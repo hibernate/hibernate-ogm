@@ -16,28 +16,32 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
-import org.hibernate.ogm.exception.impl.ErrorHandlerService;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.ogm.exception.impl.ErrorHandlerManager;
+import org.hibernate.ogm.exception.spi.ErrorHandler;
 
 /**
  * TransactionFactory using JTA transactions exclusively from the TransactionManager
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class JTATransactionManagerTransactionFactory implements TransactionFactory, ServiceRegistryAwareService {
+public class JTATransactionManagerTransactionFactory implements TransactionFactory {
 
+	private final ErrorHandler errorHandler;
 
-	private ErrorHandlerService errorHandler;
-
-	@Override
-	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-		errorHandler = serviceRegistry.getService( ErrorHandlerService.class );
+	public JTATransactionManagerTransactionFactory(ErrorHandler errorHandler) {
+		this.errorHandler = errorHandler;
 	}
 
 	@Override
 	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
-		return new JTATransactionManagerTransaction( coordinator, errorHandler );
+		ErrorHandlerManager errorHandlerManager = getErrorHandlerManager();
+		JTATransactionManagerTransaction transaction = new JTATransactionManagerTransaction( coordinator );
+
+		return errorHandlerManager != null ? new ErrorHandlerEnabledTransaction( transaction, errorHandlerManager ) : transaction;
+	}
+
+	private ErrorHandlerManager getErrorHandlerManager() {
+		return errorHandler != null ? new ErrorHandlerManager( errorHandler ) : null;
 	}
 
 	@Override

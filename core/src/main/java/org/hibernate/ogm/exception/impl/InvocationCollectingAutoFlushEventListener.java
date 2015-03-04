@@ -10,6 +10,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.event.service.spi.DuplicationStrategy;
 import org.hibernate.event.spi.AutoFlushEvent;
 import org.hibernate.event.spi.AutoFlushEventListener;
+import org.hibernate.ogm.transaction.impl.ErrorHandlerEnabledTransaction;
 import org.hibernate.ogm.util.impl.EffectivelyFinal;
 
 /**
@@ -21,12 +22,10 @@ import org.hibernate.ogm.util.impl.EffectivelyFinal;
 public class InvocationCollectingAutoFlushEventListener implements AutoFlushEventListener {
 
 	private final GridDialectInvocationCollector invocationCollector;
-	private final ErrorHandlerService errorHandler;
 	@EffectivelyFinal private AutoFlushEventListener delegate;
 
-	public InvocationCollectingAutoFlushEventListener(GridDialectInvocationCollector invocationCollector, ErrorHandlerService errorHandler) {
+	public InvocationCollectingAutoFlushEventListener(GridDialectInvocationCollector invocationCollector) {
 		this.invocationCollector = invocationCollector;
-		this.errorHandler = errorHandler;
 	}
 
 	public void setDelegate(AutoFlushEventListener delegate) {
@@ -39,9 +38,15 @@ public class InvocationCollectingAutoFlushEventListener implements AutoFlushEven
 			delegate.onAutoFlush( event );
 		}
 		finally {
-			errorHandler.onFlush();
+			getErrorHandlerManager( event ).afterFlush( invocationCollector.getAppliedOperationsOfFlushCycle() );
 			invocationCollector.finishFlushCycle();
 		}
+	}
+
+	private ErrorHandlerManager getErrorHandlerManager(AutoFlushEvent event) {
+		// TODO synch with Hardy re local TX
+		ErrorHandlerEnabledTransaction transaction = (ErrorHandlerEnabledTransaction) event.getSession().getTransactionCoordinator().getTransaction();
+		return transaction.getErrorHandlerManager();
 	}
 
 	public static class InvocationCollectingAutoFlushEventListenerDuplicationStrategy implements DuplicationStrategy {

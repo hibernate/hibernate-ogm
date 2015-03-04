@@ -164,6 +164,60 @@ public class ErrorSpiTest extends OgmTestCase {
 		assertThat( appliedOperations.hasNext() ).isFalse();
 	}
 
+//	TODO enable once we have "local" TX so we can test several concurrent TX with different data stores
+
+//	@Test
+//	public void AppliedOperationsPassedToErrorHandlerAreSeparatedByTransaction() throws Exception {
+//		OgmSession sessionA = openSession();
+//		sessionA.getTransaction().begin();
+//
+//		OgmSession sessionB = openSession();
+//		sessionB.getTransaction().begin();
+//
+//		try {
+//			Shipment loadedShipment1A = (Shipment) sessionA.get( Shipment.class, "shipment-1" );
+//			Shipment loadedShipment2B = (Shipment) sessionB.get( Shipment.class, "shipment-2" );
+//			Shipment loadedShipment3B = (Shipment) sessionB.get( Shipment.class, "shipment-3" );
+//
+//			// do an update in parallel and wait until its done
+//			Future<?> future = updateShipmentInConcurrentThread( "shipment-3", "PROCESSING" );
+//			future.get();
+//
+//			loadedShipment1A.setState( "PROCESSING" );
+//			sessionA.flush();
+//
+//			loadedShipment2B.setState( "PROCESSING" );
+//			loadedShipment3B.setState( "PROCESSING" );
+//
+//			sessionA.getTransaction().commit();
+//			sessionB.getTransaction().commit();
+//
+//			fail( "expected exception was not raised" );
+//		}
+//		catch (StaleObjectStateException sose) {
+//			sose.printStackTrace();
+//			// Expected
+//		}
+//		finally {
+//			sessionB.getTransaction().rollback();
+//
+//			sessionA.close();
+//			sessionB.close();
+//		}
+//
+//		// The update to shipment-1 is expected to be applied at the time that the update to shipment-2 causes the
+//		// rollback
+//		assertThat( MyErrorHandler.INSTANCE.getAppliedOperations() ).hasSize( 1 );
+//		List<GridDialectOperation> appliedOperations = MyErrorHandler.INSTANCE.getAppliedOperations().iterator().next();
+//
+//		assertThat( appliedOperations ).hasSize( 1 );
+//		assertThat( appliedOperations.get( 0 ) ).isInstanceOf( InsertOrUpdateTuple.class );
+//
+//		InsertOrUpdateTuple appliedOperation = appliedOperations.get( 0 ).as( InsertOrUpdateTuple.class );
+//		assertThat( appliedOperation.getEntityKey().getTable() ).isEqualTo( "Shipment" );
+//		assertThat( appliedOperation.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
+//	}
+
 	private Future<?> updateShipmentInConcurrentThread(final String id, final String newState) {
 		return executor.submit( new Runnable() {
 

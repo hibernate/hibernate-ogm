@@ -21,7 +21,6 @@ import org.hibernate.engine.transaction.spi.JoinStatus;
 import org.hibernate.engine.transaction.spi.LocalStatus;
 import org.hibernate.engine.transaction.spi.TransactionContext;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
-import org.hibernate.ogm.exception.impl.ErrorHandlerService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -35,16 +34,13 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	private static final Log log = LoggerFactory.make();
 
-	private final ErrorHandlerService errorHandler;
 	private boolean newTransaction;
 	private final TransactionManager transactionManager;
 	private boolean isDriver;
 	private boolean isInitiator;
 
-	public JTATransactionManagerTransaction(TransactionCoordinator coordinator, ErrorHandlerService errorHandler) {
+	public JTATransactionManagerTransaction(TransactionCoordinator coordinator) {
 		super( coordinator );
-
-		this.errorHandler = errorHandler;
 
 		final JtaPlatform jtaPlatform = coordinator
 					.getTransactionContext()
@@ -103,10 +99,6 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			transactionContext.beforeTransactionCompletion( this );
 		}
 
-		if ( errorHandler != null ) {
-			errorHandler.onCommit();
-		}
-
 		closeIfRequired();
 	}
 
@@ -150,9 +142,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	@Override
 	protected void beforeTransactionRollBack() {
-		if ( errorHandler != null ) {
-			errorHandler.onRollback();
-		}
+		// nothing to do
 	}
 
 	@Override
