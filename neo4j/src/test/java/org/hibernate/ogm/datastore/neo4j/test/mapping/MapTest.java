@@ -27,8 +27,8 @@ public class MapTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		home = new Address();
 		home.setCity( "Paris" );
@@ -47,7 +47,7 @@ public class MapTest extends Neo4jJpaTestCase {
 		em.persist( work );
 		em.persist( user );
 
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

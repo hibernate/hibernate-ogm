@@ -24,12 +24,12 @@ public class SingleEntityTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		jug = new JUG( "summer_camp" );
 		jug.setName( "JUG Summer Camp" );
 		em.persist( jug );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

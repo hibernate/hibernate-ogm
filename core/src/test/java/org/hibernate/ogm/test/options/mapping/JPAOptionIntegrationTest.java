@@ -34,11 +34,11 @@ import org.junit.Test;
 public class JPAOptionIntegrationTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-options.xml", Refrigerator.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/options.xml", Refrigerator.class );
 
 	@Test
 	public void shouldApplyOptionConfiguratorSpecifiedInPersistenceXml() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-options" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "options" );
 		OptionsServiceContext optionsContext = getOptionsContext( emf );
 
 		OptionsContext refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );

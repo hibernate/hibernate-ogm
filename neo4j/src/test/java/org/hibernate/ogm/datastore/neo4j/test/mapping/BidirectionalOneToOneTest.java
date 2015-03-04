@@ -26,8 +26,8 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		husband = new Husband( "frederic" );
 		husband.setName( "Frederic Joliot-Curie" );
@@ -39,7 +39,7 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 		em.persist( husband );
 		em.persist( wife );
 
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

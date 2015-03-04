@@ -7,8 +7,7 @@
 package org.hibernate.ogm.utils.test;
 
 import org.junit.Test;
-
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * To be run in an IDE this test requires option -Dhibernate.service.allow_crawling=false

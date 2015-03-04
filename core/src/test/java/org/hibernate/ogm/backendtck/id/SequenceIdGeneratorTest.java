@@ -24,63 +24,52 @@ public class SequenceIdGeneratorTest extends JpaTestCase {
 		Actor firstActor = new Actor();
 		Actor secondActor = new Actor();
 
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
-		boolean operationSuccessfull = false;
-		try {
-			firstSong.setSinger( "Charlotte Church" );
-			firstSong.setTitle( "Ave Maria" );
-			em.persist( firstSong );
+		em.getTransaction().begin();
+		firstSong.setSinger( "Charlotte Church" );
+		firstSong.setTitle( "Ave Maria" );
+		em.persist( firstSong );
 
-			secondSong.setSinger( "Charlotte Church" );
-			secondSong.setTitle( "Flower Duet" );
-			em.persist( secondSong );
+		secondSong.setSinger( "Charlotte Church" );
+		secondSong.setTitle( "Flower Duet" );
+		em.persist( secondSong );
 
-			firstActor.setName( "Russell Crowe" );
-			firstActor.setBestMovieTitle( "Gladiator" );
-			em.persist( firstActor );
+		firstActor.setName( "Russell Crowe" );
+		firstActor.setBestMovieTitle( "Gladiator" );
+		em.persist( firstActor );
 
-			secondActor.setName( "Johnny Depp" );
-			secondActor.setBestMovieTitle( "Pirates of the Caribbean" );
-			em.persist( secondActor );
-			operationSuccessfull = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessfull );
-		}
+		secondActor.setName( "Johnny Depp" );
+		secondActor.setBestMovieTitle( "Pirates of the Caribbean" );
+		em.persist( secondActor );
+		em.getTransaction().commit();
+
 		em.clear();
 
-		getTransactionManager().begin();
-		operationSuccessfull = false;
-		try {
-			firstSong = em.find( Song.class, firstSong.getId() );
-			assertThat( firstSong ).isNotNull();
-			assertThat( firstSong.getId() ).isEqualTo( Song.INITIAL_VALUE );
-			assertThat( firstSong.getTitle() ).isEqualTo( "Ave Maria" );
-			em.remove( firstSong );
+		em.getTransaction().begin();
+		firstSong = em.find( Song.class, firstSong.getId() );
+		assertThat( firstSong ).isNotNull();
+		assertThat( firstSong.getId() ).isEqualTo( Song.INITIAL_VALUE );
+		assertThat( firstSong.getTitle() ).isEqualTo( "Ave Maria" );
+		em.remove( firstSong );
 
-			secondSong = em.find( Song.class, secondSong.getId() );
-			assertThat( secondSong ).isNotNull();
-			assertThat( secondSong.getId() ).isEqualTo( Song.INITIAL_VALUE + 1 );
-			assertThat( secondSong.getTitle() ).isEqualTo( "Flower Duet" );
-			em.remove( secondSong );
+		secondSong = em.find( Song.class, secondSong.getId() );
+		assertThat( secondSong ).isNotNull();
+		assertThat( secondSong.getId() ).isEqualTo( Song.INITIAL_VALUE + 1 );
+		assertThat( secondSong.getTitle() ).isEqualTo( "Flower Duet" );
+		em.remove( secondSong );
 
-			firstActor = em.find( Actor.class, firstActor.getId() );
-			assertThat( firstActor ).isNotNull();
-			assertThat( firstActor.getId() ).isEqualTo( Actor.INITIAL_VALUE );
-			assertThat( firstActor.getName() ).isEqualTo( "Russell Crowe" );
-			em.remove( firstActor );
+		firstActor = em.find( Actor.class, firstActor.getId() );
+		assertThat( firstActor ).isNotNull();
+		assertThat( firstActor.getId() ).isEqualTo( Actor.INITIAL_VALUE );
+		assertThat( firstActor.getName() ).isEqualTo( "Russell Crowe" );
+		em.remove( firstActor );
 
-			secondActor = em.find( Actor.class, secondActor.getId() );
-			assertThat( secondActor ).isNotNull();
-			assertThat( secondActor.getId() ).isEqualTo( Actor.INITIAL_VALUE + 1 );
-			assertThat( secondActor.getName() ).isEqualTo( "Johnny Depp" );
-			em.remove( secondActor );
-			operationSuccessfull = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessfull );
-		}
+		secondActor = em.find( Actor.class, secondActor.getId() );
+		assertThat( secondActor ).isNotNull();
+		assertThat( secondActor.getId() ).isEqualTo( Actor.INITIAL_VALUE + 1 );
+		assertThat( secondActor.getName() ).isEqualTo( "Johnny Depp" );
+		em.remove( secondActor );
+		em.getTransaction().commit();
 
 		em.close();
 	}

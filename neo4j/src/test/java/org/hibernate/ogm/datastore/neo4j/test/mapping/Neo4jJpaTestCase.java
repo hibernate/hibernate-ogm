@@ -86,7 +86,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		assertThat( unexpectedProperties ).as( "Unexpected properties for " + cypher ).isEmpty();
 		assertThat( missingProperties ).as( "Missing properties for " + cypher ).isEmpty();
 		assertThat( columnAs.hasNext() ).as( "Unexpected result returned" ).isFalse();
-		commitOrRollback( true );
+		getTransactionManager().commit();
 	}
 
 	protected ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
@@ -106,7 +106,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		if ( !results.isEmpty() ) {
 			uniqueResult = (Long) results.get( 0 );
 		}
-		commitOrRollback( true );
+		getTransactionManager().commit();
 		em.close();
 		if ( uniqueResult == null ) {
 			return null;

@@ -24,13 +24,13 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		song = new Song();
 		song.setSinger( "Jon Bovi" );
 		song.setTitle( "Keep the pace" );
 		em.persist( song );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

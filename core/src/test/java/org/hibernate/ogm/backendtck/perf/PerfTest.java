@@ -44,8 +44,8 @@ public class PerfTest extends JpaTestCase {
 
 	public void testCollectionAssociations() throws Exception {
 		System.out.printf( "Warming up\n" );
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		int nbrOfAuthors = 5000; // 100;
 		if ( nbrOfAuthors >= 200 ) {
 			for ( int j = 0; j < nbrOfAuthors / 200; j++ ) {
@@ -57,22 +57,22 @@ public class PerfTest extends JpaTestCase {
 			save200AuthorsAndCommit( em, nbrOfAuthors );
 			save200BlogsAndCommit( em, nbrOfAuthors );
 		}
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 
 		int nbrOfBlogEntries = 350000;
 		System.out.printf( "Warm up period done\nSaving %s Blog entries\n", nbrOfBlogEntries );
 		long start = System.nanoTime();
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em.joinTransaction();
 		for ( int j = 0; j < nbrOfBlogEntries / 200; j++ ) {
 			save200BlogEntriesAndCommit( em, nbrOfAuthors, true );
 		}
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		System.out.printf( "Writing %s took %sms ie %sns/entry\n", nbrOfBlogEntries,
 				( System.nanoTime() - start ) / 1000000, ( System.nanoTime() - start ) / ( nbrOfBlogEntries ) );
 		System.out.printf( "Collection ratio %s entries per collection\n", nbrOfBlogEntries / nbrOfAuthors );
 
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em.joinTransaction();
 		em = getFactory().createEntityManager();
 		int nbr_of_reads = 100000;
@@ -88,7 +88,7 @@ public class PerfTest extends JpaTestCase {
 		}
 		System.out.printf( "Reading %s took %sms ie %sns/entry\n", nbr_of_reads,
 				( System.nanoTime() - start ) / 1000000, ( System.nanoTime() - start ) / ( nbr_of_reads ) );
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.clear();
 		start = System.nanoTime();
 		int blogReads = nbrOfAuthors * 10;
@@ -96,7 +96,7 @@ public class PerfTest extends JpaTestCase {
 			blogReads = 10000;
 		}
 		for ( int i = 0; i < blogReads; i++ ) {
-			getTransactionManager().begin();
+			em.getTransaction().begin();
 			em.joinTransaction();
 			int primaryKey = randId( nbrOfAuthors );
 			Blog blog = em.find( Blog.class, primaryKey );
@@ -108,7 +108,7 @@ public class PerfTest extends JpaTestCase {
 				System.out.printf( "Small number of entries in this collection %s\n", blog.getEntries().size() );
 			}
 			em.clear();
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 		}
 		System.out.printf( "Reading from blog %s times took %sms ie %sns/entry\n", blogReads,
 				( System.nanoTime() - start ) / 1000000, ( System.nanoTime() - start ) / blogReads );
@@ -117,27 +117,27 @@ public class PerfTest extends JpaTestCase {
 
 	public void testManyToOneAssociations() throws Exception {
 		System.out.printf( "Warming up\n" );
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		int nbrOfAuthors = 50000;
 		for ( int j = 0; j < nbrOfAuthors / 200; j++ ) {
 			save200AuthorsAndCommit( em, 200 );
 		}
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 
 		int nbrOfBlogEntries = 350000;
 		System.out.printf( "Warm up period done\nSaving %s Blog entries\n", nbrOfBlogEntries );
 		long start = System.nanoTime();
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em.joinTransaction();
 		for ( int j = 0; j < nbrOfBlogEntries / 200; j++ ) {
 			save200BlogEntriesAndCommit( em, nbrOfAuthors, false );
 		}
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		System.out.printf( "Writing %s took %sms ie %sns/entry\n", nbrOfBlogEntries,
 				( System.nanoTime() - start ) / 1000000, ( System.nanoTime() - start ) / ( nbrOfBlogEntries ) );
 
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em.joinTransaction();
 		em = getFactory().createEntityManager();
 		int nbr_of_reads = 100000;
@@ -154,12 +154,12 @@ public class PerfTest extends JpaTestCase {
 				( System.nanoTime() - start ) / 1000000, ( System.nanoTime() - start ) / ( nbr_of_reads ) );
 
 		em.close();
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 	}
 
 	public void testSimpleEntityInserts() throws Exception {
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		int authors = 2000000;
 		System.out.printf( "Warming up\n" );
 		for ( int j = 0; j < 200; j++ ) {
@@ -175,9 +175,9 @@ public class PerfTest extends JpaTestCase {
 		System.out.printf( "Saving %s took %sms ie %sns/entry\n", authors, ( System.nanoTime() - start ) / 1000000,
 				( System.nanoTime() - start ) / ( authors ) );
 		em.close();
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em = getFactory().createEntityManager();
 		int nbr_of_reads = 100000;
 		start = System.nanoTime();
@@ -196,7 +196,7 @@ public class PerfTest extends JpaTestCase {
 				( System.nanoTime() - start ) / 1000000, ( System.nanoTime() - start ) / ( nbr_of_reads ) );
 
 		em.close();
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 	}
 
 	private void save200AuthorsAndCommit(EntityManager em, int nbrOfAuthors) throws Exception {
@@ -210,9 +210,9 @@ public class PerfTest extends JpaTestCase {
 			em.persist( author );
 		}
 		em.flush();
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.clear();
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em.joinTransaction();
 	}
 
@@ -225,9 +225,9 @@ public class PerfTest extends JpaTestCase {
 			em.persist( blog );
 		}
 		em.flush();
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.clear();
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 		em.joinTransaction();
 	}
 
@@ -254,9 +254,9 @@ public class PerfTest extends JpaTestCase {
 
 			// stuff in or out of loop
 			// em.flush();
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.clear();
-			getTransactionManager().begin();
+			em.getTransaction().begin();
 			em.joinTransaction();
 		}
 

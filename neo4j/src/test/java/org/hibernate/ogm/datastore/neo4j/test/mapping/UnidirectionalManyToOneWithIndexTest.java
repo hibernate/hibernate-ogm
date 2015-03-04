@@ -33,8 +33,8 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		child11 = new Child();
 		child11.setName( "Emmanuel" );
@@ -63,7 +63,7 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 		father2.getOrderedChildren().add( child22 );
 
 		em.persist( father2 );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 	}
 
 	@Test

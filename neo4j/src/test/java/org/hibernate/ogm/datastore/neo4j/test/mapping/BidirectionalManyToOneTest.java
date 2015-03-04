@@ -27,8 +27,8 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		salesForce = new SalesForce( "red_hat" );
 		salesForce.setCorporation( "Red Hat" );
@@ -46,7 +46,7 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		salesForce.getSalesGuys().add( simon );
 		em.persist( simon );
 
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

@@ -6,14 +6,16 @@
  */
 package org.hibernate.ogm.backendtck.id;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.fail;
-
-import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
-import org.junit.Test;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * Tests that the insertion of a record with an already existing primary key is prevented.
@@ -21,85 +23,94 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 public class DuplicateIdDetectionTest extends JpaTestCase {
+	EntityManager em;
+
+	@Before
+	public void setUp() {
+		em = getFactory().createEntityManager();
+	}
 
 	@Test
 	public void cannotInsertSameEntityTwice() throws Exception {
-		getTransactionManager().begin();
-		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		// given
 		MakeupArtist wibke = new MakeupArtist( "wibke", "halloween" );
 		em.persist( wibke );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.clear();
-		getTransactionManager().begin();
-		em.joinTransaction();
+
+		em.getTransaction().begin();
 
 		// when
 		MakeupArtist notWibke = new MakeupArtist( "wibke", "glamorous" );
 		em.persist( notWibke );
 
 		try {
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			fail( "Expected exception wasn't raised" );
 		}
-		catch (Exception e) {
+		catch ( Exception e ) {
 			// then
-			assertThat( e.getCause() ).isExactlyInstanceOf( EntityExistsException.class );
+			assertThat( e.getCause() ).isExactlyInstanceOf( PersistenceException.class );
 			assertThat( e.getCause().getMessage() ).matches( ".*OGM000067.*" );
 		}
 
 		em.clear();
-		getTransactionManager().begin();
-		em.joinTransaction();
 
+		em.getTransaction().begin();
 		MakeupArtist loadedMakeupArtist = em.find( MakeupArtist.class, "wibke" );
 		assertThat( loadedMakeupArtist ).isNotNull();
-		assertThat( loadedMakeupArtist.getFavoriteStyle() ).describedAs( "Second insert should not be applied" ).isEqualTo( "halloween" );
+		assertThat( loadedMakeupArtist.getFavoriteStyle() ).describedAs( "Second insert should not be applied" )
+				.isEqualTo( "halloween" );
 
 		em.remove( loadedMakeupArtist );
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.close();
 	}
 
 	@Test
 	public void cannotInsertSameEntityUsingCompositeKeyTwice() throws Exception {
-		getTransactionManager().begin();
-		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		// given
-		MakeupArtistWithCompositeKey wibke = new MakeupArtistWithCompositeKey( new MakeUpArtistId( "fancy-film", "wibke" ), "halloween" );
+		MakeupArtistWithCompositeKey wibke = new MakeupArtistWithCompositeKey(
+				new MakeUpArtistId( "fancy-film", "wibke" ), "halloween"
+		);
 		em.persist( wibke );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.clear();
-		getTransactionManager().begin();
-		em.joinTransaction();
+		em.getTransaction().begin();
 
 		// when
-		MakeupArtistWithCompositeKey notWibke = new MakeupArtistWithCompositeKey( new MakeUpArtistId( "fancy-film", "wibke" ), "glamorous" );
+		MakeupArtistWithCompositeKey notWibke = new MakeupArtistWithCompositeKey(
+				new MakeUpArtistId( "fancy-film", "wibke" ), "glamorous"
+		);
 		em.persist( notWibke );
 
 		try {
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			fail( "Expected exception wasn't raised" );
 		}
-		catch (Exception e) {
+		catch ( Exception e ) {
 			// then
 			assertThat( e.getCause().getMessage() ).matches( ".*OGM000067.*" );
 		}
 
 		em.clear();
-		getTransactionManager().begin();
-		em.joinTransaction();
+		em.getTransaction().begin();
 
-		MakeupArtistWithCompositeKey loadedMakeupArtist = em.find( MakeupArtistWithCompositeKey.class, new MakeUpArtistId( "fancy-film", "wibke" ) );
+		MakeupArtistWithCompositeKey loadedMakeupArtist = em.find(
+				MakeupArtistWithCompositeKey.class, new MakeUpArtistId( "fancy-film", "wibke" )
+		);
 		assertThat( loadedMakeupArtist ).isNotNull();
-		assertThat( loadedMakeupArtist.getFavoriteStyle() ).describedAs( "Second insert should not be applied" ).isEqualTo( "halloween" );
+		assertThat( loadedMakeupArtist.getFavoriteStyle() ).describedAs( "Second insert should not be applied" )
+				.isEqualTo( "halloween" );
 
 		em.remove( loadedMakeupArtist );
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.close();
 	}
 

@@ -11,6 +11,7 @@ import javax.persistence.Persistence;
 
 import org.junit.Rule;
 import org.junit.Test;
+
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
 
@@ -19,16 +20,17 @@ import org.hibernate.ogm.utils.TestHelper;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
 public class JPAStandaloneORMAndOGMTest {
-
 	@Rule
-	public PackagingRule ogmPackaging = new PackagingRule( "persistencexml/jpajtastandalone-ormogm.xml", Poem.class );
+	public PackagingRule ogmPackaging = new PackagingRule( "persistencexml/orm-and-ogm.xml", Poem.class );
 
 	@Test
 	//Test for OGM-416 (avoid StackOverFlow when both an OGM and ORM PU are used
 	public void testJTAStandaloneNoOgm() throws Exception {
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory(
+				"ogm", TestHelper.getEnvironmentProperties()
+		);
 		emf.close();
-		emf = Persistence.createEntityManagerFactory( "jpajtastandalone-noogm" );
+		emf = Persistence.createEntityManagerFactory( "no-ogm" );
 		emf.close();
 	}
 
