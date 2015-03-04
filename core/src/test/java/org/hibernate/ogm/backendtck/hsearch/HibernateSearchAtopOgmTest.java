@@ -21,8 +21,6 @@ import org.hibernate.search.FullTextSession;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
-import org.hibernate.search.query.DatabaseRetrievalMethod;
-import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.search.query.dsl.QueryBuilder;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -51,7 +49,6 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 				.get();
 		final Query lq = b.keyword().onField( "name" ).matching( "Macif" ).createQuery();
 		final FullTextQuery ftQuery = ftem.createFullTextQuery( lq, Insurance.class );
-		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		final List<Insurance> resultList = ftQuery.getResultList();
 		assertThat( getFactory().getPersistenceUnitUtil().isLoaded( resultList.get( 0 ) ) ).isTrue();
 		assertThat( resultList ).hasSize( 1 );
@@ -81,7 +78,6 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 				.get();
 		final Query lq = b.keyword().onField( "name" ).matching( "Macif" ).createQuery();
 		final org.hibernate.search.FullTextQuery ftQuery = ftSession.createFullTextQuery( lq, Insurance.class );
-		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		final List<Insurance> resultList = ftQuery.list();
 		assertThat( getFactory().getPersistenceUnitUtil().isLoaded( resultList.get( 0 ) ) ).isTrue();
 		assertThat( resultList ).hasSize( 1 );

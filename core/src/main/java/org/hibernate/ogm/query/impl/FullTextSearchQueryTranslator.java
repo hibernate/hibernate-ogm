@@ -34,8 +34,6 @@ import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.engine.ProjectionConstants;
-import org.hibernate.search.query.DatabaseRetrievalMethod;
-import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.search.spi.SearchIntegrator;
 
 /**
@@ -83,10 +81,6 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 		}
 
 		fullTextQuery.setSort( parsingResult.getSort() );
-
-		// Following options are mandatory to load matching entities without using a query
-		// (chicken and egg problem)
-		fullTextQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 
 		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
 			fullTextQuery.setFirstResult( queryParameters.getRowSelection().getFirstRow() );

@@ -20,8 +20,6 @@ import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
-import org.hibernate.search.query.DatabaseRetrievalMethod;
-import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.junit.Test;
 
@@ -60,7 +58,6 @@ public class SearchOnStandaloneOGMTest extends OgmTestCase {
 				.get();
 		final Query lq = b.keyword().onField( "name" ).matching( "Macif" ).createQuery();
 		final FullTextQuery ftQuery = fts.createFullTextQuery( lq, Insurance.class );
-		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		final List<Insurance> resultList = ftQuery.list();
 		assertThat( resultList ).hasSize( 1 );
 		for ( Object e : resultList ) {

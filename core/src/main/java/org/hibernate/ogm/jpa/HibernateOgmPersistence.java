@@ -91,6 +91,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
 		//set the OGM specific mass indexer in case we use Hibernate Search
 		map.put( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory" );
+		//set the Hibernate Search strategy to load query matches by id rather then recurse into another query
+		map.put( "hibernate.search.query.database_retrieval_method", "FIND_BY_ID" );
 	}
 
 	@Override

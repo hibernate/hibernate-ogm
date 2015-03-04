@@ -52,6 +52,10 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
 		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory" );
 
+		// Search needs to load matching entries by id, and not recursively with another query as it does by default.
+		// Constants not used to avoid strictly depending on Search: org.hibernate.search.cfg.Environment.OBJECT_LOOKUP_METHOD
+		setProperty( "hibernate.search.query.database_retrieval_method", "FIND_BY_ID" );
+
 		// by default use the new id generator scheme...
 		setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 
@@ -112,6 +116,9 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		}
 		if ( !properties.containsKey( AvailableSettings.QUERY_TRANSLATOR ) ) {
 			setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
+		}
+		if ( ! properties.containsKey( "hibernate.search.query.database_retrieval_method" ) ) {
+			setProperty( "hibernate.search.query.database_retrieval_method", "FIND_BY_ID" );
 		}
 		return this;
 	}
