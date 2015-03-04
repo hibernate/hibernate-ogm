@@ -68,8 +68,8 @@ public class ModuleMemberRegistrationDeployment {
 			return this;
 		}
 
-		public Builder addAsWebInfResource(String resourceName) {
-			archive.addAsWebInfResource( resourceName );
+		public Builder addAsWebInfResource(String resourceName, String targetResourceName) {
+			archive.addAsWebInfResource( resourceName, targetResourceName );
 			return this;
 		}
 

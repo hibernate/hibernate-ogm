@@ -30,7 +30,7 @@ public class EhcacheModuleMemberRegistrationUsingJBossDeploymentStructureIT exte
 		return new ModuleMemberRegistrationDeployment
 				.Builder( EhcacheModuleMemberRegistrationUsingJBossDeploymentStructureIT.class)
 				.persistenceXml( persistenceXml() )
-				.addAsWebInfResource( "jboss-deployment-structure.xml" )
+				.addAsWebInfResource( "jboss-deployment-structure-ehcache.xml", "jboss-deployment-structure.xml" )
 				.createDeployment();
 	}
 

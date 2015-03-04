@@ -41,7 +41,7 @@ public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 	public static Archive<?> createTestArchive() {
 		return new ModuleMemberRegistrationDeployment.Builder( CouchDBModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
-				.addAsWebInfResource( "jboss-deployment-structure.xml" )
+				.addAsWebInfResource( "jboss-deployment-structure-couchdb.xml", "jboss-deployment-structure.xml" )
 				.createDeployment();
 	}
 
