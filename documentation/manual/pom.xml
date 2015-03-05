@@ -90,6 +90,7 @@
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
+                        <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
                         <infinispan-version>${infinispanVersion}</infinispan-version>
                         <jboss-jta-version>${jbossjtaVersion}</jboss-jta-version>
                         <mongodb-version>${mongodbVersion}</mongodb-version>
