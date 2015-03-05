@@ -16,6 +16,7 @@ import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManager;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
@@ -59,11 +60,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 
 	private static final Log LOG = LoggerFactory.make();
 
-	private final GridDialectInvocationCollector invocationCollector;
+	private final FlushCycleStateManager flushCycleStateManager;
 
-	public InvocationCollectingGridDialect(GridDialect gridDialect, GridDialectInvocationCollector invocationCollector) {
+	public InvocationCollectingGridDialect(GridDialect gridDialect, FlushCycleStateManager flushCycleStateManager) {
 		super( gridDialect );
-		this.invocationCollector = invocationCollector;
+		this.flushCycleStateManager = flushCycleStateManager;
 	}
 
 	@Override
@@ -295,11 +296,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	private void handleAppliedOperation(GridDialectOperation operation) {
-		invocationCollector.add( operation );
+		flushCycleStateManager.get( ErrorHandlerManager.class ).onAppliedOperation( operation );
 	}
 
 	private void handleException(GridDialectOperation operation, Exception e) {
-		ErrorHandlingStrategy result = invocationCollector.failedOperation( operation, e );
+		ErrorHandlingStrategy result = flushCycleStateManager.get( ErrorHandlerManager.class ).onFailedOperation( operation, e );
 
 		if ( result == ErrorHandlingStrategy.ABORT ) {
 			this.<RuntimeException>sneakyThrow( e );

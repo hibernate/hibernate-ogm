@@ -28,13 +28,6 @@ public class ErrorHandlerManager {
 		this.appliedOperations = new ArrayList<>();
 	}
 
-	/**
-	 * Captures the applied operations of the one flush cycle from the collector before they are cleared.
-	 */
-	public void afterFlush(List<GridDialectOperation> appliedOperations) {
-		this.appliedOperations.addAll( appliedOperations );
-	}
-
 	public void onRollback() {
 		DefaultRollbackContext context = new DefaultRollbackContext( appliedOperations );
 		errorHandler.onRollback( context );
@@ -43,5 +36,9 @@ public class ErrorHandlerManager {
 	public ErrorHandlingStrategy onFailedOperation(GridDialectOperation operation, Exception exception) {
 		DefaultFailedOperationContext context = new DefaultFailedOperationContext( operation, appliedOperations, exception );
 		return errorHandler.onFailedOperation( context );
+	}
+
+	public void onAppliedOperation(GridDialectOperation operation) {
+		appliedOperations.add( operation );
 	}
 }

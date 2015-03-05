@@ -22,6 +22,11 @@ import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagerInitiator;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingAutoFlushEventListener;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingAutoFlushEventListener.FlushCycleStateManagingAutoFlushEventListenerDuplicationStrategy;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingFlushEventListener;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingFlushEventListener.FlushCycleStateManagingFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
@@ -31,12 +36,6 @@ import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.exception.impl.GridDialectInvocationCollector;
-import org.hibernate.ogm.exception.impl.GridDialectInvocationCollectorInitiator;
-import org.hibernate.ogm.exception.impl.InvocationCollectingAutoFlushEventListener;
-import org.hibernate.ogm.exception.impl.InvocationCollectingAutoFlushEventListener.InvocationCollectingAutoFlushEventListenerDuplicationStrategy;
-import org.hibernate.ogm.exception.impl.InvocationCollectingFlushEventListener;
-import org.hibernate.ogm.exception.impl.InvocationCollectingFlushEventListener.InvocationCollectingFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
@@ -113,13 +112,11 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		if ( configuration.getProperties().get( OgmProperties.ERROR_HANDLER ) != null ) {
 			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
 
-			GridDialectInvocationCollector invocationCollector = serviceRegistry.getService( GridDialectInvocationCollector.class);
+			eventListenerRegistry.addDuplicationStrategy( new FlushCycleStateManagingAutoFlushEventListenerDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new FlushCycleStateManagingAutoFlushEventListener() );
 
-			eventListenerRegistry.addDuplicationStrategy( new InvocationCollectingAutoFlushEventListenerDuplicationStrategy() );
-			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new InvocationCollectingAutoFlushEventListener( invocationCollector ) );
-
-			eventListenerRegistry.addDuplicationStrategy( new InvocationCollectingFlushEventListenerDuplicationStrategy() );
-			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new InvocationCollectingFlushEventListener( invocationCollector ) );
+			eventListenerRegistry.addDuplicationStrategy( new FlushCycleStateManagingFlushEventListenerDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new FlushCycleStateManagingFlushEventListener() );
 		}
 	}
 
@@ -193,7 +190,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( GridDialectInvocationCollectorInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( FlushCycleStateManagerInitiator.INSTANCE );
 	}
 
 	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {
