@@ -18,11 +18,19 @@ import org.hibernate.ogm.exception.spi.ErrorHandler;
  */
 public class ErrorHandlerEnabledTransaction extends ForwardingTransactionImplementor {
 
-	private final ErrorHandlerManager errorHandlerManager;
+	private ErrorHandlerManager errorHandlerManager;
 
 	public ErrorHandlerEnabledTransaction(TransactionImplementor delegate, ErrorHandlerManager errorHandlerManager) {
 		super( delegate );
 		this.errorHandlerManager = errorHandlerManager;
+	}
+
+	/**
+	 * Begins the transaction, using the given error handler. Intended for OGM-internal testing only at this point.
+	 */
+	public void begin(ErrorHandler errorHandler) {
+		errorHandlerManager = new ErrorHandlerManager( errorHandler );
+		super.begin();
 	}
 
 	@Override
