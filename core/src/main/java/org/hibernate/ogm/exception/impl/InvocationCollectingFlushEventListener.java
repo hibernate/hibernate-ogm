@@ -35,11 +35,16 @@ public class InvocationCollectingFlushEventListener implements FlushEventListene
 
 	@Override
 	public void onFlush(FlushEvent event) throws HibernateException {
+		ErrorHandlerManager errorHandlerManager = getErrorHandlerManager( event );
+
+		invocationCollector.setErrorHandlerManager( errorHandlerManager );
+
+
 		try {
 			delegate.onFlush( event );
 		}
 		finally {
-			getErrorHandlerManager( event ).afterFlush( invocationCollector.getAppliedOperationsOfFlushCycle() );
+			errorHandlerManager.afterFlush( invocationCollector.getAppliedOperationsOfFlushCycle() );
 			invocationCollector.finishFlushCycle();
 		}
 	}

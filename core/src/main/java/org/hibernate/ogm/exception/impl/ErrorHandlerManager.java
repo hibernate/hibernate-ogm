@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.hibernate.ogm.exception.operation.spi.GridDialectOperation;
 import org.hibernate.ogm.exception.spi.ErrorHandler;
+import org.hibernate.ogm.exception.spi.ErrorHandlingStrategy;
 
 /**
  * Manages the {@link ErrorHandler}, if present. The lifecyle of instances is tied to transactions.
@@ -37,5 +38,10 @@ public class ErrorHandlerManager {
 	public void onRollback() {
 		DefaultRollbackContext context = new DefaultRollbackContext( appliedOperations );
 		errorHandler.onRollback( context );
+	}
+
+	public ErrorHandlingStrategy onFailedOperation(GridDialectOperation operation, Exception exception) {
+		DefaultFailedOperationContext context = new DefaultFailedOperationContext( operation, appliedOperations, exception );
+		return errorHandler.onFailedOperation( context );
 	}
 }

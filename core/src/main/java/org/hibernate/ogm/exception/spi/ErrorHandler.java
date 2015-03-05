@@ -19,7 +19,18 @@ import org.hibernate.ogm.exception.operation.spi.GridDialectOperation;
  */
 public interface ErrorHandler {
 
+	ErrorHandlingStrategy onFailedOperation(FailedOperationContext context);
+
 	void onRollback(RollbackContext context);
+
+	interface FailedOperationContext {
+
+		GridDialectOperation getFailedOperation();
+
+		List<GridDialectOperation> getAppliedOperations();
+
+		Exception getException();
+	}
 
 	/**
 	 * Provides contextual information when notifying an {@link ErrorHandler} about a transaction rollback.

@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.operation.spi.GridDialectOperation;
+import org.hibernate.ogm.exception.spi.ErrorHandlingStrategy;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.Service;
@@ -38,6 +39,8 @@ public class GridDialectInvocationCollector implements Service {
 		};
 	};
 
+	private final ThreadLocal<ErrorHandlerManager> errorHandlerManager = new ThreadLocal<>();
+
 	public void add(GridDialectOperation operation) {
 		LOG.tracef( "Adding grid operation %s", operation );
 		appliedOperations.get().add( operation );
@@ -50,5 +53,14 @@ public class GridDialectInvocationCollector implements Service {
 	public void finishFlushCycle() {
 		LOG.trace( "Finishing flush cyle" );
 		appliedOperations.remove();
+		errorHandlerManager.remove();
+	}
+
+	public ErrorHandlingStrategy failedOperation(GridDialectOperation operation, Exception e) {
+		return errorHandlerManager.get().onFailedOperation( operation, e );
+	}
+
+	public void setErrorHandlerManager(ErrorHandlerManager errorHandlerManager) {
+		this.errorHandlerManager.set( errorHandlerManager );
 	}
 }
