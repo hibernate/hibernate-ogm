@@ -6,7 +6,10 @@
  */
 package org.hibernate.ogm.exception.operation.impl;
 
+import java.util.List;
+
 import org.hibernate.ogm.exception.operation.spi.ExecuteBatch;
+import org.hibernate.ogm.exception.operation.spi.GridDialectOperation;
 import org.hibernate.ogm.exception.operation.spi.OperationType;
 
 /**
@@ -15,7 +18,16 @@ import org.hibernate.ogm.exception.operation.spi.OperationType;
  */
 public class ExecuteBatchImpl extends AbstractGridDialectOperation implements ExecuteBatch {
 
-	public ExecuteBatchImpl() {
+	private final List<GridDialectOperation> operations;
+
+	public ExecuteBatchImpl(List<GridDialectOperation> operations) {
 		super( ExecuteBatch.class, OperationType.EXECUTE_BATCH );
+
+		this.operations = operations;
+	}
+
+	@Override
+	public List<GridDialectOperation> getOperations() {
+		return operations;
 	}
 }

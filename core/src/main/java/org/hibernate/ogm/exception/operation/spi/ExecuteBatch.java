@@ -6,9 +6,19 @@
  */
 package org.hibernate.ogm.exception.operation.spi;
 
+import java.util.List;
+
 /**
+ * Represents one execution of
+ * {@link BatchableGridDialect#executeBatch(org.hibernate.ogm.dialect.batch.spi.OperationsQueue).
+ *
  * @author Gunnar Morling
  *
  */
 public interface ExecuteBatch extends GridDialectOperation {
+
+	/**
+	 * Returns the list of batched operations.
+	 */
+	List<GridDialectOperation> getOperations();
 }
