@@ -15,7 +15,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -170,21 +169,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
-
-		if ( gridDialect instanceof ForwardingGridDialect ) {
-			while ( gridDialect instanceof ForwardingGridDialect ) {
-				gridDialect = ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect();
-				if ( gridDialect instanceof InvokedOperationsLoggingDialect ) {
-					return (InvokedOperationsLoggingDialect) gridDialect;
-				}
-			}
-		}
-		else if ( gridDialect instanceof InvokedOperationsLoggingDialect ) {
-			return (InvokedOperationsLoggingDialect) gridDialect;
-		}
-
-		throw new IllegalStateException( "Unexpected dialect type: " + gridDialect.getClass() );
+		return (InvokedOperationsLoggingDialect) sfi().getServiceRegistry().getService( GridDialect.class );
 	}
 
 	private List<String> getOperations() {

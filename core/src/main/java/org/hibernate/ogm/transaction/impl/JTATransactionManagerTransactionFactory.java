@@ -16,17 +16,28 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
+import org.hibernate.ogm.exception.impl.ErrorHandlerService;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * TransactionFactory using JTA transactions exclusively from the TransactionManager
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class JTATransactionManagerTransactionFactory implements TransactionFactory {
+public class JTATransactionManagerTransactionFactory implements TransactionFactory, ServiceRegistryAwareService {
+
+
+	private ErrorHandlerService errorHandler;
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		errorHandler = serviceRegistry.getService( ErrorHandlerService.class );
+	}
 
 	@Override
 	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
-		return new JTATransactionManagerTransaction( coordinator );
+		return new JTATransactionManagerTransaction( coordinator, errorHandler );
 	}
 
 	@Override

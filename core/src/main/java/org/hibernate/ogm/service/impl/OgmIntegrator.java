@@ -19,6 +19,7 @@ import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.jpa.event.spi.JpaIntegrator;
 import org.hibernate.jpa.event.spi.jpa.CallbackRegistry;
 import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
@@ -30,6 +31,14 @@ import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.exception.impl.ErrorHandlerService;
+import org.hibernate.ogm.exception.impl.ErrorHandlerServiceInitiator;
+import org.hibernate.ogm.exception.impl.GridDialectInvocationCollector;
+import org.hibernate.ogm.exception.impl.GridDialectInvocationCollectorInitiator;
+import org.hibernate.ogm.exception.impl.InvocationCollectingAutoFlushEventListener;
+import org.hibernate.ogm.exception.impl.InvocationCollectingAutoFlushEventListener.InvocationCollectingAutoFlushEventListenerDuplicationStrategy;
+import org.hibernate.ogm.exception.impl.InvocationCollectingFlushEventListener;
+import org.hibernate.ogm.exception.impl.InvocationCollectingFlushEventListener.InvocationCollectingFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
@@ -80,11 +89,13 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		}
 		Version.touch();
 
+		attachPersistListener( serviceRegistry );
+
 		sessionFactory.addObserver( new SchemaInitializingObserver( configuration ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 		attachBatchListenersIfRequired( serviceRegistry );
 
-		attachPersistListener( serviceRegistry );
+		attachInvocationCollectorListenerIfRequired( configuration, serviceRegistry );
 	}
 
 	/**
@@ -97,6 +108,21 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		if ( batchDelegator != null ) {
 			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
 			addListeners( eventListenerRegistry, batchDelegator );
+		}
+	}
+
+	private void attachInvocationCollectorListenerIfRequired(Configuration configuration, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( configuration.getProperties().get( OgmProperties.ERROR_HANDLER ) != null ) {
+			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
+
+			ErrorHandlerService errorHandler = serviceRegistry.getService( ErrorHandlerService.class);
+			GridDialectInvocationCollector invocationCollector = serviceRegistry.getService( GridDialectInvocationCollector.class);
+
+			eventListenerRegistry.addDuplicationStrategy( new InvocationCollectingAutoFlushEventListenerDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new InvocationCollectingAutoFlushEventListener( invocationCollector, errorHandler ) );
+
+			eventListenerRegistry.addDuplicationStrategy( new InvocationCollectingFlushEventListenerDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new InvocationCollectingFlushEventListener( invocationCollector, errorHandler ) );
 		}
 	}
 
@@ -170,6 +196,8 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( ErrorHandlerServiceInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( GridDialectInvocationCollectorInitiator.INSTANCE );
 	}
 
 	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {

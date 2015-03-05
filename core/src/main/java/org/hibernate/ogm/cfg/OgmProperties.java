@@ -77,4 +77,6 @@ public interface OgmProperties {
 	 * database will have the name defined with {@link #DATABASE}. Accepts "true" or "false".
 	 */
 	String CREATE_DATABASE = "hibernate.ogm.datastore.create_database";
+
+	String ERROR_HANDLER = "hibernate.ogm.error_handler";
 }

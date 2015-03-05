@@ -51,7 +51,7 @@ public class GridDialects {
 	 * @param facetType the dialect facet type of interest
 	 * @return {@code true} in case the given dialect implements the specified facet, {@code false} otherwise
 	 */
-	static boolean hasFacet(GridDialect gridDialect, Class<? extends GridDialect> facetType) {
+	public static boolean hasFacet(GridDialect gridDialect, Class<? extends GridDialect> facetType) {
 		if ( gridDialect instanceof ForwardingGridDialect ) {
 			return hasFacet( ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect(), facetType );
 		}
