@@ -248,4 +248,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 73, value = "Couldn't load the Lucene-based query parser backend. Make sure the dependency "
 			+ "org.hibernate.hql:hibernate-hql-lucene is part of the classpath.")
 	HibernateException cannotLoadLuceneParserBackend(@Cause Exception e);
+
+	@Message(id = 74, value = "Parameter '%s' must not be an empty string")
+	IllegalArgumentException parameterSringMustNotBeEmpty(String parameterName);
 }

@@ -8,10 +8,11 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.dialect.spi.BaseDialectNamingAdaptor;
 import org.hibernate.ogm.dialect.spi.DialectNamingAdaptor;
-import org.hibernate.ogm.util.impl.StringHelper;
+import org.hibernate.ogm.util.impl.Contracts;
 
-public final class MongoDBNamingAdaptor implements DialectNamingAdaptor {
+public final class MongoDBNamingAdaptor extends BaseDialectNamingAdaptor implements DialectNamingAdaptor {
 
 	public static final DialectNamingAdaptor INSTANCE = new MongoDBNamingAdaptor();
 
@@ -23,10 +24,8 @@ public final class MongoDBNamingAdaptor implements DialectNamingAdaptor {
 
 	@Override
 	public String makeValidTableName(String requestedName) {
-		if ( StringHelper.isEmpty( requestedName ) ) {
-			throw new org.hibernate.AssertionFailure( "qualifiedName is not expected to be null at this point" );
-		}
-		else if ( requestedName.startsWith( "system." ) ) {
+		Contracts.assertStringParameterNotEmpty( requestedName, "requestedName" );
+		if ( requestedName.startsWith( "system." ) ) {
 			throw log.collectionNameHasInvalidSystemPrefix( requestedName );
 		}
 		else if ( requestedName.contains( "\u0000" ) ) {

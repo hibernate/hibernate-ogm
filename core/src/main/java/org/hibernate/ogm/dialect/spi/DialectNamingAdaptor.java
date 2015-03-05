@@ -7,7 +7,12 @@
 package org.hibernate.ogm.dialect.spi;
 
 /**
- * The Dialect can validate or adjust the names which will be used to actually persist into the database "tables".
+ * The Dialect can validate or adjust the names of structures in the datastores, such as for
+ * example the name of the tables being used in the database.
+ *
+ * Dialect developers can optionally choose to provide a custom implementation; if they choose
+ * to, we recommend to extend {@link BaseDialectNamingAdaptor} to minimize maintenance needs
+ * as this contract will likely evolve.
  *
  * @author Sanne Grinovero
  */
