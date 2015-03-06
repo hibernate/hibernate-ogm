@@ -88,7 +88,7 @@
     </module>
 
     <module name="RegexpMultiline">
-        <property name="format" value="\S\s\s\z" />
+        <property name="format" value="\S\r?\n(\r?\n)+\z" />
         <property name="message" value="Only one new line is allowed at the end of a file" />
     </module>
 
