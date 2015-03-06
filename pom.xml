@@ -52,8 +52,8 @@
         <!-- The following properties configure the embedded MongoDB instance used for tests -->
         <embeddedMongoDbVersion>2.6.5</embeddedMongoDbVersion>
         <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
-        <embeddedMongoDbTempDir>${project.build.directory}/embeddedMongoDb/extracted</embeddedMongoDbTempDir>
-        <embeddedMongoDbLogDir>${project.build.directory}/embeddedMongoDb/logs</embeddedMongoDbLogDir>
+        <embeddedMongoDbTempDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}extracted</embeddedMongoDbTempDir>
+        <embeddedMongoDbLogDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</embeddedMongoDbLogDir>
         <!-- Not using default port to reduce chances of shutting down an external MongoDB instance -->
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
 
