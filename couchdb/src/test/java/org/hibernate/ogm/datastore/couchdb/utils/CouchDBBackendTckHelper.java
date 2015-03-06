@@ -21,5 +21,3 @@ import org.junit.runner.RunWith;
 //@ClasspathSuite.ClassnameFilters({ ".*BuiltInTypeTest" })
 public class CouchDBBackendTckHelper {
 }
-
-
