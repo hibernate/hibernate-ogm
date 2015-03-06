@@ -11,11 +11,9 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.jdbc.dialect.internal.DialectFactoryInitiator;
 import org.hibernate.engine.jdbc.dialect.spi.DialectFactory;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfoSource;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -24,18 +22,13 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<DialectFactory> {
+public class OgmDialectFactoryInitiator implements StandardServiceInitiator<DialectFactory> {
 
 	public static OgmDialectFactoryInitiator INSTANCE = new OgmDialectFactoryInitiator();
 
 	@Override
-	protected DialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	public DialectFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new OgmDialectFactory( registry );
-	}
-
-	@Override
-	protected StandardServiceInitiator<DialectFactory> backupInitiator() {
-		return DialectFactoryInitiator.INSTANCE;
 	}
 
 	@Override

@@ -29,8 +29,8 @@ public class ElementCollectionListWithIndexTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
-		final EntityManager em = getFactory().createEntityManager();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		luke = new GrandChild();
 		luke.setName( "Luke" );
@@ -43,7 +43,7 @@ public class ElementCollectionListWithIndexTest extends Neo4jJpaTestCase {
 		granny.getGrandChildren().add( leia );
 
 		em.persist( granny );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

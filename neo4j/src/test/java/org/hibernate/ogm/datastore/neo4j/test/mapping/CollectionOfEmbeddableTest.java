@@ -38,8 +38,8 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDB() throws Exception {
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		address = new Address();
 		address.setCity( "Paris" );
@@ -60,7 +60,7 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 		account.getAddresses().add( anotherAddress );
 
 		em.persist( account );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 
@@ -109,11 +109,11 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testNoNodeIsLeftBehindWhenDeletingRelationships() throws Exception {
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		MultiAddressAccount multiAddressAccount = em.find( MultiAddressAccount.class, account.getLogin() );
 		multiAddressAccount.getAddresses().clear();
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 
 		assertNumberOfNodes( 1 );

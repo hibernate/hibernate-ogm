@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.utils.test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.utils.GridDialectType;

@@ -21,7 +21,7 @@ import org.junit.rules.ExpectedException;
 public class JPAStandaloneNoOGMTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-noogm.xml", Poem.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/no-ogm.xml", Poem.class );
 
 	@Rule
 	public ExpectedException error = ExpectedException.none();
@@ -31,7 +31,7 @@ public class JPAStandaloneNoOGMTest {
 		// Failure is expected as we didn't configure a JDBC connection nor a Dialect
 		// (and this would fail only if effectively loading Hibernate ORM without OGM superpowers)
 		error.expect( javax.persistence.PersistenceException.class );
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-noogm" );
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "no-ogm" );
 		emf.close(); // should not be reached, but cleanup in case the test fails.
 	}
 

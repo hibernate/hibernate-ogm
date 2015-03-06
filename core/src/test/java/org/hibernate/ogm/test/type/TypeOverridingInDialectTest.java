@@ -8,7 +8,6 @@ package org.hibernate.ogm.test.type;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
-import static org.hibernate.ogm.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
 import java.util.Date;
 import java.util.UUID;
@@ -16,8 +15,8 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.transaction.RollbackException;
-import javax.transaction.TransactionManager;
+import javax.persistence.RollbackException;
+
 
 import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Rule;
@@ -29,7 +28,7 @@ import org.junit.Test;
 public class TypeOverridingInDialectTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-customdialect.xml",
+	public PackagingRule packaging = new PackagingRule( "persistencexml/customdialect.xml",
 			Poem.class,
 			OverridingTypeDialect.class,
 			ExplodingType.class,
@@ -38,27 +37,25 @@ public class TypeOverridingInDialectTest {
 
 	@Test
 	public void testOverriddenTypeInDialect() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
-
-		TransactionManager transactionManager = extractJBossTransactionManager( emf );
-		transactionManager.begin();
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "customdialect" );
 		final EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
 		try {
 			Poem poem = new Poem();
 			poem.setName( "L'albatros" );
 			poem.setPoemSocietyId( UUID.randomUUID() );
 			poem.setCreation( new Date() );
 			em.persist( poem );
-			transactionManager.commit();
+			em.getTransaction().commit();
 			assertThat( true ).as( "Custom type not used" ).isFalse();
 		}
 		catch ( RollbackException e ) {
-			//make this chaing more robust
-			assertThat( e.getCause().getCause().getMessage() ).isEqualTo( "Exploding type" );
+			//make this chaining more robust
+			assertThat( e.getCause().getMessage() ).isEqualTo( "Exploding type" );
 		}
 		finally {
 			try {
-				transactionManager.rollback();
+				em.getTransaction().rollback();
 			}
 			catch ( Exception e ) {
 				//we try

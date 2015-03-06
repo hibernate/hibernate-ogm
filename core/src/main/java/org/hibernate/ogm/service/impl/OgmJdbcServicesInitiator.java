@@ -14,7 +14,6 @@ import org.hibernate.engine.jdbc.LobCreationContext;
 import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.internal.JdbcServicesImpl;
-import org.hibernate.engine.jdbc.internal.JdbcServicesInitiator;
 import org.hibernate.engine.jdbc.spi.ExtractedDatabaseMetaData;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.jdbc.spi.ResultSetWrapper;
@@ -29,7 +28,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmJdbcServicesInitiator extends OptionalServiceInitiator<JdbcServices> {
+public class OgmJdbcServicesInitiator implements StandardServiceInitiator<JdbcServices> {
 	public static final OgmJdbcServicesInitiator INSTANCE = new OgmJdbcServicesInitiator();
 
 	@Override
@@ -38,13 +37,8 @@ public class OgmJdbcServicesInitiator extends OptionalServiceInitiator<JdbcServi
 	}
 
 	@Override
-	protected JdbcServices buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	public JdbcServices initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new OgmJdbcServicesImpl();
-	}
-
-	@Override
-	protected StandardServiceInitiator<JdbcServices> backupInitiator() {
-		return JdbcServicesInitiator.INSTANCE;
 	}
 
 	private static final class OgmJdbcServicesImpl implements JdbcServices, ServiceRegistryAwareService, Configurable {

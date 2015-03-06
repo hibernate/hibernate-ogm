@@ -25,21 +25,20 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Transaction implementation using JTA transactions exclusively from the TransactionManager
+ * Transaction implementation using JTA transactions exclusively from the {@code TransactionManager}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero  &lt;sanne@hibernate.org&gt;
  */
-public class JTATransactionManagerTransaction extends AbstractTransactionImpl implements Transaction {
+public class JTATransaction extends AbstractTransactionImpl implements Transaction {
 
 	private static final Log log = LoggerFactory.make();
 
-	private boolean newTransaction;
 	private final TransactionManager transactionManager;
 	private boolean isDriver;
 	private boolean isInitiator;
 
-	public JTATransactionManagerTransaction(TransactionCoordinator coordinator) {
+	public JTATransaction(TransactionCoordinator coordinator) {
 		super( coordinator );
 		final JtaPlatform jtaPlatform = coordinator
 					.getTransactionContext()
@@ -54,7 +53,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		log.trace( "begin" );
 
 		try {
-			newTransaction = transactionManager.getStatus() == Status.STATUS_NO_TRANSACTION;
+			boolean newTransaction = transactionManager.getStatus() == Status.STATUS_NO_TRANSACTION;
 			if ( newTransaction ) {
 				transactionManager.begin();
 				isInitiator = true;

@@ -163,6 +163,11 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		return gridDialect.getDuplicateInsertPreventionStrategy( entityKeyMetadata );
 	}
 
+	@Override
+	public boolean supportsTransactions() {
+		return gridDialect.supportsTransactions();
+	}
+
 	/*
 	 * @see org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect
 	 */

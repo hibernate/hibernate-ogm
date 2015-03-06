@@ -30,14 +30,14 @@ import org.junit.rules.ExpectedException;
 public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void testWrappedStandalone() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getEnvironmentProperties() );
 		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
 
 		EntityManager em = emf.createEntityManager();

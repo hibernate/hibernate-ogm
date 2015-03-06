@@ -10,24 +10,23 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator;
+import org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatform> {
+public class OgmJtaPlatformInitiator implements StandardServiceInitiator<JtaPlatform> {
 	public static final OgmJtaPlatformInitiator INSTANCE = new OgmJtaPlatformInitiator();
+	public static final String JBOSS_TM_CLASS_NAME = "com.arjuna.ats.jta.TransactionManager";
 
 	@Override
 	public Class<JtaPlatform> getServiceInitiated() {
@@ -35,36 +34,44 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 	}
 
 	@Override
-	protected JtaPlatform buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	@SuppressWarnings("unchecked")
+	public JtaPlatform initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		if ( hasExplicitPlatform( configurationValues ) ) {
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
-		if ( isNeo4j( configurationValues, registry.getService( ClassLoaderService.class ) ) ) {
-			configurationValues.put( Environment.JTA_PLATFORM, "org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jJtaPlatform" );
+
+		if ( isNeo4j( registry.getService( DatastoreProvider.class ) ) ) {
+			configurationValues.put(
+					Environment.JTA_PLATFORM, "org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jJtaPlatform"
+			);
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
-		return new JBossStandAloneJtaPlatform();
+
+		// if no platform is set and JBoss transaction manager is available use that one
+		if ( jbossTransactionManagerAvailable( registry.getService( ClassLoaderService.class ) ) ) {
+			return new JBossStandAloneJtaPlatform();
+		}
+		else {
+			return new NoJtaPlatform();
+		}
 	}
 
-	//TODO OGM-370 get rid of this!!!
-	private boolean isNeo4j(Map configuration, ClassLoaderService classLoaderService) {
-		DatastoreProvider configuredProvider = new ConfigurationPropertyReader( configuration, classLoaderService )
-			.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
-			.instantiate()
-			.withShortNameResolver( new DatastoreProviderInitiator.DatastoreProviderShortNameResolver() )
-			.getValue();
-
-		return configuredProvider != null &&
-				configuredProvider.getClass().getName().equals(
-						AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName() );
-	}
-
-	@Override
-	protected StandardServiceInitiator<JtaPlatform> backupInitiator() {
-		return JtaPlatformInitiator.INSTANCE;
+	private boolean isNeo4j(DatastoreProvider datastoreProvider) {
+		return AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName()
+				.equals( datastoreProvider.getClass().getName() );
 	}
 
 	private boolean hasExplicitPlatform(Map configVales) {
 		return configVales.containsKey( AvailableSettings.JTA_PLATFORM );
+	}
+
+	private boolean jbossTransactionManagerAvailable(ClassLoaderService classLoaderService) {
+		try {
+			classLoaderService.classForName( JBOSS_TM_CLASS_NAME );
+			return true;
+		}
+		catch ( ClassLoadingException e ) {
+			return false;
+		}
 	}
 }

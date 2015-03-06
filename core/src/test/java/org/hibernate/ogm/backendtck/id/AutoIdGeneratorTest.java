@@ -24,38 +24,28 @@ public class AutoIdGeneratorTest extends JpaTestCase {
 	public void testAutoIdentifierGenerator() throws Exception {
 		DistributedRevisionControl git = new DistributedRevisionControl();
 		DistributedRevisionControl bzr = new DistributedRevisionControl();
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
-		boolean operationSuccessfull = false;
-		try {
-			git.setName( "Git" );
-			em.persist( git );
+		em.getTransaction().begin();
+		git.setName( "Git" );
+		em.persist( git );
 
-			bzr.setName( "Bazaar" );
-			em.persist( bzr );
-			operationSuccessfull = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessfull );
-		}
+		bzr.setName( "Bazaar" );
+		em.persist( bzr );
+		em.getTransaction().commit();
 
 		em.clear();
-		getTransactionManager().begin();
-		operationSuccessfull = false;
-		try {
-			DistributedRevisionControl dvcs = em.find( DistributedRevisionControl.class, git.getId() );
-			assertThat( dvcs ).isNotNull();
-			assertThat( dvcs.getId() ).isEqualTo( 1 );
-			em.remove( dvcs );
 
-			dvcs = em.find( DistributedRevisionControl.class, bzr.getId() );
-			assertThat( dvcs ).isNotNull();
-			assertThat( dvcs.getId() ).isEqualTo( 2 );
-			operationSuccessfull = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessfull );
-		}
+		em.getTransaction().begin();
+		DistributedRevisionControl dvcs = em.find( DistributedRevisionControl.class, git.getId() );
+		assertThat( dvcs ).isNotNull();
+		assertThat( dvcs.getId() ).isEqualTo( 1 );
+		em.remove( dvcs );
+
+		dvcs = em.find( DistributedRevisionControl.class, bzr.getId() );
+		assertThat( dvcs ).isNotNull();
+		assertThat( dvcs.getId() ).isEqualTo( 2 );
+		em.getTransaction().commit();
+
 		em.close();
 	}
 

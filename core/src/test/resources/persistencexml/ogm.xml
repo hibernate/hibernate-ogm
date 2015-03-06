@@ -9,12 +9,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
-    <persistence-unit name="jpajtastandalone" transaction-type="JTA">
+    <persistence-unit name="ogm" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
-        <properties>
-            <property name="hibernate.ogm.datastore.provider"
-                      value="map"/>
-            <property name="hibernate.ogm.datastore.grid_dialect" value="org.hibernate.ogm.test.type.OverridingTypeDialect"/>
-        </properties>
     </persistence-unit>
 </persistence>

@@ -13,8 +13,6 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
@@ -34,7 +32,7 @@ import org.junit.Test;
 public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 5 );
@@ -43,18 +41,21 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	private final LiteratureSociety stencilClub = new LiteratureSociety( "stencil-club", "Stencil Club Germany", christian, james );
 	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
 
+	private EntityManager em;
+
 	@Before
 	public void init() throws Exception {
+		// prepare test data
+		em = createEntityManager();
 		begin();
-
-		EntityManager em = persist( portia, athanasia, stencilClub, critic );
-
+		em = persist( portia, athanasia, stencilClub, critic );
 		commit();
-		close( em );
+		em.close();
+
+		em = createEntityManager();
 	}
 
 	private EntityManager persist(Object... entities) {
-		EntityManager em = createEntityManager();
 		for ( Object object : entities ) {
 			em.persist( object );
 		}
@@ -64,7 +65,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	@After
 	public void tearDown() throws Exception {
 		begin();
-		EntityManager em = delete( portia, athanasia, stencilClub, critic );
+		delete( portia, athanasia, stencilClub, critic );
 		commit();
 		close( em );
 	}
@@ -72,7 +73,6 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	@Test
 	public void testSingleResultQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		String nativeQuery = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
 		OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
@@ -80,13 +80,11 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertAreEquals( portia, poem );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testSingleResultQueryWithProjection() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		String nativeQuery = "db.WILDE_POEM.find( "
 				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
@@ -97,13 +95,11 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertThat( result ).isEqualTo( "Portia" );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testSingleResultQueryWithSeveralProjections() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		String nativeQuery = "db.WILDE_POEM.find( "
 				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
@@ -114,44 +110,37 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertThat( Arrays.asList( result ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testCountQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		Long result = (Long) em.createNamedQuery( "CountPoems" ).getSingleResult();
 		assertThat( result ).isEqualTo( 2L );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testSingleResultFromNamedNativeQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQuery" ).getSingleResult();
 
 		assertAreEquals( athanasia, poem );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testSingleProjectionResultFromNamedNativeQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		String result = (String) em.createNamedQuery( "AthanasiaProjectionQuery" ).getSingleResult();
 		assertThat( result ).isEqualTo( athanasia.getName() );
 
 		commit();
-		close( em );
 	}
 
 	@Test
@@ -159,33 +148,28 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	// TODO OGM-564 Re-enable once HHH-8237 is resolved and we're on ORM 4.3.6
 	public void testProjectionQueryWithTypeConversion() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		List<Byte> result = em.createNamedQuery( "PoemRatings" ).getResultList();
 		assertThat( result ).containsOnly( portia.getRating(), athanasia.getRating() );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testMappedEntityResultFromNamedNativeQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQueryWithMapping" ).getSingleResult();
 
 		assertAreEquals( athanasia, poem );
 
 		commit();
-		close( em );
 	}
 
 
 	@Test
 	public void testExceptionWhenReturnedEntityIsMissing() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		String nativeQuery = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
 		try {
@@ -199,15 +183,11 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 				.as( "The native query doesn't define a returned entity, there should be a specific exception" )
 				.contains( "OGM001217" );
 		}
-		finally {
-			close( em );
-		}
 	}
 
 	@Test
 	public void testListMultipleResultQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
 		@SuppressWarnings("unchecked")
 		List<OscarWildePoem> results = em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getResultList();
@@ -217,7 +197,6 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertAreEquals( portia, results.get( 1 ) );
 
 		commit();
-		close( em );
 	}
 
 	@Test
@@ -225,7 +204,6 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testEntitiesInsertedInCurrentSessionAreFoundByNativeQuery() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		String nativeQuery = "{ name : 'Her Voice' }";
 		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
@@ -243,13 +221,11 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 		em.remove( voice );
 		commit();
-		close( em );
 	}
 
 	@Test
 	public void testSingleResultQueryUsingExtendedSyntax() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 		String nativeQuery = "db.WILDE_POEM.find({ '$query' : { 'name' : 'Athanasia' }, '$orderby' : { 'name' : 1 } })";
 		@SuppressWarnings("unchecked")
 		List<OscarWildePoem> results = em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getResultList();
@@ -258,14 +234,12 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertAreEquals( athanasia, results.get( 0 ) );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-638")
 	public void canRunSameNativeQuerySeveralTimes() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		Query createNativeQuery = em.createNativeQuery(
 				"db.LiteratureSociety.find( { 'name' : 'Stencil Club Germany' } )",
@@ -279,14 +253,12 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertThat( stencilClub.getMembers() ).onProperty( "id" ).containsOnly( "christian", "james" );
 
 		commit();
-		close( em );
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-702")
 	public void testQueryWithCompositeId() throws Exception {
 		begin();
-		EntityManager em = createEntityManager();
 
 		@SuppressWarnings("unchecked")
 		List<Critic> critics = em.createNativeQuery( "{}", Critic.class ).getResultList();
@@ -294,7 +266,6 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
 
 		commit();
-		close( em );
 	}
 
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
@@ -315,23 +286,22 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	private EntityManager delete(Object... entities) {
-		EntityManager em = createEntityManager();
 		for ( Object object : entities ) {
 			em.detach( object );
 		}
 		return em;
 	}
 
-	private void begin() throws NotSupportedException, SystemException, Exception {
-		getTransactionManager().begin();
+	private void begin() throws Exception {
+		em.getTransaction().begin();
 	}
 
 	private void commit() throws Exception {
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 	}
 
 	private void rollback() throws Exception {
-		getTransactionManager().rollback();
+		em.getTransaction().rollback();
 	}
 
 	private EntityManager createEntityManager() {

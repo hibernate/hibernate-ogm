@@ -51,9 +51,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 		return datastoreProvider;
 	}
 
-	// TODO This only public to support the hack in OgmJtaPlatformInitiator#isNeo4j(); Can be made private once that
-	// has been removed
-	public static class DatastoreProviderShortNameResolver implements ShortNameResolver {
+	private static class DatastoreProviderShortNameResolver implements ShortNameResolver {
 
 		private static final DatastoreProviderShortNameResolver INSTANCE = new DatastoreProviderShortNameResolver();
 

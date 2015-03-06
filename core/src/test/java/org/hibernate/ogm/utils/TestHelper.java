@@ -6,18 +6,19 @@
  */
 package org.hibernate.ogm.utils;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -32,7 +33,7 @@ import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
-import com.arjuna.ats.arjuna.coordinator.TxControl;
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -42,10 +43,27 @@ public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
 	private static final TestableGridDialect helper = createStoreSpecificHelper();
+	private static final String TX_CONTROL_CLASS_NAME = "com.arjuna.ats.arjuna.coordinator.TxControl";
 
 	static {
-		// set 5 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
-		TxControl.setDefaultTimeout( 60 * 60 * 2 );
+		Class<?> txControlClass = loadClass( TX_CONTROL_CLASS_NAME );
+		if ( txControlClass != null ) {
+			// set 2 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
+			try {
+				Method timeoutMethod = txControlClass.getMethod( "setDefaultTimeout", int.class );
+				timeoutMethod.invoke( null, 60 * 60 * 2 );
+			}
+			catch ( NoSuchMethodException e ) {
+				log.error( "Found TxControl class, but unable to set timeout" );
+			}
+			catch ( IllegalAccessException e ) {
+				log.error( "Found TxControl class, but unable to set timeout" );
+			}
+			catch ( InvocationTargetException e ) {
+				log.error( "Found TxControl class, but unable to set timeout" );
+			}
+			TxControl.setDefaultTimeout( 60 * 60 * 2 );
+		}
 	}
 
 	private TestHelper() {
@@ -223,5 +241,29 @@ public class TestHelper {
 	 */
 	public static GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return helper.configureDatastore( configuration );
+	}
+
+	private static Class<?> loadClass(String className) {
+		try {
+			return Class.forName( className, true, TestHelper.class.getClassLoader() );
+		}
+		catch ( ClassNotFoundException e ) {
+			//ignore -- try using the class loader of context first
+		}
+		catch ( RuntimeException e ) {
+			// ignore
+		}
+		try {
+			ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+			if ( contextClassLoader != null ) {
+				return Class.forName( className, false, contextClassLoader );
+			}
+			else {
+				return null;
+			}
+		}
+		catch ( ClassNotFoundException e ) {
+			return null;
+		}
 	}
 }

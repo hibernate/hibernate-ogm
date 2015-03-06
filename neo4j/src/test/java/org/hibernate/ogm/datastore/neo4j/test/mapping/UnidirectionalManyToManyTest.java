@@ -27,8 +27,8 @@ public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		owner = new AccountOwner( "owner_1" );
 		owner.setSSN( "0123456" );
@@ -44,7 +44,7 @@ public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		owner.getBankAccounts().add( barclays );
 
 		em.persist( owner );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

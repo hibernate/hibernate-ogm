@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.test.datastore;
 
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.hibernate.ogm.utils.PackagingRule;
@@ -22,12 +21,12 @@ import org.junit.Test;
 public class DatastoreWithStartStoppableTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-datastoreobserver.xml", Noise.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/datastoreobserver.xml", Noise.class );
 
 	@Test
 	public void testObserver() throws Exception {
 		try {
-			final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-datastoreobserver" );
+			Persistence.createEntityManagerFactory( "datastoreobserver" );
 			Assert.fail( "StartStoppable provider not executed" );
 		}
 		catch (RuntimeException e) {

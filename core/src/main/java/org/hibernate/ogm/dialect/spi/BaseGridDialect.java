@@ -44,4 +44,9 @@ public abstract class BaseGridDialect implements GridDialect {
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
+
+	@Override
+	public boolean supportsTransactions() {
+		return true;
+	}
 }

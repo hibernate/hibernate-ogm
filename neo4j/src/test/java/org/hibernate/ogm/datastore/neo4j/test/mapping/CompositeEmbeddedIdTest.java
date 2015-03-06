@@ -30,18 +30,10 @@ public class CompositeEmbeddedIdTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-
-		boolean operationSuccessful = false;
-		getTransactionManager().begin();
-		final EntityManager em = getFactory().createEntityManager();
-
-		try {
-			em.persist( newsOGM );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		em.persist( newsOGM );
+		em.getTransaction().commit();
 		em.clear();
 		em.close();
 	}

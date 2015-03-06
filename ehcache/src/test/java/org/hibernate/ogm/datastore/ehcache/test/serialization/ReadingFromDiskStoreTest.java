@@ -37,34 +37,20 @@ public class ReadingFromDiskStoreTest extends JpaTestCase {
 
 		Bridge bixbyCreek = new Bridge( 1L, "Bixby Creek Bridge", bixbyEngineers );
 
-		boolean operationSuccessful = false;
-		getTransactionManager().begin();
-
 		final EntityManager em = getFactory().createEntityManager();
-
-		try {
-			em.persist( bixbyCreek );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
+		em.getTransaction().begin();
+		em.persist( bixbyCreek );
+		em.getTransaction().commit();
 
 		em.clear();
-		getTransactionManager().begin();
-		operationSuccessful = false;
-		try {
-			Bridge news = em.find( Bridge.class, 1L );
-			assertThat( news ).isNotNull();
-			assertThat( news.getName() ).isEqualTo( "Bixby Creek Bridge" );
+		em.getTransaction().begin();
+		Bridge news = em.find( Bridge.class, 1L );
+		assertThat( news ).isNotNull();
+		assertThat( news.getName() ).isEqualTo( "Bixby Creek Bridge" );
 
-			em.remove( news );
-			assertThat( em.find( Bridge.class, 1L ) ).isNull();
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
-
+		em.remove( news );
+		assertThat( em.find( Bridge.class, 1L ) ).isNull();
+		em.getTransaction().commit();
 		em.close();
 	}
 
@@ -82,41 +68,28 @@ public class ReadingFromDiskStoreTest extends JpaTestCase {
 
 		Bridge astoriaMegler = new Bridge( 3L, "Astoria-Megler Bridge", astoriaEngineers );
 
-		boolean operationSuccessful = false;
-		getTransactionManager().begin();
-
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
-		try {
-			em.persist( bixbyCreek );
-			em.persist( astoriaMegler );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
+		em.persist( bixbyCreek );
+		em.persist( astoriaMegler );
+		em.getTransaction().commit();
 
 		em.clear();
-		getTransactionManager().begin();
-		operationSuccessful = false;
+		em.getTransaction().begin();
+		Bridge loadedBridge = em.find( Bridge.class, 3L );
+		assertThat( loadedBridge ).isNotNull();
+		assertThat( loadedBridge.getEngineers() ).onProperty( "name" ).containsOnly( "Bruce the initializer" );
+		em.remove( loadedBridge );
+		assertThat( em.find( Bridge.class, 3L ) ).isNull();
 
-		try {
-			Bridge loadedBridge = em.find( Bridge.class, 3L );
-			assertThat( loadedBridge ).isNotNull();
-			assertThat( loadedBridge.getEngineers() ).onProperty( "name" ).containsOnly( "Bruce the initializer" );
-			em.remove( loadedBridge );
-			assertThat( em.find( Bridge.class, 3L ) ).isNull();
-
-			loadedBridge = em.find( Bridge.class, 2L );
-			assertThat( loadedBridge ).isNotNull();
-			assertThat( loadedBridge.getEngineers() ).onProperty( "name" ).containsOnly( "Bob the constructor", "Biff the destructor" );
-			em.remove( loadedBridge );
-			assertThat( em.find( Bridge.class, 2L ) ).isNull();
-
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
+		loadedBridge = em.find( Bridge.class, 2L );
+		assertThat( loadedBridge ).isNotNull();
+		assertThat( loadedBridge.getEngineers() ).onProperty( "name" )
+				.containsOnly( "Bob the constructor", "Biff the destructor" );
+		em.remove( loadedBridge );
+		assertThat( em.find( Bridge.class, 2L ) ).isNull();
+		em.getTransaction().commit();
 		em.close();
 	}
 

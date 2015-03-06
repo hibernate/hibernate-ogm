@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.logging.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -70,8 +71,9 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1217, value = "The following native query does neither specify the collection name nor is its result type mapped to an entity: %s")
 	HibernateException unableToDetermineCollectionName(String nativeQuery);
 
+	@LogMessage(level = WARN)
 	@Message(id = 1218, value = "Cannot use primary key column name '%s' for id generator, going to use '%s' instead")
-	HibernateException cannotUseGivenPrimaryKeyColumnName(String givenKeyColumnName, String usedKeyColumnName);
+	void cannotUseGivenPrimaryKeyColumnName(String givenKeyColumnName, String usedKeyColumnName);
 
 	@Message(id = 1219, value = "Database %s does not exist. Either create it yourself or set property '" + OgmProperties.CREATE_DATABASE + "' to true.")
 	HibernateException databaseDoesNotExistException(String databaseName);

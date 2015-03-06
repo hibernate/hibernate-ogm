@@ -183,4 +183,11 @@ public interface GridDialect extends Service {
 	 * same primary key
 	 */
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
+
+	/**
+	 * Whether this dialect supports transactions.
+	 *
+	 * @return {@code true} if this dialect supports transactions, {@code false} otherwise.
+	 */
+	boolean supportsTransactions();
 }

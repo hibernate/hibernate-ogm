@@ -24,17 +24,17 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class JPAResourceLocalStandaloneTest {
+public class JPAResourceLocalTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-resourcelocal.xml", Poem.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-resource-local.xml", Poem.class );
 
 	@Rule
 	public RequiresTransactionalCapabilitiesRule transactions = new RequiresTransactionalCapabilitiesRule();
 
 	@Test
-	public void testJTAStandalone() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
+	public void testBootstrapAndCRUD() throws Exception {
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "transaction-type-resource-local", TestHelper.getEnvironmentProperties() );
 		try {
 
 			final EntityManager em = emf.createEntityManager();

@@ -141,23 +141,22 @@ public class JpaQueriesTest extends JpaTestCase {
 
 	@Before
 	public void populateDb() throws Exception {
-		getTransactionManager().begin();
 		em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		em.persist( helicopter( POLICE_HELICOPTER ) );
 		em.persist( helicopter( "AW139SAR"  ) );
-		getTransactionManager().commit();
-		em.close();
+		em.getTransaction().commit();
+		em.clear();
 
-		em = getFactory().createEntityManager();
-		getTransactionManager().begin();
-		em.joinTransaction();
+		em.getTransaction().begin();
 	}
 
 	@After
 	public void closeEmAndRemoveEntities() throws Exception {
-		getTransactionManager().commit();
-		em.close();
+		em.getTransaction().commit();
 		removeEntities();
+		em.close();
+
 	}
 
 	@Override
@@ -177,16 +176,14 @@ public class JpaQueriesTest extends JpaTestCase {
 	}
 
 	private void removeEntities() throws Exception {
-		getTransactionManager().begin();
-		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		for ( Class<?> each : getEntities() ) {
 			List<?> entities = em.createQuery( "FROM " + each.getSimpleName() ).getResultList();
 			for ( Object object : entities ) {
 				em.remove( object );
 			}
 		}
-		getTransactionManager().commit();
-		em.close();
+		em.getTransaction().commit();
 	}
 
 }

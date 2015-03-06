@@ -28,8 +28,8 @@ public class ObjectIdJpaTest extends JpaTestCase {
 		EntityManager em = null;
 
 		try {
-			getTransactionManager().begin();
 			em = getFactory().createEntityManager();
+			em.getTransaction().begin();
 			// given
 			Bar goldFishBar = new Bar( "Goldfisch Bar" );
 			goldFishBar.getDoorMen().add( new DoorMan( "Bruce" ) );
@@ -37,15 +37,15 @@ public class ObjectIdJpaTest extends JpaTestCase {
 
 			// when
 			em.persist( goldFishBar );
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.clear();
 
 			// then
-			getTransactionManager().begin();
+			em.getTransaction().begin();
 			Bar barLoaded = em.find( Bar.class, goldFishBar.getId() );
 			assertThat( barLoaded.getDoorMen() ).onProperty( "name" ).containsOnly( "Bruce", "Dwain" );
 
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 		}
 		finally {
 			if ( em != null ) {
