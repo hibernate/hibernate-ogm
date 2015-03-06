@@ -14,8 +14,6 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
@@ -34,71 +32,55 @@ import org.junit.Test;
 public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
 	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
 
+	private EntityManager em;
+
 	@Before
 	public void init() throws Exception {
-		begin();
-		EntityManager em = persist( portia, athanasia, critic );
-		commit();
-		close( em );
-	}
-
-	private EntityManager persist(Object... entities) {
-		EntityManager em = createEntityManager();
-		for ( Object object : entities ) {
-			em.persist( object );
-		}
-		return em;
+		em = createEntityManager();
+		persist( portia, athanasia, critic );
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		begin();
-		EntityManager em = delete( portia, athanasia, critic );
-		commit();
-		close( em );
+		delete( portia, athanasia, critic );
+		em.close();
 	}
 
 	@Test
 	public void testIteratorSingleResultQuery() throws Exception {
-		begin();
-		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
 
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
 		OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
 
 		assertAreEquals( portia, poem );
 
-		commit();
-		close( em );
+		em.getTransaction().commit();
 	}
 
 	@Test
 	public void testIteratorSingleResultFromNamedNativeQuery() throws Exception {
-		begin();
-		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
 
 		OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQuery" ).getSingleResult();
 
 		assertAreEquals( athanasia, poem );
 
-		commit();
-		close( em );
+		em.getTransaction().commit();
 	}
 
-	private void begin() throws NotSupportedException, SystemException, Exception {
-		getTransactionManager().begin();
-	}
+
 
 	@Test
 	public void testListMultipleResultQuery() throws Exception {
-		begin();
-		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
+
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { author:'Oscar Wilde' } ) RETURN n ORDER BY n.name";
 		@SuppressWarnings("unchecked")
 		List<OscarWildePoem> results = em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getResultList();
@@ -107,14 +89,12 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		assertAreEquals( athanasia, results.get( 0 ) );
 		assertAreEquals( portia, results.get( 1 ) );
 
-		commit();
-		close( em );
+		em.getTransaction().commit();
 	}
 
 	@Test
 	public void testSingleResultQueryUsingParameter() throws Exception {
-		begin();
-		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
 
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:{name}, author:'Oscar Wilde' } ) RETURN n";
 		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
@@ -123,14 +103,12 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 
 		assertAreEquals( portia, poem );
 
-		commit();
-		close( em );
+		em.getTransaction().commit();
 	}
 
 	@Test
 	public void testSingleResultQueryUsingDateParameter() throws Exception {
-		begin();
-		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
 
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { dateOfCreation:{creationDate}, author:'Oscar Wilde' } ) RETURN n";
 		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
@@ -139,25 +117,31 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 
 		assertAreEquals( athanasia, poem );
 
-		commit();
-		close( em );
+		em.getTransaction().commit();
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-702")
 	public void testQueryWithCompositeId() throws Exception {
-		begin();
-		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
 
 		@SuppressWarnings("unchecked")
 		List<Critic> critics = em.createNativeQuery( "MATCH ( n:Critic ) RETURN n", Critic.class ).getResultList();
 
 		assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
 
-		commit();
-		close( em );
+		em.getTransaction().commit();
 	}
 
+	private void persist(Object... entities) {
+		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
+		for ( Object object : entities ) {
+			em.persist( object );
+		}
+		em.getTransaction().commit();
+		em.clear();
+	}
 
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
 		assertThat( poem ).isNotNull();
@@ -176,12 +160,13 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		em.close();
 	}
 
-	private EntityManager delete(Object... entities) {
-		EntityManager em = createEntityManager();
+	private void delete(Object... entities) {
+		em.getTransaction().begin();
 		for ( Object object : entities ) {
 			em.detach( object );
 		}
-		return em;
+		em.getTransaction().commit();
+		em.clear();
 	}
 
 	private void commit() throws Exception {

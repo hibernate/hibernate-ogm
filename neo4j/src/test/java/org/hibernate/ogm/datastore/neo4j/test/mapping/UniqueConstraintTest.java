@@ -102,8 +102,8 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void setup() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		entityWithConstraints = new EntityWithConstraints();
 		entityWithConstraints.setId( "johndoe" );
@@ -113,7 +113,7 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 		entityWithConstraints.setNonUniqueProperty( "no constraints here" );
 
 		em.persist( entityWithConstraints );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 
@@ -124,13 +124,13 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 		thrown.expectMessage( "naturalId" );
 
 		try {
-			getTransactionManager().begin();
 			final EntityManager em = getFactory().createEntityManager();
+			em.getTransaction().begin();
 			EntityWithConstraints duplicated = new EntityWithConstraints();
 			duplicated.setId( "login2" );
 			duplicated.setNaturalId( entityWithConstraints.getNaturalId() );
 			em.persist( duplicated );
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.close();
 		}
 		catch (Exception e) {
@@ -145,13 +145,13 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 		thrown.expectMessage( "uniqueColumn" );
 
 		try {
-			getTransactionManager().begin();
 			final EntityManager em = getFactory().createEntityManager();
+			em.getTransaction().begin();
 			EntityWithConstraints duplicated = new EntityWithConstraints();
 			duplicated.setId( "login2" );
 			duplicated.setUniqueColumn( entityWithConstraints.getUniqueColumn() );
 			em.persist( duplicated );
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.close();
 		}
 		catch (Exception e) {
@@ -166,13 +166,13 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 		thrown.expectMessage( "tableConstraint" );
 
 		try {
-			getTransactionManager().begin();
 			final EntityManager em = getFactory().createEntityManager();
+			em.getTransaction().begin();
 			EntityWithConstraints duplicated = new EntityWithConstraints();
 			duplicated.setId( "login3" );
 			duplicated.setTableConstraint( entityWithConstraints.getTableConstraint() );
 			em.persist( duplicated );
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.close();
 		}
 		catch (Exception e) {
@@ -198,13 +198,13 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 	@Test
 	// Not expecting any exception
 	public void shouldNotCreateConstraintForNonUniqueProperty() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		EntityWithConstraints duplicated = new EntityWithConstraints();
 		duplicated.setId( "login4" );
 		duplicated.setNonUniqueProperty( entityWithConstraints.getNonUniqueProperty() );
 		em.persist( duplicated );
-		getTransactionManager().commit();
+		em.getTransaction().commit();
 		em.close();
 	}
 

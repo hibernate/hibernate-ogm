@@ -57,37 +57,37 @@ public class UniqueConstraintCanBeSkippedTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void setup() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		entityWithConstraints = new EntityWithConstraints();
 		entityWithConstraints.setId( "id_1" );
 		entityWithConstraints.setUniqueColumn( 12345678 );
 
 		em.persist( entityWithConstraints );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 
 	@Test
 	public void skipUniqueConstraintsGenerationWhenRequired() throws Exception {
 		{
-			getTransactionManager().begin();
 			final EntityManager em = getFactory().createEntityManager();
+			em.getTransaction().begin();
 			EntityWithConstraints duplicated = new EntityWithConstraints();
 			duplicated.setId( "id_2" );
 			duplicated.setUniqueColumn( entityWithConstraints.getUniqueColumn() );
 			em.persist( duplicated );
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.close();
 		}
 		{
-			getTransactionManager().begin();
 			final EntityManager em = getFactory().createEntityManager();
+			em.getTransaction().begin();
 			EntityWithConstraints entity1 = em.find( EntityWithConstraints.class, "id_1" );
 			EntityWithConstraints entity2 = em.find( EntityWithConstraints.class, "id_2" );
 			assertThat( entity1.getUniqueColumn() ).isEqualTo( entity2.getUniqueColumn() );
-			getTransactionManager().commit();
+			em.getTransaction().commit();
 			em.close();
 		}
 	}

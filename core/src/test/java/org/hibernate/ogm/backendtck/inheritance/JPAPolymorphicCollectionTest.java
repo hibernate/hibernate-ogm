@@ -6,40 +6,54 @@
  */
 package org.hibernate.ogm.backendtck.inheritance;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
-import static org.hibernate.ogm.utils.jpa.JpaTestCase.extractJBossTransactionManager;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.transaction.TransactionManager;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hero;
 import org.hibernate.ogm.backendtck.simpleentity.SuperHero;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
-import org.junit.Rule;
-import org.junit.Test;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
 
 /**
  * @author Jonathan Wood <jonathanshawwood@gmail.com>
  */
 public class JPAPolymorphicCollectionTest {
-
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Hero.class,
-			SuperHero.class, HeroClub.class );
+	public PackagingRule packaging = new PackagingRule(
+			"persistencexml/ogm.xml",
+			Hero.class,
+			SuperHero.class, HeroClub.class
+	);
+
+	private EntityManagerFactory emf;
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		emf = Persistence.createEntityManagerFactory( "ogm",
+				TestHelper.getEnvironmentProperties() );
+		em = emf.createEntityManager();
+	}
+
+	@After
+	public void tearDown() {
+		dropSchemaAndDatabase( emf );
+		em.close();
+		emf.close();
+	}
 
 	@Test
 	public void testJPAPolymorphicCollection() throws Exception {
-
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
-
-		TransactionManager transactionManager = extractJBossTransactionManager( emf );
-
-		transactionManager.begin();
-		final EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
 		Hero h = new Hero();
 		h.setName( "Spartacus" );
 		em.persist( h );
@@ -52,11 +66,11 @@ public class JPAPolymorphicCollectionTest {
 		hc.getMembers().add( h );
 		hc.getMembers().add( sh );
 		em.persist( hc );
-		transactionManager.commit();
+		em.getTransaction().commit();
 
 		em.clear();
 
-		transactionManager.begin();
+		em.getTransaction().begin();
 		HeroClub lhc = em.find( HeroClub.class, hc.getName() );
 		assertThat( lhc ).isNotNull();
 		Hero lh = lhc.getMembers().get( 0 );
@@ -69,13 +83,7 @@ public class JPAPolymorphicCollectionTest {
 		em.remove( lh );
 		em.remove( lsh );
 		em.remove( lhc );
-
-		transactionManager.commit();
-
-		em.close();
-
-		dropSchemaAndDatabase( emf );
-		emf.close();
+		em.getTransaction().commit();
 	}
 
 }

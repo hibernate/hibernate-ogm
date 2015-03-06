@@ -8,10 +8,12 @@ package org.hibernate.ogm.backendtck.id;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.persistence.EntityManager;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -20,6 +22,17 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class CompositeIdTest extends JpaTestCase {
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		em = getFactory().createEntityManager();
+	}
+
+	@After
+	public void tearDown() {
+		em.close();
+	}
 
 	@Test
 	public void testCompositeEmbeddedId() throws Exception {
@@ -54,61 +67,47 @@ public class CompositeIdTest extends JpaTestCase {
 		final List<Label> newsCountJugLabels = new ArrayList<Label>();
 		newsCountJugLabels.add( statJugLabel );
 
-
 		News newsAboutJUG = new News( newsAboutJugID, contentAboutJUG, newsAboutJugLabels );
 		News newsOGM = new News( newsOgmID, contentOGM, newsOgmLabels );
 		News newsCountJUG = new News( newsCountJugID, contentCountJUG, newsCountJugLabels );
 
-		boolean operationSuccessful = false;
-		getTransactionManager().begin();
-		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		em.persist( newsOGM );
+		em.persist( newsAboutJUG );
+		em.persist( newsCountJUG );
+		em.getTransaction().commit();
 
-		try {
-			em.persist( newsOGM );
-			em.persist( newsAboutJUG );
-			em.persist( newsCountJUG );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
 		em.clear();
-		getTransactionManager().begin();
-		operationSuccessful = false;
-		try {
-			News news = em.find( News.class, newsOgmID );
-			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentOGM );
-			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleOGM );
-			assertThat( news.getLabels().size() ).isEqualTo( newsOgmLabels.size() );
-			em.remove( news );
-			assertThat( em.find( News.class, newsOgmID ) ).isNull();
+		em.getTransaction().begin();
+		News news = em.find( News.class, newsOgmID );
+		assertThat( news ).isNotNull();
+		assertThat( news.getContent() ).isEqualTo( contentOGM );
+		assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+		assertThat( news.getNewsId().getTitle() ).isEqualTo( titleOGM );
+		assertThat( news.getLabels().size() ).isEqualTo( newsOgmLabels.size() );
+		em.remove( news );
+		assertThat( em.find( News.class, newsOgmID ) ).isNull();
 
-			em.clear();
-			news = em.find( News.class, newsAboutJugID );
-			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentAboutJUG );
-			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleAboutJUG );
-			assertThat( news.getLabels().size() ).isEqualTo( newsAboutJugLabels.size() );
-			em.remove( news );
-			assertThat( em.find( News.class, newsAboutJugID ) ).isNull();
+		em.clear();
+		news = em.find( News.class, newsAboutJugID );
+		assertThat( news ).isNotNull();
+		assertThat( news.getContent() ).isEqualTo( contentAboutJUG );
+		assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+		assertThat( news.getNewsId().getTitle() ).isEqualTo( titleAboutJUG );
+		assertThat( news.getLabels().size() ).isEqualTo( newsAboutJugLabels.size() );
+		em.remove( news );
+		assertThat( em.find( News.class, newsAboutJugID ) ).isNull();
 
-			em.clear();
-			news = em.find( News.class, newsCountJugID );
-			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentCountJUG );
-			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleCountJUG );
-			assertThat( news.getLabels().size() ).isEqualTo( newsCountJugLabels.size() );
-			em.remove( news );
-			assertThat( em.find( News.class, newsCountJugID ) ).isNull();
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
-		em.close();
+		em.clear();
+		news = em.find( News.class, newsCountJugID );
+		assertThat( news ).isNotNull();
+		assertThat( news.getContent() ).isEqualTo( contentCountJUG );
+		assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+		assertThat( news.getNewsId().getTitle() ).isEqualTo( titleCountJUG );
+		assertThat( news.getLabels().size() ).isEqualTo( newsCountJugLabels.size() );
+		em.remove( news );
+		assertThat( em.find( News.class, newsCountJugID ) ).isNull();
+		em.getTransaction().commit();
 	}
 
 	@Override

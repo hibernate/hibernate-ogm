@@ -31,11 +31,11 @@ import org.junit.Test;
 public class HibernateCoreAPIWrappingTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Contact.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Contact.class );
 
 	@Test
 	public void testWrappedFromEntityManagerAPI() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getEnvironmentProperties() );
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
@@ -56,7 +56,7 @@ public class HibernateCoreAPIWrappingTest {
 
 	@Test
 	public void testJNDIReference() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getEnvironmentProperties() );
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		Reference reference = factory.getReference();
 		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactoryImpl.class.getName() );

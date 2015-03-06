@@ -27,8 +27,8 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDB() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		account = new Account();
 		account.setLogin( "emmanuel" );
@@ -43,7 +43,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		address.setType( new AddressType( "HOME" ) );
 
 		em.persist( account );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 
@@ -86,11 +86,11 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testRemovePropertyFromEmbeddedNode() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		Account found = em.find( Account.class, account.getLogin() );
 		found.getHomeAddress().setCity( null );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 
 		assertNumberOfNodes( 3 );
@@ -129,11 +129,11 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testRemoveEmbeddedWhenPropertyIsSetToNull() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		Account found = em.find( Account.class, account.getLogin() );
 		found.getHomeAddress().setType( null );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 
 		assertNumberOfNodes( 2 );
@@ -167,11 +167,11 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testRemoveEmbeddedWhenIntermediateEmbeddedIsRemoved() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		Account found = em.find( Account.class, account.getLogin() );
 		found.setHomeAddress( null );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 
 		assertNumberOfNodes( 1 );
@@ -192,11 +192,11 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testRemoveEmbeddedWhenOwnerIsRemoved() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		Account found = em.find( Account.class, account.getLogin() );
 		em.remove( found );
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 
 		assertNumberOfNodes( 0 );

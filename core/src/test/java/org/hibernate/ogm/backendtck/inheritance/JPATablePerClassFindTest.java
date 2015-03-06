@@ -8,15 +8,16 @@ package org.hibernate.ogm.backendtck.inheritance;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
-import static org.hibernate.ogm.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.transaction.TransactionManager;
 
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -24,28 +25,39 @@ import org.junit.Test;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class JPATablePerClassFindTest {
-
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", CommunityMember.class, Employee.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", CommunityMember.class, Employee.class );
+
+	private EntityManagerFactory emf;
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		emf = Persistence.createEntityManagerFactory( "ogm",
+				TestHelper.getEnvironmentProperties() );
+		em = emf.createEntityManager();
+	}
+
+	@After
+	public void tearDown() {
+		dropSchemaAndDatabase( emf );
+		em.close();
+		emf.close();
+	}
 
 	@Test
 	public void testJPAPolymorphicFind() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone",
-				TestHelper.getEnvironmentProperties() );
-		TransactionManager tm = extractJBossTransactionManager( emf );
-
-		tm.begin();
-		final EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
 		CommunityMember member = new CommunityMember( "Davide" );
 		em.persist( member );
 
 		Employee employee = new Employee( "Alex", "EMPLOYER" );
 		em.persist( employee );
-		tm.commit();
+		em.getTransaction().commit();
 
 		em.clear();
 
-		tm.begin();
+		em.getTransaction().begin();
 		CommunityMember lh = em.find( CommunityMember.class, member.name );
 		assertThat( lh ).isNotNull();
 		assertThat( lh ).isInstanceOf( CommunityMember.class );
@@ -53,14 +65,11 @@ public class JPATablePerClassFindTest {
 		CommunityMember lsh = em.find( Employee.class, employee.name );
 		assertThat( lsh ).isNotNull();
 		assertThat( lsh ).isInstanceOf( Employee.class );
-		assertThat( ((Employee) employee).employer ).isEqualTo( employee.employer );
+		assertThat( employee.employer ).isEqualTo( employee.employer );
 
 		em.remove( lh );
 		em.remove( lsh );
-		tm.commit();
-		em.close();
-		dropSchemaAndDatabase( emf );
-		emf.close();
+		em.getTransaction().commit();
 	}
 
 }

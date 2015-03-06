@@ -13,6 +13,9 @@ import javax.persistence.EntityManager;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -22,36 +25,37 @@ import org.junit.Test;
  *
  */
 public class ObjectIdJpaTest extends JpaTestCase {
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		em = getFactory().createEntityManager();
+	}
+
+	@After
+	public void tearDown() {
+		em.close();
+	}
 
 	@Test
 	public void canUseObjectIdAssignedUponInsertInOneToManyAssociation() throws Exception {
-		EntityManager em = null;
+		em.getTransaction().begin();
+		// given
+		Bar goldFishBar = new Bar( "Goldfisch Bar" );
+		goldFishBar.getDoorMen().add( new DoorMan( "Bruce" ) );
+		goldFishBar.getDoorMen().add( new DoorMan( "Dwain" ) );
 
-		try {
-			getTransactionManager().begin();
-			em = getFactory().createEntityManager();
-			// given
-			Bar goldFishBar = new Bar( "Goldfisch Bar" );
-			goldFishBar.getDoorMen().add( new DoorMan( "Bruce" ) );
-			goldFishBar.getDoorMen().add( new DoorMan( "Dwain" ) );
+		// when
+		em.persist( goldFishBar );
+		em.getTransaction().commit();
+		em.clear();
 
-			// when
-			em.persist( goldFishBar );
-			getTransactionManager().commit();
-			em.clear();
+		// then
+		em.getTransaction().begin();
+		Bar barLoaded = em.find( Bar.class, goldFishBar.getId() );
+		assertThat( barLoaded.getDoorMen() ).onProperty( "name" ).containsOnly( "Bruce", "Dwain" );
 
-			// then
-			getTransactionManager().begin();
-			Bar barLoaded = em.find( Bar.class, goldFishBar.getId() );
-			assertThat( barLoaded.getDoorMen() ).onProperty( "name" ).containsOnly( "Bruce", "Dwain" );
-
-			getTransactionManager().commit();
-		}
-		finally {
-			if ( em != null ) {
-				em.close();
-			}
-		}
+		em.getTransaction().commit();
 	}
 
 	@Override

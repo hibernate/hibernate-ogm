@@ -33,16 +33,16 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 
 	@Test
 	public void testHibernateSearchJPAAPIUsage() throws Exception {
-		getTransactionManager().begin();
 		final FullTextEntityManager ftem = Search.getFullTextEntityManager( getFactory().createEntityManager() );
+		ftem.getTransaction().begin();
 		final Insurance insurance = new Insurance();
 		insurance.setName( "Macif" );
 		ftem.persist( insurance );
-		getTransactionManager().commit();
+		ftem.getTransaction().commit();
 
 		ftem.clear();
 
-		getTransactionManager().begin();
+		ftem.getTransaction().begin();
 		final QueryBuilder b = ftem.getSearchFactory()
 				.buildQueryBuilder()
 				.forEntity( Insurance.class )
@@ -55,23 +55,23 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		for ( Object e : resultList ) {
 			ftem.remove( e );
 		}
-		getTransactionManager().commit();
+		ftem.getTransaction().commit();
 		ftem.close();
 	}
 
 	@Test
 	public void testHibernateSearchNativeAPIUsage() throws Exception {
-		getTransactionManager().begin();
 		final EntityManager entityManager = getFactory().createEntityManager();
 		final FullTextSession ftSession = org.hibernate.search.Search.getFullTextSession( entityManager.unwrap( Session.class ) );
+		entityManager.getTransaction().begin();
 		final Insurance insurance = new Insurance();
 		insurance.setName( "Macif" );
 		ftSession.persist( insurance );
-		getTransactionManager().commit();
+		entityManager.getTransaction().commit();
 
 		ftSession.clear();
 
-		getTransactionManager().begin();
+		entityManager.getTransaction().begin();
 		final QueryBuilder b = ftSession.getSearchFactory()
 				.buildQueryBuilder()
 				.forEntity( Insurance.class )
@@ -84,7 +84,7 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		for ( Object e : resultList ) {
 			ftSession.delete( e );
 		}
-		getTransactionManager().commit();
+		entityManager.getTransaction().commit();
 		entityManager.close();
 	}
 

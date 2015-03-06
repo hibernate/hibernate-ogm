@@ -26,8 +26,8 @@ public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 
 	@Before
 	public void prepareDb() throws Exception {
-		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		Tournament britishOpen = new Tournament( new TournamentId( "US", "123" ), "British Open" );
 		Tournament playersChampionship = new Tournament( new TournamentId( "US", "456" ), "Player's Championship" );
@@ -37,7 +37,7 @@ public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 		Director bob = new Director( "bob", "Bob", playersChampionship );
 		em.persist( bob );
 
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 	}
 

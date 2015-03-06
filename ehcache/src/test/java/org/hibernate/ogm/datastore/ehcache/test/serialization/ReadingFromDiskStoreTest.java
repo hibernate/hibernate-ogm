@@ -17,6 +17,9 @@ import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -27,6 +30,17 @@ import org.junit.Test;
  */
 @TestForIssue(jiraKey = "OGM-443")
 public class ReadingFromDiskStoreTest extends JpaTestCase {
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		em = getFactory().createEntityManager();
+	}
+
+	@After
+	public void tearDown() {
+		em.close();
+	}
 
 	@Test
 	public void shouldRetainPropertyValuesWhenReadingFromDiskStore() throws Exception {
@@ -37,35 +51,19 @@ public class ReadingFromDiskStoreTest extends JpaTestCase {
 
 		Bridge bixbyCreek = new Bridge( 1L, "Bixby Creek Bridge", bixbyEngineers );
 
-		boolean operationSuccessful = false;
-		getTransactionManager().begin();
-
-		final EntityManager em = getFactory().createEntityManager();
-
-		try {
-			em.persist( bixbyCreek );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
+		em.getTransaction().begin();
+		em.persist( bixbyCreek );
+		em.getTransaction().commit();
 
 		em.clear();
-		getTransactionManager().begin();
-		operationSuccessful = false;
-		try {
-			Bridge news = em.find( Bridge.class, 1L );
-			assertThat( news ).isNotNull();
-			assertThat( news.getName() ).isEqualTo( "Bixby Creek Bridge" );
+		em.getTransaction().begin();
+		Bridge news = em.find( Bridge.class, 1L );
+		assertThat( news ).isNotNull();
+		assertThat( news.getName() ).isEqualTo( "Bixby Creek Bridge" );
 
-			em.remove( news );
-			assertThat( em.find( Bridge.class, 1L ) ).isNull();
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
-
-		em.close();
+		em.remove( news );
+		assertThat( em.find( Bridge.class, 1L ) ).isNull();
+		em.getTransaction().commit();
 	}
 
 	@Test
@@ -82,42 +80,27 @@ public class ReadingFromDiskStoreTest extends JpaTestCase {
 
 		Bridge astoriaMegler = new Bridge( 3L, "Astoria-Megler Bridge", astoriaEngineers );
 
-		boolean operationSuccessful = false;
-		getTransactionManager().begin();
+		em.getTransaction().begin();
 
-		final EntityManager em = getFactory().createEntityManager();
-
-		try {
-			em.persist( bixbyCreek );
-			em.persist( astoriaMegler );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
+		em.persist( bixbyCreek );
+		em.persist( astoriaMegler );
+		em.getTransaction().commit();
 
 		em.clear();
-		getTransactionManager().begin();
-		operationSuccessful = false;
+		em.getTransaction().begin();
+		Bridge loadedBridge = em.find( Bridge.class, 3L );
+		assertThat( loadedBridge ).isNotNull();
+		assertThat( loadedBridge.getEngineers() ).onProperty( "name" ).containsOnly( "Bruce the initializer" );
+		em.remove( loadedBridge );
+		assertThat( em.find( Bridge.class, 3L ) ).isNull();
 
-		try {
-			Bridge loadedBridge = em.find( Bridge.class, 3L );
-			assertThat( loadedBridge ).isNotNull();
-			assertThat( loadedBridge.getEngineers() ).onProperty( "name" ).containsOnly( "Bruce the initializer" );
-			em.remove( loadedBridge );
-			assertThat( em.find( Bridge.class, 3L ) ).isNull();
-
-			loadedBridge = em.find( Bridge.class, 2L );
-			assertThat( loadedBridge ).isNotNull();
-			assertThat( loadedBridge.getEngineers() ).onProperty( "name" ).containsOnly( "Bob the constructor", "Biff the destructor" );
-			em.remove( loadedBridge );
-			assertThat( em.find( Bridge.class, 2L ) ).isNull();
-
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
-		em.close();
+		loadedBridge = em.find( Bridge.class, 2L );
+		assertThat( loadedBridge ).isNotNull();
+		assertThat( loadedBridge.getEngineers() ).onProperty( "name" )
+				.containsOnly( "Bob the constructor", "Biff the destructor" );
+		em.remove( loadedBridge );
+		assertThat( em.find( Bridge.class, 2L ) ).isNull();
+		em.getTransaction().commit();
 	}
 
 	@Override

@@ -86,7 +86,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		assertThat( unexpectedProperties ).as( "Unexpected properties for " + cypher ).isEmpty();
 		assertThat( missingProperties ).as( "Missing properties for " + cypher ).isEmpty();
 		assertThat( columnAs.hasNext() ).as( "Unexpected result returned" ).isFalse();
-		commitOrRollback( true );
+		getTransactionManager().commit();
 	}
 
 	protected ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
@@ -98,15 +98,15 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 	}
 
 	private Long executeQuery(String queryString) throws Exception {
-		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		@SuppressWarnings("unchecked")
 		List<Object> results = em.createNativeQuery( queryString ).getResultList();
 		Long uniqueResult = null;
 		if ( !results.isEmpty() ) {
 			uniqueResult = (Long) results.get( 0 );
 		}
-		commitOrRollback( true );
+		em.getTransaction().commit();
 		em.close();
 		if ( uniqueResult == null ) {
 			return null;

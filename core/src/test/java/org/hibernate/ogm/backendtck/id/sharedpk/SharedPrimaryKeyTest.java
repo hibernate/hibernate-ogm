@@ -12,6 +12,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PrimaryKeyJoinColumn;
 
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -20,48 +23,41 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 public class SharedPrimaryKeyTest extends JpaTestCase {
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		em = getFactory().createEntityManager();
+	}
+
+	@After
+	public void tearDown() {
+		em.close();
+	}
+
 	@Test
 	public void testSequenceIdGenerationInJTA() throws Exception {
-		getTransactionManager().begin();
-		final EntityManager em = getFactory().createEntityManager();
-		boolean operationSuccessful = false;
+		em.getTransaction().begin();
+		CoffeeMug mug = new CoffeeMug();
+		mug.setCapacity( 568 );
+		Lid lid = new Lid();
+		lid.setColor( "blue" );
+		lid.setMug( mug );
+		mug.setLid( lid );
+		em.persist( mug );
+		em.getTransaction().commit();
 
-		CoffeeMug mug = null;
-
-		// Persist mug and lid
-		try {
-			mug = new CoffeeMug();
-			mug.setCapacity( 568 );
-			Lid lid = new Lid();
-			lid.setColor( "blue" );
-			lid.setMug( mug );
-			mug.setLid( lid );
-			em.persist( mug );
-
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
 		em.clear();
 
 		// load mug and lid; lid should inherit id from the mug
-		getTransactionManager().begin();
-		operationSuccessful = false;
-		try {
-			mug = em.find( CoffeeMug.class, mug.getId() );
-			assertThat( mug ).isNotNull();
-			assertThat( mug.getLid() ).isNotNull();
-			assertThat( mug.getLid().getId() ).isEqualTo( mug.getId() );
+		em.getTransaction().begin();
+		mug = em.find( CoffeeMug.class, mug.getId() );
+		assertThat( mug ).isNotNull();
+		assertThat( mug.getLid() ).isNotNull();
+		assertThat( mug.getLid().getId() ).isEqualTo( mug.getId() );
 
-			em.remove( mug );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-		}
-
-		em.close();
+		em.remove( mug );
+		em.getTransaction().commit();
 	}
 
 	@Override

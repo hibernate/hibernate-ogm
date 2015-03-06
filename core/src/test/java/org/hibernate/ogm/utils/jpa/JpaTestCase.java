@@ -49,10 +49,6 @@ public abstract class JpaTestCase {
 
 	public abstract Class<?>[] getEntities();
 
-	public TransactionManager getTransactionManager() throws Exception {
-		return transactionManager;
-	}
-
 	@Before
 	public void createFactory() throws Throwable {
 		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
@@ -73,7 +69,7 @@ public abstract class JpaTestCase {
 		info.setPersistenceXMLSchemaVersion( "2.0" );
 		info.setProperties( new Properties() );
 		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
-		info.setTransactionType( PersistenceUnitTransactionType.JTA );
+		info.setTransactionType( PersistenceUnitTransactionType.RESOURCE_LOCAL );
 		info.setValidationMode( ValidationMode.AUTO );
 		info.getProperties().setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory" );
 		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
@@ -90,28 +86,22 @@ public abstract class JpaTestCase {
 	}
 
 	/**
-	 * Get JBoss TM out of Hibernate
+	 * @return Return the transaction manager in the case where one is available. Can be {@code null}.
+	 * A transaction manager will be available if JBoss Transaction is on the classpath. Where it is in use depends on
+	 * the current persistence unit under test and its persistence type setting.
+	 *
+	 * @throws Exception
 	 */
-	public static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
-		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
+	public TransactionManager getTransactionManager() throws Exception {
+		return transactionManager;
 	}
 
 	/**
-	 * We need to make sure failing tests cleanup their association with the transaction manager
-	 * so that they don't affect subsequent tests.
-	 *
-	 * @param operationSuccessfull
-	 *            when false, use rollback instead
-	 * @throws Exception
+	 * Get JBoss TM out of Hibernate
 	 */
-	protected final void commitOrRollback(boolean operationSuccessfull) throws Exception {
-		if ( operationSuccessfull ) {
-			getTransactionManager().commit();
-		}
-		else {
-			getTransactionManager().rollback();
-		}
+	private static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
+		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
 	}
 
 	@After

@@ -15,8 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 
 import org.apache.lucene.search.Query;
 import org.fest.util.Files;
@@ -40,6 +38,12 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 
 	private static final File baseDir = getBaseIndexDir();
 
+	@After
+	public void tearDown() throws Exception {
+		super.closeFactory();
+		Files.delete( baseDir );
+	}
+
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Uses embedded key which is currently not supported by the db query parsers")
 	public void testEntityWithAssociationMassIndexing() throws Exception {
@@ -51,80 +55,58 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 		assertAssociatedElementsHaveBeenIndexed();
 	}
 
-	private void populateDatastore() throws NotSupportedException, SystemException, Exception {
+	private void populateDatastore() throws Exception {
 		List<IndexedLabel> labes = Arrays.asList( new IndexedLabel( "massindex" ), new IndexedLabel( "test" ) );
 		IndexedNews news = new IndexedNews( new NewsID( "title", "author" ), "content" );
 		news.setLabels( labes );
-		boolean operationSuccessful = false;
-		EntityManager em = null;
-		try {
-			getTransactionManager().begin();
-			em = createEntityManager();
-			em.persist( news );
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-			close( em );
-		}
+		EntityManager em = createEntityManager();
+		em.getTransaction().begin();
+		em.persist( news );
+		em.getTransaction().commit();
+		em.close();
 	}
 
-	private void assertEntityHasBeenIndexed() throws NotSupportedException, SystemException, Exception {
-		boolean operationSuccessful = false;
-		FullTextEntityManager fullTextEm = null;
-		try {
-			getTransactionManager().begin();
-			fullTextEm = Search.getFullTextEntityManager( createEntityManager() );
-			QueryBuilder queryBuilder = fullTextEm.getSearchFactory().buildQueryBuilder().forEntity( IndexedNews.class ).get();
-			Query luceneQuery = queryBuilder.keyword().wildcard().onField( "newsId" ).ignoreFieldBridge().matching( "tit*" ).createQuery();
-			@SuppressWarnings("unchecked")
-			List<IndexedNews> list = fullTextEm.createFullTextQuery( luceneQuery ).getResultList();
-			assertThat( list ).hasSize( 1 );
+	private void assertEntityHasBeenIndexed() throws Exception {
+		FullTextEntityManager fullTextEm = Search.getFullTextEntityManager( createEntityManager() );
+		fullTextEm.getTransaction().begin();
+		QueryBuilder queryBuilder = fullTextEm.getSearchFactory()
+				.buildQueryBuilder()
+				.forEntity( IndexedNews.class )
+				.get();
+		Query luceneQuery = queryBuilder.keyword().wildcard().onField( "newsId" ).ignoreFieldBridge().matching(
+				"tit*"
+		).createQuery();
+		@SuppressWarnings("unchecked")
+		List<IndexedNews> list = fullTextEm.createFullTextQuery( luceneQuery ).getResultList();
+		assertThat( list ).hasSize( 1 );
 
-			List<IndexedLabel> labels = list.get( 0 ).getLabels();
-			assertThat( labels ).hasSize( 2 );
-			assertThat( contains( labels, "massindex" ) ).isTrue();
-			assertThat( contains( labels, "test" ) ).isTrue();
-			operationSuccessful = true;
-		}
-		finally {
-			commitOrRollback( operationSuccessful );
-			close( fullTextEm );
-		}
+		List<IndexedLabel> labels = list.get( 0 ).getLabels();
+		assertThat( labels ).hasSize( 2 );
+		assertThat( contains( labels, "massindex" ) ).isTrue();
+		assertThat( contains( labels, "test" ) ).isTrue();
+		fullTextEm.getTransaction().commit();
+		fullTextEm.close();
 	}
 
 	@SuppressWarnings("unchecked")
-	private void assertAssociatedElementsHaveBeenIndexed() throws NotSupportedException, SystemException, Exception {
-		boolean operationSuccessful = false;
-		FullTextEntityManager fullTextEm = null;
-		try {
-			getTransactionManager().begin();
-			fullTextEm = Search.getFullTextEntityManager( createEntityManager() );
-			QueryBuilder b = fullTextEm.getSearchFactory().buildQueryBuilder().forEntity( IndexedLabel.class ).get();
-			{
-				Query luceneQuery = b.keyword().wildcard().onField( "name" ).matching( "tes*" ).createQuery();
-				List<IndexedLabel> labels = fullTextEm.createFullTextQuery( luceneQuery ).getResultList();
-				assertThat( labels ).hasSize( 1 );
-				assertThat( contains( labels, "test" ) ).isTrue();
-			}
-			{
-				Query luceneQuery = b.keyword().wildcard().onField( "name" ).matching( "mas*" ).createQuery();
-				List<IndexedLabel> labels = fullTextEm.createFullTextQuery( luceneQuery ).getResultList();
-				assertThat( labels ).hasSize( 1 );
-				assertThat( contains( labels, "massindex" ) ).isTrue();
-			}
-			operationSuccessful = true;
+	private void assertAssociatedElementsHaveBeenIndexed() throws Exception {
+		FullTextEntityManager fullTextEm = Search.getFullTextEntityManager( createEntityManager() );
+		fullTextEm.getTransaction().begin();
+		QueryBuilder b = fullTextEm.getSearchFactory().buildQueryBuilder().forEntity( IndexedLabel.class ).get();
+		{
+			Query luceneQuery = b.keyword().wildcard().onField( "name" ).matching( "tes*" ).createQuery();
+			List<IndexedLabel> labels = fullTextEm.createFullTextQuery( luceneQuery ).getResultList();
+			assertThat( labels ).hasSize( 1 );
+			assertThat( contains( labels, "test" ) ).isTrue();
 		}
-		finally {
-			commitOrRollback( operationSuccessful );
-			close( fullTextEm );
+		{
+			Query luceneQuery = b.keyword().wildcard().onField( "name" ).matching( "mas*" ).createQuery();
+			List<IndexedLabel> labels = fullTextEm.createFullTextQuery( luceneQuery ).getResultList();
+			assertThat( labels ).hasSize( 1 );
+			assertThat( contains( labels, "massindex" ) ).isTrue();
 		}
-	}
-
-	private void close(EntityManager em) {
-		if ( em != null ) {
-			em.close();
-		}
+		fullTextEm.getTransaction().commit();
+		fullTextEm.close();
 	}
 
 	private boolean contains(List<IndexedLabel> list, String label) {
@@ -136,12 +118,6 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 		return false;
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		super.closeFactory();
-		Files.delete( baseDir );
-	}
-
 	private EntityManager createEntityManager() {
 		return getFactory().createEntityManager();
 	}
@@ -150,7 +126,7 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 		FullTextEntityManager fullTextEm = Search.getFullTextEntityManager( createEntityManager() );
 		fullTextEm.createIndexer( entityTypes ).purgeAllOnStart( true ).startAndWait();
 		int numDocs = fullTextEm.getSearchFactory().getIndexReaderAccessor().open( entityTypes ).numDocs();
-		close( fullTextEm );
+		fullTextEm.close();
 		assertThat( numDocs ).isGreaterThan( 0 );
 	}
 
@@ -161,7 +137,7 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 			fullTextEm.flushToIndexes();
 		}
 		int numDocs = fullTextEm.getSearchFactory().getIndexReaderAccessor().open( entityTypes ).numDocs();
-		close( fullTextEm );
+		fullTextEm.close();
 		assertThat( numDocs ).isEqualTo( 0 );
 	}
 
@@ -179,8 +155,7 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 		// the constructor File(File, String) is broken too, see :
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
 		// So make sure to use File(String, String) in this case as TestConstants works with absolute paths!
-		File baseDir = new File( IndexDirectoryManager.getIndexDirectory( AssociationMassIndexerTest.class ), shortTestName );
-		return baseDir;
+		return new File( IndexDirectoryManager.getIndexDirectory( AssociationMassIndexerTest.class ), shortTestName );
 	}
 
 	@Override
