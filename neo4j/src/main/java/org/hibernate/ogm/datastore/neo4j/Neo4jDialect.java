@@ -77,10 +77,13 @@ import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
+import org.neo4j.kernel.impl.util.StringLogger;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -113,11 +116,40 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	private final ExecutionEngine executionEngine;
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
+		GraphDatabaseService dataBase = provider.getDataBase();
+		StringLogger logger = getStringLogger( dataBase );
+
 		this.executionEngine = new ExecutionEngine(
-				provider.getDataBase(),
-				StringLoggerToJBossLoggingAdaptor.JBOSS_LOGGING_STRING_LOGGER
+				dataBase,
+				logger
 		);
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
+	}
+
+	private StringLogger getStringLogger(GraphDatabaseService dataBase) {
+		StringLogger logger = null;
+		// extracting the logger from the database
+		// the only public-ish API is deprecated
+		// the fallback is to do introspection :/
+		if ( dataBase instanceof GraphDatabaseAPI ) {
+			// try to find the logger from the GraphDatabaseService
+
+			try {
+				logger = ( (GraphDatabaseAPI) dataBase ).getDependencyResolver()
+						.resolveDependency( StringLogger.class );
+				log.trace( "Using same StringLogger between GraphDatabaseService and ExecutionEngine" );
+
+			}
+			catch ( IllegalArgumentException e ) {
+				// we tried
+			}
+		}
+		if ( logger == null ) {
+			// fall back to our own if we can't find the database logger
+			logger = StringLoggerToJBossLoggingAdaptor.JBOSS_LOGGING_STRING_LOGGER;
+			log.trace( "Using StringLogger mapping to JBoss Logging" );
+		}
+		return logger;
 	}
 
 	@Override
