@@ -42,6 +42,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManager;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
@@ -53,7 +54,15 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
+import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.exception.impl.ErrorHandlerManager;
+import org.hibernate.ogm.exception.operation.impl.InsertOrUpdateTupleImpl;
+import org.hibernate.ogm.exception.operation.impl.RemoveTupleWithOptimisticLockImpl;
+import org.hibernate.ogm.exception.operation.impl.UpdateTupleWithOptimisticLockImpl;
+import org.hibernate.ogm.exception.operation.spi.GridDialectOperation;
+import org.hibernate.ogm.exception.operation.spi.InsertOrUpdateTuple;
+import org.hibernate.ogm.exception.spi.ErrorHandlingStrategy;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -123,6 +132,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
 	private final OptimisticLockingAwareGridDialect optimisticLockingAwareGridDialect;
 	private final OptionsService optionsService;
+	private final FlushCycleStateManager flushCycleStateManager;
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final DuplicateInsertPreventionStrategy duplicateInsertPreventionStrategy;
@@ -185,6 +195,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		this.identityColumnAwareGridDialect = serviceRegistry.getService( IdentityColumnAwareGridDialect.class );
 		this.optimisticLockingAwareGridDialect = serviceRegistry.getService( OptimisticLockingAwareGridDialect.class );
 		this.optionsService = serviceRegistry.getService( OptionsService.class );
+		this.flushCycleStateManager = serviceRegistry.getService( FlushCycleStateManager.class );
 
 		if ( factory.getIdentifierGenerator( getEntityName() ) instanceof OgmIdentityGenerator && identityColumnAwareGridDialect == null ) {
 			throw log.getIdentityGenerationStrategyNotSupportedException( getEntityName() );
@@ -1095,9 +1106,25 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					oldVersionTuple.put( getVersionColumnName(), oldVersion );
 
 					boolean success = optimisticLockingAwareGridDialect.updateTupleWithOptimisticLock( key, oldVersionTuple, resultset, getTupleContext() );
+					ErrorHandlerManager errorHandlerManager = getErrorHandlerManager();
 
-					if ( !success ) {
-						raiseStaleObjectStateException( id );
+					if ( success ) {
+						if ( errorHandlerManager != null ) {
+							handleAppliedOperation( new UpdateTupleWithOptimisticLockImpl( key, oldVersionTuple, resultset ) );
+						}
+					}
+					else {
+						if ( errorHandlerManager != null ) {
+							try {
+								raiseStaleObjectStateException( id );
+							}
+							catch (Exception e) {
+								handleException( new UpdateTupleWithOptimisticLockImpl( key, oldVersionTuple, resultset ), e );
+							}
+						}
+						else {
+							raiseStaleObjectStateException( id );
+						}
 					}
 				}
 				else {
@@ -1265,7 +1292,24 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				resultset = gridDialect.getTuple( key, this.getTupleContext() );
 
 				if ( j == 0 && resultset != null ) {
-					throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), null );
+					EntityAlreadyExistsException e = log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), null );
+					ErrorHandlerManager errorHandlerManager = getErrorHandlerManager();
+
+					if ( errorHandlerManager == null ) {
+						throw e;
+					}
+					else {
+						InsertOrUpdateTuple insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, resultset );
+
+						ErrorHandlingStrategy result = errorHandlerManager.onFailedOperation( insertOrUpdateTuple, e );
+						if ( result == ErrorHandlingStrategy.CONTINUE ) {
+							errorHandlerManager.onAppliedOperation( insertOrUpdateTuple );
+							return;
+						}
+						else if ( result == ErrorHandlingStrategy.ABORT ) {
+							throw e;
+						}
+					}
 				}
 			}
 
@@ -1371,9 +1415,25 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				versionTuple.put( getVersionColumnName(), version );
 
 				boolean success = optimisticLockingAwareGridDialect.removeTupleWithOptimisticLock( key, versionTuple, getTupleContext() );
+				ErrorHandlerManager errorHandlerManager = getErrorHandlerManager();
 
-				if ( !success ) {
-					raiseStaleObjectStateException( id );
+				if ( success ) {
+					if ( errorHandlerManager != null ) {
+						handleAppliedOperation( new RemoveTupleWithOptimisticLockImpl( key, versionTuple ) );
+					}
+				}
+				else {
+					if ( errorHandlerManager != null ) {
+						try {
+							raiseStaleObjectStateException( id );
+						}
+						catch (Exception e) {
+							handleException( new RemoveTupleWithOptimisticLockImpl( key, versionTuple ), e );
+						}
+					}
+					else {
+						raiseStaleObjectStateException( id );
+					}
 				}
 			}
 			else {
@@ -1685,5 +1745,27 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		throw new StaleObjectStateException( getEntityName(), id );
+	}
+
+	private ErrorHandlerManager getErrorHandlerManager() {
+		return flushCycleStateManager != null ? flushCycleStateManager.get( ErrorHandlerManager.class ) : null;
+	}
+
+	private void handleAppliedOperation(GridDialectOperation operation) {
+		getErrorHandlerManager().onAppliedOperation( operation );
+	}
+
+	private void handleException(GridDialectOperation operation, Exception e) {
+		ErrorHandlingStrategy result = getErrorHandlerManager()
+				.onFailedOperation( operation, e );
+
+		if ( result == ErrorHandlingStrategy.ABORT ) {
+			this.<RuntimeException>sneakyThrow( e );
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <E extends Exception> void sneakyThrow(Exception e) throws E {
+		throw (E) e;
 	}
 }

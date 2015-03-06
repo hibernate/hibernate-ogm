@@ -221,16 +221,16 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
 		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
 
-		if ( gridDialect instanceof ForwardingGridDialect ) {
+		if ( gridDialect instanceof InvokedOperationsLoggingDialect ) {
+			return (InvokedOperationsLoggingDialect) gridDialect;
+		}
+		else if ( gridDialect instanceof ForwardingGridDialect ) {
 			while ( gridDialect instanceof ForwardingGridDialect ) {
 				gridDialect = ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect();
 				if ( gridDialect instanceof InvokedOperationsLoggingDialect ) {
 					return (InvokedOperationsLoggingDialect) gridDialect;
 				}
 			}
-		}
-		else if ( gridDialect instanceof InvokedOperationsLoggingDialect ) {
-			return (InvokedOperationsLoggingDialect) gridDialect;
 		}
 
 		throw new IllegalStateException( "Unexpected dialect type: " + gridDialect.getClass() );

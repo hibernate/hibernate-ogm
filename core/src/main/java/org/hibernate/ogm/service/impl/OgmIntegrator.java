@@ -19,8 +19,14 @@ import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.jpa.event.spi.JpaIntegrator;
 import org.hibernate.jpa.event.spi.jpa.CallbackRegistry;
 import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagerInitiator;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingAutoFlushEventListener;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingAutoFlushEventListener.FlushCycleStateManagingAutoFlushEventListenerDuplicationStrategy;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingFlushEventListener;
+import org.hibernate.ogm.dialect.flushstate.impl.FlushCycleStateManagingFlushEventListener.FlushCycleStateManagingFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
@@ -33,6 +39,8 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
+import org.hibernate.ogm.service.listener.batch.impl.AutoFlushBatchManagerEventListener;
+import org.hibernate.ogm.service.listener.batch.impl.FlushBatchManagerEventListener;
 import org.hibernate.ogm.service.listener.impl.OgmDefaultMergeEventListener;
 import org.hibernate.ogm.service.listener.impl.OgmDefaultPersistEventListener;
 import org.hibernate.ogm.service.listener.impl.OgmDefaultPersistOnFlushEventListener;
@@ -78,11 +86,13 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		}
 		Version.touch();
 
+		attachPersistListener( serviceRegistry );
+
 		sessionFactory.addObserver( new SchemaInitializingObserver( configuration ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 		attachBatchListenersIfRequired( serviceRegistry );
 
-		attachPersistListener( serviceRegistry );
+		attachInvocationCollectorListenerIfRequired( configuration, serviceRegistry );
 	}
 
 	/**
@@ -95,6 +105,18 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		if ( batchDelegator != null ) {
 			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
 			addListeners( eventListenerRegistry, batchDelegator );
+		}
+	}
+
+	private void attachInvocationCollectorListenerIfRequired(Configuration configuration, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( configuration.getProperties().get( OgmProperties.ERROR_HANDLER ) != null ) {
+			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
+
+			eventListenerRegistry.addDuplicationStrategy( new FlushCycleStateManagingAutoFlushEventListenerDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new FlushCycleStateManagingAutoFlushEventListener() );
+
+			eventListenerRegistry.addDuplicationStrategy( new FlushCycleStateManagingFlushEventListenerDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new FlushCycleStateManagingFlushEventListener() );
 		}
 	}
 
@@ -168,6 +190,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( FlushCycleStateManagerInitiator.INSTANCE );
 	}
 
 	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {

@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ClasspathSuite.class)
 //@ClasspathSuite.ClassnameFilters({ "org.hibernate.ogm.backendtck.*" })
-@ClasspathSuite.ClassnameFilters({ ".*BuiltInTypeTest" })
+@ClasspathSuite.ClassnameFilters({ ".*org.hibernate.ogm.backendtck.exception.ErrorSpiTest" })
 public class Neo4JBackendTckHelper {
 }
 
