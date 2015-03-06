@@ -131,7 +131,7 @@
                             <version>${resteasyVersion}</version>
                             <packaging>zip</packaging>
                             <downloadUrl>
-                                http://sourceforge.net/projects/resteasy/files/Resteasy%20JAX-RS/${resteasyVersion}/resteasy-jaxrs-${resteasyVersion}-all.zip/download
+                                http://downloads.sourceforge.net/project/resteasy/Resteasy%20JAX-RS/${resteasyVersion}/resteasy-jaxrs-${resteasyVersion}-all.zip?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fresteasy%2Ffiles%2FResteasy%2520JAX-RS%2F${resteasyVersion}%2F
                             </downloadUrl>
                         </artifactItem>
                     </artifactItems>
