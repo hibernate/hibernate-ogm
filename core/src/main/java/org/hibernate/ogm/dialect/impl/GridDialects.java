@@ -72,4 +72,21 @@ public class GridDialects {
 			return gridDialect.getClass();
 		}
 	}
+
+	/**
+	 * Returns that delegate of the given grid dialect of the given type. In case the given dialect itself is of the
+	 * given type, it will be returned itself. In case the given grid dialect is a {@link ForwardingGridDialect}, its
+	 * delegates will recursively be searched, until the first delegate of the given type is found.
+	 */
+	public static <T extends GridDialect> T getDelegateOrNull(GridDialect gridDialect, Class<T> delegateType) {
+		if ( gridDialect.getClass() == delegateType ) {
+			return delegateType.cast( gridDialect );
+		}
+		else if ( gridDialect instanceof ForwardingGridDialect ) {
+			return getDelegateOrNull( ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect(), delegateType );
+		}
+		else {
+			return null;
+		}
+	}
 }
