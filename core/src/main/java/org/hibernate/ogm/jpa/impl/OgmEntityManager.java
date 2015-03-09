@@ -53,6 +53,7 @@ import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
+import org.hibernate.jpa.internal.EntityManagerImpl;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.internal.util.LockModeTypeHelper;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
@@ -65,18 +66,18 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
 
 /**
- * Delegates most method calls to the underlying EntityManager
- * however, queries are handled differently
+ * An OGM specific {@code EntityManager} implementation which delegates most method calls to the underlying ORM
+ * {@code EntityManager}. However, queries are handled differently than the ORM default.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmEntityManager implements EntityManager {
 
-	private final EntityManager hibernateEm;
+	private final EntityManagerImpl hibernateEm;
 	private final OgmEntityManagerFactory factory;
 	private final LockOptions lockOptions = new LockOptions();
 
-	public OgmEntityManager(OgmEntityManagerFactory factory, EntityManager hibernateEm) {
+	public OgmEntityManager(OgmEntityManagerFactory factory, EntityManagerImpl hibernateEm) {
 		this.hibernateEm = hibernateEm;
 		this.factory = factory;
 	}
@@ -198,6 +199,8 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Query createQuery(String qlString) {
+		hibernateEm.checkOpen( true );
+
 		//TODO plug the lucene query engine
 		//to let the benchmark run let delete from pass
 		if ( qlString != null && qlString.toLowerCase().startsWith( "delete from" ) ) {
@@ -241,6 +244,8 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
+		hibernateEm.checkOpen( true );
+
 		// do the translation
 		Session session = (Session) getDelegate();
 		org.hibernate.Query query = session.createQuery( qlString );
@@ -253,6 +258,8 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Query createNamedQuery(String name) {
+		hibernateEm.checkOpen( true );
+
 		return buildQueryFromName( name, null );
 	}
 
@@ -483,17 +490,23 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
+		hibernateEm.checkOpen( true );
+
 		return buildQueryFromName( name, resultClass );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString) {
+		hibernateEm.checkOpen( true );
+
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass) {
+		hibernateEm.checkOpen( true );
+
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		q.addEntity( "alias1", resultClass.getName(), LockMode.READ );
 		return new OgmJpaQuery( q, hibernateEm );
@@ -501,6 +514,8 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping) {
+		hibernateEm.checkOpen( true );
+
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		q.setResultSetMapping( resultSetMapping );
 		return new OgmJpaQuery( q, hibernateEm );
