@@ -20,9 +20,9 @@ import java.util.List;
  * </ol>
  * Might be represented with the following structure:
  * <pre>
- * n (alias = n)|- first (alias = n_0)  -- anotherEmbedded (alias = n_0_0)
+ * n (alias = n)|- first (alias = n_0)  -- anotherEmbedded (alias = n_1)
  *              |
- *              -- second (alias = n_1) -- anotherEmbedded (alias = n_0_1)
+ *              -- second (alias = n_2) -- anotherEmbedded (alias = n_3)
  * </pre>
  *
  * @author Davide D'Alto
