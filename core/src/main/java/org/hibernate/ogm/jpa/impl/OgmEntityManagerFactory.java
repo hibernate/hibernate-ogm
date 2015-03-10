@@ -21,12 +21,14 @@ import javax.persistence.metamodel.Metamodel;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.jpa.internal.EntityManagerImpl;
 import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
- * Delegate most work to the underlying EntityManagerFactory.
- * REturn an OgmEntityManager to cope with query operations
+ * An OGM {@code EntityManagerFactory} which delegates most work to the underlying ORM {@code EntityManagerFactory}.
+ *
+ * Note: Returns an {@code OgmEntityManager} to cope with query operations.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
@@ -39,22 +41,26 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 
 	@Override
 	public EntityManager createEntityManager() {
-		return new OgmEntityManager( this, hibernateEmf.createEntityManager() );
+		return new OgmEntityManager( this, (EntityManagerImpl) hibernateEmf.createEntityManager() );
 	}
 
 	@Override
 	public EntityManager createEntityManager(Map map) {
-		return new OgmEntityManager( this, hibernateEmf.createEntityManager( map ) );
+		return new OgmEntityManager( this, (EntityManagerImpl) hibernateEmf.createEntityManager( map ) );
 	}
 
 	@Override
 	public EntityManager createEntityManager(SynchronizationType synchronizationType) {
-		return new OgmEntityManager( this, hibernateEmf.createEntityManager( synchronizationType ) );
+		return new OgmEntityManager(
+				this, (EntityManagerImpl) hibernateEmf.createEntityManager( synchronizationType )
+		);
 	}
 
 	@Override
 	public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
-		return new OgmEntityManager( this, hibernateEmf.createEntityManager( synchronizationType, map ) );
+		return new OgmEntityManager(
+				this, (EntityManagerImpl) hibernateEmf.createEntityManager( synchronizationType, map )
+		);
 	}
 
 	@Override

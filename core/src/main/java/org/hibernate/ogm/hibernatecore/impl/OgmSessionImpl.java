@@ -58,8 +58,8 @@ import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.type.Type;
 
 /**
- * Delegate most of the work to the underlying Hibernate Session
- * except that queries are redirected to our own engine
+ * An OGM specific session implementation which delegate most of the work to the underlying Hibernate ORM {@code Session},
+ * except  queries which are redirected to the OGM engine.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
@@ -113,6 +113,9 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public Query createQuery(NamedQueryDefinition namedQueryDefinition) {
+		errorIfClosed();
+		checkTransactionSynchStatus();
+
 		String queryString = namedQueryDefinition.getQueryString();
 		Query query = createQuery( queryString );
 		query.setComment( "named HQL/JP-QL query " + namedQueryDefinition.getName() );
@@ -133,6 +136,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public NoSQLQuery createNativeQuery(String nativeQuery) {
 		errorIfClosed();
+		checkTransactionSynchStatus();
 
 		return new NoSQLQueryImpl(
 				nativeQuery,
@@ -251,6 +255,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public List<?> listCustomQuery(CustomQuery customQuery, QueryParameters queryParameters) throws HibernateException {
 		errorIfClosed();
+		checkTransactionSynchStatus();
 
 		if ( log.isTraceEnabled() ) {
 			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
@@ -271,7 +276,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	 * to work with our custom loaders.
 	 */
 	private boolean autoFlushIfRequired(Set<String> querySpaces) throws HibernateException {
-		errorIfClosed();
 		if ( ! isTransactionInProgress() ) {
 			// do not auto-flush while outside a transaction
 			return false;
@@ -315,6 +319,8 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public Query getNamedQuery(String name) {
 		errorIfClosed();
+		checkTransactionSynchStatus();
+
 		NamedQueryDefinition namedQuery = factory.getNamedQuery( name );
 		//ORM looks for native queries when no HQL definition is found, we do the same here.
 		if (namedQuery == null) {
@@ -327,6 +333,8 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public Query getNamedSQLQuery(String queryName) {
 		errorIfClosed();
+		checkTransactionSynchStatus();
+
 		NamedSQLQueryDefinition nsqlqd = findNamedNativeQuery( queryName );
 		Query query = new NoSQLQueryImpl(
 				nsqlqd,
@@ -350,12 +358,29 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 		return new OgmSharedSessionBuilderDelegator( delegate.sessionWithOptions(), factory );
 	}
 
-	//Copied from org.hibernate.internal.AbstractSessionImpl.errorIfClosed()
-	//to mimic same behaviour
+	// Copied from org.hibernate.internal.AbstractSessionImpl.errorIfClosed() to mimic same behaviour
 	protected void errorIfClosed() {
 		if ( delegate.isClosed() ) {
 			throw new SessionException( "Session is closed!" );
 		}
+	}
+
+	// Copied from org.hibernate.internal.SessionImpl.checkTransactionSynchStatus() to mimic same behaviour
+	private void checkTransactionSynchStatus() {
+		pulseTransactionCoordinator();
+		delayedAfterCompletion();
+	}
+
+	// Copied from org.hibernate.internal.SessionImpl.pulseTransactionCoordinator() to mimic same behaviour
+	private void pulseTransactionCoordinator() {
+		if ( !isClosed() ) {
+			delegate.getTransactionCoordinator().pulse();
+		}
+	}
+
+	// Copied from org.hibernate.internal.SessionImpl.delayedAfterCompletion() to mimic same behaviour
+	private void delayedAfterCompletion() {
+		delegate.getTransactionCoordinator().getSynchronizationCallbackCoordinator().processAnyDelayedAfterCompletion();
 	}
 
 	public <G extends GlobalContext<?, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {
