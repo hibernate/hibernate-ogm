@@ -28,8 +28,9 @@ import org.hibernate.ogm.failure.impl.OperationCollector;
 public class ErrorHandlerEnabledTransactionDecorator extends ForwardingTransactionImplementor {
 
 	private final JtaPlatform jtaPlatform;
-	private final ErrorHandler errorHandler;
-	private final OperationCollector operationCollector;
+
+	private ErrorHandler errorHandler;
+	private OperationCollector operationCollector;
 	private boolean callErrorHandlerOnRollback;
 
 	public ErrorHandlerEnabledTransactionDecorator(TransactionImplementor delegate, ErrorHandler errorHandler, JtaPlatform jtaPlatform) {
@@ -40,6 +41,16 @@ public class ErrorHandlerEnabledTransactionDecorator extends ForwardingTransacti
 		this.errorHandler = errorHandler;
 		this.operationCollector = new OperationCollector();
 		this.callErrorHandlerOnRollback = true;
+	}
+
+	/**
+	 * Begins the transaction, using the given error handler. Intended for OGM-internal testing only at this point.
+	 */
+	public void begin(ErrorHandler errorHandler) {
+		this.errorHandler = errorHandler;
+		this.operationCollector = new OperationCollector();
+
+		super.begin();
 	}
 
 	@Override
