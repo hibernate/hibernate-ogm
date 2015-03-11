@@ -9,11 +9,16 @@ package org.hibernate.ogm.transaction.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.failure.ErrorHandler;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -37,25 +42,49 @@ public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<
 
 	@Override
 	public TransactionFactory<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+		TransactionFactory<?> transactionFactory = null;
+
 		// if there is a explicitly set transaction factory let ORM instantiate it
 		if ( hasExplicitNonJPAResourceLocalTransactionFactory( configurationValues ) ) {
-			return TransactionFactoryInitiator.INSTANCE.initiateService( configurationValues, registry );
-		}
-
-		// if the strategy is not explicitly set or resource local we decide based on the dialect
-		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
-		boolean emulateTransactions;
-		if ( datastoreProvider.allowsTransactionEmulation() ) {
-			// for resource local transaction type where the datastore does not support transactions
-			// it is enough to simulate transaction. In this case transactions are just used to scope a unit
-			// of work and to make sure that the appropriate flush event occurs
-			emulateTransactions = true;
+			transactionFactory = TransactionFactoryInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
 		else {
-			log.usingDefaultTransactionFactory();
-			emulateTransactions = false;
+			// if the strategy is not explicitly set or resource local we decide based on the dialect
+			DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
+			boolean emulateTransactions;
+			if ( datastoreProvider.allowsTransactionEmulation() ) {
+				// for resource local transaction type where the datastore does not support transactions
+				// it is enough to simulate transaction. In this case transactions are just used to scope a unit
+				// of work and to make sure that the appropriate flush event occurs
+				emulateTransactions = true;
+			}
+			else {
+				log.usingDefaultTransactionFactory();
+				emulateTransactions = false;
+			}
+			transactionFactory = new OgmTransactionFactory( emulateTransactions );
 		}
-		return new OgmTransactionFactory( emulateTransactions );
+
+		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
+		return errorHandler == null ? transactionFactory : getErrorHandlerEnabledFactory( registry, transactionFactory, errorHandler );
+	}
+
+	private ErrorHandler getErrorHandler(Map<?, ?> configurationValues, ServiceRegistryImplementor registry) {
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
+
+		return propertyReader.property( OgmProperties.ERROR_HANDLER, ErrorHandler.class )
+				.instantiate()
+				.getValue();
+	}
+
+	private TransactionFactory<?> getErrorHandlerEnabledFactory(ServiceRegistryImplementor registry, TransactionFactory<?> transactionFactory, ErrorHandler errorHandler) {
+		JtaPlatform jtaPlatform = null;
+
+		if ( transactionFactory.compatibleWithJtaSynchronization() ) {
+			jtaPlatform = registry.getService( JtaPlatform.class );
+		}
+
+		return new ErrorHandlerEnabledTransactionDecoratorFactory( errorHandler, transactionFactory, jtaPlatform );
 	}
 
 	private boolean hasExplicitNonJPAResourceLocalTransactionFactory(Map configurationValues) {
