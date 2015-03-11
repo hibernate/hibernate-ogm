@@ -21,6 +21,7 @@ import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.jpa.event.spi.JpaIntegrator;
 import org.hibernate.jpa.event.spi.jpa.CallbackRegistry;
 import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
@@ -169,7 +170,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 	}
 
 	private boolean isEventContextRequired(Configuration configuration) {
-		return false;
+		return configuration.getProperties().get( OgmProperties.ERROR_HANDLER ) != null;
 	}
 
 	/**
