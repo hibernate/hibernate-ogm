@@ -20,8 +20,20 @@ import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.exception.impl.Exceptions;
+import org.hibernate.ogm.failure.ErrorHandlingStrategy;
+import org.hibernate.ogm.failure.operation.CreateAssociationWithKey;
+import org.hibernate.ogm.failure.operation.CreateTuple;
+import org.hibernate.ogm.failure.operation.CreateTupleWithKey;
+import org.hibernate.ogm.failure.operation.ExecuteBatch;
 import org.hibernate.ogm.failure.operation.GridDialectOperation;
+import org.hibernate.ogm.failure.operation.InsertOrUpdateAssociation;
+import org.hibernate.ogm.failure.operation.InsertTuple;
+import org.hibernate.ogm.failure.operation.RemoveAssociation;
+import org.hibernate.ogm.failure.operation.RemoveTuple;
+import org.hibernate.ogm.failure.operation.UpdateTupleWithOptimisticLock;
 import org.hibernate.ogm.failure.operation.impl.CreateAssociationWithKeyImpl;
 import org.hibernate.ogm.failure.operation.impl.CreateTupleImpl;
 import org.hibernate.ogm.failure.operation.impl.CreateTupleWithKeyImpl;
@@ -56,8 +68,20 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		super.insertOrUpdateTuple( key, tuple, tupleContext );
-		handleAppliedOperation( new InsertOrUpdateTupleImpl( key, tuple ) );
+		InsertOrUpdateTupleImpl insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, tuple );
+
+		try {
+			super.insertOrUpdateTuple( key, tuple, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( insertOrUpdateTuple, e );
+		}
+
+		handleAppliedOperation( insertOrUpdateTuple );
+	}
+
+	public void onInsertOrUpdateTupleFailure(EntityKey key, Tuple tuple, TupleAlreadyExistsException e) {
+		handleException( new InsertOrUpdateTupleImpl( key, tuple ), e );
 	}
 
 	@Override
@@ -96,83 +120,185 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 			}
 		}
 
-		super.executeBatch( newQueue );
-		handleAppliedOperation( new ExecuteBatchImpl( operations ) );
+		ExecuteBatch executeBatch = new ExecuteBatchImpl( operations );
+		try {
+			super.executeBatch( newQueue );
+		}
+		catch (Exception e) {
+			handleException( executeBatch, e );
+		}
+
+		handleAppliedOperation( executeBatch );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		Tuple tuple = super.createTuple( key, tupleContext );
-		handleAppliedOperation( new CreateTupleWithKeyImpl( key ) );
+		Tuple tuple = null;
+		CreateTupleWithKey createTupleWithKey = new CreateTupleWithKeyImpl( key );
+
+		try {
+			tuple = super.createTuple( key, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( createTupleWithKey, e );
+		}
+
+		handleAppliedOperation( createTupleWithKey );
 		return tuple;
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		super.removeTuple( key, tupleContext );
-		handleAppliedOperation( new RemoveTupleImpl( key ) );
+		RemoveTuple removeTuple = new RemoveTupleImpl( key );
+
+		try {
+			super.removeTuple( key, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( removeTuple, e );
+		}
+
+		handleAppliedOperation( removeTuple );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		Association association = super.createAssociation( key, associationContext );
-		handleAppliedOperation( new CreateAssociationWithKeyImpl( key ) );
+		Association association = null;
+		CreateAssociationWithKey createAssociationWithKey = new CreateAssociationWithKeyImpl( key );
+
+		try {
+			association = super.createAssociation( key, associationContext );
+		}
+		catch (Exception e) {
+			handleException( createAssociationWithKey, e );
+		}
+
+		handleAppliedOperation( createAssociationWithKey );
 		return association;
 	}
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
-		super.insertOrUpdateAssociation( key, association, associationContext );
-		handleAppliedOperation( new InsertOrUpdateAssociationImpl( key, association ) );
+		InsertOrUpdateAssociation insertOrUpdateAssociation = new InsertOrUpdateAssociationImpl( key, association );
+
+		try {
+			super.insertOrUpdateAssociation( key, association, associationContext );
+		}
+		catch (Exception e) {
+			handleException( insertOrUpdateAssociation, e );
+		}
+
+		handleAppliedOperation( insertOrUpdateAssociation );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		super.removeAssociation( key, associationContext );
-		handleAppliedOperation( new RemoveAssociationImpl( key ) );
+		RemoveAssociation removeAssociation = new RemoveAssociationImpl( key );
+
+		try {
+			super.removeAssociation( key, associationContext );
+		}
+		catch (Exception e) {
+			handleException( removeAssociation, e );
+		}
+
+		handleAppliedOperation( removeAssociation );
 	}
 
 	// IdentityColumnAwareGridDialect
 
 	@Override
 	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		Tuple tuple = super.createTuple( entityKeyMetadata, tupleContext );
-		handleAppliedOperation( new CreateTupleImpl( entityKeyMetadata ) );
+		Tuple tuple = null;
+		CreateTuple createTuple = new CreateTupleImpl( entityKeyMetadata );
+
+		try {
+			tuple = super.createTuple( entityKeyMetadata, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( createTuple, e );
+		}
+
+		handleAppliedOperation( createTuple );
 		return tuple;
 	}
 
 	@Override
 	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
-		super.insertTuple( entityKeyMetadata, tuple, tupleContext );
-		handleAppliedOperation( new InsertTupleImpl( entityKeyMetadata, tuple ) );
+		InsertTuple insertTuple = new InsertTupleImpl( entityKeyMetadata, tuple );
+
+		try {
+			super.insertTuple( entityKeyMetadata, tuple, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( insertTuple, e );
+		}
+
+		handleAppliedOperation( insertTuple );
 	}
 
 	// OptimisticLockingAwareGridDialect
 
 	@Override
 	public boolean updateTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, Tuple tuple, TupleContext tupleContext) {
-		boolean success = super.updateTupleWithOptimisticLock( entityKey, oldLockState, tuple, tupleContext );
+		UpdateTupleWithOptimisticLock updateTupleWithOptimisticLock = new UpdateTupleWithOptimisticLockImpl( entityKey, oldLockState, tuple );
+		boolean success = false;
 
-		if ( success ) {
-			handleAppliedOperation( new UpdateTupleWithOptimisticLockImpl( entityKey, oldLockState, tuple ) );
+		try {
+			success = super.updateTupleWithOptimisticLock( entityKey, oldLockState, tuple, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( updateTupleWithOptimisticLock, e );
 		}
 
+		// applied/failed operation logging triggered by persister as per operation outcome
+
 		return success;
+	}
+
+	public void onUpdateTupleWithOptimisticLockSuccess(EntityKey entityKey, Tuple oldLockState, Tuple tuple) {
+		handleAppliedOperation( new UpdateTupleWithOptimisticLockImpl( entityKey, oldLockState, tuple ) );
+	}
+
+	public void onUpdateTupleWithOptimisticLockFailure(EntityKey entityKey, Tuple oldLockState, Tuple tuple, Exception e) {
+		handleException( new UpdateTupleWithOptimisticLockImpl( entityKey, oldLockState, tuple ), e );
 	}
 
 	@Override
 	public boolean removeTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, TupleContext tupleContext) {
-		boolean success = super.removeTupleWithOptimisticLock( entityKey, oldLockState, tupleContext );
+		RemoveTupleWithOptimisticLockImpl removeTupleWithOptimisticLock = new RemoveTupleWithOptimisticLockImpl( entityKey, oldLockState );
+		boolean success = false;
 
-		if ( success ) {
-			handleAppliedOperation( new RemoveTupleWithOptimisticLockImpl( entityKey, oldLockState ) );
+		try {
+			success = super.removeTupleWithOptimisticLock( entityKey, oldLockState, tupleContext );
 		}
+		catch (Exception e) {
+			handleException( removeTupleWithOptimisticLock, e );
+		}
+
+		// applied/failed operation logging triggered by persister as per operation outcome
 
 		return success;
 	}
 
+	public void onRemoveTupleWithOptimisticLockSuccess(EntityKey entityKey, Tuple oldLockState) {
+		handleAppliedOperation( new RemoveTupleWithOptimisticLockImpl( entityKey, oldLockState ) );
+	}
+
+	public void onRemoveTupleWithOptimisticLockFailure(EntityKey entityKey, Tuple oldLockState, Exception e) {
+		handleException( new RemoveTupleWithOptimisticLockImpl( entityKey, oldLockState ), e );
+	}
+
 	private void handleAppliedOperation(GridDialectOperation operation) {
 		getOperationCollector().addAppliedOperation( operation );
+	}
+
+	private void handleException(GridDialectOperation operation, Exception e) {
+		ErrorHandlingStrategy result = getOperationCollector().onFailedOperation( operation, e );
+
+		if ( result == ErrorHandlingStrategy.ABORT ) {
+			Exceptions.<RuntimeException>sneakyThrow( e );
+		}
 	}
 
 	/**

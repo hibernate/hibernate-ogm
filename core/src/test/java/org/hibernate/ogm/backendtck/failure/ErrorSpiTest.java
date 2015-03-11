@@ -24,6 +24,8 @@ import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
+import org.hibernate.ogm.failure.ErrorHandler.FailedGridDialectOperationContext;
 import org.hibernate.ogm.failure.ErrorHandler.RollbackContext;
 import org.hibernate.ogm.failure.operation.CreateTupleWithKey;
 import org.hibernate.ogm.failure.operation.ExecuteBatch;
@@ -31,7 +33,10 @@ import org.hibernate.ogm.failure.operation.GridDialectOperation;
 import org.hibernate.ogm.failure.operation.InsertOrUpdateTuple;
 import org.hibernate.ogm.failure.operation.UpdateTupleWithOptimisticLock;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
+import org.hibernate.ogm.transaction.impl.ErrorHandlerEnabledTransactionDecorator;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -293,6 +298,119 @@ public class ErrorSpiTest extends OgmTestCase {
 			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
 			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
 		}
+	}
+
+	@Test
+	public void onFailedOperationPresentsFailedAndAppliedOperationsAndException() {
+		OgmSession session = openSession();
+		session.getTransaction().begin();
+
+		// given two inserted records
+		session.persist( new Shipment( "shipment-1", "INITIAL" ) );
+		session.persist( new Shipment( "shipment-2", "INITIAL" ) );
+		session.flush();
+		session.clear();
+
+		try {
+			// when provoking a duplicate-key exception
+			session.persist( new Shipment( "shipment-1", "INITIAL" ) );
+			session.getTransaction().commit();
+			fail( "Expected exception was not raised" );
+		}
+		catch (Exception e) {
+			session.getTransaction().rollback();
+		}
+
+		Iterator<FailedGridDialectOperationContext> onFailedOperationInvocations = InvocationTrackingHandler.INSTANCE.getOnFailedOperationInvocations().iterator();
+		FailedGridDialectOperationContext invocation = onFailedOperationInvocations.next();
+		assertThat( onFailedOperationInvocations.hasNext() ).isFalse();
+
+		// then expect the failed op
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+			assertThat( invocation.getFailedOperation() ).isInstanceOf( ExecuteBatch.class );
+		}
+		else {
+			assertThat( invocation.getFailedOperation() ).isInstanceOf( InsertOrUpdateTuple.class );
+		}
+
+		// and the exception
+		assertThat( invocation.getException() ).isExactlyInstanceOf( TupleAlreadyExistsException.class );
+
+		// and the applied ops
+		Iterator<GridDialectOperation> appliedOperations = invocation.getAppliedGridDialectOperations().iterator();
+
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
+			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
+			GridDialectOperation operation = appliedOperations.next();
+			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
+
+			ExecuteBatch batch = operation.as( ExecuteBatch.class );
+			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
+			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( batchedOperations.hasNext() ).isFalse();
+		}
+		else {
+			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
+			assertThat( appliedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
+			assertThat( appliedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+		}
+
+		if ( currentDialectUsesLookupDuplicatePreventionStrategy() ) {
+			assertThat( appliedOperations.hasNext() ).isFalse();
+		}
+		else {
+			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
+		}
+
+		session.close();
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = GridDialectType.NEO4J,
+			comment = "Transaction cannot be committed when continuing after an exception "
+	)
+	public void subsequentOperationsArePerformedForErrorHandlingStrategyContinue() {
+		OgmSession session = openSession();
+		( (ErrorHandlerEnabledTransactionDecorator) session.getTransaction() ).begin( ContinuingErrorHandler.INSTANCE );
+
+		session.persist( new Shipment( "shipment-1", "INITIAL" ) );
+		session.persist( new Shipment( "shipment-2", "INITIAL" ) );
+
+		// TODO: without flush/clear ORM itself would detect the duplicate entity; should we relay this exception to the
+		// handler prior to rollback?
+		session.flush();
+		session.clear();
+
+		// when provoking a duplicate-key exception
+		session.persist( new Shipment( "shipment-1", "INITIAL" ) );
+
+		// TODO without the flush we'll batch this and the next insert; we cannot continue with remaining elements of a batch
+		session.flush();
+
+		session.persist( new Shipment( "shipment-3", "INITIAL" ) );
+
+		session.getTransaction().commit();
+		session.close();
+
+		session = openSession();
+		session.getTransaction().begin();
+
+		// then expect all previously and subsequent operations applied
+		Shipment loadedShipment = (Shipment) session.get( Shipment.class, "shipment-1" );
+		assertThat( loadedShipment ).isNotNull();
+
+		loadedShipment = (Shipment) session.get( Shipment.class, "shipment-2" );
+		assertThat( loadedShipment ).isNotNull();
+
+		loadedShipment = (Shipment) session.get( Shipment.class, "shipment-3" );
+		assertThat( loadedShipment ).isNotNull();
+
+		session.getTransaction().commit();
+		session.close();
 	}
 
 	private Future<?> updateShipmentInConcurrentThread(final String id, final String newState) {
