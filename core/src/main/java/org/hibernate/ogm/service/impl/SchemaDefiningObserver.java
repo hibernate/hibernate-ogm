@@ -18,11 +18,11 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Gunnar Morling
  */
-public class SchemaInitializingObserver implements SessionFactoryObserver {
+public class SchemaDefiningObserver implements SessionFactoryObserver {
 
 	private final Configuration configuration;
 
-	public SchemaInitializingObserver(Configuration configuration) {
+	public SchemaDefiningObserver(Configuration configuration) {
 		this.configuration = configuration;
 	}
 

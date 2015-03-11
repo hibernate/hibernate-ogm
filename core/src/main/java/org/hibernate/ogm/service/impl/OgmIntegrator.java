@@ -107,7 +107,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		}
 		Version.touch();
 
-		sessionFactory.addObserver( new SchemaInitializingObserver( configuration ) );
+		sessionFactory.addObserver( new SchemaDefiningObserver( configuration ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 		attachBatchListenersIfRequired( serviceRegistry );
 
