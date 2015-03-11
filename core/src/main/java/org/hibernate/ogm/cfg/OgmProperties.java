@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.cfg;
 
+import org.hibernate.ogm.failure.ErrorHandler;
+
 /**
  * Common properties for configuring NoSql datastores via {@code persistence.xml} or
  * {@link OgmConfiguration}.
@@ -77,4 +79,15 @@ public interface OgmProperties {
 	 * database will have the name defined with {@link #DATABASE}. Accepts "true" or "false".
 	 */
 	String CREATE_DATABASE = "hibernate.ogm.datastore.create_database";
+
+	/**
+	 * Property for setting a {@link ErrorHandler} which will receive applied and failed grid dialect operations upon
+	 * failures. Supported value types are:
+	 * <ul>
+	 * <li>{@link String}: the fully qualified name of an {@code ErrorHandler} type</li>
+	 * <li>{@link Class}: the class object representing an {@code ErrorHandler} type</li>
+	 * <li>{@code ErrorHandler}: an error handler instance</li>
+	 * </ul>
+	 */
+	String ERROR_HANDLER = "hibernate.ogm.error_handler";
 }
