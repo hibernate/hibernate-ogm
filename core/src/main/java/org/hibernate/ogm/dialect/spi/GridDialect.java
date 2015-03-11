@@ -183,4 +183,12 @@ public interface GridDialect extends Service {
 	 * same primary key
 	 */
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
+
+	/**
+	 * @return the naming adaptor to be used for this dialect, for example to escape characters which are not to be
+	 * used in the specific datastore.
+	 *
+	 */
+	DialectNamingAdaptor getNamingAdaptor();
+
 }

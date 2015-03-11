@@ -30,6 +30,7 @@ import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBNamingAdaptor;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
@@ -64,6 +65,7 @@ import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.DialectNamingAdaptor;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -1057,4 +1059,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return inserts.isEmpty();
 		}
 	}
+
+	@Override
+	public DialectNamingAdaptor getNamingAdaptor() {
+		return MongoDBNamingAdaptor.INSTANCE;
+	}
+
 }

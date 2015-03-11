@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 
 import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.jboss.logging.annotations.Cause;
@@ -75,4 +76,18 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1219, value = "Database %s does not exist. Either create it yourself or set property '" + OgmProperties.CREATE_DATABASE + "' to true.")
 	HibernateException databaseDoesNotExistException(String databaseName);
+
+	@Message(id = 1220, value = "When using MongoDB it is not valid to use a name for a table (a collection) which starts with the 'system.' prefix."
+			+ " Please change name for '%s', for example by using @Table ")
+	MappingException collectionNameHasInvalidSystemPrefix(String qualifiedName);
+
+	@Message(id = 1221, value = "When using MongoDB it is not valid to use a name for a table (a collection) which contains the NUL character '\\0'."
+			+ " Please change name for '%s', for example by using @Table ")
+	MappingException collectionNameContainsNULCharacter(String qualifiedName);
+
+	@Message(id = 1222, value = "When using MongoDB it is not valid to use a name for a table (a collection) which contains the dollar character '$';"
+			+ " for example this is a common problem with inner classes."
+			+ " Please pick a valid collection name for '%s', for example by using @Table ")
+	MappingException collectionNameContainsDollarCharacter(String qualifiedName);
+
 }
