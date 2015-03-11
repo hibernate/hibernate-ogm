@@ -14,6 +14,13 @@ package org.hibernate.ogm.failure;
 public class BaseErrorHandler implements ErrorHandler {
 
 	@Override
+	public ErrorHandlingStrategy onFailedGridDialectOperation(FailedGridDialectOperationContext context) {
+		// no-op
+
+		return ErrorHandlingStrategy.ABORT;
+	}
+
+	@Override
 	public void onRollback(RollbackContext context) {
 		// no-op
 	}
