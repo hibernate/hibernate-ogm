@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.ogm.failure.ErrorHandler;
+import org.hibernate.ogm.failure.ErrorHandlingStrategy;
 
 /**
  * An {@link ErrorHandler} which makes all its invocations available for testing purposes.
@@ -21,6 +22,7 @@ class InvocationTrackingHandler implements ErrorHandler {
 	static InvocationTrackingHandler INSTANCE = new InvocationTrackingHandler();
 
 	private final List<RollbackContext> onRollbackInvocations = new ArrayList<>();
+	private final List<FailedGridDialectOperationContext> onFailedOperationInvocations = new ArrayList<>();
 
 	private InvocationTrackingHandler() {
 	}
@@ -30,11 +32,22 @@ class InvocationTrackingHandler implements ErrorHandler {
 		onRollbackInvocations.add( context );
 	}
 
+	@Override
+	public ErrorHandlingStrategy onFailedGridDialectOperation(FailedGridDialectOperationContext context) {
+		onFailedOperationInvocations.add( context );
+		return ErrorHandlingStrategy.ABORT;
+	}
+
 	public void clear() {
 		onRollbackInvocations.clear();
+		onFailedOperationInvocations.clear();
 	}
 
 	public List<RollbackContext> getOnRollbackInvocations() {
 		return onRollbackInvocations;
+	}
+
+	public List<FailedGridDialectOperationContext> getOnFailedOperationInvocations() {
+		return onFailedOperationInvocations;
 	}
 }

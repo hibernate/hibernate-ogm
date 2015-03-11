@@ -39,7 +39,7 @@ public class ErrorHandlerEnabledTransactionDecorator extends ForwardingTransacti
 		this.jtaPlatform = jtaPlatform;
 
 		this.errorHandler = errorHandler;
-		this.operationCollector = new OperationCollector();
+		this.operationCollector = new OperationCollector( errorHandler );
 		this.callErrorHandlerOnRollback = true;
 	}
 
@@ -48,7 +48,7 @@ public class ErrorHandlerEnabledTransactionDecorator extends ForwardingTransacti
 	 */
 	public void begin(ErrorHandler errorHandler) {
 		this.errorHandler = errorHandler;
-		this.operationCollector = new OperationCollector();
+		this.operationCollector = new OperationCollector( errorHandler );
 
 		super.begin();
 	}

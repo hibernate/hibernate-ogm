@@ -29,10 +29,37 @@ import org.hibernate.ogm.util.Experimental;
 public interface ErrorHandler {
 
 	/**
+	 * Callback method invoked if an error occurred during the execution of a grid dialect method. The error handler can
+	 * decide whether to abort the current "transaction" or abort it.
+	 */
+	ErrorHandlingStrategy onFailedGridDialectOperation(FailedGridDialectOperationContext context);
+
+	/**
 	 * Callback method invoked if the current "transaction" is rolled back. Provides access to all grid dialect
 	 * operations successfully applied before the error causing the rollback occurred.
 	 */
 	void onRollback(RollbackContext context);
+
+	/**
+	 * Provides contextual information when notifying an {@link ErrorHandler} about a failed grid dialect operation.
+	 */
+	interface FailedGridDialectOperationContext {
+
+		/**
+		 * The operation which failed.
+		 */
+		GridDialectOperation getFailedOperation();
+
+		/**
+		 * The operations successfully applied to the datastore before the failure occurred.
+		 */
+		Iterable<GridDialectOperation> getAppliedGridDialectOperations();
+
+		/**
+		 * Exception describing the failure.
+		 */
+		Exception getException();
+	}
 
 	/**
 	 * Provides contextual information when notifying an {@link ErrorHandler} about a transaction rollback.
