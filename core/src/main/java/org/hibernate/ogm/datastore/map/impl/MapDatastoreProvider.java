@@ -177,4 +177,9 @@ public final class MapDatastoreProvider extends BaseDatastoreProvider implements
 	public Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationsMap() {
 		return Collections.unmodifiableMap( associationsKeyValueStorage );
 	}
+
+	@Override
+	public boolean allowsTransactionEmulation() {
+		return true;
+	}
 }
