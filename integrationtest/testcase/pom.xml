@@ -19,9 +19,6 @@
         </testResources>
         <plugins>
             <plugin>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
             <plugin>
