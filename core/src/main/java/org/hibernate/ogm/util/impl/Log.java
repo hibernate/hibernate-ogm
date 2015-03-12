@@ -264,4 +264,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 77, value = "Parameter '%s' must not be an empty string")
 	IllegalArgumentException parameterSringMustNotBeEmpty(String parameterName);
 
+	@Message(id = 78, value = "Unrecognized alias in query:  %s")
+	HibernateException getUnknownAliasException(String text);
 }
