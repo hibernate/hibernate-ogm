@@ -260,4 +260,7 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 76, value = "No explicit or implicit defined JTAPlatform. Using NoJtaPlatform")
 	void noJtaPlatformDetected();
+
+	@Message(id = 77, value = "Unrecognized alias in query:  %s")
+	HibernateException getUnknownAliasException(String text);
 }
