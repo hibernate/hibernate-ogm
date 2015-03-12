@@ -24,6 +24,14 @@ import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagerInitiator;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingAutoFlushEventListener;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingAutoFlushEventListener.EventContextManagingAutoFlushEventListenerDuplicationStrategy;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingFlushEventListener;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingFlushEventListener.EventContextManagingFlushEventListenerDuplicationStrategy;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener.EventContextManagingPersistEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
@@ -99,6 +107,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( EventContextManagerInitiator.INSTANCE );
 	}
 
 	private void doIntegrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
@@ -109,8 +118,9 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 		sessionFactory.addObserver( new SchemaDefiningObserver( configuration ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
-		attachBatchListenersIfRequired( serviceRegistry );
 
+		attachBatchListenersIfRequired( serviceRegistry );
+		attachEventContextManagingListenersIfRequired( configuration, serviceRegistry );
 		attachPersistListener( serviceRegistry );
 	}
 
@@ -136,6 +146,30 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
 			addListeners( eventListenerRegistry, batchDelegator );
 		}
+	}
+
+	private void attachEventContextManagingListenersIfRequired(Configuration configuration, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( !isEventContextRequired( configuration ) ) {
+			return;
+		}
+
+		EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
+		EventContextManager stateManager = serviceRegistry.getService( EventContextManager.class );
+
+		eventListenerRegistry.addDuplicationStrategy( EventContextManagingAutoFlushEventListenerDuplicationStrategy.INSTANCE );
+		eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new EventContextManagingAutoFlushEventListener( stateManager ) );
+
+		eventListenerRegistry.addDuplicationStrategy( EventContextManagingFlushEventListenerDuplicationStrategy.INSTANCE );
+		eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new EventContextManagingFlushEventListener( stateManager ) );
+
+		if ( getIntegrator( JpaIntegrator.class, serviceRegistry ) != null ) {
+			eventListenerRegistry.addDuplicationStrategy( EventContextManagingPersistEventListenerDuplicationStrategy.INSTANCE );
+			eventListenerRegistry.getEventListenerGroup( EventType.PERSIST ).appendListener( new EventContextManagingPersistEventListener( stateManager ) );
+		}
+	}
+
+	private boolean isEventContextRequired(Configuration configuration) {
+		return false;
 	}
 
 	/**
