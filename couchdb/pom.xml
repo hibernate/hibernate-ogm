@@ -121,10 +121,10 @@
                 <configuration>
                     <forkMode>once</forkMode>
                     <skipExec>${skipUnitTests}</skipExec>
+                    <dependenciesToScan>
+                        <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+                    </dependenciesToScan>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
