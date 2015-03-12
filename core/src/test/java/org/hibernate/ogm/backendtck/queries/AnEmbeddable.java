@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.backendtck.queries;
 
+import java.util.List;
+
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 
@@ -25,7 +28,15 @@ public class AnEmbeddable {
 	@IndexedEmbedded
 	private AnotherEmbeddable anotherEmbeddable;
 
+	@ElementCollection
+	@IndexedEmbedded
+	private List<AnotherEmbeddable> anotherCollection;
+
 	public AnEmbeddable() {
+	}
+
+	public AnEmbeddable(String embeddedString) {
+		this.embeddedString = embeddedString;
 	}
 
 	public AnEmbeddable(String embeddedString, AnotherEmbeddable anotherEmbeddable) {
@@ -47,5 +58,13 @@ public class AnEmbeddable {
 
 	public void setAnotherEmbeddable(AnotherEmbeddable anotherEmbeddable) {
 		this.anotherEmbeddable = anotherEmbeddable;
+	}
+
+	public List<AnotherEmbeddable> getAnotherCollection() {
+		return anotherCollection;
+	}
+
+	public void setAnotherCollection(List<AnotherEmbeddable> anotherCollection) {
+		this.anotherCollection = anotherCollection;
 	}
 }
