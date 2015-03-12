@@ -15,6 +15,8 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReference;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReferenceSource;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.QueryResolverDelegate;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 
 /**
  * Query resolver delegate targeting MongoDB queries. Very basic implementation atm., need to decide on
@@ -25,10 +27,15 @@ import org.hibernate.hql.ast.spi.QueryResolverDelegate;
  */
 public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 
+	private static final Log log = LoggerFactory.getLogger();
+
 	/**
 	 * Persister space: keep track of aliases and entity names.
 	 */
 	private final Map<String, String> aliasToEntityType = new HashMap<String, String>();
+	private final Map<String, PropertyPath> aliasToPropertyPath = new HashMap<String, PropertyPath>();
+
+	private String alias;
 
 	@Override
 	public void registerPersisterSpace(Tree entityName, Tree alias) {
@@ -41,33 +48,50 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 	}
 
 	@Override
+	public void registerJoinAlias(Tree alias, PropertyPath path) {
+		PropertyPath put = aliasToPropertyPath.put( alias.getText(), path );
+		if ( put != null && !put.equals( path ) ) {
+			throw new UnsupportedOperationException( "Alias reuse currently not supported: alias " + alias + " already assigned to type " + put );
+		}
+	}
+
+	@Override
 	public boolean isUnqualifiedPropertyReference() {
 		return true;
 	}
 
 	@Override
 	public PathedPropertyReferenceSource normalizeUnqualifiedPropertyReference(Tree property) {
-		if ( aliasToEntityType.containsKey( property.getText() ) ) {
-			return new PathedPropertyReference( property.getText(), null, true );
-		}
-		else {
-			return new PathedPropertyReference( property.getText(), null, false );
-		}
+		return new PathedPropertyReference( property.getText(), null, isAlias( property ) );
 	}
 
 	@Override
 	public boolean isPersisterReferenceAlias() {
-		return true;
+		return isEntityAlias( alias );
 	}
 
 	@Override
-	public PathedPropertyReferenceSource normalizeUnqualifiedRoot(Tree identifier382) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+	public PathedPropertyReferenceSource normalizeUnqualifiedRoot(Tree root) {
+		return new PathedPropertyReference( root.getText(), null, isAlias( root ) );
+	}
+
+	private boolean isAlias(Tree root) {
+		return aliasToEntityType.containsKey( root.getText() ) || aliasToPropertyPath.containsKey( root.getText() );
+	}
+
+	private boolean isEntityAlias(String alias) {
+		return aliasToEntityType.containsKey( alias );
 	}
 
 	@Override
-	public PathedPropertyReferenceSource normalizeQualifiedRoot(Tree identifier381) {
-		return new PathedPropertyReference( identifier381.getText(), null, true );
+	public PathedPropertyReferenceSource normalizeQualifiedRoot(Tree root) {
+		String entityNameForAlias = aliasToEntityType.get( root.getText() );
+
+		if ( entityNameForAlias == null ) {
+			throw log.getUnknownAliasException( root.getText() );
+		}
+
+		return new PathedPropertyReference( root.getText(), null, true );
 	}
 
 	@Override
@@ -76,9 +100,8 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 	}
 
 	@Override
-	public PathedPropertyReferenceSource normalizeIntermediateIndexOperation(PathedPropertyReferenceSource propertyReferenceSource, Tree collectionProperty,
-			Tree selector) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+	public PathedPropertyReferenceSource normalizeIntermediateIndexOperation(PathedPropertyReferenceSource propertyReferenceSource, Tree collectionProperty, Tree selector) {
+		return propertyReferenceSource;
 	}
 
 	@Override
@@ -88,7 +111,7 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 
 	@Override
 	public PathedPropertyReferenceSource normalizeUnqualifiedPropertyReferenceSource(Tree identifier394) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		return null;
 	}
 
 	@Override
@@ -98,7 +121,7 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 
 	@Override
 	public void pushFromStrategy(JoinType joinType, Tree assosiationFetchTree, Tree propertyFetchTree, Tree alias) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		this.alias = alias.getText();
 	}
 
 	@Override

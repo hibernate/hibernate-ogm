@@ -58,11 +58,11 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 			//currently only support selecting non-nested properties (either qualified or unqualified)
 			if ( ( propertyPath.getNodes().size() == 1 && !propertyPath.getLastNode().isAlias() )
 					|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() ) ) {
-				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
+				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
 			}
 			else if ( propertyPath.getNodes().size() > 2 && propertyPath.getNodes().get( 0 ).isAlias() ) {
-				if ( propertyHelper.isEmbedddedProperty( targetTypeName, propertyPath ) ) {
-					projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
+				if ( propertyHelper.isEmbeddedProperty( targetTypeName, propertyPath ) ) {
+					projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
 				}
 				else {
 					throw new UnsupportedOperationException( "Selecting associated properties not yet implemented." );
@@ -99,7 +99,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 			orderBy = new BasicDBObject();
 		}
 
-		String columnName = propertyHelper.getColumnName( targetType, propertyPath.asStringPathWithoutAlias() );
+		String columnName = propertyHelper.getColumnName( targetType, propertyPath.getNodeNamesWithoutAlias() );
 
 		// BasicDBObject is essentially a LinkedHashMap, so in case of several sort keys they'll be evaluated in the
 		// order they're inserted here, which is the order within the original statement

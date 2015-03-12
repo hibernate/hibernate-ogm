@@ -28,7 +28,6 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBL
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBNegationPredicate;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBRangePredicate;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBRootPredicate;
-import org.hibernate.ogm.util.impl.StringHelper;
 
 import com.mongodb.DBObject;
 
@@ -97,6 +96,6 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 	}
 
 	private String columnName(String entityType, List<String> propertyPath) {
-		return propertyHelper.getColumnName( entityType, StringHelper.join( propertyPath, "." ) );
+		return propertyHelper.getColumnName( entityType, propertyPath );
 	}
 }
