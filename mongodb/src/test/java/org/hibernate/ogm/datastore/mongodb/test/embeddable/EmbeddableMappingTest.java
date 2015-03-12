@@ -8,11 +8,17 @@ package org.hibernate.ogm.datastore.mongodb.test.embeddable;
 
 import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
 
+import java.util.Arrays;
+
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.embeddable.Account;
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.AddressType;
+import org.hibernate.ogm.backendtck.queries.AnEmbeddable;
+import org.hibernate.ogm.backendtck.queries.AnotherEmbeddable;
+import org.hibernate.ogm.backendtck.queries.EmbeddedCollectionItem;
+import org.hibernate.ogm.backendtck.queries.WithEmbedded;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
@@ -191,8 +197,70 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testEmbeddableCollection() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// Given, When
+		// If the value is not big enough, it gets converted as integer
+		Long id = Long.MAX_VALUE;
+		WithEmbedded with = new WithEmbedded( id, null );
+		with.setAnEmbeddable( new AnEmbeddable( "embedded 1", new AnotherEmbeddable( "string 1", 1 ) ) );
+		with.setYetAnotherEmbeddable( new AnEmbeddable( "embedded 2" ) );
+		with.setAnEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "item[0]", "secondItem[0]", null ), new EmbeddedCollectionItem( "item[1]", null, new AnotherEmbeddable( "string[1][0]", 10 ) ) ) );
+		with.setAnotherEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "another[0]", null, null ), new EmbeddedCollectionItem( "another[1]", null, null ) ) );
+
+		session.persist( with );
+		transaction.commit();
+		session.clear();
+		transaction = session.beginTransaction();
+
+		// Then
+		assertDbObject( session.getSessionFactory(),
+		// collection
+				WithEmbedded.class.getSimpleName(),
+				// query
+				"{ '_id' : " + id + " }",
+				// expected
+				"{" +
+					"'_id' : " + id  + "," +
+					"'anEmbeddable' : {" +
+							"'anotherEmbeddable' : {" +
+								"'embeddedInteger' : 1," +
+								"'embeddedString' : 'string 1'" +
+							"}," +
+							"'embeddedString' : 'embedded 1'" +
+					"}," +
+					"'yetAnotherEmbeddable' : {" +
+							"'embeddedString' : 'embedded 2'" +
+					"}," +
+					"'anEmbeddedCollection' : [" +
+						"{" +
+							"'item' : 'item[1]'," +
+							"'embeddedString' : 'string[1][0]'," +
+							"'embeddedInteger' : 10," +
+						"}," +
+						"{" +
+							"'item' : 'item[0]'," +
+							"'anotherItem' : 'secondItem[0]'" +
+						"}" +
+					"]," +
+					"'anotherEmbeddedCollection' : [" +
+							"{ 'item' : 'another[1]' }," +
+							"{ 'item' : 'another[0]' }" +
+					"]" +
+				"}"
+		);
+
+		session.delete( with );
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Account.class };
+		return new Class<?>[] { Account.class, WithEmbedded.class };
 	}
 }
