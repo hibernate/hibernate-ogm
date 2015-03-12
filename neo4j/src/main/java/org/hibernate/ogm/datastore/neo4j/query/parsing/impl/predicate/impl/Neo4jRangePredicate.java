@@ -28,17 +28,17 @@ public class Neo4jRangePredicate extends RangePredicate<StringBuilder> implement
 
 	@Override
 	public StringBuilder getQuery() {
-		comparator( ">=", lower );
+		comparator( " >= ", lower );
 		builder.append( " AND " );
-		comparator( "<=", upper );
+		comparator( " <= ", upper );
 		return builder;
 	}
 
 	@Override
 	public StringBuilder getNegatedQuery() {
-		comparator( "<", lower );
+		comparator( " < ", lower );
 		builder.append( " OR " );
-		comparator( ">", upper );
+		comparator( " > ", upper );
 		return builder;
 	}
 
