@@ -36,13 +36,15 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <dependenciesToScan>
+                        <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+                    </dependenciesToScan>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
             <plugin>
                  <artifactId>maven-checkstyle-plugin</artifactId>

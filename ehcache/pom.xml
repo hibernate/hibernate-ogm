@@ -113,6 +113,9 @@
                     <!-- Apache Lucene uses assertions which currently fail on JDK9: -->
                     <!-- not sure yet how that is going to be resolved, but it's not an OGM problem. -->
                     <enableAssertions>false</enableAssertions>
+                    <dependenciesToScan>
+                        <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+                    </dependenciesToScan>
                 </configuration>
             </plugin>
             <plugin>
@@ -122,9 +125,6 @@
             <plugin>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
