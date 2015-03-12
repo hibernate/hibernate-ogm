@@ -23,7 +23,6 @@ import org.hibernate.hql.ast.spi.predicate.RootPredicate;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jPropertyHelper;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryParameter;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryResolverDelegate;
-import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -103,15 +102,15 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	}
 
 	private String columnName(String entityType, List<String> propertyPath) {
-		if ( propertyHelper.isEmbedddedProperty( entityType, propertyPath ) ) {
-			return propertyHelper.getEmbeddeColumnName( entityType, StringHelper.join( propertyPath, "." ) );
+		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) ) {
+			return propertyHelper.getEmbeddeColumnName( entityType, propertyPath );
 		}
-		return propertyHelper.getColumnName( entityType, StringHelper.join( propertyPath, "." ) );
+		return propertyHelper.getColumnName( entityType, propertyPath );
 	}
 
 	private String alias(String entityType, List<String> propertyPath) {
 		String targetEntityAlias = resolverDelegate.findAliasForType( entityType );
-		if ( propertyHelper.isEmbedddedProperty( entityType, propertyPath ) ) {
+		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) ) {
 			return resolverDelegate.createAliasForEmbedded( targetEntityAlias, propertyPath );
 		}
 		return targetEntityAlias;

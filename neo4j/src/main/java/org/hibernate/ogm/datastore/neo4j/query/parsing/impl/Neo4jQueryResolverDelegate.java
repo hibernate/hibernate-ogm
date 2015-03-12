@@ -16,19 +16,26 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReference;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReferenceSource;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.QueryResolverDelegate;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 
+	private static final Log log = LoggerFactory.getLogger();
+
 	/**
 	 * Persister space: keep track of aliases and entity names.
 	 */
 	private final Map<String, String> aliasToEntityType = new HashMap<String, String>();
 	private final Map<String, String> aliases = new HashMap<String, String>();
+	private final Map<String, PropertyPath> aliasToPropertyPath = new HashMap<String, PropertyPath>();
+
 	private final Map<String, EmbeddedAliasTree> embeddedAliases = new HashMap<String, EmbeddedAliasTree>();
 	private int embeddedCounter = 0;
+	private String alias;
 
 	@Override
 	public void registerPersisterSpace(Tree entityName, Tree alias) {
@@ -42,33 +49,47 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 	}
 
 	@Override
+	public void registerJoinAlias(Tree alias, PropertyPath path) {
+		aliasToPropertyPath.put( alias.getText(), path );
+	}
+
+	@Override
 	public boolean isUnqualifiedPropertyReference() {
 		return true;
 	}
 
 	@Override
 	public PathedPropertyReferenceSource normalizeUnqualifiedPropertyReference(Tree property) {
-		if ( aliasToEntityType.containsKey( property.getText() ) ) {
-			return new PathedPropertyReference( property.getText(), null, true );
-		}
-		else {
-			return new PathedPropertyReference( property.getText(), null, false );
-		}
+		return new PathedPropertyReference( property.getText(), null, isAlias( property ) );
 	}
 
 	@Override
 	public boolean isPersisterReferenceAlias() {
-		return true;
+		return isEntityAlias( alias );
 	}
 
 	@Override
-	public PathedPropertyReferenceSource normalizeUnqualifiedRoot(Tree identifier382) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+	public PathedPropertyReferenceSource normalizeUnqualifiedRoot(Tree root) {
+		return new PathedPropertyReference( root.getText(), null, isAlias( root ) );
+	}
+
+	private boolean isAlias(Tree root) {
+		return isEntityAlias( root.getText() ) || aliasToPropertyPath.containsKey( root.getText() );
+	}
+
+	private boolean isEntityAlias(String alias) {
+		return aliasToEntityType.containsKey( alias );
 	}
 
 	@Override
-	public PathedPropertyReferenceSource normalizeQualifiedRoot(Tree identifier381) {
-		return new PathedPropertyReference( identifier381.getText(), null, true );
+	public PathedPropertyReferenceSource normalizeQualifiedRoot(Tree root) {
+		String entityNameForAlias = aliasToEntityType.get( root.getText() );
+
+		if ( entityNameForAlias == null ) {
+			throw log.getUnknownAliasException( root.getText() );
+		}
+
+		return new PathedPropertyReference( root.getText(), null, true );
 	}
 
 	@Override
@@ -99,7 +120,7 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 
 	@Override
 	public void pushFromStrategy(JoinType joinType, Tree assosiationFetchTree, Tree propertyFetchTree, Tree alias) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		this.alias = alias.getText();
 	}
 
 	@Override
