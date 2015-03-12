@@ -28,31 +28,31 @@ public class Neo4jComparisonPredicate extends ComparisonPredicate<StringBuilder>
 
 	@Override
 	protected StringBuilder getStrictlyLessQuery() {
-		return comparison( "<" );
+		return comparison( " < " );
 	}
 
 	@Override
 	protected StringBuilder getLessOrEqualsQuery() {
-		return comparison( "<=" );
+		return comparison( " <= " );
 	}
 
 	@Override
 	protected StringBuilder getEqualsQuery() {
-		return comparison( "=" );
+		return comparison( " = " );
 	}
 
 	private StringBuilder getNotEqualsQuery() {
-		return comparison( "<>" );
+		return comparison( " <> " );
 	}
 
 	@Override
 	protected StringBuilder getGreaterOrEqualsQuery() {
-		return comparison( ">=" );
+		return comparison( " >= " );
 	}
 
 	@Override
 	protected StringBuilder getStrictlyGreaterQuery() {
-		return comparison( ">" );
+		return comparison( " > " );
 	}
 
 	@Override
