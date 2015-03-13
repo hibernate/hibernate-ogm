@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
@@ -29,28 +28,34 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 	/**
 	 * Persister space: keep track of aliases and entity names.
 	 */
-	private final Map<String, String> aliasToEntityType = new HashMap<String, String>();
-	private final Map<String, String> aliases = new HashMap<String, String>();
-	private final Map<String, PropertyPath> aliasToPropertyPath = new HashMap<String, PropertyPath>();
+	private final Map<String, String> entityNameByAlias = new HashMap<String, String>();
+	private final Map<String, PropertyPath> propertyPathByAlias = new HashMap<String, PropertyPath>();
 
-	private final Map<String, EmbeddedAliasTree> embeddedAliases = new HashMap<String, EmbeddedAliasTree>();
-	private int embeddedCounter = 0;
-	private String alias;
+	private final AliasResolver aliasResolver;
+
+	private String currentAlias;
+
+	public Neo4jQueryResolverDelegate(AliasResolver aliasResolver) {
+		this.aliasResolver = aliasResolver;
+	}
 
 	@Override
 	public void registerPersisterSpace(Tree entityName, Tree alias) {
-		aliases.put( entityName.getText(), alias.getText() );
-		String put = aliasToEntityType.put( alias.getText(), entityName.getText() );
+		String put = entityNameByAlias.put( alias.getText(), entityName.getText() );
 		if ( put != null && !put.equalsIgnoreCase( entityName.getText() ) ) {
 			throw new UnsupportedOperationException(
 					"Alias reuse currently not supported: alias " + alias.getText()
 					+ " already assigned to type " + put );
 		}
+		aliasResolver.registerEntityAlias( entityName.getText(), alias.getText() );
 	}
 
 	@Override
 	public void registerJoinAlias(Tree alias, PropertyPath path) {
-		aliasToPropertyPath.put( alias.getText(), path );
+		PropertyPath put = propertyPathByAlias.put( alias.getText(), path );
+		if ( put != null && !put.equals( path ) ) {
+			throw new UnsupportedOperationException( "Alias reuse currently not supported: alias " + alias + " already assigned to type " + put );
+		}
 	}
 
 	@Override
@@ -65,7 +70,7 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 
 	@Override
 	public boolean isPersisterReferenceAlias() {
-		return isEntityAlias( alias );
+		return isEntityAlias( currentAlias );
 	}
 
 	@Override
@@ -74,16 +79,16 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 	}
 
 	private boolean isAlias(Tree root) {
-		return isEntityAlias( root.getText() ) || aliasToPropertyPath.containsKey( root.getText() );
+		return isEntityAlias( root.getText() ) || propertyPathByAlias.containsKey( root.getText() );
 	}
 
 	private boolean isEntityAlias(String alias) {
-		return aliasToEntityType.containsKey( alias );
+		return entityNameByAlias.containsKey( alias );
 	}
 
 	@Override
 	public PathedPropertyReferenceSource normalizeQualifiedRoot(Tree root) {
-		String entityNameForAlias = aliasToEntityType.get( root.getText() );
+		String entityNameForAlias = entityNameByAlias.get( root.getText() );
 
 		if ( entityNameForAlias == null ) {
 			throw log.getUnknownAliasException( root.getText() );
@@ -120,7 +125,7 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 
 	@Override
 	public void pushFromStrategy(JoinType joinType, Tree assosiationFetchTree, Tree propertyFetchTree, Tree alias) {
-		this.alias = alias.getText();
+		this.currentAlias = alias.getText();
 	}
 
 	@Override
@@ -136,90 +141,5 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 	@Override
 	public void propertyPathCompleted(PropertyPath path) {
 		//nothing to do
-	}
-
-	public String findAliasForType(String entityType) {
-		return aliases.get( entityType );
-	}
-
-	/**
-	 * Given the path to an embedded property, it will create an alias to use in the query for the embedded containing
-	 * the property.
-	 * <p>
-	 * The alias will be saved and can be returned using the method {@link #findAliasForEmbedded(String, List)}.
-	 * <p>
-	 * For example, using n as entity alias and [embedded, anotherEmbedded, property] as path to the property will
-	 * return "n_2" as alias for "n.embedded.anotherEmbedded".
-	 *
-	 * @param entityAlias the alias of the entity that contains the embedded
-	 * @param propertyPathWithoutAlias the path to the property without the alias
-	 * @return the alias of the embedded containing the property
-	 */
-	public String createAliasForEmbedded(String entityAlias, List<String> propertyPathWithoutAlias) {
-		EmbeddedAliasTree embeddedAlias = embeddedAliases.get( entityAlias );
-		if ( embeddedAlias == null ) {
-			embeddedAlias = new EmbeddedAliasTree( entityAlias, entityAlias );
-			embeddedAliases.put( entityAlias, embeddedAlias );
-		}
-		for ( int i = 0; i < propertyPathWithoutAlias.size() - 1; i++ ) {
-			String name = propertyPathWithoutAlias.get( i );
-			EmbeddedAliasTree child = embeddedAlias.findChild( name );
-			if ( child == null ) {
-				embeddedCounter++;
-				String childAlias = "_" + entityAlias + embeddedCounter;
-				child = new EmbeddedAliasTree( childAlias, name );
-				embeddedAlias.addChild( child );
-			}
-			embeddedAlias = child;
-		}
-		return embeddedAlias.getAlias();
-	}
-
-	/**
-	 * Given the alias of the entity and the path to the embedded properties it will return the alias
-	 * of the embedded component containing the property.
-	 *
-	 * @see #createAliasForEmbedded(String, List)
-	 * @param entityAlias the alias of the entity that contains the embedded
-	 * @param propertyPathWithoutAlias the path to the property without the alias
-	 * @return the alias of the embedded containing the property or null
-	 */
-	public String findAliasForEmbedded(String entityAlias, List<String> propertyPathWithoutAlias) {
-		EmbeddedAliasTree aliasTree = embeddedAliases.get( entityAlias );
-		if ( aliasTree == null ) {
-			return null;
-		}
-		EmbeddedAliasTree embedded = aliasTree;
-		for ( int i = 0; i < propertyPathWithoutAlias.size() - 1; i++ ) {
-			embedded = embedded.findChild( propertyPathWithoutAlias.get( i ) );
-			if ( embedded == null ) {
-				return null;
-			}
-		}
-		return embedded.getAlias();
-	}
-
-	/**
-	 * Given the alias of the entity it will return a tree structure containing all the aliases for the embedded
-	 * properties of the entity.
-	 * <p>
-	 * The tree has the entity alias as root and the embedded alias as children.
-	 * For example, a path to two properties like:
-	 * <ol>
-	 * <li>n.first.anotherEmbedded</li>
-	 * <li>n.second.anotherEmbedded</li>
-	 * </ol>
-	 *
-	 * Might be represented with the following structure:
-	 * <pre>
-	 * n (alias = n)|- first (alias = _n1)  -- anotherEmbedded (alias = _n2)
-	 *              |
-	 *              -- second (alias = _n3) -- anotherEmbedded (alias = _n4)
-	 * </pre>
-	 * @param entityAlias the alias of the entity that contains the embedded
-	 * @return the corresponding {@link EmbeddedAliasTree} or null
-	 */
-	public EmbeddedAliasTree getAliasTree(String entityAlias) {
-		return embeddedAliases.get( entityAlias );
 	}
 }
