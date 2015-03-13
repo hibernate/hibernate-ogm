@@ -20,9 +20,9 @@ import org.hibernate.hql.ast.spi.predicate.NegationPredicate;
 import org.hibernate.hql.ast.spi.predicate.PredicateFactory;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.AliasResolver;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jPropertyHelper;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryParameter;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryResolverDelegate;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -30,12 +30,12 @@ import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryResolverDe
 public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	private final Neo4jPropertyHelper propertyHelper;
-	private final Neo4jQueryResolverDelegate resolverDelegate;
+	private final AliasResolver embeddedAliasResolver;
 	private final StringBuilder builder;
 
-	public Neo4jPredicateFactory(Neo4jPropertyHelper propertyHelper, Neo4jQueryResolverDelegate resolverDelegate) {
+	public Neo4jPredicateFactory(Neo4jPropertyHelper propertyHelper, AliasResolver embeddedAliasResolver) {
 		this.propertyHelper = propertyHelper;
-		this.resolverDelegate = resolverDelegate;
+		this.embeddedAliasResolver = embeddedAliasResolver;
 		this.builder = new StringBuilder();
 	}
 
@@ -109,9 +109,9 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	}
 
 	private String alias(String entityType, List<String> propertyPath) {
-		String targetEntityAlias = resolverDelegate.findAliasForType( entityType );
+		String targetEntityAlias = embeddedAliasResolver.findAliasForType( entityType );
 		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) ) {
-			return resolverDelegate.createAliasForEmbedded( targetEntityAlias, propertyPath );
+			return embeddedAliasResolver.createAliasForEmbedded( targetEntityAlias, propertyPath );
 		}
 		return targetEntityAlias;
 	}

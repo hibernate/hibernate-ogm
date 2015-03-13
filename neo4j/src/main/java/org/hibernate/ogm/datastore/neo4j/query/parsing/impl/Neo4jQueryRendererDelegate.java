@@ -34,23 +34,21 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegate<StringBuilder, Neo4jQueryParsingResult> {
 
 	private final Neo4jPropertyHelper propertyHelper;
-	private final Neo4jQueryResolverDelegate resolverDelegate;
 	private final SessionFactoryImplementor sessionFactory;
 	private List<OrderByClause> orderByExpressions;
 	private final List<String> embeddedPropertyProjection;
+	private final AliasResolver embeddedAliasResolver;
 
-	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, Neo4jQueryResolverDelegate resolverDelegate, EntityNamesResolver entityNames,
-			Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
-		super( entityNames, singleEntityQueryBuilder( propertyHelper, resolverDelegate ), namedParameters );
+	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, AliasResolver embeddedAliasResolver, EntityNamesResolver entityNames, Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
+		super( entityNames, singleEntityQueryBuilder( propertyHelper, embeddedAliasResolver ), namedParameters );
 		this.sessionFactory = sessionFactory;
-		this.resolverDelegate = resolverDelegate;
+		this.embeddedAliasResolver = embeddedAliasResolver;
 		this.propertyHelper = propertyHelper;
 		this.embeddedPropertyProjection = new ArrayList<String>();
 	}
 
-	private static SingleEntityQueryBuilder<StringBuilder> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper,
-			Neo4jQueryResolverDelegate resolverDelegate) {
-		return SingleEntityQueryBuilder.getInstance( new Neo4jPredicateFactory( propertyHelper, resolverDelegate ), propertyHelper );
+	private static SingleEntityQueryBuilder<StringBuilder> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper, AliasResolver embeddedAliasResolver) {
+		return SingleEntityQueryBuilder.getInstance( new Neo4jPredicateFactory( propertyHelper, embeddedAliasResolver ), propertyHelper );
 	}
 
 	private EntityKeyMetadata getKeyMetaData(Class<?> entityType) {
@@ -60,7 +58,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 
 	@Override
 	public Neo4jQueryParsingResult getResult() {
-		String targetAlias = resolverDelegate.findAliasForType( targetTypeName );
+		String targetAlias = embeddedAliasResolver.findAliasForType( targetTypeName );
 		String label = getKeyMetaData( targetType ).getTable();
 		StringBuilder queryBuilder = new StringBuilder();
 		match( queryBuilder, targetAlias, label );
@@ -77,7 +75,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	}
 
 	private void optionalMatch(StringBuilder queryBuilder, String targetAlias) {
-		EmbeddedAliasTree node = resolverDelegate.getAliasTree( targetAlias );
+		EmbeddedAliasTree node = embeddedAliasResolver.getAliasTree( targetAlias );
 		if ( node != null ) {
 			for ( EmbeddedAliasTree child : node.getChildren() ) {
 				StringBuilder optionalMatch = new StringBuilder( " OPTIONAL MATCH " );
@@ -155,7 +153,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 			else if ( isNestedProperty( propertyPath ) ) {
 				if ( propertyHelper.isEmbeddedProperty( targetTypeName, propertyPath ) ) {
 					String entityAlias = propertyPath.getNodes().get( 0 ).getName();
-					String embeddedAlias = resolverDelegate.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias() );
+					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias() );
 					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() );
 					String projection = identifier( embeddedAlias, columnName );
 					projections.add( projection );
@@ -192,7 +190,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 			orderByExpressions = new ArrayList<OrderByClause>();
 		}
 		String columnName = propertyHelper.getColumnName( targetType, propertyPath.getNodeNamesWithoutAlias() );
-		String alias = resolverDelegate.findAliasForType( targetTypeName );
+		String alias = embeddedAliasResolver.findAliasForType( targetTypeName );
 
 		OrderByClause order = new OrderByClause( alias, columnName, isAscending );
 		orderByExpressions.add( order );
