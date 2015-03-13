@@ -1,6 +1,25 @@
 Hibernate OGM Changelog
 =======================
 
+4.2.0.Beta1 (13-03-2015)
+-------------------------
+
+** Improvement
+    * [OGM-752] - Require Maven 3.2.3 and improve some poms
+
+** New Feature
+    * [OGM-465] - Provide API for retrieving a log of all executed/failed operations of a transaction cycle
+    * [OGM-725] - Add support for Fongo to MongoDB backend
+    * [OGM-778] - Run TCK tests directly from test JAR rather than unpacking the class files
+    * [OGM-692] - [Neo4j] Add support for references to embeddable properties in JP-QL
+    * [OGM-693] - [JP-QL] Add support for references to collection of embeddables in predicates
+
+** Task   
+    * [OGM-747] - Use Java 7 as mininum JDK baseline
+    * [OGM-748] - OgmSessionFactory should extend SessionFactory rather than SessionFactoryImplementor
+    * [OGM-753] - Provide build options to get tests to work in JDK9
+
+
 4.1.3.Final (13-03-2015)
 -------------------------
 
