@@ -126,12 +126,12 @@ catch (Exception e) {
 }
 ----
 
-Inside a JTA environment, either the container demarcate the transaction for you
-and Hibernate OGM will transparently joins that transaction and flush at commit time.
+Inside a JTA environment, either the container demarcates the transaction for you
+and Hibernate OGM will transparently join that transaction and flush at commit time.
 Or you need to manually demarcate the transaction.
 In the latter case,
 it is best to start / stop the transaction before retrieving the +Session+ or +EntityManager+
-as show below.
+as shown below.
 The alternative is to call the +EntityManager.joinTransaction()+ once the transaction has started.
 
 [source, JAVA]
@@ -148,6 +148,108 @@ EntityManager entityManager = entityManagerFactory.createEntityManager();
 transactionManager.commit(); // will flush changes to the datastore
 ----
 ====
+
+[[ogm-api-error-handler]]
+==== Getting notified upon errors during application of changes
+
+[NOTE]
+====
+The error handler API described in the following is an experimental feature as of version {hibernate-ogm-version}.
+It will be enriched with additional features over time.
+This might require changes to existing method signatures
+and thus may break code using a previous version of the API.
+
+Please let us know about your usage of the API and your wishes regarding futher capabilities!
+====
+
+If an error occurs during flushing a set of changes,
+some data changes may already have been applied in the datastore.
+If the store is non-transactional, there is no way to rollback (undo) these changes.
+In this case it is desirable to know which changes have been applied and which ones failed
+in order to take appropriate action.
+
+Hibernate OGM provides an error handler API for this purpose.
+By implementing the +org.hibernate.ogm.failure.ErrorHandler+ interface, you will be notified if
+
+* an interaction between the Hibernate OGM engine and the grid dialect failed
+* a rollback of the current transaction was triggered
+
+Use cases for the error handler API include:
+
+* Logging all applied operations
+* Retrying a failed operation e.g. after timeouts
+* Making an attempt to compensate (apply an inverse operation) applied changes
+
+In its current form the API lays the ground for manually performing these and similar tasks,
+but we envision a more automated approach in future versions,
+e.g. for automatic retries of failed operations.
+
+Let's take a look at an example:
+
+.Custom +ErrorHandler+ implementation
+====
+[source, JAVA]
+----
+public class ExampleErrorHandler extends BaseErrorHandler {
+
+    @Override
+    public void onRollback(RollbackContext context) {
+        // write all applied operations to a log file
+        for ( GridDialectOperation appliedOperation : context.getAppliedGridDialectOperations() ) {
+            switch ( appliedOperation.getType() ) {
+                case INSERT_TUPLE:
+                    EntityKeyMetadata entityKeyMetadata = appliedOperation.as( InsertTuple.class ).getEntityKeyMetadata();
+                    Tuple tuple = appliedOperation.as( InsertTuple.class ).getTuple();
+
+                    // write EKM and tuple to log file...
+                    break;
+                case REMOVE_TUPLE:
+                    // ...
+                    break;
+                case ...
+                    // ...
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public ErrorHandlingStrategy onFailedGridDialectOperation(FailedGridDialectOperationContext context) {
+        // Ignore this exception and continue
+        if ( context.getException() instanceof TupleAlreadyExistsException ) {
+            GridDialectOperation failedOperation = context.getFailedOperation();
+            // write to log ...
+
+            return ErrorHandlingStrategy.CONTINUE;
+        }
+        // But abort on all others
+        else {
+            return ErrorHandlingStrategy.ABORT;
+        }
+    }
+}
+----
+====
+
+The +onRollback()+ method - which is called when the transaction is rolled back (either by the user or by the container) - shows how to iterate over all methods applied prior to the rollback, examine their specific type and e.g. write them to a log file.
+
+The +onFailedGridDialectOperation()+ method lets you decide whether to continue with the application of the changes of the current flush cycle or abort it. If +ABORT+ is returned, the causing exception will be re-thrown, eventually causing the current transaction to be rolled back. If +CONTINUE+ is returned, that exception will be ignored, causing the current transaction to continue.
+
+The decision whether to abort or continue can be based on the specific exception type or on the grid dialect operation which caused the failure.
+In the example all exceptions of type +TupleAlreadyExistsException+ are ignored, whereas all other exceptions cause the current flush cycle to be aborted. You also could react to datastore-specific exceptions such as MongoDB's +MongoTimeoutException+, if needed.
+
+Note that by extending the provided base class +BaseErrorHandler+ rather than implementing the interface directly,
+you only need to implement those callback methods you are actually interested in.
+The implementation will also not break if further callback methods are added to the +ErrorHandler+ interface in future releases.
+
+Having implemented the error handler, it needs to be registered with Hibernate OGM.
+To do so, specify it using the property +hibernate.ogm.error_handler+,
+e.g. as a persistence unit property in [filename]+META-INF/persistence.xml+:
+
+[source, XML]
+----
+<property name="hibernate.ogm.error_handler" value="com.example.ExampleErrorHandler"/>
+----
 
 === SPIs
 

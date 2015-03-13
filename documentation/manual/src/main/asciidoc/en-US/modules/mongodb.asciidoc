@@ -71,6 +71,8 @@ hibernate.ogm.datastore.password::
 The password used to connect to the MongoDB server.
 This property has no default value.
 This property is ignored if the username isn't specified.
+hibernate.ogm.error_handler::
+The fully-qualified class name, class object or an instance of +ErrorHandler+ to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
 hibernate.ogm.mongodb.connection_timeout::
 Defines the timeout used by the driver
 when the connection to the MongoDB instance is initiated.
