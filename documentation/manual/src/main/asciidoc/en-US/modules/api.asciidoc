@@ -233,7 +233,10 @@ public class ExampleErrorHandler extends BaseErrorHandler {
 
 The +onRollback()+ method - which is called when the transaction is rolled back (either by the user or by the container) - shows how to iterate over all methods applied prior to the rollback, examine their specific type and e.g. write them to a log file.
 
-The +onFailedGridDialectOperation()+ method lets you decide whether to continue with the application of the changes of the current flush cycle or abort it. If +ABORT+ is returned, the causing exception will be re-thrown, eventually causing the current transaction to be rolled back. If +CONTINUE+ is returned, that exception will be ignored, causing the current transaction to continue.
+The +onFailedGridDialectOperation()+ method is called for each specific datastore operation failing.
+It lets you decide whether to continue ignoring the failure, retry or abort the operation.
+If +ABORT+ is returned, the causing exception will be re-thrown, eventually causing the current transaction to be rolled back.
+If +CONTINUE+ is returned, that exception will be ignored, causing the current transaction to continue.
 
 The decision whether to abort or continue can be based on the specific exception type or on the grid dialect operation which caused the failure.
 In the example all exceptions of type +TupleAlreadyExistsException+ are ignored, whereas all other exceptions cause the current flush cycle to be aborted. You also could react to datastore-specific exceptions such as MongoDB's +MongoTimeoutException+, if needed.
