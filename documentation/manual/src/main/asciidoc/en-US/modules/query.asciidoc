@@ -63,9 +63,6 @@ You can make use of the following JP-QL constructs:
 
 In particular and of notice, what is not supported is:
 
-* refer to an embedded object property https://hibernate.atlassian.net/browse/OGM-692[OGM-692]
-  in a predicate
-* refer to a collection of embedded objects https://hibernate.atlassian.net/browse/OGM-693[OGM-693]
 * cross entity joins
 * JP-QL functions in particular aggregation functions like +count+
 * JP-QL update and delete queries
