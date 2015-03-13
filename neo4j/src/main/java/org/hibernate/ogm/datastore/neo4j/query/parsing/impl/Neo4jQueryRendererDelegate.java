@@ -34,23 +34,21 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegate<StringBuilder, Neo4jQueryParsingResult> {
 
 	private final Neo4jPropertyHelper propertyHelper;
-	private final Neo4jQueryResolverDelegate resolverDelegate;
 	private final SessionFactoryImplementor sessionFactory;
 	private List<OrderByClause> orderByExpressions;
 	private final List<String> embeddedPropertyProjection;
+	private final AliasResolver embeddedAliasResolver;
 
-	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, Neo4jQueryResolverDelegate resolverDelegate, EntityNamesResolver entityNames,
-			Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
-		super( entityNames, singleEntityQueryBuilder( propertyHelper, resolverDelegate ), namedParameters );
+	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, AliasResolver embeddedAliasResolver, EntityNamesResolver entityNames, Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
+		super( entityNames, singleEntityQueryBuilder( propertyHelper, embeddedAliasResolver ), namedParameters );
 		this.sessionFactory = sessionFactory;
-		this.resolverDelegate = resolverDelegate;
+		this.embeddedAliasResolver = embeddedAliasResolver;
 		this.propertyHelper = propertyHelper;
 		this.embeddedPropertyProjection = new ArrayList<String>();
 	}
 
-	private static SingleEntityQueryBuilder<StringBuilder> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper,
-			Neo4jQueryResolverDelegate resolverDelegate) {
-		return SingleEntityQueryBuilder.getInstance( new Neo4jPredicateFactory( propertyHelper, resolverDelegate ), propertyHelper );
+	private static SingleEntityQueryBuilder<StringBuilder> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper, AliasResolver embeddedAliasResolver) {
+		return SingleEntityQueryBuilder.getInstance( new Neo4jPredicateFactory( propertyHelper, embeddedAliasResolver ), propertyHelper );
 	}
 
 	private EntityKeyMetadata getKeyMetaData(Class<?> entityType) {
@@ -60,7 +58,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 
 	@Override
 	public Neo4jQueryParsingResult getResult() {
-		String targetAlias = resolverDelegate.findAliasForType( targetTypeName );
+		String targetAlias = embeddedAliasResolver.findAliasForType( targetTypeName );
 		String label = getKeyMetaData( targetType ).getTable();
 		StringBuilder queryBuilder = new StringBuilder();
 		match( queryBuilder, targetAlias, label );
@@ -77,7 +75,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	}
 
 	private void optionalMatch(StringBuilder queryBuilder, String targetAlias) {
-		EmbeddedAliasTree node = resolverDelegate.getAliasTree( targetAlias );
+		EmbeddedAliasTree node = embeddedAliasResolver.getAliasTree( targetAlias );
 		if ( node != null ) {
 			for ( EmbeddedAliasTree child : node.getChildren() ) {
 				StringBuilder optionalMatch = new StringBuilder( " OPTIONAL MATCH " );
@@ -150,13 +148,13 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	public void setPropertyPath(PropertyPath propertyPath) {
 		if ( status == Status.DEFINING_SELECT ) {
 			if ( isSimpleProperty( propertyPath ) ) {
-				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
+				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
 			}
 			else if ( isNestedProperty( propertyPath ) ) {
-				if ( propertyHelper.isEmbedddedProperty( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) ) {
+				if ( propertyHelper.isEmbeddedProperty( targetTypeName, propertyPath ) ) {
 					String entityAlias = propertyPath.getNodes().get( 0 ).getName();
-					String embeddedAlias = resolverDelegate.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias() );
-					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() );
+					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias() );
+					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() );
 					String projection = identifier( embeddedAlias, columnName );
 					projections.add( projection );
 					embeddedPropertyProjection.add( projection );
@@ -191,8 +189,8 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		if ( orderByExpressions == null ) {
 			orderByExpressions = new ArrayList<OrderByClause>();
 		}
-		String columnName = propertyHelper.getColumnName( targetType, propertyPath.asStringPathWithoutAlias() );
-		String alias = resolverDelegate.findAliasForType( targetTypeName );
+		String columnName = propertyHelper.getColumnName( targetType, propertyPath.getNodeNamesWithoutAlias() );
+		String alias = embeddedAliasResolver.findAliasForType( targetTypeName );
 
 		OrderByClause order = new OrderByClause( alias, columnName, isAscending );
 		orderByExpressions.add( order );
@@ -242,13 +240,15 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 
 	private void addComparisonPredicate(String comparativePredicate, Type comparisonType) {
 		Object comparisonValue = fromNamedQuery( comparativePredicate );
-		builder.addComparisonPredicate( propertyPath.getNodeNamesWithoutAlias(), comparisonType, comparisonValue );
+		List<String> property = resolveAlias( propertyPath );
+		builder.addComparisonPredicate( property, comparisonType, comparisonValue );
 	}
 
 	@Override
 	public void predicateIn(List<String> list) {
 		List<Object> values = fromNamedQuery( list );
-		builder.addInPredicate( propertyPath.getNodeNamesWithoutAlias(), values );
+		List<String> property = resolveAlias( propertyPath );
+		builder.addInPredicate( property, values );
 	}
 
 	@Override
@@ -256,18 +256,21 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		Object lowerComparisonValue = fromNamedQuery( lower );
 		Object upperComparisonValue = fromNamedQuery( upper );
 
-		builder.addRangePredicate( propertyPath.getNodeNamesWithoutAlias(), lowerComparisonValue, upperComparisonValue );
+		List<String> property = resolveAlias( propertyPath );
+		builder.addRangePredicate( property, lowerComparisonValue, upperComparisonValue );
 	}
 
 	@Override
 	public void predicateLike(String patternValue, Character escapeCharacter) {
 		Object pattern = fromNamedQuery( patternValue );
-		builder.addLikePredicate( propertyPath.getNodeNamesWithoutAlias(), (String) pattern, escapeCharacter );
+		List<String> property = resolveAlias( propertyPath );
+		builder.addLikePredicate( property, (String) pattern, escapeCharacter );
 	}
 
 	@Override
 	public void predicateIsNull() {
-		builder.addIsNullPredicate( propertyPath.getNodeNamesWithoutAlias() );
+		List<String> property = resolveAlias( propertyPath );
+		builder.addIsNullPredicate( property );
 	}
 
 	private Object fromNamedQuery(String comparativePredicate) {
