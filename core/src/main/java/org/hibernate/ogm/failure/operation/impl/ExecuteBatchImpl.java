@@ -6,9 +6,11 @@
  */
 package org.hibernate.ogm.failure.operation.impl;
 
+import java.util.List;
+
+import org.hibernate.ogm.failure.operation.ExecuteBatch;
 import org.hibernate.ogm.failure.operation.GridDialectOperation;
 import org.hibernate.ogm.failure.operation.OperationType;
-import org.hibernate.ogm.failure.operation.ExecuteBatch;
 
 /**
  * @author Gunnar Morling
@@ -16,7 +18,10 @@ import org.hibernate.ogm.failure.operation.ExecuteBatch;
  */
 public class ExecuteBatchImpl implements ExecuteBatch {
 
-	public ExecuteBatchImpl() {
+	private final List<GridDialectOperation> operations;
+
+	public ExecuteBatchImpl(List<GridDialectOperation> operations) {
+		this.operations = operations;
 	}
 
 	@Override
@@ -31,5 +36,10 @@ public class ExecuteBatchImpl implements ExecuteBatch {
 	@Override
 	public OperationType getType() {
 		return OperationType.EXECUTE_BATCH;
+	}
+
+	@Override
+	public List<GridDialectOperation> getOperations() {
+		return operations;
 	}
 }

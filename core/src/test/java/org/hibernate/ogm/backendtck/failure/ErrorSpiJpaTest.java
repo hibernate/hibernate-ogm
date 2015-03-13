@@ -94,7 +94,14 @@ public class ErrorSpiJpaTest  extends JpaTestCase {
 		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
-			assertThat( appliedOperations.next() ).isInstanceOf( ExecuteBatch.class );
+			GridDialectOperation operation = appliedOperations.next();
+			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
+
+			ExecuteBatch batch = operation.as( ExecuteBatch.class );
+			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
+			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( batchedOperations.hasNext() ).isFalse();
 		}
 		else {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
