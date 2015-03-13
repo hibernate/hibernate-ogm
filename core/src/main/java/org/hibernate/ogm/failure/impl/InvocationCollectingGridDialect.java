@@ -7,8 +7,15 @@
 package org.hibernate.ogm.failure.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
@@ -55,8 +62,42 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 
 	@Override
 	public void executeBatch(OperationsQueue queue) {
-		super.executeBatch( queue );
-		handleAppliedOperation( new ExecuteBatchImpl() );
+		OperationsQueue newQueue = new OperationsQueue();
+		List<GridDialectOperation> operations = new ArrayList<>();
+
+		if ( !queue.isClosed() ) {
+			Operation operation = queue.poll();
+
+			// TODO OGM-766 Avoid the looping + re-creation
+			while ( operation != null ) {
+				newQueue.add( operation );
+
+				if ( operation instanceof InsertOrUpdateTupleOperation ) {
+					InsertOrUpdateTupleOperation insertOrUpdateTuple = (InsertOrUpdateTupleOperation) operation;
+					operations.add( new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuple() ) );
+				}
+				else if ( operation instanceof RemoveTupleOperation ) {
+					RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
+					operations.add( new RemoveTupleImpl( removeTuple.getEntityKey() ) );
+				}
+				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+					InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+					operations.add( new InsertOrUpdateAssociationImpl(
+							insertOrUpdateAssociationOperation.getAssociationKey(),
+							insertOrUpdateAssociationOperation.getAssociation() )
+					);
+				}
+				else if ( operation instanceof RemoveAssociationOperation ) {
+					RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+					operations.add( new RemoveAssociationImpl( removeAssociationOperation.getAssociationKey() ) );
+				}
+
+				operation = queue.poll();
+			}
+		}
+
+		super.executeBatch( newQueue );
+		handleAppliedOperation( new ExecuteBatchImpl( operations ) );
 	}
 
 	@Override
