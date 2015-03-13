@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.util.Iterator;
+
 /**
  * Utility functions for dealing with strings.
  *
@@ -57,21 +59,23 @@ public class StringHelper {
 		if ( iterable == null ) {
 			return null;
 		}
+		return join( iterable.iterator(), separator );
+	}
 
-		StringBuilder sb = new StringBuilder();
-		boolean isFirst = true;
-
-		for ( Object object : iterable ) {
-			if ( !isFirst ) {
-				sb.append( separator );
-			}
-			else {
-				isFirst = false;
-			}
-
-			sb.append( object );
+	public static String join(Iterator<?> iterator, String separator) {
+		if ( iterator == null ) {
+			return null;
 		}
 
-		return sb.toString();
+		StringBuilder sb = new StringBuilder();
+		while ( iterator.hasNext() ) {
+			sb.append( separator );
+			sb.append( iterator.next() );
+		}
+
+		if ( sb.length() > 0 ) {
+			return sb.substring( separator.length() );
+		}
+		return "";
 	}
 }
