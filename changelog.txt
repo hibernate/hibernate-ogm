@@ -1,6 +1,34 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.3.Final (13-03-2015)
+-------------------------
+
+** Bug
+    * [OGM-265] - MongoDB throws an exception when updating an entity that is an inner class
+    * [OGM-412] - Make sure OGM pulses the transaction coordinator like ORM
+    * [OGM-665] - Integration tests cannot be built on Windows
+    * [OGM-749] - [bonus issue] Write a script to extract the release notes
+    * [OGM-764] - The regex pattern to validate trailing empty lines is broken on Windows
+    * [OGM-765] - The PackagingRule test helper is leaking file handlers and preventing test cleanup
+
+** Improvement
+    * [OGM-171] - Make Hibernate Search query use FIND_BY_ID instead of QUERY as we don't implement Criteria
+    * [OGM-755] - [Neo4J] Disable Cypher queries log
+    * [OGM-757] - Document purpose of InternalProperties#OGM_ON
+    * [OGM-761] - Clarify need to download the Hibernate Search modules separately
+
+** New Feature
+    * [OGM-718] - Make sure RESOURCE_LOCAL persistence unit do not require a transaction manager
+
+** Task
+    * [OGM-758] - Several testing resources are duplicated (ambiguous) on classpath during integration tests
+    * [OGM-759] - Upgrade to Hibernate Search 5.1.0.Final
+    * [OGM-760] - Upgrade to Infinispan 7.1.1.Final
+    * [OGM-762] - Composite IDs used in tests should have an equals and hashcode defined
+    * [OGM-772] - Rename SchemaInitializingObserver as SchemaDefiningObserver
+
+
 4.1.2.Final (27-01-2015)
 -------------------------
 
