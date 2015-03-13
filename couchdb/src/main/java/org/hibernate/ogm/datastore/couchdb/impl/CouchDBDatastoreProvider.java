@@ -82,6 +82,11 @@ public class CouchDBDatastoreProvider extends BaseDatastoreProvider implements S
 		return CouchDBSchemaSchemaDefiner.class;
 	}
 
+	@Override
+	public boolean allowsTransactionEmulation() {
+		return true;
+	}
+
 	/**
 	 * Provides an instance of CouchDBDatastore
 	 *
