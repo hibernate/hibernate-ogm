@@ -8,9 +8,11 @@ package org.hibernate.ogm.failure.operation;
 
 import java.util.List;
 
+import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+
 /**
  * Represents one execution of
- * {@link BatchableGridDialect#executeBatch(org.hibernate.ogm.dialect.batch.spi.OperationsQueue).
+ * {@link BatchableGridDialect#executeBatch(org.hibernate.ogm.dialect.batch.spi.OperationsQueue)}.
  *
  * @author Gunnar Morling
  *

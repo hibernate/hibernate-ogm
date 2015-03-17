@@ -23,6 +23,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.exception.impl.Exceptions;
+import org.hibernate.ogm.failure.ErrorHandler;
 import org.hibernate.ogm.failure.ErrorHandlingStrategy;
 import org.hibernate.ogm.failure.operation.CreateAssociationWithKey;
 import org.hibernate.ogm.failure.operation.CreateTuple;

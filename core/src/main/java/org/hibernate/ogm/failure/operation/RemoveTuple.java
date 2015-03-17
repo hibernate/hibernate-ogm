@@ -6,15 +6,16 @@
  */
 package org.hibernate.ogm.failure.operation;
 
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * Represents one execution of
- * {@link GridDialect#removeTuple(EntityKey, org.hibernate.ogm.dialect.spi.TupleContext).
+ * {@link GridDialect#removeTuple(EntityKey, org.hibernate.ogm.dialect.spi.TupleContext)}.
  *
  * @author Gunnar Morling
  */
-// TODO Expose previous state?
+// TODO OGM-777 Expose previous state?
 public interface RemoveTuple extends GridDialectOperation {
 
 	EntityKey getEntityKey();

@@ -6,15 +6,16 @@
  */
 package org.hibernate.ogm.failure.operation;
 
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 
 /**
  * Represents one execution of
- * {@link GridDialect#removeAssociation(AssociationKey, org.hibernate.ogm.dialect.spi.AssociationContext).
+ * {@link GridDialect#removeAssociation(AssociationKey, org.hibernate.ogm.dialect.spi.AssociationContext)}.
  *
  * @author Gunnar Morling
  */
-// TODO Expose previous state?
+// TODO OGM-777 Expose previous state?
 public interface RemoveAssociation extends GridDialectOperation {
 
 	AssociationKey getAssociationKey();

@@ -6,12 +6,13 @@
  */
 package org.hibernate.ogm.failure.operation;
 
+import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Represents one execution of
- * {@link IdentityColumnAwareGridDialect#insertTuple(EntityKeyMetadata, Tuple, org.hibernate.ogm.dialect.spi.TupleContext).
+ * {@link IdentityColumnAwareGridDialect#insertTuple(EntityKeyMetadata, Tuple, org.hibernate.ogm.dialect.spi.TupleContext)}.
  *
  * @author Gunnar Morling
  */
