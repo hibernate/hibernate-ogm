@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.config.internal.ConfigurationServiceInitiator;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
@@ -94,7 +93,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 			return;
 		}
 		serviceRegistryBuilder.addInitiator( OgmSessionFactoryServiceRegistryFactoryInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( ConfigurationServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmConnectionProviderInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE);
