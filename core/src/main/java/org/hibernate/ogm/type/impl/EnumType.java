@@ -36,6 +36,10 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 		isOrdinal = isOrdinal( coreEnumType.sqlTypes()[0] );
 	}
 
+	public boolean isOrdinal() {
+		return isOrdinal;
+	}
+
 	@Override
 	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
