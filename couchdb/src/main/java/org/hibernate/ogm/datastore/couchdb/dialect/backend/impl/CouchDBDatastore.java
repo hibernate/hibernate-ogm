@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.backend.impl;
 
+import static org.hibernate.ogm.datastore.document.util.impl.Identifier.createSourceId;
+
 import java.util.List;
 
 import javax.ws.rs.ProcessingException;
@@ -449,23 +451,10 @@ public class CouchDBDatastore {
 		document.setRevision( revision );
 	}
 
-	private String createId(IdSourceKey key) {
-		StringBuilder builder = new StringBuilder( key.getTable() );
-		builder.append( ":" );
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			builder.append( key.getColumnNames()[i] );
-		}
-		builder.append( ":" );
-		for ( int i = 0; i < key.getColumnValues().length; i++ ) {
-			builder.append( key.getColumnValues()[i] );
-		}
-		return builder.toString();
-	}
-
 	private SequenceDocument getSequence(IdSourceKey key, int initialValue) {
 		Response response = null;
 		try {
-			String id = createId( key );
+			String id = createSourceId( key );
 			response = databaseClient.getKeyValueById( id );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( SequenceDocument.class );

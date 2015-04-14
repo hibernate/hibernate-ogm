@@ -33,7 +33,9 @@ public enum GridDialectType {
 
 	COUCHDB( "org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper", true, false ),
 
-	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.utils.CassandraTestHelper", false, false );
+	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.utils.CassandraTestHelper", false, false ),
+
+	COUCHBASE( "org.hibernate.ogm.datastore.couchbase.utils.CouchBaseTestHelper", true, false );
 
 	private final String testHelperClassName;
 	private final boolean isDocumentStore;

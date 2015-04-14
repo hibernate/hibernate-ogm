@@ -29,6 +29,7 @@
         <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
         <hibernate.ogm.neo4j-lucene.module.slot>main</hibernate.ogm.neo4j-lucene.module.slot>
         <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
+        <hibernate.ogm.couchbase.module.slot>main</hibernate.ogm.couchbase.module.slot>
         <org.parboiled.module.slot>main</org.parboiled.module.slot>
     </properties>
 

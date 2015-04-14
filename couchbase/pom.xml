@@ -1,0 +1,178 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>hibernate-ogm-parent</artifactId>
+        <groupId>org.hibernate.ogm</groupId>
+        <version>4.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>hibernate-ogm-couchbase</artifactId>
+
+    <name>Hibernate OGM for CouchBase</name>
+    <description>Persist objects in CouchBase</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-core</artifactId>
+        </dependency>
+        <dependency>
+             <groupId>org.hibernate.hql</groupId>
+             <artifactId>hibernate-hql-lucene</artifactId>
+         </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- CouchBase client -->
+        <dependency>
+            <groupId>com.couchbase.client</groupId>
+            <artifactId>java-client</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+
+        <!-- Required if you use the OGM mass indexer -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- TEST DEPENDENCIES -->
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.takari.junit</groupId>
+            <artifactId>takari-cpsuite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- this is optional on core :( and needed for testing -->
+        <dependency>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbossjta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- RESTEasy logs through slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>once</forkMode>
+                    <skipExec>${skipUnitTests}</skipExec>
+
+                    <excludes>
+                        <!-- Associations not supported yet  -->
+                        <exclude>**/ManyToManyTest*</exclude>
+                        <exclude>**/ManyToManyExtraTest*</exclude>
+                        <exclude>**/ListTest*</exclude>
+                        <exclude>**/MapContentsStoredInSeparateDocumentTest*</exclude>
+                        <exclude>**/MapTest*</exclude>
+                        <exclude>**/CollectionUnidirectionalTest*</exclude>
+                        <exclude>**/ReferencedCompositeIdTest*</exclude>
+                        <exclude>**/ManyToOneTest*</exclude>
+                        <exclude>**/ManyToOneExtraTest*</exclude>
+                        <exclude>**/OneToOneTest*</exclude>
+                        <exclude>**/AssociationStorageConfiguredProgrammaticallyTest*</exclude>
+                        <exclude>**/AssociationStorageConfiguredViaAnnotationsTest*</exclude>
+                        <exclude>**/AssociationStorageConfiguredViaPropertyTest*</exclude>
+                        <exclude>**/JPAPolymorphicCollectionTest*</exclude>
+                        <exclude>**/EmbeddableTest*</exclude>
+                        <exclude>**/EmbeddableExtraTest*</exclude>
+                        <exclude>**/QueriesWithEmbeddedCollectionTest*</exclude>
+                        <exclude>**/SimpleQueriesTest*</exclude>
+                        <exclude>**/QueriesWithEmbeddedTest*</exclude>
+                        <exclude>**/CompensationSpiTest*</exclude>         	
+                        <!-- EntityExistsException, NonUniqueObjectException -->
+                        <exclude>**/AutoIdGeneratorTest*</exclude>
+                        <exclude>**/AutoIdGeneratorWithSessionTest*</exclude>
+                        <exclude>**/CompositeIdTest*</exclude>
+                        <exclude>**/AssociationMassIndexerTest*</exclude>
+                        <exclude>**/CompensationSpiJpaTest*</exclude>
+                        <exclude>**/ErrorSpiTest*</exclude>
+                        <exclude>**/SequenceIdGeneratorTest*</exclude>
+                        <exclude>**/TableIdGeneratorTest*</exclude>
+                        <exclude>**/JPAPolymorphicFindTest*</exclude>
+                        <exclude>**/LoaderFromTupleTest*</exclude>
+                        <exclude>**/SimpleEntityMassIndexingTest*</exclude>
+                        <exclude>**/OptimisticLockingTest*</exclude>
+                        <exclude>**/OptimisticLockingExtraTest*</exclude>
+                        <exclude>**/InheritanceTest*</exclude>
+                        <exclude>**/StringMappedTypeSerialisationTest*</exclude>
+                        <exclude>**/BuiltInTypeTest*</exclude>
+                        <exclude>**/HibernateCoreAPIWrappingTest*</exclude>
+                    </excludes>
+
+                    <dependenciesToScan>
+                        <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+                    </dependenciesToScan>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>skip-couchbase-integration-tests</id>
+            <!-- To run the tests you need to define the 
+                environment property: COUCHBASE_HOSTNAME -->
+            <activation>
+                <property>
+                    <name>!env.COUCHBASE_HOSTNAME</name>
+                </property>
+            </activation>
+            <properties>
+                 <skipUnitTests>true</skipUnitTests>
+            </properties>
+        </profile>
+    </profiles>
+</project>
