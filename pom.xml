@@ -555,6 +555,14 @@
                         <bindIp>${embeddedMongoDbBindIp}</bindIp>
                         <version>${embeddedMongoDbVersion}</version>
                     </configuration>
+                    <dependencies>
+                        <!-- Using the latest version so the plug-in can run with JDK 9 -->
+                        <dependency>
+                            <groupId>de.flapdoodle.embed</groupId>
+                            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+                            <version>1.47.2</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmaven</groupId>
