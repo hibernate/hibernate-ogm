@@ -15,7 +15,6 @@ import javax.persistence.Persistence;
 
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +33,7 @@ public class JPATablePerClassFindTest {
 	@Before
 	public void setUp() {
 		emf = Persistence.createEntityManagerFactory( "ogm",
-				TestHelper.getEnvironmentProperties() );
+				TestHelper.getDefaultTestSettings() );
 		em = emf.createEntityManager();
 	}
 

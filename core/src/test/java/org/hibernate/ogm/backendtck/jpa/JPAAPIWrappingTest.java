@@ -8,8 +8,6 @@ package org.hibernate.ogm.backendtck.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import java.util.HashMap;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -37,14 +35,14 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Test
 	public void testWrappedStandalone() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getDefaultTestSettings() );
 		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
 
 		EntityManager em = emf.createEntityManager();
 		assertThat( em.getClass() ).isEqualTo( OgmEntityManager.class );
 		em.close();
 
-		em = emf.createEntityManager( new HashMap() );
+		em = emf.createEntityManager();
 		assertThat( em.getClass() ).isEqualTo( OgmEntityManager.class );
 		em.close();
 
@@ -63,7 +61,7 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 		EntityManager entityManager = getFactory().createEntityManager();
 		assertThat( entityManager.getClass() ).isEqualTo( OgmEntityManager.class );
 		entityManager.close();
-		entityManager = getFactory().createEntityManager( new HashMap() );
+		entityManager = getFactory().createEntityManager();
 		assertThat( entityManager.getClass() ).isEqualTo( OgmEntityManager.class );
 		entityManager.close();
 	}

@@ -61,12 +61,11 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 	@Test
 	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "MongoDB tests runs w/o transaction manager")
 	public void onRollbackTriggeredThroughJtaPresentsAppliedInsertOperations() throws Exception {
-		Map<String, Object> properties = new HashMap<>();
-		properties.putAll( TestHelper.getEnvironmentProperties() );
-		properties.put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
-		properties.put( "hibernate.search.default.directory_provider", "ram" );
+		Map<String, Object> settings = new HashMap<>();
+		settings.putAll( TestHelper.getDefaultTestSettings() );
+		settings.put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
 
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "transaction-type-jta", properties );
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "transaction-type-jta", settings );
 
 		TransactionManager transactionManager = getTransactionManager( emf );
 
