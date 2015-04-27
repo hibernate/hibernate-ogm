@@ -71,8 +71,8 @@ public abstract class JpaTestCase {
 		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
 		info.setTransactionType( PersistenceUnitTransactionType.RESOURCE_LOCAL );
 		info.setValidationMode( ValidationMode.AUTO );
-		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "ram" );
-		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+
+		for ( Map.Entry<String, String> entry : TestHelper.getDefaultTestSettings().entrySet() ) {
 			info.getProperties().setProperty( entry.getKey(), entry.getValue() );
 		}
 		refineInfo( info );

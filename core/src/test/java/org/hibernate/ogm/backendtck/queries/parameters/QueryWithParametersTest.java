@@ -39,7 +39,7 @@ public class QueryWithParametersTest {
 
 	@Before
 	public void setupEntityManagerFactory() throws Exception {
-		Map<String, String> properties = TestHelper.getEnvironmentProperties();
+		Map<String, String> properties = TestHelper.getDefaultTestSettings();
 		properties.put( "hibernate.search.default.directory_provider", "ram" );
 
 		emf = Persistence.createEntityManagerFactory( "ogm", properties );

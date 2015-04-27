@@ -9,11 +9,10 @@ package org.hibernate.ogm.backendtck.jpa;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import org.junit.Rule;
-import org.junit.Test;
-
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -27,7 +26,7 @@ public class JPAStandaloneORMAndOGMTest {
 	//Test for OGM-416 (avoid StackOverFlow when both an OGM and ORM PU are used
 	public void testJTAStandaloneNoOgm() throws Exception {
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory(
-				"ogm", TestHelper.getEnvironmentProperties()
+				"ogm", TestHelper.getDefaultTestSettings()
 		);
 		emf.close();
 		emf = Persistence.createEntityManagerFactory( "no-ogm" );

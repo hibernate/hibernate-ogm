@@ -10,15 +10,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
 import org.hibernate.ogm.backendtck.simpleentity.Hero;
 import org.hibernate.ogm.backendtck.simpleentity.SuperHero;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
@@ -40,7 +39,7 @@ public class JPAPolymorphicCollectionTest {
 	@Before
 	public void setUp() {
 		emf = Persistence.createEntityManagerFactory( "ogm",
-				TestHelper.getEnvironmentProperties() );
+				TestHelper.getDefaultTestSettings() );
 		em = emf.createEntityManager();
 	}
 
