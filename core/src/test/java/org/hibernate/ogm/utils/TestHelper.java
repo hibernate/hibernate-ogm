@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -15,7 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -187,52 +184,6 @@ public class TestHelper {
 		}
 	}
 
-	public static Map<String, String> getEnvironmentProperties() {
-		//TODO hibernate.properties is ignored due to HHH-8635, thus explicitly load its properties
-		Map<String, String> properties = getHibernateProperties();
-		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
-
-		if (environmentProperties != null ) {
-			properties.putAll( environmentProperties );
-		}
-
-		return properties;
-	}
-
-	private static Map<String, String> getHibernateProperties() {
-		InputStream hibernatePropertiesStream = null;
-		Map<String, String> properties = new HashMap<String, String>();
-
-		try {
-			hibernatePropertiesStream = TestHelper.class.getResourceAsStream( "/hibernate.properties" );
-			Properties hibernateProperties = new Properties();
-			hibernateProperties.load( hibernatePropertiesStream );
-
-			for ( Entry<Object, Object> property : hibernateProperties.entrySet() ) {
-				properties.put( property.getKey().toString(), property.getValue().toString() );
-			}
-
-			return properties;
-		}
-		catch (Exception e) {
-			throw new RuntimeException( e );
-		}
-		finally {
-			closeQuietly( hibernatePropertiesStream );
-		}
-	}
-
-	private static void closeQuietly(InputStream stream) {
-		if ( stream != null ) {
-			try {
-				stream.close();
-			}
-			catch (IOException e) {
-				//ignore
-			}
-		}
-	}
-
 	public static void checkCleanCache(SessionFactory sessionFactory) {
 		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
 		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
@@ -241,9 +192,14 @@ public class TestHelper {
 	public static Map<String, String> getDefaultTestSettings() {
 		Map<String, String> settings = new HashMap<>();
 
-		settings.putAll( TestHelper.getEnvironmentProperties() );
 		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
+
+		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
+
+		if ( environmentProperties != null ) {
+			settings.putAll( environmentProperties );
+		}
 
 		return settings;
 	}
@@ -251,12 +207,9 @@ public class TestHelper {
 	public static StandardServiceRegistry getDefaultTestStandardServiceRegistry(Map<String, Object> settings) {
 		TestHelper.getCurrentDialectType();
 
-		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder()
-				.loadProperties( "/hibernate.properties" )
-				.applySetting( Environment.HBM2DDL_AUTO, "none" )
-				.applySetting( "hibernate.search.default.directory_provider", "ram" );
+		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
 
-		for ( Entry<String, String> setting : TestHelper.getEnvironmentProperties().entrySet() ) {
+		for ( Entry<String, String> setting : getDefaultTestSettings().entrySet() ) {
 			registryBuilder.applySetting( setting.getKey(), setting.getValue() );
 		}
 
