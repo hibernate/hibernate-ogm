@@ -34,7 +34,7 @@ public class JPAResourceLocalTest {
 
 	@Test
 	public void testBootstrapAndCRUD() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "transaction-type-resource-local", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "transaction-type-resource-local", TestHelper.getDefaultTestSettings() );
 		try {
 
 			final EntityManager em = emf.createEntityManager();

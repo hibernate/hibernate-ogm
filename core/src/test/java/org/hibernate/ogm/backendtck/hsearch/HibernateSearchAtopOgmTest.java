@@ -11,17 +11,16 @@ import java.util.List;
 import javax.persistence.EntityManager;
 
 import org.apache.lucene.search.Query;
-import org.junit.Test;
 import org.hibernate.Session;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.junit.Test;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -86,12 +85,6 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		}
 		entityManager.getTransaction().commit();
 		entityManager.close();
-	}
-
-	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
-		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "ram" );
 	}
 
 	@Override
