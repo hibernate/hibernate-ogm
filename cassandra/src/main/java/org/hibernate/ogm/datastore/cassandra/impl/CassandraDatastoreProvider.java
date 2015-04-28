@@ -6,16 +6,11 @@
  */
 package org.hibernate.ogm.datastore.cassandra.impl;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import com.datastax.driver.core.exceptions.DriverException;
@@ -29,12 +24,8 @@ import org.hibernate.ogm.datastore.cassandra.impl.configuration.CassandraConfigu
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-
-import org.hibernate.persister.collection.CollectionPersister;
 
 import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
 import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
@@ -63,14 +54,11 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 	private Session session;
 	private CassandraSequenceHandler sequenceHandler;
 
-	private final Set<String> entityTableNames = new HashSet<String>();
-
 	private final Map<String, Table> metaDataCache = new HashMap<String, Table>();
 
 	public void setTableMetadata(String name, Table table) {
 		metaDataCache.put( name, table );
 	}
-
 
 	@Override
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
@@ -119,6 +107,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 				cluster = new Cluster.Builder()
 						.addContactPoint( config.getHost() )
 						.withPort( config.getPort() )
+						.withCredentials( config.getUsername(), config.getPassword() )
 						.build();
 
 				Session bootstrapSession = cluster.connect();
@@ -152,43 +141,6 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 		Session bootstrapSession = cluster.connect();
 		bootstrapSession.execute( "DROP KEYSPACE " + config.getDatabaseName() );
 		bootstrapSession.close();
-	}
-
-	// test harness
-	public long countAllEntities() {
-		long count = 0;
-		for ( Table table : metaDataCache.values() ) {
-			if ( table.getIdentifierValue() != null ) {
-				StringBuilder query = new StringBuilder( "SELECT COUNT(*) FROM \"" );
-				query.append( table.getName() );
-				query.append( "\"" );
-				Row row = session.execute( query.toString() ).one();
-				count += row.getLong( 0 );
-			}
-		}
-		return count;
-	}
-
-	// test harness
-	public long countAllAssociations(Collection<CollectionPersister> collectionPersisters) {
-		long count = 0;
-		for ( CollectionPersister collectionPersister : collectionPersisters ) {
-			AssociationKeyMetadata associationKeyMetadata = ((OgmCollectionPersister) collectionPersister).getAssociationKeyMetadata();
-			StringBuilder query = new StringBuilder( "SELECT \"" );
-			query.append( associationKeyMetadata.getColumnNames()[0] );
-			query.append( "\" FROM \"" );
-			query.append( associationKeyMetadata.getTable() );
-			query.append( "\"" );
-			ResultSet resultSet = session.execute( query.toString() );
-			// no GROUP BY in CQL, so we do it the hard way...
-			HashSet<String> uniqs = new HashSet<String>();
-			for ( Row row : resultSet ) {
-				uniqs.add( row.getBytesUnsafe( 0 ).toString() );
-			}
-			count += uniqs.size();
-		}
-
-		return count;
 	}
 
 	public void createSecondaryIndexIfNeeded(String entityName, String columnName) {
@@ -257,7 +209,6 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 
 		try {
 			session.execute( query.toString() );
-			entityTableNames.add( entityName );
 		}
 		catch (DriverException e) {
 			log.failedToCreateTable( entityName, e );

@@ -9,20 +9,25 @@ package org.hibernate.ogm.datastore.cassandra.utils;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.mapping.Table;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.cassandra.CassandraDialect;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.utils.TestableGridDialect;
 
 import org.hibernate.persister.collection.CollectionPersister;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.datastax.driver.core.BoundStatement;
@@ -46,6 +51,23 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
  */
 public class CassandraTestHelper implements TestableGridDialect {
 
+	static {
+		// Read host and port from environment variable
+		// Maven's surefire plugin set it to the string 'null'
+		String cassandraHostName = System.getenv( "CASSANDRA_HOSTNAME" );
+		if ( isNotNull( cassandraHostName ) ) {
+			System.getProperties().setProperty( OgmProperties.HOST, cassandraHostName );
+		}
+		String cassandraPort = System.getenv( "CASSANDRA_PORT" );
+		if ( isNotNull( cassandraPort ) ) {
+			System.getProperties().setProperty( OgmProperties.PORT, cassandraPort );
+		}
+	}
+
+	private static boolean isNotNull(String cassandraHostName) {
+		return cassandraHostName != null && cassandraHostName.length() > 0 && ! "null".equals( cassandraHostName );
+	}
+
 	private static CassandraDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(
 				DatastoreProvider.class
@@ -59,7 +81,17 @@ public class CassandraTestHelper implements TestableGridDialect {
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		CassandraDatastoreProvider cassandraDatastoreProvider = getProvider( sessionFactory );
-		return cassandraDatastoreProvider.countAllEntities();
+		long count = 0;
+		for ( Table table : cassandraDatastoreProvider.getMetaDataCache().values() ) {
+			if ( table.getIdentifierValue() != null ) {
+				StringBuilder query = new StringBuilder( "SELECT COUNT(*) FROM \"" );
+				query.append( table.getName() );
+				query.append( "\"" );
+				Row row = cassandraDatastoreProvider.getSession().execute( query.toString() ).one();
+				count += row.getLong( 0 );
+			}
+		}
+		return count;
 	}
 
 	@Override
@@ -67,7 +99,25 @@ public class CassandraTestHelper implements TestableGridDialect {
 		CassandraDatastoreProvider cassandraDatastoreProvider = getProvider( sessionFactory );
 		Collection<CollectionPersister> collectionPersisters = ((SessionFactoryImplementor) sessionFactory).getCollectionPersisters()
 				.values();
-		return cassandraDatastoreProvider.countAllAssociations( collectionPersisters );
+
+		long count = 0;
+		for ( CollectionPersister collectionPersister : collectionPersisters ) {
+			AssociationKeyMetadata associationKeyMetadata = ((OgmCollectionPersister) collectionPersister).getAssociationKeyMetadata();
+			StringBuilder query = new StringBuilder( "SELECT \"" );
+			query.append( associationKeyMetadata.getColumnNames()[0] );
+			query.append( "\" FROM \"" );
+			query.append( associationKeyMetadata.getTable() );
+			query.append( "\"" );
+			ResultSet resultSet = cassandraDatastoreProvider.getSession().execute( query.toString() );
+			// no GROUP BY in CQL, so we do it the hard way...
+			HashSet<String> uniqs = new HashSet<String>();
+			for ( Row row : resultSet ) {
+				uniqs.add( row.getBytesUnsafe( 0 ).toString() );
+			}
+			count += uniqs.size();
+		}
+
+		return count;
 	}
 
 	@Override

@@ -113,7 +113,7 @@ public class CassandraDialect implements BatchableGridDialect {
 		}
 		catch (DriverException e) {
 			log.failToExecuteCQL( statement.getQueryString(), e );
-			return null;
+			throw e;
 		}
 	}
 
