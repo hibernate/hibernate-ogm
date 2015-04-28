@@ -37,17 +37,10 @@ import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleSnapshot;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 
-import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.Operation;
-import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
-import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
@@ -75,7 +68,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.quote;
  *
  * @author Jonathan Halliday
  */
-public class CassandraDialect implements BatchableGridDialect {
+public class CassandraDialect implements GridDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -188,6 +181,7 @@ public class CassandraDialect implements BatchableGridDialect {
 
 		if ( updateOps.size() > 0 ) {
 
+			// insert and update are both 'upsert' in cassandra.
 			Insert insert = insertInto( quote( key.getTable() ) );
 			Object[] columnValues = new Object[updateOps.size()];
 			for ( int i = 0; i < updateOps.size(); i++ ) {
@@ -241,46 +235,6 @@ public class CassandraDialect implements BatchableGridDialect {
 	@Override
 	public GridType overrideType(Type type) {
 		return CassandraTypeMapper.INSTANCE.overrideType( type );
-	}
-
-	@Override
-	public void executeBatch(OperationsQueue queue) {
-
-		// placeholder until we get around to using logged batch for these.
-
-		if ( !queue.isClosed() ) {
-			Operation operation = queue.poll();
-			while ( operation != null ) {
-				if ( operation instanceof InsertOrUpdateTupleOperation ) {
-					InsertOrUpdateTupleOperation update = (InsertOrUpdateTupleOperation) operation;
-					insertOrUpdateTuple( update.getEntityKey(), update.getTuple(), update.getTupleContext() );
-				}
-				else if ( operation instanceof RemoveTupleOperation ) {
-					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
-					removeTuple( tupleOp.getEntityKey(), tupleOp.getTupleContext() );
-				}
-				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
-					InsertOrUpdateAssociationOperation update = (InsertOrUpdateAssociationOperation) operation;
-					insertOrUpdateAssociation(
-							update.getAssociationKey(),
-							update.getAssociation(),
-							update.getContext()
-					);
-				}
-				else if ( operation instanceof RemoveAssociationOperation ) {
-					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
-					removeAssociation( remove.getAssociationKey(), remove.getContext() );
-				}
-				else {
-					throw new UnsupportedOperationException(
-							"Operation not supported on MongoDB: " + operation.getClass()
-									.getName()
-					);
-				}
-				operation = queue.poll();
-			}
-			queue.close();
-		}
 	}
 
 	@Override

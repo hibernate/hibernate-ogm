@@ -133,6 +133,12 @@
             <artifactId>hibernate-search-engine</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.takari.junit</groupId>
+            <artifactId>takari-cpsuite</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
