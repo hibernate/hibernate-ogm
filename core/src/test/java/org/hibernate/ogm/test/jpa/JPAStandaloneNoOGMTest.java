@@ -6,14 +6,18 @@
  */
 package org.hibernate.ogm.test.jpa;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 
 import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
+import com.google.common.base.Throwables;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
@@ -23,16 +27,23 @@ public class JPAStandaloneNoOGMTest {
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/no-ogm.xml", Poem.class );
 
-	@Rule
-	public ExpectedException error = ExpectedException.none();
-
 	@Test
 	public void testJTAStandaloneNoOgm() throws Exception {
+		EntityManagerFactory emf = null;
+
 		// Failure is expected as we didn't configure a JDBC connection nor a Dialect
 		// (and this would fail only if effectively loading Hibernate ORM without OGM superpowers)
-		error.expect( javax.persistence.PersistenceException.class );
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "no-ogm" );
-		emf.close(); // should not be reached, but cleanup in case the test fails.
-	}
 
+		try {
+			emf = Persistence.createEntityManagerFactory( "noogm" );
+			fail( "Expected exception was not raised" );
+		}
+		catch ( PersistenceException pe ) {
+			assertThat( Throwables.getRootCause( pe ).getMessage() ).contains( "hibernate.dialect" );
+		}
+
+		if ( emf != null ) {
+			emf.close(); // should not be reached, but cleanup in case the test fails.
+		}
+	}
 }
