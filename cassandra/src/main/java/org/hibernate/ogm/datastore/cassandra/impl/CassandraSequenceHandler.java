@@ -67,7 +67,6 @@ public class CassandraSequenceHandler {
 			resultSet = provider.getSession().execute( boundStatement );
 		}
 		catch (DriverException e) {
-			System.out.println( e.toString() );
 			throw e;
 		}
 
@@ -95,7 +94,6 @@ public class CassandraSequenceHandler {
 			provider.getSession().execute( boundStatement );
 		}
 		catch (DriverException e) {
-			System.out.println( e.toString() );
 			throw e;
 		}
 
@@ -120,7 +118,6 @@ public class CassandraSequenceHandler {
 			resultSet = provider.getSession().execute( boundStatement );
 		}
 		catch (DriverException e) {
-			System.out.println( e.toString() );
 			throw e;
 		}
 

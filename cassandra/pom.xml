@@ -20,8 +20,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <environmentVariables>
-                        <cassandra_HOSTNAME>${env.cassandra_HOSTNAME}</cassandra_HOSTNAME>
-                        <cassandra_PORT>${env.cassandra_PORT}</cassandra_PORT>
+                        <CASSANDRA_HOSTNAME>${env.CASSANDRA_HOSTNAME}</CASSANDRA_HOSTNAME>
+                        <CASSANDRA_PORT>${env.CASSANDRA_PORT}</CASSANDRA_PORT>
                     </environmentVariables>
                     <forkMode>once</forkMode>
 
