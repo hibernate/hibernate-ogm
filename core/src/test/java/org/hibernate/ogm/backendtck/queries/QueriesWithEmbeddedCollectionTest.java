@@ -15,7 +15,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -99,30 +101,35 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.NEO4J)
 	public void testBetweenOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.embedded.embeddedInteger BETWEEN -100 AND 100" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.NEO4J)
 	public void testLikeOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.embedded.embeddedString LIKE 'string[1%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.NEO4J)
 	public void testEqualOperatorWithEmbeddedInEmbeddedCollectionForString() throws Exception {
 		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.embedded.embeddedString = 'string[1][0]'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.NEO4J)
 	public void testEqualOperatorWithEmbeddedInEmbeddedCollectionForInteger() throws Exception {
 		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.embedded.embeddedInteger = 10" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.NEO4J)
 	public void testConjunctionOperatorEqualOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.item = 'item[1]' AND c.embedded.embeddedString IN ('string[1][0]')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
