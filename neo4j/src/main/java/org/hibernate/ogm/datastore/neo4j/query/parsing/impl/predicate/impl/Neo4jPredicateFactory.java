@@ -30,12 +30,12 @@ import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryParameter;
 public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	private final Neo4jPropertyHelper propertyHelper;
-	private final AliasResolver embeddedAliasResolver;
+	private final AliasResolver aliasResolver;
 	private final StringBuilder builder;
 
 	public Neo4jPredicateFactory(Neo4jPropertyHelper propertyHelper, AliasResolver embeddedAliasResolver) {
 		this.propertyHelper = propertyHelper;
-		this.embeddedAliasResolver = embeddedAliasResolver;
+		this.aliasResolver = embeddedAliasResolver;
 		this.builder = new StringBuilder();
 	}
 
@@ -109,9 +109,9 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	}
 
 	private String alias(String entityType, List<String> propertyPath) {
-		String targetEntityAlias = embeddedAliasResolver.findAliasForType( entityType );
+		String targetEntityAlias = aliasResolver.findAliasForType( entityType );
 		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) ) {
-			return embeddedAliasResolver.createAliasForEmbedded( targetEntityAlias, propertyPath );
+			return aliasResolver.createAliasForEmbedded( targetEntityAlias, propertyPath, false );
 		}
 		return targetEntityAlias;
 	}
