@@ -8,6 +8,7 @@ package org.hibernate.ogm.backendtck.queries;
 
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -93,7 +94,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	public void testConjunctionOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.item = 'item[1]' AND c.anotherItem IN ('secondItem[0]')" ).list();
+		List<?> result = session.createQuery( "FROM WithEmbedded e JOIN e.anEmbeddedCollection c WHERE c.item = 'item[0]' AND c.anotherItem IN ('secondItem[0]')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
@@ -130,7 +131,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	@Test
 	public void testQueryReturningEmbeddedObject() {
 		@SuppressWarnings("unchecked")
-		List<WithEmbedded> list = session.createQuery( "from WithEmbedded we" ).list();
+		List<WithEmbedded> list = session.createQuery( "FROM WithEmbedded we WHERE we.id = 1" ).list();
 
 		assertThat( list )
 			.onProperty( "anEmbeddable" )
@@ -146,7 +147,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 		assertThat( list )
 			.onProperty( "yetAnotherEmbeddable" )
 			.onProperty( "embeddedString" )
-			.containsExactly( "embedded 2" );
+			.containsExactly( "yet 1" );
 
 		assertThat( list.get( 0 ).getAnEmbeddedCollection() )
 			.onProperty( "item" )
@@ -169,20 +170,32 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	public static void insertTestEntities() throws Exception {
 		WithEmbedded with = new WithEmbedded( 1L, null );
 		with.setAnEmbeddable( new AnEmbeddable( "embedded 1", new AnotherEmbeddable( "string 1", 1 ) ) );
-		with.setYetAnotherEmbeddable( new AnEmbeddable( "embedded 2" ) );
+		with.setYetAnotherEmbeddable( new AnEmbeddable( "yet 1" ) );
 		with.setAnEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "item[0]", "secondItem[0]", null ), new EmbeddedCollectionItem( "item[1]", null, new AnotherEmbeddable( "string[1][0]", 10 ) ) ) );
 		with.setAnotherEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "another[0]", null, null ), new EmbeddedCollectionItem( "another[1]", null, null ) ) );
 
-		persist( with );
+		WithEmbedded with20 = new WithEmbedded( 20L, new AnEmbeddable( "embedded 20", new AnotherEmbeddable( "string 20", 20 ) ) );
+		with20.setYetAnotherEmbeddable( new AnEmbeddable( "yet 20", null ) );
+
+		WithEmbedded with300 = new WithEmbedded( 300L, new AnEmbeddable( "embedded 300", new AnotherEmbeddable( "string 300", 300 ) ) );
+		with300.setYetAnotherEmbeddable( new AnEmbeddable( "yet 300", null ) );
+
+		persist( with, with20, with300 );
 	}
 
 
 	@AfterClass
 	public static void removeTestEntities() throws Exception {
+		delete( WithEmbedded.class, 1L );
+		delete( WithEmbedded.class, 20L );
+		delete( WithEmbedded.class, 300L );
+	}
+
+	private static void delete(Class<WithEmbedded> entityClass, long id) {
 		final Session session = sessions.openSession();
 		Transaction transaction = session.beginTransaction();
 
-		session.delete( session.load( WithEmbedded.class, 1L ) );
+		session.delete( session.load( entityClass, id ) );
 
 		transaction.commit();
 		session.close();
@@ -198,6 +211,66 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 		transaction.commit();
 		session.close();
+	}
+
+	private List<ProjectionResult> asProjectionResults(String projectionQuery) {
+		List<?> results = session.createQuery( projectionQuery ).list();
+		List<ProjectionResult> projectionResults = new ArrayList<ProjectionResult>();
+
+		for ( Object result : results ) {
+			if ( !( result instanceof Object[] ) ) {
+				throw new IllegalArgumentException( "No projection result: " + result );
+			}
+			projectionResults.add( ProjectionResult.forArray( (Object[]) result ) );
+		}
+
+		return projectionResults;
+	}
+
+	private static class ProjectionResult {
+
+		private Object[] elements;
+
+		public ProjectionResult(Object... elements) {
+			this.elements = elements;
+		}
+
+		public static ProjectionResult forArray(Object[] element) {
+			ProjectionResult result = new ProjectionResult();
+			result.elements = element;
+			return result;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + Arrays.hashCode( elements );
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if ( this == obj ) {
+				return true;
+			}
+			if ( obj == null ) {
+				return false;
+			}
+			if ( getClass() != obj.getClass() ) {
+				return false;
+			}
+			ProjectionResult other = (ProjectionResult) obj;
+			if ( !Arrays.equals( elements, other.elements ) ) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return Arrays.deepToString( elements );
+		}
 	}
 
 	@Override

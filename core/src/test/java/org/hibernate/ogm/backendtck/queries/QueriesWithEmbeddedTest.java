@@ -62,13 +62,13 @@ public class QueriesWithEmbeddedTest extends OgmTestCase {
 
 	@Test
 	public void testQueryWithEmbeddableInWhereClause() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString = 'string 1'" ).list();
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString = 'embedded 1'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testQueryWithInOperator() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString IN ( 'string 1' )" ).list();
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString IN ( 'embedded 1' )" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
@@ -80,54 +80,68 @@ public class QueriesWithEmbeddedTest extends OgmTestCase {
 
 	@Test
 	public void testQueryWithLikeOperator() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString LIKE 'stri%'" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString LIKE 'string 3%'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 300L );
 	}
 
 	@Test
 	public void testQueryWithNestedEmbeddableInWhereClause() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 2'" ).list();
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 1'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testQueryWithComparisonOnMultipleProperties() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.yetAnotherEmbeddable.embeddedString = 'string 3' AND e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 2'" ).list();
+		List<?> result = session.createQuery( "from WithEmbedded e where e.yetAnotherEmbeddable.embeddedString = 'yet 1' AND e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 1'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
+	public void testQueryWithEmbeddablePropertyInSelectClauseWithOneResult() throws Exception {
+		List<ProjectionResult> result = asProjectionResults( "select e.id, e.anEmbeddable.embeddedString from WithEmbedded e where e.id = 1" );
+		assertThat( result ).containsOnly( new ProjectionResult( 1L, "embedded 1" ) );
+	}
+
+	@Test
 	public void testQueryWithEmbeddablePropertyInSelectClause() throws Exception {
-		List<ProjectionResult> result = asProjectionResults( "select e.id, e.anEmbeddable.embeddedString from WithEmbedded e" );
-		assertThat( result ).containsOnly( new ProjectionResult( 1L, "string 1" ) );
+		List<ProjectionResult> result = asProjectionResults( "select e.id, e.yetAnotherEmbeddable.embeddedString from WithEmbedded e" );
+		assertThat( result ).containsOnly( new ProjectionResult( 1L, "yet 1" ), new ProjectionResult( 20L, null ), new ProjectionResult( 300L, "yet 300" ) );
 	}
 
 	@Test
 	public void testQueryReturningEmbeddedObject() {
-		List<?> list = session.createQuery( "from WithEmbedded we" ).list();
+		List<?> list = session.createQuery( "from WithEmbedded we WHERE we.id = 1" ).list();
 
 		assertThat( list )
 			.onProperty( "anEmbeddable" )
 			.onProperty( "embeddedString" )
-			.containsExactly( "string 1" );
+			.containsExactly( "embedded 1" );
 
 		assertThat( list )
 			.onProperty( "anEmbeddable" )
 			.onProperty( "anotherEmbeddable" )
 			.onProperty( "embeddedString" )
-			.containsExactly( "string 2" );
+			.containsExactly( "string 1" );
 
 		assertThat( list )
 			.onProperty( "yetAnotherEmbeddable" )
 			.onProperty( "embeddedString" )
-			.containsExactly( "string 3" );
+			.containsExactly( "yet 1" );
 	}
 
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
-		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1", new AnotherEmbeddable( "string 2", 2 ) ) );
-		with.setYetAnotherEmbeddable( new AnEmbeddable( "string 3", null ) );
-		persist( with );
+		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "embedded 1", new AnotherEmbeddable( "string 1", 1 ) ) );
+		with.setYetAnotherEmbeddable( new AnEmbeddable( "yet 1", null ) );
+
+		WithEmbedded with20 = new WithEmbedded( 20L, new AnEmbeddable( "embedded 20", new AnotherEmbeddable( "string 20", 20 ) ) );
+		with20.setYetAnotherEmbeddable( new AnEmbeddable( null, null ) );
+
+		WithEmbedded with300 = new WithEmbedded( 300L, new AnEmbeddable( "embedded 300", new AnotherEmbeddable( "string 300", 300 ) ) );
+		with300.setYetAnotherEmbeddable( new AnEmbeddable( "yet 300", null ) );
+
+		persist( with, with20, with300 );
+
 	}
 
 	private static void persist(Object... entities) {
