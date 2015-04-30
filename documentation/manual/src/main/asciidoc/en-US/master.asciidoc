@@ -27,3 +27,5 @@ include::modules/mongodb.asciidoc[]
 include::modules/neo4j.asciidoc[]
 
 include::modules/couchdb.asciidoc[]
+
+include::modules/cassandra.asciidoc[]
