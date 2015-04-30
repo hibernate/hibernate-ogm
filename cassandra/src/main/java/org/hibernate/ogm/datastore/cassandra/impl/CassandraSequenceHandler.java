@@ -19,9 +19,11 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.quote;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
@@ -40,24 +42,24 @@ public class CassandraSequenceHandler {
 		this.provider = provider;
 	}
 
-	public void createSequence(String generatorsKey, CassandraDatastoreProvider datastoreProvider) {
+	public void createSequence(IdSourceKeyMetadata metadata, CassandraDatastoreProvider datastoreProvider) {
 
-		// ogm wiring doesn't allow us to get at the real col names :-(
 		List<String> primaryKeyName = new ArrayList<String>( 1 );
-		primaryKeyName.add( "sequence_name" );
+		primaryKeyName.add( metadata.getKeyColumnName() );
 		List<String> columnNames = new ArrayList<String>( 2 );
-		columnNames.add( "sequence_name" );
-		columnNames.add( "sequence_value" );
+		columnNames.add( metadata.getKeyColumnName() );
+		columnNames.add( metadata.getValueColumnName() );
 		List<String> columnTypes = new ArrayList<String>( 2 );
 		columnTypes.add( "varchar" );
 		columnTypes.add( "bigint" );
-		datastoreProvider.createColumnFamilyIfNeeded( generatorsKey, primaryKeyName, columnNames, columnTypes );
+		datastoreProvider.createColumnFamilyIfNeeded( metadata.getName(), primaryKeyName, columnNames, columnTypes );
 	}
 
-	private Long nextValueSelect(String tableName, String sequenceName) {
+	private Long nextValueSelect(IdSourceKeyMetadata metadata, String sequenceName) {
 
-		Statement select = select().column( "sequence_value" ).from( "\"" + tableName + "\"" )
-				.where( eq( "sequence_name", QueryBuilder.bindMarker() ) );
+		Statement select = select().column( quote( metadata.getValueColumnName() )  )
+				.from( quote( metadata.getName() ) )
+				.where( eq( metadata.getKeyColumnName(), QueryBuilder.bindMarker() ) );
 
 		PreparedStatement preparedStatement = provider.getSession().prepare( select.toString() );
 		BoundStatement boundStatement = preparedStatement.bind( sequenceName );
@@ -78,11 +80,11 @@ public class CassandraSequenceHandler {
 		}
 	}
 
-	private Long nextValueInsert(String tableName, String sequenceName, Long value) {
+	private Long nextValueInsert(IdSourceKeyMetadata metadata, String sequenceName, Long value) {
 
-		Insert insert = insertInto( "\"" + tableName + "\"" )
-				.value( "sequence_name", QueryBuilder.bindMarker( "sequence_name" ) )
-				.value( "sequence_value", QueryBuilder.bindMarker( "sequence_value" ) )
+		Insert insert = insertInto( quote( metadata.getName() ))
+				.value( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) )
+				.value( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value" ) )
 				.ifNotExists();
 
 		PreparedStatement preparedStatement = provider.getSession().prepare( insert.toString() );
@@ -97,15 +99,15 @@ public class CassandraSequenceHandler {
 			throw e;
 		}
 
-		return nextValueSelect( tableName, sequenceName );
+		return nextValueSelect( metadata, sequenceName );
 	}
 
-	private boolean nextValueUpdate(String tableName, String sequenceName, Long oldValue, Long newValue) {
+	private boolean nextValueUpdate(IdSourceKeyMetadata metadata, String sequenceName, Long oldValue, Long newValue) {
 
-		Statement update = update( "\"" + tableName + "\"" )
-				.with( set( "sequence_value", QueryBuilder.bindMarker( "sequence_value_new" ) ) )
-				.where( eq( "sequence_name", QueryBuilder.bindMarker( "sequence_name" ) ) )
-				.onlyIf( eq( "sequence_value", QueryBuilder.bindMarker( "sequence_value_old" ) ) );
+		Statement update = update( quote( metadata.getName() ) )
+				.with( set( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value_new" ) ) )
+				.where( eq( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) ) )
+				.onlyIf( eq( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value_old" ) ) );
 
 		PreparedStatement preparedStatement = provider.getSession().prepare( update.toString() );
 		BoundStatement boundStatement = preparedStatement.bind();
@@ -127,15 +129,15 @@ public class CassandraSequenceHandler {
 	public Number nextValue(NextValueRequest request) {
 
 		IdSourceKey key = request.getKey();
+		IdSourceKeyMetadata metadata = request.getKey().getMetadata();
 		Long valueFromDb = null;
 		boolean done = false;
 		do {
-			valueFromDb = nextValueSelect( key.getTable(), key.getColumnValues()[0].toString() );
+			valueFromDb = nextValueSelect( metadata, key.getColumnValues()[0].toString() );
 
 			if ( valueFromDb == null ) {
 				//if not there, insert initial value
-				valueFromDb = nextValueInsert(
-						key.getTable(),
+				valueFromDb = nextValueInsert( metadata,
 						key.getColumnValues()[0].toString(),
 						(long) request.getInitialValue()
 				);
@@ -143,7 +145,7 @@ public class CassandraSequenceHandler {
 
 			//update seq value ready for the next reader
 			Long updatedValue = valueFromDb + (long) request.getIncrement();
-			done = nextValueUpdate( key.getTable(), key.getColumnValues()[0].toString(), valueFromDb, updatedValue );
+			done = nextValueUpdate( metadata, key.getColumnValues()[0].toString(), valueFromDb, updatedValue );
 		}
 		while ( !done );
 
