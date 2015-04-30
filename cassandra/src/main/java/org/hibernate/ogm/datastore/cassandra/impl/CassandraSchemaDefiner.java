@@ -41,7 +41,7 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 		for ( PersistentNoSqlIdentifierGenerator identifierGenerator : identifierGenerators ) {
 
 			CassandraSequenceHandler sequenceHandler = datastoreProvider.getSequenceHandler();
-			sequenceHandler.createSequence( identifierGenerator.getGeneratorKeyMetadata().getName(), datastoreProvider );
+			sequenceHandler.createSequence( identifierGenerator.getGeneratorKeyMetadata(), datastoreProvider );
 		}
 
 		Iterator<Table> tableMappings = configuration.getTableMappings();
