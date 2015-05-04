@@ -14,9 +14,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.search.exception.ErrorHandler;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
@@ -58,9 +58,9 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 	}
 
 	boolean wrapInTransaction() {
-		final TransactionFactory transactionFactory = factory.getServiceRegistry()
-				.getService( TransactionFactory.class );
-		if ( !transactionFactory.compatibleWithJtaSynchronization() ) {
+		final TransactionCoordinatorBuilder transactionCoordinatorBuilder = factory.getServiceRegistry()
+				.getService( TransactionCoordinatorBuilder.class );
+		if ( !transactionCoordinatorBuilder.isJta() ) {
 			// Today we only require a TransactionManager on JTA based transaction factories
 			log.trace( "TransactionFactory does not require a TransactionManager: don't wrap in a JTA transaction" );
 			return false;

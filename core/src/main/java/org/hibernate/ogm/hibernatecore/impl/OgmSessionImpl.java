@@ -55,6 +55,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ProcedureCall;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
 import org.hibernate.type.Type;
 
 /**
@@ -380,7 +381,9 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	// Copied from org.hibernate.internal.SessionImpl.delayedAfterCompletion() to mimic same behaviour
 	private void delayedAfterCompletion() {
-		delegate.getTransactionCoordinator().getSynchronizationCallbackCoordinator().processAnyDelayedAfterCompletion();
+		if ( delegate.getTransactionCoordinator() instanceof JtaTransactionCoordinatorImpl ) {
+			( (JtaTransactionCoordinatorImpl) delegate.getTransactionCoordinator() ).getSynchronizationCallbackCoordinator().processAnyDelayedAfterCompletion();
+		}
 	}
 
 	public <G extends GlobalContext<?, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {
