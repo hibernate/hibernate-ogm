@@ -17,8 +17,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.RollbackException;
 
-
 import org.hibernate.ogm.utils.PackagingRule;
+import org.hibernate.ogm.utils.Throwables;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -50,8 +50,7 @@ public class TypeOverridingInDialectTest {
 			assertThat( true ).as( "Custom type not used" ).isFalse();
 		}
 		catch ( RollbackException e ) {
-			//make this chaining more robust
-			assertThat( e.getCause().getMessage() ).isEqualTo( "Exploding type" );
+			assertThat( Throwables.getRootCause( e ) ).hasMessage( "Exploding type" );
 		}
 		finally {
 			try {

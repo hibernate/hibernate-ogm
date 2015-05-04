@@ -33,6 +33,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -348,7 +349,9 @@ public class OptimisticLockingTest extends OgmTestCase {
 			transaction.commit();
 		}
 		catch (Exception e) {
-			transaction.rollback();
+			if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
+				transaction.rollback();
+			}
 			throw e;
 		}
 		finally {

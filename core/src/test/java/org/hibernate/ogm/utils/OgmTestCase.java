@@ -20,6 +20,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -87,7 +88,7 @@ public abstract class OgmTestCase {
 		for ( Session session : openedSessions ) {
 			if ( session.isOpen() ) {
 				Transaction transaction = session.getTransaction();
-				if ( transaction != null && transaction.isActive() ) {
+				if ( transaction != null && transaction.getStatus() == TransactionStatus.ACTIVE ) {
 					transaction.rollback();
 				}
 				session.close();
