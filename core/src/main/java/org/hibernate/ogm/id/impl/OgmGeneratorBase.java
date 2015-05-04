@@ -146,7 +146,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 		//we want to work out of transaction
 		boolean workInTransaction = false;
 		Work work = new Work();
-		Serializable generatedValue = session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork( work, workInTransaction );
+		Serializable generatedValue = session.getTransactionCoordinator().createIsolationDelegate().delegateWork( work, workInTransaction );
 		return generatedValue;
 	}
 
