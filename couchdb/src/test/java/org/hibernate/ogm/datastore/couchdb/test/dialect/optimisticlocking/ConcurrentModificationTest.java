@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.couchdb.test.dialect.optimisticlocking;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -15,6 +16,8 @@ import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.Throwables;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +39,7 @@ public class ConcurrentModificationTest extends OgmTestCase {
 	@After
 	public void deleteTestDataAndCloseSession() {
 		session.clear();
-		if ( session.getTransaction().isActive() ) {
+		if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE ) {
 			session.getTransaction().rollback();
 		}
 		Transaction transaction = session.beginTransaction();
@@ -95,7 +98,7 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		session.close();
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void concurrentModificationShouldCauseException() throws Exception {
 		Novel novel = createAndPersistNovel();
 
@@ -104,10 +107,18 @@ public class ConcurrentModificationTest extends OgmTestCase {
 
 		Transaction transaction = session.beginTransaction();
 		novel.setDescription( "Description 2" );
-		transaction.commit();
+
+		try {
+			transaction.commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void mergeAfterConcurrentModificationShouldCauseException() throws Exception {
 		Novel novel = createAndPersistNovel();
 		session.clear();
@@ -115,10 +126,18 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		doConcurrentUpdateToNovel();
 
 		session.beginTransaction();
-		novel = (Novel) session.merge( novel );
+
+		try {
+			novel = (Novel) session.merge( novel );
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void updateAfterConcurrentDeletionShouldCauseException() throws Exception {
 		createAndPersistNovel();
 		session.clear();
@@ -129,10 +148,17 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		concurrentlyDeleteNovel();
 		novel.setPosition( 2 );
 
-		transaction.commit();
+		try {
+			transaction.commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void deletionAfterConcurrentModificationShouldCauseException() throws Exception {
 		Novel novel = createAndPersistNovel();
 
@@ -140,7 +166,15 @@ public class ConcurrentModificationTest extends OgmTestCase {
 
 		Transaction transaction = session.beginTransaction();
 		session.delete( novel );
-		transaction.commit();
+
+		try {
+			transaction.commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
 	private Novel createAndPersistNovel() {
@@ -198,7 +232,7 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		} ).get();
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void customColumnNameShouldBeUsableForRevisionProperty() throws Exception {
 		Animal animal = createAndPersistAnimal();
 
@@ -207,7 +241,15 @@ public class ConcurrentModificationTest extends OgmTestCase {
 
 		Transaction transaction = session.beginTransaction();
 		animal.setName( "Xavier" );
-		transaction.commit();
+
+		try {
+			transaction.commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
 	@Test
@@ -304,7 +346,7 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		transaction.commit();
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void concurrentUpdateToAssociationShouldCauseException() throws Exception {
 		Animal animal = createAndPersistAnimal();
 		Zoo zoo = createAndPersistZoo( animal );
@@ -313,10 +355,18 @@ public class ConcurrentModificationTest extends OgmTestCase {
 
 		Transaction transaction = session.beginTransaction();
 		zoo.getAnimals().remove( zoo.getAnimals().iterator().next() );
-		transaction.commit();
+
+		try {
+			transaction.commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
-	@Test(expected = StaleObjectStateException.class)
+	@Test
 	public void concurrentUpdateToObjectShouldCauseExceptionWhenUpdatingAssociation() throws Exception {
 		Animal animal = createAndPersistAnimal();
 		Zoo zoo = createAndPersistZoo( animal );
@@ -325,7 +375,15 @@ public class ConcurrentModificationTest extends OgmTestCase {
 
 		Transaction transaction = session.beginTransaction();
 		zoo.getAnimals().remove( zoo.getAnimals().iterator().next() );
-		transaction.commit();
+
+		try {
+			transaction.commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		// TODO Should be able to catch SOSE directly once HHH-9760 is resolved
+		catch (Exception e) {
+			assertThat( Throwables.getRootCause( e ) ).isInstanceOf( StaleObjectStateException.class );
+		}
 	}
 
 	@Test
