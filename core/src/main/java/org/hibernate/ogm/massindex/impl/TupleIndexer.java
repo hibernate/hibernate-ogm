@@ -113,7 +113,6 @@ public class TupleIndexer implements SessionAwareRunnable {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private AddLuceneWork createAddLuceneWork(Object entity, InstanceInitializer sessionInitializer,
 			ConversionContext conversionContext, Serializable id, Class<?> clazz, EntityIndexBinding entityIndexBinding) {
 		DocumentBuilderIndexedEntity docBuilder = entityIndexBinding.getDocumentBuilder();
