@@ -56,7 +56,7 @@ public class Cloud {
 	}
 
 	@OneToMany
-	@JoinTable
+	@JoinTable(name = "joinProducedSnowflakes")
 	public Set<SnowFlake> getProducedSnowFlakes() {
 		return producedSnowFlakes;
 	}
@@ -66,7 +66,7 @@ public class Cloud {
 	}
 
 	@OneToMany
-	@JoinTable
+	@JoinTable(name = "joinBackupSnowflakes")
 	public Set<SnowFlake> getBackupSnowFlakes() {
 		return backupSnowFlakes;
 	}

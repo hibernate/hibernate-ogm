@@ -13,6 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -23,6 +25,10 @@ import static org.junit.Assert.fail;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect(
+		value = { GridDialectType.CASSANDRA },
+		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support uniq constraint even on primary key except by explicit/slow CAS use"
+)
 public class DuplicateIdDetectionTest extends JpaTestCase {
 	EntityManager em;
 
