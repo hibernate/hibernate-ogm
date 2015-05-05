@@ -57,18 +57,22 @@ public abstract class AbstractGenericBasicType<T>
 		return javaTypeDescriptor.fromString( string );
 	}
 
+	@Override
 	public String toString(T value) {
 		return javaTypeDescriptor.toString( value );
 	}
 
+	@Override
 	public T fromStringValue(String xml) throws HibernateException {
 		return fromString( xml );
 	}
 
+	@Override
 	public String toXMLString(T value, SessionFactoryImplementor factory) throws HibernateException {
 		return toString( value );
 	}
 
+	@Override
 	public T fromXMLString(String xml, Mapping factory) throws HibernateException {
 		return xml == null || xml.length() == 0 ? null : fromStringValue( xml );
 	}
@@ -89,6 +93,7 @@ public abstract class AbstractGenericBasicType<T>
 		}
 	}
 
+	@Override
 	public boolean[] toColumnNullness(Object value, Mapping mapping) {
 		return value == null ? FALSE : TRUE;
 	}
@@ -114,32 +119,40 @@ public abstract class AbstractGenericBasicType<T>
 		return gridTypeDescriptor;
 	}
 
+	@Override
 	public final Class getReturnedClass() {
 		return javaTypeDescriptor.getJavaTypeClass();
 	}
 
+	@Override
 	public abstract int getColumnSpan(Mapping mapping) throws MappingException;
 
+	@Override
 	public final boolean isAssociationType() {
 		return false;
 	}
 
+	@Override
 	public final boolean isCollectionType() {
 		return false;
 	}
 
+	@Override
 	public final boolean isComponentType() {
 		return false;
 	}
 
+	@Override
 	public final boolean isEntityType() {
 		return false;
 	}
 
+	@Override
 	public final boolean isAnyType() {
 		return false;
 	}
 
+	@Override
 	public final boolean isXMLElement() {
 		return false;
 	}
@@ -147,13 +160,13 @@ public abstract class AbstractGenericBasicType<T>
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public final boolean isSame(Object x, Object y) {
-		return isEqual( (T) x, (T) y );
+		return isEqual( x, y );
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public final boolean isEqual(Object x, Object y, SessionFactoryImplementor factory) {
-		return isEqual( (T) x, (T) y );
+		return isEqual( x, y );
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -179,10 +192,12 @@ public abstract class AbstractGenericBasicType<T>
 		return javaTypeDescriptor.getComparator().compare( (T) x, (T) y );
 	}
 
+	@Override
 	public final boolean isDirty(Object old, Object current, SessionImplementor session) {
 		return isDirty( old, current );
 	}
 
+	@Override
 	public final boolean isDirty(Object old, Object current, boolean[] checkable, SessionImplementor session) {
 		return checkable[0] && isDirty( old, current );
 	}
@@ -191,6 +206,7 @@ public abstract class AbstractGenericBasicType<T>
 		return !isSame( old, current );
 	}
 
+	@Override
 	public final boolean isModified(
 			Object oldHydratedState,
 			Object currentState,
@@ -255,20 +271,24 @@ public abstract class AbstractGenericBasicType<T>
 //		nullSafeSet( st, value, index, session );
 //	}
 
+	@Override
 	@SuppressWarnings({ "unchecked" })
 	public final String toLoggableString(Object value, SessionFactoryImplementor factory) {
 		return javaTypeDescriptor.extractLoggableRepresentation( (T) value );
 	}
 
+	@Override
 	@SuppressWarnings({ "unchecked" })
 	public final void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory) {
 		node.setText( toString( (T) value ) );
 	}
 
+	@Override
 	public final Object fromXMLNode(Node xml, Mapping factory) {
 		return fromString( xml.getText() );
 	}
 
+	@Override
 	public final boolean isMutable() {
 		return getMutabilityPlan().isMutable();
 	}
@@ -283,15 +303,18 @@ public abstract class AbstractGenericBasicType<T>
 		return getMutabilityPlan().deepCopy( value );
 	}
 
+	@Override
 	@SuppressWarnings({ "unchecked" })
 	public final Serializable disassemble(Object value, SessionImplementor session, Object owner) throws HibernateException {
 		return getMutabilityPlan().disassemble( (T) value );
 	}
 
+	@Override
 	public final Object assemble(Serializable cached, SessionImplementor session, Object owner) throws HibernateException {
 		return getMutabilityPlan().assemble( cached );
 	}
 
+	@Override
 	public final void beforeAssemble(Serializable cached, SessionImplementor session) {
 	}
 
@@ -301,23 +324,28 @@ public abstract class AbstractGenericBasicType<T>
 		return nullSafeGet( rs, names, session, owner );
 	}
 
+	@Override
 	public final Object resolve(Object value, SessionImplementor session, Object owner) throws HibernateException {
 		return value;
 	}
 
+	@Override
 	public final Object semiResolve(Object value, SessionImplementor session, Object owner) throws HibernateException {
 		return value;
 	}
 
+	@Override
 	public final GridType getSemiResolvedType(SessionFactoryImplementor factory) {
 		return this;
 	}
 
+	@Override
 	@SuppressWarnings({ "unchecked" })
 	public final Object replace(Object original, Object target, SessionImplementor session, Object owner, Map copyCache) {
 		return getReplacement( (T) original, (T) target );
 	}
 
+	@Override
 	@SuppressWarnings({ "unchecked" })
 	public Object replace(
 			Object original,
@@ -326,7 +354,7 @@ public abstract class AbstractGenericBasicType<T>
 			Object owner,
 			Map copyCache,
 			ForeignKeyDirection foreignKeyDirection) {
-		return ForeignKeyDirection.FOREIGN_KEY_FROM_PARENT == foreignKeyDirection
+		return ForeignKeyDirection.FROM_PARENT == foreignKeyDirection
 				? getReplacement( (T) original, (T) target )
 				: target;
 	}
