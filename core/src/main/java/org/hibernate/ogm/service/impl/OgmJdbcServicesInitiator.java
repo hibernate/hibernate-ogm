@@ -13,8 +13,10 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.LobCreationContext;
 import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
+import org.hibernate.engine.jdbc.env.spi.ExtractedDatabaseMetaData;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.jdbc.internal.JdbcServicesImpl;
-import org.hibernate.engine.jdbc.spi.ExtractedDatabaseMetaData;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.jdbc.spi.ResultSetWrapper;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
@@ -88,6 +90,16 @@ public class OgmJdbcServicesInitiator implements StandardServiceInitiator<JdbcSe
 		@Override
 		public ResultSetWrapper getResultSetWrapper() {
 			return delegate.getResultSetWrapper();
+		}
+
+		@Override
+		public JdbcEnvironment getJdbcEnvironment() {
+			return delegate.getJdbcEnvironment();
+		}
+
+		@Override
+		public JdbcConnectionAccess getBootstrapJdbcConnectionAccess() {
+			return delegate.getBootstrapJdbcConnectionAccess();
 		}
 	}
 }

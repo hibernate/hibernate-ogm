@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 
 import java.util.Map.Entry;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.model.relational.Database;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl.TuplesDesignDocument;
@@ -40,7 +40,7 @@ public class CouchDBSchemaSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	@Override
-	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
+	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
 		CouchDBDatastoreProvider datastoreProvider = (CouchDBDatastoreProvider) factory.getServiceRegistry().getService( DatastoreProvider.class );
 		CouchDBDatastore dataStore = datastoreProvider.getDataStore();
 

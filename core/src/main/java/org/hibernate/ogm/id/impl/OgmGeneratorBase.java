@@ -14,7 +14,7 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Environment;
-import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.IdentifierGeneratorHelper;
@@ -60,7 +60,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	private GridDialect gridDialect;
 
 	@Override
-	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
+	public void configure(Type type, Properties params, JdbcEnvironment jdbcEnvironment) throws MappingException {
 		identifierType = type;
 		incrementSize = determineIncrementSize( params );
 		initialValue = determineInitialValue( params );
@@ -81,7 +81,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
 		);
 
-		gridDialect = ( (OgmDialect) dialect ).getGridDialect();
+		gridDialect = ( (OgmDialect) jdbcEnvironment.getDialect() ).getGridDialect();
 	}
 
 	/**
@@ -90,6 +90,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	 *
 	 * @return The initial value to use.
 	 */
+	@Override
 	public final int getInitialValue() {
 		return initialValue;
 	}

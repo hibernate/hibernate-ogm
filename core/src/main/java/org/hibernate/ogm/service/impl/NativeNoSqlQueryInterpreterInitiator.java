@@ -6,10 +6,9 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -29,16 +28,7 @@ public class NativeNoSqlQueryInterpreterInitiator implements SessionFactoryServi
 	}
 
 	@Override
-	public NativeQueryInterpreter initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration,
-			ServiceRegistryImplementor registry) {
-
-		return getParameterMetadataRecognizer( registry );
-	}
-
-	@Override
-	public NativeQueryInterpreter initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata,
-			ServiceRegistryImplementor registry) {
-
+	public NativeQueryInterpreter initiateService(SessionFactoryImplementor sessionFactory, SessionFactoryOptions sessionFactoryOptions, ServiceRegistryImplementor registry) {
 		return getParameterMetadataRecognizer( registry );
 	}
 

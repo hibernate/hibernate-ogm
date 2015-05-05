@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.model.relational.Database;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -35,7 +35,7 @@ public class BaseSchemaDefiner implements SchemaDefiner {
 	}
 
 	@Override
-	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
+	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
 		// No-op
 	}
 
