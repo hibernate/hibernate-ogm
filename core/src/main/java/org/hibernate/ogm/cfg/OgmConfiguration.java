@@ -9,24 +9,17 @@ package org.hibernate.ogm.cfg;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.id.factory.IdentifierGeneratorFactory;
-import org.hibernate.id.factory.spi.MutableIdentifierGeneratorFactory;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
-import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactory;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.query.impl.OgmQueryTranslatorFactory;
-import org.hibernate.type.Type;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -37,8 +30,6 @@ import org.hibernate.type.Type;
  */
 public class OgmConfiguration extends Configuration implements Configurable {
 
-	private final MutableIdentifierGeneratorFactory identifierGeneratorFactory = new OgmMutableIdentifierGeneratorFactory();
-
 	public OgmConfiguration() {
 		super();
 		resetOgm();
@@ -47,7 +38,6 @@ public class OgmConfiguration extends Configuration implements Configurable {
 	private void resetOgm() {
 		//NOTE: When performing changes here, be sure to do the same in setProperties() below
 
-		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		setProperty( InternalProperties.OGM_ON, "true" );
 
 		HibernateSearchIntegration.resetProperties( this );
@@ -56,38 +46,6 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 
 		setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
-	}
-
-	@Override
-	public Mapping buildMapping() {
-		final Mapping delegate = super.buildMapping();
-		return new Mapping() {
-
-			@Override
-			public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
-				return identifierGeneratorFactory;
-			}
-
-			@Override
-			public Type getIdentifierType(String entityName) throws MappingException {
-				return delegate.getIdentifierType( entityName );
-			}
-
-			@Override
-			public String getIdentifierPropertyName(String entityName) throws MappingException {
-				return delegate.getIdentifierPropertyName( entityName );
-			}
-
-			@Override
-			public Type getReferencedPropertyType(String entityName, String propertyName) throws MappingException {
-				return delegate.getReferencedPropertyType( entityName, propertyName );
-			}
-		};
-	}
-
-	@Override
-	public MutableIdentifierGeneratorFactory getIdentifierGeneratorFactory() {
-		return identifierGeneratorFactory;
 	}
 
 	@Override

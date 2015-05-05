@@ -6,7 +6,13 @@
  */
 package org.hibernate.ogm.datastore.cassandra.impl;
 
-import org.hibernate.cfg.Configuration;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Schema;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.ForeignKey;
@@ -19,11 +25,6 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.type.Type;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 /**
  * Table and index creation methods.
  *
@@ -32,7 +33,7 @@ import java.util.Set;
 public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 
 	@Override
-	public void initializeSchema(Configuration configuration, SessionFactoryImplementor sessionFactoryImplementor) {
+	public void initializeSchema(Database database, SessionFactoryImplementor sessionFactoryImplementor) {
 		CassandraDatastoreProvider datastoreProvider = (CassandraDatastoreProvider) sessionFactoryImplementor.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 		Set<PersistentNoSqlIdentifierGenerator> identifierGenerators = getPersistentGenerators(
@@ -44,11 +45,11 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 			sequenceHandler.createSequence( identifierGenerator.getGeneratorKeyMetadata(), datastoreProvider );
 		}
 
-		Iterator<Table> tableMappings = configuration.getTableMappings();
-		while ( tableMappings.hasNext() ) {
-			Table table = tableMappings.next();
-			if ( table.isPhysicalTable() ) {
-				processTable( sessionFactoryImplementor, datastoreProvider, table );
+		for ( Schema schema : database.getSchemas() ) {
+			for ( Table table : schema.getTables() ) {
+				if ( table.isPhysicalTable() ) {
+					processTable( sessionFactoryImplementor, datastoreProvider, table );
+				}
 			}
 		}
 	}
@@ -70,7 +71,7 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 		List<String> columnNames = new ArrayList<String>();
 		List<String> columnTypes = new ArrayList<String>();
 
-		Iterator<Column> columnIterator = (Iterator<Column>) table.getColumnIterator();
+		Iterator<Column> columnIterator = table.getColumnIterator();
 		while ( columnIterator.hasNext() ) {
 			Column column = columnIterator.next();
 			columnNames.add( column.getName() );

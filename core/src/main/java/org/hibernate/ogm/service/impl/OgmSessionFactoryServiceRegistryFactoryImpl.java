@@ -6,9 +6,8 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.service.internal.SessionFactoryServiceRegistryImpl;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
@@ -29,19 +28,10 @@ public class OgmSessionFactoryServiceRegistryFactoryImpl implements SessionFacto
 	}
 
 	@Override
-	public SessionFactoryServiceRegistryImpl buildServiceRegistry(SessionFactoryImplementor sessionFactory, Configuration configuration) {
+	public SessionFactoryServiceRegistryImpl buildServiceRegistry(SessionFactoryImplementor sessionFactory, SessionFactoryOptions sessionFactoryOptions) {
 		if ( ogmSessionFactoryServiceRegistryImpl == null ) {
-			ogmSessionFactoryServiceRegistryImpl = new OgmSessionFactoryServiceRegistryImpl( theBasicServiceRegistry, sessionFactory, configuration );
+			ogmSessionFactoryServiceRegistryImpl = new OgmSessionFactoryServiceRegistryImpl( theBasicServiceRegistry, sessionFactory, sessionFactoryOptions );
 		}
 		return ogmSessionFactoryServiceRegistryImpl;
 	}
-
-	@Override
-	public SessionFactoryServiceRegistryImpl buildServiceRegistry(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata) {
-		if ( ogmSessionFactoryServiceRegistryImpl == null ) {
-			ogmSessionFactoryServiceRegistryImpl = new OgmSessionFactoryServiceRegistryImpl( theBasicServiceRegistry, sessionFactory, metadata );
-		}
-		return ogmSessionFactoryServiceRegistryImpl;
-	}
-
 }
