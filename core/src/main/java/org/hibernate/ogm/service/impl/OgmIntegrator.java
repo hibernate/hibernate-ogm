@@ -8,8 +8,9 @@ package org.hibernate.ogm.service.impl;
 
 import java.util.Map;
 
+import org.hibernate.boot.Metadata;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
@@ -17,7 +18,6 @@ import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.IntegratorService;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.jpa.event.spi.JpaIntegrator;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
@@ -55,13 +55,8 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 public class OgmIntegrator implements Integrator, ServiceContributingIntegrator {
 
 	@Override
-	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		doIntegrate( configuration, sessionFactory, serviceRegistry );
-	}
-
-	@Override
-	public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		doIntegrate( null, sessionFactory, serviceRegistry );
+	public void integrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		doIntegrate( metadata, sessionFactory, serviceRegistry );
 	}
 
 	@Override
@@ -91,16 +86,16 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( EventContextManagerInitiator.INSTANCE );
 	}
 
-	private void doIntegrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		if ( !isOgmUsed( configuration.getProperties() ) ) {
+	private void doIntegrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( !isOgmUsed( serviceRegistry.getService( ConfigurationService.class ).getSettings() ) ) {
 			return;
 		}
 		Version.touch();
 
-		sessionFactory.addObserver( new SchemaDefiningObserver( configuration ) );
+		sessionFactory.addObserver( new SchemaDefiningObserver( metadata ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 
-		attachEventContextManagingListenersIfRequired( configuration, serviceRegistry );
+		attachEventContextManagingListenersIfRequired( serviceRegistry );
 	}
 
 	private boolean isOgmUsed(Map properties) {
@@ -114,8 +109,10 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 				.getValue();
 	}
 
-	private void attachEventContextManagingListenersIfRequired(Configuration configuration, SessionFactoryServiceRegistry serviceRegistry) {
-		if ( !EventContextManager.isEventContextRequired( configuration.getProperties(), serviceRegistry ) ) {
+	private void attachEventContextManagingListenersIfRequired(SessionFactoryServiceRegistry serviceRegistry) {
+		@SuppressWarnings("unchecked")
+		Map<Object, Object> settings = serviceRegistry.getService( ConfigurationService.class ).getSettings();
+		if ( !EventContextManager.isEventContextRequired( settings, serviceRegistry ) ) {
 			return;
 		}
 

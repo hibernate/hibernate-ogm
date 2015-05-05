@@ -16,13 +16,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.fest.util.Files;
+import org.hibernate.boot.model.naming.ObjectNameNormalizer;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.DefaultNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
-import org.hibernate.cfg.ObjectNameNormalizer;
-import org.hibernate.cfg.naming.LegacyNamingStrategyDelegator;
-import org.hibernate.cfg.naming.NamingStrategyDelegator;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;

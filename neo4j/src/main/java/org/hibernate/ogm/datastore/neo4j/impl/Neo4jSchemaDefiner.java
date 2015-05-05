@@ -10,9 +10,11 @@ import static org.neo4j.graphdb.DynamicLabel.label;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Schema;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
@@ -59,13 +61,13 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 	private static final Log log = LoggerFactory.getLogger();
 
 	@Override
-	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
+	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
 		SessionFactoryImplementor sessionFactoryImplementor = factory;
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
 
 		createSequences( sessionFactoryImplementor, provider );
-		createEntityConstraints( provider.getDataBase(), configuration );
+		createEntityConstraints( provider.getDataBase(), database, factory.getProperties() );
 	}
 
 	private void createSequences(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
@@ -73,9 +75,11 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 		provider.getSequenceGenerator().createSequences( sequences );
 	}
 
-	private void createEntityConstraints(GraphDatabaseService neo4jDb, Configuration configuration) {
-		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret( configuration.getProperties().get(
-				Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
+	private void createEntityConstraints(GraphDatabaseService neo4jDb, Database database, Properties properties) {
+		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret( properties.get(
+				Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY )
+		);
+
 		log.debugf( "%1$s property set to %2$s" , Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY, constraintMethod );
 		if ( constraintMethod == UniqueConstraintSchemaUpdateStrategy.SKIP ) {
 			log.tracef( "Skipping generation of unique constraints" );
@@ -85,7 +89,7 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 			Transaction tx = null;
 			try {
 				tx = neo4jDb.beginTx();
-				addUniqueConstraints( neo4jDb, configuration );
+				addUniqueConstraints( neo4jDb, database );
 				tx.success();
 			}
 			finally {
@@ -94,25 +98,25 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 		}
 	}
 
-	private void addUniqueConstraints(GraphDatabaseService neo4jDb, Configuration configuration) {
-		Iterator<Table> tableMappings = configuration.getTableMappings();
-		while ( tableMappings.hasNext() ) {
-			Table table = tableMappings.next();
-			if ( table.isPhysicalTable() ) {
-				Label label = label( table.getName() );
-				PrimaryKey primaryKey = table.getPrimaryKey();
-				createConstraint( neo4jDb, table, label, primaryKey );
-				@SuppressWarnings("unchecked")
-				Iterator<Column> columnIterator = table.getColumnIterator();
-				while ( columnIterator.hasNext() ) {
-					Column column = columnIterator.next();
-					if ( column.isUnique() ) {
-						createUniqueConstraintIfMissing( neo4jDb, label, column.getName() );
+	private void addUniqueConstraints(GraphDatabaseService neo4jDb, Database database) {
+		for ( Schema schema : database.getSchemas() ) {
+			for ( Table table : schema.getTables() ) {
+				if ( table.isPhysicalTable() ) {
+					Label label = label( table.getName() );
+					PrimaryKey primaryKey = table.getPrimaryKey();
+					createConstraint( neo4jDb, table, label, primaryKey );
+					@SuppressWarnings("unchecked")
+					Iterator<Column> columnIterator = table.getColumnIterator();
+					while ( columnIterator.hasNext() ) {
+						Column column = columnIterator.next();
+						if ( column.isUnique() ) {
+							createUniqueConstraintIfMissing( neo4jDb, label, column.getName() );
+						}
 					}
-				}
-				Iterator<UniqueKey> uniqueKeyIterator = table.getUniqueKeyIterator();
-				while ( uniqueKeyIterator.hasNext() ) {
-					createConstraint( neo4jDb, table, label, uniqueKeyIterator.next() );
+					Iterator<UniqueKey> uniqueKeyIterator = table.getUniqueKeyIterator();
+					while ( uniqueKeyIterator.hasNext() ) {
+						createConstraint( neo4jDb, table, label, uniqueKeyIterator.next() );
+					}
 				}
 			}
 		}

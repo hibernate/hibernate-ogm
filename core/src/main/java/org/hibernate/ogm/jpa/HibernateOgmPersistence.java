@@ -17,7 +17,6 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.ProviderUtil;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
@@ -87,7 +86,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
-		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
+		map.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 		map.put( InternalProperties.OGM_ON, "true" );
 		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
 		HibernateSearchIntegration.resetProperties( map );

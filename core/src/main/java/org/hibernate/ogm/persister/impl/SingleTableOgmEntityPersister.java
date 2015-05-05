@@ -11,12 +11,12 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
-import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.mapping.Value;
+import org.hibernate.persister.spi.PersisterCreationContext;
 
 /**
  * Use single table strategy.
@@ -30,15 +30,14 @@ public class SingleTableOgmEntityPersister extends OgmEntityPersister {
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
-			final SessionFactoryImplementor factory,
-			final Mapping mapping) throws HibernateException {
-		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, factory, mapping, resolveDiscriminator( persistentClass, factory ) );
+			final PersisterCreationContext creationContext) throws HibernateException {
+		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext, resolveDiscriminator( persistentClass, creationContext.getSessionFactory() ) );
 	}
 
 	private static EntityDiscriminator resolveDiscriminator(final PersistentClass persistentClass, final SessionFactoryImplementor factory) {
 		if ( persistentClass.isPolymorphic() ) {
 			Value discrimValue = persistentClass.getDiscriminator();
-			Selectable selectable = (Selectable) discrimValue.getColumnIterator().next();
+			Selectable selectable = discrimValue.getColumnIterator().next();
 			if ( discrimValue.hasFormula() ) {
 				throw new UnsupportedOperationException( "OGM doesn't support discriminator formulas" );
 			}

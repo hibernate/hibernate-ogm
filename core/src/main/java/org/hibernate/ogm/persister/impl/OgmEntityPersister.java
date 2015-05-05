@@ -33,7 +33,6 @@ import org.hibernate.engine.OptimisticLockStyle;
 import org.hibernate.engine.internal.Versioning;
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
-import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.DynamicFilterAliasGenerator;
@@ -83,6 +82,7 @@ import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.entity.Loadable;
+import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.BackrefPropertyAccessor;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -189,13 +189,15 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
-			final SessionFactoryImplementor factory,
-			final Mapping mapping,
+			final PersisterCreationContext creationContext,
 			final EntityDiscriminator discriminator) throws HibernateException {
-		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, factory );
+		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext );
+
 		if ( log.isTraceEnabled() ) {
 			log.tracef( "Creating OgmEntityPersister for %s", persistentClass.getClassName() );
 		}
+
+		SessionFactoryImplementor factory = creationContext.getSessionFactory();
 
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		this.gridDialect = serviceRegistry.getService( GridDialect.class );
@@ -290,7 +292,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			constraintOrderedKeyColumnNames = new String[][] { getIdentifierColumnNames() };
 		}
 
-		initPropertyPaths( mapping );
+		initPropertyPaths( creationContext.getMetadata() );
 
 		//Grid related metadata
 		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );

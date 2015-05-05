@@ -11,9 +11,8 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
-import org.hibernate.engine.spi.Mapping;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.persister.spi.PersisterCreationContext;
 
 /**
  * Use table per class strategy.
@@ -25,9 +24,9 @@ public class UnionSubclassOgmEntityPersister extends OgmEntityPersister {
 
 	public UnionSubclassOgmEntityPersister(PersistentClass persistentClass,
 			EntityRegionAccessStrategy cacheAccessStrategy,
-			NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy, SessionFactoryImplementor factory,
-			Mapping mapping) throws HibernateException {
-		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, factory, mapping,
+			NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
+			PersisterCreationContext creationContext) throws HibernateException {
+		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext,
 				new TablePerClassDiscriminator( persistentClass ) );
 	}
 
