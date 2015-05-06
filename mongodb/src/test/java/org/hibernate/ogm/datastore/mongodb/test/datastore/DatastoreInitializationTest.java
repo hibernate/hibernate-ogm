@@ -87,7 +87,24 @@ public class DatastoreInitializationTest {
 		provider.configure( cfg );
 		provider.start();
 
-		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.MONGODB_CR_MECHANISM );
+		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( null );
+	}
+
+	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	public void testSCRAMSHA1AuthenticationMechanism() throws Exception {
+		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( OgmProperties.PASSWORD, "test" );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.SCRAM_SHA_1.name() );
+
+		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry( cfg ) );
+		provider.configure( cfg );
+		provider.start();
+
+		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.SCRAM_SHA_1_MECHANISM );
 	}
 
 	@Test

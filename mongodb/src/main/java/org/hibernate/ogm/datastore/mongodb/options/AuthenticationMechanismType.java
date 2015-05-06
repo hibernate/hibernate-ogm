@@ -13,6 +13,7 @@ import com.mongodb.MongoCredential;
  *
  * @see com.mongodb.MongoCredential
  * @author Davide D'Alto
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public enum AuthenticationMechanismType {
 
@@ -22,6 +23,10 @@ public enum AuthenticationMechanismType {
 			return MongoCredential.createGSSAPICredential( username );
 		}
 	},
+	/**
+	 * @deprecated since MongoDB 3.0, use {@link #SCRAM_SHA_1} or {@link #BEST}
+	 */
+	@Deprecated
 	MONGODB_CR {
 
 		public MongoCredential createCredential(String username, String databaseName, String password) {
@@ -39,7 +44,25 @@ public enum AuthenticationMechanismType {
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createMongoX509Credential( username );
 		}
-	};
+	}
+	,
+	SCRAM_SHA_1 {
+
+		public MongoCredential createCredential(String username, String databaseName, String password) {
+			return MongoCredential.createScramSha1Credential( username, databaseName, asCharArray( password ) );
+		}
+	},
+	/**
+	 * The client will negotiate the best mechanism based on
+	 * the version of the server that the client is authenticating to.
+	 */
+	BEST {
+
+		public MongoCredential createCredential(String username, String databaseName, String password) {
+			return MongoCredential.createCredential( username, databaseName, asCharArray( password ) );
+		}
+	}
+	;
 
 	private static char[] asCharArray(String password) {
 		if ( password == null ) {

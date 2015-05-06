@@ -70,7 +70,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.withValidator( TIMEOUT_VALIDATOR )
 				.getValue();
 		this.authenticationMechanism = propertyReader.property( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.class )
-				.withDefault( AuthenticationMechanismType.MONGODB_CR )
+				.withDefault( AuthenticationMechanismType.BEST )
 				.getValue();
 		this.writeConcern = globalOptions.getUnique( WriteConcernOption.class );
 		this.readPreference = globalOptions.getUnique( ReadPreferenceOption.class );
