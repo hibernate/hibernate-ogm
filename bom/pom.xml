@@ -26,7 +26,7 @@
         <ehcacheVersion>2.6.9</ehcacheVersion>
         <infinispanVersion>7.1.1.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
-        <fongodbVersion>1.6.0</fongodbVersion>
+        <fongodbVersion>1.6.2</fongodbVersion>
         <neo4jVersion>2.1.6</neo4jVersion>
         <cassandraVersion>2.1.3</cassandraVersion>
 
