@@ -103,4 +103,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 			+ " Please change name for '%s', for example by using @Column ")
 	MappingException fieldNameContainsNULCharacter(String fieldName);
 
+	@Message(id = 1225, value = "This WriteConcern has been deprecated or removed by MongoDB: %s")
+	HibernateException writeConcernDeprecated(String writeConcern);
+
 }

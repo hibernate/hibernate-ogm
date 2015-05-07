@@ -43,10 +43,10 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypeOnGlobalLevel() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.ERRORS_IGNORED );
+			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED );
 
 		OptionsContainer options = getSource().getGlobalOptions();
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
 	}
 
 	@Test
@@ -62,14 +62,14 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypePriority() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.ERRORS_IGNORED )
+			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY )
 				.property( "content", ElementType.FIELD )
 					.writeConcern( WriteConcernType.FSYNCED );
 
 		OptionsContainer options = getSource().getGlobalOptions();
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
 
 		options = getSource().getEntityOptions( ExampleForMongoDBMapping.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.MAJORITY );
@@ -135,7 +135,7 @@ public class WriteConcernOptionTest {
 	private static class ReplicaConfigurableWriteConcern extends WriteConcern {
 
 		public ReplicaConfigurableWriteConcern(int numberOfRequiredReplicas) {
-			super( numberOfRequiredReplicas, 0, false, true, false );
+			super( numberOfRequiredReplicas, 0, false, true );
 		}
 	}
 }
