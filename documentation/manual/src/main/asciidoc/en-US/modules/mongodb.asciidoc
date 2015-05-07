@@ -107,7 +107,7 @@ Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.opti
 hibernate.ogm.mongodb.write_concern::
 Defines the write concern setting to be applied when issuing writes against the MongoDB datastore.
 Possible settings are (values of the +WriteConcernType+ enum):
-+ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +REPLICA_ACKNOWLEDGED+, +MAJORITY+ and +CUSTOM+.
++ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +REPLICA_ACKNOWLEDGED+, +MAJORITY+ and +CUSTOM+.
 When set to +CUSTOM+, a custom +WriteConcern+ implementation type has to be specified.
 +
 This option is case insensitive and the default value is +ACKNOWLEDGED+.
