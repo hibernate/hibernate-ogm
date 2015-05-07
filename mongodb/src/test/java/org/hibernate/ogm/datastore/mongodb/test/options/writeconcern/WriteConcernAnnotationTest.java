@@ -31,7 +31,7 @@ public class WriteConcernAnnotationTest {
 	@Test
 	public void testWriteConcernForEntity() throws Exception {
 		OptionsContainer options = source.getEntityOptions( EntityWriteConcernExample.class );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.REPLICA_ACKNOWLEDGED );
 	}
 
 	@Test
@@ -40,7 +40,7 @@ public class WriteConcernAnnotationTest {
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new MultipleDataCenters() );
 	}
 
-	@WriteConcern(WriteConcernType.ERRORS_IGNORED)
+	@WriteConcern(WriteConcernType.REPLICA_ACKNOWLEDGED)
 	private static final class EntityWriteConcernExample {
 	}
 
@@ -52,7 +52,7 @@ public class WriteConcernAnnotationTest {
 	public static class MultipleDataCenters extends com.mongodb.WriteConcern {
 
 		public MultipleDataCenters() {
-			super( "MultipleDataCenters", 0, false, true, false );
+			super( "MultipleDataCenters" );
 		}
 	}
 }
