@@ -13,12 +13,19 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
+
 import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect(
+		value = { GridDialectType.CASSANDRA },
+		comment = "hibernate core doesn't supply required primary key metadata for collections"
+)
 public class MapTest extends OgmTestCase {
 
 	@Test
