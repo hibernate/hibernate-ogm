@@ -15,7 +15,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -29,6 +31,10 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  * @author Davide D'Alto
  */
+@SkipByGridDialect(
+		value = { GridDialectType.CASSANDRA },
+		comment = "WithEmbedded list fields - bag semantics unsupported (no primary key)"
+)
 public class QueriesWithEmbeddedTest extends OgmTestCase {
 
 	@TestSessionFactory
