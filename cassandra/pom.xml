@@ -19,6 +19,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <skipExec>${skipCassandraUnitTests}</skipExec>
                     <environmentVariables>
                         <CASSANDRA_HOSTNAME>${env.CASSANDRA_HOSTNAME}</CASSANDRA_HOSTNAME>
                         <CASSANDRA_PORT>${env.CASSANDRA_PORT}</CASSANDRA_PORT>
@@ -77,17 +78,32 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Compile -->
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-lucene</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
-            <version>2.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
+            <scope>provided</scope>
         </dependency>
 
+        <!-- Tests -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -100,16 +116,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
             <scope>test</scope>
@@ -119,20 +125,6 @@
             <artifactId>shrinkwrap-impl-base</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-lucene</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-engine</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>io.takari.junit</groupId>
             <artifactId>takari-cpsuite</artifactId>
@@ -143,55 +135,41 @@
 
     <profiles>
         <profile>
-            <id>embedded-cassandra</id>
+            <id>skip-cassandra-unit-tests</id>
+            <!-- To run the tests you need to define the environment property: CASSANDRA_HOSTNAME -->
             <activation>
                 <property>
-                    <name>!useExternalcassandra</name>
+                    <name>!env.CASSANDRA_HOSTNAME</name>
                 </property>
             </activation>
+            <properties>
+                <skipCassandraUnitTests>true</skipCassandraUnitTests>
+            </properties>
             <build>
                 <plugins>
-
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <environmentVariables>
-                                <cassandra_PORT>${embeddedcassandraPort}</cassandra_PORT>
-                                <cassandra_HOSTNAME>${embeddedcassandraBindIp}</cassandra_HOSTNAME>
-                            </environmentVariables>
-                            <forkMode>once</forkMode>
-                        </configuration>
-                    </plugin>
-
-                    <!-- http://mojo.codehaus.org/cassandra-maven-plugin/ -->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>cassandra-maven-plugin</artifactId>
-                        <version>2.0.0-1</version>
-                        <configuration>
-                            <startNativeTransport>true</startNativeTransport>
-                        </configuration>
+                        <groupId>org.codehaus.gmaven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
                         <executions>
-                            <!--<execution>-->
-                                <!--<goals>-->
-                                    <!--<goal>start</goal>-->
-                                    <!--<goal>stop</goal>-->
-                                <!--</goals>-->
-                            <!--</execution>-->
+                            <execution>
+                                <id>log-info</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <source>
+                                        println "[INFO] ------------------------------------------------------------------------";
+                                        println "[INFO] CASSANDRA BUILD INFO                                                    ";
+                                        println "[INFO] ------------------------------------------------------------------------";
+                                        println "[INFO] Skipping unit tests. Specify Cassandra host and port via the environment";
+                                        println "[INFO] variables CASSANDRA_HOSTNAME and CASSANDRA_PORT, respectively.          ";
+                                        println "[INFO] ------------------------------------------------------------------------";
+                                    </source>
+                                </configuration>
+                            </execution>
                         </executions>
-                        <dependencies>
-                            <!-- use to override the version of cassandra used by the plugin. -->
-                            <!-- but due to class changes in cassandra you can't currently go to 2.1:
-                            https://jira.codehaus.org/browse/MCASSANDRA-38 -->
-                            <dependency>
-                                <groupId>org.apache.cassandra</groupId>
-                                <artifactId>cassandra-all</artifactId>
-                                <version>2.1.4</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
