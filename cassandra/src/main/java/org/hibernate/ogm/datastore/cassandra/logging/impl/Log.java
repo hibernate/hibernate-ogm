@@ -6,14 +6,13 @@
  */
 package org.hibernate.ogm.datastore.cassandra.logging.impl;
 
-import org.hibernate.HibernateException;
-
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
-
 import static org.jboss.logging.Logger.Level.INFO;
+
+import org.hibernate.HibernateException;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Log message abstraction for i18n.
