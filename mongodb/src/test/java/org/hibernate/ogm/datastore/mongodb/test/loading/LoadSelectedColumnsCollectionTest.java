@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Session;
@@ -48,8 +49,10 @@ import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.options.spi.Option;
+import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -79,7 +82,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		water.put( "volume", "1L" );
 		collection.insert( water );
 
-		List<String> selectedColumns = new ArrayList<String>();
+		List<String> selectedColumns = new ArrayList<>();
 		selectedColumns.add( "name" );
 		Tuple tuple = this.getTuple( collectionName, "1234", selectedColumns );
 
@@ -110,7 +113,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		infinispan.setName( "Infinispan" );
 		session.persist( infinispan );
 
-		List<Module> modules = new ArrayList<Module>();
+		List<Module> modules = new ArrayList<>();
 		modules.add( mongodb );
 		modules.add( infinispan );
 
@@ -176,7 +179,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				selectedColumns,
 				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
 				Collections.<String, String>emptyMap(),
-				EmptyOptionsContext.INSTANCE
+				TestOptionContext.INSTANCE
 		);
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );
@@ -229,5 +232,37 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		 */
 		final Set<?> retrievedColumns = associationObject.keySet();
 		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
+	}
+
+	private static class TestOptionContext implements OptionsContext {
+
+		public static OptionsContext INSTANCE = new TestOptionContext();
+
+		@Override
+		public <I, V, O extends Option<I, V>> V get(Class<O> optionType, I identifier) {
+			try {
+				Option<I,V> optionInstance = optionType.newInstance();
+				return optionInstance.getDefaultValue( new ConfigurationPropertyReader( Collections.EMPTY_MAP ) );
+			}
+			catch (InstantiationException | IllegalAccessException e) {
+				throw new RuntimeException( e );
+			}
+		}
+
+		@Override
+		public <V, O extends UniqueOption<V>> V getUnique(Class<O> optionType) {
+			try {
+				UniqueOption<V> optionInstance = optionType.newInstance();
+				return optionInstance.getDefaultValue( new ConfigurationPropertyReader( Collections.EMPTY_MAP ) );
+			}
+			catch (InstantiationException | IllegalAccessException e) {
+				throw new RuntimeException( e );
+			}
+		}
+
+		@Override
+		public <I, V, O extends Option<I, V>> Map<I, V> getAll(Class<O> optionType) {
+			return null;
+		}
 	}
 }
