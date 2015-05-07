@@ -70,7 +70,9 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 
 	/**
 	 * Specify the authentication mechanism that MongoDB will use to authenticate the connection.
-	 * Possible values include: MONGODB-CR (default), MONGODB-X509, PLAIN, GSSAPI
+	 * Possible values are listed in {@link org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType}.
+	 *
+	 * {@code BEST} (default) will handshake with the server to find the best authentication mechanism.
 	 *
 	 * @see com.mongodb.MongoCredential
 	 */

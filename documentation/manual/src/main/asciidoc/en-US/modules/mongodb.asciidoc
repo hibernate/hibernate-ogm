@@ -80,8 +80,11 @@ This configuration is expressed in milliseconds.
 The default value is +5000+.
 hibernate.ogm.mongodb.authentication_mechanism::
 Define the authentication mechanism to use. Possible values are:
+
+* +BEST+: Handshakes with the server to find the best authentication mechanism.
+* +SCRAM_SHA_1+: The SCRAM SHA 1 Challenge Response mechanism as described in this link:http://tools.ietf.org/html/rfc5802[RFC].
+* +MONGODB_CR+: The MongoDB Challenge Response mechanism (deprecated since MongoDB 3)
 * +GSSAPI+: The GSSAPI mechanism. See the http://tools.ietf.org/html/rfc4752[RFC]
-* +MONGODB_CR+: The MongoDB Challenge Response mechanism. This is the default value.
 * +MONGODB_X509+: The MongoDB X.509
 * +PLAIN+: The PLAIN mechanism.  See the http://www.ietf.org/rfc/rfc4616.txt[RFC]
 hibernate.ogm.datastore.document.association_storage::
