@@ -77,77 +77,6 @@ public class EmbeddableTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testElementCollectionOfEmbeddable() throws Exception {
-		final Session session = openSession();
-
-		Transaction transaction = session.beginTransaction();
-
-		Address address = new Address();
-		address.setCity( "Paris" );
-		address.setCountry( "France" );
-		address.setStreet1( "1 avenue des Champs Elysees" );
-		address.setZipCode( "75007" );
-
-		Address anotherAddress = new Address();
-		anotherAddress.setCity( "Rome" );
-		anotherAddress.setCountry( "Italy" );
-		anotherAddress.setStreet1( "Piazza del Colosseo, 1" );
-		anotherAddress.setZipCode( "00184" );
-		anotherAddress.setType( new AddressType( "primary" ) );
-
-		MultiAddressAccount account = new MultiAddressAccount();
-		account.setLogin( "gunnar" );
-		account.setPassword( "highly secret" );
-		account.getAddresses().add( address );
-		account.getAddresses().add( anotherAddress );
-
-		session.persist( account );
-		transaction.commit();
-
-		session.clear();
-
-		transaction = session.beginTransaction();
-		MultiAddressAccount loadedAccount = (MultiAddressAccount) session.get( MultiAddressAccount.class, account.getLogin() );
-		assertThat( loadedAccount ).as( "Cannot load persisted object" ).isNotNull();
-		assertThat( loadedAccount.getAddresses() ).onProperty( "city" ).containsOnly( "Paris", "Rome" );
-		assertThat( loadedAccount.getAddresses() ).onProperty( "zipCode" ).containsOnly( "75007", "00184" );
-		assertThat( loadedAccount.getAddresses() ).onProperty( "country" ).containsOnly( "France", "Italy" );
-		assertThat( loadedAccount.getAddresses() ).onProperty( "street2" ).containsOnly( null, null );
-		assertThat( loadedAccount.getAddresses() ).onProperty( "type" ).containsOnly( new AddressType( "primary" ), null );
-
-		Address loadedAddress1 = loadedAccount.getAddresses().get( 0 );
-		Address loadedAddress2 = loadedAccount.getAddresses().get( 1 );
-
-		transaction.commit();
-
-		session.clear();
-
-		transaction = session.beginTransaction();
-		loadedAddress1.setCountry( "USA" );
-		loadedAddress2.setCountry( "Germany" );
-
-		session.merge( loadedAccount );
-		transaction.commit();
-
-		session.clear();
-
-		transaction = session.beginTransaction();
-		MultiAddressAccount secondLoadedAccount = (MultiAddressAccount) session.get( MultiAddressAccount.class, account.getLogin() );
-		assertThat( secondLoadedAccount.getAddresses() ).onProperty( "city" ).contains( "Paris", "Rome" );
-		assertThat( secondLoadedAccount.getAddresses() ).onProperty( "country" ).contains( "USA", "Germany" );
-		session.delete( secondLoadedAccount );
-		transaction.commit();
-
-		session.clear();
-
-		transaction = session.beginTransaction();
-		assertThat( session.get( MultiAddressAccount.class, account.getLogin() ) ).isNull();
-		transaction.commit();
-
-		session.close();
-	}
-
-	@Test
 	public void testNestedEmbeddable() {
 		final Session session = openSession();
 
@@ -344,6 +273,6 @@ public class EmbeddableTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Account.class, MultiAddressAccount.class, AccountWithPhone.class, Order.class };
+		return new Class<?>[] { Account.class, AccountWithPhone.class, Order.class };
 	}
 }
