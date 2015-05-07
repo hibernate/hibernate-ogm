@@ -10,31 +10,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-
-import com.datastax.driver.core.exceptions.DriverException;
-
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-
 import org.hibernate.mapping.Table;
-
 import org.hibernate.ogm.datastore.cassandra.CassandraDialect;
 import org.hibernate.ogm.datastore.cassandra.impl.configuration.CassandraConfiguration;
+import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
+import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-
-import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
-import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
-
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.DriverException;
 
 /**
  * Datastore service layered on Cassandra's java-driver i.e. CQL3 native transport.
@@ -213,5 +208,10 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 		catch (DriverException e) {
 			log.failedToCreateTable( entityName, e );
 		}
+	}
+
+	@Override
+	public boolean allowsTransactionEmulation() {
+		return true;
 	}
 }
