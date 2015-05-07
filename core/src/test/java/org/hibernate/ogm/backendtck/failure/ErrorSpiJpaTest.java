@@ -49,6 +49,10 @@ import org.junit.Test;
  * @author Gunnar Morling
  *
  */
+@SkipByGridDialect(
+		value = { GridDialectType.CASSANDRA },
+		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support uniq constraint even on primary key except by explicit/slow CAS use"
+)
 public class ErrorSpiJpaTest  extends JpaTestCase {
 
 	@Rule
