@@ -28,6 +28,7 @@
         <mongodbVersion>2.12.4</mongodbVersion>
         <fongodbVersion>1.6.0</fongodbVersion>
         <neo4jVersion>2.1.6</neo4jVersion>
+        <cassandraVersion>2.1.3</cassandraVersion>
 
         <!--
              Not all the Neo4j artifacts are available in the latest version; Some artifacts with the older
@@ -300,6 +301,11 @@
                 <artifactId>hibernate-ogm-couchdb</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-cassandra</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -426,6 +432,12 @@
                 </exclusions>
             </dependency>
 
+            <!-- Cassandra -->
+            <dependency>
+                <groupId>com.datastax.cassandra</groupId>
+                <artifactId>cassandra-driver-core</artifactId>
+                <version>${cassandraVersion}</version>
+            </dependency>
 
         <dependency>
             <groupId>org.neo4j</groupId>
