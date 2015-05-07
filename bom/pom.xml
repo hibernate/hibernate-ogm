@@ -25,7 +25,7 @@
         <classmateVersion>1.0.0</classmateVersion>
         <ehcacheVersion>2.6.9</ehcacheVersion>
         <infinispanVersion>7.2.1.Final</infinispanVersion>
-        <mongodbVersion>2.13.1</mongodbVersion>
+        <mongodbVersion>3.0.3</mongodbVersion>
         <fongodbVersion>1.6.2</fongodbVersion>
         <neo4jVersion>2.2.3</neo4jVersion>
         <!-- Update dependency versions accordingly when updating C*  -->

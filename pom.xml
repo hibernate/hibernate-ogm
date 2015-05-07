@@ -552,7 +552,7 @@
                 <plugin>
                     <groupId>com.github.joelittlejohn.embedmongo</groupId>
                     <artifactId>embedmongo-maven-plugin</artifactId>
-                    <version>0.1.12</version>
+                    <version>0.1.13</version>
                     <configuration>
                         <port>${embeddedMongoDbPort}</port>
                         <logging>file</logging>
@@ -565,7 +565,7 @@
                         <dependency>
                             <groupId>de.flapdoodle.embed</groupId>
                             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-                            <version>1.47.2</version>
+                            <version>1.48.0</version>
                         </dependency>
                     </dependencies>
                 </plugin>
