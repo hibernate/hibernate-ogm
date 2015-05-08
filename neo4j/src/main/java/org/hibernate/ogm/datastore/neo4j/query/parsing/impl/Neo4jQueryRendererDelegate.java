@@ -62,8 +62,8 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		String label = getKeyMetaData( targetType ).getTable();
 		StringBuilder queryBuilder = new StringBuilder();
 		match( queryBuilder, targetAlias, label );
-		optionalMatch( queryBuilder, targetAlias );
 		where( queryBuilder );
+		optionalMatch( queryBuilder, targetAlias );
 		returns( queryBuilder, targetAlias );
 		orderBy( queryBuilder );
 		return new Neo4jQueryParsingResult( targetType, projections, queryBuilder.toString() );
@@ -72,17 +72,38 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	private void match(StringBuilder queryBuilder, String targetAlias, String label) {
 		queryBuilder.append( "MATCH " );
 		node( queryBuilder, targetAlias, label );
+		EmbeddedAliasTree node = embeddedAliasResolver.getAliasTree( targetAlias );
+		if ( node != null ) {
+			boolean first = true;
+			for ( EmbeddedAliasTree child : node.getChildren() ) {
+				if ( !embeddedAliasResolver.isOptionalMatch( child.getAlias() ) ) {
+					StringBuilder embeddedMatch = new StringBuilder();
+					if ( first ) {
+						first = false;
+					}
+					else {
+						embeddedMatch.append( ", " );
+						node( embeddedMatch, targetAlias, label );
+					}
+					relationship( embeddedMatch, child.getName() );
+					node( embeddedMatch, child.getAlias(), NodeLabel.EMBEDDED.name() );
+					appendEmbedded( queryBuilder, embeddedMatch.toString(), child );
+				}
+			}
+		}
 	}
 
 	private void optionalMatch(StringBuilder queryBuilder, String targetAlias) {
 		EmbeddedAliasTree node = embeddedAliasResolver.getAliasTree( targetAlias );
 		if ( node != null ) {
 			for ( EmbeddedAliasTree child : node.getChildren() ) {
-				StringBuilder optionalMatch = new StringBuilder( " OPTIONAL MATCH " );
-				node( optionalMatch, targetAlias );
-				relationship( optionalMatch, child.getName() );
-				node( optionalMatch, child.getAlias(), NodeLabel.EMBEDDED.name() );
-				appendEmbedded( queryBuilder, optionalMatch.toString(), child );
+				if ( embeddedAliasResolver.isOptionalMatch( child.getAlias() ) ) {
+					StringBuilder optionalMatch = new StringBuilder( " OPTIONAL MATCH " );
+					node( optionalMatch, targetAlias );
+					relationship( optionalMatch, child.getName() );
+					node( optionalMatch, child.getAlias(), NodeLabel.EMBEDDED.name() );
+					appendEmbedded( queryBuilder, optionalMatch.toString(), child );
+				}
 			}
 		}
 	}
@@ -153,7 +174,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 			else if ( isNestedProperty( propertyPath ) ) {
 				if ( propertyHelper.isEmbeddedProperty( targetTypeName, propertyPath ) ) {
 					String entityAlias = propertyPath.getNodes().get( 0 ).getName();
-					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias() );
+					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias(), true );
 					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() );
 					String projection = identifier( embeddedAlias, columnName );
 					projections.add( projection );
