@@ -6,15 +6,14 @@
  */
 package org.hibernate.ogm.test.type;
 
+import static org.hibernate.ogm.utils.TestHelper.extractEntityTuple;
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -23,9 +22,8 @@ import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.utils.OgmTestCase;
-
-import static org.hibernate.ogm.utils.TestHelper.extractEntityTuple;
-import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -35,7 +33,6 @@ import static org.junit.Assert.assertEquals;
  * @author Hardy Ferentschik
  */
 public class StringMappedTypeSerialisationTest extends OgmTestCase {
-	private static final Random RANDOM = new Random();
 	private Session session;
 
 	@Before
@@ -55,16 +52,6 @@ public class StringMappedTypeSerialisationTest extends OgmTestCase {
 		b.setVisitCount( visitCount );
 		UUID serialNumber = UUID.randomUUID();
 		b.setSerialNumber( serialNumber );
-		final Long userId = RANDOM.nextLong();
-		b.setUserId( userId );
-		final Integer stockCount = RANDOM.nextInt();
-		b.setStockCount( stockCount );
-		final Short urlPort = (short) 80;
-		b.setUrlPort( urlPort );
-		final Float visitRatio = (float) 10.4;
-		b.setVisitRatio( visitRatio );
-		final Character delimiter = '/';
-		b.setDelimiter( delimiter );
 
 		session.persist( b );
 		transaction.commit();
@@ -78,10 +65,10 @@ public class StringMappedTypeSerialisationTest extends OgmTestCase {
 		EntityKey key = new EntityKey( keyMetadata, new Object[] { b.getId() } );
 		Map<String, Object> entity = extractEntityTuple( sessions, key );
 
-		assertEquals( "Entity visits count incorrect", entity.get( "visitCount" ), "444" );
-		assertEquals( "Entity serial number incorrect", entity.get( "serialNumber" ), serialNumber.toString() );
-		assertEquals( "Entity URL incorrect", entity.get( "url" ), "http://www.hibernate.org/" );
-		assertEquals( "Entity site weight incorrect", entity.get( "siteWeight" ), "21.77" );
+		assertEquals( "String-mapped BigInteger incorrect", entity.get( "visitCount" ), "444" );
+		assertEquals( "String-mapped UUID incorrect", entity.get( "serialNumber" ), serialNumber.toString() );
+		assertEquals( "String-mapped URL incorrect", entity.get( "url" ), "http://www.hibernate.org/" );
+		assertEquals( "String-mapped BigDecimal incorrect", entity.get( "siteWeight" ), "21.77" );
 
 		session.delete( b );
 		transaction.commit();
