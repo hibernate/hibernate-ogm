@@ -6,18 +6,25 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
+
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.backendtck.queries.AnEmbeddable;
-import org.hibernate.ogm.backendtck.queries.AnotherEmbeddable;
-import org.hibernate.ogm.backendtck.queries.EmbeddedCollectionItem;
-import org.hibernate.ogm.backendtck.queries.WithEmbedded;
+import org.hibernate.ogm.backendtck.queries.Ending;
+import org.hibernate.ogm.backendtck.queries.OptionalStoryBranch;
+import org.hibernate.ogm.backendtck.queries.StoryBranch;
+import org.hibernate.ogm.backendtck.queries.StoryGame;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * Tests the mapping of embeddable collections in Neo4j
@@ -31,96 +38,138 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 		final EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
 
-		WithEmbedded with = new WithEmbedded( 1L, null );
-		with.setAnEmbeddable( new AnEmbeddable( "embedded 1", new AnotherEmbeddable( "string 1", 1 ) ) );
-		with.setYetAnotherEmbeddable( new AnEmbeddable( "embedded 2" ) );
-		with.setAnEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "item[0]", "secondItem[0]", null ), new EmbeddedCollectionItem( "item[1]", null, new AnotherEmbeddable( "string[1][0]", 10 ) ) ) );
-		with.setAnotherEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "another[0]", null, null ), new EmbeddedCollectionItem( "another[1]", null, null ) ) );
+		List<Ending> goodBranchAdditionalEndings = new ArrayList<Ending>();
+		goodBranchAdditionalEndings.add( new Ending( "Bonus ending - you save the world", 100 ) );
+		goodBranchAdditionalEndings.add( new Ending( "Bonus ending - you kill the demon", 80 ) );
 
-		em.persist( with );
+		StoryBranch goodBranch = new StoryBranch( "you go to the village", new Ending( "village ending - everybody is happy", 1 ) );
+		goodBranch.setAdditionalEndings( goodBranchAdditionalEndings );
+
+		StoryBranch evilBranch = new StoryBranch( "you kill the villagers" );
+
+		StoryGame story = new StoryGame( 1L, null );
+		story.setGoodBranch( goodBranch );
+		story.setEvilBranch( evilBranch );
+
+		story.setChaoticBranches( Arrays.asList(
+				new OptionalStoryBranch( "search the evil [artifact]", "you punish the bandits", null ),
+				new OptionalStoryBranch( "assassinate the leader of the party", null, new Ending( "you become a demon", 10 ) ) ) );
+
+		story.setNeutralBranches( Arrays.asList(
+				new OptionalStoryBranch( "steal the [artifact]", null, null ),
+				new OptionalStoryBranch( "kill the king", null, null ) ) );
+
+		em.persist( story );
 		em.getTransaction().commit();
 		em.close();
 	}
 
 	@Test
 	public void testEmbeddedCollectionNodesMapping() throws Exception {
-		assertNumberOfNodes( 8 );
-		assertRelationships( 7 );
 
-		String withEmbeddedNode = "(w:WithEmbedded:ENTITY { id: {w}.id })";
-		String anEmbeddableNode = "(e:EMBEDDED {embeddedString: {e}.embeddedString})";
-		String anotherEmbeddableNode = "(ae:EMBEDDED {embeddedString: {ae}.embeddedString, embeddedInteger: {ae}.embeddedInteger})";
-		String yetAnotherEmbeddableNode = "(yae:EMBEDDED {embeddedString: {yae}.embeddedString})";
+		NodeForGraphAssertions storyGameNode = node( "story", StoryGame.class.getSimpleName(), ENTITY.name() )
+				.property( "id", 1L );
 
-		String anEmbeddedCollectionNode1 = "(ec1:EMBEDDED {embeddedString: {ec1}.embeddedString, embeddedInteger: {ec1}.embeddedInteger, item: {ec1}.item})";
-		String anEmbeddedCollectionNode2 = "(ec2:EMBEDDED {item: {ec2}.item, anotherItem: {ec2}.anotherItem})";
+		NodeForGraphAssertions goodBranchNode = node( "good", EMBEDDED.name() )
+				.property( "storyText", "you go to the village" );
 
-		String anotherEmbeddedCollectionNode1 = "(aec1:EMBEDDED {item: {aec1}.item})";
-		String anotherEmbeddedCollectionNode2 = "(aec2:EMBEDDED {item: {aec2}.item})";
+		NodeForGraphAssertions goodBranchEndingNode = node( "goodEnd", EMBEDDED.name() )
+				.property( "text", "village ending - everybody is happy" )
+				.property( "score", 1 );
 
-		Map<String, Object> withEmbeddedNodeProperties = new HashMap<String, Object>();
-		withEmbeddedNodeProperties.put( "id", 1L );
+		NodeForGraphAssertions goodBranchAdditionalEndingNode1 = node( "goodEndAdd1", EMBEDDED.name() )
+				.property( "text", "Bonus ending - you save the world" )
+				.property( "score", 100 );
 
-		Map<String, Object> anEmbeddableNodeProperties = new HashMap<String, Object>();
-		anEmbeddableNodeProperties.put( "embeddedString", "embedded 1" );
+		NodeForGraphAssertions goodBranchAdditionalEndingNode2 = node( "goodEndAdd2", EMBEDDED.name() )
+				.property( "text", "Bonus ending - you kill the demon" )
+				.property( "score", 80 );
 
-		Map<String, Object> anotherEmbeddableNodeProperties = new HashMap<String, Object>();
-		anotherEmbeddableNodeProperties.put( "embeddedString", "string 1" );
-		anotherEmbeddableNodeProperties.put( "embeddedInteger", 1 );
+		NodeForGraphAssertions evilBranchNode = node( "evil", EMBEDDED.name() )
+				.property( "storyText", "you kill the villagers" );
 
-		Map<String, Object> yetAnotherEmbeddableNodeProperties = new HashMap<String, Object>();
-		yetAnotherEmbeddableNodeProperties.put( "embeddedString", "embedded 2" );
+		NodeForGraphAssertions chaoticBranchNode1 = node( "chaos1", "StoryGame_chaoticBranches", EMBEDDED.name() )
+				.property( "evilText", "assassinate the leader of the party" );
 
-		Map<String, Object> anEmbeddedCollectionNodeProperties1 = new HashMap<String, Object>();
-		anEmbeddedCollectionNodeProperties1.put( "embeddedString", "string[1][0]" );
-		anEmbeddedCollectionNodeProperties1.put( "embeddedInteger", 10 );
-		anEmbeddedCollectionNodeProperties1.put( "item", "item[1]" );
+		NodeForGraphAssertions chaoticBranchNode1EvilEnding = node( "chaos1End", EMBEDDED.name() )
+				.property( "text", "you become a demon" )
+				.property( "score", 10 );
 
-		Map<String, Object> anEmbeddedCollectionNodeProperties2 = new HashMap<String, Object>();
-		anEmbeddedCollectionNodeProperties2.put( "item", "item[0]" );
-		anEmbeddedCollectionNodeProperties2.put( "anotherItem", "secondItem[0]" );
+		NodeForGraphAssertions chaoticBranchNode2 = node( "chaos2", "StoryGame_chaoticBranches", EMBEDDED.name() )
+				.property( "evilText", "search the evil [artifact]" )
+				.property( "goodText", "you punish the bandits" );
 
-		Map<String, Object> anotherEmbeddedCollectionNodeProperties1 = new HashMap<String, Object>();
-		anotherEmbeddedCollectionNodeProperties1.put( "item", "another[0]" );
+		NodeForGraphAssertions neutralBranchNode1 = node( "neutral1", "StoryGame_neutralBranches", EMBEDDED.name() )
+				.property( "evilText", "steal the [artifact]" );
 
-		Map<String, Object> anotherEmbeddedCollectionNodeProperties2 = new HashMap<String, Object>();
-		anotherEmbeddedCollectionNodeProperties2.put( "item", "another[1]" );
+		NodeForGraphAssertions neutralBranchNode2 = node( "neutral1", "StoryGame_neutralBranches", EMBEDDED.name() )
+				.property( "evilText", "kill the king" );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "w", withEmbeddedNodeProperties );
-		params.put( "e", anEmbeddableNodeProperties );
-		params.put( "ae", anotherEmbeddableNodeProperties );
-		params.put( "yae", yetAnotherEmbeddableNodeProperties );
+		RelationshipsChainForGraphAssertions relationship1 =
+				storyGameNode
+					.relationshipTo( goodBranchNode, "goodBranch" )
+					.relationshipTo( goodBranchEndingNode, "ending" );
 
-		params.put( "ec1", anEmbeddedCollectionNodeProperties1 );
-		params.put( "ec2", anEmbeddedCollectionNodeProperties2 );
+		RelationshipsChainForGraphAssertions relationship2 =
+				goodBranchNode
+					.relationshipTo( goodBranchAdditionalEndingNode1, "additionalEndings" );
 
-		params.put( "aec1", anotherEmbeddedCollectionNodeProperties1 );
-		params.put( "aec2", anotherEmbeddedCollectionNodeProperties2 );
+		RelationshipsChainForGraphAssertions relationship3 =
+				goodBranchNode
+					.relationshipTo( goodBranchAdditionalEndingNode2, "additionalEndings" );
 
-		assertExpectedMapping( "w", withEmbeddedNode, params );
-		assertExpectedMapping( "e", anEmbeddableNode, params );
-		assertExpectedMapping( "ae", anotherEmbeddableNode, params );
-		assertExpectedMapping( "yae", yetAnotherEmbeddableNode, params );
+		RelationshipsChainForGraphAssertions relationship4 =
+				storyGameNode
+					.relationshipTo( evilBranchNode, "evilBranch" );
 
-		assertExpectedMapping( "ec1", anEmbeddedCollectionNode1, params );
-		assertExpectedMapping( "ec2", anEmbeddedCollectionNode2, params );
+		RelationshipsChainForGraphAssertions relationship5 =
+				storyGameNode
+					.relationshipTo( chaoticBranchNode1, "chaoticBranches" )
+					.relationshipTo( chaoticBranchNode1EvilEnding, "evilEnding" );
 
-		assertExpectedMapping( "aec1", anotherEmbeddedCollectionNode1, params );
-		assertExpectedMapping( "aec2", anotherEmbeddedCollectionNode2, params );
+		RelationshipsChainForGraphAssertions relationship6 =
+				storyGameNode
+					.relationshipTo( chaoticBranchNode2, "chaoticBranches" );
 
-		assertExpectedMapping( "r", withEmbeddedNode + " - [r:anEmbeddable] -> " + anEmbeddableNode + " - [:anotherEmbeddable] -> " + anotherEmbeddableNode, params );
-		assertExpectedMapping( "r", withEmbeddedNode + " - [r:yetAnotherEmbeddable] -> " + yetAnotherEmbeddableNode, params );
+		RelationshipsChainForGraphAssertions relationship7 =
+				storyGameNode
+					.relationshipTo( neutralBranchNode1, "neutralBranches" );
 
-		assertExpectedMapping( "r", withEmbeddedNode + " - [r:anEmbeddedCollection] -> " + anEmbeddedCollectionNode1, params );
-		assertExpectedMapping( "r", withEmbeddedNode + " - [r:anEmbeddedCollection] -> " + anEmbeddedCollectionNode2, params );
+		RelationshipsChainForGraphAssertions relationship8 =
+				storyGameNode
+					.relationshipTo( neutralBranchNode2, "neutralBranches" );
 
-		assertExpectedMapping( "r", withEmbeddedNode + " - [r:anotherEmbeddedCollection] -> " + anotherEmbeddedCollectionNode1, params );
-		assertExpectedMapping( "r", withEmbeddedNode + " - [r:anotherEmbeddedCollection] -> " + anotherEmbeddedCollectionNode2, params );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
+
+		assertThatOnlyTheseNodesExist( executionEngine
+				, storyGameNode
+				, goodBranchNode
+				, goodBranchEndingNode
+				, goodBranchAdditionalEndingNode1
+				, goodBranchAdditionalEndingNode2
+				, evilBranchNode
+				, chaoticBranchNode1
+				, chaoticBranchNode1EvilEnding
+				, chaoticBranchNode2
+				, neutralBranchNode1
+				, neutralBranchNode2);
+
+		assertThatOnlyTheseRelationshipsExist( executionEngine
+				, relationship1
+				, relationship2
+				, relationship3
+				, relationship4
+				, relationship5
+				, relationship6
+				, relationship7
+				, relationship8
+		);
+		getTransactionManager().commit();
 	}
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class[] { WithEmbedded.class };
+		return new Class[] { StoryGame.class };
 	}
 }

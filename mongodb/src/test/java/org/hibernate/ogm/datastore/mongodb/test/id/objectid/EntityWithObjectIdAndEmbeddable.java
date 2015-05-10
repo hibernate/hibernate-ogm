@@ -13,7 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import org.bson.types.ObjectId;
-import org.hibernate.ogm.backendtck.queries.AnEmbeddable;
+import org.hibernate.ogm.backendtck.queries.StoryBranch;
 
 /**
  * @author Davide D'Alto
@@ -26,12 +26,12 @@ public class EntityWithObjectIdAndEmbeddable {
 	private ObjectId id;
 
 	@Embedded
-	private AnEmbeddable anEmbeddable;
+	private StoryBranch anEmbeddable;
 
 	public EntityWithObjectIdAndEmbeddable() {
 	}
 
-	public EntityWithObjectIdAndEmbeddable(AnEmbeddable anEmbeddable) {
+	public EntityWithObjectIdAndEmbeddable(StoryBranch anEmbeddable) {
 		this.anEmbeddable = anEmbeddable;
 	}
 
@@ -43,11 +43,11 @@ public class EntityWithObjectIdAndEmbeddable {
 		this.id = id;
 	}
 
-	public AnEmbeddable getAnEmbeddable() {
+	public StoryBranch getAnEmbeddable() {
 		return anEmbeddable;
 	}
 
-	public void setAnEmbeddable(AnEmbeddable details) {
+	public void setAnEmbeddable(StoryBranch details) {
 		this.anEmbeddable = details;
 	}
 }

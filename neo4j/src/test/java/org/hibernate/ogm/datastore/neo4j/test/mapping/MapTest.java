@@ -5,16 +5,19 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.types.Address;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -53,62 +56,48 @@ public class MapTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		String userNode = "(u:User:ENTITY { id: {u}.id })";
-		String addressNode = "(a:Address:ENTITY {id: {a}.id, city: {a}.city})";
-		String nickNameNode = "(n:Nicks:EMBEDDED {nicknames: {n}.nicknames})";
+		NodeForGraphAssertions userNode = node( "user", User.class.getSimpleName(), ENTITY.name() )
+			.property( "id", user.getId() );
 
-		// Expected nodes
-		assertExpectedMapping( "u", userNode, params( user ) );
-		assertExpectedMapping( "a", addressNode, params( home ) );
-		assertExpectedMapping( "a", addressNode, params( work ) );
-		assertExpectedMapping( "n", nickNameNode, params( "idrA" ) );
-		assertExpectedMapping( "n", nickNameNode, params( "day[9]" ) );
-		assertNumberOfNodes( 5 );
+		NodeForGraphAssertions homeNode = node( "home", Address.class.getSimpleName(), ENTITY.name() )
+			.property( "id", home.getId() )
+			.property( "city", home.getCity() );
 
-		assertExpectedMapping( "r", userNode + " - [r:nicknames] - " + nickNameNode, params( "idrA" ) );
-		assertExpectedMapping( "r", userNode + " - [r:nicknames] - " + nickNameNode, params( "day[9]" ) );
-		assertExpectedMapping( "r", userNode + " - [r:addresses{addressType: {r}.addressType}] - " + addressNode, params( home, "home" ) );
-		assertExpectedMapping( "r", userNode + " - [r:addresses{addressType: {r}.addressType}] - " + addressNode, params( work, "work" ) );
-		assertRelationships( 4 );
-	}
+		NodeForGraphAssertions workNode = node( "work", Address.class.getSimpleName(), ENTITY.name() )
+				.property( "id", work.getId() )
+				.property( "city", work.getCity() );
 
-	private Map<String, Object> params(Address address, String key) {
-		Map<String, Object> relationshipProperties = new HashMap<String, Object>();
-		relationshipProperties.put( "addressType", key );
+		NodeForGraphAssertions nickNode1 = node( "nick1", "Nicks", EMBEDDED.name() )
+				.property( "nicknames", "idrA" );
 
-		Map<String, Object> params = params( user );
-		params.putAll( params( address ) );
-		params.put( "r", relationshipProperties );
-		return params;
-	}
+		NodeForGraphAssertions nickNode2 = node( "nick2", "Nicks", EMBEDDED.name() )
+				.property( "nicknames", "day[9]" );
 
-	private Map<String, Object> params(User user) {
-		Map<String, Object> userProperties = new HashMap<String, Object>();
-		userProperties.put( "id", user.getId() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "u", userProperties );
-		return params;
-	}
+		assertThatNodesExistOnly( executionEngine
+				, userNode
+				, homeNode
+				, workNode
+				, nickNode1
+				, nickNode2
+				);
 
-	private Map<String, Object> params(Address address) {
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "id", address.getId() );
-		properties.put( "city", address.getCity() );
+		//FIXME: Add properties to relationships
+		RelationshipsChainForGraphAssertions relationship1 = userNode.relationshipTo( nickNode1, "nicknames" );
+		RelationshipsChainForGraphAssertions relationship2 = userNode.relationshipTo( nickNode2, "nicknames" );
+		RelationshipsChainForGraphAssertions relationship3 = userNode.relationshipTo( homeNode, "addresses" ).property( "addressType", "home" );
+		RelationshipsChainForGraphAssertions relationship4 = userNode.relationshipTo( workNode, "addresses" ).property( "addressType", "work" );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "a", properties );
-		return params;
-	}
+		assertThatRelationshipsExistOnly( executionEngine
+				, relationship1
+				, relationship2
+				, relationship3
+				, relationship4
+				);
 
-	private Map<String, Object> params(String nick) {
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "nicknames", nick );
-
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "n", properties );
-		params.putAll( params( user ) );
-		return params;
+		getTransactionManager().commit();
 	}
 
 	@Override

@@ -12,8 +12,8 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.backendtck.queries.AnEmbeddable;
-import org.hibernate.ogm.backendtck.queries.AnotherEmbeddable;
+import org.hibernate.ogm.backendtck.queries.StoryBranch;
+import org.hibernate.ogm.backendtck.queries.Ending;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class ObjectIdWithEmbeddableTest extends OgmTestCase {
 
 		// given
 		EntityWithObjectIdAndEmbeddable entity = new EntityWithObjectIdAndEmbeddable();
-		AnEmbeddable anEmbeddable = new AnEmbeddable( "a very nice string", null );
+		StoryBranch anEmbeddable = new StoryBranch( "a very nice string", null );
 		entity.setAnEmbeddable( anEmbeddable );
 
 		// when
@@ -47,8 +47,8 @@ public class ObjectIdWithEmbeddableTest extends OgmTestCase {
 
 		// then
 		assertThat( loaded.getId() ).isEqualTo( entity.getId() );
-		assertThat( loaded.getAnEmbeddable().getEmbeddedString() ).isEqualTo( entity.getAnEmbeddable().getEmbeddedString() );
-		assertThat( loaded.getAnEmbeddable().getAnotherEmbeddable() ).isEqualTo( entity.getAnEmbeddable().getAnotherEmbeddable() );
+		assertThat( loaded.getAnEmbeddable().getStoryText() ).isEqualTo( entity.getAnEmbeddable().getStoryText() );
+		assertThat( loaded.getAnEmbeddable().getEnding() ).isEqualTo( entity.getAnEmbeddable().getEnding() );
 
 		tx.commit();
 		session.close();
@@ -62,8 +62,8 @@ public class ObjectIdWithEmbeddableTest extends OgmTestCase {
 
 		// given
 		EntityWithObjectIdAndEmbeddable entity = new EntityWithObjectIdAndEmbeddable();
-		AnotherEmbeddable anotherEmbeddable = new AnotherEmbeddable( "Another nice string ... nested", 5 );
-		AnEmbeddable anEmbeddable = new AnEmbeddable( "a very nice string", anotherEmbeddable );
+		Ending anotherEmbeddable = new Ending( "Another nice string ... nested", 5 );
+		StoryBranch anEmbeddable = new StoryBranch( "a very nice string", anotherEmbeddable );
 		entity.setAnEmbeddable( anEmbeddable );
 
 		// when
@@ -77,9 +77,9 @@ public class ObjectIdWithEmbeddableTest extends OgmTestCase {
 
 		// then
 		assertThat( loaded.getId() ).isEqualTo( entity.getId() );
-		assertThat( loaded.getAnEmbeddable().getEmbeddedString() ).isEqualTo( entity.getAnEmbeddable().getEmbeddedString() );
-		assertThat( loaded.getAnEmbeddable().getAnotherEmbeddable().getEmbeddedString() ).isEqualTo(
-				entity.getAnEmbeddable().getAnotherEmbeddable().getEmbeddedString() );
+		assertThat( loaded.getAnEmbeddable().getStoryText() ).isEqualTo( entity.getAnEmbeddable().getStoryText() );
+		assertThat( loaded.getAnEmbeddable().getEnding().getText() ).isEqualTo(
+				entity.getAnEmbeddable().getEnding().getText() );
 
 		tx.commit();
 		session.close();

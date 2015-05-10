@@ -15,10 +15,10 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.embeddable.Account;
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.AddressType;
-import org.hibernate.ogm.backendtck.queries.AnEmbeddable;
-import org.hibernate.ogm.backendtck.queries.AnotherEmbeddable;
-import org.hibernate.ogm.backendtck.queries.EmbeddedCollectionItem;
-import org.hibernate.ogm.backendtck.queries.WithEmbedded;
+import org.hibernate.ogm.backendtck.queries.StoryBranch;
+import org.hibernate.ogm.backendtck.queries.Ending;
+import org.hibernate.ogm.backendtck.queries.OptionalStoryBranch;
+import org.hibernate.ogm.backendtck.queries.StoryGame;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
@@ -205,13 +205,17 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		// Given, When
 		// If the value is not big enough, it gets converted as integer
 		Long id = Long.MAX_VALUE;
-		WithEmbedded with = new WithEmbedded( id, null );
-		with.setAnEmbeddable( new AnEmbeddable( "embedded 1", new AnotherEmbeddable( "string 1", 1 ) ) );
-		with.setYetAnotherEmbeddable( new AnEmbeddable( "embedded 2" ) );
-		with.setAnEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "item[0]", "secondItem[0]", null ), new EmbeddedCollectionItem( "item[1]", null, new AnotherEmbeddable( "string[1][0]", 10 ) ) ) );
-		with.setAnotherEmbeddedCollection( Arrays.asList( new EmbeddedCollectionItem( "another[0]", null, null ), new EmbeddedCollectionItem( "another[1]", null, null ) ) );
+		StoryGame story = new StoryGame( id, null );
+		story.setGoodBranch( new StoryBranch( "you go to the village", new Ending( "village ending - everybody is happy", 1 ) ) );
+		story.setEvilBranch( new StoryBranch( "you kill the villagers" ) );
+		story.setChaoticBranches( Arrays.asList(
+				new OptionalStoryBranch( "search the evil [artifact]", "you punish the bandits", null ),
+				new OptionalStoryBranch( "assassinate the leader of the party", null, new Ending( "you become a demon", 10 ) ) ) );
+		story.setNeutralBranches( Arrays.asList(
+				new OptionalStoryBranch( "steal the [artifact]", null, null ),
+				new OptionalStoryBranch( "kill the king", null, null ) ) );
 
-		session.persist( with );
+		session.persist( story );
 		transaction.commit();
 		session.clear();
 		transaction = session.beginTransaction();
@@ -219,43 +223,43 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		// Then
 		assertDbObject( session.getSessionFactory(),
 		// collection
-				WithEmbedded.class.getSimpleName(),
+				StoryGame.class.getSimpleName(),
 				// query
 				"{ '_id' : " + id + " }",
 				// expected
 				"{" +
 					"'_id' : " + id  + "," +
-					"'anEmbeddable' : {" +
-							"'anotherEmbeddable' : {" +
-								"'embeddedInteger' : 1," +
-								"'embeddedString' : 'string 1'" +
+					"'goodBranch' : {" +
+							"'ending' : {" +
+								"'score' : 1," +
+								"'text' : 'village ending - everybody is happy'" +
 							"}," +
-							"'embeddedString' : 'embedded 1'" +
+							"'storyText' : 'you go to the village'" +
 					"}," +
-					"'yetAnotherEmbeddable' : {" +
-							"'embeddedString' : 'embedded 2'" +
+					"'evilBranch' : {" +
+							"'storyText' : 'you kill the villagers'" +
 					"}," +
-					"'anEmbeddedCollection' : [" +
+					"'chaoticBranches' : [" +
 						"{" +
-							"'item' : 'item[1]'," +
-							"'embedded' : {" +
-								"'embeddedString' : 'string[1][0]'," +
-								"'embeddedInteger' : 10," +
-							"}," +
+							"'evilText' : 'assassinate the leader of the party'," +
+							"'evilEnding': {" +
+								"'text' : 'you become a demon'," +
+								"'score' : 10," +
+							"}" +
 						"}," +
 						"{" +
-							"'item' : 'item[0]'," +
-							"'anotherItem' : 'secondItem[0]'" +
+							"'evilText' : 'search the evil [artifact]'," +
+							"'goodText' : 'you punish the bandits'" +
 						"}" +
 					"]," +
-					"'anotherEmbeddedCollection' : [" +
-							"{ 'item' : 'another[1]' }," +
-							"{ 'item' : 'another[0]' }" +
+					"'neutralBranches' : [" +
+							"{ 'evilText' : 'steal the [artifact]' }," +
+							"{ 'evilText' : 'kill the king' }" +
 					"]" +
 				"}"
 		);
 
-		session.delete( with );
+		session.delete( story );
 		transaction.commit();
 		session.clear();
 		session.close();
@@ -263,6 +267,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Account.class, WithEmbedded.class };
+		return new Class<?>[] { Account.class, StoryGame.class };
 	}
 }
