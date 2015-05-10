@@ -10,6 +10,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -22,6 +23,8 @@ import org.neo4j.graphdb.ResourceIterator;
  * @author Gunnar Morling
  */
 class QueriesBase {
+
+	static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	protected static void appendLabel(EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
 		escapeIdentifier( queryBuilder, entityKeyMetadata.getTable() );

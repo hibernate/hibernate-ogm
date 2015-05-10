@@ -11,7 +11,6 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -32,8 +31,6 @@ public class Neo4jEntityQueries extends QueriesBase {
 
 	private static final int CACHE_CAPACITY = 1000;
 	private static final int CACHE_CONCURRENCY_LEVEL = 20;
-
-	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	private final BoundedConcurrentHashMap<String, String> updateEmbeddedPropertyQueryCache;
 
@@ -81,12 +78,8 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 */
 	private static String initUpdateEmbeddedNodeQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "MERGE " );
-		queryBuilder.append( "(owner:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ") MERGE (owner)" );
+		appendEntityNode( "owner", entityKeyMetadata, queryBuilder );
+		queryBuilder.append( " MERGE (owner)" );
 		return queryBuilder.toString();
 	}
 
@@ -102,14 +95,20 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 */
 	private static String initFindEntityQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		queryBuilder.append( "(n:" );
+		appendEntityNode( "n", entityKeyMetadata, queryBuilder );
+		queryBuilder.append( " RETURN n" );
+		return queryBuilder.toString();
+	}
+
+	private static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
+		queryBuilder.append( "(");
+		queryBuilder.append( alias );
+		queryBuilder.append( ":" );
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
 		appendProperties( entityKeyMetadata, queryBuilder );
 		queryBuilder.append( ")" );
-		queryBuilder.append( " RETURN n" );
-		return queryBuilder.toString();
 	}
 
 	/*
@@ -136,12 +135,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 */
 	private static String initCreateEntityQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "CREATE " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
+		appendEntityNode( "n", entityKeyMetadata, queryBuilder );
 		queryBuilder.append( " RETURN n" );
 		return queryBuilder.toString();
 	}
@@ -157,12 +151,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 */
 	private static String initRemoveEmbdeddedElementQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
+		appendEntityNode( "n", entityKeyMetadata, queryBuilder );
 		queryBuilder.append( " --> (e:EMBEDDED)" );
 		queryBuilder.append( " WITH e " );
 		queryBuilder.append( " MATCH path=(e) -[*0..]-> (:EMBEDDED) ");
@@ -180,12 +169,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 */
 	private static String initRemoveEntityQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
+		appendEntityNode( "n", entityKeyMetadata, queryBuilder );
 		queryBuilder.append( " OPTIONAL MATCH (n) - [r] - ()" );
 		queryBuilder.append( " DELETE n, r" );
 		return queryBuilder.toString();
@@ -300,8 +284,12 @@ public class Neo4jEntityQueries extends QueriesBase {
 		return queryBuilder.toString();
 	}
 
-	private static String[] appendEmbeddedNodes(String embeddedColumn, StringBuilder queryBuilder) {
-		String[] columns = EMBEDDED_FIELDNAME_SEPARATOR.split( embeddedColumn );
+	/*
+	 * Given an embedded properties path returns the cypher representation that can be appended to a MERGE or CREATE
+	 * query.
+	 */
+	private static String[] appendEmbeddedNodes(String path, StringBuilder queryBuilder) {
+		String[] columns = EMBEDDED_FIELDNAME_SEPARATOR.split( path );
 		for ( int i = 0; i < columns.length - 1; i++ ) {
 			queryBuilder.append( " - [:" );
 			appendRelationshipType( queryBuilder, columns[i] );

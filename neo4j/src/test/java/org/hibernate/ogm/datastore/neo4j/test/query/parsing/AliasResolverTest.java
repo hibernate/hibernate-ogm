@@ -74,6 +74,6 @@ public class AliasResolverTest {
 
 	private String createAliasForEmbedded(AliasResolver resolverDelegate, String entityAlias, String propertyPath) {
 		List<String> embeddedProperty1 = Arrays.asList( propertyPath.split( "\\." ) );
-		return resolverDelegate.createAliasForEmbedded( entityAlias, embeddedProperty1 );
+		return resolverDelegate.createAliasForEmbedded( entityAlias, embeddedProperty1, true );
 	}
 }

@@ -281,9 +281,9 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		EntityKey entityKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
-		Node embeddedNode = entityQueries.get( entityKey.getMetadata() ).createEmbedded( executionEngine, entityKey.getColumnValues() );
-		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationRow, embeddedNode );
+		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
+		Relationship relationship = associationQueries.get( associationKey.getMetadata() )
+				.createRelationshipForEmbeddedAssociation( executionEngine, associationKey, embeddedKey );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}

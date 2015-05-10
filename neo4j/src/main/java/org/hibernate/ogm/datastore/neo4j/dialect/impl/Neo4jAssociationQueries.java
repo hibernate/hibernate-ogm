@@ -10,6 +10,12 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -30,6 +36,7 @@ import org.neo4j.graphdb.Relationship;
  */
 public class Neo4jAssociationQueries extends QueriesBase {
 
+	private final String matchOwnerEntityNode;
 	private final String findRelationshipQuery;
 	private final String removeAssociationQuery;
 	private final String removeAssociationRowQuery;
@@ -38,6 +45,18 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		this.removeAssociationQuery = initRemoveAssociationQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.removeAssociationRowQuery = initRemoveAssociationRowQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.findRelationshipQuery = initFindRelationshipQuery( ownerEntityKeyMetadata, associationKeyMetadata );
+		this.matchOwnerEntityNode = initMatchOwnerEntityNode( ownerEntityKeyMetadata );
+	}
+
+	/*
+	 * Example:
+	 *
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 */
+	private static String initMatchOwnerEntityNode(EntityKeyMetadata ownerEntityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
+		appendEntityNode( "owner", ownerEntityKeyMetadata, queryBuilder );
+		return queryBuilder.toString();
 	}
 
 	/*
@@ -83,10 +102,14 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] - ()
 	 * DELETE r
 	 *
-	 * Example with embedded:
+	 * Example with an embedded association:
 	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] - (e:EMBEDDED)
-	 * DELETE r, e
+	 * MATCH (n:ENTITY:table {id: {0}}) -[a:role] - (e:EMBEDDED)
+	 * WITH a, e
+	 * MATCH path=(e) -[*0..]-> (:EMBEDDED)
+	 * FOREACH (r IN relationships(path) | DELETE r)
+	 * FOREACH (e IN nodes(path) | DELETE e)
+	 * DELETE a
 	 */
 	private static String initRemoveAssociationQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder("MATCH ");
@@ -96,17 +119,22 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		appendLabel( ownerEntityKeyMetadata, queryBuilder );
 		appendProperties( ownerEntityKeyMetadata, queryBuilder );
 		queryBuilder.append( ") - " );
-		queryBuilder.append( "[r" );
+		queryBuilder.append( "[a" );
 		queryBuilder.append( ":" );
 		appendRelationshipType( queryBuilder, associationKeyMetadata );
 		queryBuilder.append( "]" );
 		if ( associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			queryBuilder.append( " - (e:" );
 			queryBuilder.append( EMBEDDED );
-			queryBuilder.append( ") DELETE r, e" );
+			queryBuilder.append( ")" );
+			queryBuilder.append( " WITH a,e" );
+			queryBuilder.append( "  MATCH path=(e) -[*0..]-> (:EMBEDDED) ");
+			queryBuilder.append( "  FOREACH ( r IN relationships(path) | DELETE r )" );
+			queryBuilder.append( "  FOREACH ( e IN nodes(path) | DELETE e )" );
+			queryBuilder.append( "  DELETE a" );
 		}
 		else {
-			queryBuilder.append( " - () DELETE r" );
+			queryBuilder.append( " - () DELETE a" );
 		}
 		return queryBuilder.toString();
 	}
@@ -251,5 +279,344 @@ public class Neo4jAssociationQueries extends QueriesBase {
 
 	private static void appendRelationshipType(StringBuilder queryBuilder, AssociationKeyMetadata associationKeyMetadata) {
 		escapeIdentifier( queryBuilder, associationKeyMetadata.getCollectionRole() );
+	}
+
+	/**
+	 * Give an embedded association, creates all the nodes and relationships required to represent it.
+	 * It assumes that the entity node containing the association already exists in the db.
+	 *
+	 * @param executionEngine the {@link ExecutionEngine} to run the query
+	 * @param associationKey the {@link AssociationKey} identifying the association
+	 * @param embeddedKey the {@link EntityKey} identifying the embedded component
+	 * @return the created {@link Relationship} that represents the association
+	 */
+	public Relationship createRelationshipForEmbeddedAssociation(ExecutionEngine executionEngine, AssociationKey associationKey, EntityKey embeddedKey) {
+		String query = initCreateEmbeddedAssociationQuery( associationKey, embeddedKey );
+		Object[] queryValues = createRelationshipForEmbeddedQueryValues( associationKey, embeddedKey );
+		return executeQuery( executionEngine, query, queryValues );
+	}
+
+	private String initCreateEmbeddedAssociationQuery(AssociationKey associationKey, EntityKey embeddedKey) {
+		String collectionRole = associationKey.getMetadata().getCollectionRole();
+		String[] embeddedColumnNames = embeddedKey.getColumnNames();
+		Object[] embeddedColumnValues = embeddedKey.getColumnValues();
+		String[] columnNames = associationKey.getEntityKey().getMetadata().getColumnNames();
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append( matchOwnerEntityNode );
+		if ( isCollectionOfPrimitives( collectionRole, embeddedColumnNames ) ) {
+			createRelationshipForCollectionOfPrimitivesOrMap( associationKey, collectionRole, columnNames, queryBuilder );
+		}
+		else {
+			createRelationshipforCollectionOfComponents( associationKey, collectionRole, embeddedColumnNames, embeddedColumnValues, queryBuilder );
+		}
+		return queryBuilder.toString();
+	}
+
+	private Object[] createRelationshipForEmbeddedQueryValues(AssociationKey associationKey, EntityKey embeddedKey) {
+		String collectionRole = associationKey.getMetadata().getCollectionRole();
+		Object[] columnValues = associationKey.getEntityKey().getColumnValues();
+		if ( isCollectionOfPrimitives( collectionRole, embeddedKey.getColumnNames() ) ) {
+			return ArrayHelper.concat( columnValues, embeddedKey.getColumnValues()[0] );
+		}
+		else {
+			return ArrayHelper.concat( columnValues, embeddedKey.getColumnValues() );
+		}
+	}
+
+	private boolean isCollectionOfPrimitives(String collectionRole, String[] embeddedColumnNames) {
+		return embeddedColumnNames.length == 1 && collectionRole.equals( embeddedColumnNames[0] );
+	}
+
+	/*
+	 * Example 1:
+	 * MATCH (owner:ENTITY:MultiAddressAccount {login: {0}})
+	 * CREATE (owner) -[r:addresses]-> (target:EMBEDDED:`MultiAddressAccount_addresses` {city: {1}, country: {2}, street1: {3}, `postal_code`: {6}})
+	 * RETURN r
+	 *
+	 * Example 2:
+	 * MATCH (owner:ENTITY:StoryGame {id: {0}}) - [:goodBranch] -> (e:EMBEDDED)
+	 * CREATE (e) -[r:additionalEndings]-> (target:EMBEDDED:`StoryGame_goodBranch.additionalEndings` {score: {1}, text: {2}})
+	 */
+	private void createRelationshipforCollectionOfComponents(AssociationKey associationKey, String collectionRole, String[] embeddedColumnNames, Object[] embeddedColumnValues, StringBuilder queryBuilder) {
+		int offset = associationKey.getEntityKey().getColumnNames().length;
+		EmbeddedNodesTree tree = createEmbeddedTree( embeddedColumnNames, embeddedColumnValues, offset );
+		if ( isPartOfEmbedded( collectionRole ) ) {
+			String[] pathToEmbedded = appendEmbeddedNodes( collectionRole, queryBuilder );
+			queryBuilder.append( " CREATE (e) -[r:");
+			appendRelationshipType( queryBuilder, pathToEmbedded[ pathToEmbedded.length - 1] );
+		}
+		else {
+			queryBuilder.append( " CREATE (owner) -[r:");
+			appendRelationshipType( queryBuilder, collectionRole );
+		}
+		queryBuilder.append( "]-> " );
+		queryBuilder.append( "(target:" );
+		queryBuilder.append( EMBEDDED );
+		queryBuilder.append( ":" );
+		escapeIdentifier( queryBuilder, associationKey.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable() );
+		int index = 0;
+		int embeddedNumber = 0;
+
+		// Append primitive properties
+		if ( !tree.getProperties().isEmpty() ) {
+			queryBuilder.append( " {" );
+			for ( EmbeddedNodeProperty property : tree.getProperties() ) {
+				escapeIdentifier( queryBuilder, property.getColumn() );
+				queryBuilder.append( ": {" );
+				queryBuilder.append( property.getParam() );
+				queryBuilder.append( "}" );
+				if ( index++ < tree.getProperties().size() - 1 ) {
+					queryBuilder.append( ", " );
+				}
+			}
+			queryBuilder.append( "}" );
+		}
+		queryBuilder.append( ")" );
+
+		// Append relationships representing embedded properties
+		Map<String, EmbeddedNodesTree> children = tree.getChildren();
+		boolean first = true;
+		for ( Entry<String, EmbeddedNodesTree> entry : children.entrySet() ) {
+			index = 0;
+			String relationshipType = entry.getKey();
+			EmbeddedNodesTree child = entry.getValue();
+			if ( first ) {
+				first = false;
+			}
+			else {
+				queryBuilder.append( ", (target)" );
+			}
+			queryBuilder.append( " - [:" );
+			appendRelationshipType( queryBuilder, relationshipType );
+			queryBuilder.append( "] -> " );
+			queryBuilder.append( "(a" );
+			queryBuilder.append( embeddedNumber++ );
+			queryBuilder.append( ":" );
+			queryBuilder.append( EMBEDDED );
+			if ( !child.getProperties().isEmpty() ) {
+				queryBuilder.append( " {" );
+				for ( EmbeddedNodeProperty property : child.getProperties() ) {
+					escapeIdentifier( queryBuilder, property.getColumn() );
+					queryBuilder.append( ": {" );
+					queryBuilder.append( property.getParam() );
+					queryBuilder.append( "}" );
+					if ( index++ < child.getProperties().size() - 1 ) {
+						queryBuilder.append( ", " );
+					}
+				}
+				queryBuilder.append( "}" );
+			}
+			queryBuilder.append( ")" );
+		}
+		queryBuilder.append( " RETURN r" );
+	}
+
+	/*
+	 *  Append query part related to the creation of a relationship for a collection of primitive or a Map like in the following examples:
+	 *
+	 * 1) @ElemntCollection List<String> alternatives
+	 * 2) @MapKeyColumn(name = "addressType") Map<String, Address> addresses
+	 * Query example for embedded collection of primitives or Map:
+	 *
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 * MERGE (owner) -[:relType]-> (e0:EMBEDDED) -[:relType2]-> (e:EMBEDDED)
+	 * CREATE (e) -[r:relType2]-> (new:EMBEDDED { property: {1}})
+	 * RETURN r
+	 *
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 * CREATE (owner) -[r:relType2]-> (target:EMBEDDED { property: {1}})
+	 * RETURN r
+	 */
+	private void createRelationshipForCollectionOfPrimitivesOrMap(AssociationKey associationKey, String collectionRole, String[] columnNames, StringBuilder queryBuilder) {
+		String relationshipType = collectionRole;
+		if ( isPartOfEmbedded( collectionRole ) ) {
+			queryBuilder.append( " MERGE (owner) " );
+			String[] pathToEmbedded = appendEmbeddedNodes( collectionRole, queryBuilder );
+			relationshipType = pathToEmbedded[pathToEmbedded.length - 1];
+			queryBuilder.append( " CREATE (e) -[r:" );
+		}
+		else {
+			queryBuilder.append( " CREATE (owner) -[r:" );
+		}
+		escapeIdentifier( queryBuilder, relationshipType );
+		queryBuilder.append( "]->(new:" );
+		queryBuilder.append( EMBEDDED );
+		queryBuilder.append( ":" );
+		escapeIdentifier( queryBuilder, associationKey.getTable() );
+		queryBuilder.append( " {" );
+		// THe name of the property is the same as the relationship type
+		escapeIdentifier( queryBuilder, relationshipType );
+		queryBuilder.append( ": {" );
+		queryBuilder.append( columnNames.length );
+		queryBuilder.append( "}" );
+		queryBuilder.append( "}" );
+		queryBuilder.append( ")" );
+		queryBuilder.append( " RETURN r" );
+	}
+
+	private boolean isPartOfEmbedded(String collectionRole) {
+		return collectionRole.contains( "." );
+	}
+
+	private Relationship executeQuery(ExecutionEngine executionEngine, String query, Object[] queryValues) {
+		Map<String, Object> params = params( queryValues );
+		ExecutionResult result = executionEngine.execute( query, params );
+		return singleResult( result );
+	}
+
+	/*
+	 * If the association is connected to embedded elements we also need to create the embedded relationships for this elements.
+	 * This method will chreate an tree containing the information about the path to the embedded in a more managabel way.
+	 */
+	private EmbeddedNodesTree createEmbeddedTree(String[] embeddedColumnNames, Object[] embeddedColumnValues, int offset) {
+		EmbeddedNodesTree tree = new EmbeddedNodesTree();
+		for ( int i = 0; i < embeddedColumnNames.length; i++ ) {
+			if ( embeddedColumnValues[i] != null ) {
+				if ( embeddedColumnNames[i].contains( "." ) ) {
+					int firstDot = embeddedColumnNames[i].indexOf( "." );
+					String relationshipType = embeddedColumnNames[i].substring( 0, firstDot );
+					String currentProperty = embeddedColumnNames[i].substring( firstDot + 1 );
+					appendSubTree( tree, currentProperty, relationshipType, offset + i );
+				}
+				else {
+					EmbeddedNodeProperty property = new EmbeddedNodeProperty();
+					property.setParam( offset + i );
+					property.setColumn( embeddedColumnNames[i] );
+					tree.addProperty( property );
+				}
+			}
+		}
+		return tree;
+	}
+
+	private void appendSubTree(EmbeddedNodesTree tree, String currentProperty, String relationshipType, int index) {
+		EmbeddedNodesTree subTree = tree.getChild( relationshipType );
+		if ( subTree == null ) {
+			subTree = new EmbeddedNodesTree();
+			tree.addChild( relationshipType, subTree );
+		}
+		if ( isPartOfEmbedded( currentProperty ) ) {
+			int firstDot = currentProperty.indexOf( "." );
+			String relType = currentProperty.substring( 0, firstDot );
+			String subProperty = currentProperty.substring( firstDot + 1 );
+			appendSubTree( tree, subProperty, relType, index );
+		}
+		else {
+			EmbeddedNodeProperty property = new EmbeddedNodeProperty();
+			property.setColumn( currentProperty );
+			property.setParam( index );
+			subTree.addProperty( property );
+		}
+	}
+
+	private static void appendRelationshipType(StringBuilder queryBuilder, String relationshipType) {
+		escapeIdentifier( queryBuilder, relationshipType );
+	}
+
+	private static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
+		queryBuilder.append( "(");
+		queryBuilder.append( alias );
+		queryBuilder.append( ":" );
+		queryBuilder.append( ENTITY );
+		queryBuilder.append( ":" );
+		appendLabel( entityKeyMetadata, queryBuilder );
+		appendProperties( entityKeyMetadata, queryBuilder );
+		queryBuilder.append( ")" );
+	}
+
+	/*
+	 * Given an embedded properties path returns the cypher representation that can be appended to a MERGE or CREATE
+	 * query.
+	 */
+	private static String[] appendEmbeddedNodes(String path, StringBuilder queryBuilder) {
+		String[] columns = EMBEDDED_FIELDNAME_SEPARATOR.split( path );
+		for ( int i = 0; i < columns.length - 1; i++ ) {
+			queryBuilder.append( " - [:" );
+			appendRelationshipType( queryBuilder, columns[i] );
+			queryBuilder.append( "] ->" );
+			if ( i < columns.length - 2 ) {
+				queryBuilder.append( " (e" );
+				queryBuilder.append( i );
+				queryBuilder.append( ":" );
+				queryBuilder.append( EMBEDDED );
+				queryBuilder.append( ") MERGE (e" );
+				queryBuilder.append( i );
+				queryBuilder.append( ")" );
+			}
+		}
+		queryBuilder.append( " (e:" );
+		queryBuilder.append( EMBEDDED );
+		queryBuilder.append( ")" );
+		return columns;
+	}
+
+	private static class EmbeddedNodesTree {
+
+		final List<EmbeddedNodeProperty> properties = new ArrayList<EmbeddedNodeProperty>();
+		final Map<String, EmbeddedNodesTree> children = new HashMap<String, EmbeddedNodesTree>();
+
+		public void addProperty(EmbeddedNodeProperty property) {
+			properties.add( property );
+		}
+
+		public List<EmbeddedNodeProperty> getProperties() {
+			return properties;
+		}
+
+		public void addChild(String relationshipType, EmbeddedNodesTree subTree) {
+			children.put( relationshipType, subTree );
+		}
+
+		public EmbeddedNodesTree getChild(String relationshipType) {
+			return children.get( relationshipType );
+		}
+
+		public Map<String, EmbeddedNodesTree> getChildren() {
+			return children;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append( "EmbeddedTree [properties=" );
+			builder.append( properties );
+			builder.append( ", children=" );
+			builder.append( children );
+			builder.append( "]" );
+			return builder.toString();
+		}
+	}
+
+	private class EmbeddedNodeProperty {
+
+		private String column;
+		private int param;
+
+		public String getColumn() {
+			return column;
+		}
+
+		public void setColumn(String column) {
+			this.column = column;
+		}
+
+		public int getParam() {
+			return param;
+		}
+
+		public void setParam(int param) {
+			this.param = param;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			builder.append( "[" );
+			builder.append( column );
+			builder.append( ", " );
+			builder.append( param );
+			builder.append( "]" );
+			return builder.toString();
+		}
 	}
 }

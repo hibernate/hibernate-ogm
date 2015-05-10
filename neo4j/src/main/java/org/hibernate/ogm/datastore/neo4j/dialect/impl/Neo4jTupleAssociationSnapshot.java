@@ -7,14 +7,19 @@
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
 import static org.neo4j.graphdb.DynamicLabel.label;
+import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -22,6 +27,8 @@ import org.neo4j.graphdb.Relationship;
  * @author Davide D'Alto
  */
 public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
+
+	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	private final Map<String, Object> properties;
 
@@ -32,8 +39,9 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 	private static Map<String, Object> collectProperties(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		String[] rowKeyColumnNames = associationKey.getMetadata().getRowKeyColumnNames();
-		Node ownerNode = ownerNode( associationKey, relationship );
-		Node targetNode = relationship.getOtherNode( ownerNode );
+
+		Node ownerNode = findOwnerNode( relationship, associationKey );
+		Node targetNode = findTargetNode( relationship, associationKey, ownerNode );
 
 		// Index columns
 		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
@@ -45,8 +53,47 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 		// Properties stored in the target side of the association
 		for ( String associationColumn : associatedEntityKeyMetadata.getAssociationKeyColumns() ) {
 			String targetColumnName = associatedEntityKeyMetadata.getCorrespondingEntityKeyColumn( associationColumn );
-			if ( targetNode.hasProperty( targetColumnName ) ) {
-				properties.put( associationColumn, targetNode.getProperty( targetColumnName ) );
+			if ( isEmbedded( targetColumnName ) ) {
+				// Embedded column
+				String collectionRole = associationKey.getMetadata().getCollectionRole();
+				if ( targetColumnName.equals( collectionRole ) ) {
+					// Ex: @ElementCollection List<String> examples
+					targetColumnName = targetColumnName.substring( targetColumnName.lastIndexOf( "." ) + 1 );
+					if ( targetNode.hasProperty( targetColumnName ) ) {
+						properties.put( associationColumn, targetNode.getProperty( targetColumnName ) );
+					}
+				}
+				else if ( targetNode.hasProperty( targetColumnName ) ) {
+					// Embedded id
+					properties.put( associationColumn, targetNode.getProperty( targetColumnName ) );
+				}
+				else {
+					// Ex: @ElementCollection List<Embedded> examples
+					Node embeddedNode = targetNode;
+					String[] split = EMBEDDED_FIELDNAME_SEPARATOR.split( targetColumnName );
+					boolean found = true;
+					for ( int i = 0; i < split.length - 1; i++ ) {
+						Iterator<Relationship> iterator = embeddedNode.getRelationships( Direction.OUTGOING, withName( split[i] ) ).iterator();
+						if ( iterator.hasNext() ) {
+							embeddedNode = iterator.next().getEndNode();
+						}
+						else {
+							found = false;
+							break;
+						}
+					}
+					if ( found ) {
+						targetColumnName = targetColumnName.substring( targetColumnName.lastIndexOf( "." ) + 1 );
+						if ( embeddedNode.hasProperty( targetColumnName ) ) {
+							properties.put( associationColumn, embeddedNode.getProperty( targetColumnName ) );
+						}
+					}
+				}
+			}
+			else {
+				if ( targetNode.hasProperty( targetColumnName ) ) {
+					properties.put( associationColumn, targetNode.getProperty( targetColumnName ) );
+				}
 			}
 		}
 
@@ -59,7 +106,50 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 		return properties;
 	}
 
-	private static Node ownerNode(AssociationKey associationKey, Relationship relationship) {
+	private static Node findTargetNode(Relationship relationship, AssociationKey associationKey, Node ownerNode) {
+		if ( isEmbeddedCollection( associationKey ) ) {
+			return relationship.getEndNode();
+		}
+		else {
+			return relationship.getOtherNode( ownerNode );
+		}
+	}
+
+	private static Node findOwnerNode(Relationship relationship, AssociationKey associationKey) {
+		if ( isEmbeddedCollection( associationKey ) ) {
+			String collectionRole = associationKey.getMetadata().getCollectionRole();
+			return embeddedAssociationOwner( relationship, collectionRole );
+		}
+		else {
+			return ownerNodeFromAssociation( associationKey, relationship );
+		}
+	}
+
+	private static boolean isEmbeddedCollection(AssociationKey associationKey) {
+		return associationKey.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION;
+	}
+
+	private static Node embeddedAssociationOwner(Relationship relationship, String collectionRole) {
+		if ( isEmbedded( collectionRole ) ) {
+			String[] split = EMBEDDED_FIELDNAME_SEPARATOR.split( collectionRole );
+			Node ownerNode = relationship.getStartNode();
+			for ( int i = 1; i < split.length; i++ ) {
+				String type = split[split.length - i - 1];
+				Relationship next = ownerNode.getRelationships( Direction.INCOMING, withName( type ) ).iterator().next();
+				ownerNode = next.getStartNode();
+			}
+			return ownerNode;
+		}
+		else {
+			return relationship.getStartNode();
+		}
+	}
+
+	private static boolean isEmbedded(String targetColumnName) {
+		return targetColumnName.contains( "." );
+	}
+
+	private static Node ownerNodeFromAssociation(AssociationKey associationKey, Relationship relationship) {
 		if ( relationship.getStartNode().hasLabel( label( associationKey.getEntityKey().getTable() ) ) ) {
 			return relationship.getStartNode();
 		}
