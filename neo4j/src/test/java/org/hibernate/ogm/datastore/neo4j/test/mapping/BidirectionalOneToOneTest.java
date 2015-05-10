@@ -6,15 +6,18 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.onetoone.Husband;
 import org.hibernate.ogm.backendtck.associations.onetoone.Wife;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -45,27 +48,23 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 2 );
-		assertRelationships( 1 );
+		NodeForGraphAssertions wifeNode = node( "wife", Wife.class.getSimpleName(), ENTITY.name() )
+				.property( "id", wife.getId() )
+				.property( "name", wife.getName() );
 
-		String wifeNode = "(w:Wife:ENTITY { id: {w}.id, name: {w}.name })";
-		String husbandNode = "(h:Husband:ENTITY {id: {h}.id, name: {h}.name})";
+		NodeForGraphAssertions husbandNode = node( "husband", Husband.class.getSimpleName(), ENTITY.name() )
+				.property( "id", husband.getId() )
+				.property( "name", husband.getName() );
 
-		Map<String, Object> wifeProperties = new HashMap<String, Object>();
-		wifeProperties.put( "id", wife.getId() );
-		wifeProperties.put( "name", wife.getName() );
+		RelationshipsChainForGraphAssertions relationship = husbandNode.relationshipTo( wifeNode, "wife" );
 
-		Map<String, Object> husbandProperties = new HashMap<String, Object>();
-		husbandProperties.put( "id", husband.getId() );
-		husbandProperties.put( "name", husband.getName() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "w", wifeProperties );
-		params.put( "h", husbandProperties );
+		assertThatOnlyTheseNodesExist( executionEngine, husbandNode, wifeNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		assertExpectedMapping( "w", wifeNode, params );
-		assertExpectedMapping( "h", husbandNode, params );
-		assertExpectedMapping( "r", wifeNode + " - [r:wife] - " + husbandNode, params );
+		getTransactionManager().commit();
 	}
 
 	@Override

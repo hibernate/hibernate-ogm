@@ -6,14 +6,16 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.manytoone.JUG;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -35,17 +37,17 @@ public class SingleEntityTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 1 );
-		assertRelationships( 0 );
+		NodeForGraphAssertions jugNode = node( "jug", JUG.class.getSimpleName(), ENTITY.name() )
+				.property( "jug_id", jug.getId() )
+				.property( "name", jug.getName() );
 
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "jug_id", jug.getId() );
-		properties.put( "name", jug.getName() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "n", properties );
+		assertThatOnlyTheseNodesExist( executionEngine, jugNode );
+		assertNumberOfRelationships( 0 );
 
-		assertExpectedMapping( "n", "(n:JUG:ENTITY {jug_id: {n}.jug_id, name: {n}.name})", params );
+		getTransactionManager().commit();
 	}
 
 	@Override

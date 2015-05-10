@@ -6,18 +6,23 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.SEQUENCE;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.id.Label;
 import org.hibernate.ogm.backendtck.id.News;
 import org.hibernate.ogm.backendtck.id.NewsID;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -40,48 +45,39 @@ public class CompositeEmbeddedIdTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 4 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions sequenceNode = node( "sequence", SEQUENCE.name() )
+				.property( "sequence_name", "hibernate_sequence" )
+				.property( "next_val", 3 );
 
-		String sequenceNode = "(s:SEQUENCE { sequence_name: {s}.sequence_name, next_val: {s}.next_val })";
-		String newsNode = "(n:News:ENTITY {`newsId.author`: {n}.`newsId.author`, `newsId.title`: {n}.`newsId.title`, content: {n}.content})";
-		String labelNode = "(l:Label:ENTITY {id: {l}.id, name: {l}.name, news_author_fk: {l}.news_author_fk, news_topic_fk: {l}.news_topic_fk })";
+		NodeForGraphAssertions newsNode = node( "news", News.class.getSimpleName(), ENTITY.name() )
+				.property( "newsId.author", newsOgmID.getAuthor() )
+				.property( "newsId.title", newsOgmID.getTitle() )
+				.property( "content", newsOGM.getContent() );
 
-		assertExpectedMapping( "s", sequenceNode, params( 0 ) );
-		assertExpectedMapping( "n", newsNode, params( 0 ) );
-		assertExpectedMapping( "l", labelNode, params( 0 ) );
-		assertExpectedMapping( "l", labelNode, params( 1 ) );
+		NodeForGraphAssertions label1Node = node( "label1", Label.class.getSimpleName(), ENTITY.name() )
+				.property( "id", newsOgmLabels.get( 0 ).getId() )
+				.property( "name", newsOgmLabels.get( 0 ).getName() )
+				.property( "news_author_fk", newsOgmID.getAuthor() )
+				.property( "news_topic_fk", newsOgmID.getTitle() )
+				;
 
-		assertExpectedMapping( "r", newsNode + " - [r:labels] - " + labelNode, params( 0 ) );
-		assertExpectedMapping( "r", newsNode + " - [r:labels] - " + labelNode, params( 1 ) );
-	}
+		NodeForGraphAssertions label2Node = node( "label2", Label.class.getSimpleName(), ENTITY.name() )
+				.property( "id", newsOgmLabels.get( 1 ).getId() )
+				.property( "name", newsOgmLabels.get( 1 ).getName() )
+				.property( "news_author_fk", newsOgmID.getAuthor() )
+				.property( "news_topic_fk", newsOgmID.getTitle() )
+				;
 
-	private Map<String, Object> params(int labelIndex) {
-		Map<String, Object> sequenceProperties = new HashMap<String, Object>();
-		sequenceProperties.put( "sequence_name", "hibernate_sequence" );
-		sequenceProperties.put( "next_val", 3 );
+		RelationshipsChainForGraphAssertions relationship1 = newsNode.relationshipTo( label1Node, "labels" );
+		RelationshipsChainForGraphAssertions relationship2 = newsNode.relationshipTo( label2Node, "labels" );
 
-		Map<String, Object> labelProperties = labelProperties( newsOGM.getLabels().get( labelIndex ) );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> newsProperties = new HashMap<String, Object>();
-		newsProperties.put( "newsId.author", newsOGM.getNewsId().getAuthor() );
-		newsProperties.put( "newsId.title", newsOGM.getNewsId().getTitle() );
-		newsProperties.put( "content", newsOGM.getContent() );
+		assertThatOnlyTheseNodesExist( executionEngine, newsNode, label1Node, label2Node, sequenceNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "s", sequenceProperties );
-		params.put( "l", labelProperties );
-		params.put( "n", newsProperties );
-		return params;
-	}
-
-	private Map<String, Object> labelProperties(Label label) {
-		Map<String, Object> labelProperties = new HashMap<String, Object>();
-		labelProperties.put( "id", label.getId() );
-		labelProperties.put( "name", label.getName() );
-		labelProperties.put( "news_author_fk", newsOgmID.getAuthor() );
-		labelProperties.put( "news_topic_fk", newsOgmID.getTitle() );
-		return labelProperties;
+		getTransactionManager().commit();
 	}
 
 	@Override

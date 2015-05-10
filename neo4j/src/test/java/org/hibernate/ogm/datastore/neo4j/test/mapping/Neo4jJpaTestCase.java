@@ -8,13 +8,9 @@ package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.assertThatExists;
-import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.assertThatExists;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 
@@ -28,8 +24,6 @@ import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.graphdb.ResourceIterator;
 
 /**
  * Common methods to check the mapping of entities in Neo4j.
@@ -43,7 +37,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		executeQuery( "MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r" );
 	}
 
-	protected void assertRelationships(int rel) throws Exception {
+	protected void assertNumberOfRelationships(int rel) throws Exception {
 		assertThat( numberOfRelationships() ).as( "Unexpected number of relationships" ).isEqualTo( rel );
 	}
 
@@ -57,40 +51,6 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 
 	protected Long numberOfRelationships() throws Exception {
 		return executeQuery( "MATCH (n) - [r] -> () RETURN COUNT(r)" );
-	}
-
-	protected void assertExpectedMapping(String alias, String cypher, Map<String, Object> params) throws Exception {
-		getTransactionManager().begin();
-		ResourceIterator<Object> columnAs = executeCypherQuery( "MATCH " + cypher + " RETURN " + alias, params ).columnAs( alias );
-
-		assertThat( columnAs.hasNext() ).as( cypher + " not found, cannot count properties" ).isTrue();
-		PropertyContainer propertyContainer = (PropertyContainer) columnAs.next();
-		Iterable<String> propertyKeys = propertyContainer.getPropertyKeys();
-		List<String> unexpectedProperties = new ArrayList<String>();
-		Set<String> expectedProperties = null;
-		@SuppressWarnings("unchecked")
-		Map<String, Object> expectedPropertiesMap = (Map<String, Object>) params.get( alias );
-		if (expectedPropertiesMap != null) {
-			expectedProperties = expectedPropertiesMap.keySet();
-		}
-		for ( Iterator<String> iterator = propertyKeys.iterator(); iterator.hasNext(); ) {
-			String actual = iterator.next();
-			if ( !expectedProperties.contains( actual ) ) {
-				unexpectedProperties.add( actual );
-			}
-		}
-		List<String> missingProperties = new ArrayList<String>();
-		if ( expectedProperties != null ) {
-			for ( String expected : expectedProperties ) {
-				if ( !propertyContainer.hasProperty( expected ) ) {
-					missingProperties.add( expected );
-				}
-			}
-		}
-		assertThat( unexpectedProperties ).as( "Unexpected properties for " + cypher ).isEmpty();
-		assertThat( missingProperties ).as( "Missing properties for " + cypher ).isEmpty();
-		assertThat( columnAs.hasNext() ).as( "Unexpected result returned" ).isFalse();
-		getTransactionManager().commit();
 	}
 
 	protected ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
@@ -123,19 +83,19 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		return uniqueResult;
 	}
 
-	protected void assertThatNodesExistOnly(ExecutionEngine executionEngine, NodeForGraphAssertions... nodes) throws Exception {
+	protected void assertThatOnlyTheseNodesExist(ExecutionEngine executionEngine, NodeForGraphAssertions... nodes) throws Exception {
 		for ( NodeForGraphAssertions node : nodes ) {
 			assertThatExists( executionEngine, node );
 		}
 		assertNumberOfNodes( nodes.length );
 	}
 
-	protected void assertThatRelationshipsExistOnly(ExecutionEngine executionEngine, RelationshipsChainForGraphAssertions... relationships) throws Exception {
+	protected void assertThatOnlyTheseRelationshipsExist(ExecutionEngine executionEngine, RelationshipsChainForGraphAssertions... relationships) throws Exception {
 		int expectedNumberOfRelationships = 0;
 		for ( RelationshipsChainForGraphAssertions relationship : relationships ) {
 			assertThatExists( executionEngine, relationship );
 			expectedNumberOfRelationships += relationship.getSize();
 		}
-		assertRelationships( expectedNumberOfRelationships );
+		assertNumberOfRelationships( expectedNumberOfRelationships );
 	}
 }

@@ -6,14 +6,17 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.SEQUENCE;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.id.Song;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -36,24 +39,25 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
+		NodeForGraphAssertions jugNode = node( "song", Song.class.getSimpleName(), ENTITY.name() )
+				.property( "id", song.getId() )
+				.property( "singer", song.getSinger() )
+				.property( "title", song.getTitle() );
+
+		NodeForGraphAssertions sequenceNode = node( "sequence", SEQUENCE.name() )
+				.property( "sequence_name", "song_sequence_name" )
+				.property( "next_val", 22 );
+
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
+
+		assertThatOnlyTheseNodesExist( executionEngine, jugNode, sequenceNode );
+		assertNumberOfRelationships( 0 );
+
+		getTransactionManager().commit();
+
 		assertNumberOfNodes( 2 );
-		assertRelationships( 0 );
-
-		Map<String, Object> songProperties = new HashMap<String, Object>();
-		songProperties.put( "id", song.getId() );
-		songProperties.put( "singer", song.getSinger() );
-		songProperties.put( "title", song.getTitle() );
-
-		Map<String, Object> sequenceProperties = new HashMap<String, Object>();
-		sequenceProperties.put( "sequence_name", "song_sequence_name" );
-		sequenceProperties.put( "next_val", 22 );
-
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "song", songProperties );
-		params.put( "sq", sequenceProperties );
-
-		assertExpectedMapping( "song", "(song:Song:ENTITY {id: {song}.id, singer: {song}.singer, title: {song}.title })", params );
-		assertExpectedMapping( "sq", "(sq:SEQUENCE{sequence_name: {sq}.sequence_name, next_val: {sq}.next_val})", params );
+		assertNumberOfRelationships( 0 );
 	}
 
 	@Override

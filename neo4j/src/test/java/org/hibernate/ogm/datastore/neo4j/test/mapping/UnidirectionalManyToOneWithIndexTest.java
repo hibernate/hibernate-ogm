@@ -6,17 +6,18 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import static java.util.Collections.singletonMap;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.types.Child;
 import org.hibernate.ogm.backendtck.associations.collection.types.Father;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -68,38 +69,40 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 6 );
-		assertRelationships( 4 );
+		NodeForGraphAssertions father1Node = node( "father1", Father.class.getSimpleName(), ENTITY.name() )
+				.property( "id", father1.getId() );
 
-		String fatherNode = "(f:Father:ENTITY {id: {f}.id })";
-		String childNode = "(c:Child:ENTITY {id: {c}.id, name: {c}.name })";
-		String relationshipCypher = fatherNode + " - [r:orderedChildren {birthorder: {r}.birthorder}] - " + childNode;
+		NodeForGraphAssertions child11Node = node( "child11", Child.class.getSimpleName(), ENTITY.name() )
+				.property( "id", child11.getId() )
+				.property( "name", child11.getName() );
 
-		assertExpectedMapping( "r", relationshipCypher, params( father1, child11, 0 ) );
-		assertExpectedMapping( "r", relationshipCypher, params( father1, child12, 1 ) );
-		assertExpectedMapping( "r", relationshipCypher, params( father2, child21, 0 ) );
-		assertExpectedMapping( "r", relationshipCypher, params( father2, child22, 1 ) );
-	}
+		NodeForGraphAssertions child12Node = node( "child12", Child.class.getSimpleName(), ENTITY.name() )
+				.property( "id", child12.getId() )
+				.property( "name", child12.getName() );
 
-	private Map<String, Object> params(Father father, Child child, int birthOrder) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "f", properties( father ) );
-		params.put( "c", properties( child ) );
-		params.put( "r", singletonMap( "birthorder", birthOrder ) );
-		return params;
-	}
+		NodeForGraphAssertions father2Node = node( "father2", Father.class.getSimpleName(), ENTITY.name() )
+				.property( "id", father2.getId() );
 
-	private Map<String, Object> properties(Father father) {
-		Map<String, Object> fatherProperties = new HashMap<String, Object>();
-		fatherProperties.put( "id", father.getId() );
-		return fatherProperties;
-	}
+		NodeForGraphAssertions child21Node = node( "child21", Child.class.getSimpleName(), ENTITY.name() )
+				.property( "id", child21.getId() )
+				.property( "name", child21.getName() );
 
-	private Map<String, Object> properties(Child child) {
-		Map<String, Object> childProperties = new HashMap<String, Object>();
-		childProperties.put( "id", child.getId() );
-		childProperties.put( "name", child.getName() );
-		return childProperties;
+		NodeForGraphAssertions child22Node = node( "child22", Child.class.getSimpleName(), ENTITY.name() )
+				.property( "id", child22.getId() )
+				.property( "name", child22.getName() );
+
+		RelationshipsChainForGraphAssertions relationship1 = father1Node.relationshipTo( child11Node, "orderedChildren" ).property( "birthorder", 0 );
+		RelationshipsChainForGraphAssertions relationship2 = father1Node.relationshipTo( child12Node, "orderedChildren" ).property( "birthorder", 1 );
+		RelationshipsChainForGraphAssertions relationship3 = father2Node.relationshipTo( child21Node, "orderedChildren" ).property( "birthorder", 0 );
+		RelationshipsChainForGraphAssertions relationship4 = father2Node.relationshipTo( child22Node, "orderedChildren" ).property( "birthorder", 1 );
+
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
+
+		assertThatOnlyTheseNodesExist( executionEngine, father1Node, child11Node, child12Node, father2Node, child21Node, child22Node );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2, relationship3, relationship4 );
+
+		getTransactionManager().commit();
 	}
 
 	@Override

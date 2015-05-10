@@ -6,16 +6,19 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.compositeid.Director;
 import org.hibernate.ogm.backendtck.associations.compositeid.Tournament;
 import org.hibernate.ogm.backendtck.associations.compositeid.TournamentId;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * Tests for the mapping of associations with composite ids.
@@ -24,18 +27,22 @@ import org.junit.Test;
  */
 public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 
+	private Director director;
+	private Tournament britishOpen;
+	private Tournament playersChampionship;
+
 	@Before
 	public void prepareDb() throws Exception {
 		EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
 
-		Tournament britishOpen = new Tournament( new TournamentId( "US", "123" ), "British Open" );
-		Tournament playersChampionship = new Tournament( new TournamentId( "US", "456" ), "Player's Championship" );
+		britishOpen = new Tournament( new TournamentId( "US", "123" ), "British Open" );
+		playersChampionship = new Tournament( new TournamentId( "US", "456" ), "Player's Championship" );
 		em.persist( britishOpen );
 		em.persist( playersChampionship );
 
-		Director bob = new Director( "bob", "Bob", playersChampionship );
-		em.persist( bob );
+		director = new Director( "bob", "Bob", playersChampionship );
+		em.persist( director );
 
 		em.getTransaction().commit();
 		em.close();
@@ -43,36 +50,29 @@ public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 1 );
+		NodeForGraphAssertions directorNode = node( "director", Director.class.getSimpleName(), ENTITY.name() )
+				.property( "id", director.getId() )
+				.property( "name", director.getName() );
 
-		String director = "(d:Director:ENTITY { id: {d}.id, name: {d}.name })";
-		String britishOpen = "(b:Tournament:ENTITY { `id.countryCode`: {b}.`id.countryCode`, `id.sequenceNo`: {b}.`id.sequenceNo`, name: {b}.name })";
-		String players = "(p:Tournament:ENTITY { `id.countryCode`: {p}.`id.countryCode`, `id.sequenceNo`: {p}.`id.sequenceNo`, name: {p}.name })";
+		NodeForGraphAssertions britishOpenNode = node( "british", Tournament.class.getSimpleName(), ENTITY.name() )
+				.property( "id.countryCode", britishOpen.getId().getCountryCode() )
+				.property( "id.sequenceNo", britishOpen.getId().getSequenceNo() )
+				.property( "name", britishOpen.getName() );
 
-		Map<String, Object> directorProperties = new HashMap<String, Object>();
-		directorProperties.put( "id", "bob" );
-		directorProperties.put( "name", "Bob" );
+		NodeForGraphAssertions playersChampionshipNode = node( "playerChamp", Tournament.class.getSimpleName(), ENTITY.name() )
+				.property( "id.countryCode", playersChampionship.getId().getCountryCode() )
+				.property( "id.sequenceNo", playersChampionship.getId().getSequenceNo() )
+				.property( "name", playersChampionship.getName() );
 
-		Map<String, Object> britishOpenProperties = new HashMap<String, Object>();
-		britishOpenProperties.put( "id.countryCode", "US" );
-		britishOpenProperties.put( "id.sequenceNo", "123" );
-		britishOpenProperties.put( "name", "British Open" );
+		RelationshipsChainForGraphAssertions relationship1 = directorNode.relationshipTo( playersChampionshipNode, "directedTournament" );
 
-		Map<String, Object> playersProperties = new HashMap<String, Object>();
-		playersProperties.put( "id.countryCode", "US" );
-		playersProperties.put( "id.sequenceNo", "456" );
-		playersProperties.put( "name", "Player's Championship" );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "d", directorProperties );
-		params.put( "b", britishOpenProperties );
-		params.put( "p", playersProperties );
+		assertThatOnlyTheseNodesExist( executionEngine, directorNode, britishOpenNode, playersChampionshipNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1 );
 
-		assertExpectedMapping( "d", director, params );
-		assertExpectedMapping( "b", britishOpen, params );
-		assertExpectedMapping( "p", players, params );
-		assertExpectedMapping( "r", director + " - [r:directedTournament] - " + players, params );
+		getTransactionManager().commit();
 	}
 
 	@Override

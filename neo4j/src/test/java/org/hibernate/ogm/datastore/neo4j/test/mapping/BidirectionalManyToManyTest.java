@@ -5,16 +5,18 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.manytomany.AccountOwner;
 import org.hibernate.ogm.backendtck.associations.collection.manytomany.BankAccount;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -50,41 +52,28 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions ownerNode = node( "o", AccountOwner.class.getSimpleName(), ENTITY.name() )
+				.property( "id", owner.getId() )
+				.property( "SSN", owner.getSSN() );
 
-		String ownerNode = "(o:AccountOwner:ENTITY {id: {o}.id, SSN: {o}.SSN })";
-		String accountNode = "(a:BankAccount:ENTITY {id: {a}.id, accountNumber: {a}.accountNumber })";
+		NodeForGraphAssertions barclaysNode = node( "b", BankAccount.class.getSimpleName(), ENTITY.name() )
+				.property( "id", barclays.getId() )
+				.property( "accountNumber", barclays.getAccountNumber() );
 
-		assertExpectedMapping( "o", ownerNode, params( barclays, owner ) );
-		assertExpectedMapping( "a", accountNode, params( barclays, owner ) );
-		assertExpectedMapping( "a", accountNode, params( soge, owner ) );
-		assertExpectedMapping( "r", ownerNode + " - [r:bankAccounts] - " + accountNode, params( barclays, owner ) );
-		assertExpectedMapping( "r", ownerNode + " - [r:bankAccounts] - " + accountNode, params( soge, owner ) );
-	}
+		NodeForGraphAssertions sogeNode = node( "s", BankAccount.class.getSimpleName(), ENTITY.name() )
+				.property( "id", soge.getId() )
+				.property( "accountNumber", soge.getAccountNumber() );
 
-	private Map<String, Object> params(BankAccount account, AccountOwner owner) {
-		Map<String, Object> accountProperties = accountProperties( account );
-		Map<String, Object> ownerProperties = ownerProperties( owner );
+		RelationshipsChainForGraphAssertions relationship1 = ownerNode.relationshipTo( barclaysNode, "bankAccounts" );
+		RelationshipsChainForGraphAssertions relationship2 = ownerNode.relationshipTo( sogeNode, "bankAccounts" );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "o", ownerProperties );
-		params.put( "a", accountProperties );
-		return params;
-	}
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-	private Map<String, Object> accountProperties(BankAccount account) {
-		Map<String, Object> accountProperties = new HashMap<String, Object>();
-		accountProperties.put( "id", account.getId() );
-		accountProperties.put( "accountNumber", account.getAccountNumber() );
-		return accountProperties;
-	}
+		assertThatOnlyTheseNodesExist( executionEngine, ownerNode, barclaysNode, sogeNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-	private Map<String, Object> ownerProperties(AccountOwner owner) {
-		Map<String, Object> ownerProperties = new HashMap<String, Object>();
-		ownerProperties.put( "id", owner.getId() );
-		ownerProperties.put( "SSN", owner.getSSN() );
-		return ownerProperties;
+		getTransactionManager().commit();
 	}
 
 	@Override

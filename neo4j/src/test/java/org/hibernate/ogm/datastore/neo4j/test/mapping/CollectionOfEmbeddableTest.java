@@ -6,31 +6,25 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.MultiAddressAccount;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
  */
 public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
-
-	private static final String ACCOUNT_NODE = "(ac:MultiAddressAccount:ENTITY { login: {ac}.login, password: {ac}.password })";
-
-	private static final String ADDRESS_NODE = "(ad:MultiAddressAccount_addresses:EMBEDDED {"
-			+ " street1: {ad}.street1"
-			+ ", city: {ad}.city"
-			+ ", country: {ad}.country"
-			+ ", postal_code: {ad}.postal_code"
-			+ " })";
-
-	private static final String RELATIONSHIP = ACCOUNT_NODE + " - [r:addresses] - " + ADDRESS_NODE;
 
 	private Address address;
 	private Address anotherAddress;
@@ -66,45 +60,32 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions accountNode = node( "account", MultiAddressAccount.class.getSimpleName(), ENTITY.name() )
+				.property( "login", account.getLogin() )
+				.property( "password", account.getPassword() );
 
-		assertExpectedMapping( "ac", ACCOUNT_NODE, params( account ) );
-		assertExpectedMapping( "ad", ADDRESS_NODE, params( address ) );
-		assertExpectedMapping( "ad", ADDRESS_NODE, params( anotherAddress ) );
+		NodeForGraphAssertions addressNode = node( "address", "MultiAddressAccount_addresses", EMBEDDED.name() )
+				.property( "city", address.getCity() )
+				.property( "country", address.getCountry() )
+				.property( "street1", address.getStreet1() )
+				.property( "postal_code", address.getZipCode() );
 
-		assertExpectedMapping( "r", RELATIONSHIP, params( account, address ) );
-		assertExpectedMapping( "r", RELATIONSHIP, params( account, anotherAddress ) );
-	}
+		NodeForGraphAssertions anotherNode = node( "another", "MultiAddressAccount_addresses", EMBEDDED.name() )
+				.property( "city", anotherAddress.getCity() )
+				.property( "country", anotherAddress.getCountry() )
+				.property( "street1", anotherAddress.getStreet1() )
+				.property( "postal_code", anotherAddress.getZipCode() );
 
-	private Map<String, Object> params(MultiAddressAccount account, Address address) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.putAll( params( account ) );
-		params.putAll( params( address ) );
-		return params;
-	}
+		RelationshipsChainForGraphAssertions relationship1 = accountNode.relationshipTo( addressNode, "addresses" );
+		RelationshipsChainForGraphAssertions relationship2 = accountNode.relationshipTo( anotherNode, "addresses" );
 
-	private Map<String, Object> params(MultiAddressAccount account) {
-		Map<String, Object> accountProperties = new HashMap<String, Object>();
-		accountProperties.put( "login", account.getLogin() );
-		accountProperties.put( "password", account.getPassword() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "ac", accountProperties );
-		return params;
-	}
+		assertThatOnlyTheseNodesExist( executionEngine, accountNode, addressNode, anotherNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-
-	private Map<String, Object> params(Address address) {
-		Map<String, Object> addressProperties = new HashMap<String, Object>();
-		addressProperties.put( "street1", address.getStreet1() );
-		addressProperties.put( "city", address.getCity() );
-		addressProperties.put( "country", address.getCountry() );
-		addressProperties.put( "postal_code", address.getZipCode() );
-
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "ad", addressProperties );
-		return params;
+		getTransactionManager().commit();
 	}
 
 	@Test
@@ -116,10 +97,17 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 		em.getTransaction().commit();
 		em.close();
 
-		assertNumberOfNodes( 1 );
-		assertRelationships( 0 );
+		NodeForGraphAssertions accountNode = node( "account", MultiAddressAccount.class.getSimpleName(), ENTITY.name() )
+				.property( "login", account.getLogin() )
+				.property( "password", account.getPassword() );
 
-		assertExpectedMapping( "ac", ACCOUNT_NODE, params( account ) );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
+
+		assertThatOnlyTheseNodesExist( executionEngine, accountNode );
+		assertNumberOfRelationships( 0 );
+
+		getTransactionManager().commit();
 	}
 
 	@Override

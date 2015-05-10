@@ -6,15 +6,18 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.manytoone.JUG;
 import org.hibernate.ogm.backendtck.associations.manytoone.Member;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -50,35 +53,28 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions jugNode = node( "jug", JUG.class.getSimpleName(), ENTITY.name() )
+				.property( "jug_id", jug.getId() )
+				.property( "name", jug.getName() );
 
-		String jugNode = "(jug:JUG:ENTITY {jug_id: {jug}.jug_id, name: {jug}.name })";
-		String emmanuelNode = "(e:Member:ENTITY {member_id: {e}.member_id, name: {e}.name})";
-		String jeromeNode = "(j:Member:ENTITY {member_id: {j}.member_id, name: {j}.name})";
+		NodeForGraphAssertions emmanuelNode = node( "emmanuel", Member.class.getSimpleName(), ENTITY.name() )
+				.property( "member_id", emmanuel.getId() )
+				.property( "name", emmanuel.getName() );
 
-		Map<String, Object> jugProperties = new HashMap<String, Object>();
-		jugProperties.put( "jug_id", jug.getId() );
-		jugProperties.put( "name", jug.getName() );
+		NodeForGraphAssertions jeromeNode = node( "jerome", Member.class.getSimpleName(), ENTITY.name() )
+				.property( "member_id", jerome.getId() )
+				.property( "name", jerome.getName() );
 
-		Map<String, Object> emmanuelProperties = new HashMap<String, Object>();
-		emmanuelProperties.put( "member_id", emmanuel.getId() );
-		emmanuelProperties.put( "name", emmanuel.getName() );
+		RelationshipsChainForGraphAssertions relationship1 = emmanuelNode.relationshipTo( jugNode, "memberOf" );
+		RelationshipsChainForGraphAssertions relationship2 = jeromeNode.relationshipTo( jugNode, "memberOf" );
 
-		Map<String, Object> jeromeProperties = new HashMap<String, Object>();
-		jeromeProperties.put( "member_id", jerome.getId() );
-		jeromeProperties.put( "name", jerome.getName() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "jug", jugProperties );
-		params.put( "e", emmanuelProperties );
-		params.put( "j", jeromeProperties );
+		assertThatOnlyTheseNodesExist( executionEngine, jugNode, emmanuelNode, jeromeNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		assertExpectedMapping( "jug", jugNode, params );
-		assertExpectedMapping( "e", emmanuelNode, params );
-		assertExpectedMapping( "j", jeromeNode, params );
-		assertExpectedMapping( "r", jugNode + " - [r:memberOf] - " + emmanuelNode, params );
-		assertExpectedMapping( "r", jugNode + " - [r:memberOf] - " + jeromeNode, params );
+		getTransactionManager().commit();
 	}
 
 	@Override

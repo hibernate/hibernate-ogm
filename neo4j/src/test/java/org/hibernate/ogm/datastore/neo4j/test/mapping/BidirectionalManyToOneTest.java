@@ -6,15 +6,18 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.manytoone.SalesForce;
 import org.hibernate.ogm.backendtck.associations.manytoone.SalesGuy;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -52,52 +55,28 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions forceNode = node( "force", SalesForce.class.getSimpleName(), ENTITY.name() )
+				.property( "id", salesForce.getId() )
+				.property( "corporation", salesForce.getCorporation() );
 
-		String forceNode = "(f:SalesForce:ENTITY { id: {f}.id, corporation: {f}.corporation})";
-		String guyNode = "(g:SalesGuy:ENTITY {id: {g}.id, name: {g}.name})";
-		String relationship = forceNode + " - [r:salesForce] - " + guyNode;
+		NodeForGraphAssertions ericNode = node( "eric", SalesGuy.class.getSimpleName(), ENTITY.name() )
+				.property( "id", eric.getId() )
+				.property( "name", eric.getName() );
 
-		assertExpectedMapping( "f", forceNode, params( salesForce ) );
-		assertExpectedMapping( "g", guyNode, params( eric ) );
-		assertExpectedMapping( "g", guyNode, params( simon ) );
+		NodeForGraphAssertions simonNode = node( "simon", SalesGuy.class.getSimpleName(), ENTITY.name() )
+				.property( "id", simon.getId() )
+				.property( "name", simon.getName() );
 
-		assertExpectedMapping( "r", relationship, params( eric, salesForce ) );
-		assertExpectedMapping( "r", relationship, params( simon, salesForce ) );
-	}
+		RelationshipsChainForGraphAssertions relationship1 = ericNode.relationshipTo( forceNode, "salesForce" );
+		RelationshipsChainForGraphAssertions relationship2 = simonNode.relationshipTo( forceNode, "salesForce" );
 
-	private Map<String, Object> params(SalesGuy salesGuy) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "g", properties( salesGuy ) );
-		return params;
-	}
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-	private Map<String, Object> params(SalesForce salesForce) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "f", properties( salesForce ) );
-		return params;
-	}
+		assertThatOnlyTheseNodesExist( executionEngine, forceNode, ericNode, simonNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-	private Map<String, Object> params(SalesGuy salesGuy, SalesForce salesForce) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.putAll( params( salesForce ) );
-		params.putAll( params( salesGuy ) );
-		return params;
-	}
-
-	private Map<String, Object> properties(SalesForce salesForce2) {
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "id", salesForce.getId() );
-		properties.put( "corporation", salesForce2.getCorporation() );
-		return properties;
-	}
-
-	private Map<String, Object> properties(SalesGuy salesGuy) {
-		Map<String, Object> salesGuyProperties = new HashMap<String, Object>();
-		salesGuyProperties.put( "id", eric.getId() );
-		salesGuyProperties.put( "name", eric.getName() );
-		return salesGuyProperties;
+		getTransactionManager().commit();
 	}
 
 	@Override

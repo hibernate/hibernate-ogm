@@ -6,16 +6,20 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.types.Child;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandChild;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandMother;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -49,40 +53,25 @@ public class ElementCollectionListWithIndexTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions grannyNode = node( "granny", GrandMother.class.getSimpleName(), ENTITY.name() )
+				.property( "id", granny.getId() );
 
-		String grannyNode = "(granny:GrandMother:ENTITY { id: {granny}.id })";
-		String grandChileNode = "(gc:GrandMother_grandChildren:EMBEDDED {name: {gc}.name})";
-		String relationship = grannyNode + " - [r:grandChildren{birthorder:{r}.birthorder}] - " + grandChileNode;
+		NodeForGraphAssertions child0Node = node( "child0", "GrandMother_grandChildren", EMBEDDED.name() )
+				.property( "name", granny.getGrandChildren().get( 0 ).getName() );
 
-		assertExpectedMapping( "granny", grannyNode, params( null, null ) );
-		assertExpectedMapping( "gc", grandChileNode, params( luke, 0 ) );
-		assertExpectedMapping( "gc", grandChileNode, params( leia, 1 ) );
+		NodeForGraphAssertions child1Node = node( "child1", "GrandMother_grandChildren", EMBEDDED.name() )
+				.property( "name", granny.getGrandChildren().get( 1 ).getName() );
 
-		assertExpectedMapping( "r", relationship, params( luke, 0 ) );
-		assertExpectedMapping( "r", relationship, params( leia, 1 ) );
-	}
+		RelationshipsChainForGraphAssertions relationship1 = grannyNode.relationshipTo( child0Node, "grandChildren" ).property( "birthorder", 0 );
+		RelationshipsChainForGraphAssertions relationship2 = grannyNode.relationshipTo( child1Node, "grandChildren" ).property( "birthorder", 1 );
 
-	private Map<String, Object> params(GrandChild grandChild, Integer index) {
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> grannyProperties = new HashMap<String, Object>();
-		grannyProperties.put( "id", granny.getId() );
+		assertThatOnlyTheseNodesExist( executionEngine, grannyNode, child0Node, child1Node );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		Map<String, Object> relationshipProperties = new HashMap<String, Object>();
-		relationshipProperties.put( "birthorder", index );
-
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "granny", grannyProperties );
-		params.put( "r", relationshipProperties );
-
-		if ( grandChild != null ) {
-			Map<String, Object> grandChildProperties = new HashMap<String, Object>();
-			grandChildProperties.put( "name", grandChild.getName() );
-
-			params.put( "gc", grandChildProperties );
-		}
-		return params;
+		getTransactionManager().commit();
 	}
 
 	@Override

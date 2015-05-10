@@ -57,11 +57,11 @@ public class MapTest extends Neo4jJpaTestCase {
 	@Test
 	public void testMapping() throws Exception {
 		NodeForGraphAssertions userNode = node( "user", User.class.getSimpleName(), ENTITY.name() )
-			.property( "id", user.getId() );
+				.property( "id", user.getId() );
 
 		NodeForGraphAssertions homeNode = node( "home", Address.class.getSimpleName(), ENTITY.name() )
-			.property( "id", home.getId() )
-			.property( "city", home.getCity() );
+				.property( "id", home.getId() )
+				.property( "city", home.getCity() );
 
 		NodeForGraphAssertions workNode = node( "work", Address.class.getSimpleName(), ENTITY.name() )
 				.property( "id", work.getId() )
@@ -76,7 +76,7 @@ public class MapTest extends Neo4jJpaTestCase {
 		getTransactionManager().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
-		assertThatNodesExistOnly( executionEngine
+		assertThatOnlyTheseNodesExist( executionEngine
 				, userNode
 				, homeNode
 				, workNode
@@ -90,7 +90,7 @@ public class MapTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship3 = userNode.relationshipTo( homeNode, "addresses" ).property( "addressType", "home" );
 		RelationshipsChainForGraphAssertions relationship4 = userNode.relationshipTo( workNode, "addresses" ).property( "addressType", "work" );
 
-		assertThatRelationshipsExistOnly( executionEngine
+		assertThatOnlyTheseRelationshipsExist( executionEngine
 				, relationship1
 				, relationship2
 				, relationship3

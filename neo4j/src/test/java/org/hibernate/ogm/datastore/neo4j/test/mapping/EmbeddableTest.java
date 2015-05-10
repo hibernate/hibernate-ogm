@@ -6,16 +6,20 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.embeddable.Account;
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.AddressType;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -49,39 +53,30 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testEmbeddedNodesMapping() throws Exception {
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions accountNode = node( "account", Account.class.getSimpleName(), ENTITY.name() )
+				.property( "login", account.getLogin() )
+				.property( "password", account.getPassword() )
+				.property( "version", account.getVersion() )
+				.property( "postal_code", account.getHomeAddress().getZipCode());
 
-		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version, postal_code: {a}.postal_code })";
-		String addressNode = "(e:EMBEDDED {street1: {e}.street1, city: {e}.city, country: {e}.country})";
-		String addressTypeNode = "(t:EMBEDDED {name: {t}.name})";
+		NodeForGraphAssertions homeAddressNode = node( "home", EMBEDDED.name() )
+				.property( "street1", address.getStreet1() )
+				.property( "city", address.getCity() )
+				.property( "country", address.getCountry() );
 
-		Map<String, Object> accountProperties = new HashMap<String, Object>();
-		accountProperties.put( "login", account.getLogin() );
-		accountProperties.put( "password", account.getPassword());
-		accountProperties.put( "version", account.getVersion() );
+		NodeForGraphAssertions typeNode = node( "type", EMBEDDED.name() )
+				.property( "name", address.getType().getName() );
 
-		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
-		// unless you define it as @Column("homeAddress.postal_code")
-		accountProperties.put( "postal_code", account.getHomeAddress().getZipCode() );
+		RelationshipsChainForGraphAssertions relationship = accountNode
+				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
-		Map<String, Object> addressProperties = new HashMap<String, Object>();
-		addressProperties.put( "street1", account.getHomeAddress().getStreet1() );
-		addressProperties.put( "city", account.getHomeAddress().getCity() );
-		addressProperties.put( "country", account.getHomeAddress().getCountry() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> addressTypeProperties = new HashMap<String, Object>();
-		addressTypeProperties.put( "name", account.getHomeAddress().getType().getName() );
+		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "a", accountProperties);
-		params.put( "e", addressProperties );
-		params.put( "t", addressTypeProperties );
-
-		assertExpectedMapping( "a", accountNode, params );
-		assertExpectedMapping( "e", addressNode, params );
-		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
-		assertExpectedMapping( "r", addressNode + " - [r:type] - " + addressTypeNode, params );
+		getTransactionManager().commit();
 	}
 
 	@Test
@@ -93,38 +88,29 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		em.getTransaction().commit();
 		em.close();
 
-		assertNumberOfNodes( 3 );
-		assertRelationships( 2 );
+		NodeForGraphAssertions accountNode = node( "account", Account.class.getSimpleName(), ENTITY.name() )
+				.property( "login", account.getLogin() )
+				.property( "password", account.getPassword() )
+				.property( "version", account.getVersion() + 1 )
+				.property( "postal_code", account.getHomeAddress().getZipCode() );
 
-		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version, postal_code: {a}.postal_code })";
-		String addressNode = "(e:EMBEDDED {street1: {e}.street1, country: {e}.country})";
-		String addressTypeNode = "(t:EMBEDDED {name: {t}.name})";
+		NodeForGraphAssertions homeAddressNode = node( "home", EMBEDDED.name() )
+				.property( "street1", address.getStreet1() )
+				.property( "country", address.getCountry() );
 
-		Map<String, Object> accountProperties = new HashMap<String, Object>();
-		accountProperties.put( "login", account.getLogin() );
-		accountProperties.put( "password", account.getPassword());
-		accountProperties.put( "version", account.getVersion() + 1 );
+		NodeForGraphAssertions typeNode = node( "type", EMBEDDED.name() )
+				.property( "name", address.getType().getName() );
 
-		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
-		// unless you define it as @Column("homeAddress.postal_code")
-		accountProperties.put( "postal_code", account.getHomeAddress().getZipCode() );
+		RelationshipsChainForGraphAssertions relationship = accountNode
+				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
-		Map<String, Object> addressProperties = new HashMap<String, Object>();
-		addressProperties.put( "street1", account.getHomeAddress().getStreet1() );
-		addressProperties.put( "country", account.getHomeAddress().getCountry() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> addressTypeProperties = new HashMap<String, Object>();
-		addressTypeProperties.put( "name", account.getHomeAddress().getType().getName() );
+		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "a", accountProperties);
-		params.put( "e", addressProperties );
-		params.put( "t", addressTypeProperties );
-
-		assertExpectedMapping( "a", accountNode, params );
-		assertExpectedMapping( "e", addressNode, params );
-		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
-		assertExpectedMapping( "r", addressNode + " - [r:type] - " + addressTypeNode, params );
+		getTransactionManager().commit();
 	}
 
 	@Test
@@ -136,33 +122,26 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		em.getTransaction().commit();
 		em.close();
 
-		assertNumberOfNodes( 2 );
-		assertRelationships( 1 );
+		NodeForGraphAssertions accountNode = node( "account", Account.class.getSimpleName(), ENTITY.name() )
+				.property( "login", account.getLogin() )
+				.property( "password", account.getPassword() )
+				.property( "version", account.getVersion() + 1 )
+				.property( "postal_code", account.getHomeAddress().getZipCode() );
 
-		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version, postal_code: {a}.postal_code })";
-		String addressNode = "(e:EMBEDDED {street1: {e}.street1, city: {e}.city, country: {e}.country})";
+		NodeForGraphAssertions homeAddressNode = node( "home", EMBEDDED.name() )
+				.property( "street1", address.getStreet1() )
+				.property( "city", address.getCity() )
+				.property( "country", address.getCountry() );
 
-		Map<String, Object> accountProperties = new HashMap<String, Object>();
-		accountProperties.put( "login", account.getLogin() );
-		accountProperties.put( "password", account.getPassword());
-		accountProperties.put( "version", account.getVersion() + 1 );
+		RelationshipsChainForGraphAssertions relationship = accountNode.relationshipTo( homeAddressNode, "homeAddress" );
 
-		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
-		// unless you define it as @Column("homeAddress.postal_code")
-		accountProperties.put( "postal_code", account.getHomeAddress().getZipCode() );
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> addressProperties = new HashMap<String, Object>();
-		addressProperties.put( "street1", account.getHomeAddress().getStreet1() );
-		addressProperties.put( "city", account.getHomeAddress().getCity() );
-		addressProperties.put( "country", account.getHomeAddress().getCountry() );
+		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode );
+		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "a", accountProperties);
-		params.put( "e", addressProperties );
-
-		assertExpectedMapping( "a", accountNode, params );
-		assertExpectedMapping( "e", addressNode, params );
-		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
+		getTransactionManager().commit();
 	}
 
 	@Test
@@ -174,20 +153,18 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		em.getTransaction().commit();
 		em.close();
 
-		assertNumberOfNodes( 1 );
-		assertRelationships( 0 );
+		NodeForGraphAssertions accountNode = node( "account", Account.class.getSimpleName(), ENTITY.name() )
+				.property( "login", account.getLogin() )
+				.property( "password", account.getPassword() )
+				.property( "version", account.getVersion() + 1 );
 
-		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version})";
+		getTransactionManager().begin();
+		ExecutionEngine executionEngine = createExecutionEngine();
 
-		Map<String, Object> accountProperties = new HashMap<String, Object>();
-		accountProperties.put( "login", account.getLogin() );
-		accountProperties.put( "password", account.getPassword());
-		accountProperties.put( "version", account.getVersion() + 1 );
+		assertThatOnlyTheseNodesExist( executionEngine, accountNode );
+		assertNumberOfRelationships( 0 );
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "a", accountProperties);
-
-		assertExpectedMapping( "a", accountNode, params );
+		getTransactionManager().commit();
 	}
 
 	@Test
@@ -200,7 +177,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		em.close();
 
 		assertNumberOfNodes( 0 );
-		assertRelationships( 0 );
+		assertNumberOfRelationships( 0 );
 	}
 
 	@Override
