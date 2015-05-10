@@ -238,8 +238,10 @@ public class EmbeddableMappingTest extends OgmTestCase {
 					"'anEmbeddedCollection' : [" +
 						"{" +
 							"'item' : 'item[1]'," +
-							"'embeddedString' : 'string[1][0]'," +
-							"'embeddedInteger' : 10," +
+							"'embedded' : {" +
+								"'embeddedString' : 'string[1][0]'," +
+								"'embeddedInteger' : 10," +
+							"}," +
 						"}," +
 						"{" +
 							"'item' : 'item[0]'," +

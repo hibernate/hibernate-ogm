@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.cfg.impl;
 
+import java.util.regex.Pattern;
+
 import org.hibernate.AssertionFailure;
 import org.hibernate.cfg.EJB3NamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
@@ -25,7 +27,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 	/**
 	 * A pattern common to all property names used in element collections.
 	 */
-	private static final String ELEMENT_COLLECTION_NAME_PATTERN = "collection&&element";
+	private static final Pattern ELEMENT_COLLECTION_NAME_PATTERN = Pattern.compile( "collection&&element\\." );
 
 
 	// noop method kept for documentation purposes
@@ -37,9 +39,11 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 
 	@Override
 	public String propertyToColumnName(String propertyName) {
+		String[] parts = ELEMENT_COLLECTION_NAME_PATTERN.split( propertyName );
+
 		// for element collections just use the simple name
-		if ( propertyName.contains( ELEMENT_COLLECTION_NAME_PATTERN ) ) {
-			propertyName = propertyName.substring( propertyName.lastIndexOf( "." ) + 1 );
+		if ( parts.length == 2 ) {
+			propertyName = parts[1];
 		}
 
 		return replacePropertySeparator( propertyName );
