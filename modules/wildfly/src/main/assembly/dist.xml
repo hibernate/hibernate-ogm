@@ -8,6 +8,7 @@
     <id>wildfly9</id>
     <formats>
         <format>zip</format>
+        <format>dir</format> <!-- For ease of debugging only -->
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <baseDirectory>/</baseDirectory>
