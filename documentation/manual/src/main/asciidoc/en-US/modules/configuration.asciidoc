@@ -384,7 +384,7 @@ https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly doc
 
 The Hibernate OGM module does not include the Hibernate Search module, so this will need to be downloaded separately.
 
-The Hibernate Search documentation has a similar section describing the details: http://docs.jboss.org/hibernate/search/{hibernate-search-module-slot}/reference/en-US/html/search-configuration.html#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
+The Hibernate Search documentation has a similar section describing the details: http://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html/search-configuration.html#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
 
 If your application needs to use both Hibernate OGM and Hibernate Search, your MANIFEST.MF will look like:
 
@@ -393,6 +393,6 @@ If your application needs to use both Hibernate OGM and Hibernate Search, your M
 [source]
 [subs="verbatim,attributes"]
 ----
-org.hibernate:ogm services, org.hibernate.ogm.couchdb services, org.hibernate.search.orm:{hibernate-search-module-slot} services
+org.hibernate:ogm services, org.hibernate.ogm.couchdb services, {hibernate-search-full-module-id} services
 ----
 ====

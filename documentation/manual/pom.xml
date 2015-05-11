@@ -91,6 +91,8 @@
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
+                        <hibernate-search-major-minor-version>${hibernate-search-major-minor-version}</hibernate-search-major-minor-version>
+                        <hibernate-search-full-module-id>${hibernate-search-full-module-id}</hibernate-search-full-module-id>
                         <infinispan-version>${infinispanVersion}</infinispan-version>
                         <jboss-jta-version>${jbossjtaVersion}</jboss-jta-version>
                         <mongodb-version>${mongodbVersion}</mongodb-version>
