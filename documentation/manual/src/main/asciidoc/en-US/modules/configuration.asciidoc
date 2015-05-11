@@ -323,32 +323,33 @@ This is useful even if you don't plan to use Infinispan as your primary data sto
 
 [[ogm-configuration-jbossmodule]]
 
-=== How to package Hibernate OGM applications for WildFly 8.2
+=== How to package Hibernate OGM applications for WildFly 9
 
-Provided you're deploying on WildFly 8.2,
+Provided you're deploying on WildFly,
 there is an additional way to add the OGM dependencies to your application.
 
-In WildFly 8.2, class loading is based on modules
-that have to define explicit dependencies on other modules.
+In WildFly, class loading is based on modules; this system defines explicit, non-transitive dependencies on other modules.
+
 Modules allow to share the same artifacts across multiple applications,
-getting you smaller and quicker deployments.
+making deployments smaller and quicker, and also making it possible to deploy multiple different versions of any library.
 
 More details about modules are described in
-https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[Class Loading in WildFly].
+https://docs.jboss.org/author/display/WFLY9/Class+Loading+in+WildFly[Class Loading in WildFly].
 
-==== Packaging Hibernate OGM applications for WildFly 8.2
+If you apply the following instructions you can create super small deployments which do not include any dependency.
 
-You can download the pre-packaged module ZIP from:
+==== Packaging Hibernate OGM applications for WildFly 9
+
+You can download the pre-packaged module ZIP for this version of Hibernate OGM from:
 
 * https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly9-{hibernate-ogm-version}.zip[Sourceforge]
 * https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly9&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
 
-Unpack the archive into the +modules+ folder of your WildFly 8.2 installation.
+Unpack the archive into the +modules+ folder of your WildFly 9 installation.
 The modules included are:
 
 * _org.hibernate:ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
-* _org.hibernate.ogm.<%DATASTORE%>:main_, one module for each datastore provider besides Infinispan, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
-You only need to add those modules which you actually intend to use.
+* _org.hibernate.ogm.<%DATASTORE%>:main_, one module for each datastore, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
 
 There are two ways to include the dependencies in your project:
@@ -378,15 +379,19 @@ Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the followin
 ----
 
 More information about the descriptor can be found in the
-https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly documentation].
+https://docs.jboss.org/author/display/WFLY9/Class+Loading+in+WildFly[WildFly documentation].
 
-==== Loading both the Hibernate Search and Hibernate OGM modules WildFly 8.2
+==== Enabling both the Hibernate Search and Hibernate OGM modules
 
-The Hibernate OGM module does not include the Hibernate Search module, so this will need to be downloaded separately.
+A compatible Hibernate Search module is included in WildFly 9: all you have to do is activate the dependency.
 
-The Hibernate Search documentation has a similar section describing the details: http://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html/search-configuration.html#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
+When using WildFly, no library is available to your deployments unless you explicitly request it, or unless it is the implementation for a JavaEE service which your application is using.
+For example, Hibernate ORM will be available by default to your application if you are including the definition of a persistence unit,
+although there are options to prevent that, for example to use a different JPA implementor or to use a different version of Hibernate ORM.
 
-If your application needs to use both Hibernate OGM and Hibernate Search, your MANIFEST.MF will look like:
+Hibernate Search is not automatically provided, so you have to make it available explicitly either via the +MANIFEST.MF+ or via a custom +jboss-deployment-structure.xml+.
+
+To do that, the +MANIFEST.MF+ of your deployment will look like:
 
 .Example MANIFEST.MF for an application using Hibernate OGM for CouchDB and also Hibernate Search
 ====
@@ -396,3 +401,11 @@ If your application needs to use both Hibernate OGM and Hibernate Search, your M
 org.hibernate:ogm services, org.hibernate.ogm.couchdb services, {hibernate-search-full-module-id} services
 ----
 ====
+
+Optionally you could download a different version of the Hibernate Search modules, provided it is compatible with the Hibernate OGM version you plan to use.
+For example you might want to download a more recent micro version of what is included in WildFly 9 at the time of publishing this documentation.
+
+The Hibernate Search documentation explains the details of downloading and deploying a custom version: http://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html/search-configuration.html#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
+
+This approach might require you to make changes to the XML definitions of the Hibernate OGM modules to change the references to the Hibernate Search slot
+to the slot version that you plan to use.
