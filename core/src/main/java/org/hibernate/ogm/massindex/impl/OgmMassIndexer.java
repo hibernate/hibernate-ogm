@@ -19,6 +19,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.batchindexing.impl.SimpleIndexingProgressMonitor;
+import org.hibernate.search.batchindexing.spi.MassIndexerWithTenant;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.jmx.impl.JMXRegistrar.IndexingProgressMonitor;
 import org.hibernate.search.spi.SearchIntegrator;
@@ -29,7 +30,7 @@ import org.hibernate.search.spi.SearchIntegrator;
  * @see org.hibernate.search.batchindexing.spi.MassIndexerFactory
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class OgmMassIndexer implements MassIndexer {
+public class OgmMassIndexer implements MassIndexerWithTenant {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -42,6 +43,7 @@ public class OgmMassIndexer implements MassIndexer {
 	private boolean optimizeOnFinish = true;
 	private boolean optimizeAfterPurge = true;
 	private boolean purgeAllOnStart = true;
+	private String tenantId;
 	private int typesToIndexInParallel = 1;
 
 	private final Set<Class<?>> rootEntities;
@@ -61,6 +63,12 @@ public class OgmMassIndexer implements MassIndexer {
 	@Override
 	public MassIndexer threadsToLoadObjects(int numberOfThreads) {
 		log.unsupportedIndexerConfigurationOption( "threadsToLoadObjects" );
+		return this;
+	}
+
+	@Override
+	public MassIndexerWithTenant tenantIdentifier(String tenantIdentifier) {
+		this.tenantId = tenantIdentifier;
 		return this;
 	}
 
@@ -144,7 +152,7 @@ public class OgmMassIndexer implements MassIndexer {
 
 	protected BatchCoordinator createCoordinator() {
 		return new BatchCoordinator( gridDialect, rootEntities, searchIntegrator, sessionFactory, typesToIndexInParallel, cacheMode, optimizeOnFinish,
-				purgeAllOnStart, optimizeAfterPurge, monitor );
+				purgeAllOnStart, optimizeAfterPurge, monitor, tenantId );
 	}
 
 	private void atLeastOneValidation(int numberOfThreads) {

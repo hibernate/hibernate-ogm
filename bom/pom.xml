@@ -39,7 +39,7 @@
         <!-- Neo4j does not support Lucene 4 currently-->
         <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
         <hibernateVersion>4.3.9.Final</hibernateVersion>
-        <hibernateSearchVersion>5.1.0.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>5.2.0.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.2.0.Alpha1</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>

@@ -50,11 +50,14 @@ public class BatchIndexingWorkspace implements Runnable {
 
 	private final CountDownLatch endAllSignal;
 
+	private final String tenantId;
+
 	public BatchIndexingWorkspace(GridDialect gridDialect, SearchIntegrator search,
 			SessionFactoryImplementor sessionFactory, Class<?> entityType, CacheMode cacheMode, CountDownLatch endAllSignal,
-			MassIndexerProgressMonitor monitor, BatchBackend backend) {
+			MassIndexerProgressMonitor monitor, BatchBackend backend, String tenantId) {
 		this.gridDialect = gridDialect;
 		this.indexedType = entityType;
+		this.tenantId = tenantId;
 		this.searchIntegrator = search.unwrap( ExtendedSearchIntegrator.class );
 		this.sessionFactory = sessionFactory;
 		this.cacheMode = cacheMode;
@@ -73,7 +76,7 @@ public class BatchIndexingWorkspace implements Runnable {
 		ErrorHandler errorHandler = searchIntegrator.getErrorHandler();
 		try {
 			final EntityKeyMetadata keyMetadata = getEntityKeyMetadata();
-			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler );
+			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler, tenantId );
 			gridDialect.forEachTuple( new OptionallyWrapInJTATransaction( sessionFactory, errorHandler, consumer ), keyMetadata );
 		}
 		catch ( RuntimeException re ) {

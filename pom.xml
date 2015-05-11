@@ -62,7 +62,7 @@
         <!-- Since we require users to import a specific Hibernate Search module explicitly,
          all integration tests need to know which version that shall be.
          So the property needs to be defined in the global parent pom -->
-        <hibernate-search.module.slot>5.1</hibernate-search.module.slot>
+        <hibernate-search.module.slot>5.2</hibernate-search.module.slot>
     </properties>
 
     <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are

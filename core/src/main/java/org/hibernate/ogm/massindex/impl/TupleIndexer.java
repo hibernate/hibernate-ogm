@@ -62,16 +62,18 @@ public class TupleIndexer implements SessionAwareRunnable {
 	private final ErrorHandler errorHandler;
 	private final Class<?> indexedType;
 	private final ServiceManager serviceManager;
+	private final String tenantId;
 
 	public TupleIndexer(Class<?> indexedType, MassIndexerProgressMonitor monitor,
 			SessionFactoryImplementor sessionFactory, ExtendedSearchIntegrator searchIntegrator,
-			CacheMode cacheMode, BatchBackend backend, ErrorHandler errorHandler) {
+			CacheMode cacheMode, BatchBackend backend, ErrorHandler errorHandler, String tenantId) {
 		this.indexedType = indexedType;
 		this.monitor = monitor;
 		this.sessionFactory = sessionFactory;
 		this.cacheMode = cacheMode;
 		this.backend = backend;
 		this.errorHandler = errorHandler;
+		this.tenantId = tenantId; //can be null when multi-tenancy isn't being used
 		this.entityIndexBindings = searchIntegrator.getIndexBindings();
 		serviceManager = searchIntegrator.getServiceManager();
 	}
@@ -118,7 +120,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 		String idInString = idInString( conversionContext, id, clazz, docBuilder );
 		// depending on the complexity of the object graph going to be indexed it's possible
 		// that we hit the database several times during work construction.
-		return docBuilder.createAddWork( clazz, entity, id, idInString, sessionInitializer, conversionContext );
+		return docBuilder.createAddWork( tenantId, clazz, entity, id, idInString, sessionInitializer, conversionContext );
 	}
 
 	private String idInString(ConversionContext conversionContext, Serializable id, Class<?> clazz,

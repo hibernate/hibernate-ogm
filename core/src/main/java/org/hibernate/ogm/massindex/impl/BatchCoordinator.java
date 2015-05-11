@@ -44,13 +44,15 @@ public class BatchCoordinator implements Runnable {
 	private final CountDownLatch endAllSignal;
 	private final MassIndexerProgressMonitor monitor;
 	private final ErrorHandler errorHandler;
+	private final String tenantId;
 
 	private final GridDialect gridDialect;
 
 	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, ExtendedSearchIntegrator searchFactoryImplementor,
 			SessionFactoryImplementor sessionFactory, int typesToIndexInParallel, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart,
-			boolean optimizeAfterPurge, MassIndexerProgressMonitor monitor) {
+			boolean optimizeAfterPurge, MassIndexerProgressMonitor monitor, String tenantId) {
 		this.gridDialect = gridDialect;
+		this.tenantId = tenantId;
 		this.rootEntities = rootEntities.toArray( new Class<?>[rootEntities.size()] );
 		this.searchFactoryImplementor = searchFactoryImplementor;
 		this.sessionFactory = sessionFactory;
@@ -102,7 +104,7 @@ public class BatchCoordinator implements Runnable {
 		ExecutorService executor = Executors.newFixedThreadPool( typesToIndexInParallel, "BatchIndexingWorkspace" );
 		for ( Class<?> type : rootEntities ) {
 			executor.execute( new BatchIndexingWorkspace( gridDialect, searchFactoryImplementor, sessionFactory, type,
-					cacheMode, endAllSignal, monitor, backend ) );
+					cacheMode, endAllSignal, monitor, backend, tenantId ) );
 		}
 		executor.shutdown();
 		endAllSignal.await(); // waits for the executor to finish
