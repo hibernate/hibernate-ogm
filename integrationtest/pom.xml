@@ -199,6 +199,8 @@
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
                                         </artifactItem>
+                                        <!-- The following modules are disabled as *with this specific version* we can
+                                          use the main modules as bundled with WildFly
                                         <artifactItem>
                                             <groupId>org.hibernate</groupId>
                                             <artifactId>hibernate-search-modules</artifactId>
@@ -216,6 +218,7 @@
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
                                         </artifactItem>
+                                         -->
                                     </artifactItems>
                                 </configuration>
                             </execution>
