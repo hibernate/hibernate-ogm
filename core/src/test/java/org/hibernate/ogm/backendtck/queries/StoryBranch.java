@@ -19,6 +19,7 @@ import org.hibernate.search.annotations.Store;
 
 @Embeddable
 public class StoryBranch {
+
 	// Store.YES for filtering in query
 	// Analyze.NO for projection in query
 	@Field(store = Store.YES, analyze = Analyze.NO)
@@ -66,5 +67,58 @@ public class StoryBranch {
 
 	public void setAdditionalEndings(List<Ending> anotherCollection) {
 		this.additionalEndings = anotherCollection;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( ending == null ) ? 0 : ending.hashCode() );
+		result = prime * result + ( ( storyText == null ) ? 0 : storyText.hashCode() );
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if ( this == obj ) {
+			return true;
+		}
+		if ( obj == null ) {
+			return false;
+		}
+		if ( getClass() != obj.getClass() ) {
+			return false;
+		}
+		StoryBranch other = (StoryBranch) obj;
+		if ( ending == null ) {
+			if ( other.ending != null ) {
+				return false;
+			}
+		}
+		else if ( !ending.equals( other.ending ) ) {
+			return false;
+		}
+		if ( storyText == null ) {
+			if ( other.storyText != null ) {
+				return false;
+			}
+		}
+		else if ( !storyText.equals( other.storyText ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append( "StoryBranch [storyText=" );
+		builder.append( storyText );
+		builder.append( ", ending=" );
+		builder.append( ending );
+		builder.append( ", additionalEndings=" );
+		builder.append( additionalEndings );
+		builder.append( "]" );
+		return builder.toString();
 	}
 }
