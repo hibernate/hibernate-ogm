@@ -14,6 +14,7 @@
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
         <module name="org.infinispan" slot="${infinispan.module.slot}" />
+        <module name="org.infinispan.commons" slot="${infinispan.module.slot}" />
         <module name="javax.api" />
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
