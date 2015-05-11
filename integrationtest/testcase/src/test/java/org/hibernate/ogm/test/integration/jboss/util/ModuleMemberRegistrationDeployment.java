@@ -87,7 +87,11 @@ public class ModuleMemberRegistrationDeployment {
 			for ( Entry<Object,Object> entry : entrySet ) {
 				String key = (String) entry.getKey();
 				String value = (String) entry.getValue();
+				String original = dependencies;
 				dependencies = dependencies.replace( "${" + key + "}", value );
+				if ( ! original.equals( dependencies ) ) {
+					System.out.println( "\n\n\t***\tDependency version injected: " + key + " = " + value + "\n" );
+				}
 			}
 			return dependencies;
 		}
