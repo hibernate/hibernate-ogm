@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.backendtck.optimisticlocking;
 
-import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.isA;
+import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
 import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
 import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
@@ -101,7 +101,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	@SkipByGridDialect(
-			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB },
+			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB, CASSANDRA },
 			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
 	)
 	public void updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate() throws Throwable {
@@ -148,7 +148,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	@SkipByGridDialect(
-			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB },
+			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB, CASSANDRA },
 			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
 	)
 	public void deletingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndDelete() throws Throwable {
@@ -213,30 +213,6 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 		// ... which will be detected by the re-read prior to the removal
 		commitTransactionAndPropagateExceptions( session, transaction );
-	}
-
-	@Test
-	public void updateToEmbeddedCollectionCausesVersionToBeIncreased() throws Throwable {
-		Galaxy galaxy = persistGalaxy();
-
-		Session session = openSession();
-		Transaction transaction = session.beginTransaction();
-
-		Galaxy entity = (Galaxy) session.get( Galaxy.class, galaxy.getId() );
-		entity.getStars().add( new Star( "Algol" ) );
-
-		transaction.commit();
-		session.clear();
-
-		session = openSession();
-		transaction = session.beginTransaction();
-
-		entity = (Galaxy) session.get( Galaxy.class, galaxy.getId() );
-		assertThat( entity.getVersion() ).isEqualTo( 1 );
-		assertThat( entity.getStars() ).hasSize( 3 );
-
-		transaction.commit();
-		session.close();
 	}
 
 	@Test
@@ -341,20 +317,6 @@ public class OptimisticLockingTest extends OgmTestCase {
 		transaction.commit();
 	}
 
-	private Galaxy persistGalaxy() {
-		Session session = openSession();
-
-		session.beginTransaction();
-
-		Galaxy milkyWay = new Galaxy( "galaxy-1", "Milky Way", new Star( "Sun" ), new Star( "Alpha Centauri" ) );
-		session.persist( milkyWay );
-
-		session.getTransaction().commit();
-		session.close();
-
-		return milkyWay;
-	}
-
 	private Pulsar persistPulsar() {
 		Session session = openSession();
 
@@ -411,7 +373,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Planet.class, Galaxy.class, Pulsar.class };
+		return new Class<?>[] { Planet.class, Pulsar.class };
 	}
 
 	@SuppressWarnings("serial")
