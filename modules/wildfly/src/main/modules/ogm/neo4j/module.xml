@@ -29,10 +29,12 @@
         <module name="org.hibernate" slot="${hibernate.ogm.module.slot}" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
+        <!-- Separate module to make sure it's not visible to the applications -->
+        <module name="org.hibernate.ogm.neo4j.lucene" slot="${hibernate.ogm.neo4j-lucene.module.slot}" />
+
         <module name="javax.api" />
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
-        <module name="org.apache.lucene" />
         <module name="org.jboss.logging" />
         <module name="org.parboiled" />
     </dependencies>
