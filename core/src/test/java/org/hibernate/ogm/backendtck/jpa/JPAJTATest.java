@@ -34,7 +34,10 @@ public class JPAJTATest extends JpaTestCase {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Poem.class );
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "MongoDB tests runs w/o transaction manager")
+	@SkipByGridDialect(
+			value = { GridDialectType.MONGODB, GridDialectType.CASSANDRA },
+			comment = "MongoDB and Cassandra tests runs w/o transaction manager"
+	)
 	public void testBootstrapAndCRUD() throws Exception {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory(
