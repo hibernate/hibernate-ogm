@@ -150,14 +150,15 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <version.wildfly>8.2.0.Final</version.wildfly>
+                <version.wildfly>9.0.0.CR1</version.wildfly>
+                <version.org.wildfly.arquillian>1.0.0.Alpha5</version.org.wildfly.arquillian>
                 <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
             </properties>
             <dependencies>
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.wildfly}</version>
+                <version>${version.org.wildfly.arquillian}</version>
                 <scope>test</scope>
                 <exclusions>
                     <!-- This exclusion is needed to be able to setup the project in Windows:
