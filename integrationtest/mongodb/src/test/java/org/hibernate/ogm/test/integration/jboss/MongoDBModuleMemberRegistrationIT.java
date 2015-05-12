@@ -18,11 +18,11 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.compensation.ErrorHandler.RollbackContext;
+import org.hibernate.ogm.compensation.operation.CreateTuple;
+import org.hibernate.ogm.compensation.operation.GridDialectOperation;
+import org.hibernate.ogm.compensation.operation.OperationType;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
-import org.hibernate.ogm.failure.ErrorHandler.RollbackContext;
-import org.hibernate.ogm.failure.operation.CreateTuple;
-import org.hibernate.ogm.failure.operation.GridDialectOperation;
-import org.hibernate.ogm.failure.operation.OperationType;
 import org.hibernate.ogm.test.integration.jboss.errorhandler.TestErrorHandler;
 import org.hibernate.ogm.test.integration.jboss.model.EmailAddress;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
@@ -39,7 +39,6 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 /**
  * Test for the Hibernate OGM module in WildFly using MongoDB
  *

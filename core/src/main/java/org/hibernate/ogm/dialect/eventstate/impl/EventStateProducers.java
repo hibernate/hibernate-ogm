@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.failure.impl.OperationCollector;
+import org.hibernate.ogm.compensation.impl.OperationCollector;
 import org.hibernate.ogm.transaction.impl.ErrorHandlerEnabledTransactionDecorator;
 
 /**

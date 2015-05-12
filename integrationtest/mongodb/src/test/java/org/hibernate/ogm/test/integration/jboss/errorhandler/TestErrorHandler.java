@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hibernate.ogm.failure.ErrorHandler;
-import org.hibernate.ogm.failure.ErrorHandlingStrategy;
+import org.hibernate.ogm.compensation.ErrorHandler;
+import org.hibernate.ogm.compensation.ErrorHandlingStrategy;
 
 /**
  * @author Gunnar Morling
