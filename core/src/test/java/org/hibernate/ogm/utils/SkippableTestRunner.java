@@ -7,6 +7,7 @@
 package org.hibernate.ogm.utils;
 
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -22,6 +23,16 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 
 	public SkippableTestRunner(Class<?> klass) throws InitializationError {
 		super( klass );
+	}
+
+	@Override
+	public void run(RunNotifier notifier) {
+		if ( isTestClassSkipped() || areAllTestMethodsSkipped() ) {
+			notifier.fireTestIgnored( Description.createSuiteDescription( super.getTestClass().getJavaClass() ) );
+		}
+		else {
+			super.run( notifier );
+		}
 	}
 
 	@Override
