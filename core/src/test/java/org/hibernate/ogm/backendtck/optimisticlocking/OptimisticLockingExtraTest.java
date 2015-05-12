@@ -37,7 +37,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 @SkipByGridDialect(
 		value = { GridDialectType.CASSANDRA },
-		comment = "Galaxy.stars list - bag semantics unsupported (no primary key)"
+		comment = "list - bag semantics unsupported (no primary key)"
 )
 public class OptimisticLockingExtraTest extends OgmTestCase {
 
