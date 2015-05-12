@@ -150,11 +150,11 @@ transactionManager.commit(); // will flush changes to the datastore
 ====
 
 [[ogm-api-error-handler]]
-==== Getting notified upon errors during application of changes
+==== Acting upon errors during application of changes
 
 [NOTE]
 ====
-The error handler API described in the following is an experimental feature as of version {hibernate-ogm-version}.
+The error compensation API described in the following is an experimental feature as of version {hibernate-ogm-version}.
 It will be enriched with additional features over time.
 This might require changes to existing method signatures
 and thus may break code using a previous version of the API.
@@ -168,13 +168,13 @@ If the store is non-transactional, there is no way to rollback (undo) these chan
 In this case it is desirable to know which changes have been applied and which ones failed
 in order to take appropriate action.
 
-Hibernate OGM provides an error handler API for this purpose.
+Hibernate OGM provides an error compensation API for this purpose.
 By implementing the +org.hibernate.ogm.failure.ErrorHandler+ interface, you will be notified if
 
 * an interaction between the Hibernate OGM engine and the grid dialect failed
 * a rollback of the current transaction was triggered
 
-Use cases for the error handler API include:
+Use cases for the error compensation API include:
 
 * Logging all applied operations
 * Retrying a failed operation e.g. after timeouts
@@ -182,7 +182,7 @@ Use cases for the error handler API include:
 
 In its current form the API lays the ground for manually performing these and similar tasks,
 but we envision a more automated approach in future versions,
-e.g. for automatic retries of failed operations.
+e.g. for automatic retries of failed operations or the automatic application of compensating operations.
 
 Let's take a look at an example:
 
