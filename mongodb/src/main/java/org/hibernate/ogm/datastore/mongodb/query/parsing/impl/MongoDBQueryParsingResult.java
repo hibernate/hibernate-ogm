@@ -28,13 +28,15 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	private final DBObject query;
 	private final DBObject projection;
 	private final DBObject orderBy;
+	private final List<String> unwinds;
 
-	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, DBObject query, DBObject projection, DBObject orderBy) {
+	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, DBObject query, DBObject projection, DBObject orderBy, List<String> unwinds) {
 		this.entityType = entityType;
 		this.collectionName = collectionName;
 		this.query = query;
 		this.projection = projection;
 		this.orderBy = orderBy;
+		this.unwinds = unwinds;
 	}
 
 	public DBObject getQuery() {
@@ -53,14 +55,19 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 		return orderBy;
 	}
 
+	public List<String> getUnwinds() {
+		return unwinds;
+	}
+
 	@Override
 	public Object getQueryObject() {
 		return new MongoDBQueryDescriptor(
 			collectionName,
-			Operation.FIND, //so far only SELECT is supported
+			unwinds == null ? Operation.FIND : Operation.AGGREGATE,
 			query,
 			projection,
-			orderBy
+			orderBy,
+			unwinds
 		);
 	}
 

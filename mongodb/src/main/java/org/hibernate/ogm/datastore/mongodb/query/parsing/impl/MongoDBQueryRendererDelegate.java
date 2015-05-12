@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -14,6 +16,7 @@ import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.util.impl.StringHelper;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -28,6 +31,10 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
 	private DBObject orderBy;
+	/*
+	 * The fields for which needs to be aggregated using $unwind when running the query
+	 */
+	private List<String> unwinds;
 
 	public MongoDBQueryRendererDelegate(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames, MongoDBPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
 		super(
@@ -49,21 +56,33 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 				entityPersister.getTableName(),
 				builder.build(),
 				getProjectionDBObject(),
-				orderBy
+				orderBy,
+				unwinds
 		);
 	}
 
 	@Override
 	public void setPropertyPath(PropertyPath propertyPath) {
 		if ( status == Status.DEFINING_SELECT ) {
-			//currently only support selecting non-nested properties (either qualified or unqualified)
-			if ( ( propertyPath.getNodes().size() == 1 && !propertyPath.getLastNode().isAlias() )
-					|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() ) ) {
+			List<String> pathWithoutAlias = resolveAlias( propertyPath );
+			if ( propertyHelper.isSimpleProperty( pathWithoutAlias ) ) {
 				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
 			}
-			else if ( propertyPath.getNodes().size() > 2 && propertyPath.getNodes().get( 0 ).isAlias() ) {
-				if ( propertyHelper.isEmbeddedProperty( targetTypeName, propertyPath ) ) {
-					projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
+			else if ( propertyHelper.isNestedProperty( pathWithoutAlias ) ) {
+				if ( propertyHelper.isEmbeddedProperty( targetTypeName, pathWithoutAlias ) ) {
+					String columnName = propertyHelper.getColumnName( targetTypeName, pathWithoutAlias );
+					projections.add( columnName );
+					List<String> associationPath = propertyHelper.findAssociationPath( targetTypeName, pathWithoutAlias );
+					// Currently, it is possible to nest only one association inside an embedded
+					if ( associationPath != null ) {
+						if ( unwinds == null ) {
+							unwinds = new ArrayList<String>();
+						}
+						String field = StringHelper.join( associationPath, "." );
+						if ( !unwinds.contains( field ) ) {
+							unwinds.add( field );
+						}
+					}
 				}
 				else {
 					throw new UnsupportedOperationException( "Selecting associated properties not yet implemented." );

@@ -105,7 +105,8 @@ public class MongoHelpers {
 			entity = (DBObject) next;
 		}
 
-		return entity.get( path[size - 1] );
+		String field = path[size - 1];
+		return entity.get( field );
 	}
 
 	/**

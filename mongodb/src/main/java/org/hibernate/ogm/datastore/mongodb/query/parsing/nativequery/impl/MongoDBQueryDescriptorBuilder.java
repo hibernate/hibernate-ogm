@@ -45,6 +45,6 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	public MongoDBQueryDescriptor build() {
-		return new MongoDBQueryDescriptor( collection, operation, (DBObject) JSON.parse( criteria ), (DBObject) JSON.parse( projection ), null );
+		return new MongoDBQueryDescriptor( collection, operation, (DBObject) JSON.parse( criteria ), (DBObject) JSON.parse( projection ), null, null );
 	}
 }

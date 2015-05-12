@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.query.impl;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.mongodb.DBObject;
 
@@ -22,7 +23,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	public enum Operation {
 		FIND,
-		COUNT;
+		COUNT,
+		AGGREGATE;
 	}
 
 	private final String collectionName;
@@ -30,13 +32,15 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final DBObject criteria;
 	private final DBObject projection;
 	private final DBObject orderBy;
+	private final List<String> unwinds;
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, List<String> unwinds) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
 		this.projection = projection;
 		this.orderBy = orderBy;
+		this.unwinds = unwinds;
 	}
 
 	/**
@@ -78,6 +82,10 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 */
 	public DBObject getOrderBy() {
 		return orderBy;
+	}
+
+	public List<String> getUnwinds() {
+		return unwinds;
 	}
 
 	@Override

@@ -95,18 +95,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	 * itself. We traverse the tree until we've arrived at a leaf and retrieve the value from it.
 	 */
 	private Object getValue(DBObject dbObject, String column) {
-		// for embedded columns, get the DBObject hosting the leaf and the leaf name
-		if ( column.contains( MongoDBDialect.PROPERTY_SEPARATOR ) ) {
-			String[] parts = EMBEDDED_FIELDNAME_SEPARATOR.split( column );
-			for ( int i = 0; i < parts.length - 1; i++ ) {
-				dbObject = (DBObject) dbObject.get( parts[i] );
-				if ( dbObject == null ) {
-					break;
-				}
-			}
-			column = parts[parts.length - 1];
-		}
-
-		return dbObject != null ? dbObject.get( column ) : null;
+		Object valueOrNull = MongoHelpers.getValueOrNull( dbObject, column );
+		return valueOrNull;
 	}
 }

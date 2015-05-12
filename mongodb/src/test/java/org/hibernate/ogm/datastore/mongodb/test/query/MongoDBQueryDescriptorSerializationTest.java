@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
@@ -34,7 +35,8 @@ public class MongoDBQueryDescriptorSerializationTest {
 				Operation.FIND,
 				new BasicDBObject( "foo", "bar" ),
 				new BasicDBObject( "foo", 1 ),
-				new BasicDBObject( "bar", 1 )
+				new BasicDBObject( "bar", 1 ),
+				Arrays.asList( "foo, bar" )
 		);
 
 		byte[] bytes = serialize( descriptor );
@@ -45,6 +47,7 @@ public class MongoDBQueryDescriptorSerializationTest {
 		assertThat( deserializedDescriptor.getCriteria() ).isEqualTo( descriptor.getCriteria() );
 		assertThat( deserializedDescriptor.getProjection() ).isEqualTo( descriptor.getProjection() );
 		assertThat( deserializedDescriptor.getOrderBy() ).isEqualTo( descriptor.getOrderBy() );
+		assertThat( deserializedDescriptor.getUnwinds() ).isEqualTo( descriptor.getUnwinds() );
 	}
 
 	private byte[] serialize(MongoDBQueryDescriptor descriptor) throws IOException {

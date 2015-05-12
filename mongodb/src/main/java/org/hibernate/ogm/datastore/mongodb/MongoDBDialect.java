@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,12 +24,12 @@ import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
-import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
@@ -89,6 +90,7 @@ import org.parboiled.errors.ErrorUtils;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.support.ParsingResult;
 
+import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -702,6 +704,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		switch( queryDescriptor.getOperation() ) {
 			case FIND:
 				return doFind( queryDescriptor, queryParameters, collection, entityKeyMetadata );
+			case AGGREGATE:
+				return doAggregate( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case COUNT:
 				return doCount( queryDescriptor, collection );
 			default:
@@ -726,10 +730,44 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 
+	private ClosableIterator<Tuple> doAggregate(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
+		List<DBObject> pipeline = new ArrayList<DBObject>();
+
+		pipeline.add( stage( "$match", query.getCriteria() ) );
+		pipeline.add( stage( "$project", query.getProjection() ) );
+
+		if ( query.getUnwinds() != null && !query.getUnwinds().isEmpty() ) {
+			for ( String field : query.getUnwinds() ) {
+				pipeline.add( stage( "$unwind", "$" + field ) );
+			}
+		}
+
+		if ( query.getOrderBy() != null ) {
+			pipeline.add( stage( "$sort", query.getOrderBy() ) );
+		}
+
+		// apply firstRow/maxRows if present
+		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
+			pipeline.add( stage( "$skip", queryParameters.getRowSelection().getFirstRow() ) );
+		}
+
+		if ( queryParameters.getRowSelection().getMaxRows() != null ) {
+			pipeline.add( stage( "$limit", queryParameters.getRowSelection().getMaxRows() ) );
+		}
+
+		AggregationOutput output = collection.aggregate( pipeline );
+		return new MongoDBAggregationOutput( output, entityKeyMetadata );
+	}
+
+	private DBObject stage(String key, Object value) {
+		DBObject stage = new BasicDBObject();
+		stage.put( key, value );
+		return stage;
+	}
+
 	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
 			EntityKeyMetadata entityKeyMetadata) {
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
-
 		if ( query.getOrderBy() != null ) {
 			cursor.sort( query.getOrderBy() );
 		}
@@ -979,6 +1017,38 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private static class MongoDBAggregationOutput implements ClosableIterator<Tuple> {
+
+		private final Iterator<DBObject> results;
+		private final EntityKeyMetadata metadata;
+
+		public MongoDBAggregationOutput(AggregationOutput output, EntityKeyMetadata metadata) {
+			this.results = output.results().iterator();
+			this.metadata = metadata;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return results.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			DBObject dbObject = results.next();
+			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata, UPDATE ) );
+		}
+
+		@Override
+		public void remove() {
+			results.remove();
+		}
+
+		@Override
+		public void close() {
+			// Nothing to do
+		}
 	}
 
 	private static class MongoDBResultsCursor implements ClosableIterator<Tuple> {
