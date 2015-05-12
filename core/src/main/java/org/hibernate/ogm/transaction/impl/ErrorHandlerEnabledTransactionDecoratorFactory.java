@@ -11,7 +11,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
-import org.hibernate.ogm.failure.ErrorHandler;
+import org.hibernate.ogm.compensation.ErrorHandler;
 
 /**
  * A {@link TransactionFactory} which takes transactions created by another factory and decorates them with the

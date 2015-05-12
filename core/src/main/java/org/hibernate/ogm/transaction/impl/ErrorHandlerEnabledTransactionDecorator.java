@@ -12,15 +12,15 @@ import javax.transaction.Synchronization;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
-import org.hibernate.ogm.failure.ErrorHandler;
-import org.hibernate.ogm.failure.impl.OperationCollector;
+import org.hibernate.ogm.compensation.ErrorHandler;
+import org.hibernate.ogm.compensation.impl.OperationCollector;
 
 /**
  * A {@link TransactionImplementor} wrapper which triggers invocation of the user-configured {@link ErrorHandler} upon
  * failed operations, rollbacks etc.
  * <p>
  * Depending on the type of the underlying transacton (JTA or not),
- * {@link ErrorHandler#onRollback(org.hibernate.ogm.failure.ErrorHandler.RollbackContext)} will either be invoked
+ * {@link ErrorHandler#onRollback(org.hibernate.ogm.compensation.ErrorHandler.RollbackContext)} will either be invoked
  * via a {@link Synchronization} or through the {@link #rollback()} method.
  *
  * @author Gunnar Morling

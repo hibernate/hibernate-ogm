@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.cfg;
 
-import org.hibernate.ogm.failure.ErrorHandler;
+import org.hibernate.ogm.compensation.ErrorHandler;
 
 /**
  * Common properties for configuring NoSql datastores via {@code persistence.xml} or
