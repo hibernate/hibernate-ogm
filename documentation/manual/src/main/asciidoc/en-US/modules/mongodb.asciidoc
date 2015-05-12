@@ -3104,9 +3104,11 @@ No cursor operations such as +sort()+ are supported.
 Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
 such as +$orderby+ within the criteria parameter.
 
-JSON parameters passed via the CLI syntax must be specified using the http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode]
+JSON parameters passed via the CLI syntax must be specified using the http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode].
+Specifically, keys need to be given within quotes, e.g. use +db.WILDE_POEM.find({ \"name\" : \"Athanasia\" })+
+instead of +db.WILDE_POEM.find({ name : \"Athanasia\" })+.
 The only relaxation of this is that single quotes may be used when specifying attribute names/values to facilitate embedding
-queries within Java strings.
+queries within Java strings, e.g. +db.WILDE_POEM.find({ 'name' : 'Athanasia' })+.
 
 Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
 are not (yet) converted using suitable Hibernate OGM type implementations.
