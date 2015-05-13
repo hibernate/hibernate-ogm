@@ -267,11 +267,16 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String expectedDbObject) {
+		assertDbObject( sessionFactory, collection, queryDbObject, null, expectedDbObject );
+	}
+
+	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String projectionDbObject, String expectedDbObject) {
 		DBObject finder = (DBObject) JSON.parse( queryDbObject );
+		DBObject fields = projectionDbObject != null ? (DBObject) JSON.parse( projectionDbObject ) : null;
 		DBObject expected = (DBObject) JSON.parse( expectedDbObject );
 
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder );
+		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder, fields );
 
 		assertThat( isDBObjectAndContentEqual( actual, expected ) ).describedAs( "Expected: " + expected + " but was: " + actual ).isTrue();
 	}

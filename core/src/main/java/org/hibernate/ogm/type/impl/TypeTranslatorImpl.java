@@ -70,6 +70,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		tmpMap.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );
 		tmpMap.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
 		tmpMap.put( BooleanTypeDescriptor.INSTANCE, BooleanType.INSTANCE );
+		tmpMap.put( TrueFalseType.INSTANCE.getJavaTypeDescriptor(), TrueFalseType.INSTANCE );
 		tmpMap.put( ByteTypeDescriptor.INSTANCE, ByteType.INSTANCE );
 		tmpMap.put( JdbcDateTypeDescriptor.INSTANCE, DateType.INSTANCE );
 		tmpMap.put( JdbcTimestampTypeDescriptor.INSTANCE, TimestampType.INSTANCE );

@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.backendtck.type;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -15,18 +18,14 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.type.Bookmark.Classifier;
 import org.hibernate.ogm.utils.OgmTestCase;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -124,6 +123,14 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
 		assertEquals( "Boolean value does not match", bookmark.getFavourite(), loadedBookmark.getFavourite() );
+	}
+
+	@Test
+	public void testTrueFalseMappedBooleanSupport() throws Exception {
+		bookmark.setPrivate( true );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Boolean value does not match", bookmark.isPrivate(), loadedBookmark.isPrivate() );
 	}
 
 	@Test
