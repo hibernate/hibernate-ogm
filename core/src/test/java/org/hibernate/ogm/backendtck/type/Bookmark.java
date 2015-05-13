@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
+
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -22,6 +23,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 /**
  * Test entity containing the data types each data store needs to handle.
@@ -51,6 +53,9 @@ public class Bookmark {
 	private Double taxPercentage;
 	private Boolean favourite;
 	private Byte displayMask;
+
+	@Type(type = "true_false")
+	private boolean isPrivate;
 
 	// byte arrays
 	@Lob
@@ -152,6 +157,14 @@ public class Bookmark {
 
 	public Boolean getFavourite() {
 		return favourite;
+	}
+
+	public void setPrivate(boolean isPrivate) {
+		this.isPrivate = isPrivate;
+	}
+
+	public boolean isPrivate() {
+		return isPrivate;
 	}
 
 	public Byte getDisplayMask() {
