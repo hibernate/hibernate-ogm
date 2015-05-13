@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Collections;
@@ -13,7 +14,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -31,8 +31,6 @@ import org.neo4j.graphdb.Relationship;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
-
-	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	private final Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
@@ -69,7 +67,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private static Iterable<Relationship> relationships(Node ownerNode, AssociationKey associationKey, String relationshipType) {
 		if ( relationshipType.contains( "." ) ) {
-			String[] pathToAssociation = EMBEDDED_FIELDNAME_SEPARATOR.split( relationshipType );
+			String[] pathToAssociation = split( relationshipType );
 			Node nextNode = ownerNode;
 			for ( int i = 0; i < pathToAssociation.length; i++ ) {
 				String splitType = pathToAssociation[i];

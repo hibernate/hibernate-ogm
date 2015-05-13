@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Collections;
@@ -13,7 +14,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -31,8 +31,6 @@ import org.neo4j.graphdb.Relationship;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class Neo4jTupleSnapshot implements TupleSnapshot {
-
-	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	private final Node node;
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
@@ -76,7 +74,7 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
 	// TODO: We should create a query to read this value
 	private Object readEmbeddedProperty(String column) {
-		String[] split = EMBEDDED_FIELDNAME_SEPARATOR.split( column );
+		String[] split = split( column );
 		Node embeddedNode = node;
 		for ( int i = 0; i < split.length - 1; i++ ) {
 			String relType = split[i];

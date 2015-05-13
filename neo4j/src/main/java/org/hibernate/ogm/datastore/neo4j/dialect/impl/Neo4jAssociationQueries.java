@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -454,10 +456,6 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		queryBuilder.append( " RETURN r" );
 	}
 
-	private boolean isPartOfEmbedded(String collectionRole) {
-		return collectionRole.contains( "." );
-	}
-
 	private Relationship executeQuery(ExecutionEngine executionEngine, String query, Object[] queryValues) {
 		Map<String, Object> params = params( queryValues );
 		ExecutionResult result = executionEngine.execute( query, params );
@@ -529,7 +527,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * query.
 	 */
 	private static String[] appendEmbeddedNodes(String path, StringBuilder queryBuilder) {
-		String[] columns = EMBEDDED_FIELDNAME_SEPARATOR.split( path );
+		String[] columns = split( path );
 		for ( int i = 0; i < columns.length - 1; i++ ) {
 			queryBuilder.append( " - [:" );
 			appendRelationshipType( queryBuilder, columns[i] );

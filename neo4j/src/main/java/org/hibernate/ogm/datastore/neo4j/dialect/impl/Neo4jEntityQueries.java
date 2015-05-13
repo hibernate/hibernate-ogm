@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 
 import java.util.Map;
 
@@ -289,7 +290,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * query.
 	 */
 	private static String[] appendEmbeddedNodes(String path, StringBuilder queryBuilder) {
-		String[] columns = EMBEDDED_FIELDNAME_SEPARATOR.split( path );
+		String[] columns = split( path );
 		for ( int i = 0; i < columns.length - 1; i++ ) {
 			queryBuilder.append( " - [:" );
 			appendRelationshipType( queryBuilder, columns[i] );

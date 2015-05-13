@@ -8,6 +8,8 @@ package org.hibernate.ogm.datastore.neo4j;
 
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.limit;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Collection;
@@ -18,7 +20,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
@@ -98,10 +99,6 @@ import org.neo4j.kernel.impl.util.StringLogger;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
-
-	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
-
-	private static final String PROPERTY_SEPARATOR = ".";
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -322,6 +319,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		if ( entityNode == null ) {
 			return null;
 		}
+
 		return new Association(
 				new Neo4jAssociationSnapshot(
 						entityNode,
@@ -438,7 +436,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
-				String[] split = EMBEDDED_FIELDNAME_SEPARATOR.split( operation.getColumn() );
+				String[] split = split( operation.getColumn() );
 				removePropertyForEmbedded( node, split, 0 );
 			}
 			else  if ( node.hasProperty( operation.getColumn() ) ) {
@@ -517,7 +515,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	 * @return {@code true} if the column represent an attribute of a regular embedded element, {@code false} otherwise
 	 */
 	public static boolean isPartOfRegularEmbedded(String[] keyColumnNames, String column) {
-		return column.contains( PROPERTY_SEPARATOR ) && !ArrayHelper.contains( keyColumnNames, column );
+		return isPartOfEmbedded( column ) && !ArrayHelper.contains( keyColumnNames, column );
 	}
 
 	private void putProperty(EntityKey entityKey, Node node, TupleOperation operation) {
