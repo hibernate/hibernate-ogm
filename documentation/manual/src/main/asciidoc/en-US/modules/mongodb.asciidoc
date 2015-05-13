@@ -349,7 +349,10 @@ Hibernate OGM supports by default the following property types:
 
 [source, JSON]
 ----
-  { "favorite" : true }
+  { "favorite" : true } # default mapping
+  { "favorite" : "T" } # if @Type(type = "true_false") is given
+  { "favorite" : "Y" } # if @Type(type = "yes_no") is given
+  { "favorite" : 1 } # if @Type(type = "numeric_boolean") is given
 ----
 
 * [classname]+java.lang.Byte+ (or byte primitive)
