@@ -33,6 +33,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		Bookmark bookmark = new Bookmark();
 		bookmark.setFavourite( Boolean.TRUE );
 		bookmark.setPrivate( true );
+		bookmark.setRead( true );
 
 		session.persist( bookmark );
 		transaction.commit();
@@ -93,6 +94,30 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				"{ " +
 					"'_id' : '" + bookmarkId + "', " +
 					"'isPrivate' : 'T'" +
+				"}"
+		);
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void yesNoTypeMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Bookmark",
+				// query
+				"{ '_id' : '" + bookmarkId + "' }",
+				// fields
+				"{ 'isRead' : '1' }",
+				// expected
+				"{ " +
+					"'_id' : '" + bookmarkId + "', " +
+					"'isRead' : 'Y'" +
 				"}"
 		);
 

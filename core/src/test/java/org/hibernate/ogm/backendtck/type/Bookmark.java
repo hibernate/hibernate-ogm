@@ -57,6 +57,9 @@ public class Bookmark {
 	@Type(type = "true_false")
 	private boolean isPrivate;
 
+	@Type(type = "yes_no")
+	private boolean isRead;
+
 	// byte arrays
 	@Lob
 	private byte[] lob;
@@ -165,6 +168,14 @@ public class Bookmark {
 
 	public boolean isPrivate() {
 		return isPrivate;
+	}
+
+	public void setRead(boolean isRead) {
+		this.isRead = isRead;
+	}
+
+	public boolean isRead() {
+		return isRead;
 	}
 
 	public Byte getDisplayMask() {

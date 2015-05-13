@@ -21,6 +21,8 @@ import org.hibernate.type.VersionType;
  */
 public class CouchDBStringType extends StringType implements VersionType<String> {
 
+	public static final CouchDBStringType INSTANCE = new CouchDBStringType();
+
 	@Override
 	public String seed(SessionImplementor session) {
 		return null;
