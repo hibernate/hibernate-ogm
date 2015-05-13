@@ -142,6 +142,14 @@ public class BuiltInTypeTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testNumericallyMappedBooleanSupport() throws Exception {
+		bookmark.setShared( true );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Boolean value does not match", bookmark.isShared(), loadedBookmark.isShared() );
+	}
+
+	@Test
 	public void testByteSupport() throws Exception {
 		bookmark.setDisplayMask( (byte) '8' );
 
