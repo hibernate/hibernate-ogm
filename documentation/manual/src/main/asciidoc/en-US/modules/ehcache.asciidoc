@@ -125,7 +125,7 @@ Hibernate OGM supports by default the following property types:
 
 * [classname]+java.lang.String+
 * [classname]+java.lang.Character+ (or char primitive)
-* [classname]+java.lang.Boolean+ (or boolean primitive)
+* [classname]+java.lang.Boolean+ (or boolean primitive); Optionally the annotations +@Type(type = "true_false")+, @Type(type = "yes_no") and @Type(type = "numeric_boolean") can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
 * [classname]+java.lang.Byte+ (or byte primitive)
 * [classname]+java.lang.Short+ (or short primitive)
 * [classname]+java.lang.Integer+ (or integer primitive)

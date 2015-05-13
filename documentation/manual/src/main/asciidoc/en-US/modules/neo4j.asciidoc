@@ -104,7 +104,7 @@ Each property or more precisely column is represented by an attribute of this no
 
 The following types (and corresponding primitives) get passed to Neo4j without any conversion:
 
-* [classname]+java.lang.Boolean+
+* [classname]+java.lang.Boolean+; Optionally the annotations +@Type(type = "true_false")+, @Type(type = "yes_no") and @Type(type = "numeric_boolean") can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
 * [classname]+java.lang.Character+
 * [classname]+java.lang.Byte+
 * [classname]+java.lang.Short+
