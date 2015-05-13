@@ -19,6 +19,6 @@ public class CouchDBTypeContributor implements TypeContributor {
 
 	@Override
 	public void contribute(TypeContributions typeContributions, ServiceRegistry serviceRegistry) {
-		typeContributions.contributeType( new CouchDBStringType() );
+		typeContributions.contributeType( CouchDBStringType.INSTANCE );
 	}
 }

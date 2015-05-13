@@ -284,7 +284,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	private void defineGridTypes(SessionImplementor session) {
 		if ( identifierValueGridType == null ) {
 			ServiceRegistryImplementor registry = session.getFactory().getServiceRegistry();
-			identifierValueGridType = registry.getService( TypeTranslator.class ).getType( new LongType() );
+			identifierValueGridType = registry.getService( TypeTranslator.class ).getType( LongType.INSTANCE );
 		}
 	}
 }

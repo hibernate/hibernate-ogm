@@ -20,27 +20,6 @@ import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.EnumType;
 import org.hibernate.type.Type;
-import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
-import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
-import org.hibernate.type.descriptor.java.BooleanTypeDescriptor;
-import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
-import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
-import org.hibernate.type.descriptor.java.CalendarTypeDescriptor;
-import org.hibernate.type.descriptor.java.CharacterTypeDescriptor;
-import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
-import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
-import org.hibernate.type.descriptor.java.FloatTypeDescriptor;
-import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
-import org.hibernate.type.descriptor.java.JdbcDateTypeDescriptor;
-import org.hibernate.type.descriptor.java.JdbcTimeTypeDescriptor;
-import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
-import org.hibernate.type.descriptor.java.LongTypeDescriptor;
-import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
-import org.hibernate.type.descriptor.java.ShortTypeDescriptor;
-import org.hibernate.type.descriptor.java.StringTypeDescriptor;
-import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
-import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.usertype.UserType;
 
 /**
@@ -51,34 +30,38 @@ public class TypeTranslatorImpl implements TypeTranslator {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final Map<JavaTypeDescriptor<?>, GridType> typeConverter;
+	private final Map<Type, GridType> typeConverter;
 	private final GridDialect dialect;
 
 	public TypeTranslatorImpl(GridDialect dialect) {
 		this.dialect = dialect;
 
-		Map<JavaTypeDescriptor<?>, GridType> tmpMap = newHashMap( 20 );
-		tmpMap.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
-		tmpMap.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
-		tmpMap.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
-		tmpMap.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
-		tmpMap.put( FloatTypeDescriptor.INSTANCE, FloatType.INSTANCE );
-		tmpMap.put( ShortTypeDescriptor.INSTANCE, ShortType.INSTANCE );
-		tmpMap.put( CharacterTypeDescriptor.INSTANCE, CharacterType.INSTANCE );
-		tmpMap.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
-		tmpMap.put( UrlTypeDescriptor.INSTANCE, UrlType.INSTANCE );
-		tmpMap.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );
-		tmpMap.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
-		tmpMap.put( BooleanTypeDescriptor.INSTANCE, BooleanType.INSTANCE );
-		tmpMap.put( TrueFalseType.INSTANCE.getJavaTypeDescriptor(), TrueFalseType.INSTANCE );
-		tmpMap.put( ByteTypeDescriptor.INSTANCE, ByteType.INSTANCE );
-		tmpMap.put( JdbcDateTypeDescriptor.INSTANCE, DateType.INSTANCE );
-		tmpMap.put( JdbcTimestampTypeDescriptor.INSTANCE, TimestampType.INSTANCE );
-		tmpMap.put( JdbcTimeTypeDescriptor.INSTANCE, TimeType.INSTANCE );
-		tmpMap.put( CalendarDateTypeDescriptor.INSTANCE, CalendarDateType.INSTANCE );
-		tmpMap.put( CalendarTypeDescriptor.INSTANCE, CalendarType.INSTANCE );
-		tmpMap.put( PrimitiveByteArrayTypeDescriptor.INSTANCE, PrimitiveByteArrayType.INSTANCE );
-		tmpMap.put( UUIDTypeDescriptor.INSTANCE, UUIDType.INSTANCE );
+		Map<Type, GridType> tmpMap = newHashMap( 20 );
+		tmpMap.put( org.hibernate.type.ClassType.INSTANCE, ClassType.INSTANCE );
+		tmpMap.put( org.hibernate.type.LongType.INSTANCE, LongType.INSTANCE );
+		tmpMap.put( org.hibernate.type.IntegerType.INSTANCE, IntegerType.INSTANCE );
+		tmpMap.put( org.hibernate.type.DoubleType.INSTANCE, DoubleType.INSTANCE );
+		tmpMap.put( org.hibernate.type.FloatType.INSTANCE, FloatType.INSTANCE );
+		tmpMap.put( org.hibernate.type.ShortType.INSTANCE, ShortType.INSTANCE );
+		tmpMap.put( org.hibernate.type.CharacterType.INSTANCE, CharacterType.INSTANCE );
+		tmpMap.put( org.hibernate.type.StringType.INSTANCE, StringType.INSTANCE );
+		tmpMap.put( org.hibernate.type.UrlType.INSTANCE, UrlType.INSTANCE );
+		tmpMap.put( org.hibernate.type.BigDecimalType.INSTANCE, BigDecimalType.INSTANCE );
+		tmpMap.put( org.hibernate.type.BigIntegerType.INSTANCE, BigIntegerType.INSTANCE );
+		tmpMap.put( org.hibernate.type.BooleanType.INSTANCE, BooleanType.INSTANCE );
+		tmpMap.put( org.hibernate.type.TrueFalseType.INSTANCE, TrueFalseType.INSTANCE );
+		tmpMap.put( org.hibernate.type.YesNoType.INSTANCE, YesNoType.INSTANCE );
+		tmpMap.put( org.hibernate.type.ByteType.INSTANCE, ByteType.INSTANCE );
+		tmpMap.put( org.hibernate.type.DateType.INSTANCE, DateType.INSTANCE );
+		tmpMap.put( org.hibernate.type.TimestampType.INSTANCE, TimestampType.INSTANCE );
+		tmpMap.put( org.hibernate.type.TimeType.INSTANCE, TimeType.INSTANCE );
+		tmpMap.put( org.hibernate.type.CalendarDateType.INSTANCE, CalendarDateType.INSTANCE );
+		tmpMap.put( org.hibernate.type.CalendarType.INSTANCE, CalendarType.INSTANCE );
+		tmpMap.put( org.hibernate.type.BinaryType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
+		tmpMap.put( org.hibernate.type.MaterializedBlobType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
+		tmpMap.put( org.hibernate.type.ImageType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
+		tmpMap.put( org.hibernate.type.UUIDBinaryType.INSTANCE, UUIDType.INSTANCE );
+		tmpMap.put( org.hibernate.type.UUIDCharType.INSTANCE, UUIDType.INSTANCE );
 
 		typeConverter = Collections.unmodifiableMap( tmpMap );
 	}
@@ -96,9 +79,9 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		}
 		else if ( type instanceof AbstractStandardBasicType ) {
 			AbstractStandardBasicType<?> exposedType = (AbstractStandardBasicType<?>) type;
-			final GridType gridType = typeConverter.get( exposedType.getJavaTypeDescriptor() );
+			final GridType gridType = typeConverter.get( exposedType );
 			if (gridType == null) {
-				throw log.unableToFindGridType( exposedType.getJavaTypeDescriptor().getJavaTypeClass().getName() );
+				throw log.unableToFindGridType( exposedType.getName() );
 			}
 			return gridType;
 		}

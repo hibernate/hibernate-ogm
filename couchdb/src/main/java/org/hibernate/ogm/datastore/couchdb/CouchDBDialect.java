@@ -23,6 +23,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapsh
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBBlobType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBByteType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBLongType;
+import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBStringType;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -45,6 +46,7 @@ import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
+import org.hibernate.ogm.type.impl.StringType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.StandardBasicTypes;
@@ -223,6 +225,9 @@ public class CouchDBDialect extends BaseGridDialect {
 
 	@Override
 	public GridType overrideType(Type type) {
+		if ( type == CouchDBStringType.INSTANCE ) {
+			return StringType.INSTANCE;
+		}
 		if ( type == StandardBasicTypes.MATERIALIZED_BLOB ) {
 			return CouchDBBlobType.INSTANCE;
 		}
