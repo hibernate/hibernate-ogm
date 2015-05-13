@@ -60,6 +60,9 @@ public class Bookmark {
 	@Type(type = "yes_no")
 	private boolean isRead;
 
+	@Type(type = "numeric_boolean")
+	private boolean isShared;
+
 	// byte arrays
 	@Lob
 	private byte[] lob;
@@ -176,6 +179,14 @@ public class Bookmark {
 
 	public boolean isRead() {
 		return isRead;
+	}
+
+	public void setShared(boolean isShared) {
+		this.isShared = isShared;
+	}
+
+	public boolean isShared() {
+		return isShared;
 	}
 
 	public Byte getDisplayMask() {

@@ -51,6 +51,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		tmpMap.put( org.hibernate.type.BooleanType.INSTANCE, BooleanType.INSTANCE );
 		tmpMap.put( org.hibernate.type.TrueFalseType.INSTANCE, TrueFalseType.INSTANCE );
 		tmpMap.put( org.hibernate.type.YesNoType.INSTANCE, YesNoType.INSTANCE );
+		tmpMap.put( org.hibernate.type.NumericBooleanType.INSTANCE, NumericBooleanType.INSTANCE );
 		tmpMap.put( org.hibernate.type.ByteType.INSTANCE, ByteType.INSTANCE );
 		tmpMap.put( org.hibernate.type.DateType.INSTANCE, DateType.INSTANCE );
 		tmpMap.put( org.hibernate.type.TimestampType.INSTANCE, TimestampType.INSTANCE );
