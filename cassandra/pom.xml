@@ -26,10 +26,6 @@
                     </environmentVariables>
                     <forkMode>once</forkMode>
 
-                    <includes>
-                        <include>**/BuiltInTypeTest*</include>
-                    </includes>
-
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>

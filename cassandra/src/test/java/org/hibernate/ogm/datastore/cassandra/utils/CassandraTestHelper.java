@@ -25,6 +25,7 @@ import org.hibernate.ogm.utils.TestableGridDialect;
 
 import org.hibernate.persister.collection.CollectionPersister;
 
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -110,9 +111,20 @@ public class CassandraTestHelper implements TestableGridDialect {
 			query.append( "\"" );
 			ResultSet resultSet = cassandraDatastoreProvider.getSession().execute( query.toString() );
 			// no GROUP BY in CQL, so we do it the hard way...
-			HashSet<String> uniqs = new HashSet<String>();
+			HashSet<Object> uniqs = new HashSet<>();
+			ProtocolVersion protocolVersion = cassandraDatastoreProvider.getSession()
+					.getCluster()
+					.getConfiguration()
+					.getProtocolOptions()
+					.getProtocolVersionEnum();
 			for ( Row row : resultSet ) {
-				uniqs.add( row.getBytesUnsafe( 0 ).toString() );
+				DataType dataType = row.getColumnDefinitions().getType( 0 );
+				ByteBuffer byteBuffer = row.getBytesUnsafe( 0 );
+				if ( byteBuffer == null ) {
+					continue;
+				}
+				Object value = dataType.deserialize( byteBuffer, protocolVersion );
+				uniqs.add( value );
 			}
 			count += uniqs.size();
 		}
