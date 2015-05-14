@@ -66,7 +66,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				// query
 				"{ '_id' : '" + bookmarkId + "' }",
 				// fields
-				"{ 'favourite' : '1' }",
+				"{ 'favourite' : 1 }",
 				// expected
 				"{ " +
 					"'_id' : '" + bookmarkId + "', " +
@@ -90,7 +90,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				// query
 				"{ '_id' : '" + bookmarkId + "' }",
 				// fields
-				"{ 'isPrivate' : '1' }",
+				"{ 'isPrivate' : 1 }",
 				// expected
 				"{ " +
 					"'_id' : '" + bookmarkId + "', " +
@@ -114,7 +114,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				// query
 				"{ '_id' : '" + bookmarkId + "' }",
 				// fields
-				"{ 'isRead' : '1' }",
+				"{ 'isRead' : 1 }",
 				// expected
 				"{ " +
 					"'_id' : '" + bookmarkId + "', " +
@@ -138,7 +138,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				// query
 				"{ '_id' : '" + bookmarkId + "' }",
 				// fields
-				"{ 'isShared' : '1' }",
+				"{ 'isShared' : 1 }",
 				// expected
 				"{ " +
 					"'_id' : '" + bookmarkId + "', " +
