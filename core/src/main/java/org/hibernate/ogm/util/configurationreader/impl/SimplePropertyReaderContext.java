@@ -49,6 +49,9 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 		else if ( targetType == int.class ) {
 			typedValue = (T) getAsInt();
 		}
+		else if ( targetType == Integer.class ) {
+			typedValue = (T) getAsInteger();
+		}
 		else if ( targetType.isEnum() ) {
 			typedValue = (T) getAsEnum();
 		}
@@ -77,10 +80,15 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 	}
 
 	private Integer getAsInt() {
+		Integer value = getAsInteger();
+		return value != null ? value : 0;
+	}
+
+	private Integer getAsInteger() {
 		Object configuredValue = getConfiguredValue();
 
 		if ( StringHelper.isNullOrEmptyString( configuredValue ) ) {
-			return getDefaultValue() != null ? (Integer) getDefaultValue() : 0;
+			return (Integer) getDefaultValue();
 		}
 		else if ( configuredValue instanceof Number ) {
 			return ( (Number) configuredValue ).intValue();

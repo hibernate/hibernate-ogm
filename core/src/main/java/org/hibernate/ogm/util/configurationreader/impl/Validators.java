@@ -25,6 +25,9 @@ public class Validators {
 
 		@Override
 		public void validate(Integer value) throws HibernateException {
+			if ( value == null ) {
+				return;
+			}
 			if ( value < 1 || value > 65535 ) {
 				throw log.illegalPortValue( value );
 			}
