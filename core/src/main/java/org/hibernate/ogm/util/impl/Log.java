@@ -266,4 +266,9 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 78, value = "Unrecognized alias in query:  %s")
 	HibernateException getUnknownAliasException(String text);
+
+	@Message(id = 79, value = "Unable to parse " + OgmProperties.HOST + " %s\n"
+			+ "Property should be a comma separated list of host:port\n"
+			+ "e.g. www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123")
+	HibernateException unableToParseHost(String text);
 }
