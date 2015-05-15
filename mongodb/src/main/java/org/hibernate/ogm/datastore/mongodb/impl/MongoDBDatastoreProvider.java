@@ -7,10 +7,12 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -125,15 +127,18 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	protected MongoClient createMongoClient(MongoDBConfiguration config) {
 		MongoClientOptions clientOptions = config.buildOptions();
 		List<MongoCredential> credentials = config.buildCredentials();
-		log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
+		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
 		try {
-			ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
+			List<ServerAddress> serverAddresses = new ArrayList<>( config.getHosts().size() );
+			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {
+				serverAddresses.add( new ServerAddress( hostAndPort.getHost(), hostAndPort.getPort() ) );
+			}
 			return credentials == null
-					? new MongoClient( serverAddress, clientOptions )
-					: new MongoClient( serverAddress, credentials, clientOptions );
+					? new MongoClient( serverAddresses, clientOptions )
+					: new MongoClient( serverAddresses, credentials, clientOptions );
 		}
 		catch (UnknownHostException e) {
-			throw log.mongoOnUnknownHost( config.getHost() );
+			throw log.mongoOnUnknownHost( config.toString() );
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
@@ -199,7 +204,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 				case AUTHENTICATION_FAILED_CODE:
 					throw log.authenticationFailed( config.getUsername() );
 				default:
-					throw log.unableToConnectToDatastore( config.getHost(), config.getPort(), me );
+					throw log.unableToConnectToDatastore( config.getHosts().toString(), me );
 			}
 		}
 	}

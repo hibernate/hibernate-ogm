@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.configuration.impl;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

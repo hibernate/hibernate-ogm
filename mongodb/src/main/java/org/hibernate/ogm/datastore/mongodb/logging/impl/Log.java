@@ -28,8 +28,8 @@ import com.mongodb.MongoException;
 public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@LogMessage(level = INFO)
-	@Message(id = 1201, value = "Connecting to MongoDB at %1$s:%2$d with a timeout set at %3$d millisecond(s)")
-	void connectingToMongo(String host, int port, int timeout);
+	@Message(id = 1201, value = "Connecting to MongoDB at %1$s with a timeout set at %2$d millisecond(s)")
+	void connectingToMongo(String host, int timeout);
 
 	@LogMessage(level = INFO)
 	@Message(id = 1202, value = "Closing connection to MongoDB")
@@ -63,8 +63,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1213, value = "MongoDB authentication failed with username [%s]" )
 	HibernateException authenticationFailed(String username);
 
-	@Message(id = 1214, value = "Unable to connect to MongoDB instance %1$s:%2$d" )
-	HibernateException unableToConnectToDatastore(String host, int port, @Cause Exception e);
+	@Message(id = 1214, value = "Unable to connect to MongoDB instance %1$s" )
+	HibernateException unableToConnectToDatastore(String host, @Cause Exception e);
 
 	@Message(id = 1215, value = "The value set for the configuration property" + MongoDBProperties.TIMEOUT + " must be a number greater than 0. Found '[%s]'.")
 	HibernateException mongoDBTimeOutIllegalValue(int timeout);
