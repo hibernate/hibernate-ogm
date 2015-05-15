@@ -94,4 +94,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1322, value = "Entity '%s' does not have a revision property; In order to make use of CouchDB's "
 			+ "built-in optimistic locking mechanism, it is recommended to define a property '@Generated @Version String _rev'.")
 	void entityShouldHaveRevisionProperty(String entityName);
+
+	@Message(id = 1323, value = "CouchDB does not support multiple hosts configuration: %s")
+	HibernateException doesNotSupportMultipleHosts(String hosts);
 }

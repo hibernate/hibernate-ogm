@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
@@ -101,10 +102,14 @@ public class CouchDBDatastoreProvider extends BaseDatastoreProvider implements S
 	}
 
 	private DatabaseIdentifier getDatabase() {
+		if ( ! configuration.getHosts().isSingleHost() ) {
+			logger.doesNotSupportMultipleHosts( configuration.getHosts().toString() );
+		}
+		Hosts.HostAndPort hostAndPort = configuration.getHosts().getFirst();
 		try {
 			return new DatabaseIdentifier(
-					configuration.getHost(),
-					configuration.getPort(),
+					hostAndPort.getHost(),
+					hostAndPort.getPort(),
 					configuration.getDatabaseName(),
 					configuration.getUsername(),
 					configuration.getPassword()
@@ -112,7 +117,7 @@ public class CouchDBDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 		catch (Exception e) {
 			throw logger.malformedDataBaseUrl(
-					e, configuration.getHost(), configuration.getPort(), configuration.getDatabaseName()
+					e, hostAndPort.getHost(), hostAndPort.getPort(), configuration.getDatabaseName()
 			);
 		}
 	}
