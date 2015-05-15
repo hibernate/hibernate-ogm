@@ -21,6 +21,7 @@ import org.hibernate.ogm.type.impl.EnumType;
 import org.hibernate.ogm.type.impl.FloatType;
 import org.hibernate.ogm.type.impl.IntegerType;
 import org.hibernate.ogm.type.impl.LongType;
+import org.hibernate.ogm.type.impl.NumericBooleanType;
 import org.hibernate.ogm.type.impl.StringType;
 import org.hibernate.ogm.type.impl.TimeType;
 import org.hibernate.ogm.type.impl.TimestampType;
@@ -79,6 +80,10 @@ public enum CassandraTypeMapper {
 			else {
 				return "text";
 			}
+		}
+
+		if ( gridType instanceof NumericBooleanType ) {
+			return "int";
 		}
 
 		// attempt a sane default for anything we don't recognise
