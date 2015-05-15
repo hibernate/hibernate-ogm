@@ -22,6 +22,13 @@ public class Hypothesis {
 
 	private int position;
 
+	public Hypothesis() {
+	}
+
+	public Hypothesis(String id) {
+		this.id = id;
+	}
+
 	@Id
 	public String getId() {
 		return id;

@@ -14,6 +14,7 @@ import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -38,28 +39,24 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	private static final Log log = LoggerFactory.make();
 
-	// The threadlocal is properly set and cleaned in a try / catch by {@link org.hibernate.ogm.service.impl.BatchManagerEventListener}
-	// if used elsewhere, apply the same pattern
-	private final ThreadLocal<OperationsQueue> operationQueueLocal = new ThreadLocal<OperationsQueue>();
+	private final EventContextManager eventContext;
 
-	public BatchOperationsDelegator(BatchableGridDialect dialect) {
+	public BatchOperationsDelegator(BatchableGridDialect dialect, EventContextManager eventContext) {
 		super( dialect );
-	}
-
-	public void prepareBatch() {
-		operationQueueLocal.set( new OperationsQueue() );
+		this.eventContext = eventContext;
 	}
 
 	private boolean isBatchDisabled() {
 		return getOperationQueue().isClosed();
 	}
 
-	public void clearBatch() {
-		operationQueueLocal.remove();
-	}
-
 	private OperationsQueue getOperationQueue() {
-		OperationsQueue operationsQueue = operationQueueLocal.get();
+		OperationsQueue operationsQueue = null;
+
+		if ( eventContext.isActive() ) {
+			operationsQueue = eventContext.get( OperationsQueue.class );
+		}
+
 		if ( operationsQueue == null ) {
 			return OperationsQueue.CLOSED_QUEUE;
 		}
@@ -69,6 +66,8 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	public void executeBatch() {
+		log.tracef( "Executing batch" );
+
 		try {
 			super.executeBatch( getOperationQueue() );
 		}

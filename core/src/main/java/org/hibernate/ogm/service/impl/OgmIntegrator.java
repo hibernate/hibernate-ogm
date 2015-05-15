@@ -18,7 +18,6 @@ import org.hibernate.integrator.spi.IntegratorService;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.jpa.event.spi.JpaIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
@@ -30,15 +29,12 @@ import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingFlushEventL
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingFlushEventListener.EventContextManagingFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener.EventContextManagingPersistEventListenerDuplicationStrategy;
-import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
-import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.IdentityColumnAwareGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
-import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
@@ -102,7 +98,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		sessionFactory.addObserver( new SchemaDefiningObserver( configuration ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 
-		attachBatchListenersIfRequired( serviceRegistry );
 		attachEventContextManagingListenersIfRequired( configuration, serviceRegistry );
 	}
 
@@ -117,21 +112,8 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 				.getValue();
 	}
 
-	/**
-	 * If the current dialect supports batching, register the required event listeners.
-	 */
-	private void attachBatchListenersIfRequired(SessionFactoryServiceRegistry serviceRegistry) {
-		GridDialect gridDialect = serviceRegistry.getService( GridDialect.class );
-		BatchOperationsDelegator batchDelegator = asBatchDelegatorOrNull( gridDialect );
-
-		if ( batchDelegator != null ) {
-			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
-			addListeners( eventListenerRegistry, batchDelegator );
-		}
-	}
-
 	private void attachEventContextManagingListenersIfRequired(Configuration configuration, SessionFactoryServiceRegistry serviceRegistry) {
-		if ( !isEventContextRequired( configuration ) ) {
+		if ( !EventContextManager.isEventContextRequired( configuration.getProperties(), serviceRegistry ) ) {
 			return;
 		}
 
@@ -150,10 +132,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		}
 	}
 
-	private boolean isEventContextRequired(Configuration configuration) {
-		return configuration.getProperties().get( OgmProperties.ERROR_HANDLER ) != null;
-	}
-
 	@SuppressWarnings( "unchecked" )
 	private <T extends Integrator> T getIntegrator(Class<T> integratorType, SessionFactoryServiceRegistry serviceRegistry) {
 		Iterable<Integrator> integrators = serviceRegistry.getService( IntegratorService.class ).getIntegrators();
@@ -165,24 +143,5 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		}
 
 		return null;
-	}
-
-	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {
-		while ( gridDialect instanceof ForwardingGridDialect ) {
-			if ( gridDialect instanceof BatchOperationsDelegator ) {
-				return (BatchOperationsDelegator) gridDialect;
-			}
-
-			gridDialect = ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect();
-		}
-
-		return null;
-	}
-
-	private void addListeners(EventListenerRegistry eventListenerRegistry, BatchOperationsDelegator gridDialect) {
-		eventListenerRegistry.addDuplicationStrategy( new FlushBatchManagerEventListener.FlushDuplicationStrategy() );
-		eventListenerRegistry.addDuplicationStrategy( new AutoFlushBatchManagerEventListener.AutoFlushDuplicationStrategy() );
-		eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new FlushBatchManagerEventListener( gridDialect ) );
-		eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new AutoFlushBatchManagerEventListener( gridDialect ) );
 	}
 }

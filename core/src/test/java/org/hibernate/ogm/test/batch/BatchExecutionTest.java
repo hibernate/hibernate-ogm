@@ -49,6 +49,7 @@ public class BatchExecutionTest extends OgmTestCase {
 	@Test
 	public void testExplicitFlushEvent() throws Exception {
 		final Session session = openSession();
+		session.persist( new Hypothesis( "hypo-1") );
 		session.flush();
 		session.close();
 
@@ -59,6 +60,7 @@ public class BatchExecutionTest extends OgmTestCase {
 	public void testImplicitFlushEvent() throws Exception {
 		final Session session = openSession();
 		session.beginTransaction();
+		session.persist( new Hypothesis( "hypo-1") );
 		session.getTransaction().commit();
 		session.close();
 
@@ -108,7 +110,7 @@ public class BatchExecutionTest extends OgmTestCase {
 
 		@Override
 		public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-			return null;
+			return new Tuple();
 		}
 
 		@Override

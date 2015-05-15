@@ -98,7 +98,7 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 
 				if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
-					gridDialect = new BatchOperationsDelegator( batchable );
+					gridDialect = new BatchOperationsDelegator( batchable, eventContext );
 				}
 
 				log.useGridDialect( gridDialect.getClass() );

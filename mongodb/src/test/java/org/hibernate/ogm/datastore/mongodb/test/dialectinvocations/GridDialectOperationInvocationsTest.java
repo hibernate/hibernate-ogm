@@ -119,7 +119,6 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"executeBatch",
 				"getTuple",
 				"getAssociation",
-				"executeBatch",
 				"getTuple",
 				"getAssociation",
 				"removeAssociation",
@@ -199,7 +198,6 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		session.close();
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch",
 				"executeBatch",
 				"executeBackendQuery",
 				"executeBatch",

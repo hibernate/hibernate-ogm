@@ -12,7 +12,7 @@ import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Contributes the {@link EventContextManager} service if needed as per the current configuration.
+ * Contributes the {@link EventContextManager} service.
  *
  * @author Gunnar Morling
  */
@@ -31,12 +31,6 @@ public class EventContextManagerInitiator implements StandardServiceInitiator<Ev
 
 	@Override
 	public EventContextManager initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		Map<Class<?>, EventStateProducer<?>> producers = EventStateProducers.getProducers( configurationValues );
-
-		if ( !producers.isEmpty() ) {
-			return new EventContextManager( producers );
-		}
-
-		return null;
+		return new EventContextManager();
 	}
 }
