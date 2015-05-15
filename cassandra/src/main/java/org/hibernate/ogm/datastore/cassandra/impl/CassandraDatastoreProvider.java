@@ -10,8 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.cassandra.CassandraDialect;
 import org.hibernate.ogm.datastore.cassandra.impl.configuration.CassandraConfiguration;
 import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
@@ -96,12 +98,16 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 	@Override
 	public void start() {
 		if ( cluster == null ) {
+			if ( ! config.getHosts().isSingleHost() ) {
+				throw new HibernateException( "Hibernate OGM Cassandra backend does not yet support multiple hosts, Coming soom" );
+			}
 			try {
-				log.connectingToCassandra( config.getHost(), config.getPort() );
+				Hosts.HostAndPort hostAndPort = config.getHosts().getFirst();
+				log.connectingToCassandra( hostAndPort.getHost(), hostAndPort.getPort() );
 
 				cluster = new Cluster.Builder()
-						.addContactPoint( config.getHost() )
-						.withPort( config.getPort() )
+						.addContactPoint( hostAndPort.getHost() )
+						.withPort( hostAndPort.getPort() )
 						.withCredentials( config.getUsername(), config.getPassword() )
 						.build();
 
