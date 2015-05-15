@@ -7,6 +7,7 @@
 package org.hibernate.ogm.cfg.spi;
 
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.impl.HostParser;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
@@ -24,22 +25,23 @@ public abstract class DocumentStoreConfiguration {
 
 
 
-	private final String host;
-	private final int port;
+	private final Hosts hosts;
 	private final String databaseName;
 	private final String username;
 	private final String password;
 	private final boolean createDatabase;
 
 	public DocumentStoreConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
-		this.host = propertyReader.property( OgmProperties.HOST, String.class )
+		String host = propertyReader.property( OgmProperties.HOST, String.class )
 				.withDefault( DEFAULT_HOST )
 				.getValue();
 
-		this.port =  propertyReader.property( OgmProperties.PORT, int.class )
-				.withDefault( defaultPort )
+		Integer port =  propertyReader.property( OgmProperties.PORT, Integer.class )
 				.withValidator( Validators.PORT )
+				.withDefault( null )
 				.getValue();
+
+		hosts = HostParser.parse( host, port, defaultPort );
 
 		this.databaseName = propertyReader.property( OgmProperties.DATABASE, String.class )
 				.required()
@@ -55,18 +57,11 @@ public abstract class DocumentStoreConfiguration {
 
 	/**
 	 * @see OgmProperties#HOST
+	 * @see OgmProperties#PORT
 	 * @return The host name of the data store instance
 	 */
-	public String getHost() {
-		return host;
-	}
-
-	/**
-	 * @see OgmProperties#PORT
-	 * @return The port of the data store instance to connect to
-	 */
-	public int getPort() {
-		return port;
+	public Hosts getHosts() {
+		return hosts;
 	}
 
 	/**

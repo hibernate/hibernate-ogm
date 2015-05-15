@@ -50,12 +50,19 @@ public interface OgmProperties {
 
 	/**
 	 * Property for setting the host name to connect to. Accepts {@code String}.
+	 * Accepts a comma separated list of host / ports.
+	 * Note that for IPv6, the host must be surrounded by square bracket if a port is defined: [2001:db8::ff00:42:8329]:123
+	 *
+	 * For example
+	 * www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123
 	 */
 	String HOST = "hibernate.ogm.datastore.host";
 
 	/**
 	 * Property for setting the port number of the database to connect to. Accepts {@code int}.
+	 * @deprecated ignored when multiple hosts are defined in {@link #HOST}, prefer the {@code host:port} approach
 	 */
+	@Deprecated
 	String PORT = "hibernate.ogm.datastore.port";
 
 	/**

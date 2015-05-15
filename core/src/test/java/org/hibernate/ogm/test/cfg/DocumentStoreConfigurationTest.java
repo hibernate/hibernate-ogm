@@ -14,6 +14,7 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +45,8 @@ public class DocumentStoreConfigurationTest {
 	public void shouldReturnTheDefaultValueIfThePortKeyIsNotPresentAsAConfigurationValue() {
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
-		assertThat( configuration.getPort() ).isEqualTo( 1234 );
+		Hosts hosts = configuration.getHosts();
+		assertThat( hosts.getFirst().getPort() ).isEqualTo( 1234 );
 	}
 
 	@Test
@@ -52,7 +54,8 @@ public class DocumentStoreConfigurationTest {
 		configurationValues.put( OgmProperties.PORT, "" );
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
-		assertThat( configuration.getPort() ).isEqualTo( 1234 );
+		Hosts hosts = configuration.getHosts();
+		assertThat( hosts.getFirst().getPort() ).isEqualTo( 1234 );
 	}
 
 	@Test
@@ -61,14 +64,16 @@ public class DocumentStoreConfigurationTest {
 		configurationValues.put( OgmProperties.PORT, String.valueOf( configuredPortValue ) );
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
-		assertThat( configuration.getPort() ).isEqualTo( configuredPortValue );
+		Hosts hosts = configuration.getHosts();
+		assertThat( hosts.getFirst().getPort() ).isEqualTo( configuredPortValue );
 	}
 
 	@Test
 	public void shouldReturnLocalhostIfTheHostNotPresentAsAConfigurationValue() {
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
-		assertThat( configuration.getHost() ).isEqualTo( "localhost" );
+		Hosts hosts = configuration.getHosts();
+		assertThat( hosts.getFirst().getHost() ).isEqualTo( "localhost" );
 	}
 
 	@Test
@@ -76,7 +81,8 @@ public class DocumentStoreConfigurationTest {
 		configurationValues.put( OgmProperties.HOST, " " );
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
-		assertThat( configuration.getHost() ).isEqualTo( "localhost" );
+		Hosts hosts = configuration.getHosts();
+		assertThat( hosts.getFirst().getHost() ).isEqualTo( "localhost" );
 	}
 
 	@Test
@@ -85,7 +91,8 @@ public class DocumentStoreConfigurationTest {
 		configurationValues.put( OgmProperties.HOST, configuredHostValue );
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
-		assertThat( configuration.getHost() ).isEqualTo( configuredHostValue );
+		Hosts hosts = configuration.getHosts();
+		assertThat( hosts.getFirst().getHost() ).isEqualTo( configuredHostValue );
 	}
 
 	@Test
