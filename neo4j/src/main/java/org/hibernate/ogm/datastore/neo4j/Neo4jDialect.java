@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
@@ -320,14 +321,40 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			return null;
 		}
 
-		return new Association(
-				new Neo4jAssociationSnapshot(
-						entityNode,
-						associationKey,
-						associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata(),
-						associationContext.getAssociationTypeContext().getRoleOnMainSide()
-				)
-		);
+		Map<RowKey, Tuple> tuples = createAssociationMap( associationKey, associationContext, entityKey );
+		return new Association( new Neo4jAssociationSnapshot( tuples ) );
+	}
+
+	private Map<RowKey, Tuple> createAssociationMap(AssociationKey associationKey, AssociationContext associationContext, EntityKey entityKey) {
+		String relationshipType = associationContext.getAssociationTypeContext().getRoleOnMainSide();
+		ResourceIterator<Relationship> relationships = entityQueries.get( entityKey.getMetadata() )
+				.findAssociation( executionEngine, entityKey.getColumnValues(), relationshipType );
+
+		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
+		try {
+			while ( relationships.hasNext() ) {
+				Relationship relationship = relationships.next();
+				AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
+				Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
+				RowKey rowKey = convert( associationKey, snapshot );
+				tuples.put( rowKey, new Tuple( snapshot ) );
+			}
+			return tuples;
+		}
+		finally {
+			relationships.close();
+		}
+	}
+
+	private RowKey convert(AssociationKey associationKey, Neo4jTupleAssociationSnapshot snapshot) {
+		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
+		Object[] values = new Object[columnNames.length];
+
+		for ( int i = 0; i < columnNames.length; i++ ) {
+			values[i] = snapshot.get( columnNames[i] );
+		}
+
+		return new RowKey( columnNames, values );
 	}
 
 	@Override

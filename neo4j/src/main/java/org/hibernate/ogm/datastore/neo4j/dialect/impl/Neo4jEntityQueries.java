@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
+import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -34,10 +36,12 @@ public class Neo4jEntityQueries extends QueriesBase {
 	private static final int CACHE_CONCURRENCY_LEVEL = 20;
 
 	private final BoundedConcurrentHashMap<String, String> updateEmbeddedPropertyQueryCache;
+	private final BoundedConcurrentHashMap<String, String> findAssociationQueryCache;
 
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
 	private final String findEntitiesQuery;
+	private final String findAssociationPartialQuery;
 	private final String createEntityQuery;
 	private final String removeEntityQuery;
 	private final String updateEmbeddedNodeQuery;
@@ -45,6 +49,8 @@ public class Neo4jEntityQueries extends QueriesBase {
 
 	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		this.updateEmbeddedPropertyQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
+		this.findAssociationQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
+		this.findAssociationPartialQuery = initMatchOwnerEntityNode( entityKeyMetadata );
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
 		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata );
 		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata );
@@ -52,6 +58,56 @@ public class Neo4jEntityQueries extends QueriesBase {
 		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
 		this.updateEmbeddedNodeQuery = initUpdateEmbeddedNodeQuery( entityKeyMetadata );
 		this.removeEmbdeddedElementQuery = initRemoveEmbdeddedElementQuery( entityKeyMetadata );
+	}
+
+	/*
+	 * Example:
+	 *
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 */
+	private static String initMatchOwnerEntityNode(EntityKeyMetadata ownerEntityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder();
+		appendMatchOwnerEntityNode( queryBuilder, ownerEntityKeyMetadata );
+		return queryBuilder.toString();
+	}
+
+	/*
+	 * Example:
+	 *
+	 * MATCH (owner:ENTITY:Car {`carId.maker`: {0}, `carId.model`: {1}}) -[r:tires]- ()
+	 * RETURN r
+	 *
+	 * or for embedded associations:
+	 *
+	 * MATCH (owner:ENTITY:StoryGame {id: {0}}) -[:evilBranch]-> (:EMBEDDED) -[r:additionalEndings]-> (:EMBEDDED)
+	 * RETURN r
+	 */
+	private String completeFindAssociationQuery(String relationshipType) {
+		StringBuilder queryBuilder = new StringBuilder( findAssociationPartialQuery );
+		if ( isPartOfEmbedded( relationshipType ) ) {
+			String[] path = split( relationshipType );
+			int index = 0;
+			for ( String embeddedRelationshipType : path ) {
+				queryBuilder.append( " -[" );
+				if ( index == path.length - 1 ) {
+					queryBuilder.append( "r" );
+				}
+				queryBuilder.append( ":" );
+				appendRelationshipType( queryBuilder, embeddedRelationshipType );
+				queryBuilder.append( "]-> (:");
+				queryBuilder.append( EMBEDDED );
+				queryBuilder.append( ")" );
+				index++;
+			}
+		}
+		else {
+			queryBuilder.append( " -[r" );
+			queryBuilder.append( ":" );
+			appendRelationshipType( queryBuilder, relationshipType );
+			queryBuilder.append( "]- ()" );
+		}
+		queryBuilder.append( " RETURN r" );
+		return queryBuilder.toString();
 	}
 
 	/*
@@ -159,6 +215,30 @@ public class Neo4jEntityQueries extends QueriesBase {
 		queryBuilder.append( " OPTIONAL MATCH (n) - [r] - ()" );
 		queryBuilder.append( " DELETE n, r" );
 		return queryBuilder.toString();
+	}
+
+	/**
+	 * Find the relationships representing the association.
+	 *
+	 * @param executionEngine the queries executor
+	 * @param columnValues the values for the entity key column names of the owner node
+	 * @param role the relationship type mapping the role of the association
+	 * @return an iterator on the the results
+	 */
+	// We should move this in Neo4jAssociationQueries but, at the moment, having a query that only requires an EntityKeyMetadata make it easier
+	// to deal with the *ToOne scenario
+	public ResourceIterator<Relationship> findAssociation(ExecutionEngine executionEngine, Object[] columnValues, String role) {
+		String query = findAssociationQueryCache.get( role );
+		if ( query == null ) {
+			query = completeFindAssociationQuery( role );
+			String cached = findAssociationQueryCache.putIfAbsent( role, query );
+			if ( cached != null ) {
+				query = cached;
+			}
+		}
+		Map<String, Object> params = params( columnValues );
+		executionEngine.execute( query, params );
+		return executionEngine.execute( query, params( columnValues ) ).columnAs( "r" );
 	}
 
 	/**
