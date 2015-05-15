@@ -84,32 +84,17 @@ public class Neo4jEntityQueries extends QueriesBase {
 		return queryBuilder.toString();
 	}
 
-	private static void appendRelationshipType(StringBuilder queryBuilder, String relationshipType) {
-		escapeIdentifier( queryBuilder, relationshipType );
-	}
-
 	/*
 	 * Example:
 	 *
-	 * MATCH (n:ENTITY:table {id: {0}})
-	 * RETURN n
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 * RETURN owner;
 	 */
 	private static String initFindEntityQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		appendEntityNode( "n", entityKeyMetadata, queryBuilder );
-		queryBuilder.append( " RETURN n" );
+		StringBuilder queryBuilder = new StringBuilder();
+		appendMatchOwnerEntityNode( queryBuilder, entityKeyMetadata );
+		queryBuilder.append( " RETURN owner" );
 		return queryBuilder.toString();
-	}
-
-	private static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
-		queryBuilder.append( "(");
-		queryBuilder.append( alias );
-		queryBuilder.append( ":" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
 	}
 
 	/*

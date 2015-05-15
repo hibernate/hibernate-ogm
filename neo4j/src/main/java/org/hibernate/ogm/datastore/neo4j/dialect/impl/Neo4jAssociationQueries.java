@@ -56,8 +56,8 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * MATCH (owner:ENTITY:table {id: {0}})
 	 */
 	private static String initMatchOwnerEntityNode(EntityKeyMetadata ownerEntityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		appendEntityNode( "owner", ownerEntityKeyMetadata, queryBuilder );
+		StringBuilder queryBuilder = new StringBuilder();
+		appendMatchOwnerEntityNode( queryBuilder, ownerEntityKeyMetadata );
 		return queryBuilder.toString();
 	}
 
@@ -505,21 +505,6 @@ public class Neo4jAssociationQueries extends QueriesBase {
 			property.setParam( index );
 			subTree.addProperty( property );
 		}
-	}
-
-	private static void appendRelationshipType(StringBuilder queryBuilder, String relationshipType) {
-		escapeIdentifier( queryBuilder, relationshipType );
-	}
-
-	private static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
-		queryBuilder.append( "(");
-		queryBuilder.append( alias );
-		queryBuilder.append( ":" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
 	}
 
 	/*

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 
 import java.util.HashMap;
@@ -59,6 +60,35 @@ class QueriesBase {
 		return params;
 	}
 
+	/*
+	 * Example:
+	 *
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 */
+	protected static void appendMatchOwnerEntityNode(StringBuilder queryBuilder, EntityKeyMetadata ownerEntityKeyMetadata) {
+		queryBuilder.append( "MATCH " );
+		appendEntityNode( "owner", ownerEntityKeyMetadata, queryBuilder );
+	}
+
+	/*
+	 * Example:
+	 *
+	 * (owner:ENTITY:table {id: {0}})
+	 */
+	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
+		queryBuilder.append( "(");
+		queryBuilder.append( alias );
+		queryBuilder.append( ":" );
+		queryBuilder.append( ENTITY );
+		queryBuilder.append( ":" );
+		appendLabel( entityKeyMetadata, queryBuilder );
+		appendProperties( entityKeyMetadata, queryBuilder );
+		queryBuilder.append( ")" );
+	}
+
+	protected static void appendRelationshipType(StringBuilder queryBuilder, String relationshipType) {
+		escapeIdentifier( queryBuilder, relationshipType );
+	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T singleResult(ExecutionResult result) {
