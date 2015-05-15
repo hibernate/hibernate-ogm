@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.configuration.impl;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -92,7 +93,13 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	public List<MongoCredential> buildCredentials() {
 		if ( getUsername() != null ) {
-			return Arrays.asList( authenticationMechanism.createCredential( getUsername(), getDatabaseName(), getPassword() ) );
+			return Collections.singletonList(
+					authenticationMechanism.createCredential(
+							getUsername(),
+							getDatabaseName(),
+							getPassword()
+					)
+			);
 		}
 		return null;
 	}
