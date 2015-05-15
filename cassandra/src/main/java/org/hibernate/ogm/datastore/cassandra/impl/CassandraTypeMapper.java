@@ -12,7 +12,8 @@ import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraCalendarType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraCharacterType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraPrimitiveByteArrayType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraShortType;
-
+import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraTrueFalseType;
+import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraYesNoType;
 import org.hibernate.ogm.type.impl.BooleanType;
 import org.hibernate.ogm.type.impl.ClassType;
 import org.hibernate.ogm.type.impl.DateType;
@@ -29,7 +30,9 @@ import org.hibernate.ogm.type.impl.UrlType;
 
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.TrueFalseType;
 import org.hibernate.type.Type;
+import org.hibernate.type.YesNoType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -118,6 +121,14 @@ public enum CassandraTypeMapper {
 
 		if ( type == StandardBasicTypes.CHARACTER ) {
 			return CassandraCharacterType.INSTANCE;
+		}
+
+		if ( type == YesNoType.INSTANCE ) {
+			return CassandraYesNoType.INSTANCE;
+		}
+
+		if ( type == TrueFalseType.INSTANCE ) {
+			return CassandraTrueFalseType.INSTANCE;
 		}
 
 		return null;
