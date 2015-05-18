@@ -33,7 +33,6 @@ import org.hibernate.ogm.model.key.spi.RowKey;
  */
 public class ResultSetAssociationSnapshot implements AssociationSnapshot {
 
-	private final Table table;
 	private Map<RowKey, Row> res = new HashMap<RowKey, Row>();
 	private com.datastax.driver.core.ProtocolVersion protocolVersion;
 
@@ -42,7 +41,7 @@ public class ResultSetAssociationSnapshot implements AssociationSnapshot {
 			ResultSet resultSet,
 			Table tableMetadata,
 			ProtocolVersion protocolVersion) {
-		this.table = tableMetadata;
+		this.protocolVersion = protocolVersion;
 
 		if ( resultSet == null ) {
 			res = Collections.EMPTY_MAP;
