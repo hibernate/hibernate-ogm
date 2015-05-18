@@ -278,8 +278,7 @@ public class CassandraDialect implements GridDialect {
 				new ResultSetAssociationSnapshot(
 						key,
 						resultSet,
-						provider.getMetaDataCache()
-								.get( table ),
+						tableMetadata,
 						protocolVersion
 				)
 		);
