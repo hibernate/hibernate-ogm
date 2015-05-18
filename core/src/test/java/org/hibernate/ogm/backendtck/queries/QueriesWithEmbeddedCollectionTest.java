@@ -70,38 +70,38 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	public void testEqualOpeartorWithEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = 'search the evil [artifact]'" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[ARTIFACT] Search for the evil artifact'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testInOperatorWithEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "from StoryGame story JOIN story.chaoticBranches c WHERE c.evilText IN ( 'search the evil [artifact]' )" ).list();
+		List<?> result = session.createQuery( "from StoryGame story JOIN story.chaoticBranches c WHERE c.evilText IN ( '[ARTIFACT] Search for the evil artifact' )" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 
 	@Test
 	public void testBetweenOpeartorWithEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText BETWEEN 'aaaaaa' AND 'zzzzzzzzz'" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText BETWEEN '[' AND '[B'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testLikeOpeartorWithEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText LIKE 'search the%'" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText LIKE '[ART%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testEqualEmbeddedCollectionWithEmbeddableInCollectionWhereClause() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = 'assassinate the leader of the party'" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[VENDETTA] assassinate the leader of the party'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testConjunctionOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = 'search the evil [artifact]' AND c.goodText IN ('you punish the bandits')" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[ARTIFACT] Search for the evil artifact' AND c.goodText IN ('[BANDITS] you punish the bandits')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
@@ -113,13 +113,13 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	public void testLikeOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilEnding.text LIKE 'you bec%'" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilEnding.text LIKE '[VENDETT%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
 	public void testEqualOperatorWithEmbeddedInEmbeddedCollectionForString() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilEnding.text = 'you become a demon'" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilEnding.text = '[VENDETTA] you become a demon'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
@@ -131,7 +131,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	public void testConjunctionOperatorEqualOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
-		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = 'assassinate the leader of the party' AND c.evilEnding.text IN ('you become a demon')" ).list();
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[VENDETTA] assassinate the leader of the party' AND c.evilEnding.text IN ('[VENDETTA] you become a demon')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
@@ -143,32 +143,47 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 		assertThat( list )
 			.onProperty( "goodBranch" )
 			.onProperty( "storyText" )
-			.containsExactly( "you go to the village" );
+			.containsExactly( "[VILLAGE] You go to the village" );
 
 		assertThat( list )
 			.onProperty( "goodBranch" )
 			.onProperty( "ending" )
 			.onProperty( "text" )
-			.containsExactly( "village ending - everybody is happy" );
+			.containsExactly( "[VILLAGE] Everybody is happy" );
+
+		List<Ending> additionalEndings = list.get( 0 ).getGoodBranch().getAdditionalEndings();
+		assertThat( additionalEndings )
+			.onProperty( "text" )
+			.containsOnly( "[DRAGON] Slay the dragon" );
+
+		assertThat( additionalEndings )
+			.onProperty( "score" )
+		.	containsOnly( 5 );
 
 		assertThat( list )
 			.onProperty( "evilBranch" )
 			.onProperty( "storyText" )
-			.containsExactly( "you kill the villagers" );
+			.containsExactly( "[EVIL] you kill the villagers" );
 
-		assertThat( list.get( 0 ).getChaoticBranches() )
+		List<OptionalStoryBranch> chaoticBranches = list.get( 0 ).getChaoticBranches();
+		assertThat( chaoticBranches )
 			.onProperty( "evilText" )
-			.containsOnly( "search the evil [artifact]", "assassinate the leader of the party" );
+			.containsOnly( "[ARTIFACT] Search for the evil artifact", "[VENDETTA] assassinate the leader of the party" );
 
-		assertThat( list.get( 0 ).getChaoticBranches() )
+		assertThat( chaoticBranches )
+			.onProperty( "evilEnding" )
+			.containsOnly( new Ending( "[ARTIFACT] You succumb to the dark side", 5 ), new Ending( "[VENDETTA] you become a demon", 10 ) );
+
+		assertThat( chaoticBranches )
 			.onProperty( "goodText" )
-			.containsOnly( "you punish the bandits", null );
+			.containsOnly( "[BANDITS] you punish the bandits", null );
 
-		assertThat( list.get( 0 ).getNeutralBranches() )
+		List<OptionalStoryBranch> neutralBranches = list.get( 0 ).getNeutralBranches();
+		assertThat( neutralBranches )
 			.onProperty( "evilText" )
-			.containsOnly( "steal the [artifact]", "kill the king" );
+			.containsOnly( "[THIEF] steal the artifact", "[VENDETTA] Kill the king" );
 
-		assertThat( list.get( 0 ).getNeutralBranches() )
+		assertThat( neutralBranches )
 			.onProperty( "goodText" )
 			.containsOnly( null, null );
 	}
@@ -176,21 +191,28 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
 		StoryGame story1 = new StoryGame( 1L, null );
-		story1.setGoodBranch( new StoryBranch( "you go to the village", new Ending( "village ending - everybody is happy", 1 ) ) );
-		story1.setEvilBranch( new StoryBranch( "you kill the villagers" ) );
+
+		StoryBranch story1GoodBranch = new StoryBranch( "[VILLAGE] You go to the village", new Ending( "[VILLAGE] Everybody is happy", 1 ) );
+		story1GoodBranch.setAdditionalEndings( Arrays.asList( new Ending( "[DRAGON] Slay the dragon", 5 ) ) );
+
+		story1.setGoodBranch( story1GoodBranch );
+		story1.setEvilBranch( new StoryBranch( "[EVIL] you kill the villagers" ) );
 		story1.setChaoticBranches( Arrays.asList(
-				new OptionalStoryBranch( "search the evil [artifact]", "you punish the bandits", null ),
-				new OptionalStoryBranch( "assassinate the leader of the party", null, new Ending( "you become a demon", 10 ) ) ) );
+				new OptionalStoryBranch( "[ARTIFACT] Search for the evil artifact", "[BANDITS] you punish the bandits", new Ending( "[ARTIFACT] You succumb to the dark side", 5 ) ),
+				new OptionalStoryBranch( "[VENDETTA] assassinate the leader of the party", null, new Ending( "[VENDETTA] you become a demon", 10 ) ) ) );
 
 		story1.setNeutralBranches( Arrays.asList(
-				new OptionalStoryBranch( "steal the [artifact]", null, null ),
-				new OptionalStoryBranch( "kill the king", null, null ) ) );
+				new OptionalStoryBranch( "[THIEF] steal the artifact", null, null ),
+				new OptionalStoryBranch( "[VENDETTA] Kill the king", null, null ) ) );
 
-		StoryGame story2 = new StoryGame( 20L, new StoryBranch( "you go the [cave]", new Ending( "[cave] ending - it's dark", 20 ) ) );
-		story2.setEvilBranch( new StoryBranch( "you are now a vampire", null ) );
+		StoryGame story2 = new StoryGame( 20L, new StoryBranch( "[CAVE] You go the cave", new Ending( "[CAVE] It's dark", 20 ) ) );
+		story2.setEvilBranch( new StoryBranch( "[VAMPIRE] You are now a vampire", null ) );
+		story2.setChaoticBranches( Arrays.asList(
+				new OptionalStoryBranch( "[KING] Ask for your help", "[BLACKSMITH] The blacksmith send you for a quest", null ),
+				new OptionalStoryBranch( "[WEREWOLF] You become a werewolf", null, new Ending( "[WEREWOLF] Sometimes people hear you howl at the moon", 333 ) ) ) );
 
-		StoryGame story3 = new StoryGame( 300L, new StoryBranch( "you go to the [dungeon]", new Ending( "[dungeon] ending - you loot the treasures", 300 ) ) );
-		story3.setEvilBranch( new StoryBranch( "evil branch - you become the [dungeon] keeper", null ) );
+		StoryGame story3 = new StoryGame( 300L, new StoryBranch( "[DUNGEON] You go to the dungeon", null ) );
+		story3.setEvilBranch( new StoryBranch( "[DUNGEON] You become the dungeon keeper", null ) );
 
 		persist( sessions, story1, story2, story3);
 	}
