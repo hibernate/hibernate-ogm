@@ -37,9 +37,21 @@ To use CouchDB as a datastore provider, this property must be set to +couchdb_ex
 hibernate.ogm.option.configurator::
 The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-couchdb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
-The hostname of the CouchDB instance. The default value is +127.0.0.1+.
+The hostname and port of the CouchDB instance.
+The optional port is concatenated to the host and separated by a colon.
+Let's see a few valid examples:
+
+* +couchdb.example.com+
+* +couchdb.example.com:5985+
+* +2001:db8::ff00:42:8329+ (IPv6)
+* +[2001:db8::ff00:42:8329]:5985+ (IPv6 with port requires the IPv6 to be surrounded by square brackets)
++
+Listing multiple initial hosts for fault tolerance is not supported.
+The default value is +127.0.0.1:5984+. If left undefined, the default port is +5984+.
 hibernate.ogm.datastore.port::
-The port used by the CouchDB instance. The default value is +5984+.
+Deprecated: use +hibernate.ogm.datastore.host+.
+The port used by the CouchDB instance.
+The default value is +5984+.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.create_database::

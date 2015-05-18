@@ -56,9 +56,23 @@ To use MongoDB as a datastore provider, this property must be set to +mongodb+
 hibernate.ogm.option.configurator::
 The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-mongodb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
-The hostname of the MongoDB instance. The default value is +127.0.0.1+.
+The hostname and port of the MongoDB instance.
+The optional port is concatenated to the host and separated by a colon.
+When using replica sets, you can define the various servers in a comma separated list of hosts and ports.
+Let's see a few valid examples:
+
+* +mongodb.example.com+
+* +mongodb.example.com:27018+
+* +2001:db8::ff00:42:8329+ (IPv6)
+* +[2001:db8::ff00:42:8329]:27018+ (IPv6 with port requires the IPv6 to be surrounded by square brackets)
+* +www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123+ (replica set)
++
+The default value is +127.0.0.1:27017+. If left undefined, the default port is +27017+.
 hibernate.ogm.datastore.port::
-The port used by the MongoDB instance. The default value is +27017+.
+Deprecated: use +hibernate.ogm.datastore.host+.
+The port used by the MongoDB instance.
+Ignored when multiple hosts are defined.
+The default value is +27017+.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.create_database::

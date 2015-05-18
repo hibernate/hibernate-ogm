@@ -53,9 +53,22 @@ The following properties are available to configure Cassandra support:
 hibernate.ogm.datastore.provider::
 To use Cassandra as a datastore provider, this property must be set to +cassandra+
 hibernate.ogm.datastore.host::
-The hostname of the Cassandra instance. The default value is +127.0.0.1+.  Listing multiple initial hosts for fault tolerance is not currently supported.
+The hostname and port of the Cassandra instance.
+The optional port is concatenated to the host and separated by a colon.
+Let's see a few valid examples:
+
+* +cassandra.example.com+
+* +cassandra.example.com:9043+
+* +2001:db8::ff00:42:8329+ (IPv6)
+* +[2001:db8::ff00:42:8329]:9043+ (IPv6 with port requires the IPv6 to be surrounded by square brackets)
++
+Listing multiple initial hosts for fault tolerance is not currently supported.
+The default value is +127.0.0.1:9042+. If left undefined, the default port is +9042+.
 hibernate.ogm.datastore.port::
-The port used by the Cassandra instance. The default value is +9042+.
+Deprecated: use +hibernate.ogm.datastore.host+.
+The port used by the Cassandra instance.
+Ignored when multiple hosts are defined.
+The default value is +9042+.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.username::
