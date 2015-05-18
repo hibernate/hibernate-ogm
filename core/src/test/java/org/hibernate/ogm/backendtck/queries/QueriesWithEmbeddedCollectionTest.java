@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
+import static org.hibernate.ogm.utils.SessionHelper.asProjectionResults;
 import static org.hibernate.ogm.utils.SessionHelper.delete;
 import static org.hibernate.ogm.utils.SessionHelper.persist;
 
@@ -16,8 +17,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SessionHelper.ProjectionResult;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.junit.After;
@@ -33,10 +35,6 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  * @author Davide D'Alto
  */
-@SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
-		comment = "WithEmbedded has lists - bag semantics unsupported (no primary key)"
-)
 public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@TestSessionFactory
@@ -133,6 +131,57 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	public void testConjunctionOperatorEqualOperatorWithEmbeddedInEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[VENDETTA] assassinate the leader of the party' AND c.evilEnding.text IN ('[VENDETTA] you become a demon')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN },
+			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
+	public void testProjectionsOfPropertyInEmbeddedCollection() throws Exception {
+		List<?> result = session.createQuery( "SELECT c.evilText FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 1" ).list();
+		assertThat( result ).containsOnly( "[ARTIFACT] Search for the evil artifact", "[VENDETTA] assassinate the leader of the party" );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN },
+			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
+	public void testProjectionsOfEmbeddedInEmbeddedCollection() throws Exception {
+		List<?> result = session.createQuery( "SELECT c.evilEnding.score FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 1" ).list();
+		assertThat( result ).containsOnly( 5, 10 );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN },
+			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
+	public void testProjectionsOfEmbeddedInEmbeddedCollectionWithNull() throws Exception {
+		List<?> result = session.createQuery( "SELECT c.evilEnding.score FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 20" ).list();
+		assertThat( result ).containsOnly( null, 333 );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN },
+			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
+	public void testProjectionsOfPropertiesInEmbeddedCollection() throws Exception {
+		List<ProjectionResult> result = asProjectionResults( session, "SELECT story.id, story.goodBranch.storyText, c.evilEnding.text, c.evilText FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 1" );
+		assertThat( result ).containsOnly(
+				new ProjectionResult( 1L, "[VILLAGE] You go to the village", "[ARTIFACT] You succumb to the dark side", "[ARTIFACT] Search for the evil artifact" ),
+				new ProjectionResult( 1L, "[VILLAGE] You go to the village", "[VENDETTA] you become a demon", "[VENDETTA] assassinate the leader of the party" ) );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN },
+			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
+	public void testProjectionsOfPropertiesInEmbeddedCollectionWithInnerJoin() throws Exception {
+		List<ProjectionResult> result = asProjectionResults( session, "SELECT story.id, story.goodBranch.storyText, c.evilEnding.text, c.evilText FROM StoryGame story JOIN story.chaoticBranches c " );
+		assertThat( result ).containsOnly(
+				new ProjectionResult( 1L, "[VILLAGE] You go to the village", "[ARTIFACT] You succumb to the dark side", "[ARTIFACT] Search for the evil artifact" ),
+				new ProjectionResult( 1L, "[VILLAGE] You go to the village", "[VENDETTA] you become a demon", "[VENDETTA] assassinate the leader of the party" ),
+				new ProjectionResult( 20L, "[CAVE] You go the cave", null, "[KING] Ask for your help" ),
+				new ProjectionResult( 20L, "[CAVE] You go the cave", "[WEREWOLF] Sometimes people hear you howl at the moon", "[WEREWOLF] You become a werewolf" ) );
 	}
 
 	@Test
