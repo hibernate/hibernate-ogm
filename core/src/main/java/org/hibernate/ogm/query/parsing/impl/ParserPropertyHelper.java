@@ -6,11 +6,11 @@
  */
 package org.hibernate.ogm.query.parsing.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -125,11 +125,6 @@ public class ParserPropertyHelper implements PropertyHelper {
 		return (OgmEntityPersister) sessionFactory.getEntityPersister( targetedType.getName() );
 	}
 
-	public boolean isEmbeddedProperty(String targetTypeName, PropertyPath propertyPath) {
-		List<String> namesWithoutAlias = propertyPath.getNodeNamesWithoutAlias();
-		return isEmbeddedProperty( targetTypeName, namesWithoutAlias );
-	}
-
 	public boolean isEmbeddedProperty(String targetTypeName, List<String> namesWithoutAlias) {
 		OgmEntityPersister persister = getPersister( targetTypeName );
 		Type propertyType = persister.getPropertyType( namesWithoutAlias.get( 0 ) );
@@ -145,6 +140,61 @@ public class ParserPropertyHelper implements PropertyHelper {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Check if the path to the property correspond to an association.
+	 *
+	 * @param targetTypeName the name of the entity containing the property
+	 * @param pathWithoutAlias the path to the property WIHTOUT aliases
+	 * @return {@code true} if the property is an association or {@code false} otherwise
+	 */
+	public boolean isAssociation(String targetTypeName, List<String> pathWithoutAlias) {
+		OgmEntityPersister persister = getPersister( targetTypeName );
+		Type propertyType = persister.getPropertyType( pathWithoutAlias.get( 0 ) );
+		return propertyType.isAssociationType();
+	}
+
+	/**
+	 * Find the path to the first association in the property path.
+	 *
+	 * @param targetTypeName the entity with the property
+	 * @param pathWithoutAlias the path to the property WITHOUT the alias
+	 * @return the path to the first association or {@code null} if there isn't an association in the property path
+	 */
+	public List<String> findAssociationPath(String targetTypeName, List<String> pathWithoutAlias) {
+		List<String> subPath = new ArrayList<String>( pathWithoutAlias.size() );
+		for ( String name : pathWithoutAlias ) {
+			subPath.add( name );
+			if ( isAssociation( targetTypeName, subPath ) ) {
+				return subPath;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Check if the property path is a nested property.
+	 * <p>
+	 * Example: [anEmbeddable, anotherEmbeddedable, propertyName]
+	 *
+	 * @param propertyPathWithoutAlias the path to the property WITHOUT the aliases.
+	 * @return {@code true} if it is a nested property, {@code false} otherwise
+	 */
+	public boolean isNestedProperty(List<String> propertyPathWithoutAlias) {
+		return propertyPathWithoutAlias.size() > 1;
+	}
+
+	/**
+	 * Check if the property path is a simple property.
+	 * <p>
+	 * Example: [propertyName]
+	 *
+	 * @param propertyPathWithoutAlias the path to the property WITHOUT the aliases
+	 * @return {@code true} if it is a simple property, {@code false} otherwise
+	 */
+	public boolean isSimpleProperty(List<String> propertyPathWithoutAlias) {
+		return propertyPathWithoutAlias.size() == 1;
 	}
 
 	/**

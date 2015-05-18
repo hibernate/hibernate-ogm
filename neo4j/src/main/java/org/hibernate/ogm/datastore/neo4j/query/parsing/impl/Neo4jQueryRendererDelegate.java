@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
@@ -87,7 +88,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 					}
 					relationship( embeddedMatch, child.getName() );
 					node( embeddedMatch, child.getAlias(), NodeLabel.EMBEDDED.name() );
-					appendEmbedded( queryBuilder, embeddedMatch.toString(), child );
+					appendEmbedded( queryBuilder, embeddedMatch.toString(), child, true );
 				}
 			}
 		}
@@ -96,28 +97,38 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	private void optionalMatch(StringBuilder queryBuilder, String targetAlias) {
 		EmbeddedAliasTree node = embeddedAliasResolver.getAliasTree( targetAlias );
 		if ( node != null ) {
-			for ( EmbeddedAliasTree child : node.getChildren() ) {
-				if ( embeddedAliasResolver.isOptionalMatch( child.getAlias() ) ) {
-					StringBuilder optionalMatch = new StringBuilder( " OPTIONAL MATCH " );
-					node( optionalMatch, targetAlias );
-					relationship( optionalMatch, child.getName() );
-					node( optionalMatch, child.getAlias(), NodeLabel.EMBEDDED.name() );
-					appendEmbedded( queryBuilder, optionalMatch.toString(), child );
-				}
-			}
+			appendOptionalMatch( queryBuilder, targetAlias, node.getChildren() );
 		}
 	}
 
-	private void appendEmbedded(StringBuilder queryBuilder, String optionalMatch, EmbeddedAliasTree node) {
+	private void appendOptionalMatch(StringBuilder queryBuilder, String targetAlias, List<EmbeddedAliasTree> children) {
+		for ( EmbeddedAliasTree child : children ) {
+			if ( embeddedAliasResolver.isOptionalMatch( child.getAlias() ) ) {
+				queryBuilder.append( " OPTIONAL MATCH " );
+				node( queryBuilder, targetAlias );
+				relationship( queryBuilder, child.getName() );
+				node( queryBuilder, child.getAlias(), NodeLabel.EMBEDDED.name() );
+			}
+			appendOptionalMatch( queryBuilder, child.getAlias(), child.getChildren() );
+		}
+	}
+
+	private void appendEmbedded(StringBuilder queryBuilder, String currentMatch, EmbeddedAliasTree node, boolean matchCondition) {
 		if ( node.getChildren().isEmpty() ) {
-			queryBuilder.append( optionalMatch );
+			queryBuilder.append( currentMatch );
 		}
 		else {
 			for ( EmbeddedAliasTree child : node.getChildren() ) {
-				StringBuilder builder = new StringBuilder( optionalMatch );
-				relationship( builder, child.getName() );
-				node( builder, child.getAlias(), NodeLabel.EMBEDDED.name() );
-				appendEmbedded( queryBuilder, builder.toString(), child );
+				boolean optional = embeddedAliasResolver.isOptionalMatch( child.getAlias() );
+				if ( (matchCondition && !optional) || !matchCondition) {
+					StringBuilder builder = new StringBuilder( currentMatch );
+					relationship( builder, child.getName() );
+					node( builder, child.getAlias(), NodeLabel.EMBEDDED.name() );
+					appendEmbedded( queryBuilder, builder.toString(), child, matchCondition );
+				}
+				else {
+					queryBuilder.append( currentMatch );
+				}
 			}
 		}
 	}
@@ -166,16 +177,30 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	}
 
 	@Override
-	public void setPropertyPath(PropertyPath propertyPath) {
+	public void setPropertyPath(PropertyPath path) {
 		if ( status == Status.DEFINING_SELECT ) {
-			if ( isSimpleProperty( propertyPath ) ) {
-				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
+			List<String> pathWithoutAlias = resolveAlias( path );
+			if ( propertyHelper.isSimpleProperty( pathWithoutAlias ) ) {
+				projections.add( propertyHelper.getColumnName( targetTypeName, pathWithoutAlias ) );
 			}
-			else if ( isNestedProperty( propertyPath ) ) {
-				if ( propertyHelper.isEmbeddedProperty( targetTypeName, propertyPath ) ) {
-					String entityAlias = propertyPath.getNodes().get( 0 ).getName();
-					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias(), true );
-					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() );
+			else if ( propertyHelper.isNestedProperty( pathWithoutAlias ) ) {
+				if ( propertyHelper.isEmbeddedProperty( targetTypeName, pathWithoutAlias ) ) {
+					String entityAlias = entityAlias( path );
+					final List<String> associationPath = propertyHelper.findAssociationPath( targetTypeName, pathWithoutAlias );
+					// Currently, it is possible to nest only one association inside an emebedded
+					if ( associationPath != null ) {
+						List<String> nextPath = new ArrayList<String>( associationPath.size() + 1 );
+						int next = associationPath.size();
+						nextPath.addAll( associationPath );
+						if ( next < pathWithoutAlias.size() - 1 ) {
+							nextPath.add( pathWithoutAlias.get( next ) );
+						}
+						boolean leftJoin = false; // TODO: Not sure how to obtain this information at the moment
+						embeddedAliasResolver.createAliasForEmbedded( entityAlias, nextPath, leftJoin );
+					}
+					boolean optional = true;
+					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, pathWithoutAlias, optional );
+					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, pathWithoutAlias );
 					String projection = identifier( embeddedAlias, columnName );
 					projections.add( projection );
 					embeddedPropertyProjection.add( projection );
@@ -186,23 +211,33 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 			}
 		}
 		else {
-			this.propertyPath = propertyPath;
+			this.propertyPath = path;
 		}
 	}
 
-	/*
-	 * Property path looks like: [alias, anEmbeddable, anotherEmbeddedable, propertyName]
+	/**
+	 * The entity containing the selected property path.
+	 * Note that the path MUST start with an alias.
+	 *
+	 * @param path the path to the property
+	 * @return the alias of the entity dealing with the property
+	 * @throws an exception if the path does not start with an alias
 	 */
-	private boolean isNestedProperty(PropertyPath propertyPath) {
-		return propertyPath.getNodes().size() > 2 && propertyPath.getNodes().get( 0 ).isAlias();
-	}
-
-	/*
-	 * Property path looks like: [propertyName] or [alias, propertyName]
-	 */
-	private boolean isSimpleProperty(PropertyPath propertyPath) {
-		return ( propertyPath.getNodes().size() == 1 && !propertyPath.getLastNode().isAlias() )
-				|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() );
+	private String entityAlias(PropertyPath path) {
+		if ( path.getFirstNode().isAlias() ) {
+			String alias = path.getFirstNode().getName();
+			if ( aliasToEntityType.containsKey( alias ) ) {
+				return alias;
+			}
+			else if ( aliasToPropertyPath.containsKey( alias ) ) {
+				PropertyPath resolvedAlias = aliasToPropertyPath.get( alias );
+				if ( resolvedAlias.getFirstNode().isAlias() ) {
+					return resolvedAlias.getFirstNode().getName();
+				}
+				throw new HibernateException( "It does not start with an alias" );
+			}
+		}
+		throw new HibernateException( "It does not start with an alias" );
 	}
 
 	@Override
