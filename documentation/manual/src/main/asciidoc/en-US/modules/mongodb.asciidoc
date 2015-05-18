@@ -3088,7 +3088,9 @@ when using the JP-QL query support. This includes:
 * the boolean operators +AND+, +OR+, +NOT+
 * +LIKE+, +IN+ and +BETWEEN+
 * +ORDER BY+
-
+* inner +JOIN+ on embedded collections
+* projections of regular and embedded properties
+ 
 Queries using these constructs will be transformed into equivalent native MongoDB queries.
 
 [NOTE]

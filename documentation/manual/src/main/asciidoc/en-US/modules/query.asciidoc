@@ -121,6 +121,63 @@ from Helicopter h order by h.make desc, h.name
 ----
 ====
 
+Inner +JOIN+ on an embedded association is partially supported.
+In particular, filtering the elements of the association works for all the datastores
+but projecting properties won't work if you are using Hibernate Search queries.
+
+This is better illustrated by the following example:
+
+.Entity with embedded collection and supported JP-QL queries
+====
+[source, JAVA]
+----
+@Indexed
+@Entity
+public class StoryGame {
+
+    @ElementCollection
+    @IndexedEmbedded
+    private List<OptionalStoryBranch> optionalEndings;
+
+    ...
+
+}
+
+@Embeddable
+public class OptionalStoryBranch {
+
+    // Analyze.NO for filtering in query
+    // Store.YES for projection in query
+    @Field(store = Store.YES, analyze = Analyze.NO)
+    private String text;
+
+    ...
+
+}
+----
+
+Filter the results using the supported operators will work for all the datastores:
+
+[source, JAVA]
+----
+String query =
+    "SELECT sg" +
+    "FROM StoryGame sg JOIN sg.optionalEndings ending WHERE ending.text = 'Happy ending'"
+List<StoryGame> stories = session.createQuery( query ).list();
+----
+
+Projection will  work with Neo4j or MongoDB but it won't give the expected results with the other
+datastores:
+
+[source, JAVA]
+----
+String query =
+     "SELECT ending.text " +
+     "FROM StoryGame sg JOIN sg.optionalEndings ending WHERE ending.text = 'Happy ending'";
+List<String> endings = session.createQuery( query ).list();
+----
+====
+
 [NOTE]
 ====
 In order to reflect changes performed in the current session,

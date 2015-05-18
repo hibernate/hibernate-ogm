@@ -814,6 +814,8 @@ when using the JP-QL query support. This includes:
 * the boolean operators +AND+, +OR+, +NOT+
 * +LIKE+, +IN+ and +BETWEEN+
 * +ORDER BY+
+* inner +JOIN+ on embedded collections
+* projections of regular and embedded properties
 
 Queries using these constructs will be transformed into equivalent http://docs.neo4j.org/chunked/stable/cypher-query-lang.html[Cypher queries].
 
@@ -863,7 +865,7 @@ List<Poem> poems = em.createNativeQuery( query2, Poem.class ).getResultList();
 
 // query with projections
 String query3 = MATCH ( n:Poem ) RETURN n.name, n.author ORDER BY n.name";
-List<Object[]> poemNames = (List<Object[]>)em.createNativeQuery( query3 )
+List<Object[]> poemNames = (List<Object[]>) em.createNativeQuery( query3 )
                                .getResultList();
 
 ----
