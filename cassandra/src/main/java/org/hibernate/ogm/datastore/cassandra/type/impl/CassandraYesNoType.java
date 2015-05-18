@@ -12,7 +12,7 @@ import org.hibernate.ogm.type.descriptor.impl.StringMappedGridTypeDescriptor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 
 /**
- * Maps {@link Boolean} to {@code Y} or {@code N} strings.
+ * Maps {@link Boolean} to {@code Y} or {@code N} strings, as Cassandra doesn't store {@link Character}s.
  *
  * @author Davide D'Alto
  */
@@ -31,6 +31,6 @@ public class CassandraYesNoType extends AbstractGenericBasicType<Boolean> {
 
 	@Override
 	public String getName() {
-		return "yes_no";
+		return "cassandra_yes_no";
 	}
 }

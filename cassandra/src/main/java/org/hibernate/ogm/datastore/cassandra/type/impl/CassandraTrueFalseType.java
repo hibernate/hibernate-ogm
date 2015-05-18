@@ -12,7 +12,7 @@ import org.hibernate.ogm.type.descriptor.impl.StringMappedGridTypeDescriptor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 
 /**
- * Maps {@link Boolean} to {@code T} or {@code F} strings.
+ * Maps {@link Boolean} to {@code T} or {@code F} strings, as Cassandra doesn't store {@link Character}s.
  *
  * @author Davide D'Alto
  */
@@ -31,6 +31,6 @@ public class CassandraTrueFalseType extends AbstractGenericBasicType<Boolean> {
 
 	@Override
 	public String getName() {
-		return "true_false";
+		return "cassandra_true_false";
 	}
 }
