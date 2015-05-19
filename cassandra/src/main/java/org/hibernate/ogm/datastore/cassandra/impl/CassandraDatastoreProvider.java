@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.cassandra.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 	private CassandraSequenceHandler sequenceHandler;
 
 	private final Map<String, Table> metaDataCache = new HashMap<String, Table>();
+	private final Map<String, Table> wrappedMetaDataCache = Collections.unmodifiableMap( metaDataCache );
 
 	public void setTableMetadata(String name, Table table) {
 		metaDataCache.put( name, table );
@@ -82,7 +84,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 	}
 
 	public Map<String, Table> getMetaDataCache() {
-		return metaDataCache;
+		return wrappedMetaDataCache;
 	}
 
 	@Override
