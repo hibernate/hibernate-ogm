@@ -1,6 +1,47 @@
 Hibernate OGM Changelog
 =======================
 
+4.2.0.CR1 (19-05-2015)
+-------------------------
+
+** Bug
+    * OGM-801 - mongodb       - Wrong expectation in EmbeddableMappingTest#testEmbeddableCollection()
+    * OGM-597 - query         - JP-QL query translation does not work when using enums as parameter
+    * OGM-782                   Documentation build fails with JDK 8
+    * OGM-794 - core          - Don't register the initiatior for ORM's ConfigurationService
+    * OGM-792 - tests         - Move StringMappedTypeSerialisationTest out of backend tck
+    * OGM-783 - neo4j         - Select of entity with embedded collection returns two nodes instead of one
+    * OGM-804 - tests         - Make sure JPAStandaloneNoOGMTest fails due to the actually expected exception
+
+** Improvement
+    * OGM-823 - query         - Upgrade to Hibernate Search 5.2.0.Final
+    * OGM-800 - documentation - Documentation on WildFly deployment omits the necessity to download latest Infinispan modules
+    * OGM-754 - neo4j         - Upgrade to version 2.1.8
+    * OGM-662 - core          - Support for MongoDB Replica Set in OGM
+    * OGM-807 - mongodb       - Clarify usage of the CLI syntax for native query wrt. to JSON property keys
+    * OGM-822 - infinispan    - Upgrade to Infinispan 7.2.1.Final
+
+** New Feature
+    * OGM-812 - mongodb       - Update Fongo to 1.6.2
+    * OGM-791 - mongodb       - Make authentication compatible with MongoDB 3.0
+    * OGM-826 - tests         - Don't run @BeforeClass/@AfterClass methods if entire test class is skipped
+    * OGM-706 - core          - Support queries on embedded elements and collections
+    * OGM-717 - core          - Add support for TrueFalseType
+    * OGM-122 - cassandra     - Support Cassandra as Datastore
+
+** Sub-task
+    * OGM-781                   [JP-QL] Support projections of embedded collection properties
+
+** Task
+    * OGM-668 - core          - Remove work-around for entity entry propagation
+    * OGM-669 - couchdb       - Improve mapping of nested embeddables within element collections in document stores
+    * OGM-797                   Update plug-in for starting MongoDB so build works on JDK 9
+    * OGM-806 - core          - Rename error report API to compensation API
+    * OGM-816 - core          - Use new event context framework to implement operation batching
+    * OGM-796                   Update maven-deploy-plugin
+    * OGM-803 - build         - Migrate integration tests, modules and documentation to use WildFly 9
+    * OGM-833 - build         - Upgrade to Hibernate HQL Parser version 1.2.0.Final
+
 4.2.0.Beta1 (13-03-2015)
 -------------------------
 
