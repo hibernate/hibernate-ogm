@@ -35,6 +35,7 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  * @author Davide D'Alto
  */
+@SkipByGridDialect(value = GridDialectType.CASSANDRA, comment = "Bag semantics not supported by Cassandra backend")
 public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@TestSessionFactory

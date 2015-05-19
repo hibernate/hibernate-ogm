@@ -6,6 +6,11 @@
  */
 package org.hibernate.ogm.datastore.cassandra;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +19,39 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
+import org.hibernate.ogm.datastore.cassandra.impl.CassandraTypeMapper;
+import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
+import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetAssociationSnapshot;
+import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
+import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationOperation;
+import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
@@ -28,47 +66,6 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Table;
-import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
-import org.hibernate.ogm.datastore.cassandra.impl.CassandraTypeMapper;
-import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
-import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetAssociationSnapshot;
-import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleSnapshot;
-
-import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
-
-import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
-import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
-import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.dialect.spi.ModelConsumer;
-import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
-import org.hibernate.ogm.dialect.spi.TupleContext;
-
-import org.hibernate.ogm.model.key.spi.AssociationKey;
-import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
-import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationOperation;
-import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.model.spi.TupleOperation;
-import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.persister.entity.Lockable;
-import org.hibernate.type.Type;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
 /**
  * Dialect implementation using CQL3 over Cassandra's native transport via java-driver.
@@ -236,10 +233,9 @@ public class CassandraDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-
-		String table = key.getTable();
 		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
-		List<Column> tablePKCols = (List<Column>) tableMetadata.getPrimaryKey().getColumns();
+		@SuppressWarnings("unchecked")
+		List<Column> tablePKCols = tableMetadata.getPrimaryKey().getColumns();
 
 		Select select = select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
