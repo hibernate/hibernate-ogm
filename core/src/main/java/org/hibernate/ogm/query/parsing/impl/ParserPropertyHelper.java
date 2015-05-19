@@ -13,8 +13,11 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.type.AbstractStandardBasicType;
@@ -23,7 +26,7 @@ import org.hibernate.type.ComponentType;
 import org.hibernate.type.Type;
 
 /**
- * {@link PropertyHelper} implementation containining common methods to obtain the type of the properties or the
+ * {@link PropertyHelper} implementation containing common methods to obtain the type of the properties or the
  * column names they are mapped to.
  *
  * @author Davide D'Alto
@@ -52,6 +55,17 @@ public class ParserPropertyHelper implements PropertyHelper {
 		else {
 			return value;
 		}
+	}
+
+	@Override
+	public Object convertToBackendType(String entityType, List<String> propertyPath, Object value) {
+		Type propertyType = getPropertyType( entityType, propertyPath );
+		GridType ogmType = sessionFactory.getServiceRegistry().getService( TypeTranslator.class ).getType( propertyType );
+		Tuple tuple = new Tuple();
+
+		ogmType.nullSafeSet( tuple, value, new String[] { "dummy" }, null );
+
+		return tuple.get( "dummy" );
 	}
 
 	protected Type getPropertyType(String entityType, List<String> propertyPath) {

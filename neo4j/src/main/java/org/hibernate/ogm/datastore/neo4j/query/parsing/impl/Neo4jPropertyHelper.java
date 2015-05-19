@@ -29,6 +29,16 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 		super( sessionFactory, entityNames );
 	}
 
+	@Override
+	public Object convertToBackendType(String entityType, List<String> propertyPath, Object value) {
+		if ( value instanceof Neo4jQueryParameter ) {
+			return value;
+		}
+		else {
+			return super.convertToBackendType( entityType, propertyPath, value );
+		}
+	}
+
 	public Object convertToLiteral(String entityType, List<String> propertyPath, Object value) {
 		Type propertyType = getPropertyType( entityType, propertyPath );
 		Object gridValue = convertToGridType( value, propertyType );
@@ -36,10 +46,15 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 	}
 
 	private Object convertToGridType(Object value, Type propertyType) {
-		Tuple dummy = new Tuple();
-		GridType gridType = typeTranslator().getType( propertyType );
-		gridType.nullSafeSet( dummy, value, new String[] { "key" }, null );
-		return dummy.get( "key" );
+		if ( value instanceof Neo4jQueryParameter ) {
+			return value;
+		}
+		else {
+			Tuple dummy = new Tuple();
+			GridType gridType = typeTranslator().getType( propertyType );
+			gridType.nullSafeSet( dummy, value, new String[] { "key" }, null );
+			return dummy.get( "key" );
+		}
 	}
 
 	private TypeTranslator typeTranslator() {

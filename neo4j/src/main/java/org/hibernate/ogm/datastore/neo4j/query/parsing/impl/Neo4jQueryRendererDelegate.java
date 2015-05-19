@@ -40,7 +40,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	private final AliasResolver embeddedAliasResolver;
 
 	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, AliasResolver embeddedAliasResolver, EntityNamesResolver entityNames, Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
-		super( entityNames, singleEntityQueryBuilder( propertyHelper, embeddedAliasResolver ), namedParameters );
+		super( propertyHelper, entityNames, singleEntityQueryBuilder( propertyHelper, embeddedAliasResolver ), namedParameters );
 		this.sessionFactory = sessionFactory;
 		this.embeddedAliasResolver = embeddedAliasResolver;
 		this.propertyHelper = propertyHelper;
@@ -295,11 +295,24 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	}
 
 	private Object fromNamedQuery(String comparativePredicate) {
+		// It's a named parameter; Value given via setParameter(), taking that as is
 		if ( comparativePredicate.startsWith( ":" ) ) {
 			return new Neo4jQueryParameter( comparativePredicate.substring( 1 ) );
 		}
+		// It's a value given in JP-QL; Convert the literal value
 		else {
-			return comparativePredicate;
+			List<String> path = new ArrayList<String>();
+			path.addAll( propertyPath.getNodeNamesWithoutAlias() );
+
+			PropertyPath fullPath = propertyPath;
+
+			// create the complete path in case it's a join
+			while ( fullPath.getFirstNode().isAlias() && aliasToPropertyPath.containsKey( fullPath.getFirstNode().getName() ) ) {
+				fullPath = aliasToPropertyPath.get( fullPath.getFirstNode().getName() );
+				path.addAll( 0, fullPath.getNodeNamesWithoutAlias() );
+			}
+
+			return propertyHelper.convertToPropertyType( targetTypeName, path, comparativePredicate );
 		}
 	}
 
