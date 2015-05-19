@@ -20,8 +20,8 @@ import org.hibernate.search.annotations.Store;
 @Embeddable
 public class StoryBranch {
 
-	// Store.YES for filtering in query
-	// Analyze.NO for projection in query
+	// Analyze.NO for filtering in query
+	// Store.YES for projection in query
 	@Field(store = Store.YES, analyze = Analyze.NO)
 	private String storyText;
 
