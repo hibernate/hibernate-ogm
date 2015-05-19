@@ -31,6 +31,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 
 	public MongoDBQueryRendererDelegate(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames, MongoDBPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
 		super(
+				propertyHelper,
 				entityNames,
 				SingleEntityQueryBuilder.getInstance( new MongoDBPredicateFactory( propertyHelper ), propertyHelper ),
 				namedParameters );
