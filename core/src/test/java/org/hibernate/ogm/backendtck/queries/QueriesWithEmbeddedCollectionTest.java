@@ -17,9 +17,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SessionHelper.ProjectionResult;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.junit.After;
@@ -182,6 +182,20 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 				new ProjectionResult( 1L, "[VILLAGE] You go to the village", "[VENDETTA] you become a demon", "[VENDETTA] assassinate the leader of the party" ),
 				new ProjectionResult( 20L, "[CAVE] You go the cave", null, "[KING] Ask for your help" ),
 				new ProjectionResult( 20L, "[CAVE] You go the cave", "[WEREWOLF] Sometimes people hear you howl at the moon", "[WEREWOLF] You become a werewolf" ) );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN },
+			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
+	public void testProjectionWithMultipleAssociations() throws Exception {
+		List<ProjectionResult> result = asProjectionResults( session, "SELECT story.id, c.evilEnding.text, n.evilText "
+				+ "FROM StoryGame story JOIN story.chaoticBranches c JOIN story.neutralBranches n WHERE story.id = 1" );
+		assertThat( result ).containsOnly(
+				new ProjectionResult( 1L, "[ARTIFACT] You succumb to the dark side", "[VENDETTA] Kill the king" ),
+				new ProjectionResult( 1L, "[ARTIFACT] You succumb to the dark side", "[THIEF] steal the artifact" ),
+				new ProjectionResult( 1L, "[VENDETTA] you become a demon", "[VENDETTA] Kill the king" ),
+				new ProjectionResult( 1L, "[VENDETTA] you become a demon", "[THIEF] steal the artifact" ) );
 	}
 
 	@Test
