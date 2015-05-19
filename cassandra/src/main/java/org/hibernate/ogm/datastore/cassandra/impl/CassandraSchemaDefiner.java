@@ -79,8 +79,11 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 
 			if ( type.isAssociationType() ) {
 				type = type.getSemiResolvedType( sessionFactoryImplementor );
+				if ( type.isComponentType() ) {
+					int index = column.getTypeIndex();
+					type = ((org.hibernate.type.ComponentType) type).getSubtypes()[index];
+				}
 			}
-			// actually some associations are also components, but in such case the former aspect only applies
 			else if ( type.isComponentType() ) {
 				int index = column.getTypeIndex();
 				type = ((org.hibernate.type.ComponentType) column.getValue().getType()).getSubtypes()[index];
