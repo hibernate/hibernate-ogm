@@ -294,14 +294,16 @@ public class CassandraDialect implements GridDialect {
 			Association association,
 			AssociationContext associationContext) {
 
+		if ( key.getMetadata().isInverse() ) {
+			return;
+		}
+
 		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
 		Set<String> keyColumnNames = new HashSet<String>();
 		for ( Object columnObject : tableMetadata.getPrimaryKey().getColumns() ) {
 			Column column = (Column) columnObject;
 			keyColumnNames.add( column.getName() );
 		}
-
-		tableMetadata.getPrimaryKey().getColumns();
 
 		List<AssociationOperation> updateOps = new ArrayList<AssociationOperation>(
 				association.getOperations()
@@ -363,7 +365,6 @@ public class CassandraDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-
 		if ( key.getMetadata().isInverse() ) {
 			return;
 		}
