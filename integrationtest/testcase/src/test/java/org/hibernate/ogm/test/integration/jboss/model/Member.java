@@ -8,6 +8,7 @@ package org.hibernate.ogm.test.integration.jboss.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -17,6 +18,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.search.annotations.Field;
@@ -44,6 +47,9 @@ public class Member implements Serializable {
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	private List<Address> addresses = new ArrayList<Address>();
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date registrationDate;
 
 	public Long getId() {
 		return id;
@@ -83,5 +89,13 @@ public class Member implements Serializable {
 
 	public void setAddresses(List<Address> addresses) {
 		this.addresses = addresses;
+	}
+
+	public Date getRegistrationDate() {
+		return registrationDate;
+	}
+
+	public void setRegistrationDate(Date registrationDate) {
+		this.registrationDate = registrationDate;
 	}
 }

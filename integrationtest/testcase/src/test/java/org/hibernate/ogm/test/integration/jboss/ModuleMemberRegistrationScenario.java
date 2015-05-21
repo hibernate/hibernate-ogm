@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Date;
+
 import javax.inject.Inject;
 
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistration;
@@ -47,6 +49,7 @@ public abstract class ModuleMemberRegistrationScenario {
 	public void shouldFindPersistedMemberById() throws Exception {
 		Member newMember = memberRegistration.getNewMember();
 		newMember.setName( "Peter O'Tall" );
+		newMember.setRegistrationDate( new Date() );
 		newMember.getAddresses().add( new Address( "Mulholland Drive", "Los Angeles" ) );
 		memberRegistration.register();
 
@@ -59,6 +62,11 @@ public abstract class ModuleMemberRegistrationScenario {
 				"Member should have address with correct street",
 				"Mulholland Drive",
 				found.getAddresses().iterator().next().getStreet()
+		);
+		assertEquals(
+				"Member should have correct date",
+				newMember.getRegistrationDate(),
+				found.getRegistrationDate()
 		);
 	}
 
