@@ -70,4 +70,15 @@ public class NewsID implements Serializable {
 		result = 31 * result + ( author != null ? author.hashCode() : 0 );
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append( "NewsID [title=" );
+		builder.append( title );
+		builder.append( ", author=" );
+		builder.append( author );
+		builder.append( "]" );
+		return builder.toString();
+	}
 }
