@@ -16,6 +16,8 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.parsing.impl.ParserPropertyHelper;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.Type;
 
 /**
@@ -61,21 +63,50 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 		return getSessionFactory().getServiceRegistry().getService( TypeTranslator.class );
 	}
 
+	public String getColumnName(String entityType, List<String> propertyPathWithoutAlias) {
+		return getColumnName( getPersister( entityType ), propertyPathWithoutAlias );
+	}
+
 	public String getColumnName(Class<?> entityType, List<String> propertyName) {
-		return getColumnName( (OgmEntityPersister) getSessionFactory().getEntityPersister( entityType.getName() ), propertyName );
+		OgmEntityPersister persister = (OgmEntityPersister) getSessionFactory().getEntityPersister( entityType.getName() );
+		return getColumnName( persister, propertyName );
 	}
 
-	public String getColumnName(String entityType, List<String> propertyPath) {
-		return getColumnName( getPersister( entityType ), propertyPath );
-	}
-
-	public String getColumnName(OgmEntityPersister persister, List<String> propertyName) {
-		return getColumn( persister, propertyName);
-	}
-
-	public String getEmbeddeColumnName(String entityType, List<String> propertyPath) {
-		String columnName = getColumnName( entityType, propertyPath );
-		columnName = columnName.substring( columnName.lastIndexOf( '.' ) + 1, columnName.length() );
+	private String getColumnName(OgmEntityPersister persister, List<String> propertyPathWithoutAlias) {
+		if ( isIdProperty( persister, propertyPathWithoutAlias ) ) {
+			return getColumn( persister, propertyPathWithoutAlias );
+		}
+		String columnName = getColumn( persister, propertyPathWithoutAlias );
+		if ( isNestedProperty( propertyPathWithoutAlias ) ) {
+			columnName = columnName.substring( columnName.lastIndexOf( '.' ) + 1, columnName.length() );
+		}
 		return columnName;
+	}
+
+	public boolean isIdProperty(String entityType, List<String> propertyPath) {
+		return isIdProperty( getPersister( entityType ), propertyPath );
+	}
+
+	/**
+	 * Check if the property is part of the identifier of the entity.
+	 *
+	 * @param persister the {@link OgmEntityPersister} of the entity with the property
+	 * @param namesWithoutAlias the path to the the property with all the aliases resolved
+	 * @return {@code true} if the property is part of the id, {@code false} otherwise.
+	 */
+	public boolean isIdProperty(OgmEntityPersister persister, List<String> namesWithoutAlias) {
+		String join = StringHelper.join( namesWithoutAlias, "." );
+		Type propertyType = persister.getPropertyType( namesWithoutAlias.get( 0 ) );
+		String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		if ( propertyType.isComponentType() ) {
+			String[] embeddedColumnNames = persister.getPropertyColumnNames( join );
+			for ( String embeddedColumn : embeddedColumnNames ) {
+				if ( !ArrayHelper.contains( identifierColumnNames, embeddedColumn ) ) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return ArrayHelper.contains( identifierColumnNames, join );
 	}
 }
