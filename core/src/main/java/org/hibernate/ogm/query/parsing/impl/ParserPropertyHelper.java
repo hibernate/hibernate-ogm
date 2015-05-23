@@ -125,6 +125,13 @@ public class ParserPropertyHelper implements PropertyHelper {
 		return (OgmEntityPersister) sessionFactory.getEntityPersister( targetedType.getName() );
 	}
 
+	/**
+	 * Checks if the path leads to an embedded property or association.
+	 *
+	 * @param targetTypeName the entity with the property
+	 * @param namesWithoutAlias the path to the the property with all the aliases resolved
+	 * @return {@code true} if the property is an embedded, {@code false} otherwise.
+	 */
 	public boolean isEmbeddedProperty(String targetTypeName, List<String> namesWithoutAlias) {
 		OgmEntityPersister persister = getPersister( targetTypeName );
 		Type propertyType = persister.getPropertyType( namesWithoutAlias.get( 0 ) );
