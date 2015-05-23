@@ -102,15 +102,12 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	}
 
 	private String columnName(String entityType, List<String> propertyPath) {
-		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) ) {
-			return propertyHelper.getEmbeddeColumnName( entityType, propertyPath );
-		}
 		return propertyHelper.getColumnName( entityType, propertyPath );
 	}
 
 	private String alias(String entityType, List<String> propertyPath) {
 		String targetEntityAlias = aliasResolver.findAliasForType( entityType );
-		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) ) {
+		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) && !propertyHelper.isIdProperty( entityType, propertyPath ) ) {
 			return aliasResolver.createAliasForEmbedded( targetEntityAlias, propertyPath, false );
 		}
 		return targetEntityAlias;

@@ -179,39 +179,56 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	@Override
 	public void setPropertyPath(PropertyPath path) {
 		if ( status == Status.DEFINING_SELECT ) {
-			List<String> pathWithoutAlias = resolveAlias( path );
-			if ( propertyHelper.isSimpleProperty( pathWithoutAlias ) ) {
-				projections.add( propertyHelper.getColumnName( targetTypeName, pathWithoutAlias ) );
-			}
-			else if ( propertyHelper.isNestedProperty( pathWithoutAlias ) ) {
-				if ( propertyHelper.isEmbeddedProperty( targetTypeName, pathWithoutAlias ) ) {
-					String entityAlias = entityAlias( path );
-					final List<String> associationPath = propertyHelper.findAssociationPath( targetTypeName, pathWithoutAlias );
-					// Currently, it is possible to nest only one association inside an emebedded
-					if ( associationPath != null ) {
-						List<String> nextPath = new ArrayList<String>( associationPath.size() + 1 );
-						int next = associationPath.size();
-						nextPath.addAll( associationPath );
-						if ( next < pathWithoutAlias.size() - 1 ) {
-							nextPath.add( pathWithoutAlias.get( next ) );
-						}
-						boolean leftJoin = false; // TODO: Not sure how to obtain this information at the moment
-						embeddedAliasResolver.createAliasForEmbedded( entityAlias, nextPath, leftJoin );
-					}
-					boolean optional = true;
-					String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, pathWithoutAlias, optional );
-					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, pathWithoutAlias );
-					String projection = identifier( embeddedAlias, columnName );
-					projections.add( projection );
-					embeddedPropertyProjection.add( projection );
-				}
-				else {
-					throw new UnsupportedOperationException( "Selecting associated properties not yet implemented." );
-				}
-			}
+			defineSelect( path );
 		}
 		else {
 			this.propertyPath = path;
+		}
+	}
+
+	private void defineSelect(PropertyPath path) {
+		List<String> pathWithoutAlias = resolveAlias( path );
+		if ( !pathWithoutAlias.isEmpty() ) { // It might be empty if we have selected the target entity
+			if ( propertyHelper.isSimpleProperty( pathWithoutAlias ) ) {
+				defineSelectForSimpleProperty( pathWithoutAlias );
+			}
+			else if ( propertyHelper.isEmbeddedProperty( targetTypeName, pathWithoutAlias ) ) {
+				defineSelectForEmbeddedProperty( entityAlias( path ), pathWithoutAlias );
+			}
+			else {
+				throw new UnsupportedOperationException( "Selecting associated properties not yet implemented." );
+			}
+		}
+	}
+
+	private void defineSelectForSimpleProperty(List<String> pathWithoutAlias) {
+		projections.add( propertyHelper.getColumnName( targetTypeName, pathWithoutAlias ) );
+	}
+
+	private void defineSelectForEmbeddedProperty(String entityAlias, List<String> pathWithoutAlias) {
+		if ( propertyHelper.isIdProperty( targetTypeName, pathWithoutAlias ) ) {
+			// Id properties get stored like simple properties
+			defineSelectForSimpleProperty( pathWithoutAlias );
+		}
+		else {
+			final List<String> associationPath = propertyHelper.findAssociationPath( targetTypeName, pathWithoutAlias );
+			// Currently, it is possible to nest only one association inside an emebedded
+			if ( associationPath != null ) {
+				List<String> nextPath = new ArrayList<String>( associationPath.size() + 1 );
+				int next = associationPath.size();
+				nextPath.addAll( associationPath );
+				if ( next < pathWithoutAlias.size() - 1 ) {
+					nextPath.add( pathWithoutAlias.get( next ) );
+				}
+				boolean leftJoin = false; // TODO: Not sure how to obtain this information at the moment
+				embeddedAliasResolver.createAliasForEmbedded( entityAlias, nextPath, leftJoin );
+			}
+			boolean optional = true;
+			String embeddedAlias = embeddedAliasResolver.createAliasForEmbedded( entityAlias, pathWithoutAlias, optional );
+			String columnName = propertyHelper.getColumnName( targetTypeName, pathWithoutAlias );
+			String projection = identifier( embeddedAlias, columnName );
+			projections.add( projection );
+			embeddedPropertyProjection.add( projection );
 		}
 	}
 
