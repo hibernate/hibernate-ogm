@@ -80,4 +80,15 @@ public class News {
 		result = 31 * result + ( labels != null ? labels.hashCode() : 0 );
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append( "News [newsId=" );
+		builder.append( newsId );
+		builder.append( ", content=" );
+		builder.append( content );
+		builder.append( "]" );
+		return builder.toString();
+	}
 }
