@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.id;
 
 import java.io.Serializable;
+
 import javax.persistence.Embeddable;
 
 /**
@@ -44,30 +45,42 @@ public class NewsID implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if ( this == o ) {
+	public boolean equals(Object obj) {
+		if ( this == obj ) {
 			return true;
 		}
-		if ( o == null || getClass() != o.getClass() ) {
+		if ( obj == null ) {
 			return false;
 		}
-
-		NewsID newsID = (NewsID) o;
-
-		if ( author != null ? !author.equals( newsID.author ) : newsID.author != null ) {
+		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		if ( title != null ? !title.equals( newsID.title ) : newsID.title != null ) {
+		NewsID other = (NewsID) obj;
+		if ( author == null ) {
+			if ( other.author != null ) {
+				return false;
+			}
+		}
+		else if ( !author.equals( other.author ) ) {
 			return false;
 		}
-
+		if ( title == null ) {
+			if ( other.title != null ) {
+				return false;
+			}
+		}
+		else if ( !title.equals( other.title ) ) {
+			return false;
+		}
 		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		int result = title != null ? title.hashCode() : 0;
-		result = 31 * result + ( author != null ? author.hashCode() : 0 );
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( author == null ) ? 0 : author.hashCode() );
+		result = prime * result + ( ( title == null ) ? 0 : title.hashCode() );
 		return result;
 	}
 
