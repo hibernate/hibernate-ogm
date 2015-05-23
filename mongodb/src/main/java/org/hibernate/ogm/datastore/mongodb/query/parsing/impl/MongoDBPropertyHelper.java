@@ -36,13 +36,16 @@ public class MongoDBPropertyHelper extends ParserPropertyHelper implements Prope
 		return getColumnName( getPersister( entityType ), propertyPath );
 	}
 
-	public String getColumnName(OgmEntityPersister persister, List<String> propertyName) {
-		String columnName = StringHelper.join( propertyName, "." );
-
-		if ( columnName.equals( persister.getIdentifierPropertyName() ) ) {
+	public String getColumnName(OgmEntityPersister persister, List<String> propertyPath) {
+		String propertyName = StringHelper.join( propertyPath, "." );
+		String identifierPropertyName = persister.getIdentifierPropertyName();
+		if ( propertyName.equals( identifierPropertyName ) ) {
 			return MongoDBDialect.ID_FIELDNAME;
 		}
-
-		return getColumn( persister, propertyName);
+		String column = getColumn( persister, propertyPath );
+		if ( propertyPath.size() > 1 && propertyPath.get( 0 ).equals( identifierPropertyName ) ) {
+			column = MongoDBDialect.ID_FIELDNAME + "." + column.substring( propertyPath.get( 0 ).length() + 1 );
+		}
+		return column;
 	}
 }
