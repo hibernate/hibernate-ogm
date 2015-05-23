@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.id;
 
 import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -63,9 +64,6 @@ public class News {
 		if ( content != null ? !content.equals( news.content ) : news.content != null ) {
 			return false;
 		}
-		if ( labels != null ? !labels.equals( news.labels ) : news.labels != null ) {
-			return false;
-		}
 		if ( newsId != null ? !newsId.equals( news.newsId ) : news.newsId != null ) {
 			return false;
 		}
@@ -77,7 +75,6 @@ public class News {
 	public int hashCode() {
 		int result = newsId != null ? newsId.hashCode() : 0;
 		result = 31 * result + ( content != null ? content.hashCode() : 0 );
-		result = 31 * result + ( labels != null ? labels.hashCode() : 0 );
 		return result;
 	}
 
