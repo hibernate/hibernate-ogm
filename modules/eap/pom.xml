@@ -23,6 +23,8 @@
         <luceneVersion>3.6.2</luceneVersion>
         <lucene.module.slot>main</lucene.module.slot>
         <classifier>experimental</classifier>
+        <!-- OGM-838 Skipping the deploy of this artefact until the EAP module is working again -->
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencies>
