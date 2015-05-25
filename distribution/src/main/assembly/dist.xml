@@ -19,6 +19,7 @@
     <formats>
         <format>tar.gz</format>
         <format>zip</format>
+        <format>dir</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <baseDirectory>/</baseDirectory>
@@ -151,6 +152,21 @@
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
              </includes>
+        </dependencySet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-cassandra
+        #######################################################################
+        -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>dist/lib/cassandra</outputDirectory>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-cassandra</include>
+            </includes>
         </dependencySet>
     </dependencySets>
 
