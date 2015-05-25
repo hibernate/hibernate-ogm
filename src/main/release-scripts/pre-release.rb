@@ -139,13 +139,14 @@ end
 def create_changelog_update(release_version)
   interpolated_url = eval '"' + $jira_issues_url + '"'
   jira_issues = get_json interpolated_url
+  processed_issues = process_issues(jira_issues)
 
+  max_component_length = calculate_max_component_length(processed_issues)
+  issue_type = ''
   change_log_update = release_version + ' (' +  $now.strftime("%d-%m-%Y") + ")\n"
   change_log_update << "-------------------------\n"
-
-  issue_type = ''
-  jira_issues['issues'].each do |issue|
-    current_issue_type = issue['fields']['issuetype']['name']
+  processed_issues.each do |issue|
+    current_issue_type = issue['type']
     if issue_type.empty? or !issue_type.eql? current_issue_type
       # create issue type entry
       issue_type = current_issue_type
@@ -154,19 +155,55 @@ def create_changelog_update(release_version)
 
     # issue key
     change_log_update << '    * ' << issue['key'] << ' '
+    change_log_update << '- ' << issue['components'].ljust(max_component_length) << ' - '
+    change_log_update << issue['summary'] << "\n"
+  end
 
-    # components if set. As a simplification just take the first component
+  change_log_update << "\n"
+end
+
+#######################################################################################################################
+# Processing all issues and putting data needed for changelog into an array where each element is a hash with the
+# required data
+def process_issues(jira_issues)
+  issues_array = Array.new
+  jira_issues['issues'].each do |issue|
+    issue_hash = Hash.new
+
+    # type & key
+    issue_hash['type'] = issue['fields']['issuetype']['name']
+    issue_hash['key'] = issue['key']
+
+    # components
     if issue['fields']['components'].empty?
-      change_log_update << ''.ljust(18)
+      issue_hash['components']  = ''
     else
-      components = '- ' << issue['fields']['components'][0]['name'].ljust(13) << ' - '
-      change_log_update << components
+      components = ''
+      last = issue['fields']['components'].pop
+      issue['fields']['components'].each { |component|
+        components << component['name'] << ', '
+      }
+      components << last['name']
+      issue_hash['components'] = components
     end
 
     # summary
-    change_log_update << issue['fields']['summary'] << "\n"
+    issue_hash['summary'] = issue['fields']['summary']
+
+    issues_array << issue_hash
   end
-  change_log_update << "\n"
+  return issues_array
+end
+
+#######################################################################################################################
+def calculate_max_component_length(processed_issues)
+  max = 0
+  processed_issues.each do |issue|
+    if issue['components'].length > max
+     max = issue['components'].length
+    end
+  end
+  return max
 end
 
 #######################################################################################################################
