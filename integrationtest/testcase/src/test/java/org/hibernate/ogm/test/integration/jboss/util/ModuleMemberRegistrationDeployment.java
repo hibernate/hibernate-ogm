@@ -6,12 +6,6 @@
  */
 package org.hibernate.ogm.test.integration.jboss.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
 import org.hibernate.ogm.test.integration.jboss.ModuleMemberRegistrationScenario;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistration;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistrationWithJta;
@@ -20,14 +14,11 @@ import org.hibernate.ogm.test.integration.jboss.controller.RegistrationExecutor;
 import org.hibernate.ogm.test.integration.jboss.model.Address;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnitTransactionType;
-import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 
 /**
  * Creates a commeon archive that can be customized and deployed when running integration tests.
@@ -62,38 +53,8 @@ public class ModuleMemberRegistrationDeployment {
 		}
 
 		public Builder manifestDependencies(String dependencies) {
-			archive.add( manifest( injectVariables( dependencies ) ), "META-INF/MANIFEST.MF" );
+			ModulesHelper.addModulesDependencyDeclaration( archive, dependencies );
 			return this;
-		}
-
-		private String injectVariables(String dependencies) {
-			Properties projectCompilationProperties = new Properties();
-			final InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream( "module-versions.properties" );
-			try {
-				projectCompilationProperties.load( resourceAsStream );
-			}
-			catch (IOException e) {
-				throw new RuntimeException( e );
-			}
-			finally {
-				try {
-					resourceAsStream.close();
-				}
-				catch (IOException e) {
-					throw new RuntimeException( e );
-				}
-			}
-			Set<Entry<Object,Object>> entrySet = projectCompilationProperties.entrySet();
-			for ( Entry<Object,Object> entry : entrySet ) {
-				String key = (String) entry.getKey();
-				String value = (String) entry.getValue();
-				String original = dependencies;
-				dependencies = dependencies.replace( "${" + key + "}", value );
-				if ( ! original.equals( dependencies ) ) {
-					System.out.println( "\n\n\t***\tDependency version injected: " + key + " = " + value + "\n" );
-				}
-			}
-			return dependencies;
 		}
 
 		public Builder addClasses(Class<?> clazz, Class<?>...furtherClasses) {
@@ -119,12 +80,6 @@ public class ModuleMemberRegistrationDeployment {
 			return archive;
 		}
 
-		private static Asset manifest(String dependencies) {
-			String manifest = Descriptors.create( ManifestDescriptor.class )
-					.attribute( "Dependencies", dependencies )
-					.exportAsString();
-			return new StringAsset( manifest );
-		}
 	}
 
 }
