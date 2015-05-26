@@ -75,7 +75,7 @@
                     <compact>false</compact>
                     <imagesDir>images</imagesDir>  <!-- TODO: Remove this config when the image/ prefix is removed from image paths -->
                     <toc>true</toc>
-                    <backend>docbook45</backend>
+                    <backend>docbook</backend>
                     <doctype>book</doctype>
                     <goalPrefix>asciidoctor</goalPrefix>
                     <sourceHighlighter>coderay</sourceHighlighter>
