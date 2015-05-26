@@ -145,20 +145,17 @@
                     <formats>
                         <format>
                             <formatName>pdf</formatName>
-                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/pdf.xsl
-                            </stylesheetResource>
+                            <stylesheetResource>classpath:/xslt/org/jboss/pressgang/pdf.xsl</stylesheetResource>
                             <finalName>hibernate_ogm_reference.pdf</finalName>
                         </format>
                         <format>
                             <formatName>html_single</formatName>
-                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/xhtml-single.xsl
-                            </stylesheetResource>
+                            <stylesheetResource>classpath:/xslt/org/jboss/pressgang/xhtml-single.xsl</stylesheetResource>
                             <finalName>index.html</finalName>
                         </format>
                         <format>
                             <formatName>html</formatName>
-                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/xhtml.xsl
-                            </stylesheetResource>
+                            <stylesheetResource>classpath:/xslt/org/jboss/pressgang/xhtml.xsl</stylesheetResource>
                             <finalName>index.html</finalName>
                         </format>
                     </formats>
@@ -167,7 +164,6 @@
                         <xmlTransformerType>saxon</xmlTransformerType>
                         <!-- needed for uri-resolvers; can be ommitted if using 'current' uri scheme -->
                         <!--     could also locate the docbook dependency and inspect its version... -->
-                        <docbookVersion>1.72.0</docbookVersion>
                         <localeSeparator>-</localeSeparator>
                         <applyStandardInjectionValues>false</applyStandardInjectionValues>
                     </options>
