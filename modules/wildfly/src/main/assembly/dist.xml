@@ -51,6 +51,16 @@
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.basedir}/ogm/cassandra/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/cassandra/${hibernate.ogm.cassandra.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/cassandra-driver/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/cassandra/driver/${hibernate.ogm.cassandra.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
             <source>${module.xml.basedir}/hql/module.xml</source>
             <outputDirectory>/org/hibernate/hql/${hibernate.hql.module.slot}</outputDirectory>
             <filtered>true</filtered>
@@ -102,7 +112,28 @@
                  <include>org.mongodb:mongo-java-driver</include>
               </includes>
        </dependencySet>
-        <dependencySet>
+       <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/cassandra/${hibernate.ogm.cassandra.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-cassandra</include>
+             </includes>
+       </dependencySet>
+       <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/cassandra/driver/${hibernate.ogm.cassandra.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>com.datastax.cassandra:cassandra-driver-core</include>
+                 <include>io.netty:netty</include>
+                 <include>com.codahale.metrics:metrics-core</include>
+                 <include>com.google.guava:guava</include>
+             </includes>
+       </dependencySet>
+       <dependencySet>
              <useProjectArtifact>false</useProjectArtifact>
              <outputDirectory>org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
              <useTransitiveFiltering>false</useTransitiveFiltering>

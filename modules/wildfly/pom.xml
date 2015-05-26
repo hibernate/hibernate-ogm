@@ -24,6 +24,18 @@
         <infinispan.module.slot>main</infinispan.module.slot>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Overriding the version used for tests in OGM (managed in the parent) with the one used by the C* driver -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <optional>true</optional>
+                <version>${cassandraGuavaVersion}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
@@ -53,6 +65,11 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-couchdb</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-cassandra</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

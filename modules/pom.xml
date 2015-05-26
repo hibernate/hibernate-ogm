@@ -25,6 +25,7 @@
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.infinispan.module.slot>main</hibernate.ogm.infinispan.module.slot>
+        <hibernate.ogm.cassandra.module.slot>main</hibernate.ogm.cassandra.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
         <hibernate.ogm.neo4j-lucene.module.slot>main</hibernate.ogm.neo4j-lucene.module.slot>

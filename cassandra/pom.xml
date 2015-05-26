@@ -63,6 +63,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Overriding the version used for tests in OGM with the one used by the C* driver -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${cassandraGuavaVersion}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

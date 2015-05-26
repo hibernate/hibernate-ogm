@@ -22,6 +22,7 @@ import static org.hibernate.ogm.test.integration.jboss.util.CassandraConfigurati
 
 /**
  * Test for the Hibernate OGM module in WildFly using Cassandra.
+ * The class name has to finish with "ITCassandra" for the test to be enabled in the right profile.
  *
  * @author Sanne Grinovero
  */
@@ -47,6 +48,7 @@ public class ModuleMemberRegistrationITCassandra extends ModuleMemberRegistratio
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "cassandra_experimental" ).up();
 
 		setCassandraHostName( properties );

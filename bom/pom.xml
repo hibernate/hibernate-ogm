@@ -28,6 +28,7 @@
         <mongodbVersion>2.13.1</mongodbVersion>
         <fongodbVersion>1.6.2</fongodbVersion>
         <neo4jVersion>2.1.8</neo4jVersion>
+        <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.1.3</cassandraVersion>
 
         <!--
@@ -53,6 +54,17 @@
         <concurrentlinkedhashmapVersion>1.3.1</concurrentlinkedhashmapVersion>
         <asmVersion>4.1</asmVersion>
         <luceneVersion>4.10.4</luceneVersion>
+
+        <!--
+             The following versions are required for the Cassandra driver; We don't expose a managed versions
+             of these libraries through this BOM, these versions are for internal usage to make sure the right
+             JARs end up in the C* driver WildFly module
+        -->
+        <nettyVersion>3.9.0.Final</nettyVersion>
+        <codahaleMetricsVersion>3.0.2</codahaleMetricsVersion>
+        <cassandraGuavaVersion>14.0.1</cassandraGuavaVersion>
+        <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->
+        <!-- end of Cassandra dependencies -->
     </properties>
 
     <inceptionYear>2010</inceptionYear>
