@@ -33,7 +33,7 @@
          </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-annotations</artifactId>
+            <artifactId>jboss-logging-processor</artifactId>
             <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
             <scope>provided</scope>
         </dependency>
@@ -144,10 +144,6 @@
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.bsc.maven</groupId>
-                <artifactId>maven-processor-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

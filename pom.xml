@@ -41,6 +41,7 @@
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
         <arquillianVersion>1.1.5.Final</arquillianVersion>
         <jmhVersion>1.0</jmhVersion>
+        <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
 
         <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -144,6 +145,16 @@
                 <version>${jmhVersion}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-processor</artifactId>
+                <version>${jbossLoggingProcessorVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-annotations</artifactId>
+                <version>${jbossLoggingProcessorVersion}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -157,8 +168,6 @@
                     <source>1.7</source>
                     <target>1.7</target>
                     <encoding>UTF-8</encoding>
-                    <!-- needed because of compiler bug: http://bugs.sun.com/view_bug.do?bug_id=6512707 -->
-                    <proc>none</proc>
                 </configuration>
             </plugin>
             <plugin>
@@ -308,48 +317,6 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.bsc.maven</groupId>
-                    <artifactId>maven-processor-plugin</artifactId>
-                    <version>2.2.4</version>
-                    <executions>
-                        <!-- Run annotation processors on src/main/java sources -->
-                        <execution>
-                            <id>process</id>
-                            <goals>
-                                <goal>process</goal>
-                            </goals>
-                            <phase>generate-sources</phase>
-                            <configuration>
-                                <processors>
-                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
-                                </processors>
-                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${javaVersion} -target ${javaVersion}</compilerArguments>
-                            </configuration>
-                        </execution>
-                        <!-- Run annotation processors on src/test/java sources -->
-                        <execution>
-                            <id>process-test</id>
-                            <goals>
-                                <goal>process-test</goal>
-                            </goals>
-                            <phase>generate-test-sources</phase>
-                            <configuration>
-                                <processors>
-                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
-                                </processors>
-                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${javaVersion} -target ${javaVersion}</compilerArguments>
-                            </configuration>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.jboss.logging</groupId>
-                            <artifactId>jboss-logging-processor</artifactId>
-                            <version>${jbossLoggingProcessorVersion}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>

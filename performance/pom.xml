@@ -43,7 +43,6 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
@@ -54,39 +53,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.bsc.maven</groupId>
-                    <artifactId>maven-processor-plugin</artifactId>
-                    <version>2.2.4</version>
-                    <executions>
-                        <!-- Run annotation processors on src/main/java sources -->
-                        <execution>
-                            <id>process</id>
-                            <goals>
-                                <goal>process</goal>
-                            </goals>
-                            <phase>generate-sources</phase>
-                            <configuration>
-                                <processors>
-                                    <processor>org.openjdk.jmh.generators.BenchmarkProcessor</processor>
-                                </processors>
-        <!--                        <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments> -->
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-
-        </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.bsc.maven</groupId>
-                <artifactId>maven-processor-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 </project>
