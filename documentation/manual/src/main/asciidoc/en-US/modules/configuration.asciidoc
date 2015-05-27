@@ -7,8 +7,8 @@ This makes its configuration quite simple by default.
 
 === Bootstrapping Hibernate OGM
 
-Hibernate OGM can be used via the Hibernate native APIs ([classname]+Session+)
-or via the JPA APIs ([classname]+EntityManager+).
+Hibernate OGM can be used via the Hibernate native APIs ([classname]`Session`)
+or via the JPA APIs ([classname]`EntityManager`).
 Depending of your choice, the bootstrapping strategy is slightly different.
 
 ==== Using JPA
@@ -16,9 +16,9 @@ Depending of your choice, the bootstrapping strategy is slightly different.
 The good news is that if you use JPA as your primary API,
 the configuration is extremely simple.
 Hibernate OGM is seen as a persistence provider
-which you need to configure in your [filename]+persistence.xml+.
+which you need to configure in your [filename]`persistence.xml`.
 That's it!
-The provider name is [classname]+org.hibernate.ogm.jpa.HibernateOgmPersistence+.
+The provider name is [classname]`org.hibernate.ogm.jpa.HibernateOgmPersistence`.
 
 .persistence.xml file
 ====
@@ -47,9 +47,9 @@ The provider name is [classname]+org.hibernate.ogm.jpa.HibernateOgmPersistence+.
 There are a couple of things to notice:
 
 * there is no JDBC dialect setting
-* there is no JDBC setting except sometimes a +jta-data-source+
+* there is no JDBC setting except sometimes a `jta-data-source`
   (check <<ogm-configuration-environments-javaee>> for more info)
-* there is no DDL scheme generation options (+hbm2ddl+)
+* there is no DDL scheme generation options (`hbm2ddl`)
   as NoSQL generally do not require schemas
 * if you use JTA (which we recommend), you will need to set the JTA platform
 
@@ -61,15 +61,15 @@ In this case, we have used the defaults settings for Infinispan.
 
 From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 
-* via [classname]+Persistence.createEntityManagerFactory+
-* by injecting the [classname]+EntityManager+ / [classname]+EntityManagerFactory+ in a Java EE container
+* via [classname]`Persistence.createEntityManagerFactory`
+* by injecting the [classname]`EntityManager` / [classname]`EntityManagerFactory` in a Java EE container
 * by using your favorite injection framework (CDI - Weld, Spring, Guice)
 
 
 ==== Using Hibernate ORM native APIs
 
 If you want to bootstrap Hibernate OGM using the native Hibernate APIs,
-use the class [classname]+org.hibernate.ogm.cfg.OgmConfiguration+.
+use the class [classname]`org.hibernate.ogm.cfg.OgmConfiguration`.
 
 .Bootstrap Hibernate OGM with Hibernate ORM native APIs
 ====
@@ -99,7 +99,7 @@ SessionFactory sf = cfg.buildSessionFactory();
 
 There are a couple of things to notice:
 
-* there is no DDL schema generation options (+hbm2ddl+)
+* there is no DDL schema generation options (`hbm2ddl`)
   as Infinispan does not require schemas
 * you need to set the right transaction strategy
   and the right transaction manager lookup strategy
@@ -132,27 +132,27 @@ You don't have to do much in this case. You need three specific settings:
 * a JTA datasource
 
 
-If you use JPA, simply set the +transaction-type+ to +JTA+
+If you use JPA, simply set the `transaction-type` to `JTA`
 and the transaction factory will be set for you.
 
 If you use Hibernate ORM native APIs only,
-then set +hibernate.transaction.factory_class+ to either:
+then set `hibernate.transaction.factory_class` to either:
 
-* +org.hibernate.transaction.CMTTransactionFactory+
+* `org.hibernate.transaction.CMTTransactionFactory`
   if you use declarative transaction demarcation.
-* or +org.hibernate.transaction.JTATransactionFactory+
+* or `org.hibernate.transaction.JTATransactionFactory`
   if you manually demarcate transaction boundaries
 
 
 Set the JTA platform to the right Java EE container.
-The property is +hibernate.transaction.transaction.jta.platform+
+The property is `hibernate.transaction.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
 http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform[Hibernate ORM's configuration section].
 For example, in WildFly,
-use +org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform+.
+use `org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform`.
 
-In your [filename]+persistence.xml+, you also need to define an existing datasource.
+In your [filename]`persistence.xml`, you also need to define an existing datasource.
 It is not needed by Hibernate OGM
 and won't be used but the JPA specification mandates this setting.
 
@@ -181,7 +181,7 @@ and won't be used but the JPA specification mandates this setting.
 ----
 ====
 
-+java:DefaultDS+ will work for out of the box WildFly deployments.
+`java:DefaultDS` will work for out of the box WildFly deployments.
 
 [[ogm-configuration-environments-standalonejta]]
 
@@ -201,10 +201,10 @@ in a standalone environment with Hibernate OGM.
 
 In Hibernate OGM, make sure to set the following properties:
 
-* +transaction-type+ to +JTA+ in your persistence.xml if you use JPA
-* or +hibernate.transaction.factory_class+ to +org.hibernate.transaction.JTATransactionFactory+
-  if you use [classname]+OgmConfiguration+ to bootstrap Hibernate OGM.
-* +hibernate.transaction.jta.platform+ to +org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform+ in both cases.
+* `transaction-type` to `JTA` in your persistence.xml if you use JPA
+* or `hibernate.transaction.factory_class` to `org.hibernate.transaction.JTATransactionFactory`
+  if you use [classname]`OgmConfiguration` to bootstrap Hibernate OGM.
+* `hibernate.transaction.jta.platform` to `org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform` in both cases.
 
 
 On the JBoss Transaction side, add JBoss Transaction in your classpath.
@@ -293,25 +293,25 @@ They are explained in <<ogm-datastore-providers>>.
 Otherwise, most options from Hibernate ORM and Hibernate Search are applicable
 when using Hibernate OGM.
 You can pass them as you are used to do
-either in your [filename]+persistence.xml+ file, your [filename]+hibernate.cfg.xml+ file
+either in your [filename]`persistence.xml` file, your [filename]`hibernate.cfg.xml` file
 or programmatically.
 
 More interesting is a list of options that do _not_ apply to Hibernate OGM
 and that should not be set:
 
-* +hibernate.dialect+
-* +hibernate.connection.*+ and in particular +hibernate.connection.provider_class+
-* +hibernate.show_sql+ and +hibernate.format_sql+
-* +hibernate.default_schema+ and +hibernate.default_catalog+
-* +hibernate.use_sql_comments+
-* +hibernate.jdbc.*+
-* +hibernate.hbm2ddl.auto+ and +hibernate.hbm2ddl.import_file+
+* `hibernate.dialect`
+* `hibernate.connection.*` and in particular `hibernate.connection.provider_class`
+* `hibernate.show_sql` and `hibernate.format_sql`
+* `hibernate.default_schema` and `hibernate.default_catalog`
+* `hibernate.use_sql_comments`
+* `hibernate.jdbc.*`
+* `hibernate.hbm2ddl.auto` and `hibernate.hbm2ddl.import_file`
 
 === Configuring Hibernate Search
 
 Hibernate Search integrates with Hibernate OGM just like it does with Hibernate ORM.
 The Hibernate Search version tested is {hibernate-search-version}.
-Add the dependency to your project - the group id is +org.hibernate+ and artifact id +hibernate-search-orm+.
+Add the dependency to your project - the group id is `org.hibernate` and artifact id `hibernate-search-orm`.
 
 Then configure where you want to store your indexes,
 map your entities with the relevant index annotations and you are good to go.
@@ -345,7 +345,7 @@ You can download the pre-packaged module ZIP for this version of Hibernate OGM f
 * https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly9-{hibernate-ogm-version}.zip[Sourceforge]
 * https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly9&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
 
-Unpack the archive into the +modules+ folder of your WildFly 9 installation.
+Unpack the archive into the `modules` folder of your WildFly 9 installation.
 The modules included are:
 
 * _org.hibernate:ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
@@ -364,7 +364,7 @@ Dependencies: org.hibernate:ogm services, org.hibernate.ogm.<%DATASTORE%>:main s
 
 Using jboss-deployment-structure.xml::
 This is a JBoss-specific descriptor.
-Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
+Add a `WEB-INF/jboss-deployment-structure.xml` in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source, XML]
 ----
@@ -389,9 +389,9 @@ When using WildFly, no library is available to your deployments unless you expli
 For example, Hibernate ORM will be available by default to your application if you are including the definition of a persistence unit,
 although there are options to prevent that, for example to use a different JPA implementor or to use a different version of Hibernate ORM.
 
-Hibernate Search is not automatically provided, so you have to make it available explicitly either via the +MANIFEST.MF+ or via a custom +jboss-deployment-structure.xml+.
+Hibernate Search is not automatically provided, so you have to make it available explicitly either via the `MANIFEST.MF` or via a custom `jboss-deployment-structure.xml`.
 
-To do that, the +MANIFEST.MF+ of your deployment will look like:
+To do that, the `MANIFEST.MF` of your deployment will look like:
 
 .Example MANIFEST.MF for an application using Hibernate OGM for CouchDB and also Hibernate Search
 ====

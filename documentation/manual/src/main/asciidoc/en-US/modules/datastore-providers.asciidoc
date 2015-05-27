@@ -21,10 +21,10 @@ All are in a dedicated maven module, you simply need to depend on the one you us
 
 Hibernate OGM interacts with NoSQL datastores via two contracts:
 
-* a +DatastoreProvider+ which is responsible for
+* a `DatastoreProvider` which is responsible for
   starting and stopping the connection(s) with the datastore
   and prop up the datastore if needed
-* a +GridDialect+ which is responsible for
+* a `GridDialect` which is responsible for
   converting an Hibernate OGM operation into a datastore specific operation
 
 === Using a specific NoSQL datastore
@@ -48,22 +48,22 @@ Adding the relevant Hibernate OGM module in your classpath looks like this in Ma
 ----
 
 The module names are
-+hibernate-ogm-infinispan+, +hibernate-ogm-ehcache+, +hibernate-ogm-mongodb+, +hibernate-ogm-neo4j+ and +hibernate-ogm-couchdb+.
+`hibernate-ogm-infinispan`, `hibernate-ogm-ehcache`, `hibernate-ogm-mongodb`, `hibernate-ogm-neo4j` and `hibernate-ogm-couchdb`.
 The map datastore is included in the Hibernate OGM engine module.
 
 Next, configure which datastore provider you want to use.
-This is done via the +hibernate.ogm.datastore.provider+ option.
+This is done via the `hibernate.ogm.datastore.provider` option.
 Possible values are:
 
-* specific shortcuts (preferable): +map+ (only to be used for unit tests),
-  +infinispan+, +ehcache+, +mongodb+, +neo4j_embedded+ or +couchdb_experimental+
-* the fully qualified class name of a [classname]+DatastoreProvider+ implementation
+* specific shortcuts (preferable): `map` (only to be used for unit tests),
+  `infinispan`, `ehcache`, `mongodb`, `neo4j_embedded` or `couchdb_experimental`
+* the fully qualified class name of a [classname]`DatastoreProvider` implementation
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants declared on +OgmProperties+ to specify configuration properties
-such as +hibernate.ogm.datastore.provider+.
+you should use the constants declared on `OgmProperties` to specify configuration properties
+such as `hibernate.ogm.datastore.provider`.
 
 In this case you also can specify the provider in form of a class object of a datastore provider type
 or pass an instance of a datastore provider type:
@@ -83,8 +83,8 @@ EntityManagerFactory emf = Persistence.createEntityManagerFactory( "my-pu", prop
 
 By default, a datastore provider chooses the best grid dialect transparently
 but you can manually override that setting
-with the +hibernate.ogm.datastore.grid_dialect+ option.
-Use the fully qualified class name of the [classname]+GridDialect+ implementation.
+with the `hibernate.ogm.datastore.grid_dialect` option.
+Use the fully qualified class name of the [classname]`GridDialect` implementation.
 Most users should ignore this setting entirely and live a happier life instead.
 
 Let's now look at the specifics of each datastore provider.

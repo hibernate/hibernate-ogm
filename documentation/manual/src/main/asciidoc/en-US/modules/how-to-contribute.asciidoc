@@ -22,7 +22,7 @@ You can also:
 * propose improvements on the
   http://www.hibernate.org/community/mailinglists[development mailing list]
 * join us on IRC to discuss developments and improvements
-  (+#hibernate-dev+ on +freenode.net+;
+  (`#hibernate-dev` on `freenode.net`;
   you need to be registered on freenode:
   the room does not accept "anonymous" users).
 
@@ -51,7 +51,7 @@ make sure to have both installed on your system.
 
 Clone the git repository from GitHub:
 
-[source]
+[source, bash]
 ----
 #get the sources
 git clone https://github.com/hibernate/hibernate-ogm
@@ -60,7 +60,7 @@ cd hibernate-ogm
 
 Run maven
 
-[source]
+[source, bash]
 ----
 #build project
 mvn clean install -s settings-example.xml
@@ -69,15 +69,15 @@ mvn clean install -s settings-example.xml
 [NOTE]
 ====
 Note that Hibernate OGM uses artifacts from the Maven repository hosted by JBoss.
-Make sure to either use the [code]+-s settings-example.xml+ option
-or adjust your [filename]+$$~/.m2/settings.xml$$+
+Make sure to either use the [code]`-s settings-example.xml` option
+or adjust your [filename]`$$~/.m2/settings.xml$$`
 according to the descriptions available
 http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
 ====
 
-To skip building the documentation, set the +skipDocs+ property to true:
+To skip building the documentation, set the `skipDocs` property to true:
 
-[source]
+[source, bash]
 ----
 mvn clean install -DskipDocs=true -s settings-example.xml
 ----
@@ -85,7 +85,7 @@ mvn clean install -DskipDocs=true -s settings-example.xml
 [TIP]
 ====
 If you just want to build the documentation only,
-run it from the [filename]+hibernate-ogm-documentation/manual+ subdirectory.
+run it from the [filename]`hibernate-ogm-documentation/manual` subdirectory.
 ====
 
 ==== How to contribute code effectively

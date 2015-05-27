@@ -45,10 +45,10 @@ add the following module:
 If you're not using a dependency management tool,
 copy all the dependencies from the distribution in the directories:
 
-* +/lib/required+
-* +/lib/ehcache+
+* `/lib/required`
+* `/lib/ehcache`
 * Optionally - depending on your container -
-  you might need some of the jars from +/lib/provided+
+  you might need some of the jars from `/lib/provided`
 
 
 [[ogm-ehcache-configuration-properties]]
@@ -64,28 +64,28 @@ which is a good starting point for new users - you don't have to set any propert
 
 .Ehcache datastore configuration properties
 hibernate.ogm.datastore.provider::
-To use Ehcache as a datastore provider set it to +ehcache+.
+To use Ehcache as a datastore provider set it to `ehcache`.
 hibernate.ogm.ehcache.configuration_resource_name::
 Should point to the resource name of an Ehcache configuration file.
-Defaults to +org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
-+hibernate.ogm.datastore.keyvalue.cache_storage+::
+Defaults to `org/hibernate/ogm/datastore/ehcache/default-ehcache.xml`.
+`hibernate.ogm.datastore.keyvalue.cache_storage`::
 The strategy for persisting data in EhCache.
-The following two strategies exist (values of the +org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType+ enum):
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType` enum):
 
-* +CACHE_PER_TABLE+: A dedicated cache will be used for each entity type, association type and id source table.
-* +CACHE_PER_KIND+: Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources.
+* `CACHE_PER_TABLE`: A dedicated cache will be used for each entity type, association type and id source table.
+* `CACHE_PER_KIND`: Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources.
 
 +
-Defaults to +CACHE_PER_TABLE+. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
+Defaults to `CACHE_PER_TABLE`. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via +EhcacheProperties+
+you should use the constants accessible via `EhcacheProperties`
 when specifying the configuration properties listed above.
 
-Common properties shared between stores are declared on +OgmProperties+
-(a super interface of +EhcacheProperties+).
+Common properties shared between stores are declared on `OgmProperties`
+(a super interface of `EhcacheProperties`).
 
 For maximum portability between stores, use the most generic interface possible.
 ====
@@ -95,14 +95,14 @@ For maximum portability between stores, use the most generic interface possible.
 Depending on the cache mapping approach, Hibernate OGM will either:
 
 * store each entity type, association type and id source table in a dedicated cache
-  very much like what Hibernate ORM would do. This is the +CACHE_PER_TABLE+ approach.
-* store data in three different caches when using the +CACHE_PER_KIND+ approach:
-** +ENTITIES+: is going to be used to store the main attributes of all your entities.
-** +ASSOCIATIONS+: stores the association information representing the links between entities.
-** +IDENTIFIER_STORE+: contains internal metadata that Hibernate OGM needs
+  very much like what Hibernate ORM would do. This is the `CACHE_PER_TABLE` approach.
+* store data in three different caches when using the `CACHE_PER_KIND` approach:
+** `ENTITIES`: is going to be used to store the main attributes of all your entities.
+** `ASSOCIATIONS`: stores the association information representing the links between entities.
+** `IDENTIFIER_STORE`: contains internal metadata that Hibernate OGM needs
     to provide sequences and auto-incremental numbers for primary key generation.
 
-The preferred strategy is +CACHE_PER_TABLE+ as it offers both more fine grained configuration options
+The preferred strategy is `CACHE_PER_TABLE` as it offers both more fine grained configuration options
 and the ability to work on specific entities in a more simple fashion.
 
 [[ogm-ehcache-storage-principles]]
@@ -123,24 +123,24 @@ the key being the column name.
 
 Hibernate OGM supports by default the following property types:
 
-* [classname]+java.lang.String+
-* [classname]+java.lang.Character+ (or char primitive)
-* [classname]+java.lang.Boolean+ (or boolean primitive); Optionally the annotations +@Type(type = "true_false")+, @Type(type = "yes_no") and @Type(type = "numeric_boolean") can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
-* [classname]+java.lang.Byte+ (or byte primitive)
-* [classname]+java.lang.Short+ (or short primitive)
-* [classname]+java.lang.Integer+ (or integer primitive)
-* [classname]+java.lang.Long+ (or long primitive)
-* [classname]+java.lang.Integer+ (or integer primitive)
-* [classname]+java.lang.Float+ (or float primitive)
-* [classname]+java.lang.Double+ (or double primitive)
+* [classname]`java.lang.String`
+* [classname]`java.lang.Character` (or char primitive)
+* [classname]`java.lang.Boolean` (or boolean primitive); Optionally the annotations `@Type(type = "true_false")`, `@Type(type = "yes_no")` and `@Type(type = "numeric_boolean")` can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
+* [classname]`java.lang.Byte` (or byte primitive)
+* [classname]`java.lang.Short` (or short primitive)
+* [classname]`java.lang.Integer` (or integer primitive)
+* [classname]`java.lang.Long` (or long primitive)
+* [classname]`java.lang.Integer` (or integer primitive)
+* [classname]`java.lang.Float` (or float primitive)
+* [classname]`java.lang.Double` (or double primitive)
 
-* [classname]+java.math.BigDecimal+
-* [classname]+java.math.BigInteger+
+* [classname]`java.math.BigDecimal`
+* [classname]`java.math.BigInteger`
 
-* [classname]+java.util.Calendar+
-* [classname]+java.util.Date+
-* [classname]+java.util.UUID+
-* [classname]+java.util.URL+
+* [classname]`java.util.Calendar`
+* [classname]`java.util.Date`
+* [classname]`java.util.UUID`
+* [classname]`java.util.URL`
 
 [NOTE]
 ====
@@ -159,10 +159,10 @@ The key is comprised of the following information:
 
 * the identifier column names
 * the identifier column values
-* the entity table (for the +CACHE_PER_KIND+ strategy)
+* the entity table (for the `CACHE_PER_KIND` strategy)
 
-In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
-In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
+In `CACHE_PER_TABLE`, the table name is inferred from the cache name.
+In `CACHE_PER_KIND`, the table name is necessary to identify the entity in the generic cache.
 
 .Define an identifier as a primitive type
 ====
@@ -180,7 +180,7 @@ public class Bookmark {
 }
 ----
 
-.Content of the +Bookmark+ cache in +CACHE_PER_TABLE+
+.Content of the `Bookmark` cache in `CACHE_PER_TABLE`
 [cols="3*", options="header"]
 |===
      ^| KEY                   2+^| MAP ENTRIES
@@ -189,7 +189,7 @@ public class Bookmark {
                                  | title    | "Hibernate OGM documentation" 
 |===
 
-.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+.Content of the `ENTITIES` cache in `CACHE_PER_KIND`
 [cols="3*", options="header"]
 |===
      ^| KEY                   2+^| MAP ENTRIES
@@ -223,7 +223,7 @@ public class News {
 }
 ----
 
-.Content of the +News+ cache in +CACHE_PER_TABLE+
+.Content of the `News` cache in `CACHE_PER_TABLE`
 [cols="3*", options="header"]
 |===
      ^| KEY
@@ -237,7 +237,7 @@ public class News {
       | content        | "Simple, just like ORM but with a NoSQL database"
 |===
 
-.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+.Content of the `ENTITIES` cache in `CACHE_PER_KIND`
 [cols="3*", options="header"]
 |===
      ^| KEY
@@ -256,7 +256,7 @@ public class News {
 
 Since Ehcache has not native sequence nor identity column support,
 these are simulated using the table strategy, however their default values vary.
-We highly recommend you explicitly use a +TABLE+ strategy if you want to generate a monotonic identifier.
+We highly recommend you explicitly use a `TABLE` strategy if you want to generate a monotonic identifier.
 
 But if you can, use a pure in-memory and scalable strategy like a UUID generator.
 
@@ -278,7 +278,7 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
+.Content of the `hibernate_sequences` cache in `CACHE_PER_TABLE`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -287,7 +287,7 @@ public class GuitarPlayer {
 ^.^|  2
 |===
 
-.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+.Content of the IDENTIFIERS cache in `CACHE_PER_KIND`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -297,7 +297,7 @@ public class GuitarPlayer {
 |===
 ====
 
-As you can see, in +CACHE_PER_TABLE+, the key does not contain the id source table name.
+As you can see, in `CACHE_PER_TABLE`, the key does not contain the id source table name.
 It is inferred by the cache name hosting that key.
 
 .Id generation strategy TABLE using a custom table
@@ -322,7 +322,7 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the +GuitarPlayerSequence+ cache in +CACHE_PER_TABLE+
+.Content of the `GuitarPlayerSequence` cache in `CACHE_PER_TABLE`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -331,7 +331,7 @@ public class GuitarPlayer {
 ^.^| 2
 |===
 
-.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+.Content of the IDENTIFIERS cache in `CACHE_PER_KIND`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -364,7 +364,7 @@ public class Song {
 }
 ----
 
-.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
+.Content of the `hibernate_sequences` cache in `CACHE_PER_TABLE`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -373,7 +373,7 @@ public class Song {
 ^.^| 11
 |===
 
-.Content of the +IDENTIFIERS+ cache in +CACHE_PER_KIND+
+.Content of the `IDENTIFIERS` cache in `CACHE_PER_KIND`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -385,17 +385,17 @@ public class Song {
 
 ==== Entities
 
-Entities are stored in the cache named after the entity name when using the +CACHE_PER_TABLE+ strategy.
-In the +CACHE_PER_KIND+ strategy, entities are stored in a single cache named +ENTITIES+.
+Entities are stored in the cache named after the entity name when using the `CACHE_PER_TABLE` strategy.
+In the `CACHE_PER_KIND` strategy, entities are stored in a single cache named `ENTITIES`.
 
 The key is comprised of the following information:
 
 * the identifier column names
 * the identifier column values
-* the entity table (for the +CACHE_PER_KIND+ strategy)
+* the entity table (for the `CACHE_PER_KIND` strategy)
 
-In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
-In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
+In `CACHE_PER_TABLE`, the table name is inferred from the cache name.
+In `CACHE_PER_KIND`, the table name is necessary to identify the entity in the generic cache.
 
 The entry value is itself a map which contains all the entity properties -
 or to be specific columns.
@@ -416,7 +416,7 @@ public class News {
 }
 ----
 
-.Content of the +News+ cache in +CACHE_PER_TYPE+
+.Content of the `News` cache in `CACHE_PER_TYPE`
 [cols="3*", options="header"]
 |===
      ^| KEY                        2+^| MAP ENTRIES
@@ -425,7 +425,7 @@ public class News {
                                       | title    | "On the merits of NoSQL" 
 |===
 
-.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+.Content of the `ENTITIES` cache in `CACHE_PER_KIND`
 [cols="3*", options="header"]
 |===
      ^| KEY                        2+^| MAP ENTRIES
@@ -435,8 +435,8 @@ public class News {
 |===
 ====
 
-As you can see, the table name is not part of the key for +CACHE_PER_TYPE+.
-In the rest of this section we will no longer show the +CACHE_PER_KIND+ strategy.
+As you can see, the table name is not part of the key for `CACHE_PER_TYPE`.
+In the rest of this section we will no longer show the `CACHE_PER_KIND` strategy.
 
 .Rename field and collection using @Table and @Column
 ====
@@ -456,7 +456,7 @@ public class News {
 }
 ----
 
-.Content of the +Article+ cache
+.Content of the `Article` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -495,7 +495,7 @@ public class NewsPaper {
 }
 ----
 
-.Content of the +News+ cache
+.Content of the `News` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -532,14 +532,14 @@ public class GrandChild {
 }
 ----
 
-.Content of the +GrandMother+ cache
+.Content of the `GrandMother` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
    ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the +associations_GrandMother_grandChildren+ cache in +CACHE_PER_TYPE+
+.Content of the `associations_GrandMother_grandChildren` cache in `CACHE_PER_TYPE`
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -562,7 +562,7 @@ public class GrandChild {
       | "Luke"
 |===
 
-.Content of the +ASSOCIATIONS+ cache in +CACHE_PER_KIND+
+.Content of the `ASSOCIATIONS` cache in `CACHE_PER_KIND`
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -591,13 +591,13 @@ The association key is made of:
 
 * the foreign key column names pointing to the owner of this association
 * the foreign key column values pointing to the owner of this association
-* the association table name in the +CACHE_PER_KIND+ approach where all associations share the same cache
+* the association table name in the `CACHE_PER_KIND` approach where all associations share the same cache
 
 The association entry is a map containing the representation of each entry in the collection.
 The keys of that map are made of:
 
 * the names of the columns uniquely identifying that specific collection entry
-  (e.g. for a +Set+ this is all of the columns)
+  (e.g. for a `Set` this is all of the columns)
 * the values of the columns uniquely identifying that specific collection entry
 
 The value attack to that collection entry key is a Map containing the key value pairs column name / column value.
@@ -628,14 +628,14 @@ public class GrandChild {
 }
 ----
 
-.Content of the +GrandMother+ cache
+.Content of the `GrandMother` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
    ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the +GrandMother_grandChildren+ cache
+.Content of the `GrandMother_grandChildren` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -702,7 +702,7 @@ public class Wheel {
 }
 ----
 
-.Content of the +Vehicule+ cache
+.Content of the `Vehicule` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -711,7 +711,7 @@ public class Wheel {
                                      | brand          | "Mercedes"
 |===
 
-.Content of the +Wheel+ cache
+.Content of the `Wheel` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -753,7 +753,7 @@ public class Wheel {
 }
 ----
 
-.Content of the +Vehicle+ cache
+.Content of the `Vehicle` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -762,7 +762,7 @@ public class Wheel {
                                      | brand          | "Mercedes"
 |===
 
-.Content of the +Wheel+ cache
+.Content of the `Wheel` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -803,7 +803,7 @@ public class Wheel {
 }
 ----
 
-.Content of the +Vehicle+ cache
+.Content of the `Vehicle` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                2+^| MAP ENTRIES
@@ -812,7 +812,7 @@ public class Wheel {
                                               | brand          | "Mercedes"
 |===
 
-.Content of the +Wheel+ cache
+.Content of the `Wheel` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                2+^| MAP ENTRIES
@@ -853,7 +853,7 @@ public class Wife {
 }
 ----
 
-.Content of the +Husband+ cache
+.Content of the `Husband` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -862,7 +862,7 @@ public class Wife {
                                      | wife           | "bea"
 |===
 
-.Content of the +Wife+ cache
+.Content of the `Wife` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -870,7 +870,7 @@ public class Wife {
                                      | name           | "Bea"
 |===
 
-.Content of the +associations_Husband+ cache
+.Content of the `associations_Husband` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -917,7 +917,7 @@ public class Product {
 }
 ----
 
-.Content of the +Basket+ cache
+.Content of the `Basket` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -926,7 +926,7 @@ public class Product {
                                             | owner            | "Davide"
 |===
 
-.Content of the +Product+ cache
+.Content of the `Product` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -937,7 +937,7 @@ public class Product {
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the +associations_Basket_Product+ cache
+.Content of the `associations_Basket_Product` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -963,7 +963,7 @@ public class Product {
 |===
 ====
 
-.Unidirectional one-to-many with +@JoinTable+
+.Unidirectional one-to-many with `@JoinTable`
 ====
 [source, JAVA]
 ----
@@ -994,7 +994,7 @@ public class Product {
 }
 ----
 
-.Content of the +Basket+ cache
+.Content of the `Basket` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1003,7 +1003,7 @@ public class Product {
                                             | owner            | "Davide"
 |===
 
-.Content of the +Basket+ cache
+.Content of the `Basket` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1014,7 +1014,7 @@ public class Product {
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the +associations_BasketContent+ cache
+.Content of the `associations_BasketContent` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1065,7 +1065,7 @@ public class Address {
 }
 ----
 
-.Content of the +User+ cache
+.Content of the `User` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1073,7 +1073,7 @@ public class Address {
    ^.^| ["id"], ["user_001"]               | id   | "user_001"
 |===
 
-.Content of the +Address+ cache
+.Content of the `Address` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1085,7 +1085,7 @@ public class Address {
 |===
 
 
-.Content of the +associations_User_address+ cache
+.Content of the `associations_User_address` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1144,7 +1144,7 @@ public class Address {
 }
 ----
 
-.Content of the +User+ cache
+.Content of the `User` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1152,7 +1152,7 @@ public class Address {
    ^.^| ["id"], ["user_001"]               | id   | "user_001"
 |===
 
-.Content of the +Address+ cache
+.Content of the `Address` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1163,7 +1163,7 @@ public class Address {
                                            | city | "Paris"
 |===
 
-.Content of the +associations_User_address+ cache
+.Content of the `associations_User_address` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1222,7 +1222,7 @@ public class Member {
 }
 ----
 
-.Content of the +JavaUserGroup+ cache
+.Content of the `JavaUserGroup` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1231,7 +1231,7 @@ public class Member {
                                                     | name            | "JUG Summer Camp"
 |===
 
-.Content of the +Member+ cache
+.Content of the `Member` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1274,7 +1274,7 @@ public class SalesGuy {
 }
 ----
 
-.Content of the +SalesForce+ cache
+.Content of the `SalesForce` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1283,7 +1283,7 @@ public class SalesGuy {
                                                     | corporation     | "Red Hat"
 |===
 
-.Content of the +SalesGuy+ cache
+.Content of the `SalesGuy` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1296,7 +1296,7 @@ public class SalesGuy {
                                                     | salesForce_id   | "red_hat"
 |===
 
-.Content of the +associations_SalesGuy+ cache
+.Content of the `associations_SalesGuy` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1352,7 +1352,7 @@ The "Math" class has 2 students: John Doe and Mario Rossi
 
 The "English" class has 2 students: Kate Doe and Mario Rossi
 
-.Content of the +ClassRoom+ cache
+.Content of the `ClassRoom` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1364,7 +1364,7 @@ The "English" class has 2 students: Kate Doe and Mario Rossi
                                        | name       | "English"
 |===
 
-.Content of the +Student+ cache
+.Content of the `Student` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1378,7 +1378,7 @@ The "English" class has 2 students: Kate Doe and Mario Rossi
                                        | name       | "Kate Doe"
 |===
 
-.Content of the +associations_ClassRoom_Student+ cache
+.Content of the `associations_ClassRoom_Student` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1452,7 +1452,7 @@ public class BankAccount {
 
 David owns 2 accounts: "012345" and "ZZZ-009"
 
-.Content of the +AccountOwner+ cache
+.Content of the `AccountOwner` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -1461,7 +1461,7 @@ David owns 2 accounts: "012345" and "ZZZ-009"
                                              | SSN           | "0123456"
 |===
 
-.Content of the +BankAccount+ cache
+.Content of the `BankAccount` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -1472,7 +1472,7 @@ David owns 2 accounts: "012345" and "ZZZ-009"
                                              | accountNumber | "ZZZ-009"
 |===
 
-.Content of the +AccountOwner_BankAccount+ cache
+.Content of the `AccountOwner_BankAccount` cache
 [cols="4*", options="header"]
 |===
      ^| KEY

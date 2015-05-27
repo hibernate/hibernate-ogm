@@ -12,13 +12,13 @@ Before we can start, make sure you have the following tools configured:
 * Maven 3.2.3 or above
 
 Hibernate OGM is published in the JBoss hosted Maven repository.
-Adjust your [filename]+$$~/.m2/settings.xml$$+ file
+Adjust your [filename]`$$~/.m2/settings.xml$$` file
 according to the guidelines found
 http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage].
 In this example we will use Infinispan as the targeted datastore.
 
-Add +org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}+ to your dependency management block
-and +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+
+Add `org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}` to your dependency management block
+and `org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}`
 to your project dependencies:
 
 [source, XML]
@@ -153,7 +153,7 @@ The final list of dependencies should look like this:
 ----
 
 Next we need to define the persistence unit.
-Create a [filename]+META-INF/persistence.xml+ file.
+Create a [filename]`META-INF/persistence.xml` file.
 
 [source, XML]
 ----
@@ -239,7 +239,7 @@ public static TransactionManager getTransactionManager() throws Exception {
 Some JVM do not handle mixed IPv4/IPv6 stacks properly (older
 http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in particular]),
 if you experience trouble starting the Infinispan cluster,
-pass the following property: +-Djava.net.preferIPv4Stack=true+
+pass the following property: `-Djava.net.preferIPv4Stack=true`
 to your JVM or upgrade to a recent JDK version.
 jdk7u6 (b22) is known to work on Max OS X.
 ====
@@ -251,13 +251,13 @@ You will find more details in the Neo4j transactions section: <<ogm-neo4j-transa
 ====
 
 A working example can be found in Hibernate OGM's distribution under
-[filename]+hibernate-ogm-documentation/examples/gettingstarted+.
+[filename]`hibernate-ogm-documentation/examples/gettingstarted`.
 
 What have we seen?
 
 * Hibernate OGM is a JPA implementation
   and is used as such both for mapping and in API usage
 * It is configured as a specific JPA provider:
-  [classname]+org.hibernate.ogm.jpa.HibernateOgmPersistence+
+  [classname]`org.hibernate.ogm.jpa.HibernateOgmPersistence`
 
 Let's explore more in the next chapters.

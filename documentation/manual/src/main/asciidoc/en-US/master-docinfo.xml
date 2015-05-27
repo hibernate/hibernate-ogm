@@ -46,14 +46,8 @@
          <shortaffil>Red Hat</shortaffil>
       </affiliation>
    </author>
-   <collab>
-     <collabname>Guillaume Scheibel</collabname>
-   </collab>
-   <!-- collab>
-      <collabname>Svetlana Mukhina</collabname>
-      <affiliation>
-         <orgname>Exadel</orgname>
-         <orgdiv>Documentation</orgdiv>
-      </affiliation>
-   </collab -->
+   <author>
+     <firstname>Guillaume</firstname>
+     <surname>Scheibel</surname>
+   </author>
 </authorgroup>

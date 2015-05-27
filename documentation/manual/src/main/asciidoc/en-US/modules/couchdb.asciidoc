@@ -16,9 +16,9 @@ Also be aware of the fact that partial updates are unsupported at the moment
 Instead always the entire document will be replaced during updates.
 This means that fields possibly written by other applications but not mapped to properties in your domain model will get lost.
 
-The +ASSOCIATION_DOCUMENT+ mode for storing associations should be used with care
+The `ASSOCIATION_DOCUMENT` mode for storing associations should be used with care
 as there is potential for lost updates (https://hibernate.atlassian.net/browse/OGM-461[OGM-461]).
-It is recommended to use the +IN_ENTITY+ mode (which is the default).
+It is recommended to use the `IN_ENTITY` mode (which is the default).
 
 Should you find any bugs or have feature requests for this dialect,
 then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM issue tracker].
@@ -33,7 +33,7 @@ The following properties are available to configure CouchDB support in Hibernate
 
 .CouchDB datastore configuration properties
 hibernate.ogm.datastore.provider::
-To use CouchDB as a datastore provider, this property must be set to +couchdb_experimental+
+To use CouchDB as a datastore provider, this property must be set to `couchdb_experimental`
 hibernate.ogm.option.configurator::
 The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-couchdb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
@@ -41,23 +41,23 @@ The hostname and port of the CouchDB instance.
 The optional port is concatenated to the host and separated by a colon.
 Let's see a few valid examples:
 
-* +couchdb.example.com+
-* +couchdb.example.com:5985+
-* +2001:db8::ff00:42:8329+ (IPv6)
-* +[2001:db8::ff00:42:8329]:5985+ (IPv6 with port requires the IPv6 to be surrounded by square brackets)
+* `couchdb.example.com`
+* `couchdb.example.com:5985`
+* `2001:db8::ff00:42:8329` (IPv6)
+* `[2001:db8::ff00:42:8329]:5985` (IPv6 with port requires the IPv6 to be surrounded by square brackets)
 +
 Listing multiple initial hosts for fault tolerance is not supported.
-The default value is +127.0.0.1:5984+. If left undefined, the default port is +5984+.
+The default value is `127.0.0.1:5984`. If left undefined, the default port is `5984`.
 hibernate.ogm.datastore.port::
-Deprecated: use +hibernate.ogm.datastore.host+.
+Deprecated: use `hibernate.ogm.datastore.host`.
 The port used by the CouchDB instance.
-The default value is +5984+.
+The default value is `5984`.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.create_database::
 Whether to create the specified database in case it does not exist or not.
-Can be +true+ or +false+ (default). Note that the specified user must have the right to
-create databases if set to +true+.
+Can be `true` or `false` (default). Note that the specified user must have the right to
+create databases if set to `true`.
 hibernate.ogm.datastore.username::
 The username used when connecting to the CouchDB server.
 Note that this user must have the right to create design documents in the chosen database.
@@ -69,21 +69,21 @@ The password used to connect to the CouchDB server.
 This property has no default value.
 This property is ignored if the username isn't specified.
 hibernate.ogm.error_handler::
-The fully-qualified class name, class object or an instance of +ErrorHandler+ to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
+The fully-qualified class name, class object or an instance of `ErrorHandler` to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in CouchDB.
-The following two strategies exist (values of the +org.hibernate.ogm.datastore.document.options.AssociationStorageType+ enum):
-+IN_ENTITY+ (store association information within the entity) and
-+ASSOCIATION_DOCUMENT+ (store association information in a dedicated document per association).
-+IN_ENTITY+ is the default and recommended option
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
+`IN_ENTITY` (store association information within the entity) and
+`ASSOCIATION_DOCUMENT` (store association information in a dedicated document per association).
+`IN_ENTITY` is the default and recommended option
 unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via +CouchDBProperties+
+you should use the constants accessible via `CouchDBProperties`
 when specifying the configuration properties listed above.
-Common properties shared between (document) stores are declared on +OgmProperties+ and +DocumentStoreProperties+, respectively.
+Common properties shared between (document) stores are declared on `OgmProperties` and `DocumentStoreProperties`, respectively.
 To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
@@ -92,7 +92,7 @@ To ease migration between stores, it is recommended to reference these constants
 
 Hibernate OGM allows to configure store-specific options via Java annotations.
 When working with the CouchDB backend, you can specify how associations should be stored
-using the +AssociationStorage+ annotation
+using the `AssociationStorage` annotation
 (refer to <<ogm-couchdb-storage-principles>> to learn more about association storage strategies in general).
 
 The following shows an example:
@@ -120,10 +120,10 @@ public class Zoo {
 ----
 ====
 
-The annotation on the entity level expresses that all associations of the +Zoo+
+The annotation on the entity level expresses that all associations of the `Zoo`
 class should be stored in separate assocation documents.
-This setting applies to the +animals+ and +employees+ associations.
-Only the elements of the +visitors+ association will be stored in the document of the corresponding +Zoo+ entity
+This setting applies to the `animals` and `employees` associations.
+Only the elements of the `visitors` association will be stored in the document of the corresponding `Zoo` entity
 as per the configuration of that specific property which takes precedence over the entity-level configuration.
 
 [[ogm-couchdb-programmatic-configuration]]
@@ -139,7 +139,7 @@ When working with CouchDB, you can currently configure the following options usi
 
 * association storage strategy (on the global, entity and property level)
 
-To set this option via the API, you need to create an +OptionConfigurator+ implementation
+To set this option via the API, you need to create an `OptionConfigurator` implementation
 as shown in the following example:
 
 .Example of an option configurator
@@ -162,12 +162,12 @@ public class MyOptionConfigurator extends OptionConfigurator {
 ----
 ====
 
-The call to +configureOptionsFor()+, passing the store-specific identifier type +CouchDB+,
+The call to `configureOptionsFor()`, passing the store-specific identifier type `CouchDB`,
 provides the entry point into the API. Following the fluent API pattern, you then can configure
 global options and navigate to single entities or properties to apply options specific to these.
 
-Options given on the property level precede entity-level options. So e.g. the +visitors+ association of the +Zoo+
-class would be stored using the in entity strategy, while all other associations of the +Zoo+ entity would
+Options given on the property level precede entity-level options. So e.g. the `visitors` association of the `Zoo`
+class would be stored using the in entity strategy, while all other associations of the `Zoo` entity would
 be stored using separate association documents.
 
 Similarly, entity-level options take precedence over options given on the global level.
@@ -179,9 +179,9 @@ Note that for a given level (property, entity, global),
 an option set via annotations is overridden by the same option set programmatically.
 This allows you to change settings in a more flexible way if required.
 
-To register an option configurator, specify its class name using the +hibernate.ogm.option.configurator+ property.
+To register an option configurator, specify its class name using the `hibernate.ogm.option.configurator` property.
 When bootstrapping a session factory or entity manager factory programmatically,
-you also can pass in an +OptionConfigurator+ instance or the class object representing the configurator type.
+you also can pass in an `OptionConfigurator` instance or the class object representing the configurator type.
 
 [[ogm-couchdb-storage-principles]]
 === Storage principles
@@ -203,21 +203,21 @@ in the corresponding object in the db.
 
 Hibernate OGM support by default the following types:
 
-* [classname]+java.lang.String+
+* [classname]`java.lang.String`
 
 [source, JSON]
 ----
   { "text" : "Hello world!" }
 ----
 
-* [classname]+java.lang.Character+ (or char primitive)
+* [classname]`java.lang.Character` (or char primitive)
 
 [source, JSON]
 ----
   { "delimiter" : "/" }
 ----
 
-* [classname]+java.lang.Boolean+ (or boolean primitive)
+* [classname]`java.lang.Boolean` (or boolean primitive)
 
 [source, JSON]
 ----
@@ -227,84 +227,84 @@ Hibernate OGM support by default the following types:
   { "favorite" : 1 } # if @Type(type = "numeric_boolean") is given
 ----
 
-* [classname]+java.lang.Byte+ (or byte primitive)
+* [classname]`java.lang.Byte` (or byte primitive)
 
 [source, JSON]
 ----
   { "display_mask" : "70" }
 ----
 
-* [classname]+java.lang.Short+ (or short primitive)
+* [classname]`java.lang.Short` (or short primitive)
 
 [source, JSON]
 ----
   { "urlPort" : 80 }
 ----
 
-* [classname]+java.lang.Integer+ (or int primitive)
+* [classname]`java.lang.Integer` (or int primitive)
 
 [source, JSON]
 ----
   { "stockCount" : 12309 }
 ----
 
-* [classname]+java.lang.Long+ (or long primitive)
+* [classname]`java.lang.Long` (or long primitive)
 
 [source, JSON]
 ----
   { "userId" : "-6718902786625749549" }
 ----
 
-* [classname]+java.lang.Float+ (or float primitive)
+* [classname]`java.lang.Float` (or float primitive)
 
 [source, JSON]
 ----
   { "visitRatio" : 10.4 }
 ----
 
-* [classname]+java.lang.Double+ (or double primitive)
+* [classname]`java.lang.Double` (or double primitive)
 
 [source, JSON]
 ----
   { "tax_percentage" : 12.34 }
 ----
 
-* [classname]+java.math.BigDecimal+
+* [classname]`java.math.BigDecimal`
 
 [source, JSON]
 ----
   { "site_weight" : "21.77" }
 ----
 
-* [classname]+java.math.BigInteger+
+* [classname]`java.math.BigInteger`
 
 [source, JSON]
 ----
   { "site_weight" : "444" }
 ----
 
-* [classname]+java.util.Calendar+
+* [classname]`java.util.Calendar`
 
 [source, JSON]
 ----
   { "creation" : "2014-11-18T15:51:26.252Z" }
 ----
 
-* [classname]+java.util.Date+
+* [classname]`java.util.Date`
 
 [source, JSON]
 ----
   { "last_update" : "2014-11-18T15:51:26.252Z" }
 ----
 
-* [classname]+java.util.UUID+
+* [classname]`java.util.UUID`
 
 [source, JSON]
 ----
   { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
 ----
 
-* [classname]+java.util.URL+
+* [classname]`java.util.URL`
 
 [source, JSON]
 ----
@@ -315,24 +315,24 @@ Hibernate OGM support by default the following types:
 
 Entities are stored as CouchDB documents and not as BLOBs
 which means each entity property will be translated into a document field.
-You can use the name property of the [classname]+@Table+ and [classname]+@Column+ annotations
+You can use the name property of the [classname]`@Table` and [classname]`@Column` annotations
 to rename the collections and the document's fields if you need to.
 
 CouchDB provides a built-in mechanism for detecting concurrent updates to one and the same document.
-For that purpose each document has an attribute named +_rev+ (for "revision")
+For that purpose each document has an attribute named `_rev` (for "revision")
 which is to be passed back to the store when doing an update.
 So when writing back a document and the document's revision has been altered by another writer in parallel,
 CouchDB will raise an optimistic locking error
 (you could then e.g. re-read the current document version and try another update).
 
-For this mechanism to work, you need to declare a property for the +_rev+ attribute in all your entity types
-and mark it with the +@Version+ and +@Generated+ annotations.
+For this mechanism to work, you need to declare a property for the `_rev` attribute in all your entity types
+and mark it with the `@Version` and `@Generated` annotations.
 The first marks it as a property used for optimistic locking, while the latter advices Hibernate OGM
 to refresh that property after writes since its value is managed by the datastore.
 
 [WARNING]
 ====
-Not mapping the +_rev+ attribute may cause lost updates,
+Not mapping the `_rev` attribute may cause lost updates,
 as Hibernate OGM needs to re-read the current revision before doing an update in this case.
 Thus a warning will be issued during initialization for each entity type which fails to map that property.
 ====
@@ -378,8 +378,8 @@ public class News {
 Note that CouchDB doesn't have a concept of "tables" or "collections" as e.g. MongoDB does;
 Instead all documents are stored in one large bucket.
 Thus Hibernate OGM needs to add two additional attributes:
-+$type+ which contains the type of a document (entity vs. association documents)
-and +$table+ which specifies the entity name as derived from the type or given via the +@Table+ annotation.
+`$type` which contains the type of a document (entity vs. association documents)
+and `$table` which specifies the entity name as derived from the type or given via the `@Table` annotation.
 
 [NOTE]
 ====
@@ -430,15 +430,15 @@ public class News {
 
 ===== Identifiers
 
-The +_id+ field of a CouchDB document is directly used
+The `_id` field of a CouchDB document is directly used
 to store the identifier columns mapped in the entities.
-You can use any persistable Java type as identifier type, e.g. +String+ or +long+.
+You can use any persistable Java type as identifier type, e.g. `String` or `long`.
 
-Hibernate OGM will convert the +@Id+ property into a +_id+ document field
-so you can name the entity id like you want, it will always be stored into +_id+.
+Hibernate OGM will convert the `@Id` property into a `_id` document field
+so you can name the entity id like you want, it will always be stored into `_id`.
 
-Note that you also can work with embedded ids (via +@EmbeddedId+),
-but be aware of the fact that CouchDB doesn't support storing embedded structures in the +_id+ attribute.
+Note that you also can work with embedded ids (via `@EmbeddedId`),
+but be aware of the fact that CouchDB doesn't support storing embedded structures in the `_id` attribute.
 Hibernate OGM thus will create a concatenated representation of the embedded id's properties in this case.
 
 .Entity with @EmbeddedId
@@ -482,7 +482,7 @@ public class NewsID implements Serializable {
 ===== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]+@GeneratedValue+ annotation.
+[classname]`@GeneratedValue` annotation.
 
 Two main strategies are supported:
 
@@ -492,9 +492,9 @@ Two main strategies are supported:
 Both strategy will create a new document containg the next value to use for the id, the difference
 between the two strategies is the name of the field containing the values.
 
-Hibernate OGM goes not support the +IDENTITY+ strategy and an exception is thrown at startup
+Hibernate OGM goes not support the `IDENTITY` strategy and an exception is thrown at startup
 when it is used.
-The +AUTO+ strategy is the same as the <<couchdb-sequence-id-generation-strategy, SEQUENCE>> one.
+The `AUTO` strategy is the same as the <<couchdb-sequence-id-generation-strategy, SEQUENCE>> one.
 
 [[couchdb-table-id-generation-strategy]]
 *1) TABLE generation strategy*
@@ -688,8 +688,8 @@ public class Song {
 
 ===== Embedded objects and collections
 
-Hibernate OGM stores elements annotated with [classname]+@Embedded+
-or [classname]+@ElementCollection+ as nested documents of the owning entity.
+Hibernate OGM stores elements annotated with [classname]`@Embedded`
+or [classname]`@ElementCollection` as nested documents of the owning entity.
 
 .Embedded object
 ====
@@ -807,7 +807,7 @@ public class GrandChild {
 ----
 ====
 
-The class [classname]+GrandChild+ has only one attribute +name+,
+The class [classname]`GrandChild` has only one attribute `name`,
 this means that Hibernate OGM doesn't need to store the name of the attribute.
 
 If the nested document has two or more fields, like in the following example,
@@ -864,14 +864,14 @@ public class GrandChild {
 
 Hibernate OGM CouchDB provides two strategies to store navigation information for associations:
 
-* +IN_ENTITY+ (default)
-* +ASSOCIATION_DOCUMENT+
+* `IN_ENTITY` (default)
+* `ASSOCIATION_DOCUMENT`
 
 You can switch between the two strategies using:
 
-* the +@AssociationStorage+ annotation (see <<ogm-couchdb-annotation-configuration>>)
+* the `@AssociationStorage` annotation (see <<ogm-couchdb-annotation-configuration>>)
 * the API for programmatic configuration (see <<ogm-couchdb-programmatic-configuration>>)
-* specifying a gloabl default strategy via the +hibernate.ogm.datastore.document.association_storage+ configuration property
+* specifying a gloabl default strategy via the `hibernate.ogm.datastore.document.association_storage` configuration property
 
 ===== In Entity strategy
 
@@ -883,10 +883,10 @@ The field that stores the relationship information is named like the entity prop
 
 [NOTE]
 ====
-When using this strategy the annotations +@JoinTable+ will be ignored because no collection is created
+When using this strategy the annotations `@JoinTable` will be ignored because no collection is created
 for associations.
 
-You can use +@JoinColumn+ to change the name of the field that stores the foreign key (as an example, see
+You can use `@JoinColumn` to change the name of the field that stores the foreign key (as an example, see
 <<couchdb-in-entity-one-to-one-join-column>>).
 ====
 
@@ -1763,11 +1763,11 @@ public class BankAccount {
 ===== Association document strategy
 
 With this strategy, Hibernate OGM uses separate association documents
-(with +$type+ set to "association") to store all navigation information.
+(with `$type` set to "association") to store all navigation information.
 Each assocation document is structured in 2 parts.
-The first is the +_id+ field which contains the identifier information
+The first is the `_id` field which contains the identifier information
 of the association owner and the name of the association table.
-The second part is the +rows+ field which stores (into an embedded collection) all ids
+The second part is the `rows` field which stores (into an embedded collection) all ids
 that the current instance is related to.
 
 .Unidirectional relationship
@@ -1896,10 +1896,10 @@ public class Product {
 ----
 ====
 
-Using the annotation +@JoinTable+ it is possible to change the value of
+Using the annotation `@JoinTable` it is possible to change the value of
 the document containing the association.
 
-.Unidirectional one-to-many using document strategy with +@JoinTable+
+.Unidirectional one-to-many using document strategy with `@JoinTable`
 ====
 [source, JAVA]
 ----
