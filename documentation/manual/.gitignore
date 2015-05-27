@@ -1,0 +1,8 @@
+# Asciidoctor
+
+Rakefile
+Gemfile
+Gemfile.lock
+.bundle/
+_bin/
+.rvmrc
