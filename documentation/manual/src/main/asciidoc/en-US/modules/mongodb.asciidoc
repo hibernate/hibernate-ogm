@@ -190,7 +190,7 @@ The second one is adding FongoDB and SLF4J dependencies in your project.
     <groupId>com.github.fakemongo</groupId>
     <artifactId>fongo</artifactId>
     <scope>test</scope>
-    <version>${fongoDBVersion}</version>
+    <version>${fongodbVersion}</version>
 </dependency>
 <dependency>
     <groupId>org.slf4j</groupId>
