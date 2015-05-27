@@ -15,7 +15,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
  * <p>
  * In order to run the benchmarks, do the following:
  * <ul>
- * <li>Generate the JMH benchmark classes by running {@code mvn generate-sources -pl performance} from the root dir</li>
+ * <li>Generate the JMH benchmark classes by running {@code mvn compile -pl performance} from the root dir</li>
  * <li>Adapt the settings in {@code persistence.xml} and/or {@code native-settings.properties} as per your environment
  * (both under {@code src/main/resources)}
  * <li>(optional:) Adapt the includes below to run a sub-set of all benchmarks
