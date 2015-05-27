@@ -144,11 +144,6 @@
                     </imageResource>
                     <formats>
                         <format>
-                            <formatName>pdf</formatName>
-                            <stylesheetResource>classpath:/xslt/org/jboss/pressgang/pdf.xsl</stylesheetResource>
-                            <finalName>hibernate_ogm_reference.pdf</finalName>
-                        </format>
-                        <format>
                             <formatName>html_single</formatName>
                             <stylesheetResource>classpath:/xslt/org/jboss/pressgang/xhtml-single.xsl</stylesheetResource>
                             <finalName>index.html</finalName>
@@ -157,6 +152,11 @@
                             <formatName>html</formatName>
                             <stylesheetResource>classpath:/xslt/org/jboss/pressgang/xhtml.xsl</stylesheetResource>
                             <finalName>index.html</finalName>
+                        </format>
+                        <format>
+                            <formatName>pdf</formatName>
+                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/pdf.xsl</stylesheetResource>
+                            <finalName>hibernate_ogm_reference.pdf</finalName>
                         </format>
                     </formats>
                     <options>
