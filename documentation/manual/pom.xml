@@ -166,6 +166,11 @@
                         <!--     could also locate the docbook dependency and inspect its version... -->
                         <localeSeparator>-</localeSeparator>
                         <applyStandardInjectionValues>false</applyStandardInjectionValues>
+                        <transformerParameters>
+                            <html.googleAnalyticsId>UA-45270411-3</html.googleAnalyticsId>
+                            <html.googleTagManagerId>GTM-NJWS5L</html.googleTagManagerId>
+                            <html.googleTagManagerChannel>Hibernate</html.googleTagManagerChannel>
+                        </transformerParameters>
                     </options>
                     <!-- Always need an "injections" element to avoid an NPE in the maven-jdocbook-plugin -->
                     <injections />
