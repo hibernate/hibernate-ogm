@@ -49,22 +49,22 @@ Query query = session
     .setString("desc", "tomorrow it's going to rain");
 ----
 
-Note that the +description+ field is marked as not analysed.
+Note that the `description` field is marked as not analysed.
 This is necessary to support field equality and comparison as defined by JP-QL.
 ====
 
 You can make use of the following JP-QL constructs:
 
-* simple comparisons using "<", "<=", "=", ">=" and ">"
-* +IS NULL+ and +IS NOT NULL+
-* the boolean operators +AND+, +OR+, +NOT+
-* +LIKE+, +IN+ and +BETWEEN+
-* +ORDER BY+
+* simple comparisons using "<", "+<=+", "=", ">=" and ">"
+* `IS NULL` and `IS NOT NULL`
+* the boolean operators `AND`, `OR`, `NOT`
+* `LIKE`, `IN` and `BETWEEN`
+* `ORDER BY`
 
 In particular and of notice, what is not supported is:
 
 * cross entity joins
-* JP-QL functions in particular aggregation functions like +count+
+* JP-QL functions in particular aggregation functions like `count`
 * JP-QL update and delete queries
 
 That may sound rather limiting for your use cases so bear with us.
@@ -121,7 +121,7 @@ from Helicopter h order by h.make desc, h.name
 ----
 ====
 
-Inner +JOIN+ on an embedded association is partially supported.
+Inner `JOIN` on an embedded association is partially supported.
 In particular, filtering the elements of the association works for all the datastores
 but projecting properties won't work if you are using Hibernate Search queries.
 
@@ -189,7 +189,7 @@ this can cause changes to be written as a side-effect of running queries
 which cannot be reverted by a possible later rollback.
 
 Depending on your specific use cases and requirements you may prefer to disable auto-flushing,
-e.g. by invoking +query.setFlushMode(FlushMode.MANUAL)+.
+e.g. by invoking `query.setFlushMode(FlushMode.MANUAL)`.
 Bear in mind though that query results will then not reflect changes applied within the current session.
 ====
 
@@ -202,7 +202,7 @@ Even if that costs you portability.
 Hibernate OGM addresses that problem by letting you express native queries (e.g. in MongoQL or CypherQL)
 and map the result of these queries as mapped entities.
 
-In JPA, use +EntityManager.createNativeQuery+.
+In JPA, use `EntityManager.createNativeQuery`.
 The first form accepts a result class if your result set maps the mapping definition of the entity.
 The second form accepts the name of a resultSetMapping
 and lets you customize how properties are mapped to columns by the query.
@@ -255,7 +255,7 @@ Poem poem = (Poem) em.createNamedQuery( "AthanasiaPoem" ).getSingleResult();
 ----
 ====
 
-In the native Hibernate API, use +OgmSession.createNativeQuery+ or +Session.getNamedQuery+.
+In the native Hibernate API, use `OgmSession.createNativeQuery` or `Session.getNamedQuery`.
 The former form lets you define the result set mapping programmatically.
 The latter is receiving the name of a predefined query already describing its result set mapping.
 
@@ -331,7 +331,7 @@ List<Hypothesis> resultList = ftQuery.getResultList();
 ----
 ====
 
-Assuming our database contains an [classname]+Hypothesis+ instance
+Assuming our database contains an [classname]`Hypothesis` instance
 having description "Sometimes tomorrow we release",
 that instance will be returned by our full-text query.
 
@@ -350,9 +350,9 @@ it's not suited for all use cases
  Let's see some of the limitations of Lucene Queries as our main query engine:
 
 * Lucene doesn't support Joins.
-  Any +to-One+ relations can be mapped fine,
+  Any `to-One` relations can be mapped fine,
   and the Lucene community is making progress on other forms,
-  but restrictions on +OneToMany+ or +ManyToMany+ can't be implemented today.
+  but restrictions on `OneToMany` or `ManyToMany` can't be implemented today.
 * Since we apply changes to the index at commit time,
   your updates won't affect queries until you commit
   (we might improve on this).

@@ -43,41 +43,41 @@ This will pull the cassandra java-driver transparently.
 If you're not using a dependency management tool,
 copy all the dependencies from the distribution in the directories:
 
-* +/lib/required+
-* +/lib/cassandra+
-* Optionally - depending on your container - you might need some of the jars from +/lib/provided+
+* `/lib/required`
+* `/lib/cassandra`
+* Optionally - depending on your container - you might need some of the jars from `/lib/provided`
 
 ==== Cassandra specific configuration properties
 
 To get started quickly, pay attention to the following options:
 
-* +hibernate.ogm.datastore.provider+
-* +hibernate.ogm.datastore.host+
-* +hibernate.ogm.datastore.database+
+* `hibernate.ogm.datastore.provider`
+* `hibernate.ogm.datastore.host`
+* `hibernate.ogm.datastore.database`
 
 And we should have you running.
 The following properties are available to configure Cassandra support:
 
 .Cassandra datastore configuration properties
 hibernate.ogm.datastore.provider::
-To use Cassandra as a datastore provider, this property must be set to +cassandra_experimental+
+To use Cassandra as a datastore provider, this property must be set to `cassandra_experimental`
 hibernate.ogm.datastore.host::
 The hostname and port of the Cassandra instance.
 The optional port is concatenated to the host and separated by a colon.
 Let's see a few valid examples:
 
-* +cassandra.example.com+
-* +cassandra.example.com:9043+
-* +2001:db8::ff00:42:8329+ (IPv6)
-* +[2001:db8::ff00:42:8329]:9043+ (IPv6 with port requires the IPv6 to be surrounded by square brackets)
+* `cassandra.example.com`
+* `cassandra.example.com:9043`
+* `2001:db8::ff00:42:8329` (IPv6)
+* `[2001:db8::ff00:42:8329]:9043` (IPv6 with port requires the IPv6 to be surrounded by square brackets)
 +
 Listing multiple initial hosts for fault tolerance is not currently supported.
-The default value is +127.0.0.1:9042+. If left undefined, the default port is +9042+.
+The default value is `127.0.0.1:9042`. If left undefined, the default port is `9042`.
 hibernate.ogm.datastore.port::
-Deprecated: use +hibernate.ogm.datastore.host+.
+Deprecated: use `hibernate.ogm.datastore.host`.
 The port used by the Cassandra instance.
 Ignored when multiple hosts are defined.
-The default value is +9042+.
+The default value is `9042`.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.username::
@@ -96,7 +96,7 @@ Each Entity type maps to one Cassandra table. Each Entity instance maps to one C
 CQL3 table and column names are always quoted to preserve case consistency with the Java layer, with the table name matching the Entity class and the column names matching the Entity's properties.
 The @Table and @Column annotations can be used to override identifier names in the usual manner.
 
-Embedded objects are stored as additional columns in the owning Entitie's table. The columns are named as +EmbeddedTypeName.FieldOfEmbeddedType+
+Embedded objects are stored as additional columns in the owning Entitie's table. The columns are named as `EmbeddedTypeName.FieldOfEmbeddedType`
 The type and field names can be overridden by annotations, but concatenation token delimiter cannot.
 
 [[cassandra-types]]
@@ -115,7 +115,7 @@ CQL3 does not have a Calendar type, so these are converted to Dates, which are s
 ===== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]+@GeneratedValue+ annotation.
+[classname]`@GeneratedValue` annotation.
 
 The preferred identifier approach in Cassandra is to use UUIDs.
 

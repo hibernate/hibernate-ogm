@@ -32,7 +32,7 @@ You configure Hibernate OGM and Infinispan in two steps basically:
 
 ** Use the default Infinispan configuration (no action needed)
 ** Point to your own configuration resource file
-** Point to a [acronym]+JNDI+ name of an existing Infinispan instance
+** Point to a [acronym]`JNDI` name of an existing Infinispan instance
 
 
 [[ogm-infinispan-adddepencies]]
@@ -55,9 +55,9 @@ To add the dependencies via Maven, add the following module:
 If you're not using a dependency management tool,
 copy all the dependencies from the distribution in the directories:
 
-* +/lib/required+
-* +/lib/infinispan+
-* Optionally - depending on your container - you might need some of the jars from +/lib/provided+
+* `/lib/required`
+* `/lib/infinispan`
+* Optionally - depending on your container - you might need some of the jars from `/lib/provided`
 
 
 [[ogm-infinispan-configuration-properties]]
@@ -73,37 +73,37 @@ To use the default configuration provided by Hibernate OGM -
 which is a good starting point for new users - you don't have to set any property.
 
 .Hibernate OGM properties for Infinispan
-+hibernate.ogm.datastore.provider+::
-Set it to +infinispan+ to use Infinispan as the datastore provider.
-+hibernate.ogm.infinispan.cachemanager_jndi_name+::
-If you have an Infinispan [classname]+EmbeddedCacheManager+ registered in JNDI,
+`hibernate.ogm.datastore.provider`::
+Set it to `infinispan` to use Infinispan as the datastore provider.
+`hibernate.ogm.infinispan.cachemanager_jndi_name`::
+If you have an Infinispan [classname]`EmbeddedCacheManager` registered in JNDI,
 provide the JNDI name and Hibernate OGM will use this instance
-instead of starting a new +CacheManager+.
+instead of starting a new `CacheManager`.
 This will ignore any further configuration properties
 as Infinispan is assumed being already configured.
 Infinispan can typically be pushed to JNDI via WildFly, Spring or Seam.
-+hibernate.ogm.infinispan.configuration_resource_name+::
+`hibernate.ogm.infinispan.configuration_resource_name`::
 Should point to the resource name of an Infinispan configuration file.
-This is ignored in case [acronym]+JNDI+  lookup is set.
-Defaults to +org/hibernate/ogm/datastore/infinispan/default-config.xml+.
-+hibernate.ogm.datastore.keyvalue.cache_storage+::
+This is ignored in case [acronym]`JNDI`  lookup is set.
+Defaults to `org/hibernate/ogm/datastore/infinispan/default-config.xml`.
+`hibernate.ogm.datastore.keyvalue.cache_storage`::
 The strategy for persisting data in Infinispan.
-The following two strategies exist (values of the +org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType+ enum):
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType` enum):
 
-* +CACHE_PER_TABLE+: A dedicated cache will be used for each entity type, association type and id source table.
-* +CACHE_PER_KIND+: Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources.
+* `CACHE_PER_TABLE`: A dedicated cache will be used for each entity type, association type and id source table.
+* `CACHE_PER_KIND`: Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources.
 
 +
-Defaults to +CACHE_PER_TABLE+. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
+Defaults to `CACHE_PER_TABLE`. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via +InfinispanProperties+
+you should use the constants accessible via `InfinispanProperties`
 when specifying the configuration properties listed above.
 
-Common properties shared between stores are declared on +OgmProperties+
-(a super interface of +InfinispanProperties+).
+Common properties shared between stores are declared on `OgmProperties`
+(a super interface of `InfinispanProperties`).
 
 For maximum portability between stores, use the most generic interface possible.
 ====
@@ -113,14 +113,14 @@ For maximum portability between stores, use the most generic interface possible.
 Depending on the cache mapping approach, Hibernate OGM will either:
 
 * store each entity type, association type and id source table in a dedicated cache
-  very much like what Hibernate ORM would do. This is the +CACHE_PER_TABLE+ approach.
-* store data in three different caches when using the +CACHE_PER_KIND+ approach:
-** +ENTITIES+: is going to be used to store the main attributes of all your entities.
-** +ASSOCIATIONS+: stores the association information representing the links between entities.
-** +IDENTIFIER_STORE+: contains internal metadata that Hibernate OGM needs
+  very much like what Hibernate ORM would do. This is the `CACHE_PER_TABLE` approach.
+* store data in three different caches when using the `CACHE_PER_KIND` approach:
+** `ENTITIES`: is going to be used to store the main attributes of all your entities.
+** `ASSOCIATIONS`: stores the association information representing the links between entities.
+** `IDENTIFIER_STORE`: contains internal metadata that Hibernate OGM needs
     to provide sequences and auto-incremental numbers for primary key generation.
 
-The preferred strategy is +CACHE_PER_TABLE+ as it offers both more fine grained configuration options
+The preferred strategy is `CACHE_PER_TABLE` as it offers both more fine grained configuration options
 and the ability to work on specific entities in a more simple fashion.
 
 In the following paragraphs, we will explain which aspects of Infinispan
@@ -163,14 +163,14 @@ the basic structure is shown in the following example:
 ----
 ====
 
-There are global settings that can be set before the +cache_container+ section.
+There are global settings that can be set before the `cache_container` section.
 These settings will affect the whole instance;
-mainly of interest for Hibernate OGM users is the +jgroups+ element
+mainly of interest for Hibernate OGM users is the `jgroups` element
 in which we will set JGroups configuration overrides.
 
-Inside the +cache-container+ section are defined explicit named caches and their configurations
-as well as the default cache (named +DEFAULT+ here) if we want to affect all named caches.
-This is where we will likely want to configure clustering modes, eviction policies and ++CacheStore++s.
+Inside the `cache-container` section are defined explicit named caches and their configurations
+as well as the default cache (named `DEFAULT` here) if we want to affect all named caches.
+This is where we will likely want to configure clustering modes, eviction policies and ``CacheStore``s.
 
 [[ogm-infinispan-storage]]
 
@@ -182,18 +182,18 @@ the size of the data should fit in the heap of your VM,
 and stopping/killing/crashing your application will get all data lost
 with no way to recover it.
 
-To store data permanently (out of the JVM memory) a +CacheStore+ should be enabled.
-The +infinispan-core.jar+ includes a simple implementation
+To store data permanently (out of the JVM memory) a `CacheStore` should be enabled.
+The `infinispan-core.jar` includes a simple implementation
 able to store data in simple binary files, on any read/write mounted filesystem;
 this is an easy starting point, but the real stuff is to be found
 in the additional modules found in the Infinispan distribution.
 Here you can find many more implementations to store your data in anything
 from JDBC connected relational databases, other NoSQL engines,
 to cloud storage services or other Infinispan clusters.
-Finally, implementing a custom +CacheStore+ is quite easy.
+Finally, implementing a custom `CacheStore` is quite easy.
 
 To limit the memory consumption of the precious heap space,
-you can activate a +passivation+ or an +eviction+ policy;
+you can activate a `passivation` or an `eviction` policy;
 again there are several strategies to play with,
 for now let's just consider you'll likely need one to avoid running out of memory
 when storing too many entries in the bounded JVM memory space;
@@ -203,8 +203,8 @@ in the functionality of your Hibernate OGM application
 (other than performance: entries stored in the Infinispan in-memory space
 is accessed much quicker than from any CacheStore).
 
-A +CacheStore+ can be configured as write-through,
-committing all changes to the +CacheStore+ before returning (and in the same transaction)
+A `CacheStore` can be configured as write-through,
+committing all changes to the `CacheStore` before returning (and in the same transaction)
 or as write-behind.
 A write-behind configuration is normally not encouraged in storage engines,
 as a failure of the node implies some data might be lost
@@ -235,12 +235,12 @@ with a synchronous replication to other Infinispan nodes.
 
 ====
 
-In this example we enabled both +eviction+ and a +CacheStore+ (the +persistence+ element).
-+LIRS+ is one of the choices we have for eviction strategies.
+In this example we enabled both `eviction` and a `CacheStore` (the `persistence` element).
+`LIRS` is one of the choices we have for eviction strategies.
 Here it is configured to keep (approximately) 2000 entries in live memory
 and evict the remaining as a memory usage control strategy.
 
-The +CacheStore+ is enabling +passivation+,
+The `CacheStore` is enabling `passivation`,
 which means that the entries which are evicted are stored on the filesystem.
 
 [WARNING]
@@ -278,7 +278,7 @@ but not to all the nodes.
 Provides linear scalability for both write and read operations.
 distribution is the default mode.
 
-To use the +replication+ or +distribution+ cache modes
+To use the `replication` or `distribution` cache modes
 Infinispan will use JGroups to discover and connect to the other nodes.
 
 In the default configuration,
@@ -289,9 +289,9 @@ but will require some extra configuration in cloud environments
 See the http://www.jgroups.org/manual/html_single/[JGroups reference documentation],
 specifically look for _Discovery Protocols_ to customize the detection of peer nodes.
 
-Nowadays, the [acronym]+JVM+ defaults to use [acronym]+IPv6+ network stack;
-this will work fine with JGroups, but only if you configured [acronym]+IPv6+ correctly.
-It is often useful to force the [acronym]+JVM+ to use [acronym]+IPv4+.
+Nowadays, the [acronym]`JVM` defaults to use [acronym]`IPv6` network stack;
+this will work fine with JGroups, but only if you configured [acronym]`IPv6` correctly.
+It is often useful to force the [acronym]`JVM` to use [acronym]`IPv4`.
 
 It is also useful to let JGroups know which networking interface you want to use;
 especially if you have multiple interfaces it might not guess correctly.
@@ -307,15 +307,15 @@ especially if you have multiple interfaces it might not guess correctly.
 
 [NOTE]
 ====
-You don't need to use [acronym]+IPv4+: JGroups is compatible with [acronym]+IPv6+
+You don't need to use [acronym]`IPv4`: JGroups is compatible with [acronym]`IPv6`
 provided you have routing properly configured and valid addresses assigned.
 
-The +jgroups.bind_addr+ needs to match a placeholder name
+The `jgroups.bind_addr` needs to match a placeholder name
 in your JGroups configuration in case you don't use the default one.
 ====
 
-The default configuration uses +distribution+ as cache mode
-and uses the +jgroups-tcp.xml+ configuration for JGroups,
+The default configuration uses `distribution` as cache mode
+and uses the `jgroups-tcp.xml` configuration for JGroups,
 which is contained in the Infinispan jar
 as the default configuration for Infinispan users.
 Let's see how to reconfigure this:
@@ -384,9 +384,9 @@ Let's see how to reconfigure this:
 ====
 
 In the example above we specify a custom JGroups configuration file
-and set the cache mode for the default cache to +distribution+;
-this is going to be inherited by the +Order+ and the +associations_User_Order+ caches.
-But for +User+ we have chosen (for the sake of this example) to use +replication+.
+and set the cache mode for the default cache to `distribution`;
+this is going to be inherited by the `Order` and the `associations_User_Order` caches.
+But for `User` we have chosen (for the sake of this example) to use `replication`.
 
 Now that you have clustering configured, start the service on multiple nodes.
 Each node will need the same configuration and jars.
@@ -418,24 +418,24 @@ the key being the column name.
 
 Hibernate OGM support by default the following property types:
 
-* [classname]+java.lang.String+
-* [classname]+java.lang.Character+ (or char primitive)
-* [classname]+java.lang.Boolean+ (or boolean primitive); Optionally the annotations +@Type(type = "true_false")+, @Type(type = "yes_no") and @Type(type = "numeric_boolean") can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
-* [classname]+java.lang.Byte+ (or byte primitive)
-* [classname]+java.lang.Short+ (or short primitive)
-* [classname]+java.lang.Integer+ (or integer primitive)
-* [classname]+java.lang.Long+ (or long primitive)
-* [classname]+java.lang.Integer+ (or integer primitive)
-* [classname]+java.lang.Float+ (or float primitive)
-* [classname]+java.lang.Double+ (or double primitive)
+* [classname]`java.lang.String`
+* [classname]`java.lang.Character` (or char primitive)
+* [classname]`java.lang.Boolean` (or boolean primitive); Optionally the annotations `@Type(type = "true_false")`, `@Type(type = "yes_no")` and `@Type(type = "numeric_boolean")` can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
+* [classname]`java.lang.Byte` (or byte primitive)
+* [classname]`java.lang.Short` (or short primitive)
+* [classname]`java.lang.Integer` (or integer primitive)
+* [classname]`java.lang.Long` (or long primitive)
+* [classname]`java.lang.Integer` (or integer primitive)
+* [classname]`java.lang.Float` (or float primitive)
+* [classname]`java.lang.Double` (or double primitive)
 
-* [classname]+java.math.BigDecimal+
-* [classname]+java.math.BigInteger+
+* [classname]`java.math.BigDecimal`
+* [classname]`java.math.BigInteger`
 
-* [classname]+java.util.Calendar+
-* [classname]+java.util.Date+
-* [classname]+java.util.UUID+
-* [classname]+java.util.URL+
+* [classname]`java.util.Calendar`
+* [classname]`java.util.Date`
+* [classname]`java.util.UUID`
+* [classname]`java.util.URL`
 
 [NOTE]
 ====
@@ -454,10 +454,10 @@ The key is comprised of the following information:
 
 * the identifier column names
 * the identifier column values
-* the entity table (for the +CACHE_PER_KIND+ strategy)
+* the entity table (for the `CACHE_PER_KIND` strategy)
 
-In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
-In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
+In `CACHE_PER_TABLE`, the table name is inferred from the cache name.
+In `CACHE_PER_KIND`, the table name is necessary to identify the entity in the generic cache.
 
 .Define an identifier as a primitive type
 ====
@@ -475,7 +475,7 @@ public class Bookmark {
 }
 ----
 
-.Content of the +Bookmark+ cache in +CACHE_PER_TABLE+
+.Content of the `Bookmark` cache in `CACHE_PER_TABLE`
 [cols="3*", options="header"]
 |===
      ^| KEY                   2+^| MAP ENTRIES
@@ -484,7 +484,7 @@ public class Bookmark {
                                  | title    | "Hibernate OGM documentation" 
 |===
 
-.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+.Content of the `ENTITIES` cache in `CACHE_PER_KIND`
 [cols="3*", options="header"]
 |===
      ^| KEY                   2+^| MAP ENTRIES
@@ -518,7 +518,7 @@ public class News {
 }
 ----
 
-.Content of the +News+ cache in +CACHE_PER_TABLE+
+.Content of the `News` cache in `CACHE_PER_TABLE`
 [cols="3*", options="header"]
 |===
      ^| KEY
@@ -532,7 +532,7 @@ public class News {
       | content        | "Simple, just like ORM but with a NoSQL database"
 |===
 
-.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+.Content of the `ENTITIES` cache in `CACHE_PER_KIND`
 [cols="3*", options="header"]
 |===
      ^| KEY
@@ -551,7 +551,7 @@ public class News {
 
 Since Infinispan has not native sequence nor identity column support,
 these are simulated using the table strategy, however their default values vary.
-We highly recommend you explicitly use a +TABLE+ strategy if you want to generate a monotonic identifier.
+We highly recommend you explicitly use a `TABLE` strategy if you want to generate a monotonic identifier.
 
 But if you can, use a pure in-memory and scalable strategy like a UUID generator.
 
@@ -573,7 +573,7 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
+.Content of the `hibernate_sequences` cache in `CACHE_PER_TABLE`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -582,7 +582,7 @@ public class GuitarPlayer {
 ^.^|  2
 |===
 
-.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+.Content of the IDENTIFIERS cache in `CACHE_PER_KIND`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -592,7 +592,7 @@ public class GuitarPlayer {
 |===
 ====
 
-As you can see, in +CACHE_PER_TABLE+, the key does not contain the id source table name.
+As you can see, in `CACHE_PER_TABLE`, the key does not contain the id source table name.
 It is inferred by the cache name hosting that key.
 
 .Id generation strategy TABLE using a custom table
@@ -617,7 +617,7 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the +GuitarPlayerSequence+ cache in +CACHE_PER_TABLE+
+.Content of the `GuitarPlayerSequence` cache in `CACHE_PER_TABLE`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -626,7 +626,7 @@ public class GuitarPlayer {
 ^.^| 2
 |===
 
-.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+.Content of the IDENTIFIERS cache in `CACHE_PER_KIND`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -659,7 +659,7 @@ public class Song {
 }
 ----
 
-.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
+.Content of the `hibernate_sequences` cache in `CACHE_PER_TABLE`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -668,7 +668,7 @@ public class Song {
 ^.^| 11
 |===
 
-.Content of the +IDENTIFIERS+ cache in +CACHE_PER_KIND+
+.Content of the `IDENTIFIERS` cache in `CACHE_PER_KIND`
 [cols="2*", options="header"]
 |===
   ^| KEY
@@ -680,19 +680,19 @@ public class Song {
 
 ==== Entities
 
-Entities are stored in the cache named after the entity name when using the +CACHE_PER_TABLE+ strategy.
-In the +CACHE_PER_KIND+ strategy, entities are stored in a single cache named +ENTITIES+.
+Entities are stored in the cache named after the entity name when using the `CACHE_PER_TABLE` strategy.
+In the `CACHE_PER_KIND` strategy, entities are stored in a single cache named `ENTITIES`.
 
 The key is comprised of the following information:
 
 * the identifier column names
 * the identifier column values
-* the entity table (for the +CACHE_PER_KIND+ strategy)
+* the entity table (for the `CACHE_PER_KIND` strategy)
 
-In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
-In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
+In `CACHE_PER_TABLE`, the table name is inferred from the cache name.
+In `CACHE_PER_KIND`, the table name is necessary to identify the entity in the generic cache.
 
-The entry value is an instance of [classname]+org.infinispan.atomic.FineGrainedMap+ 
+The entry value is an instance of [classname]`org.infinispan.atomic.FineGrainedMap` 
 which contains all the entity properties -
 or to be specific columns.
 Each column name and value is stored as a key / value pair in the map.
@@ -714,7 +714,7 @@ public class News {
 }
 ----
 
-.Content of the +News+ cache in +CACHE_PER_TYPE+
+.Content of the `News` cache in `CACHE_PER_TYPE`
 [cols="3*", options="header"]
 |===
      ^| KEY                        2+^| MAP ENTRIES
@@ -723,7 +723,7 @@ public class News {
                                       | title    | "On the merits of NoSQL" 
 |===
 
-.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+.Content of the `ENTITIES` cache in `CACHE_PER_KIND`
 [cols="3*", options="header"]
 |===
      ^| KEY                        2+^| MAP ENTRIES
@@ -733,8 +733,8 @@ public class News {
 |===
 ====
 
-As you can see, the table name is not part of the key for +CACHE_PER_TYPE+.
-In the rest of this section we will no longer show the +CACHE_PER_KIND+ strategy.
+As you can see, the table name is not part of the key for `CACHE_PER_TYPE`.
+In the rest of this section we will no longer show the `CACHE_PER_KIND` strategy.
 
 .Rename field and collection using @Table and @Column
 ====
@@ -754,7 +754,7 @@ public class News {
 }
 ----
 
-.Content of the +Article+ cache
+.Content of the `Article` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -793,7 +793,7 @@ public class NewsPaper {
 }
 ----
 
-.Content of the +News+ cache
+.Content of the `News` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -830,14 +830,14 @@ public class GrandChild {
 }
 ----
 
-.Content of the +GrandMother+ cache
+.Content of the `GrandMother` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
    ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the +associations_GrandMother_grandChildren+ cache in +CACHE_PER_TYPE+
+.Content of the `associations_GrandMother_grandChildren` cache in `CACHE_PER_TYPE`
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -860,7 +860,7 @@ public class GrandChild {
       | "Luke"
 |===
 
-.Content of the +ASSOCIATIONS+ cache in +CACHE_PER_KIND+
+.Content of the `ASSOCIATIONS` cache in `CACHE_PER_KIND`
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -889,13 +889,13 @@ The association key is made of:
 
 * the foreign key column names pointing to the owner of this association
 * the foreign key column values pointing to the owner of this association
-* the association table name in the +CACHE_PER_KIND+ approach where all associations share the same cache
+* the association table name in the `CACHE_PER_KIND` approach where all associations share the same cache
 
 The association entry is a map containing the representation of each entry in the collection.
 The keys of that map are made of:
 
 * the names of the columns uniquely identifying that specific collection entry
-  (e.g. for a +Set+ this is all of the columns)
+  (e.g. for a `Set` this is all of the columns)
 * the values of the columns uniquely identifying that specific collection entry
 
 The value attack to that collection entry key is a Map containing the key value pairs column name / column value.
@@ -926,14 +926,14 @@ public class GrandChild {
 }
 ----
 
-.Content of the +GrandMother+ cache
+.Content of the `GrandMother` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
    ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the +GrandMother_grandChildren+ cache
+.Content of the `GrandMother_grandChildren` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1000,7 +1000,7 @@ public class Wheel {
 }
 ----
 
-.Content of the +Vehicule+ cache
+.Content of the `Vehicule` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1009,7 +1009,7 @@ public class Wheel {
                                      | brand          | "Mercedes"
 |===
 
-.Content of the +Wheel+ cache
+.Content of the `Wheel` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1051,7 +1051,7 @@ public class Wheel {
 }
 ----
 
-.Content of the +Vehicle+ cache
+.Content of the `Vehicle` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1060,7 +1060,7 @@ public class Wheel {
                                      | brand          | "Mercedes"
 |===
 
-.Content of the +Wheel+ cache
+.Content of the `Wheel` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1101,7 +1101,7 @@ public class Wheel {
 }
 ----
 
-.Content of the +Vehicle+ cache
+.Content of the `Vehicle` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                2+^| MAP ENTRIES
@@ -1110,7 +1110,7 @@ public class Wheel {
                                               | brand          | "Mercedes"
 |===
 
-.Content of the +Wheel+ cache
+.Content of the `Wheel` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                2+^| MAP ENTRIES
@@ -1151,7 +1151,7 @@ public class Wife {
 }
 ----
 
-.Content of the +Husband+ cache
+.Content of the `Husband` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1160,7 +1160,7 @@ public class Wife {
                                      | wife           | "bea"
 |===
 
-.Content of the +Wife+ cache
+.Content of the `Wife` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1168,7 +1168,7 @@ public class Wife {
                                      | name           | "Bea"
 |===
 
-.Content of the +associations_Husband+ cache
+.Content of the `associations_Husband` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1215,7 +1215,7 @@ public class Product {
 }
 ----
 
-.Content of the +Basket+ cache
+.Content of the `Basket` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1224,7 +1224,7 @@ public class Product {
                                             | owner            | "Davide"
 |===
 
-.Content of the +Product+ cache
+.Content of the `Product` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1235,7 +1235,7 @@ public class Product {
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the +associations_Basket_Product+ cache
+.Content of the `associations_Basket_Product` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1261,7 +1261,7 @@ public class Product {
 |===
 ====
 
-.Unidirectional one-to-many with +@JoinTable+
+.Unidirectional one-to-many with `@JoinTable`
 ====
 [source, JAVA]
 ----
@@ -1292,7 +1292,7 @@ public class Product {
 }
 ----
 
-.Content of the +Basket+ cache
+.Content of the `Basket` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1301,7 +1301,7 @@ public class Product {
                                             | owner            | "Davide"
 |===
 
-.Content of the +Basket+ cache
+.Content of the `Basket` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1312,7 +1312,7 @@ public class Product {
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the +associations_BasketContent+ cache
+.Content of the `associations_BasketContent` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1363,7 +1363,7 @@ public class Address {
 }
 ----
 
-.Content of the +User+ cache
+.Content of the `User` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1371,7 +1371,7 @@ public class Address {
    ^.^| ["id"], ["user_001"]               | id   | "user_001"
 |===
 
-.Content of the +Address+ cache
+.Content of the `Address` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1383,7 +1383,7 @@ public class Address {
 |===
 
 
-.Content of the +associations_User_address+ cache
+.Content of the `associations_User_address` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1442,7 +1442,7 @@ public class Address {
 }
 ----
 
-.Content of the +User+ cache
+.Content of the `User` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1450,7 +1450,7 @@ public class Address {
    ^.^| ["id"], ["user_001"]               | id   | "user_001"
 |===
 
-.Content of the +Address+ cache
+.Content of the `Address` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
@@ -1461,7 +1461,7 @@ public class Address {
                                            | city | "Paris"
 |===
 
-.Content of the +associations_User_address+ cache
+.Content of the `associations_User_address` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1520,7 +1520,7 @@ public class Member {
 }
 ----
 
-.Content of the +JavaUserGroup+ cache
+.Content of the `JavaUserGroup` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1529,7 +1529,7 @@ public class Member {
                                                     | name            | "JUG Summer Camp"
 |===
 
-.Content of the +Member+ cache
+.Content of the `Member` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1572,7 +1572,7 @@ public class SalesGuy {
 }
 ----
 
-.Content of the +SalesForce+ cache
+.Content of the `SalesForce` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1581,7 +1581,7 @@ public class SalesGuy {
                                                     | corporation     | "Red Hat"
 |===
 
-.Content of the +SalesGuy+ cache
+.Content of the `SalesGuy` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1594,7 +1594,7 @@ public class SalesGuy {
                                                     | salesForce_id   | "red_hat"
 |===
 
-.Content of the +associations_SalesGuy+ cache
+.Content of the `associations_SalesGuy` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1650,7 +1650,7 @@ The "Math" class has 2 students: John Doe and Mario Rossi
 
 The "English" class has 2 students: Kate Doe and Mario Rossi
 
-.Content of the +ClassRoom+ cache
+.Content of the `ClassRoom` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1662,7 +1662,7 @@ The "English" class has 2 students: Kate Doe and Mario Rossi
                                        | name       | "English"
 |===
 
-.Content of the +Student+ cache
+.Content of the `Student` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
@@ -1676,7 +1676,7 @@ The "English" class has 2 students: Kate Doe and Mario Rossi
                                        | name       | "Kate Doe"
 |===
 
-.Content of the +associations_ClassRoom_Student+ cache
+.Content of the `associations_ClassRoom_Student` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1750,7 +1750,7 @@ public class BankAccount {
 
 David owns 2 accounts: "012345" and "ZZZ-009"
 
-.Content of the +AccountOwner+ cache
+.Content of the `AccountOwner` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -1759,7 +1759,7 @@ David owns 2 accounts: "012345" and "ZZZ-009"
                                              | SSN           | "0123456"
 |===
 
-.Content of the +BankAccount+ cache
+.Content of the `BankAccount` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
@@ -1770,7 +1770,7 @@ David owns 2 accounts: "012345" and "ZZZ-009"
                                              | accountNumber | "ZZZ-009"
 |===
 
-.Content of the +AccountOwner_BankAccount+ cache
+.Content of the `AccountOwner_BankAccount` cache
 [cols="4*", options="header"]
 |===
      ^| KEY
@@ -1815,17 +1815,17 @@ David owns 2 accounts: "012345" and "ZZZ-009"
 
 === Transactions
 
-Infinispan supports transactions and integrates with any standard JTA +TransactionManager+;
+Infinispan supports transactions and integrates with any standard JTA `TransactionManager`;
 this is a great advantage for JPA users as it allows to experience a _similar_ behaviour
 to the one we are used to when we work with RDBMS databases.
 
 If you're having Hibernate OGM start and manage Infinispan,
-you can skip this as it will inject the same [classname]+TransactionManager+ instance
+you can skip this as it will inject the same [classname]`TransactionManager` instance
 which you already have set up in the Hibernate / JPA configuration.
 
 If you are providing an already started Infinispan CacheManager instance
-by using the [acronym]+JNDI+ lookup approach,
-then you have to make sure the CacheManager is using the same [classname]+TransactionManager+
+by using the [acronym]`JNDI` lookup approach,
+then you have to make sure the CacheManager is using the same [classname]`TransactionManager`
 as Hibernate:
 
 .Configuring a JBoss Standalone TransactionManager lookup in Infinispan configuration
@@ -1841,8 +1841,8 @@ as Hibernate:
 ----
 ====
 
-Infinispan supports different transaction modes like +PESSIMISTIC+ and +OPTIMISTIC+,
-supports [acronym]+XA+ recovery and provides many more configuration options;
+Infinispan supports different transaction modes like `PESSIMISTIC` and `OPTIMISTIC`,
+supports [acronym]`XA` recovery and provides many more configuration options;
 see the http://infinispan.org/documentation/[Infinispan User Guide]
 for more advanced configuration options.
 
@@ -1851,7 +1851,7 @@ for more advanced configuration options.
 === Storing a Lucene index in Infinispan
 
 Hibernate Search, which can be used for advanced query capabilities (see <<ogm-query>>),
-needs some place to store the indexes for its embedded +Apache Lucene+ engine.
+needs some place to store the indexes for its embedded `Apache Lucene` engine.
 
 A common place to store these indexes is the filesystem
 which is the default for Hibernate Search;
@@ -1887,15 +1887,15 @@ in any NoSQL store supported by Infinispan:
 
 How to configure it? Here is a simple cheat sheet to get you started with this type of setup:
 
-* Add +org.hibernate:hibernate-search-infinispan:{hibernate-search-version}+ to your dependencies
+* Add `org.hibernate:hibernate-search-infinispan:{hibernate-search-version}` to your dependencies
 * set these configuration properties:
 
-** +hibernate.search.default.directory_provider = infinispan+
-** +hibernate.search.default.exclusive_index_use = false+
-** +hibernate.search.infinispan.configuration_resourcename =+ [infinispan configuration filename]
+** `hibernate.search.default.directory_provider = infinispan`
+** `hibernate.search.default.exclusive_index_use = false`
+** `hibernate.search.infinispan.configuration_resourcename =` [infinispan configuration filename]
 
 
-The referenced Infinispan configuration should define a [classname]+CacheStore+
+The referenced Infinispan configuration should define a [classname]`CacheStore`
 to load/store the index in the NoSQL engine of choice.
 It should also define three cache names:
 
@@ -1918,6 +1918,6 @@ http://docs.jboss.org/hibernate/search/4.2/reference/en-US/html_single/#infinisp
 
 Some NoSQL support storage of Lucene indexes directly,
 in which case you might skip the Infinispan Lucene integration
-by implementing a custom [classname]+DirectoryProvider+ for Hibernate Search.
+by implementing a custom [classname]`DirectoryProvider` for Hibernate Search.
 You're very welcome to share the code
 and have it merged in Hibernate Search for others to use, inspect, improve and maintain.

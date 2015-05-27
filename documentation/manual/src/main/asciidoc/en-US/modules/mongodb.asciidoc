@@ -35,24 +35,24 @@ This will pull the MongoDB driver transparently.
 If you're not using a dependency management tool,
 copy all the dependencies from the distribution in the directories:
 
-* +/lib/required+
-* +/lib/mongodb+
-* Optionally - depending on your container - you might need some of the jars from +/lib/provided+
+* `/lib/required`
+* `/lib/mongodb`
+* Optionally - depending on your container - you might need some of the jars from `/lib/provided`
 
 ==== MongoDB specific configuration properties
 
 To get started quickly, pay attention to the following options:
 
-* +hibernate.ogm.datastore.provider+
-* +hibernate.ogm.datastore.host+
-* +hibernate.ogm.datastore.database+
+* `hibernate.ogm.datastore.provider`
+* `hibernate.ogm.datastore.host`
+* `hibernate.ogm.datastore.database`
 
 And we should have you running.
 The following properties are available to configure MongoDB support:
 
 .MongoDB datastore configuration properties
 hibernate.ogm.datastore.provider::
-To use MongoDB as a datastore provider, this property must be set to +mongodb+
+To use MongoDB as a datastore provider, this property must be set to `mongodb`
 hibernate.ogm.option.configurator::
 The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-mongodb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
@@ -61,18 +61,18 @@ The optional port is concatenated to the host and separated by a colon.
 When using replica sets, you can define the various servers in a comma separated list of hosts and ports.
 Let's see a few valid examples:
 
-* +mongodb.example.com+
-* +mongodb.example.com:27018+
-* +2001:db8::ff00:42:8329+ (IPv6)
-* +[2001:db8::ff00:42:8329]:27018+ (IPv6 with port requires the IPv6 to be surrounded by square brackets)
-* +www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123+ (replica set)
+* `mongodb.example.com`
+* `mongodb.example.com:27018`
+* `2001:db8::ff00:42:8329` (IPv6)
+* `[2001:db8::ff00:42:8329]:27018` (IPv6 with port requires the IPv6 to be surrounded by square brackets)
+* `www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123` (replica set)
 +
-The default value is +127.0.0.1:27017+. If left undefined, the default port is +27017+.
+The default value is `127.0.0.1:27017`. If left undefined, the default port is `27017`.
 hibernate.ogm.datastore.port::
-Deprecated: use +hibernate.ogm.datastore.host+.
+Deprecated: use `hibernate.ogm.datastore.host`.
 The port used by the MongoDB instance.
 Ignored when multiple hosts are defined.
-The default value is +27017+.
+The default value is `27017`.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.create_database::
@@ -86,54 +86,54 @@ The password used to connect to the MongoDB server.
 This property has no default value.
 This property is ignored if the username isn't specified.
 hibernate.ogm.error_handler::
-The fully-qualified class name, class object or an instance of +ErrorHandler+ to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
+The fully-qualified class name, class object or an instance of `ErrorHandler` to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
 hibernate.ogm.mongodb.connection_timeout::
 Defines the timeout used by the driver
 when the connection to the MongoDB instance is initiated.
 This configuration is expressed in milliseconds.
-The default value is +5000+.
+The default value is `5000`.
 hibernate.ogm.mongodb.authentication_mechanism::
 Define the authentication mechanism to use. Possible values are:
 
-* +BEST+: Handshakes with the server to find the best authentication mechanism.
-* +SCRAM_SHA_1+: The SCRAM SHA 1 Challenge Response mechanism as described in this link:http://tools.ietf.org/html/rfc5802[RFC].
-* +MONGODB_CR+: The MongoDB Challenge Response mechanism (deprecated since MongoDB 3)
-* +GSSAPI+: The GSSAPI mechanism. See the http://tools.ietf.org/html/rfc4752[RFC]
-* +MONGODB_X509+: The MongoDB X.509
-* +PLAIN+: The PLAIN mechanism.  See the http://www.ietf.org/rfc/rfc4616.txt[RFC]
+* `BEST`: Handshakes with the server to find the best authentication mechanism.
+* `SCRAM_SHA_1`: The SCRAM SHA 1 Challenge Response mechanism as described in this link:http://tools.ietf.org/html/rfc5802[RFC].
+* `MONGODB_CR`: The MongoDB Challenge Response mechanism (deprecated since MongoDB 3)
+* `GSSAPI`: The GSSAPI mechanism. See the http://tools.ietf.org/html/rfc4752[RFC]
+* `MONGODB_X509`: The MongoDB X.509
+* `PLAIN`: The PLAIN mechanism.  See the http://www.ietf.org/rfc/rfc4616.txt[RFC]
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in MongoDB.
-The following two strategies exist (values of the +org.hibernate.ogm.datastore.document.options.AssociationStorageType+ enum):
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
 
-* +IN_ENTITY+: store association information within the entity
-* +ASSOCIATION_DOCUMENT+: store association information in a dedicated document per association
+* `IN_ENTITY`: store association information within the entity
+* `ASSOCIATION_DOCUMENT`: store association information in a dedicated document per association
 
 +
-+IN_ENTITY+ is the default and recommended option
+`IN_ENTITY` is the default and recommended option
 unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
 hibernate.ogm.mongodb.association_document_storage::
-Defines how to store assocation documents (applies only if the +ASSOCIATION_DOCUMENT+
+Defines how to store assocation documents (applies only if the `ASSOCIATION_DOCUMENT`
 association storage strategy is used).
-Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType+ enum):
+Possible strategies are (values of the `org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType` enum):
 
-* +GLOBAL_COLLECTION+ (default): stores the association information in a unique MongoDB collection for all associations
-* +COLLECTION_PER_ASSOCIATION+ stores the association in a dedicated MongoDB collection per association
+* `GLOBAL_COLLECTION` (default): stores the association information in a unique MongoDB collection for all associations
+* `COLLECTION_PER_ASSOCIATION` stores the association in a dedicated MongoDB collection per association
 hibernate.ogm.mongodb.write_concern::
 Defines the write concern setting to be applied when issuing writes against the MongoDB datastore.
-Possible settings are (values of the +WriteConcernType+ enum):
-+ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +REPLICA_ACKNOWLEDGED+, +MAJORITY+ and +CUSTOM+.
-When set to +CUSTOM+, a custom +WriteConcern+ implementation type has to be specified.
+Possible settings are (values of the `WriteConcernType` enum):
+`ACKNOWLEDGED`, `UNACKNOWLEDGED`, `FSYNCED`, `JOURNALED`, `REPLICA_ACKNOWLEDGED`, `MAJORITY` and `CUSTOM`.
+When set to `CUSTOM`, a custom `WriteConcern` implementation type has to be specified.
 +
-This option is case insensitive and the default value is +ACKNOWLEDGED+.
+This option is case insensitive and the default value is `ACKNOWLEDGED`.
 hibernate.ogm.mongodb.write_concern_type::
-Specifies a custom +WriteConcern+ implementation type (fully-qualified name, class object or instance).
+Specifies a custom `WriteConcern` implementation type (fully-qualified name, class object or instance).
 This is useful in cases where the pre-defined configurations are not sufficient,
 e.g. if you want to ensure that writes are propagated to a specific number of replicas or given "tag set".
-Only takes effect if +hibernate.ogm.mongodb.write_concern+ is set to +CUSTOM+.
+Only takes effect if `hibernate.ogm.mongodb.write_concern` is set to `CUSTOM`.
 hibernate.ogm.mongodb.read_preference::
-Specifies the +ReadPreference+ to be applied when issuing reads against the MongoDB datastore.
-Possible settings are (values of the +ReadPreferenceType+ enum):
-+PRIMARY+, +PRIMARY_PREFERRED+, +SECONDARY+, +SECONDARY_PREFERRED+ and +NEAREST+.
+Specifies the `ReadPreference` to be applied when issuing reads against the MongoDB datastore.
+Possible settings are (values of the `ReadPreferenceType` enum):
+`PRIMARY`, `PRIMARY_PREFERRED`, `SECONDARY`, `SECONDARY_PREFERRED` and `NEAREST`.
 It's currently not possible to plug in custom read preference types.
 If you're interested in such a feature, please let us know.
 
@@ -143,11 +143,11 @@ http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official docum
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via +MongoDBProperties+
+you should use the constants accessible via `MongoDBProperties`
 when specifying the configuration properties listed above.
 
-Common properties shared between stores are declared on +OgmProperties+
-(a super interface of +MongoDBProperties+).
+Common properties shared between stores are declared on `OgmProperties`
+(a super interface of `MongoDBProperties`).
 
 For maximum portability between stores, use the most generic interface possible.
 ====
@@ -156,14 +156,14 @@ For maximum portability between stores, use the most generic interface possible.
 
 Fongo is an in-memory java implementation of MongoDB.
 It intercepts calls to the standard mongo-java-driver for finds, updates, inserts, removes and other methods.
-The primary use is for lightweight unit testing where you don't want to spin up a +mongod+ process.
+The primary use is for lightweight unit testing where you don't want to spin up a `mongod` process.
 
 Hibernate OGM provides a FongoDB provider so during tests it can be used instead of MongoDB driver.
 Note that you don't need to change your business code to adapt to FongoDB because all adaptations are done under the cover by Hibernate OGM.
 
 To start using FongoDB provider, you should do two things:
 
-The first one is register the provider by using +hibernate.ogm.datastore.provider+ and setting to +fongodb+.
+The first one is register the provider by using `hibernate.ogm.datastore.provider` and setting to `fongodb`.
 
 .Configuring FongoDB provider
 ====
@@ -211,9 +211,9 @@ by virtue of the location where you place that annotation.
 
 When working with the MongoDB backend, you can specify the following settings:
 
-* the write concern for entities and associations using the +@WriteConcern+ annotation
-* the read preference for entities and associations using the +@ReadPreference+ annotation
-* a strategy for storing associations using the +@AssociationStorage+ and +@AssociationDocumentStorage+ annotations
+* the write concern for entities and associations using the `@WriteConcern` annotation
+* the read preference for entities and associations using the `@ReadPreference` annotation
+* a strategy for storing associations using the `@AssociationStorage` and `@AssociationDocumentStorage` annotations
 (refer to <<ogm-mongodb-storage-principles>> to learn more about these options).
 
 The following shows an example:
@@ -244,12 +244,12 @@ public class Zoo {
 ----
 ====
 
-The +@WriteConcern+ annotation on the entity level expresses that all writes should be done using the +JOURNALED+ setting.
-Similarly, the +@ReadPreference+ annotation advices the engine to preferably read that entity from the primary node if possible.
-The other two annotations on the type-level specify that all associations of the +Zoo+
+The `@WriteConcern` annotation on the entity level expresses that all writes should be done using the `JOURNALED` setting.
+Similarly, the `@ReadPreference` annotation advices the engine to preferably read that entity from the primary node if possible.
+The other two annotations on the type-level specify that all associations of the `Zoo`
 class should be stored in separate assocation documents, using a dedicated collection per association.
-This setting applies to the +animals+ and +employees+ associations.
-Only the elements of the +visitors+ association will be stored in the document of the corresponding +Zoo+ entity
+This setting applies to the `animals` and `employees` associations.
+Only the elements of the `visitors` association will be stored in the document of the corresponding `Zoo` entity
 as per the configuration of that specific property which takes precedence over the entity-level configuration.
 
 [[ogm-mongodb-programmatic-configuration]]
@@ -268,7 +268,7 @@ When working with MongoDB, you can currently configure the following options usi
 * association storage strategy
 * association document storage strategy
 
-To set these options via the API, you need to create an +OptionConfigurator+ implementation
+To set these options via the API, you need to create an `OptionConfigurator` implementation
 as shown in the following example:
 
 .Example of an option configurator
@@ -295,16 +295,16 @@ public class MyOptionConfigurator extends OptionConfigurator {
 ----
 ====
 
-The call to +configureOptionsFor()+, passing the store-specific identifier type +MongoDB+,
+The call to `configureOptionsFor()`, passing the store-specific identifier type `MongoDB`,
 provides the entry point into the API. Following the fluent API pattern, you then can configure
-global options (+writeConcern()+, +readPreference()+) and navigate to single entities or properties to apply options
-specific to these (+associationStorage()+ etc.).
-The call to +writeConcern()+  for the +Animal+  entity shows how a specific write concern type can be used.
-Here +RequiringReplicaCountOf+ is a custom implementation of +WriteConcern+ which ensures
+global options (`writeConcern()`, `readPreference()`) and navigate to single entities or properties to apply options
+specific to these (`associationStorage()` etc.).
+The call to `writeConcern()`  for the `Animal`  entity shows how a specific write concern type can be used.
+Here `RequiringReplicaCountOf` is a custom implementation of `WriteConcern` which ensures
 that writes are propagated to a given number of replicas before a write is acknowledged.
 
-Options given on the property level precede entity-level options. So e.g. the +animals+ association of the +Zoo+
-class would be stored using the in entity strategy, while all other associations of the +Zoo+ entity would
+Options given on the property level precede entity-level options. So e.g. the `animals` association of the `Zoo`
+class would be stored using the in entity strategy, while all other associations of the `Zoo` entity would
 be stored using separate association documents.
 
 Similarly, entity-level options take precedence over options given on the global level.
@@ -316,9 +316,9 @@ Note that for a given level (property, entity, global),
 an option set via annotations is overridden by the same option set programmatically.
 This allows you to change settings in a more flexible way if required.
 
-To register an option configurator, specify its class name using the +hibernate.ogm.option.configurator+ property.
+To register an option configurator, specify its class name using the `hibernate.ogm.option.configurator` property.
 When bootstrapping a session factory or entity manager factory programmatically,
-you also can pass in an +OptionConfigurator+ instance or the class object representing the configurator type.
+you also can pass in an `OptionConfigurator` instance or the class object representing the configurator type.
 
 
 [[ogm-mongodb-storage-principles]]
@@ -345,21 +345,21 @@ the field name being the column name.
 
 Hibernate OGM supports by default the following property types:
 
-* [classname]+java.lang.String+
+* [classname]`java.lang.String`
 
 [source, JSON]
 ----
   { "text" : "Hello world!" }
 ----
 
-* [classname]+java.lang.Character+ (or char primitive)
+* [classname]`java.lang.Character` (or char primitive)
 
 [source, JSON]
 ----
   { "delimiter" : "/" }
 ----
 
-* [classname]+java.lang.Boolean+ (or boolean primitive)
+* [classname]`java.lang.Boolean` (or boolean primitive)
 
 [source, JSON]
 ----
@@ -369,98 +369,98 @@ Hibernate OGM supports by default the following property types:
   { "favorite" : 1 } # if @Type(type = "numeric_boolean") is given
 ----
 
-* [classname]+java.lang.Byte+ (or byte primitive)
+* [classname]`java.lang.Byte` (or byte primitive)
 
 [source, JSON]
 ----
   { "display_mask" : "70" }
 ----
 
-* [classname]+java.lang.Byte[]+ (or byte[])
+* [classname]`java.lang.Byte[]` (or byte[])
 
 [source, JSON]
 ----
   { "pdfAsBytes" : BinData(0,"MTIzNDU=") }
 ----
 
-* [classname]+java.lang.Short+ (or short primitive)
+* [classname]`java.lang.Short` (or short primitive)
 
 [source, JSON]
 ----
   { "urlPort" : 80 }
 ----
 
-* [classname]+java.lang.Integer+ (or integer primitive)
+* [classname]`java.lang.Integer` (or integer primitive)
 
 [source, JSON]
 ----
   { "stockCount" : 12309 }
 ----
 
-* [classname]+java.lang.Long+ (or long primitive)
+* [classname]`java.lang.Long` (or long primitive)
 
 [source, JSON]
 ----
   { "userId" : NumberLong("-6718902786625749549") }
 ----
 
-* [classname]+java.lang.Float+ (or float primitive)
+* [classname]`java.lang.Float` (or float primitive)
 
 [source, JSON]
 ----
   { "visitRatio" : 10.39 }
 ----
 
-* [classname]+java.lang.Double+ (or double primitive)
+* [classname]`java.lang.Double` (or double primitive)
 
 [source, JSON]
 ----
   { "tax_percentage" : 12.34 }
 ----
 
-* [classname]+java.math.BigDecimal+
+* [classname]`java.math.BigDecimal`
 
 [source, JSON]
 ----
   { "site_weight" : "21.77" }
 ----
 
-* [classname]+java.math.BigInteger+
+* [classname]`java.math.BigInteger`
 
 [source, JSON]
 ----
   { "site_weight" : "444" }
 ----
 
-* [classname]+java.util.Calendar+
+* [classname]`java.util.Calendar`
 
 [source, JSON]
 ----
   { "creation" : "2014/11/03 16:19:49:283 +0000" }
 ----
 
-* [classname]+java.util.Date+
+* [classname]`java.util.Date`
 
 [source, JSON]
 ----
   { "last_update" : ISODate("2014-11-03T16:19:49.283Z") }
 ----
 
-* [classname]+java.util.UUID+
+* [classname]`java.util.UUID`
 
 [source, JSON]
 ----
   { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
 ----
 
-* [classname]+java.util.URL+
+* [classname]`java.util.URL`
 
 [source, JSON]
 ----
   { "url" : "http://www.hibernate.org/" }
 ----
 
-* [classname]+org.bson.types.ObjectId+
+* [classname]`org.bson.types.ObjectId`
 
 [source, JSON]
 ----
@@ -480,7 +480,7 @@ This can have consequences when it comes to queries on null value.
 
 Entities are stored as MongoDB documents and not as BLOBs:
 each entity property will be translated into a document field.
-You can use [classname]+@Table+ and [classname]+@Column+ annotations
+You can use [classname]`@Table` and [classname]`@Column` annotations
 to rename respectively the collection the document is stored in
 and the document's field a property is persisted in.
 
@@ -543,10 +543,10 @@ public class News {
 
 [NOTE]
 ====
-Hibernate OGM always store identifiers using the +_id+ field of a MongoDB document ignoring
+Hibernate OGM always store identifiers using the `_id` field of a MongoDB document ignoring
 the name of the property in the entity.
 
-That's a good thing as MongoDB has special treatment and expectation of the property +_id+.
+That's a good thing as MongoDB has special treatment and expectation of the property `_id`.
 ====
 
 An identifier type may be one of the <<mongodb-built-in-types,built-in types>>
@@ -624,10 +624,10 @@ Generally, it is recommended though to work with MongoDB's object id data type.
 This will facilitate the integration with other applications expecting that common MongoDB id type.
 To do so, you have two options:
 
-* Define your id property as +org.bson.types.ObjectId+
-* Define your id property as +String+ and annotate it with +@Type(type="objectid")+
+* Define your id property as `org.bson.types.ObjectId`
+* Define your id property as `String` and annotate it with `@Type(type="objectid")`
 
-In both cases the id will be stored as native +ObjectId+ in the datastore.
+In both cases the id will be stored as native `ObjectId` in the datastore.
 
 .Define an id as ObjectId
 ====
@@ -667,7 +667,7 @@ public class News {
 ===== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]+@GeneratedValue+ annotation.
+[classname]`@GeneratedValue` annotation.
 
 There are 4 different strategies:
 
@@ -682,8 +682,8 @@ There are 4 different strategies:
 The preferable strategy, Hibernate OGM will create the identifier upon insertion.
 To apply this strategy the id must be one of the following:
 
-* annotated with +@Type(type="objectid")+
-* [classname]+org.bson.types.ObjectId+
+* annotated with `@Type(type="objectid")`
+* [classname]`org.bson.types.ObjectId`
 
 like in the following examples:
 
@@ -910,24 +910,24 @@ hibernate_sequences collection
 
 [WARNING]
 ====
-Care must be taken when using the +GenerationType.AUTO+ strategy.
-When the property +hibernate.id.new_generator_mappings+ is set to +false+ (default),
-it will map to the +IDENTITY+ strategy.
-As described before, this requires your ids to be of type +ObjectId+ or @Type(type = "objectid") String.
-If +hibernate.id.new_generator_mappings+ is set to true, +AUTO+ will be mapped to the +TABLE+ strategy.
+Care must be taken when using the `GenerationType.AUTO` strategy.
+When the property `hibernate.id.new_generator_mappings` is set to `false` (default),
+it will map to the `IDENTITY` strategy.
+As described before, this requires your ids to be of type `ObjectId` or `@Type(type = "objectid") String`.
+If `hibernate.id.new_generator_mappings` is set to true, `AUTO` will be mapped to the `TABLE` strategy.
 This requires your id to be of a numeric type.
 
-We recommend to not use +AUTO+ but one of the explicit strategies (+IDENTITY+ or +TABLE+) to avoid
+We recommend to not use `AUTO` but one of the explicit strategies (`IDENTITY` or `TABLE`) to avoid
 potential misconfigurations.
 
 For more details you can check the issue https://hibernate.atlassian.net/browse/OGM-663[OGM-663].
 ====
 
-If the property +hibernate.id.new_generator_mappings+  is set to +false+,
-+AUTO+ will behave as the +IDENTITY+ strategy.
+If the property `hibernate.id.new_generator_mappings`  is set to `false`,
+`AUTO` will behave as the `IDENTITY` strategy.
 
-If the property +hibernate.id.new_generator_mappings+  is set to +true+,
-+AUTO+ will behave as the +SEQUENCE+ strategy.
+If the property `hibernate.id.new_generator_mappings`  is set to `true`,
+`AUTO` will behave as the `SEQUENCE` strategy.
 
 .AUTO id generation strategy using default values
 ====
@@ -961,7 +961,7 @@ hibernate_sequences collection
 ----
 ====
 
-.AUTO id generation strategy wih +hibernate.id.new_generator_mappings+ set to false and ObjectId
+.AUTO id generation strategy wih `hibernate.id.new_generator_mappings` set to false and ObjectId
 ====
 [source, JAVA]
 ----
@@ -1023,7 +1023,7 @@ Rendered as JSON in MongoDB
 
 ===== Embedded objects and collections
 
-Hibernate OGM stores elements annotated with [classname]+@Embedded+ or [classname]+@ElementCollection+ as nested documents of the owning entity.
+Hibernate OGM stores elements annotated with [classname]`@Embedded` or [classname]`@ElementCollection` as nested documents of the owning entity.
 
 .Embedded object
 ====
@@ -1127,7 +1127,7 @@ public class GrandChild {
 ----
 ====
 
-The class [classname]+GrandChild+ has only one attribute +name+,
+The class [classname]`GrandChild` has only one attribute `name`,
 this means that Hibernate OGM doesn't need to store the name of the attribute.
 
 If the nested document has two or more fields, like in the following example,
@@ -1182,7 +1182,7 @@ public class GrandChild {
 ====
 You can override the column name used for a property of an embedded object.
 But you need to know that the default column name is the concatenation of the embedding property,
-a +.+ (dot) and the embedded property (recursively for several levels of embedded objects).
+a `.` (dot) and the embedded property (recursively for several levels of embedded objects).
 
 The MongoDB datastore treats dots specifically as it transforms them into nested documents.
 If you want to override one column name and still keep the nested structure, don't forget the dots.
@@ -1259,12 +1259,12 @@ class CreditCardType {
 }
 ----
 
-If you share the same embeddable in different places, you can use JPA's +@AttributeOverride+
+If you share the same embeddable in different places, you can use JPA's `@AttributeOverride`
 to override columns from the embedding side.
-This is the case of +DeliveryProvider+ in our example.
+This is the case of `DeliveryProvider` in our example.
 
 If you omit the dot in one of the columns, this column will not be part of the nested document.
-This is demonstrated by the +CreditCardType+.
+This is demonstrated by the `CreditCardType`.
 We advise you against it.
 Like crossing streams, it is bad form.
 This approach might not be supported in the future.
@@ -1281,10 +1281,10 @@ The three possible strategies are:
 
 To switch between these strategies, use of the three approaches to options:
 
-* annotate your entity with +@AssocationStorage+ and +@AssociationDocumentStorage+ annotations (see <<ogm-mongodb-annotation-configuration>>),
+* annotate your entity with `@AssocationStorage` and `@AssociationDocumentStorage` annotations (see <<ogm-mongodb-annotation-configuration>>),
 * use the API for programmatic configuration (see <<ogm-mongodb-programmatic-configuration>>)
-* or specify a default strategy via the +hibernate.ogm.datastore.document.association_storage+ and
-+hibernate.ogm.mongodb.association_document_storage+ configuration properties.
+* or specify a default strategy via the `hibernate.ogm.datastore.document.association_storage` and
+`hibernate.ogm.mongodb.association_document_storage` configuration properties.
 
 [[mongodb-in-entity-strategy]]
 ===== In Entity strategy
@@ -1300,10 +1300,10 @@ For indexed collections (i.e. `List` or `Map`), the index will be stored along t
 
 [NOTE]
 ====
-When using this strategy the annotations +@JoinTable+ will be ignored because no collection is created
+When using this strategy the annotations `@JoinTable` will be ignored because no collection is created
 for associations.
 
-You can use +@JoinColumn+ to change the name of the field that stores the foreign key (as an example, see
+You can use `@JoinColumn` to change the name of the field that stores the foreign key (as an example, see
 <<mongodb-in-entity-one-to-one-join-column>>).
 ====
 
@@ -2183,18 +2183,18 @@ in which it will store all navigation information for that particular associatio
 
 This is the strategy closest to the relational model.
 If an entity A is related to B and C, 2 collections will be created.
-The name of this collection is made of the association table concatenated with +associations_+.
+The name of this collection is made of the association table concatenated with `associations_`.
 
-For example, if the [classname]+BankAccount+ and [classname]+Owner+ are related,
-the collection used to store will be named +associations_Owner_BankAccount+. You can rename
+For example, if the [classname]`BankAccount` and [classname]`Owner` are related,
+the collection used to store will be named `associations_Owner_BankAccount`. You can rename
 The prefix is useful to quickly identify the association collections from the entity collections.
-You can also decide to rename the collection representing the association using +@JoinTable+
+You can also decide to rename the collection representing the association using `@JoinTable`
 (see <<mongodb-one-collection-strategy-join-table, an example>>)
 
 Each document of an association collection has the following structure:
 
-* +_id+ contains the id of the owner of relationship
-* +rows+ contains all the id of the related entities
+* `_id` contains the id of the owner of relationship
+* `rows` contains all the id of the related entities
 
 [NOTE]
 ====
@@ -2530,9 +2530,9 @@ associations_AccountOwner_BankAccount collection
 ====
 
 [[mongodb-one-collection-strategy-join-table]]
-You can change the name of the collection containing the association using the +@JoinTable+ annotation.
-In the following example, the name of the collection containing the association is +OwnerBankAccounts+
-(instead of the default +associations_AccountOwner_BankAccount+)
+You can change the name of the collection containing the association using the `@JoinTable` annotation.
+In the following example, the name of the collection containing the association is `OwnerBankAccounts`
+(instead of the default `associations_AccountOwner_BankAccount`)
 
 .Bidirectional many-to-many using one collection per association strategy and @JoinTable
 ====
@@ -2610,12 +2610,12 @@ OwnerBankAccount
 [[mongodb-association-document-strategy]]
 ===== Global collection strategy
 
-With this strategy, Hibernate OGM creates a single collection named +Associations+
+With this strategy, Hibernate OGM creates a single collection named `Associations`
 in which it will store all navigation information for all associations.
 Each document of this collection is structured in 2 parts.
-The first is the +_id+ field which contains the identifier information
+The first is the `_id` field which contains the identifier information
 of the association owner and the name of the association table.
-The second part is the +rows+ field which stores (into an embedded collection) all ids
+The second part is the `rows` field which stores (into an embedded collection) all ids
 that the current instance is related to.
 
 [NOTE]
@@ -2740,7 +2740,7 @@ Associations collection
 ----
 ====
 
-.Unidirectional one-to-many using global collection strategy with +@JoinTable+
+.Unidirectional one-to-many using global collection strategy with `@JoinTable`
 ====
 [source, JAVA]
 ----
@@ -2987,9 +2987,9 @@ MongoDB does not provide a built-in mechanism for detecting concurrent updates t
 but it provides a way to execute atomic find and update operations.
 By exploiting this commands Hibernate OGM can detect concurrent modifications to the same document.
 
-You can enable optimistic locking detection using the annotation [classname]+@Version+:
+You can enable optimistic locking detection using the annotation [classname]`@Version`:
 
-.Optimistic locking detection via +@Version+
+.Optimistic locking detection via `@Version`
 ====
 [source, JAVA]
 ----
@@ -3016,13 +3016,13 @@ public class Planet implements Nameable {
 ----
 ====
 
-The +@Version+ annotation define which attribute will keep track of the version of the document,
+The `@Version` annotation define which attribute will keep track of the version of the document,
 Hibernate OGM will update the field when required and if two changes from two different sessions (for example)
-are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
+are applied to the same document a [classname]`org.hibernate.StaleObjectStateException` is thrown.
 
-You can use [classname]+@Column+ to change the name of the field created on MongoDB:
+You can use [classname]`@Column` to change the name of the field created on MongoDB:
 
-.Optimistic locking detection via +@Version+ using +@Column+
+.Optimistic locking detection via `@Version` using `@Column`
 ====
 [source, JAVA]
 ----
@@ -3074,7 +3074,7 @@ this can cause changes to be written as a side-effect of running queries
 which cannot be reverted by a possible later rollback.
 
 Depending on your specific use cases and requirements you may prefer to disable auto-flushing,
-e.g. by invoking +query.setFlushMode( FlushMode.MANUAL )+.
+e.g. by invoking `query.setFlushMode( FlushMode.MANUAL )`.
 Bear in mind though that query results will then not reflect changes applied within the current session.
 ====
 
@@ -3083,12 +3083,12 @@ Bear in mind though that query results will then not reflect changes applied wit
 Hibernate OGM is a work in progress, so only a sub-set of JP-QL constructs is available
 when using the JP-QL query support. This includes:
 
-* simple comparisons using "<", "<=", "=", ">=" and ">"
-* +IS NULL+ and +IS NOT NULL+
-* the boolean operators +AND+, +OR+, +NOT+
-* +LIKE+, +IN+ and +BETWEEN+
-* +ORDER BY+
-* inner +JOIN+ on embedded collections
+* simple comparisons using "<", "+<=+", "=", ">=" and ">"
+* `IS NULL` and `IS NOT NULL`
+* the boolean operators `AND`, `OR`, `NOT`
+* `LIKE`, `IN` and `BETWEEN`
+* `ORDER BY`
+* inner `JOIN` on embedded collections
 * projections of regular and embedded properties
  
 Queries using these constructs will be transformed into equivalent native MongoDB queries.
@@ -3111,23 +3111,23 @@ Currently two forms of native queries are available via the MongoDB backend:
 
 The former always maps results to entity types.
 The latter either maps results to entity types or to certain supported forms of projection.
-Note that parameterized queries are not supported by MongoDB, so don't expect +Query#setParameter()+ to work.
+Note that parameterized queries are not supported by MongoDB, so don't expect `Query#setParameter()` to work.
 
 [WARNING]
 ====
 Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
-Currently only +find()+ and +count()+ queries are supported via the CLI syntax.
+Currently only `find()` and `count()` queries are supported via the CLI syntax.
 Further query types (including updating queries) may be supported in future revisions.
 
-No cursor operations such as +sort()+ are supported.
+No cursor operations such as `sort()` are supported.
 Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
-such as +$orderby+ within the criteria parameter.
+such as `$orderby` within the criteria parameter.
 
 JSON parameters passed via the CLI syntax must be specified using the http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode].
-Specifically, keys need to be given within quotes, e.g. use +db.WILDE_POEM.find({ \"name\" : \"Athanasia\" })+
-instead of +db.WILDE_POEM.find({ name : \"Athanasia\" })+.
+Specifically, keys need to be given within quotes, e.g. use `db.WILDE_POEM.find({ \"name\" : \"Athanasia\" })`
+instead of `db.WILDE_POEM.find({ name : \"Athanasia\" })`.
 The only relaxation of this is that single quotes may be used when specifying attribute names/values to facilitate embedding
-queries within Java strings, e.g. +db.WILDE_POEM.find({ 'name' : 'Athanasia' })+.
+queries within Java strings, e.g. `db.WILDE_POEM.find({ 'name' : 'Athanasia' })`.
 
 Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
 are not (yet) converted using suitable Hibernate OGM type implementations.
@@ -3201,7 +3201,7 @@ List<Poem> poems = session.createNativeQuery( query2 )
 ----
 ====
 
-Native queries can also be created using the +@NamedNativeQuery+ annotation:
+Native queries can also be created using the `@NamedNativeQuery` annotation:
 
 .Using @NamedNativeQuery
 ====

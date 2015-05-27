@@ -7,7 +7,7 @@
 [NOTE]
 ====
 Hibernate OGM defines an abstraction layer
-represented by [classname]+DatastoreProvider+ and [classname]+GridDialect+
+represented by [classname]`DatastoreProvider` and [classname]`GridDialect`
 to separate the OGM engine from the datastores interaction.
 It has successfully abstracted various key/value stores, document stores and graph databases.
 We are working on testing it on other NoSQL families.
@@ -36,22 +36,22 @@ Hibernate OGM is really made possible by the reuse of a few key components:
 // On native Asciidoctor, remove width=15cm to have it work
 
 .General architecture
-image::images/ogm-architecture.png[align="center", depth="", scalefit="1", width="15cm"]
+image::ogm-architecture.png[align="center", depth="", scalefit="1", width="15cm"]
 
 Hibernate OGM reuses as much as possible from the Hibernate ORM infrastructure.
 There is no need to rewrite an entirely new JPA engine.
-The [classname]++Persister++s and the [classname]++Loader++s
+The [classname]``Persister``s and the [classname]``Loader``s
 (two interfaces used by Hibernate ORM)
 have been rewritten to persist data in the NoSQL store.
 These implementations are the core of Hibernate OGM.
 We will see in <<ogm-architecture-datapersisted>> how the data is structured.
 
 The particularities between NoSQL stores are abstracted
-by the notion of a [classname]+DatastoreProvider+ and a [classname]+GridDialect+.
+by the notion of a [classname]`DatastoreProvider` and a [classname]`GridDialect`.
 
-* [classname]+DatastoreProvider+ abstracts how to start
+* [classname]`DatastoreProvider` abstracts how to start
   and maintain a connection between Hibernate OGM and the datastore.
-* [classname]+GridDialect+ abstracts how data itself including association
+* [classname]`GridDialect` abstracts how data itself including association
   is persisted.
 
 
@@ -80,7 +80,7 @@ in more details in <<ogm-architecture-dataqueried>>.
 
 Hibernate OGM best works in a JTA environment.
 The easiest solution is to deploy it on a Java EE container.
-Alternatively, you can use a standalone JTA [classname]+TransactionManager+.
+Alternatively, you can use a standalone JTA [classname]`TransactionManager`.
 We explain how to in <<ogm-configuration-environments-standalonejta>>.
 
 Let's now see how and in which structure data is persisted in the NoSQL data store.
@@ -132,7 +132,7 @@ directly in the datastore - key/value in particular - can lead to problems:
 ====
 
 Entities are stored as tuples of values by Hibernate OGM.
-More specifically, each entity is conceptually represented by a [classname]+Map<String,Object>+
+More specifically, each entity is conceptually represented by a [classname]`Map<String,Object>`
 where the key represents the column name (often the property name but not always)
 and the value represents the column value as a basic type.
 We favor basic types over complex ones to increase portability
@@ -147,9 +147,9 @@ The key identifying a given entity instance is composed of:
 
 
 .Storing entities
-image::images/data-entity.png[align="center"]
+image::data-entity.png[align="center"]
 
-The [classname]+GridDialect+ specific to the NoSQL datastore you target
+The [classname]`GridDialect` specific to the NoSQL datastore you target
 is then responsible to convert this map into the most natural model:
 
 * for a key/value store or a data grid,
@@ -181,7 +181,7 @@ Using this approach, we favor fast read and (slightly) slower writes.
 
 // On native Asciidoctor, remove width=15cm to have it work
 .Storing associations
-image::images/data-association.png[align="center", depth="", scalefit="1", width="15cm"]
+image::data-association.png[align="center", depth="", scalefit="1", width="15cm"]
 
 Note that this approach has benefits and drawbacks:
 
@@ -198,7 +198,7 @@ This is a more natural model for documents.
 
 // On native Asciidoctor, remove width=15cm to have it work
 .Storing associations in a document store
-image::images/data-association-document.png[align="center", depth="", scalefit="1", width="15cm"]
+image::data-association-document.png[align="center", depth="", scalefit="1", width="15cm"]
 
 Some identifiers require to store a seed in the datastore
 (like sequences for examples).
@@ -219,12 +219,12 @@ to find the specificities.
 
 Many NoSQL stores have no notion of schema.
 Likewise, the tuple stored by Hibernate OGM is not tied to a particular schema:
-the tuple is represented by a [classname]+Map+,
-not a typed [classname]+Map+ specific to a given entity type.
+the tuple is represented by a [classname]`Map`,
+not a typed [classname]`Map` specific to a given entity type.
 Nevertheless, JPA does describe a schema thanks to:
 
 * the class schema
-* the JPA physical annotations like [classname]+@Table+ and [classname]+@Column+.
+* the JPA physical annotations like [classname]`@Table` and [classname]`@Column`.
 
 
 While tied to the application, it offers some robustness and explicit understanding
@@ -265,7 +265,7 @@ when using Hibernate Search:
 
 // On native Asciidoctor, remove width=15cm to have it work
 .Using Hibernate Search as query engine - greyed areas are blocks already present in Hibernate OGM's architecture
-image::images/ogm-architecture-with-hsearch.png[align="center", depth="", scalefit="1", width="15cm"]
+image::ogm-architecture-with-hsearch.png[align="center", depth="", scalefit="1", width="15cm"]
 
 In this situation, Hibernate ORM Core pushes change events
 to Hibernate Search which will index entities accordingly

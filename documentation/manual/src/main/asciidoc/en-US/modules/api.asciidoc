@@ -20,10 +20,10 @@ We already discussed this subject earlier, have a look at <<ogm-configuration>> 
 
 As a reminder, it basically boils down to either:
 
-* set the right persistence provider in your +persistence.xml+ file
-  and create an +EntityManagerFactory+ the usual way
-* start via the Hibernate ORM native APIs using +OgmConfiguration+
-  to boot a +SessionFactory+
+* set the right persistence provider in your `persistence.xml` file
+  and create an `EntityManagerFactory` the usual way
+* start via the Hibernate ORM native APIs using `OgmConfiguration`
+  to boot a `SessionFactory`
 
 === JPA and native Hibernate ORM APIs
 
@@ -33,32 +33,32 @@ If you need a refresher, make sure you read the http://hibernate.org/orm/documen
 
 A few things are a bit different though, let's discuss them.
 
-Most of the +EntityManager+ and +Session+ contracts are supported.
+Most of the `EntityManager` and `Session` contracts are supported.
 Here are the few exceptions:
 
-* +Session.createCriteria+: criteria queries are not yet supported in Hibernate OGM
-* +Session.createFilter+: queries on collections are not supported yet
-* +Session+ 's +enableFilter+, +disableFilter+ etc: query filters are not supported at the moment
-* +doWork+ and +doReturningWork+ are not implemented as they rely on JDBC connections - see
+* `Session.createCriteria`: criteria queries are not yet supported in Hibernate OGM
+* `Session.createFilter`: queries on collections are not supported yet
+* `Session` 's `enableFilter`, `disableFilter` etc: query filters are not supported at the moment
+* `doWork` and `doReturningWork` are not implemented as they rely on JDBC connections - see
   https://hibernate.atlassian.net/browse/OGM-694[OGM-694]
-* +Session+ 's stored procedure APIs are not supported
-* +Session+ 's natural id APIs are not yet supported
-* +Session.lock+ is not fully supported at this time
-* +EntityManager+ 's criteria query APIs are not supported
-* +EntityManager+ 's stored procedure APIs are not supported - see
+* `Session` 's stored procedure APIs are not supported
+* `Session` 's natural id APIs are not yet supported
+* `Session.lock` is not fully supported at this time
+* `EntityManager` 's criteria query APIs are not supported
+* `EntityManager` 's stored procedure APIs are not supported - see
   https://hibernate.atlassian.net/browse/OGM-695[OGM-695]
-* +EntityManager.lock+ is not fully supported at this time
+* `EntityManager.lock` is not fully supported at this time
 * see <<ogm-query>> to know what is supported for JP-QL and native queries
 
-==== Accessing the +OgmSession+ API
+==== Accessing the `OgmSession` API
 
-To execute NoSQL native queries, one approach is to use +OgmSession.createNativeQuery+.
+To execute NoSQL native queries, one approach is to use `OgmSession.createNativeQuery`.
 You can read more about it in <<ogm-query-native>>.
-But let's see how to access an +OgmSession+ instance.
+But let's see how to access an `OgmSession` instance.
 
-From JPA, use the +unwrap+ method of +EntityManager+
+From JPA, use the `unwrap` method of `EntityManager`
 
-.Get to an +OgmSession+ from an +EntityManager+
+.Get to an `OgmSession` from an `EntityManager`
 ====
 [source, JAVA]
 ----
@@ -68,11 +68,11 @@ NoSQLQuery query = ogmSession.createNativeQuery(...);
 ----
 ====
 
-In the Hibernate native API case, you should already have access to an +OgmSession+.
-The +OgmConfiguration+ you used returns an +OgmSessionFactory+.
-This factory in turns produces +OgmSession+.
+In the Hibernate native API case, you should already have access to an `OgmSession`.
+The `OgmConfiguration` you used returns an `OgmSessionFactory`.
+This factory in turns produces `OgmSession`.
 
-.Get to an +OgmSession+ with Hibernate ORM native APIs
+.Get to an `OgmSession` with Hibernate ORM native APIs
 ====
 [source, JAVA]
 ----
@@ -91,7 +91,7 @@ Let's see why.
 
 Hibernate does pile up changes for as long as it can before pushing them down to the datastore.
 This opens up the doors to huge optimizations (avoiding duplication, batching operations etc).
-You can force changes to be sent to the datastore by calling +Session.flush+ or +EntityManager.flush+.
+You can force changes to be sent to the datastore by calling `Session.flush` or `EntityManager.flush`.
 In some situations - for example before some queries are executed -, Hibernate will flush automatically.
 It will also flush when the transaction demarcation happens (whether there is a real transaction or not).
 
@@ -130,9 +130,9 @@ Inside a JTA environment, either the container demarcates the transaction for yo
 and Hibernate OGM will transparently join that transaction and flush at commit time.
 Or you need to manually demarcate the transaction.
 In the latter case,
-it is best to start / stop the transaction before retrieving the +Session+ or +EntityManager+
+it is best to start / stop the transaction before retrieving the `Session` or `EntityManager`
 as shown below.
-The alternative is to call the +EntityManager.joinTransaction()+ once the transaction has started.
+The alternative is to call the `EntityManager.joinTransaction()` once the transaction has started.
 
 [source, JAVA]
 ----
@@ -169,7 +169,7 @@ In this case it is desirable to know which changes have been applied and which o
 in order to take appropriate action.
 
 Hibernate OGM provides an error compensation API for this purpose.
-By implementing the +org.hibernate.ogm.failure.ErrorHandler+ interface, you will be notified if
+By implementing the `org.hibernate.ogm.failure.ErrorHandler` interface, you will be notified if
 
 * an interaction between the Hibernate OGM engine and the grid dialect failed
 * a rollback of the current transaction was triggered
@@ -186,7 +186,7 @@ e.g. for automatic retries of failed operations or the automatic application of 
 
 Let's take a look at an example:
 
-.Custom +ErrorHandler+ implementation
+.Custom `ErrorHandler` implementation
 ====
 [source, JAVA]
 ----
@@ -231,23 +231,23 @@ public class ExampleErrorHandler extends BaseErrorHandler {
 ----
 ====
 
-The +onRollback()+ method - which is called when the transaction is rolled back (either by the user or by the container) - shows how to iterate over all methods applied prior to the rollback, examine their specific type and e.g. write them to a log file.
+The `onRollback()` method - which is called when the transaction is rolled back (either by the user or by the container) - shows how to iterate over all methods applied prior to the rollback, examine their specific type and e.g. write them to a log file.
 
-The +onFailedGridDialectOperation()+ method is called for each specific datastore operation failing.
+The `onFailedGridDialectOperation()` method is called for each specific datastore operation failing.
 It lets you decide whether to continue ignoring the failure, retry or abort the operation.
-If +ABORT+ is returned, the causing exception will be re-thrown, eventually causing the current transaction to be rolled back.
-If +CONTINUE+ is returned, that exception will be ignored, causing the current transaction to continue.
+If `ABORT` is returned, the causing exception will be re-thrown, eventually causing the current transaction to be rolled back.
+If `CONTINUE` is returned, that exception will be ignored, causing the current transaction to continue.
 
 The decision whether to abort or continue can be based on the specific exception type or on the grid dialect operation which caused the failure.
-In the example all exceptions of type +TupleAlreadyExistsException+ are ignored, whereas all other exceptions cause the current flush cycle to be aborted. You also could react to datastore-specific exceptions such as MongoDB's +MongoTimeoutException+, if needed.
+In the example all exceptions of type `TupleAlreadyExistsException` are ignored, whereas all other exceptions cause the current flush cycle to be aborted. You also could react to datastore-specific exceptions such as MongoDB's `MongoTimeoutException`, if needed.
 
-Note that by extending the provided base class +BaseErrorHandler+ rather than implementing the interface directly,
+Note that by extending the provided base class `BaseErrorHandler` rather than implementing the interface directly,
 you only need to implement those callback methods you are actually interested in.
-The implementation will also not break if further callback methods are added to the +ErrorHandler+ interface in future releases.
+The implementation will also not break if further callback methods are added to the `ErrorHandler` interface in future releases.
 
 Having implemented the error handler, it needs to be registered with Hibernate OGM.
-To do so, specify it using the property +hibernate.ogm.error_handler+,
-e.g. as a persistence unit property in [filename]+META-INF/persistence.xml+:
+To do so, specify it using the property `hibernate.ogm.error_handler`,
+e.g. as a persistence unit property in [filename]`META-INF/persistence.xml`:
 
 [source, XML]
 ----
@@ -259,14 +259,14 @@ e.g. as a persistence unit property in [filename]+META-INF/persistence.xml+:
 Some of the Hibernate OGM public contracts are geared towards either integrators
 or implementors of datastore providers.
 They should not be used by a regular application.
-These contracts are named SPIs and are in a +.spi+ package.
+These contracts are named SPIs and are in a `.spi` package.
 
 To keep improving Hibernate OGM, we might break these SPIs between versions.
 If you plan on writing a datastore, come and talk to us.
 
 [TIP]
 ====
-Non public contracts are stored within a +.impl+ package.
+Non public contracts are stored within a `.impl` package.
 If you see yourself using one of these classes,
 beware that we can break these without notice.
 ====

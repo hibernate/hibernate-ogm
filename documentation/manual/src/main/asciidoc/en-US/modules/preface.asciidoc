@@ -44,7 +44,7 @@ contact us in one of the following ways:
 * propose improvements on the
   http://www.hibernate.org/community/mailinglists[development mailing list]
 * join us on IRC to discuss developments and improvements
-  (+#hibernate-dev+ on +freenode.net+;
+  (`#hibernate-dev` on `freenode.net`;
   you need to be registered on freenode:
   the room does not accept "anonymous" users).
 ====
@@ -78,7 +78,7 @@ Speaking only of the main ones, NoSQL is at least categorized in four families:
 // On native Asciidoctor, remove width=15cm to have it work
 
 .Various NoSQL families
-image::images/nosql.png[align="center", depth="", scalefit="1", width="15cm"]
+image::nosql.png[align="center", depth="", scalefit="1", width="15cm"]
 
 Each have different benefits and drawbacks
 and one solution might fit a use case better than an other.
@@ -119,11 +119,11 @@ In short, a perfectly capable Object Mapper for multiple popular NoSQL datastore
 === Experimental features
 
 As Hibernate OGM is a rather young project, some parts of it may be marked as experimental.
-This may affect specific APIs or SPIs (e.g. the case for the +SchemaInitializer+ SPI contract at the moment),
+This may affect specific APIs or SPIs (e.g. the case for the `SchemaInitializer` SPI contract at the moment),
 entire dialects (this is the case for the CouchDB dialect at the moment)
 or deliverables.
 
-Experimental APIs/SPIs are marked via the +@Experimental+ annotation.
+Experimental APIs/SPIs are marked via the `@Experimental` annotation.
 Experimental dialects make that fact apparent through their datastore name (e.g. "COUCHDB_EXPERIMENTAL")
 and experimental deliverables use the "experimental" artifact classifier.
 
