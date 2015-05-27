@@ -67,13 +67,11 @@
                 </executions>
                 <configuration>
                     <sourceDirectory>${project.build.directory}/asciidoc-prepared/en-US</sourceDirectory>
-                    <sourceDocumentName>${project.build.directory}/asciidoc-prepared/en-US/master.asciidoc</sourceDocumentName>
+                    <sourceDocumentName>master.asciidoc</sourceDocumentName>
                     <outputDirectory>${basedir}/target/docbook/en-US</outputDirectory>
-                    <!-- templateDir>${basedir}/../asciidoc/src/main/backend/slim/docbook45</templateDir>
-                    <templateEngine>slim</templateEngine -->
                     <headerFooter>true</headerFooter>
                     <compact>false</compact>
-                    <imagesDir>images</imagesDir>  <!-- TODO: Remove this config when the image/ prefix is removed from image paths -->
+                    <imagesDir>images</imagesDir>
                     <toc>true</toc>
                     <backend>docbook</backend>
                     <doctype>book</doctype>
@@ -155,7 +153,8 @@
                         </format>
                         <format>
                             <formatName>pdf</formatName>
-                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/pdf.xsl</stylesheetResource>
+                            <!-- stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/pdf.xsl</stylesheetResource -->
+                            <stylesheetResource>classpath:/xslt/org/jboss/pressgang/pdf.xsl</stylesheetResource>
                             <finalName>hibernate_ogm_reference.pdf</finalName>
                         </format>
                     </formats>
@@ -164,6 +163,7 @@
                         <xmlTransformerType>saxon</xmlTransformerType>
                         <!-- needed for uri-resolvers; can be ommitted if using 'current' uri scheme -->
                         <!--     could also locate the docbook dependency and inspect its version... -->
+                        <!-- docbookVersion>1.72.0</docbookVersion -->
                         <localeSeparator>-</localeSeparator>
                         <applyStandardInjectionValues>false</applyStandardInjectionValues>
                         <transformerParameters>

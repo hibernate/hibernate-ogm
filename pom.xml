@@ -352,7 +352,7 @@
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>0.1.3</version>
+                    <version>1.5.2</version>
                 </plugin>
                 <!-- Process the docbook xml -->
                 <plugin>
