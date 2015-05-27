@@ -78,7 +78,7 @@
                     <backend>docbook</backend>
                     <doctype>book</doctype>
                     <goalPrefix>asciidoctor</goalPrefix>
-                    <sourceHighlighter>coderay</sourceHighlighter>
+                    <sourceHighlighter>highlightjs</sourceHighlighter>
                     <attributes>
                         <idprefix />
                         <sectanchors>true</sectanchors>
