@@ -35,7 +35,6 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
-import com.mongodb.MongoTimeoutException;
 import com.mongodb.ServerAddress;
 
 /**
@@ -181,21 +180,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			if ( containsDatabase == null ) {
 				// force a connection to make sure we do have read access
 				// otherwise the connection failure happens during the first flush
-				int retries = 0;
-				while (true) {
-					try {
-						db.collectionExists( "WeDoNotCareWhatItIsWeNeedToConnect" );
-						break;
-					}
-					catch (MongoTimeoutException me) {
-						// unless we retry twice, the second access will be a TimeoutException error instead of an auth error
-						// This is a workaround for https://jira.mongodb.org/browse/JAVA-1803
-						retries++;
-						if ( retries > 2 ) {
-							throw me;
-						}
-					}
-				}
+				db.collectionExists( "WeDoNotCareWhatItIsWeNeedToConnect" );
 			}
 			return mongo.getDB( databaseName );
 		}
