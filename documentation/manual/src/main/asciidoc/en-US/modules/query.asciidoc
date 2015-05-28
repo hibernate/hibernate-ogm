@@ -121,11 +121,17 @@ from Helicopter h order by h.make desc, h.name
 ----
 ====
 
-Inner `JOIN` on an embedded association is partially supported.
-In particular, filtering the elements of the association works for all the datastores
-but projecting properties won't work if you are using Hibernate Search queries.
+There are also features that are partially supported:
 
-This is better illustrated by the following example:
+* Inner `JOIN` on an embedded association:
+  works as expected with Neo4j and MongoDB;
+  doesn't work if your datastore provider implements JP-QL queries using Hibernate Search.
+
+* Projections or filters on properties of an embedded identifier:
+  works as expected with Neo4j and MongoDB;
+  doesn't work if your datastore provider implements JP-QL queries using Hibernate Search.
+
+These are better illustrated by the following example:
 
 .Entity with embedded collection and supported JP-QL queries
 ====
@@ -135,12 +141,26 @@ This is better illustrated by the following example:
 @Entity
 public class StoryGame {
 
+    @DocumentId
+    @EmbeddedId
+    @FieldBridge(impl = NewsIdFieldBridge.class)
+    private StoryID storyId;
+
     @ElementCollection
     @IndexedEmbedded
     private List<OptionalStoryBranch> optionalEndings;
 
     ...
 
+}
+
+@Embeddable
+public class StoryID implements Serializable {
+
+    private String title;
+    private String author;
+
+    ...
 }
 
 @Embeddable
@@ -166,15 +186,36 @@ String query =
 List<StoryGame> stories = session.createQuery( query ).list();
 ----
 
-Projection will  work with Neo4j or MongoDB but it won't give the expected results with the other
-datastores:
+Projection of properties of an embedded association works with Neo4j and MongoDB,
+but the other datastores will only return one element from the association.
+This is due to the fact that Hibernate Search is currently not supporting projection
+of associations.
+Here's an example of a query affected by this:
 
 [source, JAVA]
 ----
 String query =
      "SELECT ending.text " +
-     "FROM StoryGame sg JOIN sg.optionalEndings ending WHERE ending.text = 'Happy ending'";
+     "FROM StoryGame sg JOIN sg.optionalEndings ending WHERE ending.text LIKE 'Happy%'";
 List<String> endings = session.createQuery( query ).list();
+----
+
+Projecting and filtering on embedded id properties works with Neo4j and MongoDB
+but throws an exception with the other datastores:
+
+[source, JAVA]
+----
+String query =
+     "SELECT sg.storyId.title FROM StoryGame sg WHERE sg.storyId.title = 'Best Story Ever'";
+List<String> title = session.createQuery( query ).list();
+----
+
+It will cause the following exception if the datastore uses Hibernate Search
+to execute JP-QL queries:
+
+[source, JAVA]
+----
+org.hibernate.hql.ParsingException: HQL100002: The type [storyId] has no indexed property named title.
 ----
 ====
 
