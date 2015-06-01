@@ -1,6 +1,30 @@
 Hibernate OGM Changelog
 =======================
 
+4.2.0.Final (01-06-2015)
+-------------------------
+
+** Bug
+    * OGM-808 - build            - Fix problem in annotation processors and IntelliJ IDEA
+    * OGM-827 - mongodb, tests   - Revisit the timeout default value of 200ms for MongoDB tests
+    * OGM-835 - mongodb, tests   - QueriesWithEmbeddedCollectionTest fails with FongoDB
+    * OGM-844 - documentation    - The variable ${fongoDBVersion} is not being injected in the documentation
+    * OGM-840 - build, couchdb   - Make java.util.Date usable with CouchDB on WildFly
+
+** Improvement
+    * OGM-834 -                  - Release notes script should list all components of an issue
+    * OGM-839 - cassandra        - Don't manage associations on the inverse side in Cassandra
+
+** New Feature
+    * OGM-836 - build, cassandra - Add Cassandra dependencies to the distribution package
+    * OGM-841 - documentation    - Add google analytics to the HTML documentation
+    * OGM-813 - cassandra        - Add Cassandra to JBoss Modules ZIP
+
+** Task
+    * OGM-837 - query, tests     - Test queries on partial embedded id
+    * OGM-838 - build            - Disable deploy of EAP modules
+    * OGM-846 - documentation    - Improve wording regarding JP-QL support in documentation
+
 4.2.0.CR1 (19-05-2015)
 -------------------------
 
