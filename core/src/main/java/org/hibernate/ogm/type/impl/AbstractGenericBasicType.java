@@ -23,7 +23,6 @@ import org.hibernate.ogm.type.descriptor.impl.GridValueExtractor;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.StringRepresentableType;
-import org.hibernate.type.XmlRepresentableType;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.MutabilityPlan;
@@ -36,7 +35,7 @@ import org.hibernate.type.descriptor.java.MutabilityPlan;
  */
 public abstract class AbstractGenericBasicType<T>
 		implements  GridType, //BasicType,
-				StringRepresentableType<T>, XmlRepresentableType<T> {
+				StringRepresentableType<T> {
 
 	private static final boolean[] TRUE = { true };
 	private static final boolean[] FALSE = { false };
@@ -65,16 +64,6 @@ public abstract class AbstractGenericBasicType<T>
 	@Override
 	public T fromStringValue(String xml) throws HibernateException {
 		return fromString( xml );
-	}
-
-	@Override
-	public String toXMLString(T value, SessionFactoryImplementor factory) throws HibernateException {
-		return toString( value );
-	}
-
-	@Override
-	public T fromXMLString(String xml, Mapping factory) throws HibernateException {
-		return xml == null || xml.length() == 0 ? null : fromStringValue( xml );
 	}
 
 	protected MutabilityPlan<T> getMutabilityPlan() {

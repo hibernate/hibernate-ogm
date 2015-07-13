@@ -29,6 +29,7 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
@@ -152,8 +153,9 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	}
 
 	@Override
-	public void configure(Type type, Properties params, JdbcEnvironment jdbcEnvironment) throws MappingException {
-		super.configure( type, params, jdbcEnvironment );
+	public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+		super.configure( type, params, serviceRegistry );
+		JdbcEnvironment jdbcEnvironment = serviceRegistry.getService( JdbcEnvironment.class );
 
 		Dialect dialect = jdbcEnvironment.getDialect();
 

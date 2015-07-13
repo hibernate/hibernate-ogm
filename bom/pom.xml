@@ -39,8 +39,8 @@
         <neo4jCypherCompilerOlderVersion>2.0.3</neo4jCypherCompilerOlderVersion>
         <!-- Neo4j does not support Lucene 4 currently-->
         <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
-        <hibernateVersion>5.0.0-SNAPSHOT</hibernateVersion>
-        <hibernateSearchVersion>5.2.0-SNAPSHOT</hibernateSearchVersion>
+        <hibernateVersion>5.0.0.CR2</hibernateVersion>
+        <hibernateSearchVersion>5.4.0.CR1</hibernateSearchVersion>
         <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>

@@ -24,7 +24,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.bytecode.instrumentation.spi.LazyPropertyInitializer;
-import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.cache.spi.entry.CacheEntry;
@@ -82,7 +81,7 @@ import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
-import org.hibernate.property.BackrefPropertyAccessor;
+import org.hibernate.property.access.internal.PropertyAccessStrategyBackRefImpl;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tuple.GenerationTiming;
 import org.hibernate.tuple.NonIdentifierAttribute;
@@ -577,7 +576,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		if ( hasCache() ) {
-			CacheKey cacheKey = session.generateCacheKey( id, getIdentifierType(), getEntityName() );
+			Object cacheKey = getCacheAccessStrategy().generateCacheKey( id, this, session.getFactory(), session.getTenantIdentifier() );
 			Object ce = getCacheAccessStrategy().get( cacheKey, session.getTimestamp() );
 			if ( ce != null ) {
 				CacheEntry cacheEntry = (CacheEntry) getCacheEntryStructure().destructure( ce, getFactory() );
@@ -910,7 +909,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			) {
 		Object value;
 		if ( !propertySelectable[index] ) {
-			value = BackrefPropertyAccessor.UNKNOWN;
+			value = PropertyAccessStrategyBackRefImpl.UNKNOWN;
 		}
 		else if ( allProperties || !laziness[index] ) {
 			//decide which ResultSet to get the property value from:
