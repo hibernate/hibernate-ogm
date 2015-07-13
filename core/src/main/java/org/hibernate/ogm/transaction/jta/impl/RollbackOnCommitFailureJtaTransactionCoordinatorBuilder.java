@@ -6,11 +6,11 @@
  */
 package org.hibernate.ogm.transaction.jta.impl;
 
-import org.hibernate.ogm.transaction.impl.ForwardingLocalInflow;
+import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinator.LocalInflow;
+import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
@@ -42,14 +42,14 @@ public class RollbackOnCommitFailureJtaTransactionCoordinatorBuilder extends For
 		}
 
 		@Override
-		public LocalInflow getTransactionDriverControl() {
+		public TransactionDriver getTransactionDriverControl() {
 			return new RollbackOnCommitFailureInflow( super.getTransactionDriverControl() );
 		}
 	}
 
-	private static class RollbackOnCommitFailureInflow extends ForwardingLocalInflow {
+	private static class RollbackOnCommitFailureInflow extends ForwardingTransactionDriver {
 
-		public RollbackOnCommitFailureInflow(LocalInflow delegate) {
+		public RollbackOnCommitFailureInflow(TransactionDriver delegate) {
 			super( delegate );
 		}
 

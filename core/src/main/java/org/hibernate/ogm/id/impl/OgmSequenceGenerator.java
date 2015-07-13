@@ -24,6 +24,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
@@ -72,8 +73,9 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	}
 
 	@Override
-	public void configure(Type type, Properties params, JdbcEnvironment jdbcEnvironment) throws MappingException {
-		super.configure( type, params, jdbcEnvironment );
+	public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+		super.configure( type, params, serviceRegistry );
+		JdbcEnvironment jdbcEnvironment = serviceRegistry.getService( JdbcEnvironment.class );
 
 		this.type = type;
 		this.params = params;
@@ -82,7 +84,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 				jdbcEnvironment.getDialect()
 		);
 		generatorKeyMetadata = DefaultIdSourceKeyMetadata.forSequence( sequenceName );
-		delegate = getDelegate( jdbcEnvironment );
+		delegate = getDelegate( serviceRegistry );
 	}
 
 	@Override
@@ -137,7 +139,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		}
 	}
 
-	private IdSourceKeyAndKeyMetadataProvider getDelegate(JdbcEnvironment jdbcEnvironment) {
+	private IdSourceKeyAndKeyMetadataProvider getDelegate(ServiceRegistry serviceRegistry) {
 		GridDialect gridDialect = super.getGridDialect();
 
 		if ( gridDialect.supportsSequences() ) {
@@ -153,7 +155,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 			Properties newParams = new Properties();
 			newParams.putAll( params );
 			newParams.put( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
-			tableGenerator.configure( type, newParams, jdbcEnvironment );
+			tableGenerator.configure( type, newParams, serviceRegistry );
 
 			return new TableKeyAndMetadataProvider( tableGenerator );
 		}

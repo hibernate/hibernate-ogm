@@ -38,8 +38,8 @@ public class ForwardingTransactionCoordinatorOwner implements TransactionCoordin
 	}
 
 	@Override
-	public void afterTransactionCompletion(boolean successful) {
-		delegate.afterTransactionCompletion( successful );
+	public void afterTransactionCompletion(boolean successful, boolean delayed) {
+		delegate.afterTransactionCompletion( successful, delayed );
 	}
 
 	@Override

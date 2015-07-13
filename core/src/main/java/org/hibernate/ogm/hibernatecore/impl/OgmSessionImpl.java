@@ -22,7 +22,6 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.SessionException;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
-import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.ActionQueue;
@@ -56,7 +55,6 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
-import org.hibernate.type.Type;
 
 /**
  * An OGM specific session implementation which delegate most of the work to the underlying Hibernate ORM {@code Session},
@@ -246,11 +244,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public EntityKey generateEntityKey(Serializable id, EntityPersister persister) {
 		return delegate.generateEntityKey( id, persister );
-	}
-
-	@Override
-	public CacheKey generateCacheKey(Serializable id, Type type, String entityOrRoleName) {
-		return delegate.generateCacheKey( id, type, entityOrRoleName );
 	}
 
 	@Override

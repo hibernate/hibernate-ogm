@@ -30,6 +30,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
@@ -60,7 +61,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	private GridDialect gridDialect;
 
 	@Override
-	public void configure(Type type, Properties params, JdbcEnvironment jdbcEnvironment) throws MappingException {
+	public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
 		identifierType = type;
 		incrementSize = determineIncrementSize( params );
 		initialValue = determineInitialValue( params );
@@ -81,7 +82,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
 		);
 
-		gridDialect = ( (OgmDialect) jdbcEnvironment.getDialect() ).getGridDialect();
+		gridDialect = ( (OgmDialect) serviceRegistry.getService( JdbcEnvironment.class ).getDialect() ).getGridDialect();
 	}
 
 	/**

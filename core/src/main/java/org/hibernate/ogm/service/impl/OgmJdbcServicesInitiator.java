@@ -12,7 +12,6 @@ import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.LobCreationContext;
 import org.hibernate.engine.jdbc.LobCreator;
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
 import org.hibernate.engine.jdbc.env.spi.ExtractedDatabaseMetaData;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
@@ -55,11 +54,6 @@ public class OgmJdbcServicesInitiator implements StandardServiceInitiator<JdbcSe
 		@Override
 		public void injectServices(ServiceRegistryImplementor serviceRegistry) {
 			delegate.injectServices( serviceRegistry );
-		}
-
-		@Override
-		public ConnectionProvider getConnectionProvider() {
-			return delegate.getConnectionProvider();
 		}
 
 		@Override
