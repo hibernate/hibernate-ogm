@@ -41,7 +41,7 @@ public class ForwardingTransactionCoordinator implements TransactionCoordinator 
 	}
 
 	@Override
-	public LocalInflow getTransactionDriverControl() {
+	public TransactionDriver getTransactionDriverControl() {
 		return delegate.getTransactionDriverControl();
 	}
 

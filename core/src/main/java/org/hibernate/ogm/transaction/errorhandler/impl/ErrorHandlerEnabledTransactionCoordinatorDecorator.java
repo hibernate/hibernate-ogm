@@ -40,7 +40,7 @@ public class ErrorHandlerEnabledTransactionCoordinatorDecorator extends Forwardi
 	}
 
 	@Override
-	public LocalInflow getTransactionDriverControl() {
+	public TransactionDriver getTransactionDriverControl() {
 		// Create the collector upon first usage in a given TX (not done via TransactionObserver#afterBegin() as it is
 		// not invoked in the case of JTA
 		if ( operationCollector == null ) {
@@ -67,7 +67,7 @@ public class ErrorHandlerEnabledTransactionCoordinatorDecorator extends Forwardi
 		}
 
 		@Override
-		public void afterCompletion(boolean successful) {
+		public void afterCompletion(boolean successful, boolean delayed) {
 			if ( !successful ) {
 				errorHandler.onRollback( operationCollector );
 			}

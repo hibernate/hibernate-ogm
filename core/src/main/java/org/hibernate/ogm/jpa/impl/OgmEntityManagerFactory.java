@@ -6,23 +6,23 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Cache;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Query;
 import javax.persistence.SynchronizationType;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.internal.EntityManagerImpl;
-import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
@@ -32,10 +32,11 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateEntityManagerFactory {
-	private final EntityManagerFactory hibernateEmf;
+public class OgmEntityManagerFactory implements HibernateEntityManagerFactory {
 
-	public OgmEntityManagerFactory(EntityManagerFactory hibernateEmf) {
+	private final HibernateEntityManagerFactory hibernateEmf;
+
+	public OgmEntityManagerFactory(HibernateEntityManagerFactory hibernateEmf) {
 		this.hibernateEmf = hibernateEmf;
 	}
 
@@ -64,8 +65,8 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 	}
 
 	@Override
-	public SessionFactory getSessionFactory() {
-		final SessionFactory sessionFactory = ( (HibernateEntityManagerFactory) hibernateEmf ).getSessionFactory();
+	public SessionFactoryImplementor getSessionFactory() {
+		final SessionFactory sessionFactory = hibernateEmf.getSessionFactory();
 		return new OgmSessionFactoryImpl( (SessionFactoryImplementor) sessionFactory );
 	}
 
@@ -117,8 +118,8 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 	}
 
 	@Override
-	public EntityTypeImpl<?> getEntityTypeByName(String entityName) {
-		return ( (HibernateEntityManagerFactory) hibernateEmf ).getEntityTypeByName( entityName );
+	public EntityType<?> getEntityTypeByName(String entityName) {
+		return hibernateEmf.getEntityTypeByName( entityName );
 	}
 
 	@Override
@@ -130,5 +131,15 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 		}
 
 		return hibernateEmf.unwrap( cls );
+	}
+
+	@Override
+	public <T> List<EntityGraph<? super T>> findEntityGraphsByType(Class<T> entityClass) {
+		return hibernateEmf.findEntityGraphsByType( entityClass );
+	}
+
+	@Override
+	public String getEntityManagerFactoryName() {
+		return hibernateEmf.getEntityManagerFactoryName();
 	}
 }
