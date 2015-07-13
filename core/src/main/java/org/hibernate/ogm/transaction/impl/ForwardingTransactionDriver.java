@@ -6,19 +6,19 @@
  */
 package org.hibernate.ogm.transaction.impl;
 
-import org.hibernate.resource.transaction.TransactionCoordinator.LocalInflow;
+import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 /**
- * A {@link LocalInflow} forwarding all invocations to a delegate.
+ * A {@link TransactionDriver} forwarding all invocations to a delegate.
  *
  * @author Gunnar Morling
  */
-public class ForwardingLocalInflow implements LocalInflow {
+public class ForwardingTransactionDriver implements TransactionDriver {
 
-	private final LocalInflow delegate;
+	private final TransactionDriver delegate;
 
-	public ForwardingLocalInflow(LocalInflow delegate) {
+	public ForwardingTransactionDriver(TransactionDriver delegate) {
 		this.delegate = delegate;
 	}
 

@@ -19,6 +19,7 @@ import javax.persistence.spi.ProviderUtil;
 
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.AvailableSettings;
+import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
@@ -55,7 +56,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
 					enforceOgmConfig( protectiveCopy );
 					protectiveCopy.put( AvailableSettings.PROVIDER, delegate.getClass().getName() );
-					final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
+					final HibernateEntityManagerFactory coreEMF = (HibernateEntityManagerFactory) delegate.createEntityManagerFactory(
 							emName, protectiveCopy
 					);
 					if ( coreEMF != null ) {
@@ -92,7 +93,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 			//HEM only builds an EntityManagerFactory when HibernatePersistence.class.getName() is the PersistenceProvider
 			//that's why we override it when
 			//new DelegatorPersistenceUnitInfo(info)
-			final EntityManagerFactory coreEMF = delegate.createContainerEntityManagerFactory(
+			final HibernateEntityManagerFactory coreEMF = (HibernateEntityManagerFactory) delegate.createContainerEntityManagerFactory(
 					new DelegatorPersistenceUnitInfo(
 							info
 					),
