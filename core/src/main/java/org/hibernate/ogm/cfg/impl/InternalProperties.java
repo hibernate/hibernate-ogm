@@ -7,10 +7,8 @@
 package org.hibernate.ogm.cfg.impl;
 
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.query.spi.QueryParserService;
-import org.hibernate.ogm.service.impl.OgmIntegrator;
 
 /**
  * Constants used within OGM, not intended for public use.
@@ -18,17 +16,6 @@ import org.hibernate.ogm.service.impl.OgmIntegrator;
  * @author Gunnar Morling
  */
 public class InternalProperties {
-
-	/**
-	 * Used to make sure that Hibernate OGM's custom service implementations are only registered with the bootstrap
-	 * process if the persistence unit in question uses Hibernate OGM. For that purpose, this property is set to
-	 * {@code true} in {@link OgmConfiguration} and {@link HibernateOgmPersistence}. If Hibernate ORM is bootstrapped,
-	 * {@link OgmIntegrator} will still be executed (as it is discovered via the Java service loader) but it will take
-	 * no effect since this property is not set in this case.
-	 *
-	 * @see OgmIntegrator
-	 */
-	public static final String OGM_ON = "hibernate.ogm._activate";
 
 	/**
 	 * Name of the configuration option for passing in set up {@link OptionsServiceContext}s.

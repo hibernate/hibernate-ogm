@@ -22,6 +22,7 @@ import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 
@@ -79,6 +80,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	private void enforceOgmConfig(Map<Object,Object> map) {
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
+		map.put( OgmProperties.ENABLED, true );
 	}
 
 	@Override

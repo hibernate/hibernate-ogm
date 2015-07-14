@@ -9,8 +9,8 @@ package org.hibernate.ogm.boot.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagerInitiator;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
@@ -78,8 +78,8 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 
 	private boolean isOgmEnabled(Map<?, ?> settings) {
 		return new ConfigurationPropertyReader( settings )
-			.property( InternalProperties.OGM_ON, boolean.class )
-			.withDefault( true )
+			.property( OgmProperties.ENABLED, boolean.class )
+			.withDefault( false )
 			.getValue();
 	}
 }
