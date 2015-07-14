@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.utils;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,8 +44,6 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -159,7 +159,7 @@ public class TestHelper {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
-		return (T) session.get( clazz, id );
+		return session.get( clazz, id );
 	}
 
 	public static void dropSchemaAndDatabase(Session session) {
@@ -192,6 +192,7 @@ public class TestHelper {
 	public static Map<String, String> getDefaultTestSettings() {
 		Map<String, String> settings = new HashMap<>();
 
+		settings.put( OgmProperties.ENABLED, "true" );
 		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
 
