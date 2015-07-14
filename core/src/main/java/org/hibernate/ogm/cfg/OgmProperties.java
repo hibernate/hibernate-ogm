@@ -22,6 +22,13 @@ import org.hibernate.ogm.compensation.ErrorHandler;
 public interface OgmProperties {
 
 	/**
+	 * Property for enabling or disabling Hibernate OGM. Accepts {@code boolean} or {@code String}s representing
+	 * booleans. Defaults to {@code true}. Can be used to disable Hibernate OGM and bootstrap Hibernate ORM instead via
+	 * the Hibernate bootstrap API.
+	 */
+	String ENABLED = "hibernate.ogm.enabled";
+
+	/**
 	 * Name of the configuration option for specifying an {@link OptionConfigurator} when bootstrapping Hibernate OGM.
 	 * Supported value types are:
 	 * <ul>
