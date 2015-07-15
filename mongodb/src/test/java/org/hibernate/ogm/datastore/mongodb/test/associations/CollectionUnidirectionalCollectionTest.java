@@ -6,7 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations;
 
-import org.hibernate.cfg.Configuration;
+import java.util.Map;
+
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.CollectionUnidirectionalTest;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -17,14 +18,14 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageTyp
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class CollectionUnidirectionalCollectionTest extends CollectionUnidirectionalTest {
+
 	@Override
-	protected void configure(Configuration cfg) {
-		super.configure( cfg );
-		cfg.getProperties().put(
+	protected void configure(Map<String, Object> settings) {
+		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);
-		cfg.getProperties().put(
+		settings.put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
 				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
 		);

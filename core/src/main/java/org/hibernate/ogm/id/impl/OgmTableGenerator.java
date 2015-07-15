@@ -188,7 +188,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 			log.schemaOptionNotSupportedForTableGenerator( schemaName );
 		}
 
-		String catalogName =params.getProperty( PersistentIdentifierGenerator.CATALOG );
+		String catalogName = params.getProperty( PersistentIdentifierGenerator.CATALOG );
 		if ( catalogName != null ) {
 			log.catalogOptionNotSupportedForTableGenerator( catalogName );
 		}

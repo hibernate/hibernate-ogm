@@ -22,13 +22,8 @@ import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
-import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.query.impl.OgmQueryTranslatorFactory;
 
 /**
  * JPA PersistenceProvider implementation specific to Hibernate OGM
@@ -82,14 +77,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	}
 
 	private void enforceOgmConfig(Map<Object,Object> map) {
-		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
-		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
-		map.put( org.hibernate.cfg.AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
-		map.put( InternalProperties.OGM_ON, "true" );
-		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
-		HibernateSearchIntegration.resetProperties( map );
 	}
 
 	@Override

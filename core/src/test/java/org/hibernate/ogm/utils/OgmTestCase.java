@@ -12,6 +12,7 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -54,7 +55,7 @@ public abstract class OgmTestCase {
 	protected abstract Class<?>[] getAnnotatedClasses();
 
 	@SessionFactoryConfiguration
-	private void modifyConfiguration(Configuration cfg) {
+	private void modifyConfiguration(Map<String, Object> cfg) {
 		configure( cfg );
 	}
 
@@ -63,7 +64,7 @@ public abstract class OgmTestCase {
 	 *
 	 * @param cfg the configuration
 	 */
-	protected void configure(Configuration cfg) {
+	protected void configure(Map<String, Object> cfg) {
 	}
 
 	protected OgmSession openSession() {

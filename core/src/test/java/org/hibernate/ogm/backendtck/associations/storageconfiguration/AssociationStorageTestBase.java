@@ -26,7 +26,7 @@ public abstract class AssociationStorageTestBase extends OgmTestCase {
 	@Before
 	public void setupConfiguration() {
 		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
+//		configure( configuration );
 	}
 
 	protected void setupSessionFactory() {

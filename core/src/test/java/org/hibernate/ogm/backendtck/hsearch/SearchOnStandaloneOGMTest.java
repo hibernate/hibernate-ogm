@@ -13,7 +13,6 @@ import java.util.List;
 import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
@@ -32,12 +31,6 @@ import org.junit.Test;
  */
 @SkipByGridDialect(value = GridDialectType.NEO4J, comment = "Neo4j is not compatible with HSEARCH 5")
 public class SearchOnStandaloneOGMTest extends OgmTestCase {
-
-	@Override
-	protected void configure(Configuration cfg) {
-		super.configure( cfg );
-		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
-	}
 
 	@Test
 	public void testHibernateSearchJPAAPIUsage() throws Exception {

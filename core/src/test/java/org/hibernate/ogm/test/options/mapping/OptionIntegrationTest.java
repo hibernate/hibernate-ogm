@@ -9,8 +9,8 @@ package org.hibernate.ogm.test.options.mapping;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
+import java.util.Map;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
@@ -131,8 +131,8 @@ public class OptionIntegrationTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
 	}
 
 	@Override

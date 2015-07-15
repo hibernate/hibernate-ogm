@@ -9,6 +9,7 @@ package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -41,8 +42,8 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 	private Cloud cloud;
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
 	@Test
