@@ -8,7 +8,8 @@ package org.hibernate.ogm.datastore.ehcache.test.cachemapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.cfg.Configuration;
+import java.util.Map;
+
 import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
@@ -37,7 +38,7 @@ public class CachePerKindCacheMappingTest extends CacheMappingTestBase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( EhcacheProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
+	protected void configure(Map<String, Object> cfg) {
+		cfg.put( EhcacheProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
 	}
 }

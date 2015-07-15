@@ -7,34 +7,29 @@
 package org.hibernate.ogm.datastore.neo4j.test;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Collections;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.TableGenerator;
 
 import org.fest.util.Files;
-import org.hibernate.boot.model.naming.ObjectNameNormalizer;
-import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
-import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.cfg.DefaultNamingStrategy;
-import org.hibernate.cfg.NamingStrategy;
-import org.hibernate.id.PersistentIdentifierGenerator;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
-import org.hibernate.ogm.dialect.impl.OgmDialect;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.id.impl.OgmTableGenerator;
-import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.type.LongType;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,64 +50,29 @@ public class Neo4jNextValueGenerationTest {
 	private static final int THREADS = 10;
 
 	private Neo4jDialect dialect;
-
 	private String dbLocation;
-
-	private Neo4jDatastoreProvider provider;
 
 	@Before
 	public void setUp() {
 		dbLocation = Neo4jTestHelper.dbLocation();
-		Properties configurationValues = new Properties();
-		configurationValues.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		provider = new Neo4jDatastoreProvider();
 
-		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
-		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
-		provider.injectServices( serviceRegistry );
+		StandardServiceRegistry serviceRegistry = TestHelper.getDefaultTestStandardServiceRegistry(
+				Collections.<String, Object>singletonMap( Neo4jProperties.DATABASE_PATH, dbLocation )
+		);
 
-		Set<PersistentNoSqlIdentifierGenerator> sequences = new HashSet<PersistentNoSqlIdentifierGenerator>();
-		sequences.add( identifierGenerator( INITIAL_VALUE_SEQUENCE, INITIAL_VALUE_FIRST_VALUE_TEST ) );
-		sequences.add( identifierGenerator( THREAD_SAFETY_SEQUENCE, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
+		new MetadataSources( serviceRegistry )
+			.addAnnotatedClass( EntityWithTableGenerator.class )
+			.addAnnotatedClass( AnotherEntityWithTableGenerator.class )
+			.buildMetadata()
+			.getSessionFactoryBuilder()
+			.unwrap( OgmSessionFactoryBuilder.class )
+			.build();
 
-		provider.configure( configurationValues );
-		provider.start();
-		provider.getSequenceGenerator().createSequences( sequences );
-		dialect = new Neo4jDialect( provider );
-	}
-
-	private PersistentNoSqlIdentifierGenerator identifierGenerator(String sequenceName, int initialValue) {
-		Properties newParams = new Properties();
-		newParams.setProperty( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
-		newParams.setProperty( OgmTableGenerator.TABLE_PARAM, HIBERNATE_SEQUENCES );
-		newParams.setProperty( OgmTableGenerator.INITIAL_PARAM, String.valueOf( initialValue ) );
-		newParams.put( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, new DefaultObjectNameNormalizer() );
-		OgmTableGenerator tableGenerator = new OgmTableGenerator();
-		tableGenerator.configure( LongType.INSTANCE, newParams, new OgmDialect( dialect ) );
-		return tableGenerator;
-	}
-
-	private static class DefaultObjectNameNormalizer extends ObjectNameNormalizer {
-
-		@Override
-		protected boolean isUseQuotedIdentifiersGlobally() {
-			return false;
-		}
-
-		@Override
-		protected NamingStrategy getNamingStrategy() {
-			return new DefaultNamingStrategy();
-		}
-
-		@Override
-		protected NamingStrategyDelegator getNamingStrategyDelegator() {
-			return LegacyNamingStrategyDelegator.DEFAULT_INSTANCE;
-		}
+		dialect = (Neo4jDialect) serviceRegistry.getService( GridDialect.class );
 	}
 
 	@After
 	public void tearDown() {
-		provider.stop();
 		Files.delete( new File( dbLocation ) );
 	}
 
@@ -148,5 +108,31 @@ public class Neo4jNextValueGenerationTest {
 	private IdSourceKey buildIdGeneratorKey(String sequenceName) {
 		IdSourceKeyMetadata metadata = DefaultIdSourceKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );
 		return IdSourceKey.forTable( metadata, sequenceName );
+	}
+
+	@Entity
+	private static class EntityWithTableGenerator {
+
+		@Id
+		@GeneratedValue(strategy = GenerationType.TABLE, generator = "gen1")
+		@TableGenerator(
+			name = "gen1",
+			initialValue = INITIAL_VALUE_FIRST_VALUE_TEST,
+			pkColumnValue = INITIAL_VALUE_SEQUENCE
+		)
+		Long id;
+	}
+
+	@Entity
+	private static class AnotherEntityWithTableGenerator {
+
+		@Id
+		@GeneratedValue(strategy = GenerationType.TABLE, generator = "gen2")
+		@TableGenerator(
+			name = "gen2",
+			initialValue = INITIAL_VALUE_THREAD_SAFETY_TEST,
+			pkColumnValue = THREAD_SAFETY_SEQUENCE
+		)
+		Long id;
 	}
 }

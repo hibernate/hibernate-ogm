@@ -10,7 +10,6 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Map;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.OptionConfigurator;
@@ -43,8 +42,8 @@ public class CachePerKindConfiguredViaOptionCacheMappingTest extends CacheMappin
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, new OptionConfigurator() {
+	protected void configure(Map<String, Object> cfg) {
+		cfg.put( OgmProperties.OPTION_CONFIGURATOR, new OptionConfigurator() {
 
 			@Override
 			public void configure(Configurable configurable) {

@@ -6,11 +6,13 @@
  */
 package org.hibernate.ogm.backendtck.optimisticlocking;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.Serializable;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
@@ -21,12 +23,9 @@ import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 
 /**
@@ -52,7 +51,7 @@ public class OptimisticLockingExtraTest extends OgmTestCase {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		Galaxy entity = (Galaxy) session.get( Galaxy.class, galaxy.getId() );
+		Galaxy entity = session.get( Galaxy.class, galaxy.getId() );
 		entity.getStars().add( new Star( "Algol" ) );
 
 		transaction.commit();
@@ -61,7 +60,7 @@ public class OptimisticLockingExtraTest extends OgmTestCase {
 		session = openSession();
 		transaction = session.beginTransaction();
 
-		entity = (Galaxy) session.get( Galaxy.class, galaxy.getId() );
+		entity = session.get( Galaxy.class, galaxy.getId() );
 		assertThat( entity.getVersion() ).isEqualTo( 1 );
 		assertThat( entity.getStars() ).hasSize( 3 );
 
@@ -84,8 +83,8 @@ public class OptimisticLockingExtraTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.GRID_DIALECT, TestDialect.class );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.GRID_DIALECT, TestDialect.class );
 	}
 
 	@Override

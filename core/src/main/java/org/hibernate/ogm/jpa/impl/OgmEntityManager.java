@@ -595,13 +595,7 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Object getDelegate() {
-		final Object delegate = hibernateEm.getDelegate();
-		if ( Session.class.isAssignableFrom( delegate.getClass() ) ) {
-			return buildOgmSession( (EventSource) delegate );
-		}
-		else {
-			return delegate;
-		}
+		return hibernateEm.getDelegate();
 	}
 
 	@Override

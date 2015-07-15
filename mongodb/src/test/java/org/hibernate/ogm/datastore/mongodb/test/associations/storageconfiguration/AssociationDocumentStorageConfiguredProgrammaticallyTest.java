@@ -43,7 +43,7 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 	@Before
 	public void setupConfiguration() {
 		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
+//		configure( configuration );
 	}
 
 	protected void setupSessionFactory() {
