@@ -225,7 +225,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 			if ( associatedJoinable.isCollection() ) {
 				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) associatedJoinable;
 				if ( collectionPersister.getType().isComponentType() ) {
-					StringBuilder columnNameBuilder = new StringBuilder( propertyName );
+					StringBuilder columnNameBuilder = new StringBuilder( );
 					// Collection of embeddables
 					appendComponenCollectionPath( columnNameBuilder, collectionPersister, pathIterator );
 					return columnNameBuilder.toString();
@@ -245,7 +245,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 			else if ( subType.isAssociationType() ) {
 				throw new UnsupportedOperationException( "Queries on collection in embeddables are not supported: " + property );
 			}
-			columnNameBuilder.append( "." );
+
 			columnNameBuilder.append( persister.toColumns( property )[0] );
 		}
 	}

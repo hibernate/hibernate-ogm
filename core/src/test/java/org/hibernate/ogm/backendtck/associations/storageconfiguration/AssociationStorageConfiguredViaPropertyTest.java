@@ -6,11 +6,10 @@
  */
 package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -26,6 +25,8 @@ import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 /**
  * Test for configuring the association storage mode via {@link Configuration}.
  *
@@ -40,8 +41,8 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 	private Cloud cloud;
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
 	@Test

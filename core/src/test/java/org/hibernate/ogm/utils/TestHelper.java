@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,8 +22,14 @@ import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -247,6 +254,55 @@ public class TestHelper {
 		}
 
 		return configuration;
+	}
+
+	public static StandardServiceRegistry getDefaultTestStandardServiceRegistry(Map<String, Object> settings) {
+		TestHelper.getCurrentDialectType();
+
+		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder()
+				.loadProperties( "/hibernate.properties" )
+				.applySetting( Environment.HBM2DDL_AUTO, "none" )
+				.applySetting( "hibernate.search.default.directory_provider", "ram" );
+
+		for ( Entry<String, String> setting : TestHelper.getEnvironmentProperties().entrySet() ) {
+			registryBuilder.applySetting( setting.getKey(), setting.getValue() );
+		}
+
+		for ( Entry<String, Object> setting : settings.entrySet() ) {
+			registryBuilder.applySetting( setting.getKey(), setting.getValue() );
+		}
+
+		return registryBuilder.build();
+	}
+
+	private static MetadataSources getMetadataSources(Class<?>... entityTypes) {
+		MetadataSources sources = new MetadataSources();
+
+		for (Class<?> entityType : entityTypes) {
+			sources.addAnnotatedClass( entityType );
+		}
+
+		return sources;
+	}
+	private static Metadata getDefaultTestMetadata(Map<String, Object> settings, Class<?>... entityTypes) {
+		StandardServiceRegistry serviceRegistry = getDefaultTestStandardServiceRegistry( settings );
+		MetadataSources sources = getMetadataSources( entityTypes );
+
+		return sources.getMetadataBuilder( serviceRegistry ).build();
+	}
+
+	public static OgmSessionFactory getDefaultTestSessionFactory(Class<?>... entityTypes) {
+		return getDefaultTestSessionFactory( Collections.<String, Object>emptyMap(), entityTypes );
+	}
+
+	public static OgmSessionFactory getDefaultTestSessionFactory(Map<String, Object> settings, Class<?>... entityTypes) {
+		return getDefaultTestMetadata(
+				settings,
+				entityTypes
+			)
+			.getSessionFactoryBuilder()
+			.unwrap( OgmSessionFactoryBuilder.class )
+			.build();
 	}
 
 	/**

@@ -10,13 +10,13 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.ErrorHandler.FailedGridDialectOperationContext;
@@ -467,8 +467,8 @@ public class CompensationSpiTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
 	}
 
 	@Override
