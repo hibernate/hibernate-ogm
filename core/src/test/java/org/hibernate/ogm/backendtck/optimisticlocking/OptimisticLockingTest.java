@@ -15,6 +15,7 @@ import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -23,7 +24,6 @@ import java.util.concurrent.ThreadFactory;
 import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
@@ -367,8 +367,8 @@ public class OptimisticLockingTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.GRID_DIALECT, TestDialect.class );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.GRID_DIALECT, TestDialect.class );
 	}
 
 	@Override

@@ -9,7 +9,9 @@ package org.hibernate.ogm.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.TransactionManager;
@@ -18,7 +20,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.utils.TestSessionFactory.Scope;
@@ -171,56 +174,61 @@ public class OgmTestRunner extends SkippableTestRunner {
 		}
 	}
 
-	protected SessionFactory buildSessionFactory() {
-		Class<?>[] classes = getConfiguredEntityTypes();
-		Configuration configuration = createConfiguration( classes );
-
-		return configuration.buildSessionFactory();
+	protected OgmSessionFactory buildSessionFactory() {
+		return TestHelper.getDefaultTestSessionFactory( getTestSpecificSettings(), getConfiguredEntityTypes() );
 	}
 
 	private Class<?>[] getConfiguredEntityTypes() {
 		for ( FrameworkMethod frameworkMethod : getTestClass().getAnnotatedMethods( TestEntities.class ) ) {
-			Method method = frameworkMethod.getMethod();
-			method.setAccessible( true );
+			Class<?>[] entityTypes = invokeTestEntitiesMethod( frameworkMethod );
 
-			if ( method.getReturnType() != Class[].class || method.getParameterTypes().length > 0 ) {
-				throw new IllegalStateException( "Method annotated with " + TestEntities.class.getSimpleName()
-						+ " must have no parameters and must return Class<?>[]." );
+			if ( entityTypes == null || entityTypes.length == 0 ) {
+				throw new IllegalArgumentException( "Define at least a single annotated entity" );
 			}
-			try {
-				return (Class<?>[]) method.invoke( super.createTest() );
-			}
-			catch (Exception e) {
-				throw new RuntimeException( e );
-			}
+
+			return entityTypes;
 		}
 
 		throw new IllegalStateException( "The entities of the test must be retrievable via a parameterless method which is annotated with "
 				+ TestEntities.class.getSimpleName() + " and returns Class<?>[]." );
 	}
 
-	private Configuration createConfiguration(Class<?>[] entityTypes) {
-		if ( entityTypes == null || entityTypes.length == 0 ) {
-			throw new IllegalArgumentException( "Define at least a single annotated entity" );
+	private Class<?>[] invokeTestEntitiesMethod(FrameworkMethod frameworkMethod) {
+		Method method = frameworkMethod.getMethod();
+		method.setAccessible( true );
+
+		if ( method.getReturnType() != Class[].class || method.getParameterTypes().length > 0 ) {
+			throw new IllegalStateException( "Method annotated with " + TestEntities.class.getSimpleName()
+					+ " must have no parameters and must return Class<?>[]." );
 		}
 
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( entityTypes );
-		invokeTestConfigurationMethod( configuration );
+		Class<?>[] entityTypes = null;
 
-		return configuration;
+		try {
+			entityTypes = (Class<?>[]) method.invoke( super.createTest() );
+		}
+		catch (Exception e) {
+			Exceptions.<RuntimeException>sneakyThrow( e );
+		}
+
+		return entityTypes;
 	}
 
-	private void invokeTestConfigurationMethod(OgmConfiguration configuration) {
+	private Map<String, Object> getTestSpecificSettings() {
+		Map<String, Object> testSpecificSettings = new HashMap<>();
+
 		try {
 			for ( FrameworkMethod frameworkMethod : getTestClass().getAnnotatedMethods( SessionFactoryConfiguration.class ) ) {
 				Method method = frameworkMethod.getMethod();
 				method.setAccessible( true );
-				method.invoke( super.createTest(), configuration );
+				method.invoke( super.createTest(), testSpecificSettings );
 			}
 		}
 		catch (Exception e) {
-			throw new RuntimeException( e );
+			Exceptions.<RuntimeException>sneakyThrow( e );
 		}
+
+		return testSpecificSettings;
 	}
 
 	@Override

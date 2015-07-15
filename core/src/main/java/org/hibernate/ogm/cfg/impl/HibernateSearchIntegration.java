@@ -9,6 +9,7 @@ package org.hibernate.ogm.cfg.impl;
 import java.util.Map;
 import java.util.Properties;
 
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 
 /**
@@ -81,4 +82,12 @@ public final class HibernateSearchIntegration {
 		}
 	}
 
+	public static void resetProperties( StandardServiceRegistryBuilder registryBuilder) {
+		if ( searchIsAvailable ) {
+			// set the OGM specific mass indexer in case we use Hibernate Search
+			registryBuilder.applySetting( MASSINDEXER_PROPERTY_KEY, MASSINDEXER_PROPERTY_VALUE );
+			// set the Hibernate Search strategy to load query matches by id rather then recurse into another query
+			registryBuilder.applySetting( RETRIEVALSTRATEGY_PROPERTY_KEY, RETRIEVALSTRATEGY_PROPERTY_VALUE );
+		}
+	}
 }
