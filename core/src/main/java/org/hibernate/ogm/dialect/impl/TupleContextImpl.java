@@ -95,8 +95,9 @@ public class TupleContextImpl implements TupleContext {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder( "Tuple Context {" );
 
+		builder.append( "selectableColumns: [")
 		builder.append( StringHelper.join( selectableColumns, ", " ) );
-		builder.append( "}" );
+		builder.append( "] }" );
 
 		return builder.toString();
 	}
