@@ -1,0 +1,44 @@
+package org.hibernate.ogm.datastore.redis.impl;
+
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.type.Type;
+
+/**
+ * Strategy for serializing/deserializing entities within Redis.
+ * <p/>
+ * Every strategy can support a different set of data types.
+ *
+ * @author Mark Paluch
+ */
+public interface SerializationStrategy {
+
+	/**
+	 * Deserialize payload into the expected {@code targetType}
+	 *
+	 * @param serialized byte array with in the serialized form
+	 * @param targetType expected type
+	 * @param <T> expected type
+	 *
+	 * @return the instance of {@code targetType} or null
+	 */
+	<T> T deserialize(byte[] serialized, Class<T> targetType);
+
+	/**
+	 * Serialize the {@code payload} into the target representation.
+	 *
+	 * @param payload the payload
+	 *
+	 * @return byte array containing the target representation
+	 */
+	byte[] serialize(Object payload);
+
+	/**
+	 * If the datastore does not support a {@link Type} the dialect might override it with a custom one.
+	 *
+	 * @param type The {@link Type} that might need to be overridden
+	 *
+	 * @return the GridType instance to use to bind the given {@code type} or null if the type does not need to be overridden
+	 */
+	GridType overrideType(Type type);
+
+}

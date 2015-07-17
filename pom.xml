@@ -30,6 +30,7 @@
         <module>neo4j</module>
         <module>couchdb</module>
         <module>cassandra</module>
+        <module>redis</module>
         <module>modules</module>
         <module>performance</module>
     </modules>
@@ -98,6 +99,12 @@
                 <version>1.5.0</version>
             </dependency>
             <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>1.2.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
               <groupId>org.jboss.naming</groupId>
               <artifactId>jnp-client</artifactId>
               <scope>test</scope>
@@ -155,6 +162,8 @@
                 <artifactId>jboss-logging-annotations</artifactId>
                 <version>${jbossLoggingProcessorVersion}</version>
             </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 

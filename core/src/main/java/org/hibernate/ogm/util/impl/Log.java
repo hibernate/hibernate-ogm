@@ -43,6 +43,7 @@ import org.jboss.logging.annotations.MessageLogger;
  * <li>1301-1400: couchdb</li>
  * <li>1401-1500: neo4j</li>
  * <li>1501-1600: ehcache</li>
+ * <li>1601-1700: redis</li>
  * </ul>
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
