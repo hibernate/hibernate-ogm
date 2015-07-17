@@ -60,6 +60,16 @@
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.basedir}/ogm/redis/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/redis/${hibernate.ogm.redis.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/redis-driver/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/redis/driver/${hibernate.ogm.redis.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
             <source>${module.xml.basedir}/hql/module.xml</source>
             <outputDirectory>/org/hibernate/hql/${hibernate.hql.module.slot}</outputDirectory>
             <filtered>true</filtered>
@@ -131,6 +141,31 @@
                  <include>com.codahale.metrics:metrics-core</include>
                  <include>com.google.guava:guava</include>
              </includes>
+       </dependencySet>
+       <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/redis/${hibernate.ogm.redis.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-redis</include>
+             </includes>
+       </dependencySet>
+       <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/redis/driver/${hibernate.ogm.redis.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>biz.paluch.redis:lettuce</include>
+                 <include>io.netty:netty-buffer</include>
+                 <include>io.netty:netty-codec</include>
+                 <include>io.netty:netty-common</include>
+                 <include>io.netty:netty-transport</include>
+                 <include>io.netty:netty-handler</include>
+                 <include>com.google.guava:guava</include>
+                 <include>org.apache.commons:commons-pool2</include>
+              </includes>
        </dependencySet>
        <dependencySet>
              <useProjectArtifact>false</useProjectArtifact>
