@@ -25,6 +25,7 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnitTransactionType;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -79,6 +80,7 @@ public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRe
 	}
 
 	@Test
+	@Ignore("Waiting for quoting fix to be available via official ORM release")
 	public void shouldFindPersistedMemberByIdWithNativeQuery() throws Exception {
 		Member newMember = memberRegistration.getNewMember();
 		newMember.setName( "Giovanni Doe" );
