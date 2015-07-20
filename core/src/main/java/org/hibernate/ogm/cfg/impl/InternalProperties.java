@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.cfg.impl;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;

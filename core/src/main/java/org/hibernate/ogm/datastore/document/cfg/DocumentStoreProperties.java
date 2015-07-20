@@ -6,12 +6,12 @@
  */
 package org.hibernate.ogm.datastore.document.cfg;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.ogm.cfg.OgmProperties;
 
 /**
  * Common properties for configuring document datastores such as MongoDB or CouchDB via {@code persistence.xml} or
- * {@link OgmConfiguration}.
+ * {@link StandardServiceRegistryBuilder#applySetting(String, Object)}.
  * <p>
  * Note that not all properties are supported by all datastores; refer to the documentation of the specific dialect to
  * find out the supported configuration properties.

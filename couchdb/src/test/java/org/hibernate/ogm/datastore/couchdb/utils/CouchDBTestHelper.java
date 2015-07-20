@@ -17,7 +17,6 @@ import javax.ws.rs.core.Response;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
@@ -35,10 +34,10 @@ import org.hibernate.ogm.datastore.couchdb.utils.backend.json.EntityCountRespons
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.AssociationsDesignDocument;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.TestableGridDialect;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -230,8 +229,8 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
-		return configuration.configureOptionsFor( CouchDB.class );
+	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
+		return CouchDB.class;
 	}
 
 	@Override
