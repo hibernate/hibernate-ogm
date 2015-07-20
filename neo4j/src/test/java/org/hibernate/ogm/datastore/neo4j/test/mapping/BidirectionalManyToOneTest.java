@@ -70,13 +70,15 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = ericNode.relationshipTo( forceNode, "salesForce" );
 		RelationshipsChainForGraphAssertions relationship2 = simonNode.relationshipTo( forceNode, "salesForce" );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, forceNode, ericNode, simonNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

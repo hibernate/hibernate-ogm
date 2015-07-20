@@ -139,7 +139,8 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 				storyGameNode
 					.relationshipTo( neutralBranchNode2, "neutralBranches" );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine
@@ -165,7 +166,8 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 				, relationship7
 				, relationship8
 		);
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

@@ -41,13 +41,15 @@ public class SingleEntityTest extends Neo4jJpaTestCase {
 				.property( "jug_id", jug.getId() )
 				.property( "name", jug.getName() );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, jugNode );
 		assertNumberOfRelationships( 0 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

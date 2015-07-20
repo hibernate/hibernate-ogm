@@ -79,13 +79,15 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = accountNode.relationshipTo( addressNode, "addresses" );
 		RelationshipsChainForGraphAssertions relationship2 = accountNode.relationshipTo( anotherNode, "addresses" );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode, addressNode, anotherNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Test
@@ -101,13 +103,15 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 				.property( "login", account.getLogin() )
 				.property( "password", account.getPassword() );
 
-		getTransactionManager().begin();
+		EntityManager em2 = getFactory().createEntityManager();
+		em2.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode );
 		assertNumberOfRelationships( 0 );
 
-		getTransactionManager().commit();
+		em2.getTransaction().commit();
+		em2.close();
 	}
 
 	@Override

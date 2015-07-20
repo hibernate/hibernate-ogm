@@ -70,13 +70,15 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship = accountNode
 				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Test
@@ -104,13 +106,15 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship = accountNode
 				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
-		getTransactionManager().begin();
+		final EntityManager em2 = getFactory().createEntityManager();
+		em2.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		getTransactionManager().commit();
+		em2.getTransaction().commit();
+		em2.close();
 	}
 
 	@Test
@@ -135,13 +139,15 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 		RelationshipsChainForGraphAssertions relationship = accountNode.relationshipTo( homeAddressNode, "homeAddress" );
 
-		getTransactionManager().begin();
+		final EntityManager em2 = getFactory().createEntityManager();
+		em2.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 
-		getTransactionManager().commit();
+		em2.getTransaction().commit();
+		em2.close();
 	}
 
 	@Test
@@ -158,13 +164,15 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 				.property( "password", account.getPassword() )
 				.property( "version", account.getVersion() + 1 );
 
-		getTransactionManager().begin();
+		final EntityManager em2 = getFactory().createEntityManager();
+		em2.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode );
 		assertNumberOfRelationships( 0 );
 
-		getTransactionManager().commit();
+		em2.getTransaction().commit();
+		em2.close();
 	}
 
 	@Test

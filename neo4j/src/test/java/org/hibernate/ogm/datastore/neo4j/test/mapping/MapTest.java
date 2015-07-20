@@ -73,7 +73,8 @@ public class MapTest extends Neo4jJpaTestCase {
 		NodeForGraphAssertions nickNode2 = node( "nick2", "Nicks", EMBEDDED.name() )
 				.property( "nicknames", "day[9]" );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine
@@ -97,7 +98,8 @@ public class MapTest extends Neo4jJpaTestCase {
 				, relationship4
 				);
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

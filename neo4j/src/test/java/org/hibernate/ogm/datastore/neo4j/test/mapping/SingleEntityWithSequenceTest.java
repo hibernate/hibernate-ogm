@@ -48,13 +48,15 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 				.property( "sequence_name", "song_sequence_name" )
 				.property( "next_val", 22 );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 		ExecutionEngine executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, jugNode, sequenceNode );
 		assertNumberOfRelationships( 0 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 
 		assertNumberOfNodes( 2 );
 		assertNumberOfRelationships( 0 );
