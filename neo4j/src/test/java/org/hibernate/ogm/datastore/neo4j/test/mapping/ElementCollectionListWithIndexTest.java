@@ -19,7 +19,7 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -65,13 +65,15 @@ public class ElementCollectionListWithIndexTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = grannyNode.relationshipTo( child0Node, "grandChildren" ).property( "birthorder", 0 );
 		RelationshipsChainForGraphAssertions relationship2 = grannyNode.relationshipTo( child1Node, "grandChildren" ).property( "birthorder", 1 );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, grannyNode, child0Node, child1Node );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

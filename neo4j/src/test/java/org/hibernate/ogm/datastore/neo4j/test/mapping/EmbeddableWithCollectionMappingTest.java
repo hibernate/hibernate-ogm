@@ -67,7 +67,8 @@ public class EmbeddableWithCollectionMappingTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions rel1 = orderNode.relationshipTo( shippingAddressNode, "shippingAddress" ).relationshipTo( phoneNode, "phone" ).relationshipTo( altenative1, "alternatives" );
 		RelationshipsChainForGraphAssertions rel2 = phoneNode.relationshipTo( altenative2, "alternatives" );
 
-		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
 
 		assertThatOnlyTheseNodesExist( createExecutionEngine()
 				, orderNode
@@ -77,7 +78,8 @@ public class EmbeddableWithCollectionMappingTest extends Neo4jJpaTestCase {
 				, altenative2 );
 
 		assertThatOnlyTheseRelationshipsExist( createExecutionEngine(), rel1, rel2 );
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

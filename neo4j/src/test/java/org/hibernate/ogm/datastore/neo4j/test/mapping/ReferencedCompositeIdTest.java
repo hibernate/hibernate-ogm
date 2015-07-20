@@ -18,7 +18,7 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * Tests for the mapping of associations with composite ids.
@@ -66,13 +66,15 @@ public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 
 		RelationshipsChainForGraphAssertions relationship1 = directorNode.relationshipTo( playersChampionshipNode, "directedTournament" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, directorNode, britishOpenNode, playersChampionshipNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

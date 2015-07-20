@@ -35,9 +35,8 @@ public class JPAJTATest extends JpaTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.MONGODB, GridDialectType.CASSANDRA },
-			comment = "MongoDB and Cassandra tests runs w/o transaction manager"
-	)
+		value = { GridDialectType.MONGODB, GridDialectType.CASSANDRA, GridDialectType.NEO4J },
+		comment = "These datastores tests runs w/o transaction manager")
 	public void testBootstrapAndCRUD() throws Exception {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory(

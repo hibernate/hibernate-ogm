@@ -16,7 +16,7 @@ import org.hibernate.ogm.backendtck.id.Song;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Davide D'Alto
@@ -48,13 +48,15 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 				.property( "sequence_name", "song_sequence_name" )
 				.property( "next_val", 22 );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, jugNode, sequenceNode );
 		assertNumberOfRelationships( 0 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 
 		assertNumberOfNodes( 2 );
 		assertNumberOfRelationships( 0 );

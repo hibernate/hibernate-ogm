@@ -63,8 +63,8 @@ public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<
 				emulateTransactions = false;
 			}
 			transactionFactory = new OgmTransactionFactory( emulateTransactions );
+			transactionFactory = datastoreProvider.wrapTransactionFactory( transactionFactory );
 		}
-
 		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
 		return errorHandler == null ? transactionFactory : getErrorHandlerEnabledFactory( registry, transactionFactory, errorHandler );
 	}

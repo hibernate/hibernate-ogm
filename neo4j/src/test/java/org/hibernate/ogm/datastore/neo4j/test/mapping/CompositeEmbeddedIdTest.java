@@ -22,7 +22,7 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Davide D'Alto
@@ -71,13 +71,15 @@ public class CompositeEmbeddedIdTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = newsNode.relationshipTo( label1Node, "labels" );
 		RelationshipsChainForGraphAssertions relationship2 = newsNode.relationshipTo( label2Node, "labels" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, newsNode, label1Node, label2Node, sequenceNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

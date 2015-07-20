@@ -22,8 +22,8 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Result;
 
 /**
  * Common methods to check the mapping of entities in Neo4j.
@@ -53,17 +53,16 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		return executeQuery( "MATCH (n) - [r] -> () RETURN COUNT(r)" );
 	}
 
-	protected ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
-		ExecutionEngine engine = createExecutionEngine();
-		ExecutionResult result = engine.execute( query, parameters );
+	protected Result executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
+		GraphDatabaseService engine = createExecutionEngine();
+		Result result = engine.execute( query, parameters );
 		return result;
 	}
 
-	protected ExecutionEngine createExecutionEngine() {
+	protected GraphDatabaseService createExecutionEngine() {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) getFactory() ).getSessionFactory();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
-		ExecutionEngine engine = new ExecutionEngine( provider.getDataBase() );
-		return engine;
+		return provider.getDataBase();
 	}
 
 	private Long executeQuery(String queryString) throws Exception {
@@ -83,14 +82,14 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		return uniqueResult;
 	}
 
-	protected void assertThatOnlyTheseNodesExist(ExecutionEngine executionEngine, NodeForGraphAssertions... nodes) throws Exception {
+	protected void assertThatOnlyTheseNodesExist(GraphDatabaseService executionEngine, NodeForGraphAssertions... nodes) throws Exception {
 		for ( NodeForGraphAssertions node : nodes ) {
 			assertThatExists( executionEngine, node );
 		}
 		assertNumberOfNodes( nodes.length );
 	}
 
-	protected void assertThatOnlyTheseRelationshipsExist(ExecutionEngine executionEngine, RelationshipsChainForGraphAssertions... relationships) throws Exception {
+	protected void assertThatOnlyTheseRelationshipsExist(GraphDatabaseService executionEngine, RelationshipsChainForGraphAssertions... relationships) throws Exception {
 		int expectedNumberOfRelationships = 0;
 		for ( RelationshipsChainForGraphAssertions relationship : relationships ) {
 			assertThatExists( executionEngine, relationship );

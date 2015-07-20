@@ -10,19 +10,22 @@
         <resource-root path="hibernate-ogm-neo4j-${project.version}.jar" />
         <resource-root path="neo4j-${neo4jVersion}.jar" />
         <resource-root path="neo4j-cypher-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-commons-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompilerOlderVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompilerOlderVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.1-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-udc-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompiler19Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompiler20Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.1-${neo4jCypherCompiler21Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.2-${neo4jCypherCompiler22Version}.jar" />
         <resource-root path="neo4j-graph-algo-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graph-matching-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-io-${neo4jVersion}.jar" />
         <resource-root path="neo4j-jmx-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-udc-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-unsafe-${neo4jVersion}.jar" />
         <resource-root path="parboiled-scala_2.10-${parboiledVersion}.jar" />
         <resource-root path="scala-library-${scalaLibraryVersion}.jar" />
-        <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
+        <resource-root path="scala-reflect-${scalaLibraryVersion}.jar" />
         <resource-root path="concurrentlinkedhashmap-lru-${concurrentlinkedhashmapVersion}.jar" />
     </resources>
     <dependencies>
@@ -31,6 +34,9 @@
 
         <!-- Separate module to make sure it's not visible to the applications -->
         <module name="org.hibernate.ogm.neo4j.lucene" slot="${hibernate.ogm.neo4j-lucene.module.slot}" />
+
+        <!-- It requires sun.misc.Unsafe -->
+        <module name="sun.jdk" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />

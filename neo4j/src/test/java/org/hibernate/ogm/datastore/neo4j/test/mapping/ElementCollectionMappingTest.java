@@ -24,7 +24,7 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * Tests the mapping of embeddable collections in Neo4j
@@ -139,8 +139,9 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 				storyGameNode
 					.relationshipTo( neutralBranchNode2, "neutralBranches" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine
 				, storyGameNode
@@ -165,7 +166,8 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 				, relationship7
 				, relationship8
 		);
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override

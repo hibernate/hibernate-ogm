@@ -24,9 +24,12 @@ import org.neo4j.graphdb.DependencyResolver;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.event.KernelEventHandler;
 import org.neo4j.graphdb.event.TransactionEventHandler;
@@ -36,8 +39,6 @@ import org.neo4j.graphdb.traversal.BidirectionalTraversalDescription;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.TransactionBuilder;
-import org.neo4j.kernel.impl.nioneo.store.StoreId;
 import org.neo4j.kernel.impl.util.StringLogger;
 
 /**
@@ -215,17 +216,37 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		}
 
 		@Override
-		public StoreId storeId() {
-			return null;
-		}
-
-		@Override
-		public TransactionBuilder tx() {
+		public org.neo4j.kernel.impl.store.StoreId storeId() {
 			return null;
 		}
 
 		@Override
 		public String getStoreDir() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterator<Node> findNodes(Label label, String key, Object value) {
+			return null;
+		}
+
+		@Override
+		public Node findNode(Label label, String key, Object value) {
+			return null;
+		}
+
+		@Override
+		public ResourceIterator<Node> findNodes(Label label) {
+			return null;
+		}
+
+		@Override
+		public Result execute(String query) throws QueryExecutionException {
+			return null;
+		}
+
+		@Override
+		public Result execute(String query, Map<String, Object> parameters) throws QueryExecutionException {
 			return null;
 		}
 	}

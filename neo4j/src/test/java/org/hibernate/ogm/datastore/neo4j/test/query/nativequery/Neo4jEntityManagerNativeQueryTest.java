@@ -155,11 +155,6 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		return new Class<?>[] { OscarWildePoem.class, Critic.class };
 	}
 
-	private void close(EntityManager em) {
-		em.clear();
-		em.close();
-	}
-
 	private void delete(Object... entities) {
 		em.getTransaction().begin();
 		for ( Object object : entities ) {
@@ -167,10 +162,6 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		}
 		em.getTransaction().commit();
 		em.clear();
-	}
-
-	private void commit() throws Exception {
-		getTransactionManager().commit();
 	}
 
 	private EntityManager createEntityManager() {

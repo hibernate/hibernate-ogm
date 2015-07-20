@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Davide D'Alto
@@ -96,13 +96,15 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship3 = father2Node.relationshipTo( child21Node, "orderedChildren" ).property( "birthorder", 0 );
 		RelationshipsChainForGraphAssertions relationship4 = father2Node.relationshipTo( child22Node, "orderedChildren" ).property( "birthorder", 1 );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		final EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, father1Node, child11Node, child12Node, father2Node, child21Node, child22Node );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2, relationship3, relationship4 );
 
-		getTransactionManager().commit();
+		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Override
