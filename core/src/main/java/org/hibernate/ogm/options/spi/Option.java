@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.options.spi;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
@@ -72,7 +72,7 @@ public abstract class Option<I, V> {
 	 * to bootstrap Hibernate OGM.
 	 *
 	 * @param propertyReader Provides access to the configuration properties used to bootstrap Hibernate OGM, e.g. given
-	 * in {@code persistence.xml} or set on {@link OgmConfiguration}.
+	 * in {@code persistence.xml} or set via {@link StandardServiceRegistryBuilder#applySetting(String, Object)}.
 	 * @return A default value for a specific option type or {@code null} if no default exists.
 	 */
 	public V getDefaultValue(ConfigurationPropertyReader propertyReader) {
