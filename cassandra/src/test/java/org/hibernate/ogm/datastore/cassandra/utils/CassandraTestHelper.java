@@ -7,29 +7,32 @@
 package org.hibernate.ogm.datastore.cassandra.utils;
 
 
-import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.mapping.Table;
-import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.cassandra.CassandraDialect;
-import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
-import org.hibernate.ogm.utils.TestableGridDialect;
-
-import org.hibernate.persister.collection.CollectionPersister;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.quote;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.mapping.Table;
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.cassandra.Cassandra;
+import org.hibernate.ogm.datastore.cassandra.CassandraDialect;
+import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.persister.collection.CollectionPersister;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -40,10 +43,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.quote;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
 /**
  * Utility methods for test suite support.
@@ -199,7 +198,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
-		return null;
+	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
+		return Cassandra.class;
 	}
 }

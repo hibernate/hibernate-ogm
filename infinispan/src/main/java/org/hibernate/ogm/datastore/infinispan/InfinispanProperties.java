@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.infinispan;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
 
 /**
- * Properties for configuring the Infinispan datastore via {@code persistence.xml} or {@link OgmConfiguration}.
+ * Properties for configuring the Infinispan datastore via {@code persistence.xml} or
+ * {@link StandardServiceRegistryBuilder}.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling

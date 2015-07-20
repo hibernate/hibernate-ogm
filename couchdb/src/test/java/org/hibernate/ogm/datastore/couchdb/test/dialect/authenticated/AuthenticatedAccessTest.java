@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.couchdb.test.dialect.authenticated;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.client.Client;
@@ -29,7 +30,10 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.engine.config.spi.ConfigurationService;
+import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.utils.TestHelper;
@@ -74,9 +78,9 @@ public class AuthenticatedAccessTest {
 
 	@BeforeClass
 	public static void createDatabaseAndSetUpAuthentication() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
+		StandardServiceRegistry serviceRegistry = getServiceRegistry();
 
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( serviceRegistry.getService( ConfigurationService.class ).getSettings() );
 		host = propertyReader.property( OgmProperties.HOST, String.class ).withDefault( "localhost" ).getValue();
 		port = propertyReader.property( OgmProperties.PORT, int.class ).withDefault( 5984 ).getValue();
 		serverUri = "http://" + host + ":" + port;
@@ -87,7 +91,12 @@ public class AuthenticatedAccessTest {
 		createTestDatabase();
 		createDatabaseUser();
 
-		sessions = configuration.buildSessionFactory();
+		sessions = new MetadataSources( serviceRegistry )
+			.addAnnotatedClass( Flower.class )
+			.buildMetadata()
+			.getSessionFactoryBuilder()
+			.unwrap( OgmSessionFactoryBuilder.class )
+			.build();
 	}
 
 	@AfterClass
@@ -122,14 +131,15 @@ public class AuthenticatedAccessTest {
 		session.close();
 	}
 
-	private static OgmConfiguration getConfiguration() {
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( Flower.class );
-		configuration.setProperty( OgmProperties.DATABASE, database );
-		configuration.setProperty( OgmProperties.USERNAME, databaseUser );
-		configuration.setProperty( OgmProperties.PASSWORD, databaseUserPassword );
-		configuration.setProperty( OgmProperties.CREATE_DATABASE, Boolean.FALSE.toString() );
+	private static StandardServiceRegistry getServiceRegistry() {
+		Map<String, Object> settings = new HashMap<>();
 
-		return configuration;
+		settings.put( OgmProperties.DATABASE, database );
+		settings.put( OgmProperties.USERNAME, databaseUser );
+		settings.put( OgmProperties.PASSWORD, databaseUserPassword );
+		settings.put( OgmProperties.CREATE_DATABASE, Boolean.FALSE );
+
+		return TestHelper.getDefaultTestStandardServiceRegistry( settings );
 	}
 
 	private static void createServerAdminUser() {

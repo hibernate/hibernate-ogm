@@ -18,7 +18,6 @@ import java.util.Set;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
@@ -27,7 +26,7 @@ import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -257,11 +256,6 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public MongoDBGlobalContext configureDatastore(OgmConfiguration configuration) {
-		return configuration.configureOptionsFor( MongoDB.class );
-	}
-
-	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
 		return new MongoDBDialect( (MongoDBDatastoreProvider) datastoreProvider );
 	}
@@ -331,5 +325,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 			return left == right || ( left != null && left.equals( right ) );
 		}
 		return true;
+	}
+
+	@Override
+	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
+		return MongoDB.class;
 	}
 }

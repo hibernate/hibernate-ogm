@@ -6,20 +6,13 @@
  */
 package org.hibernate.ogm.cfg;
 
-import java.util.Properties;
-
 import org.hibernate.HibernateException;
-import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
-import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.query.impl.OgmQueryTranslatorFactory;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -32,44 +25,12 @@ public class OgmConfiguration extends Configuration implements Configurable {
 
 	public OgmConfiguration() {
 		super();
-		resetOgm();
-	}
-
-	private void resetOgm() {
-		//NOTE: When performing changes here, be sure to do the same in setProperties() below
-
-		setProperty( InternalProperties.OGM_ON, "true" );
-
-		HibernateSearchIntegration.resetProperties( this );
-
-		// by default use the new id generator scheme...
-		setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
-
-		setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
+		super.setProperty( OgmProperties.ENABLED, "true" );
 	}
 
 	@Override
-	@Deprecated
 	public OgmSessionFactory buildSessionFactory() throws HibernateException {
-		return new OgmSessionFactoryImpl( (SessionFactoryImplementor) super.buildSessionFactory() );
-	}
-
-	@Override
-	public Configuration setProperties(Properties properties) {
-		super.setProperties( properties );
-		//Unless the new configuration properties explicitly disable OGM's default properties
-		//assume there was no intention to disable them:
-		if ( ! properties.containsKey( InternalProperties.OGM_ON ) ) {
-			setProperty( InternalProperties.OGM_ON, "true" );
-		}
-		if ( ! properties.containsKey( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS ) ) {
-			setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
-		}
-		if ( !properties.containsKey( AvailableSettings.QUERY_TRANSLATOR ) ) {
-			setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
-		}
-		HibernateSearchIntegration.setPropertiesIfUndefined( properties, this );
-		return this;
+		return (OgmSessionFactory) super.buildSessionFactory();
 	}
 
 	/**
