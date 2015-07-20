@@ -70,6 +70,11 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 				else {
 					// Ex: @ElementCollection List<Embedded> examples
 					Node embeddedNode = targetNode;
+
+					if ( targetColumnName.startsWith( collectionRole ) ) {
+						targetColumnName = targetColumnName.substring( collectionRole.length() + 1 );
+					}
+
 					String[] split = split( targetColumnName );
 					boolean found = true;
 					for ( int i = 0; i < split.length - 1; i++ ) {
