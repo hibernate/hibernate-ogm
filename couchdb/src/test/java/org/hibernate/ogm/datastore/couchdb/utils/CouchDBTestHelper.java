@@ -28,13 +28,13 @@ import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapsh
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.facade.DatabaseTestClient;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.AssociationCountResponse;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.EntityCountResponse;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.AssociationsDesignDocument;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.util.impl.Identifier;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;

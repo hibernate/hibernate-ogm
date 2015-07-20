@@ -30,6 +30,7 @@
         <module>neo4j</module>
         <module>couchdb</module>
         <module>cassandra</module>
+        <module>couchbase</module>
         <module>modules</module>
         <module>performance</module>
     </modules>
