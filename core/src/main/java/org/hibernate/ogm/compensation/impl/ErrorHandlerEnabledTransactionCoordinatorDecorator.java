@@ -4,11 +4,10 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.transaction.errorhandler.impl;
+package org.hibernate.ogm.compensation.impl;
 
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.ogm.compensation.ErrorHandler;
-import org.hibernate.ogm.compensation.impl.OperationCollector;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
@@ -32,10 +31,6 @@ public class ErrorHandlerEnabledTransactionCoordinatorDecorator extends Forwardi
 	}
 
 	public OperationCollector getOperationCollector() {
-		if ( operationCollector == null ) {
-			throw new IllegalStateException();
-		}
-
 		return operationCollector;
 	}
 
