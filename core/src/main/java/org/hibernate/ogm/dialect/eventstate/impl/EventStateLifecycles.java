@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.compensation.impl.ErrorHandlerEnabledTransactionCoordinatorDecorator;
 import org.hibernate.ogm.compensation.impl.OperationCollector;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.transaction.errorhandler.impl.ErrorHandlerEnabledTransactionCoordinatorDecorator;
 
 /**
  * Holds all known {@link EventStateLifecycle}s.
