@@ -13,8 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 
 /**
  * Provides common functionality required for query creation.
@@ -91,16 +90,15 @@ class QueriesBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T> T singleResult(ExecutionResult result) {
-		ResourceIterator<Map<String, Object>> iterator = result.iterator();
+	protected <T> T singleResult(Result result) {
 		try {
-			if ( iterator.hasNext() ) {
-				return (T) iterator.next().values().iterator().next();
+			if ( result.hasNext() ) {
+				return (T) result.next().values().iterator().next();
 			}
 			return null;
 		}
 		finally {
-			iterator.close();
+			result.close();
 		}
 	}
 }

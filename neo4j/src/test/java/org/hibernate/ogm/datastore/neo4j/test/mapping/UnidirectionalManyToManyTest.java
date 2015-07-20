@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Davide D'Alto
@@ -69,7 +69,7 @@ public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
 
 		EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, ownerNode, barclaysNode, sogeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );

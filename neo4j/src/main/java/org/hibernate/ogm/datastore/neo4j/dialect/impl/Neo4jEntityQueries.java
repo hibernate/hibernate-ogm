@@ -17,11 +17,11 @@ import java.util.Map;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 
 /**
  * Container for the queries related to one entity type in Neo4j. Unfortunately, we cannot use the same queries for all
@@ -220,14 +220,14 @@ public class Neo4jEntityQueries extends QueriesBase {
 	/**
 	 * Find the relationships representing the association.
 	 *
-	 * @param executionEngine the queries executor
+	 * @param GraphDatabaseService the queries executor
 	 * @param columnValues the values for the entity key column names of the owner node
 	 * @param role the relationship type mapping the role of the association
 	 * @return an iterator on the the results
 	 */
 	// We should move this in Neo4jAssociationQueries but, at the moment, having a query that only requires an EntityKeyMetadata make it easier
 	// to deal with the *ToOne scenario
-	public ResourceIterator<Relationship> findAssociation(ExecutionEngine executionEngine, Object[] columnValues, String role) {
+	public ResourceIterator<Relationship> findAssociation(GraphDatabaseService executionEngine, Object[] columnValues, String role) {
 		String query = findAssociationQueryCache.get( role );
 		if ( query == null ) {
 			query = completeFindAssociationQuery( role );
@@ -244,60 +244,60 @@ public class Neo4jEntityQueries extends QueriesBase {
 	/**
 	 * Create a single node representing an embedded element.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param GraphDatabaseService the {@link GraphDatabaseService} used to run the query
 	 * @param columnValues the values in {@link org.hibernate.ogm.model.key.spi.EntityKey#getColumnValues()}
 	 * @return the corresponding node;
 	 */
-	public Node createEmbedded(ExecutionEngine executionEngine, Object[] columnValues) {
+	public Node createEmbedded(GraphDatabaseService executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( createEmbeddedNodeQuery, params );
+		Result result = executionEngine.execute( createEmbeddedNodeQuery, params );
 		return singleResult( result );
 	}
 
 	/**
 	 * Find the node corresponding to an entity.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param GraphDatabaseService the {@link GraphDatabaseService} used to run the query
 	 * @param columnValues the values in {@link org.hibernate.ogm.model.key.spi.EntityKey#getColumnValues()}
 	 * @return the corresponding node
 	 */
-	public Node findEntity(ExecutionEngine executionEngine, Object[] columnValues) {
+	public Node findEntity(GraphDatabaseService executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( findEntityQuery, params );
+		Result result = executionEngine.execute( findEntityQuery, params );
 		return singleResult( result );
 	}
 
 	/**
 	 * Creates the node corresponding to an entity.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param GraphDatabaseService the {@link GraphDatabaseService} used to run the query
 	 * @param columnValues the values in {@link org.hibernate.ogm.model.key.spi.EntityKey#getColumnValues()}
 	 * @return the corresponding node
 	 */
-	public Node insertEntity(ExecutionEngine executionEngine, Object[] columnValues) {
+	public Node insertEntity(GraphDatabaseService executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( createEntityQuery, params );
+		Result result = executionEngine.execute( createEntityQuery, params );
 		return singleResult( result );
 	}
 
 	/**
 	 * Find all the node representing the entity.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param GraphDatabaseService the {@link GraphDatabaseService} used to run the query
 	 * @return an iterator over the nodes representing an entity
 	 */
-	public ResourceIterator<Node> findEntities(ExecutionEngine executionEngine) {
-		ExecutionResult result = executionEngine.execute( findEntitiesQuery );
+	public ResourceIterator<Node> findEntities(GraphDatabaseService executionEngine) {
+		Result result = executionEngine.execute( findEntitiesQuery );
 		return result.columnAs( "n" );
 	}
 
 	/**
 	 * Remove the nodes representing the entity and the embedded elements attached to it.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param GraphDatabaseService the {@link GraphDatabaseService} used to run the query
 	 * @param columnValues the values of the key identifying the entity to remove
 	 */
-	public void removeEntity(ExecutionEngine executionEngine, Object[] columnValues) {
+	public void removeEntity(GraphDatabaseService executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
 		// Remove the embedded elements first
 		executionEngine.execute( removeEmbdeddedElementQuery, params );
@@ -308,12 +308,12 @@ public class Neo4jEntityQueries extends QueriesBase {
 	/**
 	 * Update the value of an embedded node property.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param GraphDatabaseService the {@link GraphDatabaseService} used to run the query
 	 * @param keyValues the columns representing the identifier in the entity owning the embedded
 	 * @param embeddedColumn the column on the embedded node (dot-separated properties)
 	 * @param value the new value for the property
 	 */
-	public void updateEmbeddedColumn(ExecutionEngine executionEngine, Object[] keyValues, String embeddedColumn, Object value) {
+	public void updateEmbeddedColumn(GraphDatabaseService executionEngine, Object[] keyValues, String embeddedColumn, Object value) {
 		String query = updateEmbeddedPropertyQueryCache.get( embeddedColumn );
 		if ( query == null ) {
 			query = initUpdateEmbeddedColumnQuery( keyValues, embeddedColumn );

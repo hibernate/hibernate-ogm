@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
@@ -16,6 +17,7 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jTransactionFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -101,5 +103,11 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 	@Override
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
 		return Neo4jSchemaDefiner.class;
+	}
+
+	@Override
+	public TransactionFactory<?> wrapTransactionFactory(TransactionFactory<?> transactionFactory) {
+		Neo4jTransactionFactory factory = new Neo4jTransactionFactory( transactionFactory, this);
+		return factory;
 	}
 }

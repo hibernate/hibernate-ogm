@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.fest.assertions.Fail;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.ResourceIterator;
 
@@ -29,7 +29,7 @@ public class GraphAssertions {
 		return new NodeForGraphAssertions( alias, labels);
 	}
 
-	public static void assertThatExists(ExecutionEngine engine, NodeForGraphAssertions node) throws Exception {
+	public static void assertThatExists(GraphDatabaseService engine, NodeForGraphAssertions node) throws Exception {
 		String nodeAsCypher = node.toCypher();
 		String query = "MATCH " + nodeAsCypher + " RETURN " + node.getAlias();
 		ResourceIterator<Object> columnAs = engine.execute( query, node.getParams() ).columnAs( node.getAlias() );
@@ -60,7 +60,7 @@ public class GraphAssertions {
 		}
 	}
 
-	public static void assertThatExists(ExecutionEngine engine, RelationshipsChainForGraphAssertions relationship) throws Exception {
+	public static void assertThatExists(GraphDatabaseService engine, RelationshipsChainForGraphAssertions relationship) throws Exception {
 		String relationshipAsCypher = relationship.toCypher();
 		NodeForGraphAssertions node = relationship.getStart();
 		String query = "MATCH " + relationshipAsCypher + " RETURN " + node.getAlias();

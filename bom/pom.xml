@@ -27,16 +27,14 @@
         <infinispanVersion>7.2.1.Final</infinispanVersion>
         <mongodbVersion>2.13.1</mongodbVersion>
         <fongodbVersion>1.6.2</fongodbVersion>
-        <neo4jVersion>2.1.8</neo4jVersion>
+        <neo4jVersion>2.2.3</neo4jVersion>
         <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.1.3</cassandraVersion>
-
-        <!--
-             Not all the Neo4j artifacts are available in the latest version; Some artifacts with the older
-             version need to be explicitly managed as they have transitive dependencies in different versions
-             than Neo4j core
-        -->
-        <neo4jCypherCompilerOlderVersion>2.0.3</neo4jCypherCompilerOlderVersion>
+        <!-- Neo4j supports different versions of Cypher -->
+        <neo4jCypherCompiler19Version>2.0.4</neo4jCypherCompiler19Version>
+        <neo4jCypherCompiler20Version>2.0.4</neo4jCypherCompiler20Version>
+        <neo4jCypherCompiler21Version>2.1.8</neo4jCypherCompiler21Version>
+        <neo4jCypherCompiler22Version>${neo4jVersion}</neo4jCypherCompiler22Version>
         <!-- Neo4j does not support Lucene 4 currently-->
         <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
         <hibernateVersion>4.3.9.Final</hibernateVersion>
@@ -49,10 +47,10 @@
         <slf4jVersion>1.7.5</slf4jVersion>
         <resteasyVersion>3.0.9.Final</resteasyVersion>
         <jacksonVersion>2.4.1</jacksonVersion>
-        <parboiledVersion>1.1.6</parboiledVersion>
-        <scalaLibraryVersion>2.10.4</scalaLibraryVersion>
-        <concurrentlinkedhashmapVersion>1.3.1</concurrentlinkedhashmapVersion>
-        <asmVersion>4.1</asmVersion>
+        <parboiledVersion>1.1.7</parboiledVersion>
+        <scalaLibraryVersion>2.10.5</scalaLibraryVersion>
+        <concurrentlinkedhashmapVersion>1.4</concurrentlinkedhashmapVersion>
+        <asmVersion>5.0.3</asmVersion>
         <luceneVersion>4.10.4</luceneVersion>
 
         <!--
@@ -426,20 +424,24 @@
                 <version>${neo4jVersion}</version>
                 <exclusions>
                     <exclusion>
-                        <artifactId>neo4j-cypher-compiler-1.9</artifactId>
-                        <groupId>org.neo4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>neo4j-cypher-compiler-2.0</artifactId>
+                        <artifactId>neo4j-consistency-check</artifactId>
                         <groupId>org.neo4j</groupId>
                     </exclusion>
                     <exclusion>
                         <artifactId>opencsv</artifactId>
                         <groupId>net.sf.opencsv</groupId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.neo4j</groupId>
+                <artifactId>neo4j-kernel</artifactId>
+                <version>${neo4jVersion}</version>
+                <exclusions>
                     <exclusion>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>neo4j-csv</artifactId>
+                        <groupId>org.neo4j</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -450,66 +452,6 @@
                 <artifactId>cassandra-driver-core</artifactId>
                 <version>${cassandraVersion}</version>
             </dependency>
-
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-cypher-compiler-1.9</artifactId>
-            <version>${neo4jCypherCompilerOlderVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>neo4j-graph-matching</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>neo4j-kernel</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>neo4j-graph-algo</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>neo4j-lucene-index</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>scala-library</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-cypher-compiler-2.0</artifactId>
-            <version>${neo4jCypherCompilerOlderVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>neo4j-graph-matching</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>neo4j-kernel</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>neo4j-graph-algo</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>neo4j-lucene-index</artifactId>
-                    <groupId>org.neo4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>scala-library</artifactId>
-                    <groupId>org.scala-lang</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>opencsv</artifactId>
-                    <groupId>net.sf.opencsv</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>

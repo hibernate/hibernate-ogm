@@ -123,7 +123,7 @@ public class ForwardingTransactionImplementor implements TransactionImplementor 
 		return delegate.getTimeout();
 	}
 
-	TransactionImplementor getDelegate() {
+	protected TransactionImplementor getDelegate() {
 		return delegate;
 	}
 }
