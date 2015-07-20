@@ -1,0 +1,130 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>hibernate-ogm-parent</artifactId>
+		<groupId>org.hibernate.ogm</groupId>
+		<version>4.2.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>hibernate-ogm-elasticsearch</artifactId>
+
+	<name>Hibernate OGM for Elastic search as a Database</name>
+	<description>Persist objects in Elastic search</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hibernate.ogm</groupId>
+			<artifactId>hibernate-ogm-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.hql</groupId>
+			<artifactId>hibernate-hql-lucene</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging-processor</artifactId>
+			<!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>1.6.0</version>
+		</dependency>
+
+		<!-- Required if you use the OGM mass indexer -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-search-orm</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- TEST DEPENDENCIES -->
+		<dependency>
+			<groupId>org.hibernate.ogm</groupId>
+			<artifactId>hibernate-ogm-core</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.takari.junit</groupId>
+			<artifactId>takari-cpsuite</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- this is optional on core :( and needed for testing -->
+		<dependency>
+			<groupId>org.jboss.jbossts</groupId>
+			<artifactId>jbossjta</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easytesting</groupId>
+			<artifactId>fest-assert</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-impl-base</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- RESTEasy logs through slf4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>once</forkMode>
+					<skipExec>${skipUnitTests}</skipExec>
+					<dependenciesToScan>
+						<dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+					</dependenciesToScan>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>skip-couchdb-integration-tests</id>
+			<!-- To run the tests you need to define the environment property: ELASTICSEARCH_HOSTNAME -->
+			<activation>
+				<property>
+					<name>!env.ELASTICSEARCH_HOSTNAME</name>
+				</property>
+			</activation>
+			<properties>
+				<skipUnitTests>true</skipUnitTests>
+			</properties>
+		</profile>
+	</profiles>
+</project>
