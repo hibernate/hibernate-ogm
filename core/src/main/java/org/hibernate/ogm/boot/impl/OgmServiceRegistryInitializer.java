@@ -9,6 +9,7 @@ package org.hibernate.ogm.boot.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
@@ -45,7 +46,8 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 
 	@Override
 	public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-		boolean isOgmEnabled = isOgmEnabled( serviceRegistryBuilder.getSettings() );
+		Map<Object, Object> settings = serviceRegistryBuilder.getSettings();
+		boolean isOgmEnabled = isOgmEnabled( settings );
 
 		// registering OgmService in each case; Other OGM extensions then can recognize whether OGM is enabled or not
 		// and either register their specific customizations or pass through the ORM default implementations
@@ -53,6 +55,14 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 
 		if ( !isOgmEnabled ) {
 			return;
+		}
+
+		if ( !settings.containsKey( AvailableSettings.GLOBALLY_QUOTED_IDENTIFIERS ) ) {
+			serviceRegistryBuilder.applySetting( AvailableSettings.GLOBALLY_QUOTED_IDENTIFIERS, false );
+		}
+
+		if ( !settings.containsKey( AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED ) ) {
+			serviceRegistryBuilder.applySetting( AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED, false );
 		}
 
 		HibernateSearchIntegration.resetProperties( serviceRegistryBuilder );
