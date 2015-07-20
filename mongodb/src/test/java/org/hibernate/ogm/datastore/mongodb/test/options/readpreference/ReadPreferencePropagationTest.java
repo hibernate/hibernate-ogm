@@ -13,12 +13,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -131,15 +132,14 @@ public class ReadPreferencePropagationTest {
 	}
 
 	private void setupSessionFactory(MongoDBDatastoreProvider provider, AssociationStorageType associationStorage) {
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+		Map<String, Object> settings = new HashMap<>();
 
-		configuration.getProperties().put( OgmProperties.DATASTORE_PROVIDER, provider );
-
+		settings.put( OgmProperties.DATASTORE_PROVIDER, provider );
 		if ( associationStorage != null ) {
-			configuration.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, associationStorage );
+			settings.put( DocumentStoreProperties.ASSOCIATIONS_STORE, associationStorage );
 		}
 
-		sessions = configuration.buildSessionFactory();
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, getAnnotatedClasses() );
 	}
 
 	private BasicDBObject getGolfCourse() {

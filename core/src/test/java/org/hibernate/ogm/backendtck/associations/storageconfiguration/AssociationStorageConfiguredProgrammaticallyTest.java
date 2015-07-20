@@ -9,14 +9,15 @@ package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
@@ -41,10 +42,13 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@Test
 	public void associationStorageSetToAssociationDocumentOnGlobalLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -53,10 +57,13 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@Test
 	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.associationStorage( AssociationStorageType.IN_ENTITY );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -65,11 +72,14 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@Test
 	public void associationStorageSetToAssociationDocumentOnEntityLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -78,11 +88,14 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@Test
 	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.IN_ENTITY );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -91,14 +104,17 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@Test
 	public void associationStorageSetOnPropertyLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.entity( Cloud.class )
 				.property( "producedSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.property( "backupSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.IN_ENTITY );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -107,13 +123,16 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@Test
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-		.entity( Cloud.class )
-			.associationStorage( AssociationStorageType.IN_ENTITY )
-			.property( "backupSnowFlakes", ElementType.METHOD )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+		Map<String, Object> settings = new HashMap<String, Object>();
 
-		setupSessionFactory();
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
+			.entity( Cloud.class )
+			.associationStorage( AssociationStorageType.IN_ENTITY )
+				.property( "backupSnowFlakes", ElementType.METHOD )
+					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -213,11 +232,7 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Cloud.class,
-				SnowFlake.class
-		};
+	private void setupSessionFactory(Map<String, Object> settings) {
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, Cloud.class, SnowFlake.class );
 	}
 }

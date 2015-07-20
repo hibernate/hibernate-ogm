@@ -9,13 +9,15 @@ package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
@@ -42,6 +44,7 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 	@Test
 	public void associationStorageSetToCollectionOnEntityLevel() throws Exception {
 		setupSessionFactory();
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -59,12 +62,14 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 	@Test
 	public void associationStorageSetOnPropertyLevelViaApiTakesPrecedenceOverAnnotation() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.entity( AnnotatedCloud.class )
 				.property( "backupSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.IN_ENTITY );
 
-		setupSessionFactory();
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, AnnotatedCloud.class, Cloud.class, SnowFlake.class );
 
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
@@ -230,13 +235,7 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 		sessions.close();
 	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				AnnotatedCloud.class,
-				PolarCloud.class,
-				SnowFlake.class
-		};
+	private void setupSessionFactory() {
+		sessions = TestHelper.getDefaultTestSessionFactory( AnnotatedCloud.class, PolarCloud.class, SnowFlake.class );
 	}
 }

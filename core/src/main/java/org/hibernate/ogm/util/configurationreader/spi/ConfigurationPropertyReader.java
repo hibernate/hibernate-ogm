@@ -8,14 +8,14 @@ package org.hibernate.ogm.util.configurationreader.spi;
 
 import java.util.Map;
 
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.util.configurationreader.impl.SimplePropertyReaderContext;
 
 /**
- * Provides a safe access to configuration values as typically configured via {@link OgmConfiguration} or
- * {@code persistence.xml}.
+ * Provides a safe access to configuration values as typically configured via
+ * {@link StandardServiceRegistryBuilder#applySetting(String, Object)} or {@code persistence.xml}.
  * <p>
  * Values can be given in two ways:
  * <ul>
