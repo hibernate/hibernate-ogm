@@ -56,6 +56,7 @@ public class JPAJTATest extends JpaTestCase {
 		em.clear();
 
 		transactionManager.begin();
+		em.joinTransaction();
 		poem = em.find( Poem.class, poem.getId() );
 		assertThat( poem ).isNotNull();
 		assertThat( poem.getName() ).isEqualTo( "L'albatros" );
