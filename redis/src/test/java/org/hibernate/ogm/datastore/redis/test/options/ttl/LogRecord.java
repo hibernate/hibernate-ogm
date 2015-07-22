@@ -4,32 +4,31 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.redis.test.mapping;
+package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
+import java.util.concurrent.TimeUnit;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+
+import org.hibernate.ogm.datastore.redis.options.TTL;
 
 /**
  * @author Mark Paluch
  */
+@TTL(value = 7, unit = TimeUnit.DAYS)
 @Entity
-public class Donut {
+public class LogRecord {
 
 	@Id
 	private String id;
 
-	private double radius;
+	private String message;
 
-	private Glaze glaze;
-
-	Donut() {
-
+	public LogRecord() {
 	}
 
-	public Donut(String id, double radius, Glaze glaze) {
+	public LogRecord(String id) {
 		this.id = id;
-		this.radius = radius;
-		this.glaze = glaze;
 	}
 
 	public String getId() {
@@ -40,24 +39,11 @@ public class Donut {
 		this.id = id;
 	}
 
-	public double getRadius() {
-		return radius;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setRadius(double radius) {
-		this.radius = radius;
+	public void setMessage(String message) {
+		this.message = message;
 	}
-
-	public Glaze getGlaze() {
-		return glaze;
-	}
-
-	public void setGlaze(Glaze glaze) {
-		this.glaze = glaze;
-	}
-
-	enum Glaze {
-		Sugar, Dark, Pink
-	}
-
 }

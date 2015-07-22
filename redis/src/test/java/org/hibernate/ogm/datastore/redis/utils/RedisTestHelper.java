@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.redis.utils;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +21,7 @@ import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
+import org.hibernate.ogm.datastore.redis.options.EntityStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
@@ -50,17 +57,24 @@ public class RedisTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
-		Entity entity = getGridDialect( castProvider ).getEntity( key );
+		RedisDialect gridDialect = getGridDialect( castProvider );
+		Entity entity = gridDialect.getEntityStorageStrategy( EntityStorageType.JSON ).getEntity(
+				gridDialect.entityId(
+						key
+				)
+		);
 		return entity.getProperties();
 	}
 
 	private static RedisDatastoreProvider getProvider(SessionFactory sessionFactory) {
+
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService(
 				DatastoreProvider.class
 		);
 		if ( !( RedisDatastoreProvider.class.isInstance( provider ) ) ) {
 			throw new RuntimeException( "Not testing with RedisDatastoreProvider, cannot extract underlying map." );
 		}
+
 		return RedisDatastoreProvider.class.cast( provider );
 	}
 
@@ -96,12 +110,24 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
-		List<byte[]> keys = castProvider.getConnection().keys( RedisDialect.toBytes( "*" ) );
+		RedisConnection<byte[], byte[]> connection = getConnection( sessionFactory );
+		List<byte[]> keys = connection.keys( RedisDialect.toBytes( "*" ) );
 
 		long result = 0;
 		for ( byte[] key : keys ) {
-			result += castProvider.getConnection().hlen( key );
+			String keyAsString = RedisDialect.toString( key );
+			if ( keyAsString.startsWith( RedisDialect.ASSOCIATIONS ) || keyAsString.startsWith( RedisDialect.IDENTIFIERS ) ) {
+				continue;
+			}
+
+			String type = connection.type( key );
+
+			if ( type.equals( "hash" ) ) {
+				result += connection.hlen( key );
+			}
+			else {
+				result++;
+			}
 		}
 
 		return result;
@@ -115,7 +141,7 @@ public class RedisTestHelper implements TestableGridDialect {
 		RedisDatastoreProvider provider = getProvider( sessionFactory );
 		try {
 
-			byte[] actual = provider.getConnection().hget( RedisDialect.toBytes( hash ), RedisDialect.toBytes( key ) );
+			byte[] actual = provider.getConnection().get( RedisDialect.toBytes( hash + ":" + key ) );
 			JSONAssert.assertEquals( expectedDbObject, RedisDialect.toString( actual ), JSONCompareMode.LENIENT );
 		}
 		catch (JSONException e) {
@@ -147,7 +173,7 @@ public class RedisTestHelper implements TestableGridDialect {
 	public long getNumberOfGlobalAssociations(SessionFactory sessionFactory) {
 
 		RedisConnection<byte[], byte[]> connection = getConnection( sessionFactory );
-		return connection.hlen( RedisDialect.ASSOCIATIONS );
+		return connection.keys( RedisDialect.toBytes( RedisDialect.ASSOCIATIONS + ":*" ) ).size();
 	}
 
 	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
@@ -157,14 +183,17 @@ public class RedisTestHelper implements TestableGridDialect {
 		List<byte[]> keys = connection.keys( RedisDialect.toBytes( "*" ) );
 
 		for ( byte[] key : keys ) {
-			if ( key.equals( RedisDialect.ASSOCIATIONS ) || key.equals( RedisDialect.IDENTIFIERS ) ) {
+
+			String keyAsString = RedisDialect.toString( key );
+			if ( keyAsString.startsWith( RedisDialect.ASSOCIATIONS ) || keyAsString.startsWith( RedisDialect.IDENTIFIERS ) ) {
 				continue;
 			}
-			Map<byte[], byte[]> tuples = connection.hgetall( key );
 
-			for ( byte[] entity : tuples.values() ) {
+			String type = connection.type( key );
 
-				JsonNode jsonNode = fromJSON( entity );
+			if ( "string".equalsIgnoreCase( type ) ) {
+				byte[] value = connection.get( key );
+				JsonNode jsonNode = fromJSON( value );
 
 				for ( JsonNode node : jsonNode ) {
 					if ( node.isArray() ) {

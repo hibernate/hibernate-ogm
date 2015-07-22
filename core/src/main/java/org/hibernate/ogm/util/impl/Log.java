@@ -6,14 +6,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
-
 import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
@@ -24,12 +18,18 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.service.spi.ServiceException;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Log messages and exceptions used by Hibernate OGM core. Dialects may provide extensions of this interface with their
@@ -272,4 +272,7 @@ public interface Log extends BasicLogger {
 			+ "Property should be a comma separated list of host:port\n"
 			+ "e.g. www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123")
 	HibernateException unableToParseHost(String text);
+
+	@Message(id = 80, value = "The value set for the configuration property '%1$s' must be a long number. Found '%2$s'.")
+	HibernateException notALong(String propertyName, String value);
 }

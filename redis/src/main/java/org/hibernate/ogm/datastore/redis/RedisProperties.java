@@ -27,6 +27,25 @@ public final class RedisProperties implements KeyValueStoreProperties {
 	 */
 	public static final String SSL = "hibernate.ogm.redis.ssl";
 
+	/**
+	 * Property for configuring the strategy for storing entities. Valid values are the
+	 * {@link org.hibernate.ogm.datastore.redis.options.EntityStorageType} enumeration and the String
+	 * representation of its constants. Defaults to the json storage strategy.
+	 * <p/>
+	 * Note that any value specified via this property will be overridden by values configured via annotations or the
+	 * programmatic API.
+	 */
+	public static final String ENTITY_STORE = "hibernate.ogm.datastore.redis.entity_storage";
+
+	/**
+	 * Configuration property for setting the expiry of keys. This value is set in milliseconds.
+	 * <p/>
+	 * Defaults to none.
+	 *
+	 * @see org.hibernate.ogm.datastore.redis.options.TTL
+	 */
+	public static final String EXPIRY = "hibernate.ogm.redis.expiry";
+
 	private RedisProperties() {
 	}
 }

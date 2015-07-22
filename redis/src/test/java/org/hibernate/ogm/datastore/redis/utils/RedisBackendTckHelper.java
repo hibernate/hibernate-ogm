@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
  * @author Hardy Ferentschik
  */
 @RunWith(ClasspathSuite.class)
-@ClasspathSuite.ClassnameFilters({"org.hibernate.ogm.backendtck.*"})
+@ClasspathSuite.ClassnameFilters({"org.hibernate.ogm.backendtck.*" })
 //@ClasspathSuite.ClassnameFilters({ ".*BuiltInTypeTest" })
 public class RedisBackendTckHelper {
 }
