@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.query.spi.QueryParserService;
 
 /**
@@ -29,5 +30,10 @@ public abstract class BaseDatastoreProvider implements DatastoreProvider {
 	@Override
 	public boolean allowsTransactionEmulation() {
 		return false;
+	}
+
+	@Override
+	public TransactionFactory<?> wrapTransactionFactory(TransactionFactory<?> transactionFactory) {
+		return transactionFactory;
 	}
 }
