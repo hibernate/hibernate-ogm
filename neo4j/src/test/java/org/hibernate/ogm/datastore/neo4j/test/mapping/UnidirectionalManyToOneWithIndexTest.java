@@ -65,6 +65,7 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 
 		em.persist( father2 );
 		em.getTransaction().commit();
+		em.close();
 	}
 
 	@Test
