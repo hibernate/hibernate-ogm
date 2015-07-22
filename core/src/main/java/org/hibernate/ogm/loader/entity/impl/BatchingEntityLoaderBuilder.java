@@ -133,6 +133,7 @@ public abstract class BatchingEntityLoaderBuilder {
 	 * @param lockMode The lock mode
 	 * @param factory The SessionFactory
 	 * @param influencers Any influencers that should affect the built query
+	 * @param innerEntityLoaderBuilder Builder of the entity loader receiving the subset of batches
 	 *
 	 * @return The loader.
 	 */
@@ -141,20 +142,33 @@ public abstract class BatchingEntityLoaderBuilder {
 			int batchSize,
 			LockMode lockMode,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers) {
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
+		// defaults to the legacy ORM EntityLoader
+		innerEntityLoaderBuilder = innerEntityLoaderBuilder == null ? LegacyEntityLoaderBuilder.INSTANCE : innerEntityLoaderBuilder;
 		if ( batchSize <= 1 ) {
 			// no batching
-			return buildNonBatchingLoader( persister, lockMode, factory, influencers );
+			return buildNonBatchingLoader( persister, lockMode, factory, influencers, innerEntityLoaderBuilder );
 		}
-		return buildBatchingLoader( persister, batchSize, lockMode, factory, influencers );
+		return buildBatchingLoader( persister, batchSize, lockMode, factory, influencers, innerEntityLoaderBuilder );
+	}
+
+	public UniqueEntityLoader buildLoader(
+			OuterJoinLoadable persister,
+			int batchSize,
+			LockMode lockMode,
+			SessionFactoryImplementor factory,
+			LoadQueryInfluencers influencers) {
+		return buildLoader( persister, batchSize, lockMode, factory, influencers, null );
 	}
 
 	protected UniqueEntityLoader buildNonBatchingLoader(
 			OuterJoinLoadable persister,
 			LockMode lockMode,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers) {
-		return LegacyEntityLoaderBuilder.INSTANCE.buildLoader( persister, 1, lockMode, factory, influencers );
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
+		return innerEntityLoaderBuilder.buildLoader( persister, 1, lockMode, factory, influencers );
 	}
 
 	protected abstract UniqueEntityLoader buildBatchingLoader(
@@ -162,7 +176,8 @@ public abstract class BatchingEntityLoaderBuilder {
 			int batchSize,
 			LockMode lockMode,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers);
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder);
 
 	/**
 	 * Builds a batch-fetch capable loader based on the given persister, lock-options, etc.
@@ -172,6 +187,7 @@ public abstract class BatchingEntityLoaderBuilder {
 	 * @param lockOptions The lock options
 	 * @param factory The SessionFactory
 	 * @param influencers Any influencers that should affect the built query
+	 * @param innerEntityLoaderBuilder Builder of the entity loader receiving the subset of batches
 	 *
 	 * @return The loader.
 	 */
@@ -180,20 +196,24 @@ public abstract class BatchingEntityLoaderBuilder {
 			int batchSize,
 			LockOptions lockOptions,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers) {
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
+		// defaults to the legacy ORM EntityLoader
+		innerEntityLoaderBuilder = innerEntityLoaderBuilder == null ? LegacyEntityLoaderBuilder.INSTANCE : innerEntityLoaderBuilder;
 		if ( batchSize <= 1 ) {
 			// no batching
-			return buildNonBatchingLoader( persister, lockOptions, factory, influencers );
+			return buildNonBatchingLoader( persister, lockOptions, factory, influencers, innerEntityLoaderBuilder );
 		}
-		return buildBatchingLoader( persister, batchSize, lockOptions, factory, influencers );
+		return buildBatchingLoader( persister, batchSize, lockOptions, factory, influencers, innerEntityLoaderBuilder );
 	}
 
 	protected UniqueEntityLoader buildNonBatchingLoader(
 			OuterJoinLoadable persister,
 			LockOptions lockOptions,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers) {
-		return LegacyEntityLoaderBuilder.INSTANCE.buildLoader( persister, 1, lockOptions, factory, influencers );
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
+		return innerEntityLoaderBuilder.buildLoader( persister, 1, lockOptions, factory, influencers );
 	}
 
 	protected abstract UniqueEntityLoader buildBatchingLoader(
@@ -201,5 +221,6 @@ public abstract class BatchingEntityLoaderBuilder {
 			int batchSize,
 			LockOptions lockOptions,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers);
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder);
 }

@@ -32,8 +32,9 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 			int batchSize,
 			LockMode lockMode,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers) {
-		return new PaddedBatchingEntityLoader( persister, batchSize, lockMode, factory, influencers );
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
+		return new PaddedBatchingEntityLoader( persister, batchSize, lockMode, factory, influencers, innerEntityLoaderBuilder );
 	}
 
 	@Override
@@ -42,8 +43,15 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 			int batchSize,
 			LockOptions lockOptions,
 			SessionFactoryImplementor factory,
-			LoadQueryInfluencers influencers) {
-		return new PaddedBatchingEntityLoader( persister, batchSize, lockOptions, factory, influencers );
+			LoadQueryInfluencers influencers,
+			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
+		return new PaddedBatchingEntityLoader(
+				persister,
+				batchSize,
+				lockOptions,
+				factory,
+				influencers,
+				innerEntityLoaderBuilder );
 	}
 
 	public static class PaddedBatchingEntityLoader extends BatchingEntityLoader {
@@ -55,12 +63,18 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				int maxBatchSize,
 				LockMode lockMode,
 				SessionFactoryImplementor factory,
-				LoadQueryInfluencers loadQueryInfluencers) {
+				LoadQueryInfluencers loadQueryInfluencers,
+				BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
 			super( persister );
 			this.batchSizes = ArrayHelper.getBatchSizes( maxBatchSize );
 			this.loaders = new BatchableEntityLoader[ batchSizes.length ];
 			for ( int i = 0; i < batchSizes.length; i++ ) {
-				this.loaders[i] = LegacyEntityLoaderBuilder.INSTANCE.buildLoader( persister, batchSizes[i], lockMode, factory, loadQueryInfluencers);
+				this.loaders[i] = innerEntityLoaderBuilder.buildLoader(
+						persister,
+						batchSizes[i],
+						lockMode,
+						factory,
+						loadQueryInfluencers );
 			}
 			validate( maxBatchSize );
 		}
@@ -70,12 +84,13 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				int maxBatchSize,
 				LockOptions lockOptions,
 				SessionFactoryImplementor factory,
-				LoadQueryInfluencers loadQueryInfluencers) {
+				LoadQueryInfluencers loadQueryInfluencers,
+				BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
 			super( persister );
 			this.batchSizes = ArrayHelper.getBatchSizes( maxBatchSize );
 			this.loaders = new BatchableEntityLoader[ batchSizes.length ];
 			for ( int i = 0; i < batchSizes.length; i++ ) {
-				this.loaders[i] = LegacyEntityLoaderBuilder.INSTANCE.buildLoader(
+				this.loaders[i] = innerEntityLoaderBuilder.buildLoader(
 						persister,
 						batchSizes[i],
 						lockOptions,
