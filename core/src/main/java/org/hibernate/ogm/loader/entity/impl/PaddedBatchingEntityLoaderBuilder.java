@@ -15,10 +15,12 @@ import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.util.collections.ArrayHelper;
-import org.hibernate.loader.Loader;
+import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.persister.entity.OuterJoinLoadable;
 
 /**
+ * DO NOT UPDATE: Copy of ORM code that will be backported
+ *
  * @author Steve Ebersole
  */
 class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
@@ -46,7 +48,7 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 
 	public static class PaddedBatchingEntityLoader extends BatchingEntityLoader {
 		private final int[] batchSizes;
-		private final Loader[] loaders;
+		private final BatchableEntityLoader[] loaders;
 
 		public PaddedBatchingEntityLoader(
 				OuterJoinLoadable persister,
@@ -56,21 +58,11 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				LoadQueryInfluencers loadQueryInfluencers) {
 			super( persister );
 			this.batchSizes = ArrayHelper.getBatchSizes( maxBatchSize );
-			this.loaders = new Loader[ batchSizes.length ];
+			this.loaders = new BatchableEntityLoader[ batchSizes.length ];
 			for ( int i = 0; i < batchSizes.length; i++ ) {
-				this.loaders[i] = new EntityLoader( persister, batchSizes[i], lockMode, factory, loadQueryInfluencers);
+				this.loaders[i] = LegacyEntityLoaderBuilder.INSTANCE.buildLoader( persister, batchSizes[i], lockMode, factory, loadQueryInfluencers);
 			}
 			validate( maxBatchSize );
-		}
-
-		private void validate(int max) {
-			// these are more indicative of internal problems then user error...
-			if ( batchSizes[0] != max ) {
-				throw new HibernateException( "Unexpected batch size spread" );
-			}
-			if ( batchSizes[batchSizes.length-1] != 1 ) {
-				throw new HibernateException( "Unexpected batch size spread" );
-			}
 		}
 
 		public PaddedBatchingEntityLoader(
@@ -81,11 +73,27 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				LoadQueryInfluencers loadQueryInfluencers) {
 			super( persister );
 			this.batchSizes = ArrayHelper.getBatchSizes( maxBatchSize );
-			this.loaders = new Loader[ batchSizes.length ];
+			this.loaders = new BatchableEntityLoader[ batchSizes.length ];
 			for ( int i = 0; i < batchSizes.length; i++ ) {
-				this.loaders[i] = new EntityLoader( persister, batchSizes[i], lockOptions, factory, loadQueryInfluencers);
+				this.loaders[i] = LegacyEntityLoaderBuilder.INSTANCE.buildLoader(
+						persister,
+						batchSizes[i],
+						lockOptions,
+						factory,
+						loadQueryInfluencers
+				);
 			}
 			validate( maxBatchSize );
+		}
+
+		private void validate(int max) {
+			// these are more indicative of internal problems then user error...
+			if ( batchSizes[0] != max ) {
+				throw new HibernateException( "Unexpected batch size spread" );
+			}
+			if ( batchSizes[batchSizes.length - 1] != 1 ) {
+				throw new HibernateException( "Unexpected batch size spread" );
+			}
 		}
 
 		@Override
@@ -96,12 +104,12 @@ class PaddedBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 
 			final int numberOfIds = ArrayHelper.countNonNull( batch );
 			if ( numberOfIds <= 1 ) {
-				return ( (UniqueEntityLoader) loaders[batchSizes.length-1] ).load( id, optionalObject, session );
+				return loaders[batchSizes.length - 1].load( id, optionalObject, session );
 			}
 
 			// Uses the first batch-size bigger than the number of actual ids in the batch
-			int indexToUse = batchSizes.length-1;
-			for ( int i = 0; i < batchSizes.length-1; i++ ) {
+			int indexToUse = batchSizes.length - 1;
+			for ( int i = 0; i < batchSizes.length - 1; i++ ) {
 				if ( batchSizes[i] >= numberOfIds ) {
 					indexToUse = i;
 				}
