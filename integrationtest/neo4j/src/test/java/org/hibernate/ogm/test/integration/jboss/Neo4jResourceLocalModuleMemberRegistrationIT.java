@@ -35,12 +35,12 @@ import org.junit.runner.RunWith;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
-public class Neo4jModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
+public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
 
 	@Deployment
 	public static Archive<?> createTestArchive() throws Exception {
 		return new ModuleMemberRegistrationDeployment
-				.Builder( Neo4jModuleMemberRegistrationIT.class )
+				.Builder( Neo4jResourceLocalModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.neo4j services" )
 				.createDeployment();
