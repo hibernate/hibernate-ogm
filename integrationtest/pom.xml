@@ -89,14 +89,6 @@
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
             <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <!-- This exclusion is needed to be able to setup the project in Windows:
-                     it otherwise includes transitive dependency to the JDK JConsole -->
-                <exclusion>
-                    <artifactId>wildfly-patching</artifactId>
-                    <groupId>org.wildfly</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>
@@ -147,11 +139,10 @@
                 <version>${version.org.wildfly.arquillian}</version>
                 <scope>test</scope>
                 <exclusions>
-                    <!-- This exclusion is needed to be able to setup the project in Windows:
-                         it otherwise includes transitive dependency to the JDK JConsole -->
+                    <!-- Pulled in transitively; Neither available on Windows nor on JDK 9 -->
                     <exclusion>
-                        <artifactId>wildfly-patching</artifactId>
-                        <groupId>org.wildfly</groupId>
+                        <groupId>sun.jdk</groupId>
+                        <artifactId>jconsole</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

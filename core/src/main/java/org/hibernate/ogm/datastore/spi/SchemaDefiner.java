@@ -43,7 +43,7 @@ public interface SchemaDefiner extends Service {
 	/**
 	 * Initializes the schema in the datastore.
 	 *
-	 * @param configuration all the configuration properties
+	 * @param database describes the database and its schema(s)
 	 * @param factory the session factory
 	 */
 	void initializeSchema(Database database, SessionFactoryImplementor factory);
