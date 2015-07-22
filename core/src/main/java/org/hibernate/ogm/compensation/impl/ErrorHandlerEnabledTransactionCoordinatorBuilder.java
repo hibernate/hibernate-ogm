@@ -15,7 +15,7 @@ import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
  * A {@link TransactionCoordinatorBuilder} which takes transactions created by another builder and decorates them with the
- * {@link ErrorHandlerEnabledTransactionDecorator}.
+ * {@link ErrorHandlerEnabledTransactionCoordinatorDecorator}.
  *
  * @author Gunnar Morling
  */
