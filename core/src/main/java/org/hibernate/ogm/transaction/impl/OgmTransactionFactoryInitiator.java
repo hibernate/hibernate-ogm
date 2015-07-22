@@ -43,6 +43,7 @@ public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<
 	@Override
 	public TransactionFactory<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		TransactionFactory<?> transactionFactory = null;
+		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
 
 		// if there is a explicitly set transaction factory let ORM instantiate it
 		if ( hasExplicitNonJPAResourceLocalTransactionFactory( configurationValues ) ) {
@@ -50,7 +51,6 @@ public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<
 		}
 		else {
 			// if the strategy is not explicitly set or resource local we decide based on the dialect
-			DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
 			boolean emulateTransactions;
 			if ( datastoreProvider.allowsTransactionEmulation() ) {
 				// for resource local transaction type where the datastore does not support transactions
@@ -64,7 +64,7 @@ public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<
 			}
 			transactionFactory = new OgmTransactionFactory( emulateTransactions );
 		}
-
+		transactionFactory = datastoreProvider.wrapTransactionFactory( transactionFactory );
 		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
 		return errorHandler == null ? transactionFactory : getErrorHandlerEnabledFactory( registry, transactionFactory, errorHandler );
 	}
