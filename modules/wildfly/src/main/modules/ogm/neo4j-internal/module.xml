@@ -15,7 +15,10 @@
         <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
         <resource-root path="parboiled-scala_2.10-${parboiledVersion}.jar" />
         <resource-root path="scala-library-${scalaLibraryVersion}.jar" />
+        <resource-root path="scala-reflect-${scalaLibraryVersion}.jar" />
+        <resource-root path="neo4j-io-${neo4jVersion}.jar" />
         <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-unsafe-${neo4jVersion}.jar" />
         <resource-root path="concurrentlinkedhashmap-lru-${concurrentlinkedhashmapVersion}.jar" />
     </resources>
 
@@ -23,6 +26,11 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.parboiled"/>
+
+        <!-- neo4j-lucene-index requires the API in the Kernel -->
         <module name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.neo4j.module.slot}"/>
+
+        <!-- It requires sun.misc.Unsafe -->
+        <module name="sun.jdk" />
     </dependencies>
 </module>
