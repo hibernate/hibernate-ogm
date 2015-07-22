@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.value;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -16,18 +15,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Mark Paluch
  */
-@JsonTypeInfo(
-		use = JsonTypeInfo.Id.NAME,
-		include = JsonTypeInfo.As.PROPERTY,
-		property = StructuredValue.TYPE_DISCRIMINATOR_FIELD_NAME
-)
 public abstract class StructuredValue {
-
-	/**
-	 * Name of the document type discriminator field
-	 */
-	public static final String TYPE_DISCRIMINATOR_FIELD_NAME = "$type";
-
 
 	public StructuredValue() {
 	}

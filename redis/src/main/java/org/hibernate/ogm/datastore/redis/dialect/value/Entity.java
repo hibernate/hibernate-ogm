@@ -16,7 +16,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 
@@ -49,13 +48,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
  * @author Mark Paluch
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeName(Entity.TYPE_NAME)
 public class Entity extends StructuredValue {
 
-	/**
-	 * The name of this document type as materialized in {@link StructuredValue#TYPE_DISCRIMINATOR_FIELD_NAME}.
-	 */
-	public static final String TYPE_NAME = "entity";
 
 	private static final String PATH_SEPARATOR = ".";
 	private static final Pattern PATH_SPLIT_PATTERN = Pattern.compile( Pattern.quote( PATH_SEPARATOR ) );

@@ -275,4 +275,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 80, value = "Could not load an entity batch: %s")
 	HibernateException errorOnEntityBatchLoad(String contextualInfo, @Cause Exception e);
+
+	@Message(id = 81, value = "The value set for the configuration property '%1$s' must be a long number. Found '%2$s'.")
+	HibernateException notALong(String propertyName, String value);
 }

@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.redis.impl.json;
 
 import java.io.IOException;
@@ -9,7 +15,6 @@ import org.hibernate.type.Type;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -19,13 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JsonSerializationStrategy implements SerializationStrategy {
 
-	private final static byte[] NULL = "null".getBytes();
+	private static final byte[] NULL = "null".getBytes();
 	private final ObjectMapper objectMapper;
 
 	public JsonSerializationStrategy() {
-		this.objectMapper = new ObjectMapper().configure( JsonParser.Feature.ALLOW_SINGLE_QUOTES, true )
-				.configure( DeserializationFeature.USE_BIG_INTEGER_FOR_INTS, true )
-				.configure( DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true );
+		this.objectMapper = new ObjectMapper().configure( JsonParser.Feature.ALLOW_SINGLE_QUOTES, true );
 	}
 
 	@Override

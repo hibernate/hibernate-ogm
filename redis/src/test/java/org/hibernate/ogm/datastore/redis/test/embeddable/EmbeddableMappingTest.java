@@ -64,7 +64,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'$type': 'entity', " +
 						"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'country' : 'France', " +
@@ -74,7 +73,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 						"}" +
 						"}, " +
 						"'postal_code' : '75007', " +
-						"'login' : 'emmanuel', " +
 						"'password' : 'like I would tell ya', " +
 						"'version': 0 " +
 						"}"
@@ -107,7 +105,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'$type': 'entity', " +
 						"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'street1' : '1 avenue des Champs Elysees'," +
@@ -116,7 +113,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 						"}" +
 						"}, " +
 						"'postal_code' : '75007', " +
-						"'login' : 'emmanuel', " +
 						"'version': 1 " +
 						"}"
 		);
@@ -147,12 +143,10 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'$type': 'entity', " +
 						"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'street1' : '1 avenue des Champs Elysees'" +
 						"}, " +
-						"'login' : 'emmanuel', " +
 						"'postal_code' : '75007', " +
 						"'version': 2 " +
 						"}"
@@ -248,8 +242,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"" + id,
 				// expected
 				"{" +
-						"'$type':'entity'," +
-						"'id': " + id + "," +
 						"'goodBranch' : {" +
 						"'ending' : {" +
 						"'score' : 1," +
