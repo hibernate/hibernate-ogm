@@ -25,9 +25,9 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.util.impl.ArrayHelper;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Result;
 
 /**
  * Container for the queries related to one association family in Neo4j. Unfortunately, we cannot use the same queries
@@ -193,22 +193,22 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * Removes the relationship(s) representing the given association. If the association refers to an embedded entity
 	 * (collection), the referenced entities are removed as well.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param executionEngine the {@link GraphDatabaseService} used to run the query
 	 * @param associationKey represents the association
 	 */
-	public void removeAssociation(ExecutionEngine executionEngine, AssociationKey associationKey) {
+	public void removeAssociation(GraphDatabaseService executionEngine, AssociationKey associationKey) {
 		executionEngine.execute( removeAssociationQuery, params( associationKey.getEntityKey().getColumnValues() ) );
 	}
 
 	/**
 	 * Returns the relationship corresponding to the {@link AssociationKey} and {@link RowKey}.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param executionEngine the {@link GraphDatabaseService} used to run the query
 	 * @param associationKey represents the association
 	 * @param rowKey represents a row in an association
 	 * @return the corresponding relationship
 	 */
-	public Relationship findRelationship(ExecutionEngine executionEngine, AssociationKey associationKey, RowKey rowKey) {
+	public Relationship findRelationship(GraphDatabaseService executionEngine, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues;
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0 ) {
 			int length = associationKey.getMetadata().getRowKeyIndexColumnNames().length;
@@ -226,18 +226,18 @@ public class Neo4jAssociationQueries extends QueriesBase {
 			relationshipValues = getEntityKey( associationKey, rowKey ).getColumnValues();
 		}
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
-		ExecutionResult result = executionEngine.execute( findRelationshipQuery, params( queryValues ) );
+		Result result = executionEngine.execute( findRelationshipQuery, params( queryValues ) );
 		return singleResult( result );
 	}
 
 	/**
 	 * Remove an association row
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param executionEngine the {@link GraphDatabaseService} used to run the query
 	 * @param associationKey represents the association
 	 * @param rowKey represents a row in an association
 	 */
-	public void removeAssociationRow(ExecutionEngine executionEngine, AssociationKey associationKey, RowKey rowKey) {
+	public void removeAssociationRow(GraphDatabaseService executionEngine, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues;
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0 ) {
 			int length = associationKey.getMetadata().getRowKeyIndexColumnNames().length;
@@ -287,12 +287,12 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * Give an embedded association, creates all the nodes and relationships required to represent it.
 	 * It assumes that the entity node containing the association already exists in the db.
 	 *
-	 * @param executionEngine the {@link ExecutionEngine} to run the query
+	 * @param executionEngine the {@link GraphDatabaseService} to run the query
 	 * @param associationKey the {@link AssociationKey} identifying the association
 	 * @param embeddedKey the {@link EntityKey} identifying the embedded component
 	 * @return the created {@link Relationship} that represents the association
 	 */
-	public Relationship createRelationshipForEmbeddedAssociation(ExecutionEngine executionEngine, AssociationKey associationKey, EntityKey embeddedKey) {
+	public Relationship createRelationshipForEmbeddedAssociation(GraphDatabaseService executionEngine, AssociationKey associationKey, EntityKey embeddedKey) {
 		String query = initCreateEmbeddedAssociationQuery( associationKey, embeddedKey );
 		Object[] queryValues = createRelationshipForEmbeddedQueryValues( associationKey, embeddedKey );
 		return executeQuery( executionEngine, query, queryValues );
@@ -456,9 +456,9 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		queryBuilder.append( " RETURN r" );
 	}
 
-	private Relationship executeQuery(ExecutionEngine executionEngine, String query, Object[] queryValues) {
+	private Relationship executeQuery(GraphDatabaseService executionEngine, String query, Object[] queryValues) {
 		Map<String, Object> params = params( queryValues );
-		ExecutionResult result = executionEngine.execute( query, params );
+		Result result = executionEngine.execute( query, params );
 		return singleResult( result );
 	}
 

@@ -69,7 +69,7 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship2 = jeromeNode.relationshipTo( jugNode, "memberOf" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, jugNode, emmanuelNode, jeromeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );

@@ -29,7 +29,7 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.TestableGridDialect;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -49,8 +49,8 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ResourceIterator<Long> result = engine.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
+		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
+		ResourceIterator<Long> result = graphDb.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
 		Long count = result.next();
 		result.close();
 		return count.longValue();
@@ -58,8 +58,8 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ResourceIterator<Long> result = engine.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
+		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
+		ResourceIterator<Long> result = graphDb.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
 		Long count = result.next();
 		result.close();
 		return count.longValue();

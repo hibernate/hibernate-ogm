@@ -68,8 +68,8 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship2 = ownerNode.relationshipTo( sogeNode, "bankAccounts" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
 
+		GraphDatabaseService executionEngine = createExecutionEngine();
 		assertThatOnlyTheseNodesExist( executionEngine, ownerNode, barclaysNode, sogeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 

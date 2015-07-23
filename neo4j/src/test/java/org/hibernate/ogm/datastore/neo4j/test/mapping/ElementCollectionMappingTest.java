@@ -140,8 +140,8 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 					.relationshipTo( neutralBranchNode2, "neutralBranches" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
 
+		GraphDatabaseService executionEngine = createExecutionEngine();
 		assertThatOnlyTheseNodesExist( executionEngine
 				, storyGameNode
 				, goodBranchNode

@@ -59,8 +59,8 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship = husbandNode.relationshipTo( wifeNode, "wife" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
 
+		GraphDatabaseService executionEngine = createExecutionEngine();
 		assertThatOnlyTheseNodesExist( executionEngine, husbandNode, wifeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
 

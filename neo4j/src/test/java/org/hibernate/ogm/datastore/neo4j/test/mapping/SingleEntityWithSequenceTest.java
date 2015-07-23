@@ -49,7 +49,7 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 				.property( "next_val", 22 );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, jugNode, sequenceNode );
 		assertNumberOfRelationships( 0 );

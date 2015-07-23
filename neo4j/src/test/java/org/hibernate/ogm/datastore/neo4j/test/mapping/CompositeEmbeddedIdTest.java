@@ -72,8 +72,8 @@ public class CompositeEmbeddedIdTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship2 = newsNode.relationshipTo( label2Node, "labels" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
 
+		GraphDatabaseService executionEngine = createExecutionEngine();
 		assertThatOnlyTheseNodesExist( executionEngine, newsNode, label1Node, label2Node, sequenceNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 

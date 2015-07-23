@@ -42,7 +42,7 @@ public class SingleEntityTest extends Neo4jJpaTestCase {
 				.property( "name", jug.getName() );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, jugNode );
 		assertNumberOfRelationships( 0 );

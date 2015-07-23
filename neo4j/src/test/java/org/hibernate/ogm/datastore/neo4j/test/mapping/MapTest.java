@@ -74,7 +74,7 @@ public class MapTest extends Neo4jJpaTestCase {
 				.property( "nicknames", "day[9]" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine
 				, userNode
