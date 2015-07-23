@@ -84,9 +84,9 @@ public class CRUDTest extends OgmTestCase {
 	public static void main(String[] args) throws Exception {
 		CRUDTest test = new CRUDTest();
 
-		test.sessions = TestHelper
-				.getDefaultTestConfiguration( test.getAnnotatedClasses() )
-				.buildSessionFactory();
+		test.sessions = TestHelper.getDefaultTestSessionFactory( test.getAnnotatedClasses() );
+
+		test.setUp();
 
 		try {
 			test.performanceLoop();

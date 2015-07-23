@@ -6,9 +6,8 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
@@ -35,7 +34,7 @@ public class SchemaDefinerInitiator implements SessionFactoryServiceInitiator<Sc
 	}
 
 	@Override
-	public SchemaDefiner initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+	public SchemaDefiner initiateService(SessionFactoryImplementor sessionFactory, SessionFactoryOptions sessionFactoryOptions, ServiceRegistryImplementor registry) {
 		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
 		Class<? extends SchemaDefiner> schemaInitializerType = datastoreProvider.getSchemaDefinerType();
 
@@ -49,10 +48,5 @@ public class SchemaDefinerInitiator implements SessionFactoryServiceInitiator<Sc
 		}
 
 		return new BaseSchemaDefiner();
-	}
-
-	@Override
-	public SchemaDefiner initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
-		throw new UnsupportedOperationException( "Cannot initiate schema initializer based on meta-data" );
 	}
 }

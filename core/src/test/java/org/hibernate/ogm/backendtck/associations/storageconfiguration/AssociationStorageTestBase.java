@@ -7,31 +7,22 @@
 package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestHelper;
-import org.junit.Before;
+import org.junit.runner.RunWith;
 
 /**
  * Base for tests for configuring association storage strategies.
  *
  * @author Gunnar Morling
  */
-public abstract class AssociationStorageTestBase extends OgmTestCase {
+@RunWith(SkippableTestRunner.class)
+public abstract class AssociationStorageTestBase {
 
-	protected OgmConfiguration configuration;
 	protected OgmSessionFactory sessions;
-
-	@Before
-	public void setupConfiguration() {
-		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
-	}
-
-	protected void setupSessionFactory() {
-		sessions = configuration.buildSessionFactory();
-	}
 
 	protected long associationDocumentCount() {
 		return TestHelper.getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT );
@@ -39,5 +30,9 @@ public abstract class AssociationStorageTestBase extends OgmTestCase {
 
 	protected long inEntityAssociationCount() {
 		return TestHelper.getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY );
+	}
+
+	protected Class<? extends DatastoreConfiguration<DocumentStoreGlobalContext<?, ?>>> getDocumentDatastoreConfiguration() {
+		return TestHelper.<DatastoreConfiguration<DocumentStoreGlobalContext<?, ?>>>getCurrentDatastoreConfiguration();
 	}
 }

@@ -6,9 +6,10 @@
  */
 package org.hibernate.ogm.test.batch;
 
+import java.util.Map;
+
 import org.fest.assertions.Assertions;
 import org.hibernate.Session;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -76,8 +77,8 @@ public class BatchExecutionTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.setProperty( OgmProperties.DATASTORE_PROVIDER, SampleBatchableDatastoreProvider.class.getName() );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.DATASTORE_PROVIDER, SampleBatchableDatastoreProvider.class.getName() );
 	}
 
 	@Override

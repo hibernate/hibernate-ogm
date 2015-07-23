@@ -7,9 +7,9 @@
 package org.hibernate.ogm.service.impl;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.spi.SessionFactoryOptions;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -37,17 +37,15 @@ class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<Que
 	}
 
 	@Override
-	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
+	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, SessionFactoryOptions sessionFactoryOptions, ServiceRegistryImplementor registry) {
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader(
+				registry.getService( ConfigurationService.class ).getSettings(),
+				registry.getService( ClassLoaderService.class )
+		);
 
 		return propertyReader.property( InternalProperties.QUERY_PARSER_SERVICE, QueryParserService.class )
 				.instantiate()
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultQueryParserServiceType() )
 				.getValue();
-	}
-
-	@Override
-	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
-		throw new UnsupportedOperationException( "Cannot create " + QueryParserService.class.getName() + " service using metadata" );
 	}
 }

@@ -6,27 +6,36 @@
  */
 package org.hibernate.ogm.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
+import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -35,8 +44,6 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -115,6 +122,12 @@ public class TestHelper {
 		return helper.getGridDialect( datastoreProvider );
 	}
 
+	public static <D extends DatastoreConfiguration<?>> Class<D> getCurrentDatastoreConfiguration() {
+		@SuppressWarnings("unchecked") // relies on the fact that the caller assigns correctly; that's ok for this purpose
+		Class<D> configurationType = (Class<D>) helper.getDatastoreConfigurationType();
+		return configurationType;
+	}
+
 	public static long getNumberOfEntities( Session session) {
 		return getNumberOfEntities( session.getSessionFactory() );
 	}
@@ -146,7 +159,7 @@ public class TestHelper {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
-		return (T) session.get( clazz, id );
+		return session.get( clazz, id );
 	}
 
 	public static void dropSchemaAndDatabase(Session session) {
@@ -171,92 +184,77 @@ public class TestHelper {
 		}
 	}
 
-	public static Map<String, String> getEnvironmentProperties() {
-		//TODO hibernate.properties is ignored due to HHH-8635, thus explicitly load its properties
-		Map<String, String> properties = getHibernateProperties();
-		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
-
-		if (environmentProperties != null ) {
-			properties.putAll( environmentProperties );
-		}
-
-		return properties;
-	}
-
-	private static Map<String, String> getHibernateProperties() {
-		InputStream hibernatePropertiesStream = null;
-		Map<String, String> properties = new HashMap<String, String>();
-
-		try {
-			hibernatePropertiesStream = TestHelper.class.getResourceAsStream( "/hibernate.properties" );
-			Properties hibernateProperties = new Properties();
-			hibernateProperties.load( hibernatePropertiesStream );
-
-			for ( Entry<Object, Object> property : hibernateProperties.entrySet() ) {
-				properties.put( property.getKey().toString(), property.getValue().toString() );
-			}
-
-			return properties;
-		}
-		catch (Exception e) {
-			throw new RuntimeException( e );
-		}
-		finally {
-			closeQuietly( hibernatePropertiesStream );
-		}
-	}
-
-	private static void closeQuietly(InputStream stream) {
-		if ( stream != null ) {
-			try {
-				stream.close();
-			}
-			catch (IOException e) {
-				//ignore
-			}
-		}
-	}
-
 	public static void checkCleanCache(SessionFactory sessionFactory) {
 		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
 		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
 
-	/**
-	 * Provides a default {@link OgmConfiguration} for tests, using the given set of annotated entity types.
-	 *
-	 * @param entityTypes the entity types for which to build a configuration
-	 * @return a default configuration based on the given types
-	 */
-	public static OgmConfiguration getDefaultTestConfiguration(Class<?>... entityTypes) {
-		OgmConfiguration configuration = new OgmConfiguration();
+	public static Map<String, String> getDefaultTestSettings() {
+		Map<String, String> settings = new HashMap<>();
 
-		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
-			configuration.setProperty( entry.getKey(), entry.getValue() );
+		settings.put( OgmProperties.ENABLED, "true" );
+		settings.put( Environment.HBM2DDL_AUTO, "none" );
+		settings.put( "hibernate.search.default.directory_provider", "ram" );
+
+		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
+
+		if ( environmentProperties != null ) {
+			settings.putAll( environmentProperties );
 		}
 
-		configuration.setProperty( Environment.HBM2DDL_AUTO, "none" );
-
-		// volatile indexes for Hibernate Search (if used)
-		configuration.setProperty( "hibernate.search.default.directory_provider", "ram" );
-		// disable warnings about unspecified Lucene version
-		configuration.setProperty( "hibernate.search.lucene_version", "LUCENE_35" );
-
-		for ( Class<?> aClass : entityTypes ) {
-			configuration.addAnnotatedClass( aClass );
-		}
-
-		return configuration;
+		return settings;
 	}
 
-	/**
-	 * Returns a {@link GlobalContext} for configuring the current datastore.
-	 *
-	 * @param configuration the target the configuration will be applied to
-	 * @return a context object for configuring the current datastore.
-	 */
-	public static GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
-		return helper.configureDatastore( configuration );
+	public static StandardServiceRegistry getDefaultTestStandardServiceRegistry(Map<String, Object> settings) {
+		TestHelper.getCurrentDialectType();
+
+		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
+
+		for ( Entry<String, String> setting : getDefaultTestSettings().entrySet() ) {
+			registryBuilder.applySetting( setting.getKey(), setting.getValue() );
+		}
+
+		for ( Entry<String, Object> setting : settings.entrySet() ) {
+			registryBuilder.applySetting( setting.getKey(), setting.getValue() );
+		}
+
+		return registryBuilder.build();
+	}
+
+	private static MetadataSources getMetadataSources(Class<?>... entityTypes) {
+		MetadataSources sources = new MetadataSources();
+
+		for (Class<?> entityType : entityTypes) {
+			sources.addAnnotatedClass( entityType );
+		}
+
+		return sources;
+	}
+	private static Metadata getDefaultTestMetadata(Map<String, Object> settings, Class<?>... entityTypes) {
+		StandardServiceRegistry serviceRegistry = getDefaultTestStandardServiceRegistry( settings );
+		MetadataSources sources = getMetadataSources( entityTypes );
+
+		return sources.getMetadataBuilder( serviceRegistry ).build();
+	}
+
+	public static OgmSessionFactory getDefaultTestSessionFactory(Class<?>... entityTypes) {
+		return getDefaultTestSessionFactory( Collections.<String, Object>emptyMap(), entityTypes );
+	}
+
+	public static OgmSessionFactory getDefaultTestSessionFactory(Map<String, Object> settings, Class<?>... entityTypes) {
+		return getDefaultTestMetadata(
+				settings,
+				entityTypes
+			)
+			.getSessionFactoryBuilder()
+			.unwrap( OgmSessionFactoryBuilder.class )
+			.build();
+	}
+
+	public static <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Map<String, Object> settings, Class<D> datastoreType) {
+		ConfigurableImpl configurable = new ConfigurableImpl();
+		settings.put( InternalProperties.OGM_OPTION_CONTEXT, configurable.getContext() );
+		return configurable.configureOptionsFor( datastoreType );
 	}
 
 	private static Class<?> loadClass(String className) {
@@ -290,8 +288,12 @@ public class TestHelper {
 		private static AvailableDatastoreProvider getDatastoreProvider() {
 			// This ignores the case where the provider is given as class or FQN; That's ok for now, can be extended if
 			// needed
-			String datastoreProviderProperty = new OgmConfiguration().getProperty( OgmProperties.DATASTORE_PROVIDER );
-			AvailableDatastoreProvider provider = AvailableDatastoreProvider.byShortName( datastoreProviderProperty );
+			Object datastoreProviderProperty = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
+				.getService( ConfigurationService.class )
+				.getSettings()
+				.get( OgmProperties.DATASTORE_PROVIDER );
+
+			AvailableDatastoreProvider provider = datastoreProviderProperty != null ? AvailableDatastoreProvider.byShortName( datastoreProviderProperty.toString() ) : null;
 
 			if ( provider == null ) {
 				throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );

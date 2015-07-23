@@ -8,17 +8,19 @@ package org.hibernate.ogm.test.options;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
-import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.ConfigurationOptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
-import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.PermissionOption;
@@ -40,8 +42,7 @@ public class OptionsContextImplTest {
 	@Before
 	public void setupContext() {
 		optionsServiceContext = new AppendableConfigurationContext();
-		cfg = newHashMap();
-		cfg.put( InternalProperties.OGM_OPTION_CONTEXT, optionsServiceContext );
+		cfg = new HashMap<>();
 	}
 
 	@Test
@@ -264,7 +265,13 @@ public class OptionsContextImplTest {
 	}
 
 	private List<OptionValueSource> getSources() {
-		return OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( cfg, new ClassLoaderServiceImpl() ) );
+		return Arrays.<OptionValueSource>asList(
+				new ProgrammaticOptionValueSource( optionsServiceContext ),
+				new AnnotationOptionValueSource(),
+				new ConfigurationOptionValueSource(
+						new ConfigurationPropertyReader( cfg, new ClassLoaderServiceImpl() )
+				)
+		);
 	}
 
 	private static class Foo {

@@ -89,14 +89,6 @@
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
             <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <!-- This exclusion is needed to be able to setup the project in Windows:
-                     it otherwise includes transitive dependency to the JDK JConsole -->
-                <exclusion>
-                    <artifactId>wildfly-patching</artifactId>
-                    <groupId>org.wildfly</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>
@@ -136,7 +128,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <version.wildfly>9.0.0.CR1</version.wildfly>
+                <version.wildfly>10.0.0.Alpha5</version.wildfly>
                 <version.org.wildfly.arquillian>1.0.0.Alpha5</version.org.wildfly.arquillian>
                 <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
             </properties>
@@ -147,11 +139,10 @@
                 <version>${version.org.wildfly.arquillian}</version>
                 <scope>test</scope>
                 <exclusions>
-                    <!-- This exclusion is needed to be able to setup the project in Windows:
-                         it otherwise includes transitive dependency to the JDK JConsole -->
+                    <!-- Pulled in transitively; Neither available on Windows nor on JDK 9 -->
                     <exclusion>
-                        <artifactId>wildfly-patching</artifactId>
-                        <groupId>org.wildfly</groupId>
+                        <groupId>sun.jdk</groupId>
+                        <artifactId>jconsole</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -179,7 +170,7 @@
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-wildfly9</artifactId>
+                                            <artifactId>hibernate-ogm-modules-wildfly10</artifactId>
                                             <version>${project.version}</version>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>

@@ -12,6 +12,7 @@ import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.search.Query;
 import org.hibernate.Session;
@@ -145,11 +146,10 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(org.hibernate.cfg.Configuration cfg) {
-		super.configure( cfg );
-		cfg.setProperty( "hibernate.search.default.indexBase", indexDir.getAbsolutePath() );
-		cfg.setProperty( "hibernate.search.default.directory_provider", "filesystem" );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( "hibernate.search.default.indexBase", indexDir.getAbsolutePath() );
+		settings.put( "hibernate.search.default.directory_provider", "filesystem" );
 		// Infinispan requires to be set to distribution mode for this test to pass
-		cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
+		settings.put( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
 	}
 }
