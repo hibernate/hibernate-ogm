@@ -14,7 +14,6 @@ import org.hibernate.boot.SessionFactoryBuilder;
 import org.hibernate.boot.internal.SessionFactoryBuilderImpl;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.utils.Throwables;
 import org.junit.Test;
 
@@ -27,12 +26,8 @@ public class StandAloneNoOgmTest {
 
 	@Test
 	public void canBootstrapHibernateOrmWithOgmBeingPresent() {
-		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-			.applySetting( OgmProperties.ENABLED, false )
-			.build();
-
 		try {
-			new MetadataSources( registry )
+			new MetadataSources()
 				.buildMetadata()
 				.buildSessionFactory();
 
@@ -48,7 +43,6 @@ public class StandAloneNoOgmTest {
 	@Test
 	public void sessionFactoryBuilderIsTheOneFromOrm() {
 		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-			.applySetting( OgmProperties.ENABLED, false )
 			.applySetting( "hibernate.dialect", "org.hibernate.dialect.H2Dialect" )
 			.build();
 

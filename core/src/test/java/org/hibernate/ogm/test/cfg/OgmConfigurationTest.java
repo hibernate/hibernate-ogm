@@ -13,15 +13,15 @@ import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.junit.Test;
 
-
 /**
- * @author Gunnar Morling
+ * Test for bootstrapping via {@link OgmConfiguration}.
  *
+ * @author Gunnar Morling
  */
 public class OgmConfigurationTest {
 
 	@Test
-	public void foo() {
+	public void canBootstrapViaOgmConfiguration() {
 		OgmConfiguration cfg = new OgmConfiguration();
 		cfg.addAnnotatedClass( LawnMower.class );
 
@@ -36,7 +36,7 @@ public class OgmConfigurationTest {
 		session.clear();
 
 		session.beginTransaction();
-		LawnMower loadedMower = (LawnMower) session.get( LawnMower.class, mower.getId() );
+		LawnMower loadedMower = session.get( LawnMower.class, mower.getId() );
 		assertThat( loadedMower.getBrand() ).isEqualTo( "Findboard 9000" );
 		session.getTransaction().commit();
 
