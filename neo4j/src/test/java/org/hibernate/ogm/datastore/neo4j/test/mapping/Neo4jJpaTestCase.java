@@ -67,32 +67,29 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 
 	private Long executeQuery(String queryString) throws Exception {
 		final EntityManager em = getFactory().createEntityManager();
-		em.getTransaction().begin();
 		@SuppressWarnings("unchecked")
 		List<Object> results = em.createNativeQuery( queryString ).getResultList();
 		Long uniqueResult = null;
 		if ( !results.isEmpty() ) {
 			uniqueResult = (Long) results.get( 0 );
 		}
-		em.getTransaction().commit();
-		em.close();
 		if ( uniqueResult == null ) {
 			return null;
 		}
 		return uniqueResult;
 	}
 
-	protected void assertThatOnlyTheseNodesExist(GraphDatabaseService executionEngine, NodeForGraphAssertions... nodes) throws Exception {
+	protected void assertThatOnlyTheseNodesExist(NodeForGraphAssertions... nodes) throws Exception {
 		for ( NodeForGraphAssertions node : nodes ) {
-			assertThatExists( executionEngine, node );
+			assertThatExists( createExecutionEngine(), node );
 		}
 		assertNumberOfNodes( nodes.length );
 	}
 
-	protected void assertThatOnlyTheseRelationshipsExist(GraphDatabaseService executionEngine, RelationshipsChainForGraphAssertions... relationships) throws Exception {
+	protected void assertThatOnlyTheseRelationshipsExist(RelationshipsChainForGraphAssertions... relationships) throws Exception {
 		int expectedNumberOfRelationships = 0;
 		for ( RelationshipsChainForGraphAssertions relationship : relationships ) {
-			assertThatExists( executionEngine, relationship );
+			assertThatExists( createExecutionEngine(), relationship );
 			expectedNumberOfRelationships += relationship.getSize();
 		}
 		assertNumberOfRelationships( expectedNumberOfRelationships );
