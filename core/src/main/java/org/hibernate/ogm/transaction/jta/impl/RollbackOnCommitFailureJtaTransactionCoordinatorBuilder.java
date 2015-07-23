@@ -43,13 +43,13 @@ public class RollbackOnCommitFailureJtaTransactionCoordinatorBuilder extends For
 
 		@Override
 		public TransactionDriver getTransactionDriverControl() {
-			return new RollbackOnCommitFailureInflow( super.getTransactionDriverControl() );
+			return new RollbackOnCommitFailureTransactionDriver( super.getTransactionDriverControl() );
 		}
 	}
 
-	private static class RollbackOnCommitFailureInflow extends ForwardingTransactionDriver {
+	private static class RollbackOnCommitFailureTransactionDriver extends ForwardingTransactionDriver {
 
-		public RollbackOnCommitFailureInflow(TransactionDriver delegate) {
+		public RollbackOnCommitFailureTransactionDriver(TransactionDriver delegate) {
 			super( delegate );
 		}
 
