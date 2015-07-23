@@ -39,6 +39,7 @@ import org.hibernate.type.Type;
  * Extension point for a loader that executes native NoSQL queries.
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ * @author Emmanuel Bernard emmanuel@hibernate.org
  */
 public class BackendCustomLoader extends CustomLoader {
 
@@ -101,9 +102,9 @@ public class BackendCustomLoader extends CustomLoader {
 	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
+		OgmLoader loader = getLoader( session, returnedClass );
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
-			OgmLoader loader = createLoader( session, returnedClass );
 			results.add( entity( session, tuple, loader ) );
 		}
 		return results;
@@ -161,9 +162,9 @@ public class BackendCustomLoader extends CustomLoader {
 		return entities.get( 0 );
 	}
 
-	private OgmLoader createLoader(SessionImplementor session, Class<?> entityClass) {
+	private OgmLoader getLoader(SessionImplementor session, Class<?> entityClass) {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
-		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { persister } );
+		OgmLoader loader = (OgmLoader) persister.getAppropriateLoader( LockOptions.READ, session );
 		return loader;
 	}
 

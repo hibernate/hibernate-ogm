@@ -57,7 +57,8 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
-import org.hibernate.ogm.loader.impl.OgmLoader;
+import org.hibernate.ogm.loader.entity.impl.BatchingEntityLoaderBuilder;
+import org.hibernate.ogm.loader.entity.impl.OgmBatchableEntityLoaderBuilder;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -119,6 +120,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
+
+	// Copy from AbstractEntityPersister
+	// TODO increase visibility in superclass?
+	private final int batchSize;
+
 
 	//service references
 	private final GridDialect gridDialect;
@@ -194,7 +200,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		this.identityColumnAwareGridDialect = serviceRegistry.getService( IdentityColumnAwareGridDialect.class );
 		this.optimisticLockingAwareGridDialect = serviceRegistry.getService( OptimisticLockingAwareGridDialect.class );
 		this.optionsService = serviceRegistry.getService( OptionsService.class );
-		this.invocationCollectingGridDialect = GridDialects.getDelegateOrNull( gridDialect, InvocationCollectingGridDialect.class );
+		this.invocationCollectingGridDialect = GridDialects.getDelegateOrNull(
+				gridDialect,
+				InvocationCollectingGridDialect.class
+		);
 
 		if ( factory.getIdentifierGenerator( getEntityName() ) instanceof OgmIdentityGenerator && identityColumnAwareGridDialect == null ) {
 			throw log.getIdentityGenerationStrategyNotSupportedException( getEntityName() );
@@ -207,6 +216,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		);
 
 		this.discriminator = discriminator;
+
+		// TODO batch logic copied from AbstractEntityPersister
+		// remove copy by increasing visibility in super class
+		int batch = persistentClass.getBatchSize();
+		if ( batch == -1 ) {
+			batch = factory.getSettings().getDefaultBatchFetchSize();
+		}
+		batchSize = batch;
 
 		//SPACES
 		//TODO: i'm not sure, but perhaps we should exclude
@@ -808,18 +825,57 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			);
 	}
 
+
+	// TODO copied from AsbtactEntityPersister: change the visibility
+	public UniqueEntityLoader getAppropriateLoader(LockOptions lockOptions, SessionImplementor session) {
+//		if ( queryLoader != null ) {
+//			// if the user specified a custom query loader we need to that
+//			// regardless of any other consideration
+//			return queryLoader;
+//		}
+//		else if ( isAffectedByEnabledFilters( session ) ) {
+//			// because filters affect the rows returned (because they add
+//			// restrictions) these need to be next in precedence
+//			return createEntityLoader(lockOptions, session.getLoadQueryInfluencers() );
+//		}
+//		else if ( session.getLoadQueryInfluencers().getInternalFetchProfile() != null && LockMode.UPGRADE.greaterThan( lockOptions.getLockMode() ) ) {
+//			// Next, we consider whether an 'internal' fetch profile has been set.
+//			// This indicates a special fetch profile Hibernate needs applied
+//			// (for its merge loading process e.g.).
+//			return ( UniqueEntityLoader ) getLoaders().get( session.getLoadQueryInfluencers().getInternalFetchProfile() );
+//		}
+//		else if ( isAffectedByEnabledFetchProfiles( session ) ) {
+//			// If the session has associated influencers we need to adjust the
+//			// SQL query used for loading based on those influencers
+//			return createEntityLoader(lockOptions, session.getLoadQueryInfluencers() );
+//		}
+//		else if ( isAffectedByEntityGraph( session ) ) {
+//			return createEntityLoader( lockOptions, session.getLoadQueryInfluencers() );
+//		}
+//		else if ( lockOptions.getTimeOut() != LockOptions.WAIT_FOREVER ) {
+//			return createEntityLoader( lockOptions, session.getLoadQueryInfluencers() );
+//		}
+//		else {
+//			return ( UniqueEntityLoader ) getLoaders().get( lockOptions.getLockMode() );
+//		}
+		// Today OGM cannot really react to all the use cases commented
+		return (UniqueEntityLoader) getLoaders().get( lockOptions.getLockMode() );
+	}
+
 	@Override
 	protected UniqueEntityLoader createEntityLoader(LockMode lockMode, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		//FIXME add support to lock mode and loadQueryInfluencers
-		return new OgmLoader( new OgmEntityPersister[] { this } );
+		return BatchingEntityLoaderBuilder.getBuilder( getFactory() )
+				.buildLoader( this, batchSize, lockMode, getFactory(), loadQueryInfluencers, new OgmBatchableEntityLoaderBuilder() );
 	}
 
 	@Override
 	protected UniqueEntityLoader createEntityLoader(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
-		//FIXME add support to lock options and loadQueryInfluencers
-		return new OgmLoader( new OgmEntityPersister[] { this } );
+		//FIXME add support to lock mode and loadQueryInfluencers
+		return BatchingEntityLoaderBuilder.getBuilder( getFactory() )
+				.buildLoader( this, batchSize, lockOptions, getFactory(), loadQueryInfluencers, new OgmBatchableEntityLoaderBuilder() );
 	}
 
 	@Override

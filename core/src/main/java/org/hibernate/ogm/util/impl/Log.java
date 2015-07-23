@@ -271,4 +271,7 @@ public interface Log extends BasicLogger {
 			+ "Property should be a comma separated list of host:port\n"
 			+ "e.g. www.example.com, www2.example.com:123, 192.0.2.1, 192.0.2.2:123, 2001:db8::ff00:42:8329, [2001:db8::ff00:42:8329]:123")
 	HibernateException unableToParseHost(String text);
+
+	@Message(id = 80, value = "Could not load an entity batch: %s")
+	HibernateException errorOnEntityBatchLoad(String contextualInfo, @Cause Exception e);
 }

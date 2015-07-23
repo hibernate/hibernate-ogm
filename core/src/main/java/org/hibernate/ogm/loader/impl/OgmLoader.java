@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.HibernateException;
@@ -33,6 +34,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
+import org.hibernate.ogm.loader.entity.impl.BatchableEntityLoader;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -46,6 +48,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
 import org.hibernate.pretty.MessageHelper;
@@ -59,7 +62,7 @@ import org.hibernate.type.Type;
  *
  * @author Emmanuel Bernard
  */
-public class OgmLoader implements UniqueEntityLoader {
+public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -69,6 +72,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	private final LockMode[] defaultLockModes;
 	private final CollectionAliases[] collectionAliases;
 	private final GridDialect gridDialect;
+	private final int batchSize;
 
 	/**
 	 * Load a collection
@@ -91,14 +95,16 @@ public class OgmLoader implements UniqueEntityLoader {
 		for ( int i = 0; i < collectionPersisters.length; i++ ) {
 			collectionAliases[i] = new OgmColumnCollectionAliases( collectionPersisters[i] );
 		}
+		this.batchSize = -1;
 	}
 
 	/**
 	 * Load an entity.
 	 *
 	 * @param entityPersisters the {@link OgmEntityPersister}s
+	 * @param batchSize the batchSize
 	 */
-	public OgmLoader(OgmEntityPersister[] entityPersisters) {
+	public OgmLoader(OgmEntityPersister[] entityPersisters, int batchSize) {
 		if ( entityPersisters == null || entityPersisters.length == 0 ) {
 			throw new AssertionFailure( "EntityPersister[] must not be null or empty" );
 		}
@@ -111,6 +117,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		final int fromSize = 1;
 		this.defaultLockModes = ArrayHelper.fillArray( LockMode.NONE, fromSize );
 		this.collectionAliases = new CollectionAliases[0];
+		this.batchSize = batchSize;
 	}
 
 	/**
@@ -305,19 +312,27 @@ public class OgmLoader implements UniqueEntityLoader {
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 		//TODO yuk! Is there a cleaner way to access the id?
 		final Serializable id;
-		// first look for direct id
+		// see if we use batching first
+		// then look for direct id
 		// then for a tuple based result set we could extract the id
 		// otherwise that's a collection so we use the collection key
-		if ( qp.getOptionalId() != null ) {
+		boolean loadSeveralIds = loadSeveralIds( qp );
+		if ( loadSeveralIds ) {
+			// need to be set to null otherwise the optionalId has precedence
+			// and is used for all tuples regardless of their actual ids
+			id = null;
+		}
+		else if ( qp.getOptionalId() != null ) {
 			id = qp.getOptionalId();
 		}
 		else if ( ogmLoadingContext.hasResultSet() ) {
+			// extract the ids from the tuples directly
 			id = null;
 		}
 		else {
 			id = qp.getCollectionKeys()[0];
 		}
-		TupleAsMapResultSet resultset = getResultSet( id, ogmLoadingContext, session );
+		TupleAsMapResultSet resultset = getResultSet( id, qp, ogmLoadingContext, session );
 
 		//Todo implement lockmode
 		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
@@ -341,7 +356,7 @@ public class OgmLoader implements UniqueEntityLoader {
 						qp,
 						ogmLoadingContext,
 						//lockmodeArray,
-						qp.getOptionalId(),
+						id,
 						hydratedObjects,
 						keys,
 						returnProxies);
@@ -358,6 +373,10 @@ public class OgmLoader implements UniqueEntityLoader {
 		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
 		//TODO create subselects
 		return results;
+	}
+
+	private boolean loadSeveralIds(QueryParameters qp) {
+		return qp.getPositionalParameterValues().length > 1;
 	}
 
 	/**
@@ -415,7 +434,8 @@ public class OgmLoader implements UniqueEntityLoader {
 	throws SQLException {
 		final OgmEntityPersister[] persisters = getEntityPersisters();
 		final int entitySpan = persisters.length;
-		extractKeysFromResultSet( session, optionalId, ogmLoadingContext, keys );
+		Tuple tuple = resultset.unwrap( TupleAsMapResultSet.class ).getTuple();
+		extractKeysFromResultSet( session, optionalId, tuple, keys );
 
 		registerNonExists( keys, persisters, session);
 
@@ -425,7 +445,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		}
 
 		final Object[] row = getRow(
-				resultset.unwrap( TupleAsMapResultSet.class ).getTuple(),
+				tuple,
 				persisters,
 				keys,
 				qp.getOptionalObject(),
@@ -459,7 +479,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	private void extractKeysFromResultSet(
 			SessionImplementor session,
 			Serializable optionalId,
-			OgmLoadingContext ogmLoadingContext,
+			Tuple tuple,
 			org.hibernate.engine.spi.EntityKey[] keys) {
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
@@ -470,16 +490,15 @@ public class OgmLoader implements UniqueEntityLoader {
 		else {
 			if (optionalId == null) {
 				final OgmEntityPersister currentPersister = entityPersisters[0];
-				Tuple tuple =  ogmLoadingContext.getResultSet().getTuple();
 				GridType gridIdentifierType = currentPersister.getGridIdentifierType();
 				optionalId = (Serializable) gridIdentifierType.nullSafeGet( tuple, currentPersister.getIdentifierColumnNames(), session, null );
 			}
-			final org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( optionalId,  entityPersisters[0] );
+			final org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( optionalId, entityPersisters[0] );
 			keys[0] = key;
 		}
 	}
 
-	private TupleAsMapResultSet getResultSet(Serializable id, OgmLoadingContext ogmLoadingContext, SessionImplementor session) {
+	private TupleAsMapResultSet getResultSet(Serializable id, QueryParameters qp, OgmLoadingContext ogmLoadingContext, SessionImplementor session) {
 		if ( id == null && ogmLoadingContext.hasResultSet() ) {
 			return ogmLoadingContext.getResultSet();
 		}
@@ -488,10 +507,29 @@ public class OgmLoader implements UniqueEntityLoader {
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
 			OgmEntityPersister persister = getEntityPersisters()[0];
-			final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
-			Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
-			if ( entry != null ) {
-				resultset.addTuple( entry );
+			if ( loadSeveralIds( qp ) ) {
+				// here we expect to receive QueryParameters.positionalParameters full of ids and thus of the same type.
+				// if that's not the case, we are in a bit of a trouble :)
+				int numberOfIds = qp.getPositionalParameterValues().length;
+				// prepare the array of entity keys for each id
+				EntityKey[] keys = new EntityKey[numberOfIds];
+				for ( int index = 0 ; index < numberOfIds ; index++ ) {
+					keys[index] = EntityKeyBuilder.fromPersister( persister, (Serializable) qp.getPositionalParameterValues()[index], session );
+				}
+				for ( EntityKey entityKey : keys ) {
+					// TODO use the multiload API once introduced
+					Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+					if ( entry != null ) {
+						resultset.addTuple( entry );
+					}
+				}
+			}
+			else {
+				final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
+				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
+				if ( entry != null ) {
+					resultset.addTuple( entry );
+				}
 			}
 		}
 		else {
@@ -569,7 +607,7 @@ public class OgmLoader implements UniqueEntityLoader {
 						descriptors[i],
 						resultSet, //TODO CURRENT must use the same instance across all calls
 						session
-					);
+				);
 
 			}
 
@@ -605,7 +643,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				rs,
 				descriptor.getSuffixedKeyAliases(),
 				session
-			);
+		);
 
 		if ( collectionRowKey != null ) {
 			// we found a collection element in the result set
@@ -1197,5 +1235,34 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	protected EntityType[] getOwnerAssociationTypes() {
 		return null;
+	}
+
+	@Override
+	public List<?> loadEntityBatch(SessionImplementor session, Serializable[] ids, Type idType, Object optionalObject, String optionalEntityName, Serializable optionalId, EntityPersister persister, LockOptions lockOptions)
+			throws HibernateException {
+		if ( log.isDebugEnabled() ) {
+			log.debugf( "Batch loading entity: %s", MessageHelper.infoString( persister, ids, getFactory() ) );
+		}
+
+		Type[] types = new Type[ids.length];
+		Arrays.fill( types, idType );
+		List result;
+		try {
+			QueryParameters qp = new QueryParameters();
+			qp.setPositionalParameterTypes( types );
+			qp.setPositionalParameterValues( ids );
+			qp.setOptionalObject( optionalObject );
+			qp.setOptionalEntityName( optionalEntityName );
+			qp.setOptionalId( optionalId );
+			qp.setLockOptions( lockOptions );
+			result = doQueryAndInitializeNonLazyCollections( session, qp, OgmLoadingContext.EMPTY_CONTEXT, false );
+		}
+		catch ( Exception e ) {
+			throw log.errorOnEntityBatchLoad( MessageHelper.infoString( getEntityPersisters()[0], ids, getFactory() ), e );
+		}
+
+		log.debug( "Done entity batch load" );
+
+		return result;
 	}
 }

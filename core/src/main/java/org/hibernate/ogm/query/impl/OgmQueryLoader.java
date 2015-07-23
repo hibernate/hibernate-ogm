@@ -38,6 +38,7 @@ import org.hibernate.type.Type;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
+ * @author Emmanuel Bernard emmanuel@hibernate.org
  */
 public class OgmQueryLoader extends QueryLoader {
 
@@ -85,9 +86,9 @@ public class OgmQueryLoader extends QueryLoader {
 	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
+		OgmLoader loader = getLoader( session, returnedClass );
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
-			OgmLoader loader = createLoader( session, returnedClass );
 			results.add( entity( session, tuple, loader ) );
 		}
 		return results;
@@ -125,9 +126,9 @@ public class OgmQueryLoader extends QueryLoader {
 		return entities.get( 0 );
 	}
 
-	private OgmLoader createLoader(SessionImplementor session, Class<?> entityClass) {
+	private OgmLoader getLoader(SessionImplementor session, Class<?> entityClass) {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
-		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { persister } );
+		OgmLoader loader = (OgmLoader) persister.getAppropriateLoader( LockOptions.READ, session );
 		return loader;
 	}
 
