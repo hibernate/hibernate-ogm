@@ -11,8 +11,8 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 
 /**
  * Iterates over the results of a native query when each result is not mapped by an entity
@@ -23,8 +23,8 @@ public class MapsTupleIterator implements ClosableIterator<Tuple> {
 
 	private final ResourceIterator<Map<String, Object>> iterator;
 
-	public MapsTupleIterator(ExecutionResult result) {
-		this.iterator = result.iterator();
+	public MapsTupleIterator(Result result) {
+		this.iterator = result;
 	}
 
 	@Override

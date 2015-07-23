@@ -98,7 +98,7 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship4 = father2Node.relationshipTo( child22Node, "orderedChildren" ).property( "birthorder", 1 );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, father1Node, child11Node, child12Node, father2Node, child21Node, child22Node );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2, relationship3, relationship4 );

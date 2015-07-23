@@ -71,7 +71,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );

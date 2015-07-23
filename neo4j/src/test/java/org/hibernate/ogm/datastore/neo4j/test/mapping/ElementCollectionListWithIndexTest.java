@@ -66,8 +66,8 @@ public class ElementCollectionListWithIndexTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship2 = grannyNode.relationshipTo( child1Node, "grandChildren" ).property( "birthorder", 1 );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
 
+		GraphDatabaseService executionEngine = createExecutionEngine();
 		assertThatOnlyTheseNodesExist( executionEngine, grannyNode, child0Node, child1Node );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
 

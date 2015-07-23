@@ -67,7 +67,7 @@ public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = directorNode.relationshipTo( playersChampionshipNode, "directedTournament" );
 
 		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
+		GraphDatabaseService executionEngine = createExecutionEngine();
 
 		assertThatOnlyTheseNodesExist( executionEngine, directorNode, britishOpenNode, playersChampionshipNode );
 		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1 );
