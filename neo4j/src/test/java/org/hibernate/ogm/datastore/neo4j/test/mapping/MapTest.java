@@ -80,7 +80,6 @@ public class MapTest extends Neo4jJpaTestCase {
 				, nickNode2
 				);
 
-		//FIXME: Add properties to relationships
 		RelationshipsChainForGraphAssertions relationship1 = userNode.relationshipTo( nickNode1, "nicknames" );
 		RelationshipsChainForGraphAssertions relationship2 = userNode.relationshipTo( nickNode2, "nicknames" );
 		RelationshipsChainForGraphAssertions relationship3 = userNode.relationshipTo( homeNode, "addresses" ).property( "addressType", "home" );
