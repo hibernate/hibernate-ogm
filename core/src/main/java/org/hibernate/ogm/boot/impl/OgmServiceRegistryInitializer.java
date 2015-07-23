@@ -57,10 +57,6 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 			return;
 		}
 
-		if ( !settings.containsKey( AvailableSettings.GLOBALLY_QUOTED_IDENTIFIERS ) ) {
-			serviceRegistryBuilder.applySetting( AvailableSettings.GLOBALLY_QUOTED_IDENTIFIERS, false );
-		}
-
 		if ( !settings.containsKey( AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED ) ) {
 			serviceRegistryBuilder.applySetting( AvailableSettings.KEYWORD_AUTO_QUOTING_ENABLED, false );
 		}

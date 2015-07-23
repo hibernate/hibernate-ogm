@@ -497,7 +497,9 @@ public class CompensationSpiTest extends OgmTestCase {
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 
-
+	/**
+	 * In JTA the failed commit attempt will have done the rollback already. The TX is NOT_ACTIVE in this case.
+	 */
 	private void rollbackTransactionIfActive(Transaction transaction) {
 		if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
 			transaction.rollback();
