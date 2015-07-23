@@ -163,7 +163,7 @@ public class ElasticSearchDialect extends BaseGridDialect {
 		}
 	}
 
-	@Override
+	// @Override
 	protected List<Tuple> getTuples(EntityKeyMetadata entityKeyMetadata) {
 		SearchResponse searchResponse = provider.getClient().prepareSearch(provider.getDatabase()).setTypes(entityKeyMetadata.getTable()).setSearchType(SearchType.QUERY_AND_FETCH)
 				.addFields(entityKeyMetadata.getColumnNames()).execute().actionGet();

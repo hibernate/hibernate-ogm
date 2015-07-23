@@ -18,6 +18,12 @@
 		<dependency>
 			<groupId>org.hibernate.ogm</groupId>
 			<artifactId>hibernate-ogm-core</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>antlr-runtime</artifactId>
+					<groupId>org.antlr</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.hql</groupId>
@@ -34,6 +40,12 @@
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>1.6.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>antlr-runtime</artifactId>
+					<groupId>org.antlr</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Required if you use the OGM mass indexer -->
@@ -93,6 +105,7 @@
 			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>
