@@ -17,7 +17,6 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -73,11 +72,8 @@ public class MapTest extends Neo4jJpaTestCase {
 		NodeForGraphAssertions nickNode2 = node( "nick2", "Nicks", EMBEDDED.name() )
 				.property( "nicknames", "day[9]" );
 
-		getTransactionManager().begin();
-		GraphDatabaseService executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine
-				, userNode
+		assertThatOnlyTheseNodesExist(
+				userNode
 				, homeNode
 				, workNode
 				, nickNode1
@@ -90,14 +86,12 @@ public class MapTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship3 = userNode.relationshipTo( homeNode, "addresses" ).property( "addressType", "home" );
 		RelationshipsChainForGraphAssertions relationship4 = userNode.relationshipTo( workNode, "addresses" ).property( "addressType", "work" );
 
-		assertThatOnlyTheseRelationshipsExist( executionEngine
-				, relationship1
+		assertThatOnlyTheseRelationshipsExist(
+				relationship1
 				, relationship2
 				, relationship3
 				, relationship4
 				);
-
-		getTransactionManager().commit();
 	}
 
 	@Override
