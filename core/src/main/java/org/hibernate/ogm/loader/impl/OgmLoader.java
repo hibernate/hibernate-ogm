@@ -317,20 +317,25 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 		// then for a tuple based result set we could extract the id
 		// otherwise that's a collection so we use the collection key
 		boolean loadSeveralIds = loadSeveralIds( qp );
+		boolean isCollectionLoader;
 		if ( loadSeveralIds ) {
 			// need to be set to null otherwise the optionalId has precedence
 			// and is used for all tuples regardless of their actual ids
 			id = null;
+			isCollectionLoader = false;
 		}
 		else if ( qp.getOptionalId() != null ) {
 			id = qp.getOptionalId();
+			isCollectionLoader = false;
 		}
 		else if ( ogmLoadingContext.hasResultSet() ) {
 			// extract the ids from the tuples directly
 			id = null;
+			isCollectionLoader = false;
 		}
 		else {
 			id = qp.getCollectionKeys()[0];
+			isCollectionLoader = true;
 		}
 		TupleAsMapResultSet resultset = getResultSet( id, qp, ogmLoadingContext, session );
 
@@ -348,6 +353,12 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 		//TODO should we collect List<Object> as result? Not necessary today
 		Object result = null;
 		List<Object> results = new ArrayList<Object>();
+
+		if ( isCollectionLoader ) {
+			preLoadBatchFetchingQueue( session, resultset );
+
+		}
+
 		try {
 			while ( resultset.next() ) {
 				result = getRowFromResultSet(
@@ -373,6 +384,37 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
 		//TODO create subselects
 		return results;
+	}
+
+	private void preLoadBatchFetchingQueue(SessionImplementor session, TupleAsMapResultSet resultset) {
+		// Logic to eliminate the n+1 issue in collection loading when batch fetching is enabled.
+		//
+		// Walk the resultset to hydrate the collection elements.
+		// Hydrating will add associated entities to the batch fetching queue without loading them.
+		// The next resultset walking will effectively load these associated entities
+		// but with the help of the properly loaded batch fetching queue.
+		// Without this double phase, each element is individually loaded leading to n+1
+		// because the batch fetching queue does not contain the "next" elements.
+		try {
+			while ( resultset.next() ) {
+				// Call hydrate on the collection element itself
+				// This is too much work as we are only interested in ToOne hydration
+				// But ToOne can be contained in ComponentType
+				// TODO: only call this hydration phase if we know that the collection contains directly or indirectly ToOnes
+				Tuple tuple = resultset.unwrap( TupleAsMapResultSet.class ).getTuple();
+				collectionPersisters[0].getElementGridType().hydrate( tuple, collectionAliases[0].getSuffixedElementAliases(), session, null );
+				// a key might exist and might be an entity (not currently supported though in OGM)
+				if ( collectionPersisters[0].getKeyColumnNames().length > 0 ) {
+					collectionPersisters[0].getKeyGridType()
+							.hydrate( tuple, collectionAliases[0].getSuffixedKeyAliases(), session, null );
+				}
+			}
+			// reset resultset for main loop
+			resultset.beforeFirst();
+		}
+		catch (SQLException e) {
+			//never happens this is not a regular ResultSet
+		}
 	}
 
 	private boolean loadSeveralIds(QueryParameters qp) {

@@ -31,20 +31,9 @@ public class BatchFetchingTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testLoadSeveralFloorsFromTower() throws Exception {
+	public void testLoadSeveralFloorsByBatch() throws Exception {
 		Session session = openSession();
-		session.beginTransaction();
-		Tower tower = new Tower();
-		tower.setName( "Pise" );
-		Floor floor = new Floor();
-		floor.setLevel( 0 );
-		tower.getFloors().add( floor );
-		floor = new Floor();
-		floor.setLevel( 1 );
-		tower.getFloors().add( floor );
-		session.persist( tower );
-		session.getTransaction().commit();
-
+		Tower tower = prepareDataset( session );
 		session.clear();
 
 		Log log = LoggerFactory.make();
@@ -70,15 +59,57 @@ public class BatchFetchingTest extends OgmTestCase {
 
 		session.getTransaction().commit();
 
+		cleanDataset( session, tower );
+		session.close();
+
+	}
+
+	@Test
+	public void testLoadSeveralFloorsFromTower() throws Exception {
+
+		Log log = LoggerFactory.make();
+		Session session = openSession();
+		Tower tower = prepareDataset( session );
 		session.clear();
 
 		// now read the tower and its floors to detect 1+n patterns;
 		session.beginTransaction();
 		tower = (Tower) session.get( Tower.class, tower.getId() );
-		log.error( "Done with Tower load" );
+
+		Statistics statistics = session.getSessionFactory().getStatistics();
+		statistics.setStatisticsEnabled( true );
+		statistics.clear();
+		assertEquals( 0, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
 		Assertions.assertThat( tower.getFloors() ).hasSize( 2 );
-		session.getTransaction().rollback();
+		assertEquals( 1, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
+		session.getTransaction().commit();
+
+		cleanDataset( session, tower );
 		session.close();
 
+	}
+
+	private void cleanDataset(Session session, Tower tower) {
+		session.beginTransaction();
+		session.delete( session.get( Tower.class, tower.getId() ) );
+		for ( Floor currentFloor : tower.getFloors() ) {
+			session.delete( session.get( Floor.class, currentFloor.getId() ) );
+		}
+		session.getTransaction().commit();
+	}
+
+	private Tower prepareDataset(Session session) {
+		session.beginTransaction();
+		Tower tower = new Tower();
+		tower.setName( "Pise" );
+		Floor floor = new Floor();
+		floor.setLevel( 0 );
+		tower.getFloors().add( floor );
+		floor = new Floor();
+		floor.setLevel( 1 );
+		tower.getFloors().add( floor );
+		session.persist( tower );
+		session.getTransaction().commit();
+		return tower;
 	}
 }
