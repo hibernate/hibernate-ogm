@@ -33,4 +33,20 @@ public class OgmBatchableEntityLoaderBuilder implements BatchingEntityLoaderBuil
 		// TODO handle LoadQueryInfluenbcers to handle entityGraph
 		return new OgmLoader( new OgmEntityPersister[] { (OgmEntityPersister) persister }, batchSize );
 	}
+
+	@Override
+	public BatchableEntityLoader buildDynamicLoader(OuterJoinLoadable persister, int batchSize, LockMode lockMode, SessionFactoryImplementor factory, LoadQueryInfluencers influencers) {
+		// OGM does not really support lockMode,
+		// factory is retrieved from the persister
+		// TODO handle LoadQueryInfluenbcers to handle entityGraph
+		return new OgmLoader( new OgmEntityPersister[] { (OgmEntityPersister) persister }, batchSize );
+	}
+
+	@Override
+	public BatchableEntityLoader buildDynamicLoader(OuterJoinLoadable persister, int batchSize, LockOptions lockOptions, SessionFactoryImplementor factory, LoadQueryInfluencers influencers) {
+		// OGM does not really support lockMode,
+		// factory is retrieved from the persister
+		// TODO handle LoadQueryInfluenbcers to handle entityGraph
+		return new OgmLoader( new OgmEntityPersister[] { (OgmEntityPersister) persister }, batchSize );
+	}
 }
