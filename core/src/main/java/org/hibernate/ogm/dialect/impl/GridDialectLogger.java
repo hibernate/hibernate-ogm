@@ -7,6 +7,8 @@
 package org.hibernate.ogm.dialect.impl;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
@@ -56,6 +58,14 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Reading tuple with key %1$s and context %2$s", key, tupleContext );
 		return super.getTuple( key, tupleContext );
+	}
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		if ( log.isTraceEnabled() ) {
+			log.tracef( "Reading tuples with keys %1$s and context %2$s", Arrays.toString( keys ), tupleContext );
+		}
+		return super.getTuples( keys, tupleContext );
 	}
 
 	@Override

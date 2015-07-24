@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -85,6 +86,13 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 		Tuple tuple = super.getTuple( key, tupleContext );
 		log( "getTuple", key.toString(), tuple != null ? tuple.toString() : "null" );
 		return tuple;
+	}
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		List<Tuple> tuples = super.getTuples( keys, tupleContext );
+		log( "getTuples", Arrays.toString( keys ), tuples != null ? tuples.toString() : "null" );
+		return tuples;
 	}
 
 	@Override

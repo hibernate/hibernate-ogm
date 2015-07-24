@@ -31,6 +31,7 @@ import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEven
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener.EventContextManagingPersistEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.IdentityColumnAwareGridDialectInitiator;
+import org.hibernate.ogm.dialect.impl.MultigetGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
@@ -86,6 +87,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( MultigetGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( EventContextManagerInitiator.INSTANCE );
 	}
 

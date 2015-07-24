@@ -31,6 +31,7 @@ import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
@@ -53,6 +54,7 @@ import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
@@ -72,6 +74,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 	private final LockMode[] defaultLockModes;
 	private final CollectionAliases[] collectionAliases;
 	private final GridDialect gridDialect;
+	private final MultigetGridDialect multigetGridDialect;
 	private final int batchSize;
 
 	/**
@@ -86,7 +89,9 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 		this.entityPersisters = new OgmEntityPersister[] {};
 		this.collectionPersisters = collectionPersisters;
 		this.factory = collectionPersisters[0].getFactory();
-		this.gridDialect = this.factory.getServiceRegistry().getService( GridDialect.class );
+		ServiceRegistryImplementor serviceRegistry = this.factory.getServiceRegistry();
+		this.gridDialect = serviceRegistry.getService( GridDialect.class );
+		this.multigetGridDialect = serviceRegistry.getService( MultigetGridDialect.class );
 
 		//NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
@@ -111,7 +116,9 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 		this.entityPersisters = entityPersisters;
 		this.collectionPersisters = new OgmCollectionPersister[] {};
 		this.factory = entityPersisters[0].getFactory();
-		this.gridDialect = this.factory.getServiceRegistry().getService( GridDialect.class );
+		ServiceRegistryImplementor serviceRegistry = this.factory.getServiceRegistry();
+		this.gridDialect = serviceRegistry.getService( GridDialect.class );
+		this.multigetGridDialect = serviceRegistry.getService( MultigetGridDialect.class );
 
 		// NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
@@ -558,11 +565,19 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 				for ( int index = 0 ; index < numberOfIds ; index++ ) {
 					keys[index] = EntityKeyBuilder.fromPersister( persister, (Serializable) qp.getPositionalParameterValues()[index], session );
 				}
-				for ( EntityKey entityKey : keys ) {
-					// TODO use the multiload API once introduced
-					Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
-					if ( entry != null ) {
-						resultset.addTuple( entry );
+				if ( multigetGridDialect != null ) {
+					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext() ) ) {
+						if ( tuple != null ) {
+							resultset.addTuple( tuple );
+						}
+					}
+				}
+				else {
+					for ( EntityKey entityKey : keys ) {
+						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+						if ( entry != null ) {
+							resultset.addTuple( entry );
+						}
 					}
 				}
 			}
