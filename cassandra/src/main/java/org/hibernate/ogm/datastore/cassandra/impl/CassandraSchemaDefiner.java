@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
-import org.hibernate.boot.model.relational.Schema;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.ForeignKey;
@@ -45,8 +45,8 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 			sequenceHandler.createSequence( identifierGenerator.getGeneratorKeyMetadata(), datastoreProvider );
 		}
 
-		for ( Schema schema : database.getSchemas() ) {
-			for ( Table table : schema.getTables() ) {
+		for ( Namespace namespace : database.getNamespaces() ) {
+			for ( Table table : namespace.getTables() ) {
 				if ( table.isPhysicalTable() ) {
 					processTable( sessionFactoryImplementor, datastoreProvider, table );
 				}

@@ -7,7 +7,7 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import org.hibernate.SharedSessionBuilder;
-import org.hibernate.engine.spi.ForwardingSharedSessionBuilder;
+import org.hibernate.engine.spi.AbstractDelegatingSharedSessionBuilder;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -15,7 +15,7 @@ import org.hibernate.ogm.OgmSessionFactory;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmSharedSessionBuilderDelegator extends ForwardingSharedSessionBuilder implements SharedSessionBuilder {
+public class OgmSharedSessionBuilderDelegator extends AbstractDelegatingSharedSessionBuilder implements SharedSessionBuilder {
 	private final SharedSessionBuilder builder;
 	private final OgmSessionFactory factory;
 
