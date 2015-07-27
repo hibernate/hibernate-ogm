@@ -14,7 +14,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
-import org.hibernate.boot.model.relational.Schema;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
@@ -99,8 +99,8 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	private void addUniqueConstraints(GraphDatabaseService neo4jDb, Database database) {
-		for ( Schema schema : database.getSchemas() ) {
-			for ( Table table : schema.getTables() ) {
+		for ( Namespace namespace : database.getNamespaces() ) {
+			for ( Table table : namespace.getTables() ) {
 				if ( table.isPhysicalTable() ) {
 					Label label = label( table.getName() );
 					PrimaryKey primaryKey = table.getPrimaryKey();

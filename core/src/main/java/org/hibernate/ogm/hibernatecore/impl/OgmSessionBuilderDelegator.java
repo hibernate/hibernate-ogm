@@ -7,7 +7,7 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import org.hibernate.Session;
-import org.hibernate.engine.spi.ForwardingSessionBuilderImplementor;
+import org.hibernate.engine.spi.AbstractDelegatingSessionBuilderImplementor;
 import org.hibernate.engine.spi.SessionBuilderImplementor;
 import org.hibernate.engine.spi.SessionOwner;
 import org.hibernate.event.spi.EventSource;
@@ -22,7 +22,7 @@ import org.hibernate.resource.transaction.backend.jta.internal.synchronization.M
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmSessionBuilderDelegator extends ForwardingSessionBuilderImplementor implements OgmSessionBuilderImplementor {
+public class OgmSessionBuilderDelegator extends AbstractDelegatingSessionBuilderImplementor implements OgmSessionBuilderImplementor {
 
 	private final SessionBuilderImplementor builder;
 	private final OgmSessionFactory factory;
