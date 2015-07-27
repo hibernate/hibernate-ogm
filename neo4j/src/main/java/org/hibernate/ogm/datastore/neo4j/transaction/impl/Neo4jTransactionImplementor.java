@@ -8,11 +8,15 @@ package org.hibernate.ogm.datastore.neo4j.transaction.impl;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionImplementor;
 import org.neo4j.graphdb.Transaction;
 
@@ -20,6 +24,8 @@ import org.neo4j.graphdb.Transaction;
  * @author Davide D'Alto
  */
 public class Neo4jTransactionImplementor extends ForwardingTransactionImplementor {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final Neo4jDatastoreProvider datastoreProvider;
 	private final JtaPlatform jtaPlatform;
@@ -111,7 +117,27 @@ public class Neo4jTransactionImplementor extends ForwardingTransactionImplemento
 
 		@Override
 		public void beforeCompletion() {
-			success();
+			boolean markedForRollback = markedForRollback();
+			if ( !markedForRollback ) {
+				success();
+			}
+		}
+
+		private boolean markedForRollback() {
+			boolean markedForRollback = true;
+			TransactionManager transactionManager = jtaPlatform.retrieveTransactionManager();
+			if ( transactionManager != null ) {
+				try {
+					if ( transactionManager.getTransaction() != null ) {
+						markedForRollback = ( Status.STATUS_MARKED_ROLLBACK == transactionManager.getTransaction().getStatus() );
+					}
+					return markedForRollback;
+				}
+				catch (SystemException e) {
+					throw log.exceptionWhileChekingTransactionStatus( e );
+				}
+			}
+			return markedForRollback;
 		}
 
 		@Override
