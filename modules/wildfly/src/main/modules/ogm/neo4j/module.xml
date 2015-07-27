@@ -14,23 +14,18 @@
         <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompilerOlderVersion}.jar" />
         <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompilerOlderVersion}.jar" />
         <resource-root path="neo4j-cypher-compiler-2.1-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
         <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
         <resource-root path="neo4j-udc-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graph-algo-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graph-matching-${neo4jVersion}.jar" />
         <resource-root path="neo4j-jmx-${neo4jVersion}.jar" />
-        <resource-root path="parboiled-scala_2.10-${parboiledVersion}.jar" />
-        <resource-root path="scala-library-${scalaLibraryVersion}.jar" />
-        <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
-        <resource-root path="concurrentlinkedhashmap-lru-${concurrentlinkedhashmapVersion}.jar" />
     </resources>
     <dependencies>
         <module name="org.hibernate" slot="${hibernate.ogm.module.slot}" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
         <!-- Separate module to make sure it's not visible to the applications -->
-        <module name="org.hibernate.ogm.neo4j.lucene" slot="${hibernate.ogm.neo4j-lucene.module.slot}" />
+        <module name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.neo4j-internal.module.slot}" services="import" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />

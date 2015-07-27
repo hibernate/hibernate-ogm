@@ -50,7 +50,18 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( dbLocation );
 		setConfigurationFromLocation( builder, configurationLocation );
 		setConfigurationFromProperties( builder, configuration );
-		return builder.newGraphDatabase();
+		final ClassLoader neo4JClassLoader = builder.getClass().getClassLoader();
+		final Thread currentThread = Thread.currentThread();
+		final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+		try {
+			//Neo4J relies on the context classloader to load its own extensions:
+			//Allow it to load even the ones we're not exposing directly to end users.
+			currentThread.setContextClassLoader( neo4JClassLoader );
+			return builder.newGraphDatabase();
+		}
+		finally {
+			currentThread.setContextClassLoader( contextClassLoader );
+		}
 	}
 
 	private void setConfigurationFromProperties(GraphDatabaseBuilder builder, Map<?, ?> properties) {
