@@ -36,9 +36,6 @@ public class BatchFetchingTest extends OgmTestCase {
 		Tower tower = prepareDataset( session );
 		session.clear();
 
-		Log log = LoggerFactory.make();
-		log.error( "Done with the insertion" );
-
 		session.beginTransaction();
 		for ( Floor currentFloor : tower.getFloors() ) {
 			// load proxies
@@ -67,7 +64,6 @@ public class BatchFetchingTest extends OgmTestCase {
 	@Test
 	public void testLoadSeveralFloorsFromTower() throws Exception {
 
-		Log log = LoggerFactory.make();
 		Session session = openSession();
 		Tower tower = prepareDataset( session );
 		session.clear();
