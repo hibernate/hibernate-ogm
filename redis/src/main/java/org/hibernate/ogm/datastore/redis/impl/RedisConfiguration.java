@@ -6,17 +6,17 @@
  */
 package org.hibernate.ogm.datastore.redis.impl;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HostParser;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.redis.RedisProperties;
-import org.hibernate.ogm.util.configurationreader.impl.Validators;
+import org.hibernate.ogm.datastore.redis.logging.impl.Log;
+import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-
-import com.lambdaworks.redis.RedisURI;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 
 /**
  * @author Mark Paluch
@@ -32,8 +32,11 @@ public class RedisConfiguration {
 	 * The default timeout (5000ms) in case the {@link RedisProperties#TIMEOUT} property is not set
 	 */
 	private static final long DEFAULT_TIMEOUT = TimeUnit.MILLISECONDS.toMillis( 5000 );
-
 	private static final int DEFAULT_PORT = 6379;
+	private static final int DEFAULT_DATABASE = 0;
+
+	private static final Log log = LoggerFactory.getLogger();
+
 
 	private final Hosts hosts;
 	private final int databaseNumber;
@@ -41,25 +44,46 @@ public class RedisConfiguration {
 	private long timeout = DEFAULT_TIMEOUT;
 	private boolean ssl = false;
 
+	/**
+	 * A {@link PropertyValidator} which asserts that a given number is a valid database number.
+	 */
+	public static final PropertyValidator<Integer> DATABASE_VALIDATOR = new PropertyValidator<Integer>() {
+
+		@Override
+		public void validate(Integer value) throws HibernateException {
+			if ( value == null ) {
+				return;
+			}
+			if ( value < 0 || value > 15 ) {
+				throw log.illegalDatabaseValue( value );
+			}
+		}
+	};
+
 
 	public RedisConfiguration(ConfigurationPropertyReader propertyReader) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
 				.withDefault( DEFAULT_HOST )
 				.getValue();
 
-		Integer port = propertyReader.property( OgmProperties.PORT, Integer.class )
-				.withValidator( Validators.PORT )
-				.withDefault( null )
-				.getValue();
+		hosts = HostParser.parse( host, null, DEFAULT_PORT );
 
-		hosts = HostParser.parse( host, port, DEFAULT_PORT );
-
-		databaseNumber = propertyReader.property( OgmProperties.PORT, Integer.class )
-				.withValidator( Validators.PORT )
-				.withDefault( RedisURI.DEFAULT_REDIS_PORT )
+		databaseNumber = propertyReader.property( OgmProperties.DATABASE, Integer.class )
+				.withValidator( DATABASE_VALIDATOR )
+				.withDefault( DEFAULT_DATABASE )
 				.getValue();
 
 		this.password = propertyReader.property( OgmProperties.PASSWORD, String.class ).getValue();
+
+		this.timeout = propertyReader
+				.property( RedisProperties.TIMEOUT, Integer.class )
+				.withDefault( (int) DEFAULT_TIMEOUT )
+				.getValue();
+
+		this.ssl = propertyReader
+				.property( RedisProperties.SSL, boolean.class )
+				.withDefault( false )
+				.getValue();
 
 	}
 
@@ -107,25 +131,5 @@ public class RedisConfiguration {
 	 */
 	public boolean isSsl() {
 		return ssl;
-	}
-
-	/**
-	 * Initialize the internal values form the given {@link Map}.
-	 *
-	 * @param configurationMap The values to use as configuration
-	 */
-	public void initConfiguration(Map<?, ?> configurationMap) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationMap );
-
-		this.timeout = propertyReader
-				.property( RedisProperties.TIMEOUT, Integer.class )
-				.withDefault( (int) DEFAULT_TIMEOUT )
-				.getValue();
-
-		this.ssl = propertyReader
-				.property( RedisProperties.SSL, boolean.class )
-				.withDefault( false )
-				.getValue();
-
 	}
 }

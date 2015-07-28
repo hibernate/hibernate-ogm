@@ -7,16 +7,17 @@
 package org.hibernate.ogm.datastore.redis.options.navigation;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
-import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStorePropertyContext;
+import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
+import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreEntityContext;
 
 /**
- * Allows to configure Redis-specific options for a single property.
+ * Allows to configure Redis-specific options applying on a global level. These options may be overridden for single
+ * properties.
  *
  * @author Mark Paluch
  */
-public interface RedisPropertyContext extends KeyValueStorePropertyContext<RedisEntityContext, RedisPropertyContext>,
-		DocumentStorePropertyContext<RedisEntityContext, RedisPropertyContext> {
+public interface RedisEntityContext extends KeyValueStoreEntityContext<RedisEntityContext, RedisPropertyContext>,
+		DocumentStoreEntityContext<RedisEntityContext, RedisPropertyContext> {
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is
@@ -27,5 +28,5 @@ public interface RedisPropertyContext extends KeyValueStorePropertyContext<Redis
 	 *
 	 * @return this context, allowing for further fluent API invocations
 	 */
-	RedisPropertyContext associationStorage(AssociationStorageType associationStorageType);
+	RedisEntityContext associationStorage(AssociationStorageType associationStorageType);
 }

@@ -21,5 +21,21 @@ public enum EntityStorageType {
 	/**
 	 * Stores the entity in a hash and store all fields as strings.
 	 */
-	HASH
+	HASH;
+
+	/**
+	 * Lookup an {@link EntityStorageType} based on a Redis data type string.
+	 *
+	 * @param type Redis data type string
+	 *
+	 * @return the entity storage type
+	 */
+	public static EntityStorageType forType(String type) {
+
+		if ( HASH.name().equalsIgnoreCase( type ) ) {
+			return HASH;
+		}
+
+		return JSON;
+	}
 }

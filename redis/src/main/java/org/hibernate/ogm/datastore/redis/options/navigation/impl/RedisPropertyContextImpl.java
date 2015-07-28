@@ -6,15 +6,18 @@
  */
 package org.hibernate.ogm.datastore.redis.options.navigation.impl;
 
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.spi.BaseKeyValueStorePropertyContext;
-import org.hibernate.ogm.datastore.redis.navigation.RedisEntityContext;
+import org.hibernate.ogm.datastore.redis.options.navigation.RedisEntityContext;
 import org.hibernate.ogm.datastore.redis.options.navigation.RedisPropertyContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
+import org.hibernate.ogm.util.impl.Contracts;
 
 /**
  * Converts Redis property-level options.
  *
- * @author Gunnar Morling
+ * @author Mark Paluch
  */
 public abstract class RedisPropertyContextImpl
 		extends BaseKeyValueStorePropertyContext<RedisEntityContext, RedisPropertyContext> implements
@@ -22,5 +25,12 @@ public abstract class RedisPropertyContextImpl
 
 	public RedisPropertyContextImpl(ConfigurationContext context) {
 		super( context );
+	}
+
+	@Override
+	public RedisPropertyContext associationStorage(AssociationStorageType associationStorageType) {
+		Contracts.assertParameterNotNull( associationStorageType, "associationStorageType" );
+		addEntityOption( new AssociationStorageOption(), associationStorageType );
+		return this;
 	}
 }

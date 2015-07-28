@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.redis.logging.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.cfg.OgmProperties;
 
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -33,4 +34,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1703, value = "Unable to find or initialize a connection to the Redis server")
 	HibernateException unableToInitializeRedis(@Cause RuntimeException e);
+
+	@Message(id = 1704, value = "The value set for the configuration property '" + OgmProperties.DATABASE + "' must be a number between 0 and 15. Found '%s'.")
+	HibernateException illegalDatabaseValue(int value);
 }
