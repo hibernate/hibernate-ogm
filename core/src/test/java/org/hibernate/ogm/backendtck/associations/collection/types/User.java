@@ -29,6 +29,7 @@ import org.hibernate.annotations.GenericGenerator;
 public class User {
 	private String id;
 	private Map<String, Address> addresses = new HashMap<String, Address>();
+	private Map<String, PhoneNumber> phoneNumbers = new HashMap<>();
 	private Set<String> nicknames = new HashSet<String>();
 
 	@Id
@@ -51,6 +52,15 @@ public class User {
 
 	public void setAddresses(Map<String, Address> addresses) {
 		this.addresses = addresses;
+	}
+
+	@OneToMany
+	public Map<String, PhoneNumber> getPhoneNumbers() {
+		return phoneNumbers;
+	}
+
+	public void setPhoneNumbers(Map<String, PhoneNumber> phoneNumbers) {
+		this.phoneNumbers = phoneNumbers;
 	}
 
 	@ElementCollection

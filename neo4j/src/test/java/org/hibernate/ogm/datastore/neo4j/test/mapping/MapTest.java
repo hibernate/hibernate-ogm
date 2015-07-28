@@ -12,6 +12,7 @@ import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.types.Address;
+import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
@@ -102,7 +103,7 @@ public class MapTest extends Neo4jJpaTestCase {
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { User.class, Address.class };
+		return new Class<?>[] { User.class, Address.class, PhoneNumber.class };
 	}
 
 }
