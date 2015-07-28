@@ -8,9 +8,14 @@ package org.hibernate.ogm.datastore.mongodb.test.associations;
 
 import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.associations.collection.types.Address;
+import org.hibernate.ogm.backendtck.associations.collection.types.Department;
+import org.hibernate.ogm.backendtck.associations.collection.types.Enterprise;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.PhoneNumberId;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
@@ -171,8 +176,49 @@ public class MapMappingTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testMapOfComponent() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		Map<String, Department> departments = new HashMap<>();
+		departments.put( "sawing", new Department( "Sawing", 7 ) );
+		departments.put( "sale", new Department( "Sale", 2 ) );
+		Enterprise timberTradingInc = new Enterprise( "enterprise-1", departments );
+
+		session.persist( timberTradingInc );
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// assert
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Enterprise",
+				// query
+				"{ '_id' : 'enterprise-1' }",
+				// expected
+				"{ " +
+					"'_id' : 'enterprise-1', " +
+					"'departments' : {" +
+						"'sawing' : { 'name' : 'Sawing', 'headCount'  : 7 }," +
+						"'sale' : { 'name' : 'Sale', 'headCount'  : 2 }," +
+					"}" +
+				"}"
+		);
+
+		// clean up
+		session.delete( timberTradingInc );
+
+		tx.commit();
+		session.close();
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { User.class, Address.class, PhoneNumber.class };
+		return new Class<?>[] { User.class, Address.class, PhoneNumber.class, Enterprise.class };
 	}
 }

@@ -7,8 +7,12 @@
 package org.hibernate.ogm.backendtck.associations.collection.types;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.MapAssert.entry;
 import static org.hibernate.ogm.utils.TestHelper.getCurrentDialectType;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -201,12 +205,42 @@ public class MapTest extends OgmTestCase {
 
 		tx.commit();
 		session.close();
+	}
+
+	public void testMapOfComponent() {
+		Session session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		Map<String, Department> departments = new HashMap<>();
+		departments.put( "sawing", new Department( "Sawing", 7 ) );
+		departments.put( "sale", new Department( "Sale", 2 ) );
+		Enterprise timberTradingInc = new Enterprise( "enterprise-1", departments );
+
+		session.persist( timberTradingInc );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// assert
+		timberTradingInc = (Enterprise) session.get( Enterprise.class, "enterprise-1" );
+
+		assertThat( timberTradingInc.getDepartments() ).hasSize( 2 );
+		assertThat( timberTradingInc.getDepartments() ).includes( entry( "sawing", new Department( "Sawing", 7 ) ) );
+		assertThat( timberTradingInc.getDepartments() ).includes( entry( "sale", new Department( "Sale", 2 ) ) );
+
+		// clean up
+		session.delete( timberTradingInc );
+
+		tx.commit();
+		session.close();
 
 		checkCleanCache();
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { User.class, Address.class };
+		return new Class<?>[] { User.class, Address.class, PhoneNumber.class, Enterprise.class };
 	}
 }
