@@ -162,6 +162,10 @@
         <defaultGoal>install</defaultGoal>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <showWarnings>true</showWarnings>
@@ -183,6 +187,7 @@
                             <Implementation-Vendor>hibernate.org</Implementation-Vendor>
                             <Implementation-Vendor-Id>hibernate.org</Implementation-Vendor-Id>
                             <Implementation-URL>http://hibernate.org</Implementation-URL>
+                            <Git-Commit-Id>${buildNumber}</Git-Commit-Id>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -524,6 +529,24 @@
                                 </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>1.3</version>
+                    <executions>
+                        <execution>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>create</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <doCheck>false</doCheck>
+                        <doUpdate>false</doUpdate>
+                        <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
                     </configuration>
                 </plugin>
                 <plugin>
