@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.redis.impl;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.HibernateException;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HostParser;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -19,8 +20,11 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 
 /**
+ * Configuration for {@link RedisDatastoreProvider}.
+ *
  * @author Mark Paluch
  */
+@Immutable
 public class RedisConfiguration {
 
 	/**
@@ -32,22 +36,16 @@ public class RedisConfiguration {
 	 * The default timeout (5000ms) in case the {@link RedisProperties#TIMEOUT} property is not set
 	 */
 	private static final long DEFAULT_TIMEOUT = TimeUnit.MILLISECONDS.toMillis( 5000 );
+
 	private static final int DEFAULT_PORT = 6379;
 	private static final int DEFAULT_DATABASE = 0;
 
 	private static final Log log = LoggerFactory.getLogger();
 
-
-	private final Hosts hosts;
-	private final int databaseNumber;
-	private final String password;
-	private long timeout = DEFAULT_TIMEOUT;
-	private boolean ssl = false;
-
 	/**
 	 * A {@link PropertyValidator} which asserts that a given number is a valid database number.
 	 */
-	public static final PropertyValidator<Integer> DATABASE_VALIDATOR = new PropertyValidator<Integer>() {
+	private static final PropertyValidator<Integer> DATABASE_VALIDATOR = new PropertyValidator<Integer>() {
 
 		@Override
 		public void validate(Integer value) throws HibernateException {
@@ -60,6 +58,11 @@ public class RedisConfiguration {
 		}
 	};
 
+	private final Hosts hosts;
+	private final int databaseNumber;
+	private final String password;
+	private final long timeout;
+	private final boolean ssl;
 
 	public RedisConfiguration(ConfigurationPropertyReader propertyReader) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )

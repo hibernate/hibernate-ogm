@@ -108,7 +108,7 @@ public class RedisHashMappingTest extends OgmTestCase {
 		session.getTransaction().begin();
 
 		// given
-		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink );
+		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink, "pink-donut" );
 		session.persist( donut );
 
 
@@ -122,6 +122,7 @@ public class RedisHashMappingTest extends OgmTestCase {
 		assertThat( loadedDonut ).isNotNull();
 		assertThat( loadedDonut.getId() ).isEqualTo( "homers-donut" );
 		assertThat( loadedDonut.getGlaze() ).isEqualTo( Donut.Glaze.Pink );
+		assertThat( loadedDonut.getAlias() ).isEqualTo( "pink-donut" );
 
 		session.getTransaction().commit();
 
@@ -134,7 +135,7 @@ public class RedisHashMappingTest extends OgmTestCase {
 		session.getTransaction().begin();
 
 		// given
-		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink );
+		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink, "pink-donut" );
 		session.persist( donut );
 
 		session.getTransaction().commit();
@@ -145,6 +146,37 @@ public class RedisHashMappingTest extends OgmTestCase {
 		// then
 		assertThat( map.get( "glaze" ) ).isEqualTo( "2" );
 		assertThat( map.get( "radius" ) ).isEqualTo( "7.5" );
+		assertThat( map.get( "alias" ) ).isEqualTo( "pink-donut" );
+
+
+		session.close();
+	}
+
+	@Test
+	public void verifyNullsNotStored() {
+		OgmSession session = openSession();
+		session.getTransaction().begin();
+
+		// given
+		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink, "pink-donut"  );
+		session.persist( donut );
+
+		session.getTransaction().commit();
+
+		session.getTransaction().begin();
+
+		Donut loaded = (Donut) session.get( Donut.class, "homers-donut" );
+		loaded.setGlaze( Donut.Glaze.Dark );
+		loaded.setAlias( null );
+		session.persist( loaded );
+
+		session.getTransaction().commit();
+
+		// when
+		Map<String, String> map = toStringMap( getConnection().hgetall( "Donut:homers-donut".getBytes() ) );
+
+		// then
+		assertThat( map.containsKey( "alias" ) ).isFalse();
 
 
 		session.close();

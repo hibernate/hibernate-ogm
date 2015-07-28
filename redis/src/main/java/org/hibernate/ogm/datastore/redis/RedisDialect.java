@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.hibernate.LockMode;
@@ -48,6 +49,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -121,7 +123,6 @@ public class RedisDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		// TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		return new Tuple( new RedisTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
@@ -129,7 +130,7 @@ public class RedisDialect extends BaseGridDialect {
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, map );
-		storeEntity( key, map, tupleContext.getOptionsContext() );
+		storeEntity( key, map, tupleContext.getOptionsContext(), tuple.getOperations() );
 	}
 
 	@Override
@@ -365,7 +366,11 @@ public class RedisDialect extends BaseGridDialect {
 		return getEntityStorageStrategy( optionsContext ).getEntity( entityId( key ) );
 	}
 
-	private void storeEntity(EntityKey key, Map<String, Object> map, OptionsContext optionsContext) {
+	private void storeEntity(
+			EntityKey key,
+			Map<String, Object> map,
+			OptionsContext optionsContext,
+			Set<TupleOperation> operations) {
 		Entity entityDocument = new Entity();
 
 		for ( Map.Entry<String, Object> entry : map.entrySet() ) {
@@ -375,7 +380,7 @@ public class RedisDialect extends BaseGridDialect {
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
 
-		storeEntity( key, entityDocument, optionsContext );
+		storeEntity( key, entityDocument, optionsContext, operations );
 
 		Long ttl = getTTL( optionsContext );
 		if ( ttl != null ) {
@@ -383,8 +388,12 @@ public class RedisDialect extends BaseGridDialect {
 		}
 	}
 
-	private void storeEntity(EntityKey key, Entity document, OptionsContext optionsContext) {
-		getEntityStorageStrategy( optionsContext ).storeEntity( entityId( key ), document );
+	private void storeEntity(
+			EntityKey key,
+			Entity document,
+			OptionsContext optionsContext,
+			Set<TupleOperation> operations) {
+		getEntityStorageStrategy( optionsContext ).storeEntity( entityId( key ), document, operations );
 	}
 
 	private Association getAssociation(EntityKey key) {
@@ -410,7 +419,8 @@ public class RedisDialect extends BaseGridDialect {
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
 		getEntityStorageStrategy( associationContext.getAssociationTypeContext().getOptionsContext() ).storeEntity(
 				entityId( key ),
-				entity
+				entity,
+				null
 		);
 		return entity;
 	}

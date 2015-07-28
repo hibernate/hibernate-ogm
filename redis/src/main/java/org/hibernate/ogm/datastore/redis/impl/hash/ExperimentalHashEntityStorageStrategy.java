@@ -11,11 +11,16 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.EntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.json.RedisJsonTypeConverter;
+import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.TupleOperationType;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.ogm.util.Experimental;
 import org.hibernate.type.BinaryType;
@@ -62,9 +67,10 @@ public class ExperimentalHashEntityStorageStrategy implements EntityStorageStrat
 	}
 
 	@Override
-	public void storeEntity(byte[] key, Entity entity) {
+	public void storeEntity(byte[] key, Entity entity, Set<TupleOperation> operations) {
 
 		Map<byte[], byte[]> map = new HashMap<>();
+		Set<byte[]> fieldsToRemove = new HashSet<>();
 
 		for ( Map.Entry<String, Object> entry : entity.getProperties().entrySet() ) {
 
@@ -83,6 +89,20 @@ public class ExperimentalHashEntityStorageStrategy implements EntityStorageStrat
 		}
 
 		connection.hmset( key, map );
+
+		if ( operations != null ) {
+			for ( TupleOperation operation : operations ) {
+				if ( operation.getType() == TupleOperationType.PUT_NULL || operation.getType() == TupleOperationType.REMOVE ) {
+					fieldsToRemove.add( RedisDialect.toBytes( operation.getColumn() ) );
+				}
+
+				if ( !fieldsToRemove.isEmpty() ) {
+					connection.hdel( key, fieldsToRemove.toArray( new byte[fieldsToRemove.size()][] ) );
+				}
+
+			}
+		}
+
 	}
 
 	private byte[] getPropertyValue(Object value) {
