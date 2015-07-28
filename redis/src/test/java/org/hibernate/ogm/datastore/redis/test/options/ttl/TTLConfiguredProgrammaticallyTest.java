@@ -4,24 +4,30 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.backendtck.associations.storageconfiguration;
+package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
-import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.datastore.redis.RedisDialect;
+import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
+import org.hibernate.ogm.datastore.redis.options.navigation.RedisGlobalContext;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -29,95 +35,92 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Test for configuring the different association storage modes via the option API.
  *
- * @author Gunnar Morling
+ * @author Mark Paluch
  */
-@SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.CASSANDRA },
-		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
-)
-public class AssociationStorageConfiguredProgrammaticallyTest extends AssociationStorageTestBase {
+public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
 
 	private Cloud cloud;
 
+	protected OgmConfiguration configuration;
+	protected OgmSessionFactory sessions;
+
+	@Before
+	public void setupConfiguration() {
+		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+		configure( configuration );
+	}
+
+	protected void setupSessionFactory() {
+		sessions = configuration.buildSessionFactory();
+	}
+
 	@Test
-	public void associationStorageSetToAssociationDocumentOnGlobalLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+	public void ttlOnGlobalLevel() throws Exception {
+		( (RedisGlobalContext) TestHelper.configureDatastore( configuration ) )
+				.ttl( 1, TimeUnit.DAYS );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 0 );
+		assertThat( cloudTtl() ).isGreaterThan( TimeUnit.HOURS.toMillis( 23 ) )
+				.isLessThanOrEqualTo( TimeUnit.HOURS.toMillis( 24 ) );
 	}
 
+
 	@Test
-	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-			.associationStorage( AssociationStorageType.IN_ENTITY );
+	public void ttlOnEntityLevel() throws Exception {
+		( (RedisGlobalContext) TestHelper.configureDatastore( configuration ) )
+				.entity( Cloud.class )
+				.ttl( 1, TimeUnit.DAYS );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
-		assertThat( associationDocumentCount() ).isEqualTo( 0 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
+		assertThat( cloudTtl() ).isGreaterThan( TimeUnit.HOURS.toMillis( 23 ) ).isLessThanOrEqualTo(
+				TimeUnit.HOURS.toMillis(
+						24
+				)
+		);
 	}
 
 	@Test
-	public void associationStorageSetToAssociationDocumentOnEntityLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-			.entity( Cloud.class )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
-
-		setupSessionFactory();
-		createCloudWithTwoProducedSnowflakes();
-
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 0 );
-	}
-
-	@Test
-	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-			.entity( Cloud.class )
-				.associationStorage( AssociationStorageType.IN_ENTITY );
-
-		setupSessionFactory();
-		createCloudWithTwoProducedSnowflakes();
-
-		assertThat( associationDocumentCount() ).isEqualTo( 0 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
-	}
-
-	@Test
-	public void associationStorageSetOnPropertyLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-			.entity( Cloud.class )
-				.property( "producedSnowFlakes", ElementType.METHOD )
-					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+	public void ttlOnPropertyLevel() throws Exception {
+		( (RedisGlobalContext) TestHelper.configureDatastore( configuration ) )
+				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+				.entity( Cloud.class )
 				.property( "backupSnowFlakes", ElementType.METHOD )
-					.associationStorage( AssociationStorageType.IN_ENTITY );
+				.ttl( 1, TimeUnit.DAYS );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
+		// property-level options are applied to the type as well.
+		// not sure, whether this is a good idea.
+		assertThat( cloudTtl() ).isGreaterThan( TimeUnit.HOURS.toMillis( 23 ) )
+				.isLessThanOrEqualTo( TimeUnit.HOURS.toMillis( 24 ) );
+
+		assertThat( associationTtl() ).isGreaterThan( TimeUnit.HOURS.toMillis( 23 ) )
+				.isLessThanOrEqualTo( TimeUnit.HOURS.toMillis( 24 ) );
 	}
 
-	@Test
-	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
-		.entity( Cloud.class )
-			.associationStorage( AssociationStorageType.IN_ENTITY )
-			.property( "backupSnowFlakes", ElementType.METHOD )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
-		setupSessionFactory();
-		createCloudWithTwoProducedAndOneBackupSnowflake();
+	private long cloudTtl() {
+		return getProvider().getConnection().pttl( RedisDialect.toBytes( "Cloud:" + cloud.getId() ) );
+	}
 
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
+	private long associationTtl() {
+
+		byte[] associationKey = getProvider().getConnection()
+				.keys( RedisDialect.toBytes( "Associations:Cloud:*" ) )
+				.get( 0 );
+		return getProvider().getConnection().pttl( associationKey );
+	}
+
+
+	private RedisDatastoreProvider getProvider() {
+		return (RedisDatastoreProvider) sfi()
+				.getServiceRegistry()
+				.getService( DatastoreProvider.class );
 	}
 
 	private void createCloudWithTwoProducedSnowflakes() {

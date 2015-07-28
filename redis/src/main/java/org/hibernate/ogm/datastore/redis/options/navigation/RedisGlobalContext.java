@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.redis.options.navigation;
 
+import java.util.concurrent.TimeUnit;
+
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreGlobalContext;
@@ -29,4 +31,14 @@ public interface RedisGlobalContext extends KeyValueStoreGlobalContext<RedisGlob
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	RedisGlobalContext associationStorage(AssociationStorageType associationStorageType);
+
+	/**
+	 * Specifies the TTL for keys. See also {@link org.hibernate.ogm.datastore.redis.options.TTL}
+	 *
+	 * @param value the TTL duration
+	 * @param timeUnit the TTL time unit
+	 *
+	 * @return this context, allowing for further fluent API invocations
+	 */
+	RedisGlobalContext ttl(long value, TimeUnit timeUnit);
 }

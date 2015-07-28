@@ -297,6 +297,7 @@ public class RedisDialect extends BaseGridDialect {
 				associationKey.getMetadata(),
 				associationContext.getAssociationTypeContext()
 		) ) {
+
 			storeEntity(
 					associationKey.getEntityKey(),
 					(Entity) redisAssociation.getOwningDocument(),
@@ -304,15 +305,24 @@ public class RedisDialect extends BaseGridDialect {
 			);
 		}
 		else {
+			Long currentTtl = connection.pttl( entityId( associationKey.getEntityKey() ) );
 			storeAssociation( associationKey.getEntityKey(), (Association) redisAssociation.getOwningDocument() );
-			Long ttl = getTTL( associationContext );
-			if ( ttl != null ) {
-				expireAssociation( associationKey.getEntityKey(), ttl );
-			}
+			setAssociationTTL( associationKey, associationContext, currentTtl );
 		}
-
 	}
 
+	private void setAssociationTTL(
+			AssociationKey associationKey,
+			AssociationContext associationContext,
+			Long currentTtl) {
+		Long ttl = getTTL( associationContext );
+		if ( ttl != null ) {
+			expireAssociation( associationKey.getEntityKey(), ttl );
+		}
+		else if ( currentTtl != null && currentTtl > 0 ) {
+			expireAssociation( associationKey.getEntityKey(), currentTtl );
+		}
+	}
 
 	private List<Object> getAssociationRows(
 			org.hibernate.ogm.model.spi.Association association,
@@ -380,12 +390,8 @@ public class RedisDialect extends BaseGridDialect {
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
 
-		storeEntity( key, entityDocument, optionsContext, operations );
 
-		Long ttl = getTTL( optionsContext );
-		if ( ttl != null ) {
-			expireEntity( key, ttl );
-		}
+		storeEntity( key, entityDocument, optionsContext, operations );
 	}
 
 	private void storeEntity(
@@ -393,7 +399,22 @@ public class RedisDialect extends BaseGridDialect {
 			Entity document,
 			OptionsContext optionsContext,
 			Set<TupleOperation> operations) {
+
+		Long currentTtl = connection.pttl( entityId( key ) );
+
 		getEntityStorageStrategy( optionsContext ).storeEntity( entityId( key ), document, operations );
+
+		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
+
+	}
+
+	private void setEntityTTL(EntityKey key, Long currentTtl, Long configuredTTL) {
+		if ( configuredTTL != null ) {
+			expireEntity( key, configuredTTL );
+		}
+		else if ( currentTtl != null && currentTtl > 0 ) {
+			expireEntity( key, currentTtl );
+		}
 	}
 
 	private Association getAssociation(EntityKey key) {
@@ -417,11 +438,16 @@ public class RedisDialect extends BaseGridDialect {
 	}
 
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
+
+		Long currentTtl = connection.pttl( entityId( key ) );
+
 		getEntityStorageStrategy( associationContext.getAssociationTypeContext().getOptionsContext() ).storeEntity(
 				entityId( key ),
 				entity,
 				null
 		);
+
+		setEntityTTL( key, currentTtl, getTTL( associationContext ) );
 		return entity;
 	}
 

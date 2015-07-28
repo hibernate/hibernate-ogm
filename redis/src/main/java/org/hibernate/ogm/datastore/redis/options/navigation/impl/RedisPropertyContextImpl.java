@@ -6,9 +6,12 @@
  */
 package org.hibernate.ogm.datastore.redis.options.navigation.impl;
 
+import java.util.concurrent.TimeUnit;
+
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.spi.BaseKeyValueStorePropertyContext;
+import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
 import org.hibernate.ogm.datastore.redis.options.navigation.RedisEntityContext;
 import org.hibernate.ogm.datastore.redis.options.navigation.RedisPropertyContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
@@ -30,7 +33,16 @@ public abstract class RedisPropertyContextImpl
 	@Override
 	public RedisPropertyContext associationStorage(AssociationStorageType associationStorageType) {
 		Contracts.assertParameterNotNull( associationStorageType, "associationStorageType" );
-		addEntityOption( new AssociationStorageOption(), associationStorageType );
+		addPropertyOption( new AssociationStorageOption(), associationStorageType );
+		return this;
+	}
+
+	@Override
+	public RedisPropertyContext ttl(
+			long value, TimeUnit timeUnit) {
+		Contracts.assertTrue( value > 0, "value must be greater 0" );
+		Contracts.assertParameterNotNull( timeUnit, "timeUnit" );
+		addEntityOption( new TTLOption(), timeUnit.toMillis( value ) );
 		return this;
 	}
 }
