@@ -324,7 +324,7 @@ public class News {
 [source, JSON]
 ----
 {
-    "version": "1",
+    "version": 1,
     "title": "On the merits of NoSQL",
     "description": "This paper discuss why NoSQL will save the world for good"
 }
@@ -466,8 +466,8 @@ Two main strategies are supported:
 1. <<redis-table-id-generation-strategy, TABLE>>
 2. <<redis-sequence-id-generation-strategy, SEQUENCE>>
 
-Both strategy will operate in the hash named `Identifiers` containg the last value of the id, the difference
-between the two strategies is the name of the field containing the values.
+Both strategy will operate in the keys starting with `Identifiers` containing the last value of the id. The difference
+between the two strategies is the name of the key containing the values.
 
 Hibernate OGM goes not support the `IDENTITY` strategy and an exception is thrown at startup
 when it is used.
@@ -507,7 +507,7 @@ Key: Video:1
 
 [source, JSON]
 ----
-Key: Identifiers, Field sequence_name:default
+Key: Identifiers:hibernate_sequences:default
 Value: 1
 ----
 ====
@@ -538,28 +538,7 @@ public class Video {
 
 [source, JSON]
 ----
-@Entity
-public class Video {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "video")
-    @TableGenerator(
-            name = "video",
-            table = "sequences",
-            pkColumnName = "key",
-            pkColumnValue = "video",
-            valueColumnName = "seed"
-    )
-    private Integer id;
-    private String name
-
-    // getters, setters, ...
-}
-----
-
-[source, JSON]
-----
-Key: Identifiers, Field sequences:video
+Key: Identifiers:sequences:video
 Value: 2
 ----
 ====
@@ -595,8 +574,8 @@ Key: Song:2
 
 [source, JSON]
 ----
-Key: Identifiers, Field hibernate_sequences:hibernate_sequence
-Value: 3
+Key: Identifiers:hibernate_sequences:hibernate_sequence
+Value: 2
 ----
 ====
 
@@ -634,8 +613,8 @@ Key: Song:2
 
 [source, JSON]
 ----
-Key: Identifiers, Field hibernate_sequences:song_sequence
-Value: 20
+Key: Identifiers:hibernate_sequences:song_sequence_name
+Value: 21
 ----
 ====
 
@@ -787,7 +766,7 @@ Key: GrandMother:86ada718-f2a2-4299-b6ac-3d90b1ef2331
     "grandChildren" : [
             {
                 "name" : "luke",
-                "birth_order" : 0
+                "birthorder" : 0
             },
             {
                 "name" : "leia",
@@ -891,8 +870,7 @@ public class Wheel {
 ----
 Key: Vehicule:V001
 {
-    "id": "V001",
-    "brand": "Mercedes",
+    "brand": "Mercedes"
 }
 ----
 
@@ -900,7 +878,7 @@ Key: Vehicule:V001
 ----
 Key: Wheel:W1
 {
-  "diameter" : 0,
+  "diameter" : 0.0,
   "vehicule_id" : "V001"
 }
 ----
@@ -941,7 +919,7 @@ public class Wheel {
 ----
 Key: Vehicule:V001
 {
-    "brand": "Mercedes",
+    "brand": "Mercedes"
 }
 ----
 
@@ -949,7 +927,7 @@ Key: Vehicule:V001
 ----
 Key: Wheel:W1
 {
-  "diameter" : 0,
+  "diameter" : 0.0,
   "part_of" : "V001"
 }
 ----
@@ -993,8 +971,7 @@ public class Wheel {
 ----
 Key: Vehicule:V001
 {
-    "id": "V001",
-    "brand": "Mercedes",
+    "brand": "Mercedes"
 }
 ----
 
@@ -1002,7 +979,7 @@ Key: Vehicule:V001
 ----
 Wheel:vehicule:V001
 {
-  "diameter" : 0,
+  "diameter" : 0.0,
   "vehicule_id" : "V001"
 }
 ----
@@ -1043,7 +1020,6 @@ public class Wife {
 ----
 Key: Husband:alex
 {
-  "id" : "alex",
   "name" : "Alex",
   "wife" : "bea"
 }
@@ -1940,7 +1916,5 @@ But do not consider rollback as a possibility, this won't work.
 Hibernate OGM is a work in progress
 and we are actively working on JP-QL query support.
 
-In the mean time, you have two strategies to query entities stored by Hibernate OGM:
-
-* use Hibernate Search
+In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM.
 
