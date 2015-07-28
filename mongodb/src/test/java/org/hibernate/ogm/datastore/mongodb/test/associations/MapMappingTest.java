@@ -122,6 +122,55 @@ public class MapMappingTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testMapWithNonStringKey() throws Exception {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		PhoneNumber home = new PhoneNumber( new PhoneNumberId( "DE", 123 ), "Home Phone" );
+		PhoneNumber work = new PhoneNumber( new PhoneNumberId( "EN", 456 ), "Work Phone" );
+		User user = new User();
+		user.getPhoneNumbersByPriority().put( 1, home );
+		user.getPhoneNumbersByPriority().put( 2, work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// Then
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"User",
+				// query
+				"{ '_id' : '" + user.getId() + "' }",
+				// expected
+				"{ " +
+					"'_id' : '" + user.getId() + "', " +
+					"'phoneNumbersByPriority' : [" +
+						"{ 'priority' : 1, 'countryCode' : 'DE', 'number'  : 123 }," +
+						"{ 'priority' : 2, 'countryCode' : 'EN', 'number'  : 456 }" +
+					"]" +
+				"}"
+		);
+
+		// clean-up
+		user = (User) session.get( User.class, user.getId() );
+		session.delete( user );
+		session.delete( session.load( PhoneNumber.class, home.getId() ) );
+		session.delete( session.load( PhoneNumber.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
+
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { User.class, Address.class, PhoneNumber.class };

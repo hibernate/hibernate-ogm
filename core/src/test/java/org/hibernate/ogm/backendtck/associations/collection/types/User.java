@@ -30,6 +30,7 @@ public class User {
 	private String id;
 	private Map<String, Address> addresses = new HashMap<String, Address>();
 	private Map<String, PhoneNumber> phoneNumbers = new HashMap<>();
+	private Map<Integer, PhoneNumber> phoneNumbersByPriority = new HashMap<>();
 	private Set<String> nicknames = new HashSet<String>();
 
 	@Id
@@ -61,6 +62,16 @@ public class User {
 
 	public void setPhoneNumbers(Map<String, PhoneNumber> phoneNumbers) {
 		this.phoneNumbers = phoneNumbers;
+	}
+
+	@OneToMany
+	@MapKeyColumn(name = "priority")
+	public Map<Integer, PhoneNumber> getPhoneNumbersByPriority() {
+		return phoneNumbersByPriority;
+	}
+
+	public void setPhoneNumbersByPriority(Map<Integer, PhoneNumber> phoneNumbersByPriority) {
+		this.phoneNumbersByPriority = phoneNumbersByPriority;
 	}
 
 	@ElementCollection
