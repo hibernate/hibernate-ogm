@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
  * <pre>
  * {@code
  * {
- *     "$type": "entity",
  *     "name": "Bob",
  *     "login": "dude",
  *     "homeAddress": {

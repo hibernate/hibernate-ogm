@@ -69,9 +69,9 @@ public class RedisConfiguration {
 				.withDefault( DEFAULT_HOST )
 				.getValue();
 
-		hosts = HostParser.parse( host, null, DEFAULT_PORT );
+		this.hosts = HostParser.parse( host, null, DEFAULT_PORT );
 
-		databaseNumber = propertyReader.property( OgmProperties.DATABASE, Integer.class )
+		this.databaseNumber = propertyReader.property( OgmProperties.DATABASE, Integer.class )
 				.withValidator( DATABASE_VALIDATOR )
 				.withDefault( DEFAULT_DATABASE )
 				.getValue();
@@ -87,7 +87,6 @@ public class RedisConfiguration {
 				.property( RedisProperties.SSL, boolean.class )
 				.withDefault( false )
 				.getValue();
-
 	}
 
 	/**

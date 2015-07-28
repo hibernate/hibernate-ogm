@@ -16,7 +16,6 @@ import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -54,8 +53,6 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	@Override
 	public void configure(Map configurationValues) {
-
-		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader(
 				configurationValues,
@@ -71,7 +68,6 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 			throw log.unableToConfigureDatastoreProvider( e );
 		}
 	}
-
 
 	@Override
 	public void start() {

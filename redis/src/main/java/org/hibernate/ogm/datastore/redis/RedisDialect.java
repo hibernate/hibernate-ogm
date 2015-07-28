@@ -88,7 +88,6 @@ public class RedisDialect extends BaseGridDialect {
 		strategies.put( EntityStorageType.HASH, new ExperimentalHashEntityStorageStrategy( connection ) );
 
 		this.entityStorageStrategies = Collections.unmodifiableMap( strategies );
-
 	}
 
 	/**
@@ -158,7 +157,6 @@ public class RedisDialect extends BaseGridDialect {
 		);
 	}
 
-
 	private Long getTTL(OptionsContext optionsContext) {
 		return optionsContext.getUnique( TTLOption.class );
 	}
@@ -195,7 +193,6 @@ public class RedisDialect extends BaseGridDialect {
 	@Override
 	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-
 			KeyScanCursor<byte[]> cursor = null;
 			String pattern = entityKeyMetadata.getTable() + ":*";
 			ScanArgs scanArgs = ScanArgs.Builder.matches( pattern );
@@ -208,7 +205,6 @@ public class RedisDialect extends BaseGridDialect {
 				}
 
 				for ( byte[] key : cursor.getKeys() ) {
-
 					String type = connection.type( key );
 					EntityStorageStrategy entityStorageStrategy = getEntityStorageStrategy( type );
 
@@ -390,7 +386,6 @@ public class RedisDialect extends BaseGridDialect {
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
 
-
 		storeEntity( key, entityDocument, optionsContext, operations );
 	}
 
@@ -405,7 +400,6 @@ public class RedisDialect extends BaseGridDialect {
 		getEntityStorageStrategy( optionsContext ).storeEntity( entityId( key ), document, operations );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
-
 	}
 
 	private void setEntityTTL(EntityKey key, Long currentTtl, Long configuredTTL) {
@@ -418,7 +412,6 @@ public class RedisDialect extends BaseGridDialect {
 	}
 
 	private Association getAssociation(EntityKey key) {
-
 		byte[] associationId = associationId( key );
 		List<byte[]> lrange = connection.lrange( associationId, 0, -1 );
 
@@ -438,7 +431,6 @@ public class RedisDialect extends BaseGridDialect {
 	}
 
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
-
 		Long currentTtl = connection.pttl( entityId( key ) );
 
 		getEntityStorageStrategy( associationContext.getAssociationTypeContext().getOptionsContext() ).storeEntity(
@@ -457,7 +449,6 @@ public class RedisDialect extends BaseGridDialect {
 	}
 
 	private void storeAssociation(EntityKey key, Association document) {
-
 		byte[] associationId = associationId( key );
 		connection.del( associationId );
 
@@ -479,8 +470,15 @@ public class RedisDialect extends BaseGridDialect {
 		connection.del( entityId( key ) );
 	}
 
-
-	public byte[] identifierId(IdSourceKey key) {
+	/**
+	 * Create a byte[] representation of the identifier key in the format of {@code Identifiers:(table name):(columnId)}.
+	 * {@see #IDENTIFIERS}
+	 *
+	 * @param key Key for the identifier
+	 *
+	 * @return byte array containing the key
+	 */
+	private byte[] identifierId(IdSourceKey key) {
 		byte[] prefix = toBytes( IDENTIFIERS + ":" + key.getTable() + ":" );
 		byte[] entityId = prepareKey( key.getColumnNames(), key.getColumnValues() );
 
@@ -489,10 +487,17 @@ public class RedisDialect extends BaseGridDialect {
 		System.arraycopy( entityId, 0, identifierId, prefix.length, entityId.length );
 
 		return identifierId;
-
 	}
 
-	public byte[] associationId(EntityKey key) {
+	/**
+	 * Create a byte[] representation of the entity key in the format of {@code Association:(table name):(columnId)}.
+	 * {@see #ASSOCIATIONS}
+	 *
+	 * @param key Key of the association
+	 *
+	 * @return byte array containing the key
+	 */
+	private byte[] associationId(EntityKey key) {
 		byte[] prefix = toBytes( ASSOCIATIONS + ":" + key.getTable() + ":" );
 		byte[] entityId = prepareKey( key.getColumnNames(), key.getColumnValues() );
 
@@ -501,9 +506,15 @@ public class RedisDialect extends BaseGridDialect {
 		System.arraycopy( entityId, 0, associationId, prefix.length, entityId.length );
 
 		return associationId;
-
 	}
 
+	/**
+	 * Create a byte[] representation of the key in the format of {@code (table name):(columnId)}.
+	 *
+	 * @param key Key of the entity
+	 *
+	 * @return byte array containing the key
+	 */
 	public byte[] entityId(EntityKey key) {
 		byte[] prefix = toBytes( key.getTable() + ":" );
 		byte[] entityId = prepareKey( key.getColumnNames(), key.getColumnValues() );
@@ -513,7 +524,6 @@ public class RedisDialect extends BaseGridDialect {
 		System.arraycopy( entityId, 0, associationId, prefix.length, entityId.length );
 
 		return associationId;
-
 	}
 
 	private byte[] prepareKey(String[] columnNames, Object[] columnValues) {
