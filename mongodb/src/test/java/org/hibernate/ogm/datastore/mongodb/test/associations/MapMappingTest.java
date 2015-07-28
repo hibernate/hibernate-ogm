@@ -11,6 +11,8 @@ import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assert
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.associations.collection.types.Address;
+import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber;
+import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.PhoneNumberId;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
@@ -71,8 +73,57 @@ public class MapMappingTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testMapOfEntityWithCompositeId() throws Exception {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		PhoneNumber home = new PhoneNumber( new PhoneNumberId( "DE", 123 ), "Home Phone" );
+		PhoneNumber work = new PhoneNumber( new PhoneNumberId( "EN", 456 ), "Work Phone" );
+		User user = new User();
+		user.getPhoneNumbers().put( "home", home );
+		user.getPhoneNumbers().put( "work", work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// Then
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"User",
+				// query
+				"{ '_id' : '" + user.getId() + "' }",
+				// expected
+				"{ " +
+					"'_id' : '" + user.getId() + "', " +
+					"'phoneNumbers' : {" +
+						"'home' : { 'countryCode' : 'DE', 'number'  : 123 }," +
+						"'work' : { 'countryCode' : 'EN', 'number'  : 456 }" +
+					"}" +
+				"}"
+		);
+
+		// clean-up
+		user = (User) session.get( User.class, user.getId() );
+		session.delete( user );
+		session.delete( session.load( PhoneNumber.class, home.getId() ) );
+		session.delete( session.load( PhoneNumber.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
+
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { User.class, Address.class };
+		return new Class<?>[] { User.class, Address.class, PhoneNumber.class };
 	}
 }

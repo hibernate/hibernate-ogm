@@ -12,11 +12,12 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.PhoneNumberId;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-
 import org.junit.Test;
 
 /**
@@ -162,6 +163,45 @@ public class MapTest extends OgmTestCase {
 
 		tx.commit();
 		session.close();
+		checkCleanCache();
+	}
+
+	@Test
+	public void testMapOfEntityWithCompositeId() throws Exception {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		PhoneNumber home = new PhoneNumber( new PhoneNumberId( "DE", 123 ), "Home Phone" );
+		PhoneNumber work = new PhoneNumber( new PhoneNumberId( "EN", 456 ), "Work Phone" );
+		User user = new User();
+		user.getPhoneNumbers().put( "home", home );
+		user.getPhoneNumbers().put( "work", work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		user = (User) session.get( User.class, user.getId() );
+		assertThat( user.getPhoneNumbers().get( "home" ) ).isNotNull();
+		assertThat( user.getPhoneNumbers().get( "home" ).getId() ).isEqualTo( new PhoneNumberId( "DE", 123 ) );
+		assertThat( user.getPhoneNumbers().get( "work" ) ).isNotNull();
+		assertThat( user.getPhoneNumbers().get( "work" ).getId() ).isEqualTo( new PhoneNumberId( "EN", 456 ) );
+		assertThat( user.getPhoneNumbers() ).hasSize( 2 );
+
+		// clean-up
+		user = (User) session.get( User.class, user.getId() );
+		session.delete( user );
+		session.delete( session.load( PhoneNumber.class, home.getId() ) );
+		session.delete( session.load( PhoneNumber.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
+
 		checkCleanCache();
 	}
 
