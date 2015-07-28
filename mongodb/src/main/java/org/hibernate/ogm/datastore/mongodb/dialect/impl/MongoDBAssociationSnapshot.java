@@ -8,10 +8,13 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.getValueOrNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
+import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 
@@ -42,22 +45,80 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 	}
 
 	private static Collection<?> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
-		Collection<?> rows;
+		Collection<?> rows = null;
 
-		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			if ( associationKey.getMetadata().isOneToOne() ) {
-				Object oneToOneValue = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Object.class );
-				rows = oneToOneValue != null ? Collections.singletonList( oneToOneValue ) : Collections.emptyList();
-			}
-			else {
-				rows = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Collection.class );
+		if ( associationKey.getMetadata().isOneToOne() ) {
+			Object oneToOneValue = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Object.class );
+			if ( oneToOneValue != null ) {
+				rows = Collections.singletonList( oneToOneValue );
 			}
 		}
 		else {
-			rows = (Collection<?>) document.get( MongoDBDialect.ROWS_FIELDNAME );
+			Object toManyValue;
+
+			if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
+				toManyValue = getValueOrNull( document, associationKey.getMetadata().getCollectionRole() );
+			}
+			else {
+				toManyValue = document.get( MongoDBDialect.ROWS_FIELDNAME );
+			}
+
+			// list of rows
+			if ( toManyValue instanceof Collection ) {
+				rows = (Collection<?>) toManyValue;
+			}
+			// a map-typed association, rows are organized by row key
+			else if ( toManyValue instanceof DBObject ) {
+				rows = getRowsFromMapAssociation( associationKey, (DBObject) toManyValue );
+			}
 		}
 
 		return rows != null ? rows : Collections.emptyList();
+	}
+
+	/**
+	 * Restores the list representation of the given map-typed association. E.g. { 'home' : 123, 'work' : 456 } will be
+	 * transformed into [{ 'addressType='home', 'address_id'=123}, { 'addressType='work', 'address_id'=456} ]) as
+	 * expected by the row accessor.
+	 */
+	private static Collection<?> getRowsFromMapAssociation(AssociationKey associationKey, DBObject value) {
+		String rowKeyIndexColumn = associationKey.getMetadata().getRowKeyIndexColumnNames()[0];
+		List<DBObject> rows = new ArrayList<DBObject>();
+
+		String[] associationKeyColumns = associationKey.getMetadata()
+				.getAssociatedEntityKeyMetadata()
+				.getAssociationKeyColumns();
+
+		// Omit shared prefix of compound ids, will be handled in the row accessor
+		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
+		prefix = prefix == null ? "" : prefix + ".";
+
+		// restore the list representation
+		for ( String rowKey : value.keySet() ) {
+			Object mapRow = value.get( rowKey );
+
+			// include the row key index column
+			DBObject row = new BasicDBObject();
+			row.put( rowKeyIndexColumn, rowKey );
+
+			// several value columns, copy them all
+			if ( mapRow instanceof DBObject ) {
+				for ( String column : associationKey.getMetadata().getAssociatedEntityKeyMetadata().getAssociationKeyColumns() ) {
+					row.put(
+							column.substring( prefix.length() ),
+							( (DBObject) mapRow ).get( column.substring( prefix.length() ) )
+					);
+				}
+			}
+			// single value column
+			else {
+				row.put( associationKey.getMetadata().getAssociatedEntityKeyMetadata().getAssociationKeyColumns()[0], mapRow );
+			}
+
+			rows.add( row );
+		}
+
+		return rows;
 	}
 
 	// TODO This only is used for tests; Can we get rid of it?

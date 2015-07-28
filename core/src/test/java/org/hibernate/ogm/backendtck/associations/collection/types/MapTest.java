@@ -48,15 +48,6 @@ public class MapTest extends OgmTestCase {
 		tx.commit();
 		session.clear();
 
-		if ( getCurrentDialectType().isDocumentStore() ) {
-			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
-					.describedAs( "Map contents should be stored within the entity document" )
-					.isEqualTo( 1 );
-			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
-					.describedAs( "Map contents should be stored within the entity document" )
-					.isEqualTo( 0 );
-		}
-
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );
 		// TODO do null value

@@ -510,23 +510,73 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	/**
-	 * Returns the rows of the given association as to be stored in the database. Elements of the returned list are
-	 * either
+	 * Returns the rows of the given association as to be stored in the database. The return value is one of the
+	 * following:
 	 * <ul>
-	 * <li>plain values such as {@code String}s, {@code int}s etc. in case there is exactly one row key column which is
-	 * not part of the association key (in this case we don't need to persist the key name as it can be restored from
-	 * the association key upon loading) or</li>
-	 * <li>{@code DBObject}s with keys/values for all row key columns which are not part of the association key</li>
+	 * <li>A list of plain values such as {@code String}s, {@code int}s etc. in case there is exactly one row key column
+	 * which is not part of the association key (in this case we don't need to persist the key name as it can be
+	 * restored from the association key upon loading) or</li>
+	 * <li>A list of {@code DBObject}s with keys/values for all row key columns which are not part of the association
+	 * key</li>
+	 * <li>A {@link DBObject} with a key for each entry in case the given association has exactly one row key column
+	 * which is of type {@code String} (e.g. a hash map). The map values will either be plain values (in case it's
+	 * single values) or another {@code DBObject}.
 	 * </ul>
 	 */
-	private List<?> getAssociationRows(Association association, AssociationKey key) {
-		List<Object> rows = new ArrayList<Object>();
+	private Object getAssociationRows(Association association, AssociationKey key) {
+		boolean organizeByRowKey = organizeByRowKey( association, key );
 
-		for ( RowKey rowKey : association.getKeys() ) {
-			rows.add( getAssociationRow( association.get( rowKey ), key ) );
+		// transform map entries such as ( addressType='home', address_id=123) into the more
+		// natural ( { 'home'=123 }
+		if ( organizeByRowKey ) {
+			String rowKeyColumn = organizeByRowKey ? key.getMetadata().getRowKeyIndexColumnNames()[0] : null;
+			DBObject rows = new BasicDBObject();
+
+			for ( RowKey rowKey : association.getKeys() ) {
+				DBObject row = (DBObject) getAssociationRow( association.get( rowKey ), key );
+
+				String rowKeyValue = (String) row.removeField( rowKeyColumn );
+
+				// if there is a single column on the value side left, unwrap it
+				if ( row.keySet().size() == 1 ) {
+					rows.put( rowKeyValue, row.toMap().values().iterator().next() );
+				}
+				else {
+					rows.put( rowKeyValue, row );
+				}
+			}
+
+			return rows;
+		}
+		// non-map rows can be taken as is
+		else {
+			List<Object> rows = new ArrayList<>();
+
+			for ( RowKey rowKey : association.getKeys() ) {
+				rows.add( getAssociationRow( association.get( rowKey ), key ) );
+			}
+
+			return rows;
+		}
+	}
+
+	/**
+	 * Whether the rows of the given association should be stored in a hash using the single row key column as key or
+	 * not.
+	 */
+	private boolean organizeByRowKey(Association association, AssociationKey key) {
+		if ( association.isEmpty() ) {
+			return false;
 		}
 
-		return rows;
+		if ( key.getMetadata().getRowKeyIndexColumnNames().length != 1 ) {
+			return false;
+		}
+
+		Object valueOfFirstRow = association.get( association.getKeys().iterator().next() )
+				.get( key.getMetadata().getRowKeyIndexColumnNames()[0] );
+
+		return valueOfFirstRow instanceof String;
 	}
 
 	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
@@ -541,6 +591,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			// if the columns are only made of the embedded id columns, remove the embedded id property prefix
 			// collectionrole: [ { id: { id1: "foo", id2: "bar" } } ] becomes collectionrole: [ { id1: "foo", id2: "bar" } ]
 			String prefix = getColumnSharedPrefixOfAssociatedEntityLink( associationKey );
+
 			DBObject rowObject = new BasicDBObject( rowKeyColumnsToPersist.length );
 			for ( String column : rowKeyColumnsToPersist ) {
 				Object value = row.get( column );
@@ -575,8 +626,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
-		List<?> rows = getAssociationRows( association, key );
-		Object toStore = key.getMetadata().isOneToOne() ? rows.get( 0 ) : rows;
+		Object rows = getAssociationRows( association, key );
+		Object toStore = key.getMetadata().isOneToOne() ? ( (List<?>) rows ).get( 0 ) : rows;
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			collection = this.getCollection( key.getEntityKey() );
@@ -943,7 +994,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
 				BatchInsertionTask insertTask = getOrCreateBatchInsertionTask( inserts, associationKey.getEntityKey().getMetadata(), collection, writeConcern );
 				DBObject documentForInsertion = insertTask.get( associationKey.getEntityKey() );
-				List<?> embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
+				Object embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
 				String collectionRole = associationKey.getMetadata().getCollectionRole();
 				MongoHelpers.setValue( documentForInsertion, collectionRole, embeddedElements );
 			}
