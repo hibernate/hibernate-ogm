@@ -239,6 +239,40 @@ public class MapTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testMapWithSimpleValueType() {
+		Session session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		Enterprise timberTradingInc = new Enterprise( "enterprise-1", null );
+		timberTradingInc.getRevenueByDepartment().put( "sale", 1000 );
+		timberTradingInc.getRevenueByDepartment().put( "sawing", 2000 );
+		timberTradingInc.getRevenueByDepartment().put( "planting", 3000 );
+
+		session.persist( timberTradingInc );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// assert
+		timberTradingInc = (Enterprise) session.get( Enterprise.class, "enterprise-1" );
+
+		assertThat( timberTradingInc.getRevenueByDepartment() ).includes( entry( "sawing", 2000 ) );
+		assertThat( timberTradingInc.getRevenueByDepartment() ).includes( entry( "sale", 1000 ) );
+		assertThat( timberTradingInc.getRevenueByDepartment() ).includes( entry( "planting", 3000 ) );
+		assertThat( timberTradingInc.getRevenueByDepartment() ).hasSize( 3 );
+
+		// clean up
+		session.delete( timberTradingInc );
+
+		tx.commit();
+		session.close();
+
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { User.class, Address.class, PhoneNumber.class, Enterprise.class };
