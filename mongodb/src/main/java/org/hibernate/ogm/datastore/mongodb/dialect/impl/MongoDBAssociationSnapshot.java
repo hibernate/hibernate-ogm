@@ -30,6 +30,8 @@ import com.mongodb.DBObject;
  */
 public class MongoDBAssociationSnapshot extends AssociationRows {
 
+	private static final String EMBEDDABLE_COLUMN_PREFIX = ".value.";
+
 	private final DBObject dbObject;
 
 	public MongoDBAssociationSnapshot(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
@@ -93,6 +95,8 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
 		prefix = prefix == null ? "" : prefix + ".";
 
+		String embeddedValueColumnPrefix = associationKey.getMetadata().getCollectionRole() + EMBEDDABLE_COLUMN_PREFIX;
+
 		// restore the list representation
 		for ( String rowKey : value.keySet() ) {
 			Object mapRow = value.get( rowKey );
@@ -104,10 +108,20 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 			// several value columns, copy them all
 			if ( mapRow instanceof DBObject ) {
 				for ( String column : associationKey.getMetadata().getAssociatedEntityKeyMetadata().getAssociationKeyColumns() ) {
-					row.put(
-							column.substring( prefix.length() ),
-							( (DBObject) mapRow ).get( column.substring( prefix.length() ) )
-					);
+					// The column is part of an element collection; Restore the "value" node in the hierarchy
+					if ( column.startsWith( embeddedValueColumnPrefix ) ) {
+						MongoHelpers.setValue(
+								row,
+								column.substring( associationKey.getMetadata().getCollectionRole().length() + 1 ),
+								( (DBObject) mapRow ).get( column.substring( embeddedValueColumnPrefix.length() ) )
+						);
+					}
+					else {
+						row.put(
+								column.substring( prefix.length() ),
+								( (DBObject) mapRow ).get( column.substring( prefix.length() ) )
+						);
+					}
 				}
 			}
 			// single value column
