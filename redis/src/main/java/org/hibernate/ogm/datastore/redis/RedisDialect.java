@@ -47,6 +47,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -72,7 +73,6 @@ import com.lambdaworks.redis.protocol.LettuceCharsets;
 public class RedisDialect extends BaseGridDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
-	public static final byte[] IDENTIFIERS_AS_BYTES = toBytes( IDENTIFIERS );
 	public static final String ASSOCIATIONS = "Associations";
 
 	protected final Map<EntityStorageType, EntityStorageStrategy> entityStorageStrategies;
@@ -195,15 +195,15 @@ public class RedisDialect extends BaseGridDialect {
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		byte[] key = prepareKey( request.getKey().getColumnNames(), request.getKey().getColumnValues() );
-		byte[] hget = connection.hget( IDENTIFIERS_AS_BYTES, key );
+		byte[] key = identifierId( request.getKey() );
+		byte[] hget = connection.get( key );
 
 		if ( hget == null || hget.length == 0 ) {
-			connection.hset( IDENTIFIERS_AS_BYTES, key, toBytes( Long.toString( request.getInitialValue() ) ) );
+			connection.set( key, toBytes( Long.toString( request.getInitialValue() ) ) );
 			return request.getInitialValue();
 		}
 
-		return connection.hincrby( IDENTIFIERS_AS_BYTES, key, request.getIncrement() );
+		return connection.incrby( key, request.getIncrement() );
 	}
 
 	@Override
@@ -466,6 +466,18 @@ public class RedisDialect extends BaseGridDialect {
 		connection.del( entityId( key ) );
 	}
 
+
+	public byte[] identifierId(IdSourceKey key) {
+		byte[] prefix = toBytes( IDENTIFIERS + ":" + key.getTable() + ":" );
+		byte[] entityId = prepareKey( key.getColumnNames(), key.getColumnValues() );
+
+		byte[] identifierId = new byte[prefix.length + entityId.length];
+		System.arraycopy( prefix, 0, identifierId, 0, prefix.length );
+		System.arraycopy( entityId, 0, identifierId, prefix.length, entityId.length );
+
+		return identifierId;
+
+	}
 
 	public byte[] associationId(EntityKey key) {
 		byte[] prefix = toBytes( ASSOCIATIONS + ":" + key.getTable() + ":" );

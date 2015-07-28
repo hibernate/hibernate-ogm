@@ -45,19 +45,18 @@ public class TableGeneratorTest extends OgmTestCase {
 		// then
 		assertThat( ken.getId() ).isEqualTo( 1L );
 		assertThat( buck.getId() ).isEqualTo( 1L );
-		assertCountQueryResult( "Identifiers", "pianoPlayer", "1" );
-		assertCountQueryResult( "Identifiers", "guitarPlayer", "1" );
+		assertCountQueryResult( "Identifiers:PianoPlayerSequence:pianoPlayer", "1" );
+		assertCountQueryResult( "Identifiers:GuitarPlayerSequence:guitarPlayer", "1" );
 
 		tx.commit();
 		session.close();
 	}
 
-	private void assertCountQueryResult(String hash, String field, String expectedCount) {
+	private void assertCountQueryResult(String key, String expectedCount) {
 
 		String actualCount = RedisDialect.toString(
-				getProvider().getConnection().hget(
-						RedisDialect.toBytes( hash ),
-						RedisDialect.toBytes( field )
+				getProvider().getConnection().get(
+						RedisDialect.toBytes( key )
 				)
 		);
 
