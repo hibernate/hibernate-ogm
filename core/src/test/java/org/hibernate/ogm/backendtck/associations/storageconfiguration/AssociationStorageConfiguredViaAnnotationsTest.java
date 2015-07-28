@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +19,11 @@ import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlob
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
+
 import org.junit.After;
 import org.junit.Test;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for configuring the different association storage modes via annotations.
@@ -30,7 +31,7 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.CASSANDRA },
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.CASSANDRA, GridDialectType.REDIS },
 		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
 )
 public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationStorageTestBase {

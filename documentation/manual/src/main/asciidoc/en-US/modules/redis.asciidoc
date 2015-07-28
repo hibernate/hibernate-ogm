@@ -64,9 +64,9 @@ Defines the timeout used by the driver
 when the connection to the Redis instance is initiated.
 This configuration is expressed in milliseconds.
 The default value is `5000`.
-hibernate.ogm.redis.expiry::
-Defines the expiry for entities and associations.
-Expiry can be configured on entity and association level (see <<ogm-redis-annotation-configuration>>
+hibernate.ogm.redis.ttl::
+Defines the TTL for entities and associations.
+TTL can be configured on entity and association level (see <<ogm-redis-annotation-configuration>>
 This property has no default value.
 hibernate.ogm.error_handler::
 The fully-qualified class name, class object or an instance of `ErrorHandler` to get notified upon errors during flushes (see <<ogm-api-error-handler>>)

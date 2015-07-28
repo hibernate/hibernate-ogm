@@ -45,7 +45,7 @@ public final class RedisProperties implements KeyValueStoreProperties, DocumentS
 	 *
 	 * @see org.hibernate.ogm.datastore.redis.options.TTL
 	 */
-	public static final String EXPIRY = "hibernate.ogm.redis.expiry";
+	public static final String TTL = "hibernate.ogm.redis.ttl";
 
 	private RedisProperties() {
 	}
