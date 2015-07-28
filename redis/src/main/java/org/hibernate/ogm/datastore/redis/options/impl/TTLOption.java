@@ -21,7 +21,7 @@ public class TTLOption extends UniqueOption<Long> {
 	@Override
 	public Long getDefaultValue(ConfigurationPropertyReader propertyReader) {
 		return propertyReader
-				.property( RedisProperties.EXPIRY, Long.class )
+				.property( RedisProperties.TTL, Long.class )
 				.withDefault( null )
 				.getValue();
 	}

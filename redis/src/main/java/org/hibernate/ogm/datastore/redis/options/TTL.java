@@ -42,7 +42,7 @@ public @interface TTL {
 	long value();
 
 	/**
-	 * Speciefies the unit of duration for expiring the key. Defaults to {@link java.util.concurrent.TimeUnit#SECONDS}
+	 * Specifies the unit of duration for expiring the key. Defaults to {@link java.util.concurrent.TimeUnit#SECONDS}
 	 *
 	 * @return the expiry time unit
 	 */
