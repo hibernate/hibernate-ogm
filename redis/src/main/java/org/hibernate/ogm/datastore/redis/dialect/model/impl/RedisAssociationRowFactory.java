@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -61,7 +60,7 @@ public class RedisAssociationRowFactory extends StructureOptimizerAssociationRow
 				this.prefixedColumns = Arrays.asList( prefixedColumns );
 			}
 			else {
-				this.prefixedColumns = new ArrayList<String>( 0 );
+				this.prefixedColumns = Collections.emptyList();
 			}
 		}
 

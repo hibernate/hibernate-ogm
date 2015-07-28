@@ -66,7 +66,7 @@ public class RedisJsonMappingTest extends OgmTestCase {
 		session.getTransaction().begin();
 
 		// given
-		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink );
+		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink, "pink-donut" );
 		session.persist( donut );
 
 
@@ -80,6 +80,7 @@ public class RedisJsonMappingTest extends OgmTestCase {
 		assertThat( loadedDonut ).isNotNull();
 		assertThat( loadedDonut.getId() ).isEqualTo( "homers-donut" );
 		assertThat( loadedDonut.getGlaze() ).isEqualTo( Donut.Glaze.Pink );
+		assertThat( loadedDonut.getAlias() ).isEqualTo( "pink-donut" );
 
 		session.getTransaction().commit();
 
@@ -92,7 +93,7 @@ public class RedisJsonMappingTest extends OgmTestCase {
 		session.getTransaction().begin();
 
 		// given
-		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink );
+		Donut donut = new Donut( "homers-donut", 7.5, Donut.Glaze.Pink, "pink-donut" );
 		session.persist( donut );
 
 		session.getTransaction().commit();
@@ -101,7 +102,7 @@ public class RedisJsonMappingTest extends OgmTestCase {
 		String representation = new String( getConnection().get( "Donut:homers-donut".getBytes() ) );
 
 		// then
-		JSONAssert.assertEquals( "{\"radius\":7.5,\"glaze\":2}", representation, JSONCompareMode.STRICT );
+		JSONAssert.assertEquals( "{\"alias\":\"pink-donut\",\"radius\":7.5,\"glaze\":2}", representation, JSONCompareMode.STRICT );
 
 		session.close();
 	}

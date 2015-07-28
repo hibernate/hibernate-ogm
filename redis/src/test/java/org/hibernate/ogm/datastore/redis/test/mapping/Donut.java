@@ -22,14 +22,17 @@ public class Donut {
 
 	private Glaze glaze;
 
+	private String alias;
+
 	Donut() {
 
 	}
 
-	public Donut(String id, double radius, Glaze glaze) {
+	public Donut(String id, double radius, Glaze glaze, String alias) {
 		this.id = id;
 		this.radius = radius;
 		this.glaze = glaze;
+		this.alias = alias;
 	}
 
 	public String getId() {
@@ -54,6 +57,14 @@ public class Donut {
 
 	public void setGlaze(Glaze glaze) {
 		this.glaze = glaze;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 	enum Glaze {

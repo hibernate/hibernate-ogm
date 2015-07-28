@@ -6,8 +6,11 @@
  */
 package org.hibernate.ogm.datastore.redis.impl.json;
 
+import java.util.Set;
+
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.EntityStorageStrategy;
+import org.hibernate.ogm.model.spi.TupleOperation;
 
 import com.lambdaworks.redis.RedisConnection;
 
@@ -36,7 +39,7 @@ public class JsonEntityStorageStrategy implements EntityStorageStrategy {
 	}
 
 	@Override
-	public void storeEntity(byte[] key, Entity entity) {
+	public void storeEntity(byte[] key, Entity entity, Set<TupleOperation> operations) {
 		byte value[] = jsonSerializationStrategy.serialize( entity );
 
 		connection.set( key, value );
