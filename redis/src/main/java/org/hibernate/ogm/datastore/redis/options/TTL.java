@@ -37,14 +37,14 @@ public @interface TTL {
 	 * Specifies the expiry duration after persisting the annotated entity or
 	 * property.
 	 *
-	 * @return the expiry duration.
+	 * @return the TTL duration
 	 */
 	long value();
 
 	/**
 	 * Specifies the unit of duration for expiring the key. Defaults to {@link java.util.concurrent.TimeUnit#SECONDS}
 	 *
-	 * @return the expiry time unit
+	 * @return the TTL time unit
 	 */
 	TimeUnit unit() default TimeUnit.SECONDS;
 }
