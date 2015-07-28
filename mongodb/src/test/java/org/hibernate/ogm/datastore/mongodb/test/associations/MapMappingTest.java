@@ -217,6 +217,48 @@ public class MapMappingTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testMapWithSimpleValueType() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		Enterprise timberTradingInc = new Enterprise( "enterprise-1", null );
+		timberTradingInc.getRevenueByDepartment().put( "sale", 1000 );
+		timberTradingInc.getRevenueByDepartment().put( "sawing", 2000 );
+		timberTradingInc.getRevenueByDepartment().put( "planting", 3000 );
+
+		session.persist( timberTradingInc );
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// assert
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Enterprise",
+				// query
+				"{ '_id' : 'enterprise-1' }",
+				// expected
+				"{ " +
+					"'_id' : 'enterprise-1', " +
+					"'revenueByDepartment' : {" +
+						"'sawing' : 2000," +
+						"'sale' : 1000," +
+						"'planting' : 3000," +
+					"}" +
+				"}"
+		);
+
+		// clean up
+		session.delete( timberTradingInc );
+
+		tx.commit();
+		session.close();
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { User.class, Address.class, PhoneNumber.class, Enterprise.class };

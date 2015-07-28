@@ -22,6 +22,7 @@ public class Enterprise {
 
 	private String id;
 	private Map<String, Department> departments = new HashMap<>();
+	private Map<String, Integer> revenueByDepartment = new HashMap<>();
 
 	public Enterprise() {
 	}
@@ -48,5 +49,14 @@ public class Enterprise {
 
 	public void setDepartments(Map<String, Department> departments) {
 		this.departments = departments;
+	}
+
+	@ElementCollection
+	public Map<String, Integer> getRevenueByDepartment() {
+		return revenueByDepartment;
+	}
+
+	public void setRevenueByDepartment(Map<String, Integer> revenueByDepartment) {
+		this.revenueByDepartment = revenueByDepartment;
 	}
 }
