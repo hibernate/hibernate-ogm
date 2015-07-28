@@ -28,6 +28,8 @@ import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.RedisURI;
 
+import static com.lambdaworks.redis.RedisURI.Builder.redis;
+
 /**
  * Provides access to Redis
  * it can be taken via JNDI or started by this ServiceProvider; in this case it will also
@@ -68,8 +70,6 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 			// Otherwise a generic unable to request service is thrown
 			throw log.unableToConfigureDatastoreProvider( e );
 		}
-
-		this.config.initConfiguration( configurationValues );
 	}
 
 
@@ -77,8 +77,9 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 	public void start() {
 		try {
 			Hosts.HostAndPort hostAndPort = config.getHosts().getFirst();
-			RedisURI.Builder builder = new RedisURI.Builder().redis( hostAndPort.getHost(), hostAndPort.getPort() );
+			RedisURI.Builder builder = redis( hostAndPort.getHost(), hostAndPort.getPort() );
 			builder.withSsl( config.isSsl() );
+			builder.withDatabase( config.getDatabaseNumber() );
 
 			if ( config.getPassword() != null ) {
 				builder.withPassword( config.getPassword() );

@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.redis;
 
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
 
 /**
@@ -14,7 +15,7 @@ import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
  *
  * @author Mark Paluch
  */
-public final class RedisProperties implements KeyValueStoreProperties {
+public final class RedisProperties implements KeyValueStoreProperties, DocumentStoreProperties {
 
 	/**
 	 * The timeout used at the connection to the Redis instance. This value is set in milliseconds. Defaults to 5000.

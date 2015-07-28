@@ -8,19 +8,18 @@ package org.hibernate.ogm.datastore.redis;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.hibernate.LockMode;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
@@ -33,10 +32,8 @@ import org.hibernate.ogm.datastore.redis.impl.hash.ExperimentalHashEntityStorage
 import org.hibernate.ogm.datastore.redis.impl.json.JsonEntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.options.EntityStorageType;
-import org.hibernate.ogm.datastore.redis.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.redis.options.impl.EntityStorageOption;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
-import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -65,25 +62,23 @@ import com.lambdaworks.redis.protocol.LettuceCharsets;
  * Stores tuples and associations inside Redis.
  * <p/>
  * Tuples are stored in Redis as a JSON serialization of a {@link Entity} object. Associations are stored in Redis obtained as a
- * JSON serialization of a {@link Association} object either within the entity or external. See {@link RedisProperties#ASSOCIATIONS_STORE} on how to configure
+ * JSON serialization of a {@link Association} object either within the entity or external.
+ * See {@link org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties#ASSOCIATIONS_STORE} on how to configure
  * entity or external storage.
  *
  * @author Mark Paluch
  */
+@Immutable
 public class RedisDialect extends BaseGridDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";
 
 	protected final Map<EntityStorageType, EntityStorageStrategy> entityStorageStrategies;
-
-	private final RedisDatastoreProvider provider;
 	private final RedisConnection<byte[], byte[]> connection;
-
 	private final JsonSerializationStrategy serializationStrategy = new JsonSerializationStrategy();
 
 	public RedisDialect(RedisDatastoreProvider provider) {
-		this.provider = provider;
 		this.connection = provider.getConnection();
 
 		Map<EntityStorageType, EntityStorageStrategy> strategies = new HashMap<>();
@@ -115,23 +110,13 @@ public class RedisDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-
 		Entity entity = getEntity( key, tupleContext.getOptionsContext() );
 		if ( entity != null ) {
-			return new Tuple( new RedisTupleSnapshot( entity.getProperties() ) );
-		}
-		else if ( isInTheQueue( key, tupleContext ) ) {
-			// The key has not been inserted in the db but it is in the queue
 			return new Tuple( new RedisTupleSnapshot( entity.getProperties() ) );
 		}
 		else {
 			return null;
 		}
-	}
-
-	private boolean isInTheQueue(EntityKey key, TupleContext tupleContext) {
-		OperationsQueue queue = tupleContext.getOperationsQueue();
-		return queue != null && queue.contains( key );
 	}
 
 	@Override
@@ -208,31 +193,23 @@ public class RedisDialect extends BaseGridDialect {
 
 	@Override
 	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-
-
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 
 			KeyScanCursor<byte[]> cursor = null;
 			String pattern = entityKeyMetadata.getTable() + ":*";
+			ScanArgs scanArgs = ScanArgs.Builder.matches( pattern );
 			do {
-
 				if ( cursor != null ) {
-					cursor = connection.scan( cursor, ScanArgs.Builder.matches( pattern ) );
+					cursor = connection.scan( cursor, scanArgs );
 				}
 				else {
-					cursor = connection.scan( ScanArgs.Builder.matches( pattern ) );
+					cursor = connection.scan( scanArgs );
 				}
 
 				for ( byte[] key : cursor.getKeys() ) {
 
 					String type = connection.type( key );
-					EntityStorageStrategy entityStorageStrategy;
-					if ( "hash".equalsIgnoreCase( type ) ) {
-						entityStorageStrategy = entityStorageStrategies.get( EntityStorageType.HASH );
-					}
-					else {
-						entityStorageStrategy = entityStorageStrategies.get( EntityStorageType.JSON );
-					}
+					EntityStorageStrategy entityStorageStrategy = getEntityStorageStrategy( type );
 
 					Entity document = entityStorageStrategy.getEntity( key );
 
@@ -242,7 +219,10 @@ public class RedisDialect extends BaseGridDialect {
 
 			} while ( !cursor.isFinished() );
 		}
+	}
 
+	private EntityStorageStrategy getEntityStorageStrategy(String type) {
+		return entityStorageStrategies.get( EntityStorageType.forType( type ) );
 	}
 
 	@Override
@@ -381,22 +361,19 @@ public class RedisDialect extends BaseGridDialect {
 		}
 	}
 
-	public Entity getEntity(EntityKey key, OptionsContext optionsContext) {
+	private Entity getEntity(EntityKey key, OptionsContext optionsContext) {
 		return getEntityStorageStrategy( optionsContext ).getEntity( entityId( key ) );
 	}
 
-	public void storeEntity(EntityKey key, Map<String, Object> map, OptionsContext optionsContext) {
+	private void storeEntity(EntityKey key, Map<String, Object> map, OptionsContext optionsContext) {
 		Entity entityDocument = new Entity();
-		Set<String> keys = new HashSet<>( Arrays.asList( key.getColumnNames() ) );
-
 
 		for ( Map.Entry<String, Object> entry : map.entrySet() ) {
-			if ( keys.contains( entry.getKey() ) ) {
+			if ( key.getMetadata().isKeyColumn( entry.getKey() ) ) {
 				continue;
 			}
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
-
 
 		storeEntity( key, entityDocument, optionsContext );
 
@@ -406,11 +383,11 @@ public class RedisDialect extends BaseGridDialect {
 		}
 	}
 
-	public void storeEntity(EntityKey key, Entity document, OptionsContext optionsContext) {
+	private void storeEntity(EntityKey key, Entity document, OptionsContext optionsContext) {
 		getEntityStorageStrategy( optionsContext ).storeEntity( entityId( key ), document );
 	}
 
-	public Association getAssociation(EntityKey key) {
+	private Association getAssociation(EntityKey key) {
 
 		byte[] associationId = associationId( key );
 		List<byte[]> lrange = connection.lrange( associationId, 0, -1 );
@@ -423,14 +400,14 @@ public class RedisDialect extends BaseGridDialect {
 		return association;
 	}
 
-	public Entity getEntity(EntityKey key, AssociationContext associationTypeContext) {
+	private Entity getEntity(EntityKey key, AssociationContext associationTypeContext) {
 		return getEntityStorageStrategy(
 				associationTypeContext.getAssociationTypeContext()
 						.getOptionsContext()
 		).getEntity( entityId( key ) );
 	}
 
-	public Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
+	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
 		getEntityStorageStrategy( associationContext.getAssociationTypeContext().getOptionsContext() ).storeEntity(
 				entityId( key ),
 				entity
@@ -443,7 +420,7 @@ public class RedisDialect extends BaseGridDialect {
 		connection.pexpire( associationId, ttl );
 	}
 
-	public void storeAssociation(EntityKey key, Association document) {
+	private void storeAssociation(EntityKey key, Association document) {
 
 		byte[] associationId = associationId( key );
 		connection.del( associationId );
@@ -458,11 +435,11 @@ public class RedisDialect extends BaseGridDialect {
 		connection.pexpire( associationId, ttl );
 	}
 
-	public void removeAssociation(EntityKey key) {
+	private void removeAssociation(EntityKey key) {
 		connection.del( associationId( key ) );
 	}
 
-	public void remove(EntityKey key) {
+	private void remove(EntityKey key) {
 		connection.del( entityId( key ) );
 	}
 
