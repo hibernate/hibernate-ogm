@@ -1855,7 +1855,7 @@ Product collection
 ----
 ====
 
-A map can be used to represents an association,
+A map can be used to represent an association,
 in this case Hibernate OGM will store the key of the map
 and the associated id.
 
@@ -1894,12 +1894,8 @@ User collection as JSON in MongoDB
   "_id" : "user_001",
   "addresses" : [
     {
-      "addresses_KEY" : "work",
-      "addresses_id" : "address_001"
-    },
-    {
-      "addresses_KEY" : "home",
-      "addresses_id" : "address_002"
+      "work" : "address_001",
+      "home" : "address_002"
     }
   ]
 }
@@ -1914,7 +1910,15 @@ Address collection as JSON in MongoDB
 ----
 ====
 
-You can use @MapKeyColumn to rename the column containing the key of the map.
+If the map value cannot be represented by a single field (e.g. when referencing a type with a composite id
+or using an embeddable type as map value type),
+a sub-document containing all the required fields will be stored as value.
+
+If the map key either is not of type `String` or it is made up of several columns (composite map key),
+the optimized structure shown in the example above cannot be used as MongoDB only allows for Strings as field names.
+In that case the association will be represented by a list of sub-documents, also containing the map key column(s).
+You can use `@MapKeyColumn` to rename the field containing the key of the map,
+otherwise it will default to "<%COLLECTION_ROLE%>_KEY", e.g. "addresses_KEY".
 
 .Unidirectional one-to-many using maps with @MapKeyColumn
 ====
@@ -1928,7 +1932,7 @@ public class User {
 
     @OneToMany
     @MapKeyColumn(name = "addressType")
-    private Map<String, Address> addresses = new HashMap<String, Address>();
+    private Map<Long, Address> addresses = new HashMap<Long, Address>();
 
     // getters, setters ...
 }
@@ -1952,11 +1956,11 @@ User collection as JSON in MongoDB
   "_id" : "user_001",
   "addresses" : [
     {
-      "addressType" : "work",
+      "addressType" : 1,
       "addresses_id" : "address_001"
     },
     {
-      "addressType" : "home",
+      "addressType" : 2,
       "addresses_id" : "address_002"
     }
   ]
@@ -2965,7 +2969,6 @@ Associations collection
 }
 ----
 ====
-
 
 === Transactions
 
