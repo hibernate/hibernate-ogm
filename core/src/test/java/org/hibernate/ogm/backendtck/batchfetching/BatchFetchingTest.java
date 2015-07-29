@@ -6,18 +6,24 @@
  */
 package org.hibernate.ogm.backendtck.batchfetching;
 
+import java.util.List;
+
 import org.fest.assertions.Assertions;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.junit.Test;
 
+import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.stat.Statistics;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -47,6 +53,7 @@ public class BatchFetchingTest extends OgmTestCase {
 		statistics.clear();
 
 		assertEquals( 0, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
+		getOperationsLogger().reset();
 		for ( Floor currentFloor : tower.getFloors() ) {
 			// load proxies
 			Object entity = session.load( Floor.class, currentFloor.getId() );
@@ -58,10 +65,23 @@ public class BatchFetchingTest extends OgmTestCase {
 		int fetchSize = isMultigetDialect() ? 1 : 2;
 		assertEquals( fetchSize, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
 
+		if ( isMultigetDialect() ) {
+			assertThat( getOperations() ).containsExactly(
+					"getTuples"
+			);
+		}
+		else {
+			assertThat( getOperations() ).containsExactly(
+					"getTuple",
+					"getTuple"
+			);
+		}
+
 		session.getTransaction().commit();
 
 		cleanDataset( session, tower );
 		session.close();
+
 
 	}
 
@@ -80,6 +100,7 @@ public class BatchFetchingTest extends OgmTestCase {
 		statistics.setStatisticsEnabled( true );
 		statistics.clear();
 		assertEquals( 0, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
+		getOperationsLogger().reset();
 		Assertions.assertThat( tower.getFloors() ).hasSize( 2 );
 
 		// if a multiget, we load both entities as one go, otherwise we don't
@@ -87,6 +108,19 @@ public class BatchFetchingTest extends OgmTestCase {
 		assertEquals( fetchSize, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
 		session.getTransaction().commit();
 
+		if ( isMultigetDialect() ) {
+			assertThat( getOperations() ).containsExactly(
+					"getAssociation",
+					"getTuples"
+			);
+		}
+		else {
+			assertThat( getOperations() ).containsExactly(
+					"getAssociation",
+					"getTuple",
+					"getTuple"
+			);
+		}
 		cleanDataset( session, tower );
 		session.close();
 
@@ -119,5 +153,24 @@ public class BatchFetchingTest extends OgmTestCase {
 	private boolean isMultigetDialect() {
 		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
 		return GridDialects.hasFacet( gridDialect, MultigetGridDialect.class );
+	}
+
+	@Override
+	protected void configure(Configuration cfg) {
+		cfg.getProperties().put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
+	}
+
+	private InvokedOperationsLoggingDialect getOperationsLogger() {
+		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
+				gridDialect,
+				InvokedOperationsLoggingDialect.class
+		);
+
+		return invocationLogger;
+	}
+
+	private List<String> getOperations() {
+		return getOperationsLogger().getOperations();
 	}
 }
