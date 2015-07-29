@@ -8,7 +8,6 @@ package org.hibernate.ogm.query.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -84,14 +83,19 @@ public class OgmQueryLoader extends QueryLoader {
 
 	// At the moment we only support the case where one entity type is returned
 	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
-		List<Object> results = new ArrayList<Object>();
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
 		OgmLoader loader = getLoader( session, returnedClass );
+		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
+		ogmLoadingContext.setTuples( getTuplesAsList( tuples ) );
+		return loader.loadEntities( session, LockOptions.NONE, ogmLoadingContext );
+	}
+
+	private List<Tuple> getTuplesAsList(ClosableIterator<Tuple> tuples) {
+		List<Tuple> tuplesAsList = new ArrayList<>();
 		while ( tuples.hasNext() ) {
-			Tuple tuple = tuples.next();
-			results.add( entity( session, tuple, loader ) );
+			tuplesAsList.add( tuples.next() );
 		}
-		return results;
+		return tuplesAsList;
 	}
 
 	private List<Object> listOfArrays(SessionImplementor session, Iterator<Tuple> tuples) {
@@ -116,14 +120,6 @@ public class OgmQueryLoader extends QueryLoader {
 		}
 
 		return results;
-	}
-
-	private <E> E entity(SessionImplementor session, Tuple tuple, OgmLoader loader) {
-		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
-		ogmLoadingContext.setTuples( Arrays.asList( tuple ) );
-		@SuppressWarnings("unchecked")
-		List<E> entities = (List<E>) loader.loadEntities( session, LockOptions.NONE, ogmLoadingContext );
-		return entities.get( 0 );
 	}
 
 	private OgmLoader getLoader(SessionImplementor session, Class<?> entityClass) {
