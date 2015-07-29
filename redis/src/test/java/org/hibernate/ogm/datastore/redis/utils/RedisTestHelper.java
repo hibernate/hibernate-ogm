@@ -63,6 +63,13 @@ public class RedisTestHelper implements TestableGridDialect {
 						key
 				)
 		);
+
+		if ( entity != null ) {
+			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+				entity.set( key.getColumnNames()[i], key.getColumnValues()[i] );
+			}
+		}
+
 		return entity.getProperties();
 	}
 
