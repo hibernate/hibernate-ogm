@@ -10,4 +10,4 @@
  *
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
-package org.hibernate.ogm.test.batchfetching;
+package org.hibernate.ogm.backendtck.batchfetching;
