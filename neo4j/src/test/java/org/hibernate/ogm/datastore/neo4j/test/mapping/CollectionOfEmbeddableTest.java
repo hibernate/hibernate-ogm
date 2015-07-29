@@ -19,7 +19,6 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -79,13 +78,8 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = accountNode.relationshipTo( addressNode, "addresses" );
 		RelationshipsChainForGraphAssertions relationship2 = accountNode.relationshipTo( anotherNode, "addresses" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, accountNode, addressNode, anotherNode );
-		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
-
-		getTransactionManager().commit();
+		assertThatOnlyTheseNodesExist( accountNode, addressNode, anotherNode );
+		assertThatOnlyTheseRelationshipsExist( relationship1, relationship2 );
 	}
 
 	@Test
@@ -101,13 +95,8 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 				.property( "login", account.getLogin() )
 				.property( "password", account.getPassword() );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, accountNode );
+		assertThatOnlyTheseNodesExist( accountNode );
 		assertNumberOfRelationships( 0 );
-
-		getTransactionManager().commit();
 	}
 
 	@Override

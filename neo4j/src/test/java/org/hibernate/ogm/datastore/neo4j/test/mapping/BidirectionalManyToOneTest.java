@@ -17,7 +17,6 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -70,13 +69,8 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship1 = ericNode.relationshipTo( forceNode, "salesForce" );
 		RelationshipsChainForGraphAssertions relationship2 = simonNode.relationshipTo( forceNode, "salesForce" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, forceNode, ericNode, simonNode );
-		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship1, relationship2 );
-
-		getTransactionManager().commit();
+		assertThatOnlyTheseNodesExist( forceNode, ericNode, simonNode );
+		assertThatOnlyTheseRelationshipsExist( relationship1, relationship2 );
 	}
 
 	@Override

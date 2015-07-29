@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
 import static java.util.Collections.singletonMap;
+import static org.fest.assertions.Assertions.assertThat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,12 +18,12 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.neo4j.cypher.CypherExecutionException;
-import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
+import org.neo4j.graphdb.QueryExecutionException;
 
 /**
  * Test that unique constraints are created on Neo4j for:
@@ -185,13 +186,14 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 	 */
 	@Test
 	public void shouldThrowExceptionForDuplicatedIdentifierWithNativeQuery() throws Throwable {
-		thrown.expect( UniqueConstraintViolationKernelException.class );
+		thrown.expect( QueryExecutionException.class );
 
 		try {
 			executeCypherQuery( "CREATE (n:`UniqueConstraintTest$EntityWithConstraints` {id: {id}})", singletonMap( "id", (Object) entityWithConstraints.id ) );
 		}
-		catch (CypherExecutionException e) {
-			throw extract( UniqueConstraintViolationKernelException.class, e );
+		catch (QueryExecutionException e) {
+			assertThat( e.getStatusCode() ).isEqualTo( Neo4jDialect.CONSTRAINT_VIOLATION_CODE );
+			throw e;
 		}
 	}
 

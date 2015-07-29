@@ -50,4 +50,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = INFO)
 	@Message(id = 1407, value = "%1$s - %2$s")
 	void logNeo4JQueryEngineUserMessage(String marker, String message);
+
+	@Message(id = 1408, value = "Error while cheking transaction status")
+	HibernateException exceptionWhileChekingTransactionStatus(@Cause Exception e);
 }

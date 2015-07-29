@@ -50,27 +50,6 @@ but the effect will be the same (since Neo4j constraints don't have a name):
 keep the existing constraints and create the missing one.
 Default value is `DROP_RECREATE_QUIETLY`.
 
-[WARNING]
-====
-At the moment, you must not specify the property `hibernate.transaction.jta.platform` when using Neo4j.
-It would override Hibernate OGM's version and the transactions would not work correctly.
-====
-
-[NOTE]
-====
-Use the following method to retrieve the transaction manager
-(it needs to be done after the `EntityManagerFactory` has been bootstrapped):
-
-[source, JAVA]
-----
-private static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-    SessionFactoryImplementor sessionFactory =
-        (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
-    return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
-}
-----
-====
-
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
@@ -752,16 +731,8 @@ The following summary will help you to keep track of the labels assigned to a ne
 [[ogm-neo4j-transactions]]
 === Transactions
 
-[CAUTION]
-====
-Neo4J operations must be executed inside a transaction.
+In Neo4j operations must be executed inside a transaction.
 Make sure your interactions with Hibernate OGM are within a transaction when you target Neo4J.
-====
-
-Unless a different `org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform` is specified, Hibernate OGM will use a specific implementation to integrate with the Neo4j transaction mechanism.
-This means that you can start and commit transaction using the Hibernate session.
-
-The drawback is that it is not possible at the moment to let Neo4j participate in managed JTA transactions spanning several resources (see issue https://hibernate.atlassian.net/browse/OGM-370[OGM-370]).
 
 .Example of starting and committing transactions
 ====
@@ -783,6 +754,22 @@ Account savedAccount =  (Account) session.get( Account.class, account.getId() );
 tx.commit();
 ----
 ====
+
+In the case of JTA, Hibernate OGM attaches the Neo4J internal transaction to the JTA
+transaction lifecycle.
+That way when the JTA transaction is committed or rollbacked (for example by an EJB CMT or
+explicitly), the Neo4J transaction is also committed or rollbacked.
+This makes for a very nice integration in a Java EE container.
+
+[CAUTION]
+----
+This is NOT a true JTA/XA integration but more a lifecycle alignment:
+changes on more than one datasource won't be executed as a single atomic transaction.
+
+In particular, if the JTA transaction involves multiple resources, Neo4j might commit
+before a failure of another resource. In this case, Neo4j won't be able to rollback even
+if the JTA transaction will.
+----
 
 [[ogm-neo4j-queries]]
 === Queries

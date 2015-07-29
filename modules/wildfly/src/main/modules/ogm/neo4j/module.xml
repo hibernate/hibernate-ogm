@@ -10,10 +10,10 @@
         <resource-root path="hibernate-ogm-neo4j-${project.version}.jar" />
         <resource-root path="neo4j-${neo4jVersion}.jar" />
         <resource-root path="neo4j-cypher-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-commons-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompilerOlderVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompilerOlderVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.1-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompiler19Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompiler20Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.1-${neo4jCypherCompiler21Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.2-${neo4jCypherCompiler22Version}.jar" />
         <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
         <resource-root path="neo4j-udc-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graph-algo-${neo4jVersion}.jar" />
@@ -24,6 +24,8 @@
         <module name="org.hibernate" slot="${hibernate.ogm.module.slot}" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
+        <module name="org.parboiled"/>
+
         <!-- Separate module to make sure it's not visible to the applications -->
         <module name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.neo4j-internal.module.slot}" services="import" />
 
@@ -31,6 +33,5 @@
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
-        <module name="org.parboiled" />
     </dependencies>
 </module>

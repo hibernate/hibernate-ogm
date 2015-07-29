@@ -19,7 +19,6 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -70,13 +69,8 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship = accountNode
 				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
-		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
-
-		getTransactionManager().commit();
+		assertThatOnlyTheseNodesExist( accountNode, homeAddressNode, typeNode );
+		assertThatOnlyTheseRelationshipsExist( relationship );
 	}
 
 	@Test
@@ -104,13 +98,8 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		RelationshipsChainForGraphAssertions relationship = accountNode
 				.relationshipTo( homeAddressNode, "homeAddress" ).relationshipTo( typeNode, "type" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode, typeNode );
-		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
-
-		getTransactionManager().commit();
+		assertThatOnlyTheseNodesExist( accountNode, homeAddressNode, typeNode );
+		assertThatOnlyTheseRelationshipsExist( relationship );
 	}
 
 	@Test
@@ -135,13 +124,8 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 		RelationshipsChainForGraphAssertions relationship = accountNode.relationshipTo( homeAddressNode, "homeAddress" );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, accountNode, homeAddressNode );
-		assertThatOnlyTheseRelationshipsExist( executionEngine, relationship );
-
-		getTransactionManager().commit();
+		assertThatOnlyTheseNodesExist( accountNode, homeAddressNode );
+		assertThatOnlyTheseRelationshipsExist( relationship );
 	}
 
 	@Test
@@ -158,13 +142,8 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 				.property( "password", account.getPassword() )
 				.property( "version", account.getVersion() + 1 );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, accountNode );
+		assertThatOnlyTheseNodesExist( accountNode );
 		assertNumberOfRelationships( 0 );
-
-		getTransactionManager().commit();
 	}
 
 	@Test

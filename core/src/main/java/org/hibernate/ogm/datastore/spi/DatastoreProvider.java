@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.util.Experimental;
@@ -60,4 +61,12 @@ public interface DatastoreProvider extends Service {
 	 */
 	@Experimental("This contract might evolve into something which differentiates in more detail various transactional capabilities (see OGM-763)")
 	boolean allowsTransactionEmulation();
+
+	/**
+	 * Allows the {@link DatastoreProvider} to replace or wrap the existing {@link TransactionFactory}.
+	 *
+	 * @param transactionFactory the current {@link TransactionFactory}
+	 * @return a wrapped {@link TransactionFactory}
+	 */
+	TransactionFactory<?> wrapTransactionFactory(TransactionFactory<?> transactionFactory);
 }

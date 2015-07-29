@@ -20,14 +20,13 @@ import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Lock;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.ConstraintType;
@@ -88,11 +87,8 @@ public class Neo4jSequenceGenerator {
 
 	private final GraphDatabaseService neo4jDb;
 
-	private final ExecutionEngine engine;
-
 	public Neo4jSequenceGenerator(GraphDatabaseService neo4jDb, int sequenceCacheMaxSize) {
 		this.neo4jDb = neo4jDb;
-		this.engine = new ExecutionEngine( neo4jDb );
 		this.queryCache = new BoundedConcurrentHashMap<String, String>( sequenceCacheMaxSize, 20, BoundedConcurrentHashMap.Eviction.LIRS );
 	}
 
@@ -193,7 +189,7 @@ public class Neo4jSequenceGenerator {
 		Label generatorKeyLabel = DynamicLabel.label( idSourceKeyMetadata.getName() );
 		String query = "MERGE (n" + labels( generatorKeyLabel.name(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + " { " + idSourceKeyMetadata.getKeyColumnName() + ": {"
 				+ SEQUENCE_NAME_QUERY_PARAM + "}} ) ON CREATE SET n." + idSourceKeyMetadata.getValueColumnName() + " = {" + INITIAL_VALUE_QUERY_PARAM + "} RETURN n";
-		engine.execute( query, params( sequenceName, initialValue ) );
+		neo4jDb.execute( query, params( sequenceName, initialValue ) );
 	}
 
 	/**
@@ -203,7 +199,7 @@ public class Neo4jSequenceGenerator {
 	 * </pre>
 	 */
 	private void addSequence(IdSourceKeyMetadata idSourceKeyMetadata, int initialValue) {
-		engine.execute( SEQUENCE_CREATION_QUERY, params( idSourceKeyMetadata.getName(), initialValue ) );
+		neo4jDb.execute( SEQUENCE_CREATION_QUERY, params( idSourceKeyMetadata.getName(), initialValue ) );
 	}
 
 	private Map<String, Object> params(String sequenceName, int initialValue) {
@@ -258,7 +254,7 @@ public class Neo4jSequenceGenerator {
 	 */
 	private Node getSequence(IdSourceKey idSourceKey) {
 		String updateSequenceQuery = getQuery( idSourceKey );
-		ExecutionResult result = engine.execute( updateSequenceQuery, singletonMap( SEQUENCE_NAME_QUERY_PARAM, (Object) sequenceName( idSourceKey ) ) );
+		Result result = neo4jDb.execute( updateSequenceQuery, singletonMap( SEQUENCE_NAME_QUERY_PARAM, (Object) sequenceName( idSourceKey ) ) );
 		ResourceIterator<Node> column = result.columnAs( "n" );
 		Node node = null;
 		if ( column.hasNext() ) {

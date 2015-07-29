@@ -16,7 +16,6 @@ import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.InternalProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jGraphDatabaseServiceFactoryProvider;
-import org.hibernate.ogm.datastore.neo4j.impl.StringLoggerToJBossLoggingAdaptor;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.junit.Test;
@@ -24,9 +23,12 @@ import org.neo4j.graphdb.DependencyResolver;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.event.KernelEventHandler;
 import org.neo4j.graphdb.event.TransactionEventHandler;
@@ -36,9 +38,6 @@ import org.neo4j.graphdb.traversal.BidirectionalTraversalDescription;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.TransactionBuilder;
-import org.neo4j.kernel.impl.nioneo.store.StoreId;
-import org.neo4j.kernel.impl.util.StringLogger;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -197,35 +196,41 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public DependencyResolver getDependencyResolver() {
-			return new DependencyResolver() {
-				@Override
-				public <T> T resolveDependency(Class<T> type) throws IllegalArgumentException {
-					if ( type.isAssignableFrom( StringLogger.class ) ) {
-						return (T) StringLoggerToJBossLoggingAdaptor.JBOSS_LOGGING_STRING_LOGGER;
-					}
-					throw new IllegalArgumentException("Unknown to this mock");
-				}
-
-				@Override
-				public <T> T resolveDependency(Class<T> type, SelectionStrategy selector)
-						throws IllegalArgumentException {
-					return null;
-				}
-			};
-		}
-
-		@Override
-		public StoreId storeId() {
 			return null;
 		}
 
 		@Override
-		public TransactionBuilder tx() {
+		public org.neo4j.kernel.impl.store.StoreId storeId() {
 			return null;
 		}
 
 		@Override
 		public String getStoreDir() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterator<Node> findNodes(Label label, String key, Object value) {
+			return null;
+		}
+
+		@Override
+		public Node findNode(Label label, String key, Object value) {
+			return null;
+		}
+
+		@Override
+		public ResourceIterator<Node> findNodes(Label label) {
+			return null;
+		}
+
+		@Override
+		public Result execute(String query) throws QueryExecutionException {
+			return null;
+		}
+
+		@Override
+		public Result execute(String query, Map<String, Object> parameters) throws QueryExecutionException {
 			return null;
 		}
 	}

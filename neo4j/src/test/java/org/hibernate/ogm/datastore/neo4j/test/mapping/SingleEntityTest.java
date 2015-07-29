@@ -15,7 +15,6 @@ import org.hibernate.ogm.backendtck.associations.manytoone.JUG;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
 
 /**
  * @author Davide D'Alto
@@ -41,13 +40,8 @@ public class SingleEntityTest extends Neo4jJpaTestCase {
 				.property( "jug_id", jug.getId() )
 				.property( "name", jug.getName() );
 
-		getTransactionManager().begin();
-		ExecutionEngine executionEngine = createExecutionEngine();
-
-		assertThatOnlyTheseNodesExist( executionEngine, jugNode );
+		assertThatOnlyTheseNodesExist( jugNode );
 		assertNumberOfRelationships( 0 );
-
-		getTransactionManager().commit();
 	}
 
 	@Override

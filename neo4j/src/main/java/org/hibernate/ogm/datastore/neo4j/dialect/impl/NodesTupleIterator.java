@@ -10,8 +10,8 @@ import java.util.Map;
 
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Result;
 
 /**
  * Iterates over the result of a native query when each result is a neo4j node.
@@ -23,7 +23,7 @@ public class NodesTupleIterator extends MapsTupleIterator {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 
-	public NodesTupleIterator(ExecutionResult result, EntityKeyMetadata entityKeyMetadata) {
+	public NodesTupleIterator(Result result, EntityKeyMetadata entityKeyMetadata) {
 		super( result );
 		this.entityKeyMetadata = entityKeyMetadata;
 	}

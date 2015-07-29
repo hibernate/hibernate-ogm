@@ -29,8 +29,7 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.TestableGridDialect;
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -42,31 +41,28 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	 * Query for counting all entities. This takes embedded entities and temporary nodes (which never should show up
 	 * actually) into account.
 	 */
-	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " RETURN COUNT(n)";
+	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " RETURN COUNT(n) as count";
+
+	private static final String ASSOCIATION_COUNT_QUERY = "MATCH (n) - [r] -> () RETURN COUNT(DISTINCT type(r)) as count";
 
 	private static final String ROOT_FOLDER = buildDirectory() + File.separator + "NEO4J";
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ExecutionResult result = engine.execute( ENTITY_COUNT_QUERY );
-		ResourceIterator<Map<String, Object>> iterator = result.iterator();
-		if ( iterator.hasNext() ) {
-			Map<String, Object> next = iterator.next();
-			return ( (Long) next.get( "COUNT(n)" ) ).longValue();
-		}
-		return 0;
+		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
+		ResourceIterator<Long> result = graphDb.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
+		Long count = result.next();
+		result.close();
+		return count.longValue();
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		String query = "MATCH (n) - [r] -> () RETURN COUNT(DISTINCT type(r))";
-		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ExecutionResult result = engine.execute( query.toString() );
-		ResourceIterator<Long> columnAs = result.columnAs( "COUNT(DISTINCT type(r))" );
-		Long next = columnAs.next();
-		columnAs.close();
-		return next.longValue();
+		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
+		ResourceIterator<Long> result = graphDb.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
+		Long count = result.next();
+		result.close();
+		return count.longValue();
 	}
 
 	@Override
