@@ -15,6 +15,7 @@ import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class ConcurrentModificationTest extends OgmTestCase {
 	@After
 	public void deleteTestDataAndCloseSession() {
 		session.clear();
-		if ( session.getTransaction().isActive() ) {
+		if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE ) {
 			session.getTransaction().rollback();
 		}
 		Transaction transaction = session.beginTransaction();

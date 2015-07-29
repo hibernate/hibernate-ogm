@@ -8,7 +8,8 @@ package org.hibernate.ogm.service.impl;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.model.relational.Database;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -20,10 +21,10 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class SchemaDefiningObserver implements SessionFactoryObserver {
 
-	private final Configuration configuration;
+	private Database database;
 
-	public SchemaDefiningObserver(Configuration configuration) {
-		this.configuration = configuration;
+	public SchemaDefiningObserver(Metadata metadata) {
+		this.database = metadata.getDatabase();
 	}
 
 	@Override
@@ -33,7 +34,7 @@ public class SchemaDefiningObserver implements SessionFactoryObserver {
 
 		SchemaDefiner schemaInitializer = registry.getService( SchemaDefiner.class );
 		schemaInitializer.validateMapping( sessionFactoryImplementor );
-		schemaInitializer.initializeSchema( configuration, sessionFactoryImplementor );
+		schemaInitializer.initializeSchema( database, sessionFactoryImplementor );
 	}
 
 	@Override

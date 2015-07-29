@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.model.relational.Database;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.util.Experimental;
 import org.hibernate.service.Service;
@@ -43,8 +43,8 @@ public interface SchemaDefiner extends Service {
 	/**
 	 * Initializes the schema in the datastore.
 	 *
-	 * @param configuration all the configuration properties
+	 * @param database describes the database and its schema(s)
 	 * @param factory the session factory
 	 */
-	void initializeSchema(Configuration configuration, SessionFactoryImplementor factory);
+	void initializeSchema(Database database, SessionFactoryImplementor factory);
 }

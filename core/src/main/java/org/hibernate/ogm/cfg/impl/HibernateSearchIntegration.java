@@ -6,10 +6,7 @@
  */
 package org.hibernate.ogm.cfg.impl;
 
-import java.util.Map;
-import java.util.Properties;
-
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 /**
  * Hibernate Search is an optional dependency, so while we need refer to its constants
@@ -49,36 +46,12 @@ public final class HibernateSearchIntegration {
 		}
 	}
 
-	public static void resetProperties(Configuration ogmConfiguration) {
-		if ( searchIsAvailable ) {
-			// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
-			// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
-			ogmConfiguration.setProperty( MASSINDEXER_PROPERTY_KEY, MASSINDEXER_PROPERTY_VALUE );
-
-			// Search needs to load matching entries by id, and not recursively with another query as it does by default.
-			// Constants not used to avoid strictly depending on Search: org.hibernate.search.cfg.Environment.OBJECT_LOOKUP_METHOD
-			ogmConfiguration.setProperty( RETRIEVALSTRATEGY_PROPERTY_KEY, RETRIEVALSTRATEGY_PROPERTY_VALUE );
-		}
-	}
-
-	public static void setPropertiesIfUndefined(Properties properties, Configuration ogmConfiguration) {
-		if ( searchIsAvailable ) {
-			if ( ! properties.containsKey( MASSINDEXER_PROPERTY_KEY ) ) {
-				ogmConfiguration.setProperty( MASSINDEXER_PROPERTY_KEY, MASSINDEXER_PROPERTY_VALUE );
-			}
-			if ( ! properties.containsKey( RETRIEVALSTRATEGY_PROPERTY_KEY ) ) {
-				ogmConfiguration.setProperty( RETRIEVALSTRATEGY_PROPERTY_KEY, RETRIEVALSTRATEGY_PROPERTY_VALUE );
-			}
-		}
-	}
-
-	public static void resetProperties(Map<Object, Object> map) {
+	public static void resetProperties( StandardServiceRegistryBuilder registryBuilder) {
 		if ( searchIsAvailable ) {
 			// set the OGM specific mass indexer in case we use Hibernate Search
-			map.put( MASSINDEXER_PROPERTY_KEY, MASSINDEXER_PROPERTY_VALUE );
+			registryBuilder.applySetting( MASSINDEXER_PROPERTY_KEY, MASSINDEXER_PROPERTY_VALUE );
 			// set the Hibernate Search strategy to load query matches by id rather then recurse into another query
-			map.put( RETRIEVALSTRATEGY_PROPERTY_KEY, RETRIEVALSTRATEGY_PROPERTY_VALUE );
+			registryBuilder.applySetting( RETRIEVALSTRATEGY_PROPERTY_KEY, RETRIEVALSTRATEGY_PROPERTY_VALUE );
 		}
 	}
-
 }

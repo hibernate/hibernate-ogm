@@ -6,7 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.loading;
 
-import org.hibernate.cfg.Configuration;
+import java.util.Map;
+
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -22,9 +23,8 @@ import com.mongodb.DBCollection;
 public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsCollectionTest {
 
 	@Override
-	protected void configure(Configuration cfg) {
-		super.configure( cfg );
-		cfg.getProperties().put(
+	protected void configure(Map<String, Object> settings) {
+		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);

@@ -8,10 +8,10 @@ package org.hibernate.ogm.datastore.mongodb.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.fest.assertions.Assertions;
 import org.hibernate.Session;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.backendtck.simpleentity.Helicopter;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
@@ -134,8 +134,8 @@ public class BatchInsertTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.setProperty( OgmProperties.GRID_DIALECT, LeakingMongoDBDialect.class.getName() );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.GRID_DIALECT, LeakingMongoDBDialect.class );
 	}
 
 	public static class LeakingMongoDBDialect extends MongoDBDialect implements BatchableGridDialect {

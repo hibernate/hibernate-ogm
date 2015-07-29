@@ -127,6 +127,12 @@ public class OgmMassIndexer implements MassIndexerWithTenant {
 	}
 
 	@Override
+	public MassIndexer transactionTimeout(int timeoutInSeconds) {
+		log.unsupportedIndexerConfigurationOption( "transactionTimeout" );
+		return this;
+	}
+
+	@Override
 	public MassIndexer typesToIndexInParallel(int threadsToIndexObjects) {
 		atLeastOneValidation( threadsToIndexObjects );
 		this.typesToIndexInParallel = Math.min( threadsToIndexObjects, rootEntities.size() );

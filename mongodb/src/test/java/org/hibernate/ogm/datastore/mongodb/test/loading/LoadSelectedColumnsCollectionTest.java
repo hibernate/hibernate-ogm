@@ -14,12 +14,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -189,13 +189,12 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		super.configure( cfg );
-		cfg.getProperties().put(
+	protected void configure(Map<String, Object> settings) {
+		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);
-		cfg.getProperties().put(
+		settings.put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
 				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
 		);

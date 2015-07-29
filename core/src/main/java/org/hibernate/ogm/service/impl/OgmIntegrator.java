@@ -8,40 +8,23 @@ package org.hibernate.ogm.service.impl;
 
 import java.util.Map;
 
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.IntegratorService;
-import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.jpa.event.spi.JpaIntegrator;
-import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.Version;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
-import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagerInitiator;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingAutoFlushEventListener;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingAutoFlushEventListener.EventContextManagingAutoFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingFlushEventListener;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingFlushEventListener.EventContextManagingFlushEventListenerDuplicationStrategy;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManagingPersistEventListener.EventContextManagingPersistEventListenerDuplicationStrategy;
-import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
-import org.hibernate.ogm.dialect.impl.IdentityColumnAwareGridDialectInitiator;
-import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
-import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator;
-import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
-import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
-import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
-import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
-import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
-import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
-import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
@@ -51,69 +34,33 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class OgmIntegrator implements Integrator, ServiceContributingIntegrator {
+public class OgmIntegrator implements Integrator {
 
 	@Override
-	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		doIntegrate( configuration, sessionFactory, serviceRegistry );
-	}
-
-	@Override
-	public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		doIntegrate( null, sessionFactory, serviceRegistry );
+	public void integrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		doIntegrate( metadata, sessionFactory, serviceRegistry );
 	}
 
 	@Override
 	public void disintegrate(SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
 	}
 
-	@Override
-	public void prepareServices(StandardServiceRegistryBuilder serviceRegistryBuilder) {
-		if ( !isOgmUsed( serviceRegistryBuilder.getSettings() ) ) {
-			return;
-		}
-		serviceRegistryBuilder.addInitiator( OgmSessionFactoryServiceRegistryFactoryInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmConnectionProviderInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE);
-		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( DatastoreProviderInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OptionsServiceInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( GridDialectInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( EventContextManagerInitiator.INSTANCE );
-	}
-
-	private void doIntegrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		if ( !isOgmUsed( configuration.getProperties() ) ) {
+	private void doIntegrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( ! serviceRegistry.getService( OgmConfigurationService.class ).isOgmEnabled() ) {
 			return;
 		}
 		Version.touch();
 
-		sessionFactory.addObserver( new SchemaDefiningObserver( configuration ) );
+		sessionFactory.addObserver( new SchemaDefiningObserver( metadata ) );
 		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 
-		attachEventContextManagingListenersIfRequired( configuration, serviceRegistry );
+		attachEventContextManagingListenersIfRequired( serviceRegistry );
 	}
 
-	private boolean isOgmUsed(Map properties) {
-		// Integrator are discovered via the Java ServiceLoader mechanism and get executed independently of whether a
-		// a user actually wants to use OGM. For this reason an internal property (OGM_ON) is set in OgmConfiguration
-		// resp. HibernateOgmPersistence to indicate the actual bootstrapping of OGM. The required OGM settings
-		// will only be applied if this flag is set when the callbacks of this integrator is called.
-		return new ConfigurationPropertyReader( properties )
-				.property( InternalProperties.OGM_ON, boolean.class )
-				.withDefault( false )
-				.getValue();
-	}
-
-	private void attachEventContextManagingListenersIfRequired(Configuration configuration, SessionFactoryServiceRegistry serviceRegistry) {
-		if ( !EventContextManager.isEventContextRequired( configuration.getProperties(), serviceRegistry ) ) {
+	private void attachEventContextManagingListenersIfRequired(SessionFactoryServiceRegistry serviceRegistry) {
+		@SuppressWarnings("unchecked")
+		Map<Object, Object> settings = serviceRegistry.getService( ConfigurationService.class ).getSettings();
+		if ( !EventContextManager.isEventContextRequired( settings, serviceRegistry ) ) {
 			return;
 		}
 

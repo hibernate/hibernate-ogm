@@ -7,6 +7,7 @@
 package org.hibernate.ogm.cfg;
 
 import org.hibernate.ogm.compensation.ErrorHandler;
+import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 
 /**
  * Common properties for configuring NoSql datastores via {@code persistence.xml} or
@@ -20,6 +21,14 @@ import org.hibernate.ogm.compensation.ErrorHandler;
  * @author Gunnar Morling
  */
 public interface OgmProperties {
+
+	/**
+	 * Property for enabling or disabling Hibernate OGM. Accepts {@code boolean} or {@code String}s representing
+	 * booleans. Defaults to {@code false}. Can be used to enable Hibernate OGM via the Hibernate bootstrap API. When
+	 * bootstrapping via {@link OgmConfiguration} or JPA (through {@link HibernateOgmPersistence}, Hibernate OGM will be
+	 * enabled by default, so this property does not have to be set.
+	 */
+	String ENABLED = "hibernate.ogm.enabled";
 
 	/**
 	 * Name of the configuration option for specifying an {@link OptionConfigurator} when bootstrapping Hibernate OGM.

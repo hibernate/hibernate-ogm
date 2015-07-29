@@ -6,16 +6,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.datastore;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import org.hibernate.MappingException;
-import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Assert;
@@ -56,10 +54,8 @@ public class CollectionNamingValidationTest {
 	}
 
 	private void assertTableCausesException(Class<?> mappedType, String expectedExceptionPrefix) {
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( mappedType );
 		try {
-			OgmSessionFactory sessionFactory = configuration.buildSessionFactory();
-			sessionFactory.close();
+			TestHelper.getDefaultTestSessionFactory( mappedType );
 			Assert.fail( "An exception was expected" );
 		}
 		catch (MappingException me) {
@@ -77,7 +73,7 @@ public class CollectionNamingValidationTest {
 		@Id Long id;
 	}
 
-	@Entity @Table(name = "blah\0")
+	@Entity @Table(name = "bl\0ah")
 	public static class NULNamedTable {
 		@Id Long id;
 	}

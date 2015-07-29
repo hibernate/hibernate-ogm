@@ -14,7 +14,7 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Environment;
-import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.IdentifierGeneratorHelper;
@@ -30,6 +30,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
@@ -60,7 +61,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	private GridDialect gridDialect;
 
 	@Override
-	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
+	public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
 		identifierType = type;
 		incrementSize = determineIncrementSize( params );
 		initialValue = determineInitialValue( params );
@@ -81,7 +82,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
 		);
 
-		gridDialect = ( (OgmDialect) dialect ).getGridDialect();
+		gridDialect = ( (OgmDialect) serviceRegistry.getService( JdbcEnvironment.class ).getDialect() ).getGridDialect();
 	}
 
 	/**
@@ -90,6 +91,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	 *
 	 * @return The initial value to use.
 	 */
+	@Override
 	public final int getInitialValue() {
 		return initialValue;
 	}
@@ -145,7 +147,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 		//we want to work out of transaction
 		boolean workInTransaction = false;
 		Work work = new Work();
-		Serializable generatedValue = session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork( work, workInTransaction );
+		Serializable generatedValue = session.getTransactionCoordinator().createIsolationDelegate().delegateWork( work, workInTransaction );
 		return generatedValue;
 	}
 

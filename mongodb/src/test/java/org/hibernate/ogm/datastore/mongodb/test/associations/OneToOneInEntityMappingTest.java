@@ -8,8 +8,9 @@ package org.hibernate.ogm.datastore.mongodb.test.associations;
 
 import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
 
+import java.util.Map;
+
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.associations.onetoone.Husband;
 import org.hibernate.ogm.backendtck.associations.onetoone.Wife;
@@ -87,9 +88,8 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		super.configure( cfg );
-		cfg.getProperties().put(
+	protected void configure(Map<String, Object> settings) {
+		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.IN_ENTITY
 		);

@@ -8,7 +8,8 @@ package org.hibernate.ogm.test.datastore;
 
 import java.util.Iterator;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
@@ -50,22 +51,23 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 	public static class TestSchemaDefiner extends BaseSchemaDefiner {
 
 		@Override
-		public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
-			Iterator<Table> tables = configuration.getTableMappings();
-			while ( tables.hasNext() ) {
-				Table table = tables.next();
-				if ( table.isPhysicalTable() ) {
-					String tableName = table.getQuotedName();
-					// do something with table
-					Iterator<Column> columns = table.getColumnIterator();
-					while ( columns.hasNext() ) {
-						Column column = columns.next();
-						String columnName = column.getCanonicalName();
-						// do something with column
+		public void initializeSchema(Database database, SessionFactoryImplementor factory) {
+			for ( Namespace namespace : database.getNamespaces() ) {
+				for (Table table : namespace.getTables() ) {
+					if ( table.isPhysicalTable() ) {
+						String tableName = table.getQuotedName();
+						// do something with table
+						Iterator<Column> columns = table.getColumnIterator();
+						while ( columns.hasNext() ) {
+							Column column = columns.next();
+							String columnName = column.getCanonicalName();
+							// do something with column
+						}
+						//TODO handle unique constraints?
 					}
-					//TODO handle unique constraints?
 				}
 			}
+
 			throw new RuntimeException("STARTED!");
 		}
 	}

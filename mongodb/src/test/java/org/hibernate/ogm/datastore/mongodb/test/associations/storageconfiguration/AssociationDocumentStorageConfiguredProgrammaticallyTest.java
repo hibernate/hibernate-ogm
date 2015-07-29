@@ -11,19 +11,21 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
+import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
-import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -31,32 +33,27 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
-public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends OgmTestCase {
+public class AssociationDocumentStorageConfiguredProgrammaticallyTest {
 
 	private final MongoDBTestHelper testHelper = new MongoDBTestHelper();
 
-	private OgmConfiguration configuration;
 	private OgmSessionFactory sessions;
-
 	private Cloud cloud;
 
-	@Before
-	public void setupConfiguration() {
-		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
-	}
-
-	protected void setupSessionFactory() {
-		sessions = configuration.buildSessionFactory();
+	protected void setupSessionFactory(Map<String, Object> settings) {
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, Cloud.class, SnowFlake.class );
 	}
 
 	@Test
 	public void associationDocumentStorageSetOnGlobalLevel() throws Exception {
-		testHelper.configureDatastore( configuration )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, MongoDB.class )
 			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 			.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
@@ -66,12 +63,15 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 
 	@Test
 	public void associationDocumentStorageSetOnEntityLevel() throws Exception {
-		testHelper.configureDatastore( configuration )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, MongoDB.class )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
@@ -81,7 +81,9 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 
 	@Test
 	public void associationDocumentStorageSetOnPropertyLevel() throws Exception {
-		testHelper.configureDatastore( configuration )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, MongoDB.class )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.property( "producedSnowFlakes", ElementType.METHOD )
@@ -89,7 +91,8 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 				.property( "backupSnowFlakes", ElementType.METHOD )
 					.associationDocumentStorage( AssociationDocumentStorageType.GLOBAL_COLLECTION );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
+
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
@@ -190,13 +193,5 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 
 		sessions.close();
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Cloud.class,
-				SnowFlake.class
-		};
 	}
 }

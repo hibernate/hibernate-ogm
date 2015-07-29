@@ -9,12 +9,11 @@ package org.hibernate.ogm.utils;
 import java.util.Map;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**
  * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,
@@ -82,12 +81,11 @@ public interface TestableGridDialect {
 	Map<String, String> getEnvironmentProperties();
 
 	/**
-	 * Returns the store-specific {@link GlobalContext} for applying configuration options.
+	 * Returns the store-specific {@link DatastoreConfiguration} type for applying configuration options.
 	 *
-	 * @param configuration the {@link OgmConfiguration} to which the options should be applied to
-	 * @return the store-specific {@link GlobalContext}
+	 * @return the store-specific {@link DatastoreConfiguration} type
 	 */
-	GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration);
+	Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType();
 
 	GridDialect getGridDialect(DatastoreProvider datastoreProvider);
 }

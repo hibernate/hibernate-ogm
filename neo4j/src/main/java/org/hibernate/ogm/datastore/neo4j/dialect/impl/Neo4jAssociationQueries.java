@@ -341,7 +341,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 */
 	private void createRelationshipforCollectionOfComponents(AssociationKey associationKey, String collectionRole, String[] embeddedColumnNames, Object[] embeddedColumnValues, StringBuilder queryBuilder) {
 		int offset = associationKey.getEntityKey().getColumnNames().length;
-		EmbeddedNodesTree tree = createEmbeddedTree( embeddedColumnNames, embeddedColumnValues, offset );
+		EmbeddedNodesTree tree = createEmbeddedTree( collectionRole, embeddedColumnNames, embeddedColumnValues, offset );
 		if ( isPartOfEmbedded( collectionRole ) ) {
 			String[] pathToEmbedded = appendEmbeddedNodes( collectionRole, queryBuilder );
 			queryBuilder.append( " CREATE (e) -[r:");
@@ -464,22 +464,30 @@ public class Neo4jAssociationQueries extends QueriesBase {
 
 	/*
 	 * If the association is connected to embedded elements we also need to create the embedded relationships for this elements.
-	 * This method will chreate an tree containing the information about the path to the embedded in a more managabel way.
+	 * This method will create an tree containing the information about the path to the embedded in a more managabel way.
 	 */
-	private EmbeddedNodesTree createEmbeddedTree(String[] embeddedColumnNames, Object[] embeddedColumnValues, int offset) {
+	private EmbeddedNodesTree createEmbeddedTree(String collectionRole, String[] embeddedColumnNames, Object[] embeddedColumnValues, int offset) {
 		EmbeddedNodesTree tree = new EmbeddedNodesTree();
 		for ( int i = 0; i < embeddedColumnNames.length; i++ ) {
+			String embeddedColumnName;
+			if ( embeddedColumnNames[i].startsWith( collectionRole ) ) {
+				embeddedColumnName = embeddedColumnNames[i].substring( collectionRole.length() + 1 );
+			}
+			else {
+				embeddedColumnName = embeddedColumnNames[i];
+			}
+
 			if ( embeddedColumnValues[i] != null ) {
-				if ( embeddedColumnNames[i].contains( "." ) ) {
-					int firstDot = embeddedColumnNames[i].indexOf( "." );
-					String relationshipType = embeddedColumnNames[i].substring( 0, firstDot );
-					String currentProperty = embeddedColumnNames[i].substring( firstDot + 1 );
+				if ( embeddedColumnName.contains( "." ) ) {
+					int firstDot = embeddedColumnName.indexOf( "." );
+					String relationshipType = embeddedColumnName.substring( 0, firstDot );
+					String currentProperty = embeddedColumnName.substring( firstDot + 1 );
 					appendSubTree( tree, currentProperty, relationshipType, offset + i );
 				}
 				else {
 					EmbeddedNodeProperty property = new EmbeddedNodeProperty();
 					property.setParam( offset + i );
-					property.setColumn( embeddedColumnNames[i] );
+					property.setColumn( embeddedColumnName );
 					tree.addProperty( property );
 				}
 			}

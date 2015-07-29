@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
@@ -16,7 +16,7 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
 /**
- * Properties for configuring the MongoDB datastore via {@code persistence.xml} or {@link OgmConfiguration}.
+ * Properties for configuring the MongoDB datastore via {@code persistence.xml} or {@link StandardServiceRegistryBuilder}.
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  * @author Gunnar Morling

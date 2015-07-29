@@ -7,9 +7,9 @@
 package org.hibernate.ogm.service.impl;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.spi.SessionFactoryOptions;
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.service.Service;
 import org.hibernate.service.internal.SessionFactoryServiceRegistryImpl;
 import org.hibernate.service.spi.Configurable;
@@ -24,16 +24,8 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  */
 public class OgmSessionFactoryServiceRegistryImpl extends SessionFactoryServiceRegistryImpl {
 
-	private Configuration configuration = null;
-
-	public OgmSessionFactoryServiceRegistryImpl(ServiceRegistryImplementor parent, SessionFactoryImplementor sessionFactory, Configuration configuration) {
-		super( parent, sessionFactory, configuration );
-		this.configuration = configuration;
-		createServiceBindings();
-	}
-
-	public OgmSessionFactoryServiceRegistryImpl(ServiceRegistryImplementor parent, SessionFactoryImplementor sessionFactory, MetadataImplementor metadata) {
-		super( parent, sessionFactory, metadata );
+	public OgmSessionFactoryServiceRegistryImpl(ServiceRegistryImplementor parent, SessionFactoryImplementor sessionFactory, SessionFactoryOptions sessionFactoryOptions) {
+		super( parent, sessionFactory, sessionFactoryOptions );
 		createServiceBindings();
 	}
 
@@ -46,7 +38,7 @@ public class OgmSessionFactoryServiceRegistryImpl extends SessionFactoryServiceR
 	@Override
 	public <R extends Service> void configureService(ServiceBinding<R> serviceBinding) {
 		if ( Configurable.class.isInstance( serviceBinding.getService() ) ) {
-			( (Configurable) serviceBinding.getService() ).configure( configuration.getProperties() );
+			( (Configurable) serviceBinding.getService() ).configure( getService( ConfigurationService.class ).getSettings() );
 		}
 	}
 }

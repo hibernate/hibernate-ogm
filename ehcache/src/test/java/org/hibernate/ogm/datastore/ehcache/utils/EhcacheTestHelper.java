@@ -13,19 +13,18 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.ehcache.Ehcache;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.TestableGridDialect;
@@ -128,12 +127,12 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
-		return configuration.configureOptionsFor( Ehcache.class );
+	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
+		return new EhcacheDialect( (EhcacheDatastoreProvider) datastoreProvider );
 	}
 
 	@Override
-	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new EhcacheDialect( (EhcacheDatastoreProvider) datastoreProvider );
+	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
+		return Ehcache.class;
 	}
 }

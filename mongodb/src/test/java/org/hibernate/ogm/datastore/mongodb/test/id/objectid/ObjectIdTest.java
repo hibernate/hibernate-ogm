@@ -8,10 +8,11 @@ package org.hibernate.ogm.datastore.mongodb.test.id.objectid;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Map;
+
 import org.bson.types.ObjectId;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -289,7 +290,7 @@ public class ObjectIdTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "false" );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, false );
 	}
 }

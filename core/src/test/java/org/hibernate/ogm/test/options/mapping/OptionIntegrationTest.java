@@ -9,8 +9,11 @@ package org.hibernate.ogm.test.options.mapping;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
@@ -25,10 +28,8 @@ import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.mapping.model.Microwave;
 import org.hibernate.ogm.test.options.mapping.model.Refrigerator;
-import org.hibernate.ogm.test.options.mapping.model.SampleDatastoreProvider;
 import org.hibernate.ogm.test.options.mapping.model.SampleNoSqlDatastore;
 import org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurator;
-import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
@@ -38,9 +39,9 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
-public class OptionIntegrationTest extends OgmTestCase {
+public class OptionIntegrationTest {
 
-	private OgmSessionFactoryImplementor sessions;
+	private OgmSessionFactory sessions;
 
 	@After
 	public void closeSessionFactory() {
@@ -49,12 +50,13 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatEntityOptionCanBeSetAndRetrieved() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
-		configuration.configureOptionsFor( SampleNoSqlDatastore.class )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, SampleNoSqlDatastore.class )
 			.entity( Refrigerator.class )
 				.force( true );
 
-		setupSessionFactory( configuration );
+		setupSessionFactory( settings );
 
 		OptionsContext refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
@@ -62,14 +64,15 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatEntityOptionsCanBeSetAndRetrievedOnMultipleTypes() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
-		configuration.configureOptionsFor( SampleNoSqlDatastore.class )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, SampleNoSqlDatastore.class )
 			.entity( Refrigerator.class )
 				.force( true )
 			.entity( Microwave.class )
 				.name( "test" );
 
-		setupSessionFactory( configuration );
+		setupSessionFactory( settings );
 
 		OptionsContext refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
@@ -80,13 +83,28 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatPropertyOptionCanBeSetAndRetrieved() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
-		configuration.configureOptionsFor( SampleNoSqlDatastore.class )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, SampleNoSqlDatastore.class )
 			.entity( Refrigerator.class )
 				.property( "temperature", ElementType.FIELD )
 					.embed( "Embedded" );
 
-		setupSessionFactory( configuration );
+		setupSessionFactory( settings );
+
+		OptionsContext temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
+		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
+	}
+
+	@Test
+	public void testThatPropertyOptionCanBeSetViaOgmConfigurationAndRetrieved() throws Exception {
+		OgmConfiguration cfg = new OgmConfiguration();
+		cfg.configureOptionsFor( SampleNoSqlDatastore.class )
+			.entity( Refrigerator.class )
+				.property( "temperature", ElementType.FIELD )
+					.embed( "Embedded" );
+
+		sessions = cfg.buildSessionFactory();
 
 		OptionsContext temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
 		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
@@ -94,27 +112,24 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfiguratorInstance() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, new SampleOptionConfigurator() );
-		setupSessionFactory( configuration );
+		Map<String, Object> settings = Collections.<String, Object>singletonMap( OgmProperties.OPTION_CONFIGURATOR, new SampleOptionConfigurator() );
+		setupSessionFactory( settings );
 
 		assertOptionsSetViaConfigurator();
 	}
 
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfiguratorType() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, SampleOptionConfigurator.class );
-		setupSessionFactory( configuration );
+		Map<String, Object> settings = Collections.<String, Object>singletonMap( OgmProperties.OPTION_CONFIGURATOR, SampleOptionConfigurator.class );
+		setupSessionFactory( settings );
 
 		assertOptionsSetViaConfigurator();
 	}
 
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfiguratorTypeName() throws Exception {
-		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, SampleOptionConfigurator.class.getName() );
-		setupSessionFactory( configuration );
+		Map<String, Object> settings = Collections.<String, Object>singletonMap( OgmProperties.OPTION_CONFIGURATOR, SampleOptionConfigurator.class.getName() );
+		setupSessionFactory( settings );
 
 		assertOptionsSetViaConfigurator();
 	}
@@ -130,31 +145,14 @@ public class OptionIntegrationTest extends OgmTestCase {
 		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 	}
 
-	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Refrigerator.class };
-	}
-
 	private OptionsServiceContext getOptionsContext() {
-		return sessions.getServiceRegistry()
+		return ( (OgmSessionFactoryImplementor) sessions ).getServiceRegistry()
 				.getService( OptionsService.class )
 				.context();
 	}
 
-	private void setupSessionFactory(OgmConfiguration ogmConfiguration) {
-		sessions = (OgmSessionFactoryImplementor) ogmConfiguration.buildSessionFactory();
-	}
-
-	private OgmConfiguration getConfiguration() {
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configuration.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
-
-		return configuration;
+	private void setupSessionFactory(Map<String, Object> settings) {
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, Refrigerator.class );
 	}
 
 	public interface AnotherGlobalContext extends GlobalContext<AnotherGlobalContext, AnotherEntityContext> {

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.model.relational.Database;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.keyvalue.options.spi.CacheMappingOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
@@ -22,7 +22,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 public class CacheInitializer extends BaseSchemaDefiner {
 
 	@Override
-	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
+	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );

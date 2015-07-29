@@ -9,8 +9,11 @@ package org.hibernate.ogm.id.impl;
 import java.util.Properties;
 
 import org.hibernate.MappingException;
-import org.hibernate.cfg.ObjectNameNormalizer;
+import org.hibernate.boot.model.naming.ObjectNameNormalizer;
+import org.hibernate.boot.model.relational.QualifiedName;
+import org.hibernate.boot.model.relational.QualifiedNameParser;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.PersistentIdentifierGenerator;
@@ -26,6 +29,7 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
@@ -149,11 +153,18 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	}
 
 	@Override
-	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
-		super.configure( type, params, dialect );
+	public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+		super.configure( type, params, serviceRegistry );
+		JdbcEnvironment jdbcEnvironment = serviceRegistry.getService( JdbcEnvironment.class );
+
+		Dialect dialect = jdbcEnvironment.getDialect();
 
 		identifierType = type;
-		tableName = determineGeneratorTableName( params, dialect );
+		tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(
+				determineGeneratorTableName( params, dialect ),
+				dialect
+		);
+
 		segmentColumnName = determineSegmentColumnName( params, dialect );
 		valueColumnName = determineValueColumnName( params, dialect );
 		segmentValue = determineSegmentValue( params );
@@ -162,39 +173,33 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	}
 
 	/**
-	 * Determine the table name to use for the generator values.
+	 * NOTE: Copied from TableGenerator
 	 * <p>
+	 * Determine the table name to use for the generator values.
+	 * <p/>
 	 * Called during {@link #configure configuration}.
 	 *
+	 * @see #getTableName()
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
 	 * @param dialect The dialect in effect
-	 *
 	 * @return The table name to use.
-	 *
-	 * @see #getTableName()
 	 */
-	protected String determineGeneratorTableName(Properties params, Dialect dialect) {
-		String name = ConfigurationHelper.getString( TABLE_PARAM, params, DEF_TABLE );
-		boolean isGivenNameUnqualified = name.indexOf( '.' ) < 0;
-		if ( isGivenNameUnqualified ) {
-			ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
-			name = normalizer.normalizeIdentifierQuoting( name );
-
-			String schemaName = normalizer.normalizeIdentifierQuoting( params.getProperty( PersistentIdentifierGenerator.SCHEMA ) );
-			if ( schemaName != null ) {
-				log.schemaOptionNotSupportedForTableGenerator( schemaName );
-			}
-
-			String catalogName = normalizer.normalizeIdentifierQuoting( params.getProperty( PersistentIdentifierGenerator.CATALOG ) );
-			if ( catalogName != null ) {
-				log.catalogOptionNotSupportedForTableGenerator( catalogName );
-			}
+	protected QualifiedName determineGeneratorTableName(Properties params, Dialect dialect) {
+		String schemaName = params.getProperty( PersistentIdentifierGenerator.SCHEMA );
+		if ( schemaName != null ) {
+			log.schemaOptionNotSupportedForTableGenerator( schemaName );
 		}
-		else {
-			// if already qualified there is not much we can do in a portable manner so we pass it
-			// through and assume the user has set up the name correctly.
+
+		String catalogName = params.getProperty( PersistentIdentifierGenerator.CATALOG );
+		if ( catalogName != null ) {
+			log.catalogOptionNotSupportedForTableGenerator( catalogName );
 		}
-		return name;
+
+		return QualifiedNameParser.INSTANCE.parse(
+				ConfigurationHelper.getString( TABLE_PARAM, params, DEF_TABLE ),
+				null,
+				null
+		);
 	}
 
 	/**
@@ -213,7 +218,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	protected String determineSegmentColumnName(Properties params, Dialect dialect) {
 		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 		String name = ConfigurationHelper.getString( SEGMENT_COLUMN_PARAM, params, DEF_SEGMENT_COLUMN );
-		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
+		return normalizer.toDatabaseIdentifierText( name );
 	}
 
 	/**
@@ -229,7 +234,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	protected String determineValueColumnName(Properties params, Dialect dialect) {
 		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 		String name = ConfigurationHelper.getString( VALUE_COLUMN_PARAM, params, DEF_VALUE_COLUMN );
-		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
+		return normalizer.toDatabaseIdentifierText( name );
 	}
 
 	/**

@@ -11,9 +11,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
-import org.junit.Rule;
-import org.junit.Test;
-
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
@@ -22,6 +19,8 @@ import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
@@ -41,7 +40,7 @@ public class JPAJTATest extends JpaTestCase {
 	public void testBootstrapAndCRUD() throws Exception {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory(
-				"transaction-type-jta", TestHelper.getEnvironmentProperties()
+				"transaction-type-jta", TestHelper.getDefaultTestSettings()
 		);
 
 		TransactionManager transactionManager = getTransactionManager( emf );

@@ -17,19 +17,15 @@ import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.ProviderUtil;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.AvailableSettings;
+import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
-import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.query.impl.OgmQueryTranslatorFactory;
 
 /**
  * JPA PersistenceProvider implementation specific to Hibernate OGM
@@ -60,7 +56,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
 					enforceOgmConfig( protectiveCopy );
 					protectiveCopy.put( AvailableSettings.PROVIDER, delegate.getClass().getName() );
-					final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
+					final HibernateEntityManagerFactory coreEMF = (HibernateEntityManagerFactory) delegate.createEntityManagerFactory(
 							emName, protectiveCopy
 					);
 					if ( coreEMF != null ) {
@@ -83,14 +79,9 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	}
 
 	private void enforceOgmConfig(Map<Object,Object> map) {
-		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
-		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
-		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
-		map.put( InternalProperties.OGM_ON, "true" );
-		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
-		HibernateSearchIntegration.resetProperties( map );
+		map.put( OgmProperties.ENABLED, true );
 	}
 
 	@Override
@@ -102,7 +93,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 			//HEM only builds an EntityManagerFactory when HibernatePersistence.class.getName() is the PersistenceProvider
 			//that's why we override it when
 			//new DelegatorPersistenceUnitInfo(info)
-			final EntityManagerFactory coreEMF = delegate.createContainerEntityManagerFactory(
+			final HibernateEntityManagerFactory coreEMF = (HibernateEntityManagerFactory) delegate.createContainerEntityManagerFactory(
 					new DelegatorPersistenceUnitInfo(
 							info
 					),

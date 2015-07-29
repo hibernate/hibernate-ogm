@@ -10,10 +10,10 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -212,8 +212,8 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
