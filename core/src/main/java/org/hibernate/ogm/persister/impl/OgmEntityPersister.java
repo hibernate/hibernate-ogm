@@ -597,7 +597,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		if ( hasCache() ) {
 			Object cacheKey = getCacheAccessStrategy().generateCacheKey( id, this, session.getFactory(), session.getTenantIdentifier() );
-			Object ce = getCacheAccessStrategy().get( cacheKey, session.getTimestamp() );
+			Object ce = getCacheAccessStrategy().get( session, cacheKey, session.getTimestamp() );
 			if ( ce != null ) {
 				CacheEntry cacheEntry = (CacheEntry) getCacheEntryStructure().destructure( ce, getFactory() );
 				if ( !cacheEntry.areLazyPropertiesUnfetched() ) {
