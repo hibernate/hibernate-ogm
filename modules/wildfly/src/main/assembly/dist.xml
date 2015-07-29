@@ -163,7 +163,6 @@
                  <include>io.netty:netty-common</include>
                  <include>io.netty:netty-transport</include>
                  <include>io.netty:netty-handler</include>
-                 <include>com.google.guava:guava</include>
                  <include>org.apache.commons:commons-pool2</include>
               </includes>
        </dependencySet>
