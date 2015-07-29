@@ -478,7 +478,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	private boolean currentDialectHasFacet(Class<? extends GridDialect> facet) {
 		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
-		return GridDialects.hasFacet( gridDialect, OptimisticLockingAwareGridDialect.class );
+		return GridDialects.hasFacet( gridDialect, facet );
 	}
 
 	private boolean currentDialectUsesLookupDuplicatePreventionStrategy() {
