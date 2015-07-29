@@ -48,6 +48,7 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
@@ -130,6 +131,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridDialect gridDialect;
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
 	private final OptimisticLockingAwareGridDialect optimisticLockingAwareGridDialect;
+	private final boolean canGridDialectDoMultiget;
 	private final OptionsService optionsService;
 
 	/**
@@ -204,6 +206,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				gridDialect,
 				InvocationCollectingGridDialect.class
 		);
+		this.canGridDialectDoMultiget = GridDialects.hasFacet( gridDialect, MultigetGridDialect.class );
 
 		if ( factory.getIdentifierGenerator( getEntityName() ) instanceof OgmIdentityGenerator && identityColumnAwareGridDialect == null ) {
 			throw log.getIdentityGenerationStrategyNotSupportedException( getEntityName() );
@@ -866,6 +869,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	protected UniqueEntityLoader createEntityLoader(LockMode lockMode, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		//FIXME add support to lock mode and loadQueryInfluencers
+		// if the dialect does not support it, don't batch so that we can avoid skewing the ORM fetch statistics
+		int batchSize = canGridDialectDoMultiget ? this.batchSize : 1;
 		return BatchingEntityLoaderBuilder.getBuilder( getFactory() )
 				.buildLoader( this, batchSize, lockMode, getFactory(), loadQueryInfluencers, new OgmBatchableEntityLoaderBuilder() );
 	}

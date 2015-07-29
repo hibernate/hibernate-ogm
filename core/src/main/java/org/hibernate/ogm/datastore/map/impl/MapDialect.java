@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.datastore.map.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.LockMode;
@@ -14,6 +16,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -34,7 +37,7 @@ import org.hibernate.persister.entity.Lockable;
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public class MapDialect extends BaseGridDialect {
+public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 
 	private final MapDatastoreProvider provider;
 
@@ -72,6 +75,17 @@ public class MapDialect extends BaseGridDialect {
 		else {
 			return new Tuple( new MapTupleSnapshot( entityMap ) );
 		}
+	}
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		List<Map<String, Object>> mapResults = provider.getEntityTuples( keys );
+		List<Tuple> results = new ArrayList<>( mapResults.size() );
+		// should be done with a lambda for the tuple creation but that's for demo purposes
+		for ( Map<String, Object> entry : mapResults ) {
+			results.add( entry != null ? new Tuple( new MapTupleSnapshot( entry ) ) : null );
+		}
+		return results;
 	}
 
 	@Override

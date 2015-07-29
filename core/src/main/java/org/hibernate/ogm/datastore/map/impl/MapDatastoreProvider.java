@@ -8,8 +8,10 @@ package org.hibernate.ogm.datastore.map.impl;
 
 import static org.hibernate.ogm.util.impl.CollectionHelper.newConcurrentHashMap;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
@@ -138,6 +140,14 @@ public final class MapDatastoreProvider extends BaseDatastoreProvider implements
 
 	public Map<String, Object> getEntityTuple(EntityKey key) {
 		return entitiesKeyValueStorage.get( key );
+	}
+
+	public List<Map<String, Object>> getEntityTuples(EntityKey... keys) {
+		List<Map<String, Object>> results = new ArrayList<>( keys.length );
+		for ( EntityKey key : keys ) {
+			results.add( entitiesKeyValueStorage.get( key ) );
+		}
+		return results;
 	}
 
 	public void removeEntityTuple(EntityKey key) {

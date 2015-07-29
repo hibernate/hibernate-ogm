@@ -10,10 +10,11 @@ import org.fest.assertions.Assertions;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.Test;
 
+import org.hibernate.ogm.dialect.impl.GridDialects;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.stat.Statistics;
 
@@ -52,7 +53,10 @@ public class BatchFetchingTest extends OgmTestCase {
 			Hibernate.initialize( entity );
 			assertTrue( Hibernate.isInitialized( entity ) );
 		}
-		assertEquals( 1, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
+
+		// if a multiget, we load both entities as one go, otherwise we don't
+		int fetchSize = isMultigetDialect() ? 1 : 2;
+		assertEquals( fetchSize, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
 
 		session.getTransaction().commit();
 
@@ -77,7 +81,10 @@ public class BatchFetchingTest extends OgmTestCase {
 		statistics.clear();
 		assertEquals( 0, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
 		Assertions.assertThat( tower.getFloors() ).hasSize( 2 );
-		assertEquals( 1, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
+
+		// if a multiget, we load both entities as one go, otherwise we don't
+		int fetchSize = isMultigetDialect() ? 1 : 2;
+		assertEquals( fetchSize, statistics.getEntityStatistics( Floor.class.getName() ).getFetchCount() );
 		session.getTransaction().commit();
 
 		cleanDataset( session, tower );
@@ -107,5 +114,10 @@ public class BatchFetchingTest extends OgmTestCase {
 		session.persist( tower );
 		session.getTransaction().commit();
 		return tower;
+	}
+
+	private boolean isMultigetDialect() {
+		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		return GridDialects.hasFacet( gridDialect, MultigetGridDialect.class );
 	}
 }
