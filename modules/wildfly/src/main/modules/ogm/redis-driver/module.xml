@@ -12,13 +12,11 @@
     <resources>
         <resource-root path="lettuce-${lettuceVersion}.jar" />
         <resource-root path="commons-pool2-${lettuceCommonsPoolVersion}.jar" />
-        <resource-root path="netty-core-${netty4Version}.jar" />
         <resource-root path="netty-buffer-${netty4Version}.jar" />
         <resource-root path="netty-codec-${netty4Version}.jar" />
         <resource-root path="netty-common-${netty4Version}.jar" />
         <resource-root path="netty-transport-${netty4Version}.jar" />
         <resource-root path="netty-handler-${netty4Version}.jar" />
-        <resource-root path="guava-${lettuceGuavaVersion}.jar" />
     </resources>
     <dependencies>
 
@@ -30,5 +28,8 @@
 
         <!-- ... and to management API -->
         <module name="javax.api" />
+
+        <!-- use Guava from WildFly, that's nice, because WF9 ships with Guava 18 -->
+        <module name="com.google.guava" />
     </dependencies>
 </module>
