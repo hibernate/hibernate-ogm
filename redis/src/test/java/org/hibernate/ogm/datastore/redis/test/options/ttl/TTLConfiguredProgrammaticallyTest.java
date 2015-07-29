@@ -39,10 +39,10 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
 
-	private Cloud cloud;
-
 	protected OgmConfiguration configuration;
 	protected OgmSessionFactory sessions;
+
+	private Cloud cloud;
 
 	@Before
 	public void setupConfiguration() {
