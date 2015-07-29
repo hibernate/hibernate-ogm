@@ -4,7 +4,7 @@
 
 Make sure you have:
 
-1. **JDK 7** for the build (the created artifacts are compatible with Java 6)
+1. **JDK 8** for the build (the created artifacts are compatible with Java 7)
 
 2. **Maven** configured to use the JBoss repositories, with permissions to upload. Make sure your _settings.xml_ is configured accordingly or use the option _-s settings-example.xml_ when running the commands.
 
@@ -80,9 +80,8 @@ This parameterized job automates step 5 from this section as well as steps 1 and
    - Copy the _readme.txt_ (in _target/checkout/distribution/target/hibernate-ogm-[version]-dist_)
    - Copy the _.zip distribution_ (in _target/checkout/distribution/target_)
    - Copy the _.tar.gz distribution_ (in _target/checkout/distribution/target_)
-   - Copy the _.zip containing the JBoss Modules_. There are two .zip files:
-     - for **WildFly 8**: in _target/checkout/modules/wildfly/target_
-     - for **EAP 6** (if it works): in _target/checkout/modules/eap6/target_
+   - Copy the _.zip containing the JBoss Modules_. There is currently one .zip file:
+     - for **WildFly 10**: in _target/checkout/modules/wildfly/target_
 
 2. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/hibernate/ogm/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
 

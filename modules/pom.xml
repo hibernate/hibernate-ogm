@@ -34,7 +34,6 @@
     </properties>
 
     <modules>
-        <module>eap</module>
         <module>wildfly</module>
     </modules>
 
