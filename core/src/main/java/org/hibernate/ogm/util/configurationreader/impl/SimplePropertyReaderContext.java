@@ -37,14 +37,14 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 	@Override
 	@SuppressWarnings("unchecked")
 	protected T getTypedValue() {
-		T typedValue = null;
+		T typedValue;
 		Class<T> targetType = getTargetType();
 
 		if ( targetType == String.class ) {
 			typedValue = (T) getAsString();
 		}
 		else if ( targetType == boolean.class ) {
-			typedValue = (T) getAsBoolean();
+			typedValue = (T) getAsPrimitiveBoolean();
 		}
 		else if ( targetType == int.class ) {
 			typedValue = (T) getAsInt();
@@ -64,8 +64,11 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 		else if ( targetType == URL.class ) {
 			typedValue = (T) getAsUrl();
 		}
+		else if ( targetType == Boolean.class ) {
+			typedValue = (T) getAsBoolean();
+		}
 		else {
-			throw log.unsupportedPropertyType( getPropertyName(), getConfiguredValue().toString() );
+			throw log.unsupportedPropertyType( getPropertyName(), getConfiguredValue() == null ? "null" : getConfiguredValue().toString() );
 		}
 		return typedValue;
 	}
@@ -75,11 +78,16 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 		return stringValue == null ? (String) getDefaultValue() : stringValue;
 	}
 
+	private Boolean getAsPrimitiveBoolean() {
+		Boolean value = getAsBoolean();
+		return value != null ? value : false;
+	}
+
 	private Boolean getAsBoolean() {
 		Object configuredValue = getConfiguredValue();
 
 		if ( StringHelper.isNullOrEmptyString( configuredValue ) ) {
-			return getDefaultValue() != null ? (Boolean) getDefaultValue() : false;
+			return getDefaultValue() != null ? (Boolean) getDefaultValue() : null;
 		}
 
 		return ( configuredValue instanceof Boolean ) ? (Boolean) configuredValue : Boolean.valueOf( configuredValue.toString().trim() );
