@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.document.cfg;
 
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 
 /**
  * Common properties for configuring document datastores such as MongoDB or CouchDB via {@code persistence.xml} or
@@ -31,4 +32,16 @@ public interface DocumentStoreProperties extends OgmProperties {
 	 * programmatic API.
 	 */
 	String ASSOCIATIONS_STORE = "hibernate.ogm.datastore.document.association_storage";
+
+	/**
+	 * Property for configuring the strategy for storing map-typed associations. Only applies to maps with a single key
+	 * column which is of type {@code String}. Valid values are the {@link MapStorageType} enumeration and the String
+	 * representation of its constants. Defaults to the {@link MapStorageType#BY_KEY} strategy. For map associations
+	 * with more than one key column or a single key column of another type than {@code String} always the list strategy
+	 * will be used regardless of this setting.
+	 * <p>
+	 * Note that any value specified via this property will be overridden by values configured via annotations or the
+	 * programmatic API.
+	 */
+	String MAP_STORAGE = "hibernate.ogm.datastore.document.map_storage";
 }

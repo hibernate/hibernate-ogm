@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.document.options.navigation;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.options.navigation.PropertyContext;
 
 /**
@@ -25,5 +26,14 @@ public interface DocumentStorePropertyContext<E extends DocumentStoreEntityConte
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	P associationStorage(AssociationStorageType storage);
+
+	/**
+	 * Specifies how the contents of a map-typed association should be persisted. Only applies if the property
+	 * represents a map-typed association.
+	 *
+	 * @param mapStorage the mapStorage storage type to be used. Overrides any settings on the entity and global level.
+	 * @return this context, allowing for further fluent API invocations
+	 */
+	P mapStorage(MapStorageType mapStorage);
 
 }

@@ -98,7 +98,7 @@ public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { User.class, Address.class };
+		return new Class<?>[] { User.class, Address.class, PhoneNumber.class };
 	}
 
 	@Override

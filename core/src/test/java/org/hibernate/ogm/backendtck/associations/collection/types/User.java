@@ -21,6 +21,8 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.ogm.datastore.document.options.MapStorage;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -29,6 +31,9 @@ import org.hibernate.annotations.GenericGenerator;
 public class User {
 	private String id;
 	private Map<String, Address> addresses = new HashMap<String, Address>();
+	private Map<String, PhoneNumber> phoneNumbers = new HashMap<>();
+	private Map<Integer, PhoneNumber> phoneNumbersByPriority = new HashMap<>();
+	private Map<String, PhoneNumber> alternativePhoneNumbers = new HashMap<>();
 	private Set<String> nicknames = new HashSet<String>();
 
 	@Id
@@ -51,6 +56,36 @@ public class User {
 
 	public void setAddresses(Map<String, Address> addresses) {
 		this.addresses = addresses;
+	}
+
+	@OneToMany
+	public Map<String, PhoneNumber> getPhoneNumbers() {
+		return phoneNumbers;
+	}
+
+	public void setPhoneNumbers(Map<String, PhoneNumber> phoneNumbers) {
+		this.phoneNumbers = phoneNumbers;
+	}
+
+	@OneToMany
+	@MapStorage(MapStorageType.AS_LIST)
+	@MapKeyColumn(name = "phoneType")
+	public Map<String, PhoneNumber> getAlternativePhoneNumbers() {
+		return alternativePhoneNumbers;
+	}
+
+	public void setAlternativePhoneNumbers(Map<String, PhoneNumber> alternativePhoneNumbers) {
+		this.alternativePhoneNumbers = alternativePhoneNumbers;
+	}
+
+	@OneToMany
+	@MapKeyColumn(name = "priority")
+	public Map<Integer, PhoneNumber> getPhoneNumbersByPriority() {
+		return phoneNumbersByPriority;
+	}
+
+	public void setPhoneNumbersByPriority(Map<Integer, PhoneNumber> phoneNumbersByPriority) {
+		this.phoneNumbersByPriority = phoneNumbersByPriority;
 	}
 
 	@ElementCollection

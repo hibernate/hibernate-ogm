@@ -118,6 +118,16 @@ Possible strategies are (values of the `org.hibernate.ogm.datastore.mongodb.opti
 
 * `GLOBAL_COLLECTION` (default): stores the association information in a unique MongoDB collection for all associations
 * `COLLECTION_PER_ASSOCIATION` stores the association in a dedicated MongoDB collection per association
+
+hibernate.ogm.datastore.document.map_storage::
+Defines the way OGM stores the contents of map-typed associations in MongoDB.
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.MapStorageType` enum):
+
+* `BY_KEY`: map-typed associations with a single key column which is of type `String` will be stored as a sub-document,
+organized by the given key; Not applicable for other types of key columns, in which case always `AS_LIST` will be used
+* `AS_LIST`: map-typed associations will be stored as an array containing a sub-document for each map entry.
+All key and value columns will be contained within the array elements
+
 hibernate.ogm.mongodb.write_concern::
 Defines the write concern setting to be applied when issuing writes against the MongoDB datastore.
 Possible settings are (values of the `WriteConcernType` enum):
@@ -214,7 +224,9 @@ When working with the MongoDB backend, you can specify the following settings:
 * the write concern for entities and associations using the `@WriteConcern` annotation
 * the read preference for entities and associations using the `@ReadPreference` annotation
 * a strategy for storing associations using the `@AssociationStorage` and `@AssociationDocumentStorage` annotations
-(refer to <<ogm-mongodb-storage-principles>> to learn more about these options).
+* a strategy for storing the contents of map-typed associations using the `@MapStorage` annotation
+
+Refer to <<mongodb-associations> to learn more about the options related to storing associations.
 
 The following shows an example:
 
@@ -227,6 +239,7 @@ The following shows an example:
 @ReadPreference(ReadPreferenceType.PRIMARY_PREFERRED)
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
 @AssociationDocumentStorage(AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION)
+@MapStorage(MapStorageType.AS_LIST)
 public class Zoo {
 
     @OneToMany
@@ -267,6 +280,7 @@ When working with MongoDB, you can currently configure the following options usi
 * read preference
 * association storage strategy
 * association document storage strategy
+* strategy for storing the contents of map-typed associations
 
 To set these options via the API, you need to create an `OptionConfigurator` implementation
 as shown in the following example:
@@ -285,6 +299,7 @@ public class MyOptionConfigurator extends OptionConfigurator {
             .entity( Zoo.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
                 .associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION )
+                .mapStorage( MapStorageType.ASLIST )
                 .property( "animals", ElementType.FIELD )
                     .associationStorage( AssociationStorageType.IN_ENTITY )
             .entity( Animal.class )
@@ -1270,6 +1285,7 @@ Like crossing streams, it is bad form.
 This approach might not be supported in the future.
 ====
 
+[[mongodb-associations]]
 ==== Associations
 
 Hibernate OGM MongoDB proposes three strategies to store navigation information for associations.
@@ -1855,7 +1871,7 @@ Product collection
 ----
 ====
 
-A map can be used to represents an association,
+A map can be used to represent an association,
 in this case Hibernate OGM will store the key of the map
 and the associated id.
 
@@ -1894,12 +1910,8 @@ User collection as JSON in MongoDB
   "_id" : "user_001",
   "addresses" : [
     {
-      "addresses_KEY" : "work",
-      "addresses_id" : "address_001"
-    },
-    {
-      "addresses_KEY" : "home",
-      "addresses_id" : "address_002"
+      "work" : "address_001",
+      "home" : "address_002"
     }
   ]
 }
@@ -1914,7 +1926,15 @@ Address collection as JSON in MongoDB
 ----
 ====
 
-You can use @MapKeyColumn to rename the column containing the key of the map.
+If the map value cannot be represented by a single field (e.g. when referencing a type with a composite id
+or using an embeddable type as map value type),
+a sub-document containing all the required fields will be stored as value.
+
+If the map key either is not of type `String` or it is made up of several columns (composite map key),
+the optimized structure shown in the example above cannot be used as MongoDB only allows for Strings as field names.
+In that case the association will be represented by a list of sub-documents, also containing the map key column(s).
+You can use `@MapKeyColumn` to rename the field containing the key of the map,
+otherwise it will default to "<%COLLECTION_ROLE%>_KEY", e.g. "addresses_KEY".
 
 .Unidirectional one-to-many using maps with @MapKeyColumn
 ====
@@ -1928,7 +1948,7 @@ public class User {
 
     @OneToMany
     @MapKeyColumn(name = "addressType")
-    private Map<String, Address> addresses = new HashMap<String, Address>();
+    private Map<Long, Address> addresses = new HashMap<Long, Address>();
 
     // getters, setters ...
 }
@@ -1952,11 +1972,11 @@ User collection as JSON in MongoDB
   "_id" : "user_001",
   "addresses" : [
     {
-      "addressType" : "work",
+      "addressType" : 1,
       "addresses_id" : "address_001"
     },
     {
-      "addressType" : "home",
+      "addressType" : 2,
       "addresses_id" : "address_002"
     }
   ]
@@ -1971,6 +1991,10 @@ Address collection as JSON in MongoDB
 { "_id" : "address_002", "city" : "Paris" }
 ----
 ====
+
+In case you want to enforce the list-style represention also for maps with a single key column of type `String`
+(e.g. when reading back data persisted by earlier versions of Hibernate OGM),
+you can use the option `hibernate.ogm.datastore.document.map_storage` to do so.
 
 .Unidirectional many-to-many using in entity strategy
 ====
@@ -2965,7 +2989,6 @@ Associations collection
 }
 ----
 ====
-
 
 === Transactions
 
