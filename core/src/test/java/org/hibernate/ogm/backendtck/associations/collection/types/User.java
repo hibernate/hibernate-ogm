@@ -21,6 +21,8 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.ogm.datastore.document.options.MapStorage;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -31,6 +33,7 @@ public class User {
 	private Map<String, Address> addresses = new HashMap<String, Address>();
 	private Map<String, PhoneNumber> phoneNumbers = new HashMap<>();
 	private Map<Integer, PhoneNumber> phoneNumbersByPriority = new HashMap<>();
+	private Map<String, PhoneNumber> alternativePhoneNumbers = new HashMap<>();
 	private Set<String> nicknames = new HashSet<String>();
 
 	@Id
@@ -62,6 +65,17 @@ public class User {
 
 	public void setPhoneNumbers(Map<String, PhoneNumber> phoneNumbers) {
 		this.phoneNumbers = phoneNumbers;
+	}
+
+	@OneToMany
+	@MapStorage(MapStorageType.AS_LIST)
+	@MapKeyColumn(name = "phoneType")
+	public Map<String, PhoneNumber> getAlternativePhoneNumbers() {
+		return alternativePhoneNumbers;
+	}
+
+	public void setAlternativePhoneNumbers(Map<String, PhoneNumber> alternativePhoneNumbers) {
+		this.alternativePhoneNumbers = alternativePhoneNumbers;
 	}
 
 	@OneToMany

@@ -8,18 +8,24 @@ package org.hibernate.ogm.datastore.mongodb.test.associations;
 
 import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
 
+import java.lang.annotation.ElementType;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.backendtck.associations.collection.types.Address;
 import org.hibernate.ogm.backendtck.associations.collection.types.Department;
 import org.hibernate.ogm.backendtck.associations.collection.types.Enterprise;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.PhoneNumberId;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
+import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 /**
@@ -74,6 +80,114 @@ public class MapMappingTest extends OgmTestCase {
 
 		tx.commit();
 		session.close();
+
+		checkCleanCache();
+	}
+
+	@Test
+	public void testMapOfEntityUsingListStrategy() throws Exception {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		PhoneNumber home = new PhoneNumber( new PhoneNumberId( "DE", 123 ), "Home Phone" );
+		PhoneNumber work = new PhoneNumber( new PhoneNumberId( "EN", 456 ), "Work Phone" );
+		User user = new User();
+		user.getAlternativePhoneNumbers().put( "home", home );
+		user.getAlternativePhoneNumbers().put( "work", work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		// Then
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"User",
+				// query
+				"{ '_id' : '" + user.getId() + "' }",
+				// expected
+				"{ " +
+					"'_id' : '" + user.getId() + "', " +
+					"'alternativePhoneNumbers' : [" +
+						"{ 'phoneType' : 'home', 'countryCode' : 'DE', 'number'  : 123 }," +
+						"{ 'phoneType' : 'work', 'countryCode' : 'EN', 'number'  : 456 }" +
+					"]" +
+				"}"
+		);
+
+		// clean-up
+		user = (User) session.get( User.class, user.getId() );
+		session.delete( user );
+		session.delete( session.load( PhoneNumber.class, home.getId() ) );
+		session.delete( session.load( PhoneNumber.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
+
+		checkCleanCache();
+	}
+
+	@Test
+	public void testMapOfEntityUsingListStrategyConfiguredViaOptionApi() throws Exception {
+		OgmConfiguration cfg = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( cfg ) )
+			.entity( User.class )
+				.property( "addresses", ElementType.METHOD )
+					.mapStorage( MapStorageType.AS_LIST );
+
+		OgmSessionFactory sessionFactory = cfg.buildSessionFactory();
+		OgmSession session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+
+		Address home = new Address();
+		home.setCity( "Paris" );
+		Address work = new Address();
+		work.setCity( "San Francisco" );
+		User user = new User();
+		user.getAddresses().put( "home", home );
+		user.getAddresses().put( "work", work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"User",
+				// query
+				"{ '_id' : '" + user.getId() + "' }",
+				// expected
+				"{ " +
+					"'_id' : '" + user.getId() + "', " +
+					"'addresses' : [" +
+						"{ 'addressType' : 'home', 'addresses_id' : '" + home.getId() + "' }," +
+						"{ 'addressType' : 'work', 'addresses_id' : '" + work.getId() + "' }" +
+					"]" +
+				"}"
+		);
+
+		// clean-up
+		user = (User) session.get( User.class, user.getId() );
+		session.delete( user );
+		session.delete( session.load( Address.class, home.getId() ) );
+		session.delete( session.load( Address.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
+		sessionFactory.close();
 
 		checkCleanCache();
 	}
