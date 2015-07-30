@@ -7,8 +7,6 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,10 +27,14 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.json.JSONException;
+import org.skyscreamer.jsonassert.JSONCompare;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.JSONCompareResult;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
@@ -267,64 +269,24 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String projectionDbObject, String expectedDbObject) {
 		DBObject finder = (DBObject) JSON.parse( queryDbObject );
 		DBObject fields = projectionDbObject != null ? (DBObject) JSON.parse( projectionDbObject ) : null;
-		DBObject expected = (DBObject) JSON.parse( expectedDbObject );
 
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder, fields );
 
-		assertThat( isDBObjectAndContentEqual( actual, expected ) ).describedAs( "Expected: " + expected + " but was: " + actual ).isTrue();
+		assertJsonEquals( expectedDbObject, actual.toString() );
 	}
 
-	/*
-	 * Do a manual equals of each element in the DBObjects.
-	 * In particular, ignores the indexes of arrays and compare their content only.
-	 */
-	private static boolean isDBObjectAndContentEqual(Object left, Object right) {
-		if ( left instanceof BasicDBList ) {
-			if ( ! ( right instanceof BasicDBList ) ) {
-				return false;
-			}
-			// we don't care about the order here for now
-			BasicDBList leftAsList = (BasicDBList) left;
-			BasicDBList rightAsList = (BasicDBList) right;
-			// check that the fields names are the same
-			Set<String> leftFields = new HashSet<String>( leftAsList.keySet() );
-			Set<String> rightFields = new HashSet<String>( rightAsList.keySet() );
-			if ( ! leftFields.equals( rightFields ) ) {
-				return false;
-			}
-			// check that all left field values are in right
-			for ( String field : leftFields ) {
-				// fall back to native equals via the contains. It is out of our current tests
-				if ( ! rightAsList.contains( leftAsList.get( field ) ) ) {
-					return false;
-				}
+	private static void assertJsonEquals(String expectedJson, String actualJson) {
+		try {
+			JSONCompareResult result = JSONCompare.compareJSON( expectedJson, actualJson, JSONCompareMode.NON_EXTENSIBLE );
+
+			if ( result.failed() ) {
+				throw new AssertionError(result.getMessage() + "; Actual: " + actualJson);
 			}
 		}
-		else if ( left instanceof DBObject ) {
-			if ( ! ( right instanceof DBObject ) ) {
-				return false;
-			}
-			DBObject leftAsDBObject = (DBObject) left;
-			DBObject rightAsDBObject = (DBObject) right;
-			// check that the fields names are the same
-			Set<String> leftFields = new HashSet<String>( leftAsDBObject.keySet() );
-			Set<String> rightFields = new HashSet<String>( rightAsDBObject.keySet() );
-			if ( ! leftFields.equals( rightFields ) ) {
-				return false;
-			}
-			// check that all left fields are in right and equal
-			for ( String field : leftFields ) {
-				boolean matches = isDBObjectAndContentEqual( leftAsDBObject.get( field ), rightAsDBObject.get( field ) );
-				if ( ! matches ) {
-					return false;
-				}
-			}
+		catch (JSONException e) {
+			Exceptions.<RuntimeException>sneakyThrow( e );
 		}
-		else {
-			return left == right || ( left != null && left.equals( right ) );
-		}
-		return true;
 	}
 
 	@Override
