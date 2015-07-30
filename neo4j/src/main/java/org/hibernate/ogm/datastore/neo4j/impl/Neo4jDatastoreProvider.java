@@ -9,8 +9,6 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
@@ -18,12 +16,13 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
-import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jTransactionFactory;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -107,7 +106,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 	}
 
 	@Override
-	public TransactionFactory<?> wrapTransactionFactory(TransactionFactory<?> transactionFactory) {
-		return new Neo4jTransactionFactory( transactionFactory, this, registry.getService( JtaPlatform.class ) );
+	public TransactionCoordinatorBuilder wrapTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder ) {
+		return new Neo4jTransactionCoordinatorBuilder( coordinatorBuilder, this );
 	}
 }
