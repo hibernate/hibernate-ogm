@@ -21,7 +21,6 @@ import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
-import org.hibernate.ogm.datastore.redis.options.EntityStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
@@ -58,7 +57,8 @@ public class RedisTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
 		RedisDialect gridDialect = getGridDialect( castProvider );
-		Entity entity = gridDialect.getEntityStorageStrategy( EntityStorageType.JSON ).getEntity(
+
+		Entity entity = gridDialect.getEntityStorageStrategy().getEntity(
 				gridDialect.entityId(
 						key
 				)
