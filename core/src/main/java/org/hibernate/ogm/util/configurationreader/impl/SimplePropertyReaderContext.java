@@ -52,6 +52,12 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 		else if ( targetType == Integer.class ) {
 			typedValue = (T) getAsInteger();
 		}
+		else if ( targetType == long.class ) {
+			typedValue = (T) getAsLong();
+		}
+		else if ( targetType == Long.class ) {
+			typedValue = (T) getAsLong();
+		}
 		else if ( targetType.isEnum() ) {
 			typedValue = (T) getAsEnum();
 		}
@@ -100,6 +106,26 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 			}
 			catch (NumberFormatException e) {
 				throw log.notAnInteger( getPropertyName(), configuredValue.toString() );
+			}
+		}
+	}
+
+	private Long getAsLong() {
+		Object configuredValue = getConfiguredValue();
+
+		if ( StringHelper.isNullOrEmptyString( configuredValue ) ) {
+			return (Long) getDefaultValue();
+		}
+		else if ( configuredValue instanceof Number ) {
+			return ( (Number) configuredValue ).longValue();
+		}
+		else {
+			try {
+				String stringValue = configuredValue.toString().trim();
+				return Long.valueOf( stringValue );
+			}
+			catch (NumberFormatException e) {
+				throw log.notALong( getPropertyName(), configuredValue.toString() );
 			}
 		}
 	}

@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +20,11 @@ import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlob
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
+
 import org.junit.After;
 import org.junit.Test;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for configuring the different association storage modes via the option API.
