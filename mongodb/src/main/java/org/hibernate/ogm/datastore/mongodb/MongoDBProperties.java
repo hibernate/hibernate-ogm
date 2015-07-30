@@ -56,11 +56,6 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	public static final String READ_PREFERENCE = "hibernate.ogm.mongodb.read_preference";
 
 	/**
-	 * The timeout used at the connection to the MongoDB instance. This value is set in milliseconds. Defaults to 5000.
-	 */
-	public static final String TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
-
-	/**
 	 * Configuration property for specifying how to store association documents. Only applicable if
 	 * {@link DocumentStoreProperties#ASSOCIATIONS_STORE} is set to {@link AssociationStorageType#ASSOCIATION_DOCUMENT}.
 	 * Supported values are the {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType} enum or the String representations of its constants.
@@ -77,6 +72,13 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 * @see com.mongodb.MongoCredential
 	 */
 	public static final String AUTHENTICATION_MECHANISM = "hibernate.ogm.mongodb.authentication_mechanism";
+
+	/**
+	 * Property prefix for MongoDB driver settings which needs to be passed on to the driver. Refer to
+	 * the options of {@link com.mongodb.MongoClientOptions.Builder} for a list of available properties.
+	 * All string, int and boolean builder methods can be configured, eg {@code hibernate.ogm.mongodb.driver.maxWaitTime = 1000}.
+	 */
+	public static final String MONGO_DRIVER_SETTINGS_PREFIX = "hibernate.ogm.mongodb.driver";
 
 	private MongoDBProperties() {
 	}

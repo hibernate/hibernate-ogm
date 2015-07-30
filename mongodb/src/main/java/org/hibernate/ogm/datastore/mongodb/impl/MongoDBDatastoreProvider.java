@@ -6,10 +6,16 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -30,13 +36,6 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.MongoException;
-import com.mongodb.ServerAddress;
-
 /**
  * Provides access to a MongoDB instance
  *
@@ -44,8 +43,6 @@ import com.mongodb.ServerAddress;
  * @author Gunnar Morling
  */
 public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
-
-	private static final int AUTHENTICATION_FAILED_CODE = 18;
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -136,9 +133,6 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 					? new MongoClient( serverAddresses, clientOptions )
 					: new MongoClient( serverAddresses, credentials, clientOptions );
 		}
-		catch (UnknownHostException e) {
-			throw log.mongoOnUnknownHost( config.toString() );
-		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
 		}
@@ -185,12 +179,10 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			return mongo.getDB( databaseName );
 		}
 		catch (MongoException me) {
-			switch ( me.getCode() ) {
-				case AUTHENTICATION_FAILED_CODE:
-					throw log.authenticationFailed( config.getUsername() );
-				default:
-					throw log.unableToConnectToDatastore( config.getHosts().toString(), me );
-			}
+			// The Mongo driver allows not to determine the cause of the error, eg failing authentication, anymore
+			// by error code. At best the message contains some more information.
+			// See also http://stackoverflow.com/questions/30455152/check-mongodb-authentication-with-java-3-0-driver
+			throw log.unableToConnectToDatastore( me.getMessage(), me );
 		}
 	}
 }
