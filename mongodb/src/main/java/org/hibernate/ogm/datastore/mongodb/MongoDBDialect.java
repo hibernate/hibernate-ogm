@@ -24,9 +24,12 @@ import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
@@ -519,12 +522,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * <li>A list of {@code DBObject}s with keys/values for all row key columns which are not part of the association
 	 * key</li>
 	 * <li>A {@link DBObject} with a key for each entry in case the given association has exactly one row key column
-	 * which is of type {@code String} (e.g. a hash map). The map values will either be plain values (in case it's
-	 * single values) or another {@code DBObject}.
+	 * which is of type {@code String} (e.g. a hash map) and {@link DocumentStoreProperties#MAP_STORAGE} is not set to
+	 * {@link MapStorageType#AS_LIST}. The map values will either be plain values (in case it's single values) or
+	 * another {@code DBObject}.
 	 * </ul>
 	 */
-	private Object getAssociationRows(Association association, AssociationKey key) {
-		boolean organizeByRowKey = organizeByRowKey( association, key );
+	private Object getAssociationRows(Association association, AssociationKey key, AssociationContext associationContext) {
+		boolean organizeByRowKey = organizeByRowKey( association, key, associationContext );
 
 		// transform map entries such as ( addressType='home', address_id=123) into the more
 		// natural ( { 'home'=123 }
@@ -564,7 +568,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Whether the rows of the given association should be stored in a hash using the single row key column as key or
 	 * not.
 	 */
-	private boolean organizeByRowKey(Association association, AssociationKey key) {
+	private boolean organizeByRowKey(Association association, AssociationKey key, AssociationContext associationContext) {
 		if ( association.isEmpty() ) {
 			return false;
 		}
@@ -576,7 +580,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Object valueOfFirstRow = association.get( association.getKeys().iterator().next() )
 				.get( key.getMetadata().getRowKeyIndexColumnNames()[0] );
 
-		return valueOfFirstRow instanceof String;
+		// TODO We may relax this to other single-column key types by conversion through grid type
+		if ( !( valueOfFirstRow instanceof String ) ) {
+			return false;
+		}
+
+		// The list style may be explicitly enforced for compatability reasons
+		return getMapStorage( associationContext ) == MapStorageType.BY_KEY;
 	}
 
 	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
@@ -626,7 +636,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
-		Object rows = getAssociationRows( association, key );
+		Object rows = getAssociationRows( association, key, associationContext );
 		Object toStore = key.getMetadata().isOneToOne() ? ( (List<?>) rows ).get( 0 ) : rows;
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
@@ -912,6 +922,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return AssociationStorageStrategy.getInstance( keyMetadata, associationStorage, associationDocumentStorageType );
 	}
 
+
+	private MapStorageType getMapStorage(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( MapStorageOption.class );
+	}
+
 	@Override
 	public void executeBatch(OperationsQueue queue) {
 		if ( !queue.isClosed() ) {
@@ -994,7 +1009,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
 				BatchInsertionTask insertTask = getOrCreateBatchInsertionTask( inserts, associationKey.getEntityKey().getMetadata(), collection, writeConcern );
 				DBObject documentForInsertion = insertTask.get( associationKey.getEntityKey() );
-				Object embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
+				Object embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey(), updateOp.getContext() );
 				String collectionRole = associationKey.getMetadata().getCollectionRole();
 				MongoHelpers.setValue( documentForInsertion, collectionRole, embeddedElements );
 			}

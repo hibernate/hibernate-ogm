@@ -273,6 +273,43 @@ public class MapTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testMapWithStringKeyButListStyleEnforced() throws Exception {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		PhoneNumber home = new PhoneNumber( new PhoneNumberId( "DE", 123 ), "Home Phone" );
+		PhoneNumber work = new PhoneNumber( new PhoneNumberId( "EN", 456 ), "Work Phone" );
+		User user = new User();
+		user.getAlternativePhoneNumbers().put( "home", home );
+		user.getAlternativePhoneNumbers().put( "work", work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+
+		user = (User) session.get( User.class, user.getId() );
+		assertThat( user.getAlternativePhoneNumbers().get( "home" ) ).isNotNull();
+		assertThat( user.getAlternativePhoneNumbers().get( "home" ).getId() ).isEqualTo( new PhoneNumberId( "DE", 123 ) );
+		assertThat( user.getAlternativePhoneNumbers().get( "work" ) ).isNotNull();
+		assertThat( user.getAlternativePhoneNumbers().get( "work" ).getId() ).isEqualTo( new PhoneNumberId( "EN", 456 ) );
+		assertThat( user.getAlternativePhoneNumbers() ).hasSize( 2 );
+
+		// clean-up
+		user = (User) session.get( User.class, user.getId() );
+		session.delete( user );
+		session.delete( session.load( PhoneNumber.class, home.getId() ) );
+		session.delete( session.load( PhoneNumber.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { User.class, Address.class, PhoneNumber.class, Enterprise.class };

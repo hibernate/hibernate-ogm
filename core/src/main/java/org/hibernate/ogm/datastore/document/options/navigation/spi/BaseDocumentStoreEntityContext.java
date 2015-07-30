@@ -7,9 +7,11 @@
 package org.hibernate.ogm.datastore.document.options.navigation.spi;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.options.navigation.spi.BaseEntityContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
@@ -28,6 +30,16 @@ public abstract class BaseDocumentStoreEntityContext<E extends DocumentStoreEnti
 	@Override
 	public E associationStorage(AssociationStorageType associationStorage) {
 		addEntityOption( new AssociationStorageOption(), associationStorage );
+
+		// ok; an error would only occur for inconsistently defined context types
+		@SuppressWarnings("unchecked")
+		E context = (E) this;
+		return context;
+	}
+
+	@Override
+	public E mapStorage(MapStorageType mapStorage) {
+		addEntityOption( new MapStorageOption(), mapStorage );
 
 		// ok; an error would only occur for inconsistently defined context types
 		@SuppressWarnings("unchecked")
