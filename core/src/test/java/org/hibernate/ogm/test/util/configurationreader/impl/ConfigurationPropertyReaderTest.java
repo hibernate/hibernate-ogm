@@ -328,6 +328,26 @@ public class ConfigurationPropertyReaderTest {
 				.getValue();
 	}
 
+	@Test
+	public void unspecifiedBooleanOptionRetrievedAsBooleanWrapperTypeReturnsNull() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		Boolean value = reader.property( "foo", Boolean.class ).getValue();
+		assertThat( value ).isEqualTo( null );
+	}
+
+	@Test
+	public void unspecifiedBooleanOptionRetrievedAsPrimitiveBooleanReturnsFalse() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		Boolean value = reader.property( "foo", boolean.class ).getValue();
+		assertThat( value ).isEqualTo( false );
+	}
+
 	private Properties loadPropertiesFromUrl(URL value) throws IOException {
 		Properties properties = new Properties();
 		InputStream stream = null;
