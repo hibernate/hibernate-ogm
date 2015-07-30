@@ -27,13 +27,9 @@ import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnap
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
-import org.hibernate.ogm.datastore.redis.impl.EntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
-import org.hibernate.ogm.datastore.redis.impl.hash.ExperimentalHashEntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonEntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
-import org.hibernate.ogm.datastore.redis.options.EntityStorageType;
-import org.hibernate.ogm.datastore.redis.options.impl.EntityStorageOption;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -76,18 +72,13 @@ public class RedisDialect extends BaseGridDialect {
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";
 
-	protected final Map<EntityStorageType, EntityStorageStrategy> entityStorageStrategies;
+	protected final JsonEntityStorageStrategy entityStorageStrategy;
 	private final RedisConnection<byte[], byte[]> connection;
 	private final JsonSerializationStrategy serializationStrategy = new JsonSerializationStrategy();
 
 	public RedisDialect(RedisDatastoreProvider provider) {
 		this.connection = provider.getConnection();
-
-		Map<EntityStorageType, EntityStorageStrategy> strategies = new HashMap<>();
-		strategies.put( EntityStorageType.JSON, new JsonEntityStorageStrategy( serializationStrategy, connection ) );
-		strategies.put( EntityStorageType.HASH, new ExperimentalHashEntityStorageStrategy( connection ) );
-
-		this.entityStorageStrategies = Collections.unmodifiableMap( strategies );
+		this.entityStorageStrategy = new JsonEntityStorageStrategy( serializationStrategy, connection );
 	}
 
 	/**
@@ -111,7 +102,7 @@ public class RedisDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		Entity entity = getEntity( key, tupleContext.getOptionsContext() );
+		Entity entity = getEntity( key );
 		if ( entity != null ) {
 			return new Tuple( new RedisTupleSnapshot( entity.getProperties() ) );
 		}
@@ -165,18 +156,6 @@ public class RedisDialect extends BaseGridDialect {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( TTLOption.class );
 	}
 
-	protected EntityStorageStrategy getEntityStorageStrategy(OptionsContext optionsContext) {
-		EntityStorageType entitiyStorage = optionsContext.getUnique(
-				EntityStorageOption.class
-		);
-
-		return getEntityStorageStrategy( entitiyStorage );
-	}
-
-	public EntityStorageStrategy getEntityStorageStrategy(EntityStorageType entitiyStorage) {
-		return entityStorageStrategies.get( entitiyStorage );
-	}
-
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		byte[] key = identifierId( request.getKey() );
@@ -208,7 +187,6 @@ public class RedisDialect extends BaseGridDialect {
 
 				for ( byte[] key : cursor.getKeys() ) {
 					String type = connection.type( key );
-					EntityStorageStrategy entityStorageStrategy = getEntityStorageStrategy( type );
 					Entity document = entityStorageStrategy.getEntity( key );
 
 					addKeyValuesFromKeyName( entityKeyMetadata, prefixBytes, key, document );
@@ -266,10 +244,6 @@ public class RedisDialect extends BaseGridDialect {
 
 	}
 
-	private EntityStorageStrategy getEntityStorageStrategy(String type) {
-		return entityStorageStrategies.get( EntityStorageType.forType( type ) );
-	}
-
 	@Override
 	public org.hibernate.ogm.model.spi.Association getAssociation(
 			AssociationKey key,
@@ -278,8 +252,7 @@ public class RedisDialect extends BaseGridDialect {
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			Entity owningEntity = getEntity(
-					key.getEntityKey(),
-					associationContext
+					key.getEntityKey()
 			);
 
 			if ( owningEntity != null && owningEntity.getProperties().containsKey(
@@ -307,13 +280,13 @@ public class RedisDialect extends BaseGridDialect {
 	public org.hibernate.ogm.model.spi.Association createAssociation(
 			AssociationKey key,
 			AssociationContext associationContext) {
-		RedisAssociation redisAssociation = null;
+		RedisAssociation redisAssociation;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			Entity owningEntity = getEntity(
-					key.getEntityKey(),
-					associationContext
+					key.getEntityKey()
 			);
+
 			if ( owningEntity == null ) {
 				owningEntity = storeEntity( key.getEntityKey(), new Entity(), associationContext );
 			}
@@ -403,9 +376,9 @@ public class RedisDialect extends BaseGridDialect {
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			Entity owningEntity = getEntity(
-					key.getEntityKey(),
-					associationContext
+					key.getEntityKey()
 			);
+
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
 				storeEntity( key.getEntityKey(), owningEntity, associationContext );
@@ -416,8 +389,8 @@ public class RedisDialect extends BaseGridDialect {
 		}
 	}
 
-	private Entity getEntity(EntityKey key, OptionsContext optionsContext) {
-		Entity entity = getEntityStorageStrategy( optionsContext ).getEntity( entityId( key ) );
+	private Entity getEntity(EntityKey key) {
+		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
 		if ( entity != null ) {
 			addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
 		}
@@ -425,7 +398,6 @@ public class RedisDialect extends BaseGridDialect {
 	}
 
 	private void addIdToEntity(Entity entity, String[] columnNames, Object[] columnValues) {
-
 		for ( int i = 0; i < columnNames.length; i++ ) {
 			entity.set( columnNames[i], columnValues[i] );
 		}
@@ -456,7 +428,7 @@ public class RedisDialect extends BaseGridDialect {
 
 		Long currentTtl = connection.pttl( entityId( key ) );
 
-		getEntityStorageStrategy( optionsContext ).storeEntity( entityId( key ), document, operations );
+		entityStorageStrategy.storeEntity( entityId( key ), document, operations );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
 	}
@@ -482,23 +454,10 @@ public class RedisDialect extends BaseGridDialect {
 		return association;
 	}
 
-	private Entity getEntity(EntityKey key, AssociationContext associationTypeContext) {
-		Entity entity = getEntityStorageStrategy(
-				associationTypeContext.getAssociationTypeContext()
-						.getOptionsContext()
-		).getEntity( entityId( key ) );
-
-		if ( entity != null ) {
-			addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
-		}
-
-		return entity;
-	}
-
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
 		Long currentTtl = connection.pttl( entityId( key ) );
 
-		getEntityStorageStrategy( associationContext.getAssociationTypeContext().getOptionsContext() ).storeEntity(
+		entityStorageStrategy.storeEntity(
 				entityId( key ),
 				entity,
 				null
@@ -591,11 +550,15 @@ public class RedisDialect extends BaseGridDialect {
 		return associationId;
 	}
 
+	public JsonEntityStorageStrategy getEntityStorageStrategy() {
+		return entityStorageStrategy;
+	}
+
 	/*
-	 * Construct a key based on the key columns:
-	 * Single key: Use the value as key
-	 * Multiple keys: Serialize the key using a JSON map.
-	 */
+			 * Construct a key based on the key columns:
+			 * Single key: Use the value as key
+			 * Multiple keys: Serialize the key using a JSON map.
+			 */
 	private byte[] keyToBytes(String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length == 1 ) {
 

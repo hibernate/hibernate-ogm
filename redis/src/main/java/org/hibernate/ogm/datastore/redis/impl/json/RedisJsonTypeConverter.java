@@ -11,8 +11,6 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonBlobType;
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonByteType;
-import org.hibernate.ogm.datastore.redis.impl.RedisJsonDoubleType;
-import org.hibernate.ogm.datastore.redis.impl.RedisJsonIntegerType;
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonLongType;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
@@ -42,9 +40,7 @@ public class RedisJsonTypeConverter {
 		conversion.put( StandardBasicTypes.TIME, Iso8601StringDateType.TIME );
 		conversion.put( StandardBasicTypes.TIMESTAMP, Iso8601StringDateType.DATE_TIME );
 		conversion.put( StandardBasicTypes.BYTE, RedisJsonByteType.INSTANCE );
-		conversion.put( StandardBasicTypes.INTEGER, RedisJsonIntegerType.INSTANCE );
 		conversion.put( StandardBasicTypes.LONG, RedisJsonLongType.INSTANCE );
-		conversion.put( StandardBasicTypes.DOUBLE, RedisJsonDoubleType.INSTANCE );
 		conversion.put( BinaryType.INSTANCE, RedisJsonBlobType.INSTANCE );
 		conversion.put( MaterializedBlobType.INSTANCE, RedisJsonBlobType.INSTANCE );
 		return conversion;
