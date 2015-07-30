@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.query.spi.QueryParserService;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 
 /**
  * Recommended base class for {@link DatastoreProvider} implementations.
@@ -33,7 +33,7 @@ public abstract class BaseDatastoreProvider implements DatastoreProvider {
 	}
 
 	@Override
-	public TransactionFactory<?> wrapTransactionFactory(TransactionFactory<?> transactionFactory) {
-		return transactionFactory;
+	public TransactionCoordinatorBuilder wrapTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder) {
+		return coordinatorBuilder;
 	}
 }

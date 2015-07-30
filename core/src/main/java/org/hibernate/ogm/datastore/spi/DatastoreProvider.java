@@ -6,10 +6,10 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.util.Experimental;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.service.Service;
 
 /**
@@ -63,10 +63,10 @@ public interface DatastoreProvider extends Service {
 	boolean allowsTransactionEmulation();
 
 	/**
-	 * Allows the {@link DatastoreProvider} to replace or wrap the existing {@link TransactionFactory}.
+	 * Allow the {@link DatastoreProvider} to replace/wrap the current {@link TransactionCoordinatorBuilder}.
 	 *
-	 * @param transactionFactory the current {@link TransactionFactory}
-	 * @return a wrapped {@link TransactionFactory}
+	 * @param coordinatorBuilder the current {@link TransactionCoordinatorBuilder}
+	 * @return the same {@link TransactionCoordinatorBuilder}, or a new one if database needs additional functionalities.
 	 */
-	TransactionFactory<?> wrapTransactionFactory(TransactionFactory<?> transactionFactory);
+	TransactionCoordinatorBuilder wrapTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder);
 }

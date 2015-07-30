@@ -47,11 +47,11 @@ public class OgmTransactionCoordinatorBuilderInitiator implements StandardServic
 	@Override
 	public TransactionCoordinatorBuilder initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		TransactionCoordinatorBuilder coordinatorBuilder = TransactionCoordinatorBuilderInitiator.INSTANCE.initiateService( configurationValues, registry );
+		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
 
 		// if the strategy is resource local we decide based on the dialect whether to actually use JTA or
 		// "emulated local transactions"
 		if ( !coordinatorBuilder.isJta() ) {
-			DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
 
 			// if the datastore does not support transactions it is enough to emulate them. In this case transactions
 			// are just used to scope a unit of work and to make sure that the appropriate flush event occurs
@@ -64,6 +64,7 @@ public class OgmTransactionCoordinatorBuilderInitiator implements StandardServic
 				coordinatorBuilder = new RollbackOnCommitFailureJtaTransactionCoordinatorBuilder( getDefaultBuilder( registry, "jta" ) );
 			}
 		}
+		coordinatorBuilder = datastoreProvider.wrapTransactionCoordinatorBuilder( coordinatorBuilder );
 
 		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
 
