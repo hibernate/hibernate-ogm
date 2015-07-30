@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.impl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -27,9 +25,7 @@ import org.hibernate.service.spi.Stoppable;
 
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
-import com.lambdaworks.redis.RedisException;
 import com.lambdaworks.redis.RedisURI;
-import com.lambdaworks.redis.codec.RedisCodec;
 
 import static com.lambdaworks.redis.RedisURI.Builder.redis;
 
@@ -44,41 +40,11 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		ServiceRegistryAwareService, Configurable {
 
 	private static final Log log = LoggerFactory.getLogger();
-	private static final RedisClient redisClient;
-
-	// RedisClient.connect accepting codec and RedisURI is private
-	private static final Method CONNECT_CODEC_URI;
-	private static final ByteArrayCodec CODEC = new ByteArrayCodec();
-
-	static {
-		redisClient = new RedisClient();
-		Runtime.getRuntime().addShutdownHook(
-				new Thread( "RedisClient-Shutdown-Hook" ) {
-					@Override
-					public void run() {
-						redisClient.shutdown( 100, 100, TimeUnit.MILLISECONDS );
-					}
-				}
-		);
-
-		try {
-			CONNECT_CODEC_URI = RedisClient.class.getDeclaredMethod( "connect", RedisCodec.class, RedisURI.class );
-			CONNECT_CODEC_URI.setAccessible( true );
-		}
-		catch (Exception e) {
-			throw new IllegalStateException(
-					"RedisClient does not have the private connect(RedisCodec, RedisURI) method. Beat up the developer.",
-					e
-			);
-		}
-	}
-
-
 	private ServiceRegistryImplementor serviceRegistry;
 
 	private RedisConfiguration config;
+	private RedisClient redisClient;
 	private RedisConnection<byte[], byte[]> connection;
-
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -116,9 +82,10 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 			}
 
 			builder.withTimeout( config.getTimeout(), TimeUnit.MILLISECONDS );
+			redisClient = new RedisClient( builder.build() );
 
 			log.connectingToRedis( config.getHosts().toString(), config.getTimeout() );
-			connection = connect( builder.build() );
+			connection = redisClient.connect( new ByteArrayCodec() );
 
 		}
 		catch (RuntimeException e) {
@@ -127,27 +94,14 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		}
 	}
 
-	private RedisConnection<byte[], byte[]> connect(RedisURI redisURI) {
-		try {
-			return (RedisConnection<byte[], byte[]>) CONNECT_CODEC_URI.invoke( redisClient, CODEC, redisURI );
-		}
-		catch (InvocationTargetException ite) {
-			if ( ite.getCause() instanceof RedisException ) {
-				throw (RedisException) ite.getCause();
-			}
-			throw new RedisException( ite.getCause() );
-		}
-		catch (IllegalAccessException e) {
-			throw new RedisException( e );
-		}
-	}
-
 	@Override
 	public void stop() {
 		if ( connection != null ) {
 			log.disconnectingFromRedis();
 			connection.close();
+			redisClient.shutdown( 100, 100, TimeUnit.MILLISECONDS );
 			connection = null;
+			redisClient = null;
 		}
 	}
 
