@@ -127,6 +127,7 @@
         <module>mongodb</module>
         <module>couchdb</module>
         <module>neo4j</module>
+        <module>redis</module>
     </modules>
 
     <profiles>
