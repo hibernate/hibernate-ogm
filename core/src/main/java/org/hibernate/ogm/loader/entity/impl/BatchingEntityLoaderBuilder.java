@@ -25,12 +25,6 @@ import org.hibernate.type.Type;
 
 /**
  * DO NOT CHANGE: this class is copied from ORM 5 and changes will be backported at some point
- * SPECIFIC CHANGES DONE:
- * - change getBuilder to use one implementation for now (to be undone)
- * - introduce the CoreBuilderContract
- * - change the buildLoader interface to optionally accept a BatchableEntityLoaderBuilder contract
- * - default CorBuildercontract implementation to the EntityLoader one.
- *
  *
  * The contract for building {@link UniqueEntityLoader} capable of performing batch-fetch loading.  Intention
  * is to build these instances, by first calling the static {@link #getBuilder}, and then calling the appropriate
@@ -42,22 +36,15 @@ import org.hibernate.type.Type;
  * @see org.hibernate.loader.BatchFetchStyle
  */
 public abstract class BatchingEntityLoaderBuilder {
-	// FIXME: Transform this method into a service initiator and have BatchingEntityLoader be a Service
+	// FIXME: Transform this method into a service initiator and have BatchingEntityLoader be a Service when migrating back to ORM
 	public static BatchingEntityLoaderBuilder getBuilder(SessionFactoryImplementor factory) {
-
-		switch ( factory.getSettings().getBatchFetchStyle() ) {
-			case PADDED: {
-				return PaddedBatchingEntityLoaderBuilder.INSTANCE;
-			}
-			case DYNAMIC: {
-				return DynamicBatchingEntityLoaderBuilder.INSTANCE;
-			}
-			default: {
-				return DynamicBatchingEntityLoaderBuilder.INSTANCE;
-				// return org.hibernate.loader.entity.plan.LegacyBatchingEntityLoaderBuilder.INSTANCE;
-//				return LegacyBatchingEntityLoaderBuilder.INSTANCE;
-			}
-		}
+		// Today, the MultigetGridDialect interface does not offer support for prepared statement / fixed size abtch queries
+		// Better use the dynamic batching in all cases until further notice
+		// TODO should we raise an info on ignoring this setting
+		// I don't see it being used much in practice and will probably annoy more than help
+		return DynamicBatchingEntityLoaderBuilder.INSTANCE;
+		// Unused implementation PaddedBatchingEntityLoaderBuilder.INSTANCE;
+		// but will be gone when we migrate the code back to ORM
 	}
 
 	/**
