@@ -6,15 +6,15 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.datastore;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.fail;
-import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
 import java.util.Map;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
@@ -26,21 +26,21 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.SkipByDatastoreProvider;
+import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceException;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Hardy Ferentschik
  */
 @RunWith(SkippableTestRunner.class)
 public class DatastoreInitializationTest {
@@ -54,34 +54,35 @@ public class DatastoreInitializationTest {
 	@Rule
 	public ExpectedException error = ExpectedException.none();
 
+	private Map<String, String> cfg;
+
+	@Before
+	public void setUp() {
+		cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "snafu" );
+		cfg.put( OgmProperties.USERNAME, "foo" );
+		cfg.put( OgmProperties.PASSWORD, "bar" );
+		cfg.put( "hibernate.ogm.mongodb.driver.serverSelectionTimeout", "1000" );
+	}
+
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testAuthentication() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
-		cfg.put( OgmProperties.PASSWORD, "test" );
+		error.expect( ServiceException.class );
+		error.expectMessage( "OGM000071" );
+		// the timeout exception thrown by the driver will actually contain some information about the authentication
+		// error. Obviously quite fragile. Might change
+		error.expectCause( hasMessage( containsString( "Exception authenticating" ) ) );
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
-
-		error.expect( ServiceException.class );
-		error.expectMessage( "OGM000071" );
-		//nested exception
-		error.expectCause( hasMessage( containsString( "OGM001213" ) ) );
-
 		provider.start();
 	}
 
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testDefaultAuthenticationMechanism() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
-		cfg.put( OgmProperties.PASSWORD, "test" );
-
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
@@ -93,10 +94,6 @@ public class DatastoreInitializationTest {
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testSCRAMSHA1AuthenticationMechanism() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
-		cfg.put( OgmProperties.PASSWORD, "test" );
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.SCRAM_SHA_1.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
@@ -104,16 +101,16 @@ public class DatastoreInitializationTest {
 		provider.configure( cfg );
 		provider.start();
 
-		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.SCRAM_SHA_1_MECHANISM );
+		assertThat(
+				provider.leakingClient.getCredentialsList()
+						.get( 0 )
+						.getMechanism()
+		).isEqualTo( MongoCredential.SCRAM_SHA_1_MECHANISM );
 	}
 
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testX509AuthenticationMechanism() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
-		cfg.put( OgmProperties.PASSWORD, "test" );
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.MONGODB_X509.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
@@ -121,16 +118,16 @@ public class DatastoreInitializationTest {
 		provider.configure( cfg );
 		provider.start();
 
-		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.MONGODB_X509_MECHANISM );
+		assertThat(
+				provider.leakingClient.getCredentialsList()
+						.get( 0 )
+						.getMechanism()
+		).isEqualTo( MongoCredential.MONGODB_X509_MECHANISM );
 	}
 
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testGSSAPIAuthenticationMechanism() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
-		cfg.put( OgmProperties.PASSWORD, "test" );
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.GSSAPI.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
@@ -138,16 +135,16 @@ public class DatastoreInitializationTest {
 		provider.configure( cfg );
 		provider.start();
 
-		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.GSSAPI_MECHANISM );
+		assertThat(
+				provider.leakingClient.getCredentialsList()
+						.get( 0 )
+						.getMechanism()
+		).isEqualTo( MongoCredential.GSSAPI_MECHANISM );
 	}
 
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testPlainAuthenticationMechanism() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
-		cfg.put( OgmProperties.PASSWORD, "test" );
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.PLAIN.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
@@ -155,16 +152,16 @@ public class DatastoreInitializationTest {
 		provider.configure( cfg );
 		provider.start();
 
-		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.PLAIN_MECHANISM );
+		assertThat(
+				provider.leakingClient.getCredentialsList()
+						.get( 0 )
+						.getMechanism()
+		).isEqualTo( MongoCredential.PLAIN_MECHANISM );
 	}
 
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testNotRecognizedAuthenticationMechanism() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( OgmProperties.DATABASE, "test" );
-		cfg.put( OgmProperties.HOST, "www.hibernate.org" );
-		cfg.put( OgmProperties.USERNAME, "notauser" );
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, "alhdfoiehfnl" );
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
@@ -181,7 +178,6 @@ public class DatastoreInitializationTest {
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testConnectionErrorWrappedInHibernateException() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.HOST, NON_EXISTENT_IP );
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
@@ -199,33 +195,20 @@ public class DatastoreInitializationTest {
 	@Test
 	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testConnectionTimeout() {
-		Map<String, Object> cfg = new HashMap<String, Object>();
-		cfg.put( MongoDBProperties.TIMEOUT, "30" );
 		cfg.put( OgmProperties.HOST, NON_EXISTENT_IP );
 		cfg.put( OgmProperties.DATABASE, "ogm_test_database" );
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
-
-		/*
-		 * To be sure, the test passes on slow / busy machines the hole
-		 * operation should not take more than 3 seconds.
-		  */
-		final long estimateSpentTime = 3L * 1000L * 1000L * 1000L;
 		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
 
-		Exception exception = null;
-		final long start = System.nanoTime();
-		try {
-			provider.start();
-		}
-		catch ( Exception e ) {
-			exception = e;
-			assertThat( System.nanoTime() - start ).isLessThanOrEqualTo( estimateSpentTime );
-		}
-		if ( exception == null ) {
-			fail( "The expected exception has not been raised, a MongoDB instance runs on " + NON_EXISTENT_IP );
-		}
+		error.expect( ServiceException.class );
+		error.expectMessage( "OGM000071" );
+		// the timeout exception thrown by the driver will actually contain some information about the authentication
+		// error. Obviously quite fragile. Might change
+		error.expectCause( hasMessage( containsString( "Timed out" ) ) );
+
+		provider.start();
 	}
 
 	private ServiceRegistryImplementor getServiceRegistry(Map<String, ?> cfg) {
@@ -255,7 +238,7 @@ public class DatastoreInitializationTest {
 			try {
 				super.start();
 			}
-			catch (Exception e) {
+			catch ( Exception e ) {
 			}
 		}
 	}

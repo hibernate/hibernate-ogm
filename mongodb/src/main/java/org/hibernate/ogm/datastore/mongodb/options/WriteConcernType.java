@@ -18,18 +18,6 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
  */
 public enum WriteConcernType {
 
-
-	/**
-	 * No exceptions are raised, even for network issues.
-	 *
-	 * This write concern has been deprecated. There is no replacement for this write concern.
-	 * The closest would be to use {@link #UNACKNOWLEDGED}, then catch and ignore any exceptions of type MongoSocketException.
-	 *
-	 * @deprecated This WriteConcern is no longer supported by MongoDB
-	 */
-	@Deprecated
-	ERRORS_IGNORED(null),
-
 	/**
 	 * Write operations that use this write concern will wait for acknowledgement from the primary server before
 	 * returning. Exceptions are raised for network issues, and server errors.
