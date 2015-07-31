@@ -199,7 +199,65 @@
                                     </artifactItems>
                                 </configuration>
                             </execution>
+
+                            <!-- TODO OGM-878; Copy CR 3 modules; Remove once on WildFly 10 Beta1 -->
+                            <execution>
+                                <id>copy-orm5-cr3</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.hibernate</groupId>
+                                            <artifactId>hibernate-core</artifactId>
+                                            <version>${hibernateVersion}</version>
+                                            <overWrite>false</overWrite>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.hibernate</groupId>
+                                            <artifactId>hibernate-entitymanager</artifactId>
+                                            <version>${hibernateVersion}</version>
+                                            <overWrite>false</overWrite>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.hibernate</groupId>
+                                            <artifactId>hibernate-envers</artifactId>
+                                            <version>${hibernateVersion}</version>
+                                            <overWrite>false</overWrite>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/wildfly-${version.wildfly}/modules/system/layers/base/org/hibernate/main</outputDirectory>
+                                    <overWriteReleases>false</overWriteReleases>
+                                    <overWriteSnapshots>true</overWriteSnapshots>
+                                </configuration>
+                            </execution>
                         </executions>
+                    </plugin>
+
+                    <!-- TODO OGM-878; Use CR 3 modules; Remove once on WildFly 10 Beta1 -->
+                    <plugin>
+                        <groupId>com.google.code.maven-replacer-plugin</groupId>
+                        <artifactId>replacer</artifactId>
+                        <version>1.5.3</version>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>replace</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <file>${project.build.directory}/wildfly-${version.wildfly}/modules/system/layers/base/org/hibernate/main/module.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <token>CR2</token>
+                                    <value>CR3</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
