@@ -13,8 +13,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.logging.Logger;
-
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.dialect.pagination.LimitHelper;
@@ -32,6 +30,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.loader.spi.AfterLoadAction;
 import org.hibernate.persister.entity.OuterJoinLoadable;
 import org.hibernate.pretty.MessageHelper;
+import org.jboss.logging.Logger;
 
 /**
  * DO NOT UPDATE: Copy of ORM code that will be backported
@@ -253,7 +252,8 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				return processResultSet( rs, queryParameters, session, false, null, maxRows, afterLoadActions );
 			}
 			finally {
-				session.getTransactionCoordinator().getJdbcCoordinator().release( st );
+				session.getJdbcCoordinator().getResourceRegistry().release( st );
+				session.getJdbcCoordinator().afterStatementExecution();
 			}
 		}
 	}

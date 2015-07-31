@@ -6,15 +6,17 @@
  */
 package org.hibernate.ogm.backendtck.batchfetching;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
+import java.util.Map;
 
 import org.fest.assertions.Assertions;
-
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.junit.Test;
-
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
@@ -22,11 +24,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.stat.Statistics;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard emmanuel@hibernate.org
@@ -81,8 +79,6 @@ public class BatchFetchingTest extends OgmTestCase {
 
 		cleanDataset( session, tower );
 		session.close();
-
-
 	}
 
 	@Test
@@ -94,7 +90,7 @@ public class BatchFetchingTest extends OgmTestCase {
 
 		// now read the tower and its floors to detect 1+n patterns;
 		session.beginTransaction();
-		tower = (Tower) session.get( Tower.class, tower.getId() );
+		tower = session.get( Tower.class, tower.getId() );
 
 		Statistics statistics = session.getSessionFactory().getStatistics();
 		statistics.setStatisticsEnabled( true );
@@ -123,7 +119,6 @@ public class BatchFetchingTest extends OgmTestCase {
 		}
 		cleanDataset( session, tower );
 		session.close();
-
 	}
 
 	private void cleanDataset(Session session, Tower tower) {
@@ -156,8 +151,8 @@ public class BatchFetchingTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
+	protected void configure(Map<String, Object> cfg) {
+		cfg.put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
