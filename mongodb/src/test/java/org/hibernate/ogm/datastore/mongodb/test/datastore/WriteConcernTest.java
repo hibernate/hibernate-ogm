@@ -109,7 +109,7 @@ public class WriteConcernTest {
 	public static class MultipleDataCenters extends com.mongodb.WriteConcern {
 
 		public MultipleDataCenters() {
-			super( "MultipleDataCenters", 0, false, true, false );
+			super( "MultipleDataCenters" );
 		}
 	}
 }

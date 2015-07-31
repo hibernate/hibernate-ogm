@@ -8,24 +8,15 @@ package org.hibernate.ogm.datastore.mongodb.options;
 
 import com.mongodb.WriteConcern;
 
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+
 /**
  * Write concern options for MongoDB. Represents the non-deprecated constants from {@link WriteConcern}.
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public enum WriteConcernType {
-
-
-	/**
-	 * No exceptions are raised, even for network issues.
-	 *
-	 * This write concern has been deprecated. There is no replacement for this write concern.
-	 * The closest would be to use {@link #UNACKNOWLEDGED}, then catch and ignore any exceptions of type MongoSocketException.
-	 *
-	 * @deprecated This WriteConcern is no longer supported by MongoDB
-	 */
-	@Deprecated
-	ERRORS_IGNORED(WriteConcern.ERRORS_IGNORED),
 
 	/**
 	 * Write operations that use this write concern will wait for acknowledgement from the primary server before
@@ -67,9 +58,11 @@ public enum WriteConcernType {
 	 */
 	CUSTOM( null );
 
+	private static Log log = LoggerFactory.getLogger();
+
 	private final WriteConcern writeConcern;
 
-	private WriteConcernType(WriteConcern writeConcern) {
+	WriteConcernType(WriteConcern writeConcern) {
 		this.writeConcern = writeConcern;
 	}
 
@@ -79,6 +72,11 @@ public enum WriteConcernType {
 	 * @return the {@link WriteConcern} associated with this enum value; {@code null} in the case of {@link #CUSTOM}.
 	 */
 	public WriteConcern getWriteConcern() {
+		if ( this.name().equals( "ERRORS_IGNORED" ) ) {
+			// Do a hard fail as we don't have a proper replacement
+			// Looks like the nicest thing to do to the user
+			throw log.writeConcernDeprecated( "ERRORS_IGNORED" );
+		}
 		return writeConcern;
 	}
 }

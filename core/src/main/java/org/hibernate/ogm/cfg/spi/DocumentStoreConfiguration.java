@@ -23,8 +23,6 @@ public abstract class DocumentStoreConfiguration {
 	 */
 	private static final String DEFAULT_HOST = "localhost";
 
-
-
 	private final Hosts hosts;
 	private final String databaseName;
 	private final String username;

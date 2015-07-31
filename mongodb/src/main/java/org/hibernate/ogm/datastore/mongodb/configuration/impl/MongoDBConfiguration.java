@@ -6,10 +6,18 @@
  */
 package org.hibernate.ogm.datastore.mongodb.configuration.impl;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.hibernate.HibernateException;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
+
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -20,41 +28,25 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
-
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
 
 /**
  * Configuration for {@link MongoDBDatastoreProvider}.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
+ * @author Hardy Ferentschik
  */
 public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
 
-	/**
-	 * The default value used to set the timeout during the connection to the MongoDB instance This value is set in
-	 * milliseconds.
-	 *
-	 * @see MongoDBProperties#TIMEOUT
-	 */
-	private static final int DEFAULT_TIMEOUT = 5000;
-
 	private static final int DEFAULT_PORT = 27017;
-
 	private static final Log log = LoggerFactory.getLogger();
 
-	private static final TimeoutValidator TIMEOUT_VALIDATOR = new TimeoutValidator();
-
-	private final int timeout;
 	private final WriteConcern writeConcern;
 	private final ReadPreference readPreference;
 	private final AuthenticationMechanismType authenticationMechanism;
+	private final ConfigurationPropertyReader propertyReader;
 
 	/**
 	 * Creates a new {@link MongoDBConfiguration}.
@@ -65,10 +57,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	public MongoDBConfiguration(ConfigurationPropertyReader propertyReader, OptionsContext globalOptions) {
 		super( propertyReader, DEFAULT_PORT );
 
-		this.timeout = propertyReader.property( MongoDBProperties.TIMEOUT, int.class )
-				.withDefault( DEFAULT_TIMEOUT )
-				.withValidator( TIMEOUT_VALIDATOR )
-				.getValue();
+		this.propertyReader = propertyReader;
 		this.authenticationMechanism = propertyReader.property( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.class )
 				.withDefault( AuthenticationMechanismType.BEST )
 				.getValue();
@@ -82,12 +71,62 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 * @return the {@link MongoClientOptions} corresponding to the {@link MongoDBConfiguration}
 	 */
 	public MongoClientOptions buildOptions() {
-		MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
+		MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder();
 
-		optionsBuilder.connectTimeout( timeout );
 		optionsBuilder.writeConcern( writeConcern );
 		optionsBuilder.readPreference( readPreference );
+
+		Map<String, Method> settingsMap = createSettingsMap();
+		for ( Map.Entry<String, Method> entry : settingsMap.entrySet() ) {
+			String setting = MongoDBProperties.MONGO_DRIVER_SETTINGS_PREFIX + "." + entry.getKey();
+			// we know that there is exactly one parameter
+			Class<?> type = entry.getValue().getParameterTypes()[0];
+
+			// for reflection purposes we need to deal with wrapper classes
+			if ( int.class.equals( type ) ) {
+				type = Integer.class;
+			}
+			if ( boolean.class.equals( type ) ) {
+				type = Boolean.class;
+			}
+
+			Object property = propertyReader.property( setting, type ).withDefault( null ).getValue();
+			if ( property == null ) {
+				continue;
+			}
+
+			Method settingMethod = entry.getValue();
+			try {
+				settingMethod.invoke( optionsBuilder, property );
+			}
+			catch ( InvocationTargetException | IllegalAccessException e ) {
+				throw log.unableToInvokeMethodViaReflection(
+						settingMethod.getDeclaringClass().getName(),
+						settingMethod.getName()
+				);
+			}
+		}
+
 		return optionsBuilder.build();
+	}
+
+	private Map<String, Method> createSettingsMap() {
+		Map<String, Method> settingsMap = new HashMap<>();
+
+		Method[] methods = MongoClientOptions.Builder.class.getDeclaredMethods();
+		for ( Method method : methods ) {
+			if ( method.getParameterTypes().length == 1 ) {
+				Class<?> parameterType = method.getParameterTypes()[0];
+				// we just care of string, int and boolean setters
+				if ( String.class.equals( parameterType )
+						|| int.class.equals( parameterType )
+						|| boolean.class.equals( parameterType ) ) {
+					settingsMap.put( method.getName(), method );
+				}
+			}
+		}
+
+		return settingsMap;
 	}
 
 	public List<MongoCredential> buildCredentials() {
@@ -101,15 +140,5 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 			);
 		}
 		return null;
-	}
-
-	private static class TimeoutValidator implements PropertyValidator<Integer> {
-
-		@Override
-		public void validate(Integer value) throws HibernateException {
-			if ( value < 0 ) {
-				throw log.mongoDBTimeOutIllegalValue( value );
-			}
-		}
 	}
 }
