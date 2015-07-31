@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.redis.options.navigation;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStorePropertyContext;
 
@@ -19,17 +18,6 @@ import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreProp
  */
 public interface RedisPropertyContext extends KeyValueStorePropertyContext<RedisEntityContext, RedisPropertyContext>,
 		DocumentStorePropertyContext<RedisEntityContext, RedisPropertyContext> {
-
-	/**
-	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is
-	 * set to {@link AssociationStorageType#ASSOCIATION_DOCUMENT}.
-	 *
-	 * @param associationStorageType the association type to be used when not configured on the entity or
-	 * property level
-	 *
-	 * @return this context, allowing for further fluent API invocations
-	 */
-	RedisPropertyContext associationStorage(AssociationStorageType associationStorageType);
 
 	/**
 	 * Specifies the TTL for keys. See also {@link org.hibernate.ogm.datastore.redis.options.TTL}
