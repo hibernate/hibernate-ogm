@@ -16,9 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.hibernate.LockMode;
-import org.hibernate.annotations.Immutable;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
@@ -48,7 +45,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 import com.lambdaworks.redis.KeyScanCursor;
@@ -66,7 +62,6 @@ import com.lambdaworks.redis.protocol.LettuceCharsets;
  *
  * @author Mark Paluch
  */
-@Immutable
 public class RedisDialect extends BaseGridDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
@@ -79,20 +74,6 @@ public class RedisDialect extends BaseGridDialect {
 	public RedisDialect(RedisDatastoreProvider provider) {
 		this.connection = provider.getConnection();
 		this.entityStorageStrategy = new JsonEntityStorageStrategy( serializationStrategy, connection );
-	}
-
-	/**
-	 * Redis essentially has no workable lock strategy
-	 *
-	 * @param lockable The persister for the entity to be locked.
-	 * @param lockMode The type of lock to be acquired.
-	 *
-	 * @return always null
-	 */
-	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		// Redis essentially has no workable lock strategy
-		return null;
 	}
 
 	@Override

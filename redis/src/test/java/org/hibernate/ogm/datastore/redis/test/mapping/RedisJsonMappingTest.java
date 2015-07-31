@@ -6,20 +6,19 @@
  */
 package org.hibernate.ogm.datastore.redis.test.mapping;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
-
+import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.lambdaworks.redis.RedisConnection;
-import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import static org.fest.assertions.Assertions.assertThat;
+import com.lambdaworks.redis.RedisConnection;
 
 /**
  * Base for tests.
@@ -102,7 +101,7 @@ public class RedisJsonMappingTest extends OgmTestCase {
 		String representation = new String( getConnection().get( "Donut:homers-donut".getBytes() ) );
 
 		// then
-		JSONAssert.assertEquals( "{\"alias\":\"pink-donut\",\"radius\":7.5,\"glaze\":2}", representation, JSONCompareMode.STRICT );
+		JSONAssert.assertEquals( "{'alias':'pink-donut','radius':7.5,'glaze':2}", representation, JSONCompareMode.STRICT );
 
 		session.close();
 	}
