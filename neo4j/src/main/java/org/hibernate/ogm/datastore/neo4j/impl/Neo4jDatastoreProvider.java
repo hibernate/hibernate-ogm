@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.boot.registry.selector.spi.StrategySelector;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
@@ -106,7 +107,12 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 	}
 
 	@Override
-	public TransactionCoordinatorBuilder wrapTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder ) {
-		return new Neo4jTransactionCoordinatorBuilder( coordinatorBuilder, this );
+	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder, StrategySelector strategySelector) {
+		if ( coordinatorBuilder.isJta() ) {
+			return new Neo4jTransactionCoordinatorBuilder( coordinatorBuilder, this );
+		}
+		else {
+			return new Neo4jTransactionCoordinatorBuilder( jdbcDefaultBuilder( strategySelector ), this );
+		}
 	}
 }

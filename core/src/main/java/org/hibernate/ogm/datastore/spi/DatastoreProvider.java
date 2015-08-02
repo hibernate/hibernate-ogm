@@ -6,9 +6,9 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.boot.registry.selector.spi.StrategySelector;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.query.spi.QueryParserService;
-import org.hibernate.ogm.util.Experimental;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.service.Service;
 
@@ -50,23 +50,11 @@ public interface DatastoreProvider extends Service {
 	Class<? extends SchemaDefiner> getSchemaDefinerType();
 
 	/**
-	 * Whether this underlying datastore allows emulation of transactions.
-	 *
-	 * When transaction emulation is used, transactions only demarcate a unit of work. The transaction emulation will
-	 * make sure that at commit time all required changes are flushed, but there are otherwise no true transaction,
-	 * in particular rollback, semantics.
-	 *
-	 * @return {@code true} if the underlying datastore allows transaction emulation, {@code false} otherwise.
-	 *
-	 */
-	@Experimental("This contract might evolve into something which differentiates in more detail various transactional capabilities (see OGM-763)")
-	boolean allowsTransactionEmulation();
-
-	/**
 	 * Allow the {@link DatastoreProvider} to replace/wrap the current {@link TransactionCoordinatorBuilder}.
 	 *
 	 * @param coordinatorBuilder the current {@link TransactionCoordinatorBuilder}
+	 * @param strategySelector provides access to default {@link TransactionCoordinatorBuilder}s
 	 * @return the same {@link TransactionCoordinatorBuilder}, or a new one if database needs additional functionalities.
 	 */
-	TransactionCoordinatorBuilder wrapTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder);
+	TransactionCoordinatorBuilder getTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder, StrategySelector strategySelector);
 }
