@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.transaction;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 import static org.junit.Assert.fail;
@@ -54,6 +55,8 @@ public class JtaRollbackTest extends Neo4jJpaTestCase {
 			fail( "Expected exception was not raised" );
 		}
 		catch (Exception e) {
+			// Entity already exists exception
+			assertThat( e.getCause().getMessage() ).matches( ".*OGM000067.*" );
 		}
 		em.close();
 
@@ -92,6 +95,12 @@ public class JtaRollbackTest extends Neo4jJpaTestCase {
 	@Test
 	// Neo4j is not an XAResource, and it will commit before the JTA transaction is committed.
 	// If something goes wrong after the Neo4j transaction has been closed, it won't be possible to rollback.
+	//
+	// Note that this test might fails for two reasons:
+	// 1) Neo4j participate correctly to the JTA transaction
+	// 2) The failure occurs before Neo4j has synchronized
+	//
+	// If one of these situations occurs you will need to udpate the test
 	public void testFailedRollback() throws Exception {
 		final Game game1 = new Game( "game-1", "Title 1" );
 		final Game game2 = new Game( "game-2", "Title 2" );
@@ -125,7 +134,8 @@ public class JtaRollbackTest extends Neo4jJpaTestCase {
 			fail( "Expected exception was not raised" );
 		}
 		catch (Exception e) {
-			System.out.println( e );
+			// Exception raise by a registered synchronisation
+			assertThat( e.getCause().getMessage() ).matches( ".*Don't panic.*" );
 		}
 		em.close();
 
