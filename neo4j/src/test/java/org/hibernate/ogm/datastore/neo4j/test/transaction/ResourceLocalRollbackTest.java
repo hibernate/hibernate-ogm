@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.transaction;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 import static org.junit.Assert.fail;
@@ -42,14 +43,15 @@ public class ResourceLocalRollbackTest extends Neo4jJpaTestCase {
 		em.getTransaction().commit();
 
 		em.getTransaction().begin();
-		em.joinTransaction();
 		try {
-			// This should generate an exception because we already have an entry with the same id in the db
+			// This should generate an exception because we already have an entity with the same id in the db
 			em.persist( new Game( game1.getId(), "New " + game1.getTitle() ) );
 			em.getTransaction().commit();
 			fail( "Expected exception was not raised" );
 		}
 		catch (Exception e) {
+			// Entity already exists exception
+			assertThat( e.getCause().getMessage() ).matches( ".*OGM000067.*" );
 		}
 		em.close();
 
