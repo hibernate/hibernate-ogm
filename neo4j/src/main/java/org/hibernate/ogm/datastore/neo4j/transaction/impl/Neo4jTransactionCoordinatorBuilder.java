@@ -14,7 +14,7 @@ import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
- * Builder for {@link Neo4jTransactionCoordinator}.
+ * Builder for {@link Neo4jJtaTransactionCoordinator}.
  *
  * @author Davide D'Alto
  */
@@ -30,7 +30,13 @@ public class Neo4jTransactionCoordinatorBuilder implements TransactionCoordinato
 
 	@Override
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, TransactionCoordinatorOptions options) {
-		return new Neo4jTransactionCoordinator( delegate.buildTransactionCoordinator( owner, options ), datastoreProvider );
+		TransactionCoordinator coordinator = delegate.buildTransactionCoordinator( owner, options );
+		if ( delegate.isJta() ) {
+			return new Neo4jJtaTransactionCoordinator( coordinator, datastoreProvider );
+		}
+		else {
+			return new Neo4jLocalTransactionCoordinator( coordinator, datastoreProvider );
+		}
 	}
 
 	@Override

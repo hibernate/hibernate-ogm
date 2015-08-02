@@ -16,7 +16,6 @@ import org.hibernate.ogm.compensation.ErrorHandler;
 import org.hibernate.ogm.compensation.impl.ErrorHandlerEnabledTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.transaction.emulated.impl.EmulatedLocalTransactionCoordinatorBuilder;
-import org.hibernate.ogm.transaction.jta.impl.RollbackOnCommitFailureJtaTransactionCoordinatorBuilder;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorBuilderInitiator;
@@ -48,26 +47,10 @@ public class OgmTransactionCoordinatorBuilderInitiator implements StandardServic
 	public TransactionCoordinatorBuilder initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		TransactionCoordinatorBuilder coordinatorBuilder = TransactionCoordinatorBuilderInitiator.INSTANCE.initiateService( configurationValues, registry );
 		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
-
-		// if the strategy is resource local we decide based on the dialect whether to actually use JTA or
-		// "emulated local transactions"
-		if ( !coordinatorBuilder.isJta() ) {
-
-			// if the datastore does not support transactions it is enough to emulate them. In this case transactions
-			// are just used to scope a unit of work and to make sure that the appropriate flush event occurs
-			boolean emulateTransactions = datastoreProvider.allowsTransactionEmulation();
-
-			if ( emulateTransactions ) {
-				coordinatorBuilder = new EmulatedLocalTransactionCoordinatorBuilder( getDefaultBuilder( registry, "jdbc" ) );
-			}
-			else {
-				coordinatorBuilder = new RollbackOnCommitFailureJtaTransactionCoordinatorBuilder( getDefaultBuilder( registry, "jta" ) );
-			}
-		}
-		coordinatorBuilder = datastoreProvider.wrapTransactionCoordinatorBuilder( coordinatorBuilder );
+		StrategySelector strategySelector = registry.getService( StrategySelector.class );
+		coordinatorBuilder = datastoreProvider.getTransactionCoordinatorBuilder( coordinatorBuilder, strategySelector );
 
 		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
-
 		return errorHandler != null ? new ErrorHandlerEnabledTransactionCoordinatorBuilder( coordinatorBuilder, errorHandler ) : coordinatorBuilder;
 	}
 
