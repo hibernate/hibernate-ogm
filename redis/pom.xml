@@ -150,7 +150,7 @@
                 </property>
             </activation>
             <properties>
-                <skipCassandraUnitTests>true</skipCassandraUnitTests>
+                <skipRedisUnitTests>true</skipRedisUnitTests>
             </properties>
             <build>
                 <plugins>
