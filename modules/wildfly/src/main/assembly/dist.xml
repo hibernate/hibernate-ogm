@@ -158,11 +158,6 @@
              <unpack>false</unpack>
              <includes>
                  <include>biz.paluch.redis:lettuce</include>
-                 <include>io.netty:netty-buffer</include>
-                 <include>io.netty:netty-codec</include>
-                 <include>io.netty:netty-common</include>
-                 <include>io.netty:netty-transport</include>
-                 <include>io.netty:netty-handler</include>
                  <include>org.apache.commons:commons-pool2</include>
               </includes>
        </dependencySet>
