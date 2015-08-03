@@ -167,7 +167,6 @@ public class RedisDialect extends BaseGridDialect {
 				}
 
 				for ( byte[] key : cursor.getKeys() ) {
-					String type = connection.type( key );
 					Entity document = entityStorageStrategy.getEntity( key );
 
 					addKeyValuesFromKeyName( entityKeyMetadata, prefixBytes, key, document );

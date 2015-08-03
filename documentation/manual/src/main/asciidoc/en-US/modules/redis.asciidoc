@@ -46,12 +46,8 @@ Let's see a few valid examples:
 +
 Listing multiple initial hosts for fault tolerance is not supported.
 The default value is `127.0.0.1:6379`. If left undefined, the default port is `6379`.
-hibernate.ogm.datastore.port::
-Deprecated: use `hibernate.ogm.datastore.host`.
-The port used by the Redis instance.
-The default value is `6379`.
 hibernate.ogm.datastore.database::
-The database number to connect to. If left undefined, the default port is `0`.
+The database number to connect to. If left undefined, the default number is `0`.
 Note that Redis databases are identified with a number from `0` to `16`.
 hibernate.ogm.datastore.password::
 The password used to connect to the Redis server.
