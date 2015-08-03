@@ -95,8 +95,8 @@
                         ${basedir}/../../infinispan/src/main/java;
                         ${basedir}/../../mongodb/src/main/java;
                         ${basedir}/../../neo4j/src/main/java;
-                        ${basedir}/../../couchdb/src/main/java
-                        ${basedir}/../../redis/src/main/java
+                        ${basedir}/../../couchdb/src/main/java;
+                        ${basedir}/../../redis/src/main/java;
                     </sourcepath>
                     <show>public</show>
                     <tags>
