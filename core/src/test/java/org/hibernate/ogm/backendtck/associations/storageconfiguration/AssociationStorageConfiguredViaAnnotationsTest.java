@@ -31,7 +31,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.CASSANDRA, GridDialectType.REDIS },
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.CASSANDRA },
 		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
 )
 public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationStorageTestBase {
