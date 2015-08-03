@@ -6,13 +6,15 @@
  */
 package org.hibernate.ogm.datastore.infinispan.test.initialize;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -50,10 +52,12 @@ public class WrongConfigurationBootTest {
 	 *            The Infinispan configuration resource to use to try booting OGM
 	 */
 	private void tryBoot(String configurationResourceName) {
-		Configuration cfg = new OgmConfiguration();
-		cfg.setProperty( OgmProperties.DATASTORE_PROVIDER, "infinispan" );
-		cfg.setProperty( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, configurationResourceName );
-		SessionFactory sessionFactory = cfg.buildSessionFactory();
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan" );
+		settings.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, configurationResourceName );
+
+		SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings );
+
 		if ( sessionFactory != null ) {
 			try {
 				// trigger service initialization, and also verifies it actually uses Infinispan:

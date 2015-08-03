@@ -8,7 +8,10 @@ package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -17,7 +20,6 @@ import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
@@ -40,11 +42,6 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	private Cloud cloud;
 
-	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
-	}
-
 	@Test
 	public void associationStorageSetToAssociationDocumentViaProperty() throws Exception {
 		setupSessionFactory();
@@ -56,10 +53,13 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	@Test
 	public void associationStorageSetViaApiTakesPrecedenceOverProperty() throws Exception {
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, getDocumentDatastoreConfiguration() )
 			.associationStorage( AssociationStorageType.IN_ENTITY );
 
-		setupSessionFactory();
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, Cloud.class, SnowFlake.class );
+
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -138,11 +138,10 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Cloud.class,
-				SnowFlake.class
-		};
+	private void setupSessionFactory() {
+		sessions = TestHelper.getDefaultTestSessionFactory(
+				Collections.<String, Object>singletonMap( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT ),
+				Cloud.class, SnowFlake.class
+		);
 	}
 }

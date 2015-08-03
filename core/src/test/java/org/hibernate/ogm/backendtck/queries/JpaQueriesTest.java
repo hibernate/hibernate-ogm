@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -162,11 +161,6 @@ public class JpaQueriesTest extends JpaTestCase {
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class<?>[] { Helicopter.class };
-	}
-
-	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "ram" );
 	}
 
 	private Helicopter helicopter(String name) {

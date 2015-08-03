@@ -35,7 +35,7 @@ public class HibernateCoreAPIWrappingTest {
 
 	@Test
 	public void testWrappedFromEntityManagerAPI() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getDefaultTestSettings() );
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
@@ -56,7 +56,7 @@ public class HibernateCoreAPIWrappingTest {
 
 	@Test
 	public void testJNDIReference() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getEnvironmentProperties() );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getDefaultTestSettings() );
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		Reference reference = factory.getReference();
 		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactoryImpl.class.getName() );

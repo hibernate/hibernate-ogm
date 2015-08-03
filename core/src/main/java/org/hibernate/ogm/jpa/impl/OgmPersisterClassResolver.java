@@ -7,7 +7,6 @@
 package org.hibernate.ogm.jpa.impl;
 
 import org.hibernate.mapping.Collection;
-import org.hibernate.metamodel.binding.PluralAttributeBinding;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
 import org.hibernate.ogm.persister.impl.UnionSubclassOgmEntityPersister;
@@ -40,11 +39,6 @@ public class OgmPersisterClassResolver extends StandardPersisterClassResolver im
 
 	@Override
 	public Class<? extends CollectionPersister> getCollectionPersisterClass(Collection metadata) {
-		return OgmCollectionPersister.class;
-	}
-
-	@Override
-	public Class<? extends CollectionPersister> getCollectionPersisterClass(PluralAttributeBinding metadata) {
 		return OgmCollectionPersister.class;
 	}
 }

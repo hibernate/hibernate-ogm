@@ -22,8 +22,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.SessionException;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
-import org.hibernate.cache.spi.CacheKey;
-import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.ActionQueue;
 import org.hibernate.engine.spi.EntityEntry;
@@ -55,7 +54,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ProcedureCall;
-import org.hibernate.type.Type;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
 
 /**
  * An OGM specific session implementation which delegate most of the work to the underlying Hibernate ORM {@code Session},
@@ -248,11 +247,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public CacheKey generateCacheKey(Serializable id, Type type, String entityOrRoleName) {
-		return delegate.generateCacheKey( id, type, entityOrRoleName );
-	}
-
-	@Override
 	public List<?> listCustomQuery(CustomQuery customQuery, QueryParameters queryParameters) throws HibernateException {
 		errorIfClosed();
 		checkTransactionSynchStatus();
@@ -380,7 +374,9 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	// Copied from org.hibernate.internal.SessionImpl.delayedAfterCompletion() to mimic same behaviour
 	private void delayedAfterCompletion() {
-		delegate.getTransactionCoordinator().getSynchronizationCallbackCoordinator().processAnyDelayedAfterCompletion();
+		if ( delegate.getTransactionCoordinator() instanceof JtaTransactionCoordinatorImpl ) {
+			( (JtaTransactionCoordinatorImpl) delegate.getTransactionCoordinator() ).getSynchronizationCallbackCoordinator().processAnyDelayedAfterCompletion();
+		}
 	}
 
 	public <G extends GlobalContext<?, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {

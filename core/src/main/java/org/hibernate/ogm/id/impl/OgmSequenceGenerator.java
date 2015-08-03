@@ -10,8 +10,9 @@ package org.hibernate.ogm.id.impl;
 import java.util.Properties;
 
 import org.hibernate.MappingException;
-import org.hibernate.cfg.ObjectNameNormalizer;
-import org.hibernate.dialect.Dialect;
+import org.hibernate.boot.model.relational.QualifiedName;
+import org.hibernate.boot.model.relational.QualifiedNameParser;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
@@ -23,6 +24,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 
 /**
@@ -71,14 +73,18 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	}
 
 	@Override
-	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
-		super.configure( type, params, dialect );
+	public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+		super.configure( type, params, serviceRegistry );
+		JdbcEnvironment jdbcEnvironment = serviceRegistry.getService( JdbcEnvironment.class );
 
 		this.type = type;
 		this.params = params;
-		sequenceName = determineSequenceName( params, dialect );
+		sequenceName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(
+				determineSequenceName( params, jdbcEnvironment ),
+				jdbcEnvironment.getDialect()
+		);
 		generatorKeyMetadata = DefaultIdSourceKeyMetadata.forSequence( sequenceName );
-		delegate = getDelegate( dialect );
+		delegate = getDelegate( serviceRegistry );
 	}
 
 	@Override
@@ -100,20 +106,21 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
-	 * @param dialect The dialect in effect
+	 * @param jdbcEnv
 	 * @return The sequence name
 	 */
-	private String determineSequenceName(Properties params, Dialect dialect) {
+	protected QualifiedName determineSequenceName(Properties params, JdbcEnvironment jdbcEnv) {
 		final String sequencePerEntitySuffix = ConfigurationHelper.getString( SequenceStyleGenerator.CONFIG_SEQUENCE_PER_ENTITY_SUFFIX, params, SequenceStyleGenerator.DEF_SEQUENCE_SUFFIX );
-		// JPA_ENTITY_NAME value honours <class ... entity-name="..."> (HBM) and @Entity#name (JPA) overrides.
-		String sequenceName = ConfigurationHelper.getBoolean( SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, params, false )
+		// JPA_ENTITY_NAME value honors <class ... entity-name="..."> (HBM) and @Entity#name (JPA) overrides.
+		final String defaultSequenceName = ConfigurationHelper.getBoolean( SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, params, false )
 				? params.getProperty( JPA_ENTITY_NAME ) + sequencePerEntitySuffix
 				: SequenceStyleGenerator.DEF_SEQUENCE_NAME;
-		final ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
-		sequenceName = ConfigurationHelper.getString( SequenceStyleGenerator.SEQUENCE_PARAM, params, sequenceName );
-		if ( sequenceName.indexOf( '.' ) < 0 ) {
-			sequenceName = normalizer.normalizeIdentifierQuoting( sequenceName );
 
+		final String sequenceName = ConfigurationHelper.getString( SequenceStyleGenerator.SEQUENCE_PARAM, params, defaultSequenceName );
+		if ( sequenceName.contains( "." ) ) {
+			return QualifiedNameParser.INSTANCE.parse( sequenceName );
+		}
+		else {
 			final String schemaName = params.getProperty( PersistentIdentifierGenerator.SCHEMA );
 			if ( schemaName != null ) {
 				log.schemaOptionNotSupportedForSequenceGenerator( schemaName );
@@ -123,14 +130,16 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 			if ( catalogName != null ) {
 				log.catalogOptionNotSupportedForSequenceGenerator( catalogName );
 			}
-		}
-		// if already qualified there is not much we can do in a portable manner so we pass it
-		// through and assume the user has set up the name correctly.
 
-		return sequenceName;
+			return new QualifiedNameParser.NameParts(
+					null,
+					null,
+					jdbcEnv.getIdentifierHelper().toIdentifier( sequenceName )
+			);
+		}
 	}
 
-	private IdSourceKeyAndKeyMetadataProvider getDelegate(Dialect dialect) {
+	private IdSourceKeyAndKeyMetadataProvider getDelegate(ServiceRegistry serviceRegistry) {
 		GridDialect gridDialect = super.getGridDialect();
 
 		if ( gridDialect.supportsSequences() ) {
@@ -146,7 +155,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 			Properties newParams = new Properties();
 			newParams.putAll( params );
 			newParams.put( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
-			tableGenerator.configure( type, newParams, dialect );
+			tableGenerator.configure( type, newParams, serviceRegistry );
 
 			return new TableKeyAndMetadataProvider( tableGenerator );
 		}

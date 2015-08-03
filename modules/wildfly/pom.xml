@@ -13,7 +13,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>hibernate-ogm-modules-wildfly9</artifactId>
+    <artifactId>hibernate-ogm-modules-wildfly10</artifactId>
     <packaging>pom</packaging>
 
     <name>Hibernate OGM WildFly Module</name>

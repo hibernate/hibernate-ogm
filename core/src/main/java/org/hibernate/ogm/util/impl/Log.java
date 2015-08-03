@@ -61,10 +61,6 @@ public interface Log extends BasicLogger {
 						"Unable to build Persistence Unit %1$s")
 	void persistenceXmlNotFoundInClassPath(String unitName);
 
-	@LogMessage(level = INFO)
-	@Message(id = 3, value = "Use default transaction factory (use a TransactionManager exclusively to pilot the transaction)")
-	void usingDefaultTransactionFactory();
-
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
 	HibernateException cannotInstantiateGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, @Cause Exception e);
 

@@ -249,7 +249,7 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 
 		final AST hqlAst = parser.getAST();
 
-		final NodeTraverser walker = new NodeTraverser( new JavaConstantConverter() );
+		final NodeTraverser walker = new NodeTraverser( new JavaConstantConverter( sessionFactory ) );
 		walker.traverseDepthFirst( hqlAst );
 
 		parser.getParseErrorHandler().throwQueryException();

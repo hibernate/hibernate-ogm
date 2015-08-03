@@ -103,24 +103,24 @@ public class TupleIndexer implements SessionAwareRunnable {
 		// being not-indexed, we skip them.
 		// FIXME for improved performance: avoid loading them in an early phase.
 		if ( entityIndexBinding != null ) {
-			EntityIndexingInterceptor interceptor = entityIndexBinding.getEntityIndexingInterceptor();
+			EntityIndexingInterceptor<?> interceptor = entityIndexBinding.getEntityIndexingInterceptor();
 			if ( isNotSkippable( interceptor, entity ) ) {
 				Serializable id = session.getIdentifier( entity );
-				AddLuceneWork addWork = createAddLuceneWork( entity, sessionInitializer, conversionContext, id, clazz,
+				AddLuceneWork addWork = createAddLuceneWork( session.getTenantIdentifier(), entity, sessionInitializer, conversionContext, id, clazz,
 						entityIndexBinding );
 				backend.enqueueAsyncWork( addWork );
 			}
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private AddLuceneWork createAddLuceneWork(Object entity, InstanceInitializer sessionInitializer,
+	private AddLuceneWork createAddLuceneWork(String tenantIdentifier, Object entity, InstanceInitializer sessionInitializer,
 			ConversionContext conversionContext, Serializable id, Class<?> clazz, EntityIndexBinding entityIndexBinding) {
 		DocumentBuilderIndexedEntity docBuilder = entityIndexBinding.getDocumentBuilder();
 		String idInString = idInString( conversionContext, id, clazz, docBuilder );
 		// depending on the complexity of the object graph going to be indexed it's possible
 		// that we hit the database several times during work construction.
-		return docBuilder.createAddWork( tenantId, clazz, entity, id, idInString, sessionInitializer, conversionContext );
+
+		return docBuilder.createAddWork( tenantIdentifier, clazz, entity, id, idInString, sessionInitializer, conversionContext );
 	}
 
 	private String idInString(ConversionContext conversionContext, Serializable id, Class<?> clazz,

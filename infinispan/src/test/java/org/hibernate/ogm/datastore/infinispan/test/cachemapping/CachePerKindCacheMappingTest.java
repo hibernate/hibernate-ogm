@@ -10,7 +10,6 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Map;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -40,7 +39,7 @@ public class CachePerKindCacheMappingTest extends CacheMappingTestBase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( InfinispanProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
+	protected void configure(Map<String, Object> cfg) {
+		cfg.put( InfinispanProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
 	}
 }

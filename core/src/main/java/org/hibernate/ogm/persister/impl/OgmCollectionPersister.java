@@ -18,7 +18,6 @@ import org.hibernate.MappingException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -59,6 +58,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
+import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.EntityType;
@@ -103,9 +103,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 */
 	private AssociationTypeContext associationTypeContext;
 
-	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
+	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, PersisterCreationContext persisterCreationContext)
 			throws MappingException, CacheException {
-		super( collection, cacheAccessStrategy, cfg, factory );
+		super( collection, cacheAccessStrategy, persisterCreationContext );
+
+		SessionFactoryImplementor factory = persisterCreationContext.getSessionFactory();
 		ServiceRegistry registry = factory.getServiceRegistry();
 		final TypeTranslator typeTranslator = registry.getService( TypeTranslator.class );
 		this.gridDialect = registry.getService( GridDialect.class );

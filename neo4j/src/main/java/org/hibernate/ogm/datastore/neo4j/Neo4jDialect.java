@@ -81,6 +81,7 @@ import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Result;
+import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -213,12 +214,21 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		}
 		catch (QueryExecutionException qee) {
 			if ( CONSTRAINT_VIOLATION_CODE.equals( qee.getStatusCode() ) ) {
-				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, qee );
+				Throwable cause = findRecognizableCause( qee );
+				if ( cause instanceof UniqueConstraintViolationKernelException ) {
+					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, qee );
+				}
 			}
-			else {
-				throw qee;
-			}
+			throw qee;
 		}
+	}
+
+	private Throwable findRecognizableCause(QueryExecutionException qee) {
+		Throwable cause = qee.getCause();
+		while ( cause.getCause() != null ) {
+			cause = cause.getCause();
+		}
+		return cause;
 	}
 
 	@Override

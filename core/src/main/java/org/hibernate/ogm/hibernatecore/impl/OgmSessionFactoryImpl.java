@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.hibernatecore.impl;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.util.Map;
 import java.util.Properties;
@@ -27,15 +26,16 @@ import org.hibernate.SessionFactoryObserver;
 import org.hibernate.StatelessSession;
 import org.hibernate.StatelessSessionBuilder;
 import org.hibernate.TypeHelper;
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.spi.QueryCache;
 import org.hibernate.cache.spi.Region;
 import org.hibernate.cache.spi.UpdateTimestampsCache;
+import org.hibernate.cache.spi.access.RegionAccessStrategy;
 import org.hibernate.cfg.Settings;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionRegistry;
 import org.hibernate.engine.ResultSetMappingDefinition;
-import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.engine.profile.FetchProfile;
@@ -134,12 +134,6 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 	@Override
 	public String[] getReturnAliases(String queryString) throws HibernateException {
 		return delegate.getReturnAliases( queryString );
-	}
-
-	@Override
-	@Deprecated
-	public ConnectionProvider getConnectionProvider() {
-		return delegate.getConnectionProvider();
 	}
 
 	@Override
@@ -369,53 +363,6 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 		return delegate.getCache();
 	}
 
-	@Override
-	@Deprecated
-	public void evict(Class persistentClass) throws HibernateException {
-		delegate.evict( persistentClass );
-	}
-
-	@Override
-	@Deprecated
-	public void evict(Class persistentClass, Serializable id) throws HibernateException {
-		delegate.evict( persistentClass, id );
-	}
-
-	@Override
-	@Deprecated
-	public void evictEntity(String entityName) throws HibernateException {
-		delegate.evictEntity( entityName );
-	}
-
-	@Override
-	@Deprecated
-	public void evictEntity(String entityName, Serializable id) throws HibernateException {
-		delegate.evictEntity( entityName, id );
-	}
-
-	@Override
-	@Deprecated
-	public void evictCollection(String roleName) throws HibernateException {
-		delegate.evictCollection( roleName );
-	}
-
-	@Override
-	@Deprecated
-	public void evictCollection(String roleName, Serializable id) throws HibernateException {
-		delegate.evictCollection( roleName, id );
-	}
-
-	@Override
-	@Deprecated
-	public void evictQueries(String cacheRegion) throws HibernateException {
-		delegate.evictQueries( cacheRegion );
-	}
-
-	@Override
-	@Deprecated
-	public void evictQueries() throws HibernateException {
-		delegate.evictQueries();
-	}
 
 	@Override
 	public Set getDefinedFilterNames() {
@@ -467,5 +414,30 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 	@Override
 	public Iterable<EntityNameResolver> iterateEntityNameResolvers() {
 		return delegate.iterateEntityNameResolvers();
+	}
+
+	@Override
+	public RegionAccessStrategy getSecondLevelCacheRegionAccessStrategy(String regionName) {
+		return delegate.getSecondLevelCacheRegionAccessStrategy( regionName );
+	}
+
+	@Override
+	public RegionAccessStrategy getNaturalIdCacheRegionAccessStrategy(String regionName) {
+		return delegate.getNaturalIdCacheRegionAccessStrategy( regionName );
+	}
+
+	@Override
+	public EntityPersister locateEntityPersister(Class byClass) {
+		return delegate.locateEntityPersister( byClass );
+	}
+
+	@Override
+	public EntityPersister locateEntityPersister(String byName) {
+		return delegate.locateEntityPersister( byName );
+	}
+
+	@Override
+	public DeserializationResolver getDeserializationResolver() {
+		return delegate.getDeserializationResolver();
 	}
 }

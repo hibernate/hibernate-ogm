@@ -9,15 +9,18 @@ package org.hibernate.ogm.backendtck.compensation;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.ErrorHandler.FailedGridDialectOperationContext;
 import org.hibernate.ogm.compensation.ErrorHandler.RollbackContext;
@@ -33,10 +36,11 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.transaction.impl.ErrorHandlerEnabledTransactionDecorator;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -80,7 +84,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			session.getTransaction().commit();
 		}
 		catch (Exception e) {
-			session.getTransaction().rollback();
+			rollbackTransactionIfActive( session.getTransaction() );
 		}
 
 		// then expect the ops for inserting the two records
@@ -136,7 +140,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			session.getTransaction().commit();
 		}
 		catch (Exception e) {
-			session.getTransaction().rollback();
+			rollbackTransactionIfActive( session.getTransaction() );
 		}
 
 		// then expect the ops for inserting the two records
@@ -169,7 +173,6 @@ public class CompensationSpiTest extends OgmTestCase {
 	}
 
 	@Test
-
 	public void onRollbackPresentsAppliedUpdateOperations() throws Exception {
 		OgmSession session = openSession();
 		session.getTransaction().begin();
@@ -203,7 +206,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			// Expected
 		}
 		finally {
-			session.getTransaction().rollback();
+			rollbackTransactionIfActive( session.getTransaction() );
 			session.close();
 		}
 
@@ -276,7 +279,8 @@ public class CompensationSpiTest extends OgmTestCase {
 			// Expected
 		}
 		finally {
-			sessionB.getTransaction().rollback();
+			rollbackTransactionIfActive( sessionA.getTransaction() );
+			rollbackTransactionIfActive( sessionB.getTransaction() );
 
 			sessionA.close();
 			sessionB.close();
@@ -322,7 +326,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			fail( "Expected exception was not raised" );
 		}
 		catch (Exception e) {
-			session.getTransaction().rollback();
+			rollbackTransactionIfActive( session.getTransaction() );
 		}
 
 		Iterator<FailedGridDialectOperationContext> onFailedOperationInvocations = InvocationTrackingHandler.INSTANCE.getOnFailedOperationInvocations().iterator();
@@ -378,8 +382,13 @@ public class CompensationSpiTest extends OgmTestCase {
 			comment = "Transaction cannot be committed when continuing after an exception "
 	)
 	public void subsequentOperationsArePerformedForErrorHandlingStrategyContinue() {
-		OgmSession session = openSession();
-		( (ErrorHandlerEnabledTransactionDecorator) session.getTransaction() ).begin( ContinuingErrorHandler.INSTANCE );
+		OgmSessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
+				Collections.<String, Object>singletonMap( OgmProperties.ERROR_HANDLER, ContinuingErrorHandler.INSTANCE ),
+				getAnnotatedClasses()
+		);
+
+		OgmSession session = sessionFactory.openSession();
+		session.getTransaction().begin();
 
 		session.persist( new Shipment( "shipment-1", "INITIAL" ) );
 		session.persist( new Shipment( "shipment-2", "INITIAL" ) );
@@ -400,7 +409,7 @@ public class CompensationSpiTest extends OgmTestCase {
 		session.getTransaction().commit();
 		session.close();
 
-		session = openSession();
+		session = sessionFactory.openSession();
 		session.getTransaction().begin();
 
 		// then expect all previously and subsequent operations applied
@@ -467,8 +476,8 @@ public class CompensationSpiTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
+	protected void configure(Map<String, Object> settings) {
+		settings.put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
 	}
 
 	@Override
@@ -486,5 +495,14 @@ public class CompensationSpiTest extends OgmTestCase {
 		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{"id"} );
 
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
+	}
+
+	/**
+	 * In JTA the failed commit attempt will have done the rollback already. The TX is NOT_ACTIVE in this case.
+	 */
+	private void rollbackTransactionIfActive(Transaction transaction) {
+		if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
+			transaction.rollback();
+		}
 	}
 }

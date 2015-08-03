@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.couchdb;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.ogm.cfg.OgmProperties;
 
 /**
- * Properties for configuring the CouchDB document datastore via {@code persistence.xml} or {@link OgmConfiguration}.
+ * Properties for configuring the CouchDB document datastore via {@code persistence.xml} or
+ * {@link StandardServiceRegistryBuilder}.
  *
  * @author Gunnar Morling
  */

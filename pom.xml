@@ -36,7 +36,9 @@
     </modules>
 
     <properties>
-        <javaVersion>1.7</javaVersion>
+        <!-- JDK version required to build OGM; requiring 1.8 as WildFly 10 requires JDK 1.8; We still create
+             1.7 byte code to run in other environments -->
+        <minJdkVersion>1.8</minJdkVersion>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
@@ -214,8 +216,7 @@
                 <configuration>
                     <rules>
                         <requireJavaVersion>
-                            <!-- require JDK 1.7 to run the build -->
-                            <version>[1.7,)</version>
+                            <version>[${minJdkVersion},)</version>
                         </requireJavaVersion>
                         <DependencyConvergence />
                     </rules>
@@ -629,8 +630,6 @@
         <profile>
             <id>doc</id>
             <activation>
-                <!-- asciidoctor won't work on JDK9  -->
-                <jdk>[1.7, 1.9)</jdk>
                 <property>
                     <name>skipDocs</name>
                     <value>!true</value>
@@ -643,9 +642,6 @@
         <profile>
             <id>distro</id>
             <activation>
-            <!-- At the moment we don't generate the documentation with JDK 9.
-                 We don't want to release a distribution without documentation -->
-                <jdk>[1.7, 1.9)</jdk>
                 <property>
                     <name>skipDistro</name>
                     <value>!true</value>
@@ -654,29 +650,6 @@
             <modules>
                 <module>distribution</module>
             </modules>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>enforce-rules</id>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <rules>
-                                <requireJavaVersion>
-                                   <version>[${javaVersion}, 1.9)</version>
-                                </requireJavaVersion>
-                                <DependencyConvergence />
-                            </rules>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>

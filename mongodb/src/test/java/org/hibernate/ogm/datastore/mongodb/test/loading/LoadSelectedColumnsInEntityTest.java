@@ -8,9 +8,9 @@ package org.hibernate.ogm.datastore.mongodb.test.loading;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
@@ -28,9 +28,8 @@ import com.mongodb.DBObject;
 public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollectionTest {
 
 	@Override
-	protected void configure(Configuration cfg) {
-		super.configure( cfg );
-		cfg.getProperties().put(
+	protected void configure(Map<String, Object> settings) {
+		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.IN_ENTITY
 		);
