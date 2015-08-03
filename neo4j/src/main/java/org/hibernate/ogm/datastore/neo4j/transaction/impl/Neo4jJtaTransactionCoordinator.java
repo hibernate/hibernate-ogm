@@ -49,7 +49,7 @@ public class Neo4jJtaTransactionCoordinator extends ForwardingTransactionCoordin
 	}
 
 	private void join() {
-		if ( tx == null && delegate.isActive() && delegate.getTransactionCoordinatorBuilder().isJta() ) {
+		if ( tx == null && delegate.isActive() ) {
 			tx = graphDB.beginTx();
 			delegate.getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization() );
 		}

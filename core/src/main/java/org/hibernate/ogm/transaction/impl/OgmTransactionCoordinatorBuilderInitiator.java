@@ -16,6 +16,7 @@ import org.hibernate.ogm.compensation.ErrorHandler;
 import org.hibernate.ogm.compensation.impl.ErrorHandlerEnabledTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.transaction.emulated.impl.EmulatedLocalTransactionCoordinatorBuilder;
+import org.hibernate.ogm.transaction.jta.impl.RollbackOnCommitFailureJtaTransactionCoordinatorBuilder;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorBuilderInitiator;
@@ -45,17 +46,40 @@ public class OgmTransactionCoordinatorBuilderInitiator implements StandardServic
 
 	@Override
 	public TransactionCoordinatorBuilder initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		TransactionCoordinatorBuilder coordinatorBuilder = TransactionCoordinatorBuilderInitiator.INSTANCE.initiateService( configurationValues, registry );
-		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
-		StrategySelector strategySelector = registry.getService( StrategySelector.class );
-		coordinatorBuilder = datastoreProvider.getTransactionCoordinatorBuilder( coordinatorBuilder, strategySelector );
+		TransactionCoordinatorBuilder builder = null;
 
-		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
-		return errorHandler != null ? new ErrorHandlerEnabledTransactionCoordinatorBuilder( coordinatorBuilder, errorHandler ) : coordinatorBuilder;
+		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
+		TransactionCoordinatorBuilder defaultBuilder = TransactionCoordinatorBuilderInitiator.INSTANCE.initiateService( configurationValues, registry );
+		TransactionCoordinatorBuilder customBuilder = datastoreProvider.getTransactionCoordinatorBuilder( defaultBuilder );
+
+		// Take custom builder if present
+		if ( customBuilder != null && customBuilder != defaultBuilder ) {
+			builder = customBuilder;
+		}
+		// JTA default builder can be taken as is
+		else if ( defaultBuilder.isJta() ) {
+			builder = defaultBuilder;
+		}
+		// For RESOURCE_LOCAL either use emulated local TX or delegate to JTA
+		else if ( datastoreProvider.allowsTransactionEmulation() ) {
+			// if the datastore does not support transactions it is enough to emulate them. In this case transactions
+			// are just used to scope a unit of work and to make sure that the appropriate flush event occurs
+			builder = new EmulatedLocalTransactionCoordinatorBuilder( defaultBuilder );
+		}
+		else {
+			builder = new RollbackOnCommitFailureJtaTransactionCoordinatorBuilder( getDefaultBuilder( registry, "jta" ) );
+		}
+
+		return decorateWithErrorHandlerIfNeeded( configurationValues, registry, builder );
 	}
 
 	private TransactionCoordinatorBuilder getDefaultBuilder(ServiceRegistryImplementor registry, String strategy ) {
 		return registry.getService( StrategySelector.class ).resolveStrategy( TransactionCoordinatorBuilder.class, strategy );
+	}
+
+	private TransactionCoordinatorBuilder decorateWithErrorHandlerIfNeeded(Map configurationValues, ServiceRegistryImplementor registry, TransactionCoordinatorBuilder builder) {
+		ErrorHandler errorHandler = getErrorHandler( configurationValues, registry );
+		return errorHandler != null ? new ErrorHandlerEnabledTransactionCoordinatorBuilder( builder, errorHandler ) : builder;
 	}
 
 	private ErrorHandler getErrorHandler(Map<?, ?> configurationValues, ServiceRegistryImplementor registry) {
@@ -63,5 +87,4 @@ public class OgmTransactionCoordinatorBuilderInitiator implements StandardServic
 
 		return propertyReader.property( OgmProperties.ERROR_HANDLER, ErrorHandler.class ).instantiate().getValue();
 	}
-
 }
