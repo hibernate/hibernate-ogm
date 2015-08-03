@@ -6,74 +6,69 @@
  */
 package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
-import org.hibernate.ogm.datastore.redis.options.navigation.RedisGlobalContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
-
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for configuring the different association storage modes via the option API.
  *
  * @author Mark Paluch
  */
-public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
+public class TTLConfiguredProgrammaticallyTest {
 
-	protected OgmConfiguration configuration;
 	protected OgmSessionFactory sessions;
 
 	private Cloud cloud;
 
-	@Before
-	public void setupConfiguration() {
-		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
-	}
-
-	protected void setupSessionFactory() {
-		sessions = configuration.buildSessionFactory();
+	private void setupSessionFactory(Map<String, Object> settings) {
+		sessions = TestHelper.getDefaultTestSessionFactory( settings, Cloud.class, SnowFlake.class );
 	}
 
 	@Test
 	public void ttlOnGlobalLevel() throws Exception {
-		( (RedisGlobalContext) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, Redis.class )
 				.ttl( 1, TimeUnit.DAYS );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( cloudTtl() ).isGreaterThan( TimeUnit.HOURS.toMillis( 23 ) )
 				.isLessThanOrEqualTo( TimeUnit.HOURS.toMillis( 24 ) );
 	}
 
-
 	@Test
 	public void ttlOnEntityLevel() throws Exception {
-		( (RedisGlobalContext) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, Redis.class )
 				.entity( Cloud.class )
 				.ttl( 1, TimeUnit.DAYS );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( cloudTtl() ).isGreaterThan( TimeUnit.HOURS.toMillis( 23 ) ).isLessThanOrEqualTo(
@@ -85,13 +80,15 @@ public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
 
 	@Test
 	public void ttlOnPropertyLevel() throws Exception {
-		( (RedisGlobalContext) TestHelper.configureDatastore( configuration ) )
+		Map<String, Object> settings = new HashMap<String, Object>();
+
+		TestHelper.configureOptionsFor( settings, Redis.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.entity( Cloud.class )
 				.property( "backupSnowFlakes", ElementType.METHOD )
 				.ttl( 1, TimeUnit.DAYS );
 
-		setupSessionFactory();
+		setupSessionFactory( settings );
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		// property-level options are applied to the type as well.
@@ -116,9 +113,8 @@ public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
 		return getProvider().getConnection().pttl( associationKey );
 	}
 
-
 	private RedisDatastoreProvider getProvider() {
-		return (RedisDatastoreProvider) sfi()
+		return (RedisDatastoreProvider) ( (SessionFactoryImplementor) sessions )
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 	}
@@ -199,7 +195,7 @@ public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
 		Transaction transaction = session.beginTransaction();
 
 		if ( cloud != null ) {
-			Cloud cloudToDelete = (Cloud) session.get( Cloud.class, cloud.getId() );
+			Cloud cloudToDelete = session.get( Cloud.class, cloud.getId() );
 			for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
 				session.delete( current );
 			}
@@ -214,13 +210,5 @@ public class TTLConfiguredProgrammaticallyTest extends OgmTestCase {
 
 		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
 		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Cloud.class,
-				SnowFlake.class
-		};
 	}
 }

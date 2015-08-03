@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.redis.test.embeddable;
 
+import static org.hibernate.ogm.datastore.redis.utils.RedisTestHelper.assertDbObject;
+
 import java.util.Arrays;
 
 import org.hibernate.Transaction;
@@ -18,10 +20,8 @@ import org.hibernate.ogm.backendtck.queries.OptionalStoryBranch;
 import org.hibernate.ogm.backendtck.queries.StoryBranch;
 import org.hibernate.ogm.backendtck.queries.StoryGame;
 import org.hibernate.ogm.utils.OgmTestCase;
-
+import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.hibernate.ogm.datastore.redis.utils.RedisTestHelper.assertDbObject;
 
 /**
  * Tests for {@code @Embeddable} types and {@code @ElementCollection}s there-of.
@@ -83,7 +83,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		Account loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		Account loadedAccount = session.get( Account.class, account.getLogin() );
 
 		// When
 
@@ -123,7 +123,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount = session.get( Account.class, account.getLogin() );
 
 		// When
 		// set a nested embedded to null
@@ -158,7 +158,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount = session.get( Account.class, account.getLogin() );
 
 		// When
 		// set all properties of an embedded to null
@@ -187,7 +187,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction.commit();
 		// Clean-Up
 		transaction = session.beginTransaction();
-		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount = session.get( Account.class, account.getLogin() );
 		session.delete( loadedAccount );
 		transaction.commit();
 
@@ -195,6 +195,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 	}
 
 	@Test
+	@Ignore("TODO OGM-887: Fix created and expected mapping")
 	public void testEmbeddableCollection() throws Exception {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -242,32 +243,34 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"" + id,
 				// expected
 				"{" +
-						"'goodBranch' : {" +
+					"'goodBranch' : {" +
 						"'ending' : {" +
-						"'score' : 1," +
-						"'text' : 'village ending - everybody is happy'" +
+							"'score' : 1," +
+							"'text' : 'village ending - everybody is happy'" +
 						"}," +
 						"'storyText' : 'you go to the village'" +
-						"}," +
-						"'evilBranch' : {" +
+					"}," +
+					"'evilBranch' : {" +
 						"'storyText' : 'you kill the villagers'" +
-						"}," +
-						"'chaoticBranches' : [" +
+					"}," +
+					"'chaoticBranches' : [" +
 						"{" +
-						"'evilText' : 'assassinate the leader of the party'," +
-						"'evilEnding.text' : 'you become a demon'," +
-						"'evilEnding.score' : 10" +
+							"'evilText' : 'assassinate the leader of the party'," +
+							"'evilEnding' : {" +
+								"'text' : 'you become a demon'," +
+								"'score' : 10" +
+							"}" +
 						"}," +
 						"{" +
-						"'evilText' : 'search the evil [artifact]'," +
-						"'goodText' : 'you punish the bandits'" +
+							"'evilText' : 'search the evil [artifact]'," +
+							"'goodText' : 'you punish the bandits'" +
 						"}" +
-						"]," +
-						"'neutralBranches' : [" +
+					"]," +
+					"'neutralBranches' : [" +
 						"{ 'evilText' : 'steal the [artifact]' }," +
 						"{ 'evilText' : 'kill the king' }" +
-						"]" +
-						"}"
+					"]" +
+				"}"
 		);
 
 		session.delete( story );

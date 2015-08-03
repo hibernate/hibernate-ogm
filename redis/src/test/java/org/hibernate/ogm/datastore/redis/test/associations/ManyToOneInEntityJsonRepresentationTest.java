@@ -6,9 +6,12 @@
  */
 package org.hibernate.ogm.datastore.redis.test.associations;
 
+import static org.fest.assertions.Assertions.assertThat;
+
+import java.util.Map;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.backendtck.associations.manytoone.Court;
 import org.hibernate.ogm.backendtck.associations.manytoone.Game;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -16,25 +19,21 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
-
 import org.junit.Test;
-
-import com.lambdaworks.redis.RedisConnection;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import static org.fest.assertions.Assertions.assertThat;
+import com.lambdaworks.redis.RedisConnection;
 
 /**
  * @author Mark Paluch
  */
 public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 
-
 	@Override
-	protected void configure(Configuration cfg) {
+	protected void configure(Map<String, Object> cfg) {
 		super.configure( cfg );
-		cfg.getProperties().put(
+		cfg.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.IN_ENTITY
 		);
@@ -92,7 +91,7 @@ public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		Court localCourt = (Court) session.get( Court.class, new Court.CourtId( "DE", 123 ) );
+		Court localCourt = session.get( Court.class, new Court.CourtId( "DE", 123 ) );
 		assertThat( localCourt.getGames() ).hasSize( 2 );
 		for ( Game game : localCourt.getGames() ) {
 			session.delete( game );

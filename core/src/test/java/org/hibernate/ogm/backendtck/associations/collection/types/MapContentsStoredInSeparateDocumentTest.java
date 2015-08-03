@@ -65,7 +65,7 @@ public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 				.isEqualTo( 1 );
 
 		tx = session.beginTransaction();
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		assertThat( user.getNicknames() ).as( "Should have 2 nick1" ).hasSize( 2 );
 		assertThat( user.getNicknames() ).as( "Should contain nicks" ).contains( "idrA", "day[9]" );
 		user.getNicknames().remove( "idrA" );
@@ -74,7 +74,7 @@ public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 		session.clear();
 
 		tx = session.beginTransaction();
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		// TODO do null value
 		assertThat( user.getAddresses() ).as( "List should have 2 elements" ).hasSize( 2 );
 		assertThat( user.getAddresses().get( "home" ).getCity() ).as( "home address should be under home" ).isEqualTo(
@@ -85,7 +85,7 @@ public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 		session.delete( session.load( Address.class, home.getId() ) );
 		session.delete( session.load( Address.class, work.getId() ) );
 
-		user2 = (User) session.get( User.class, user2.getId() );
+		user2 = session.get( User.class, user2.getId() );
 		assertThat( user2.getNicknames() ).as( "Should have 2 nicks" ).hasSize( 2 );
 		assertThat( user2.getNicknames() ).as( "Should contain nick" ).contains( "idrA", "day[9]" );
 		session.delete( user2 );

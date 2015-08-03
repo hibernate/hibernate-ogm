@@ -6,22 +6,21 @@
  */
 package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
+import static org.fest.assertions.Assertions.assertThat;
+
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.lambdaworks.redis.RedisConnection;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for Redis Expiry.
@@ -36,9 +35,9 @@ public class RedisTTLTest extends OgmTestCase {
 	}
 
 	@Override
-	protected void configure(Configuration cfg) {
+	protected void configure(Map<String, Object> cfg) {
 		super.configure( cfg );
-		cfg.getProperties().put(
+		cfg.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);

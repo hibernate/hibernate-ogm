@@ -14,25 +14,24 @@ import java.util.Map;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.json.JSONException;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambdaworks.redis.RedisConnection;
-import org.json.JSONException;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 public class RedisTestHelper implements TestableGridDialect {
 
@@ -211,13 +210,6 @@ public class RedisTestHelper implements TestableGridDialect {
 		}
 
 		return associationCount;
-
-	}
-
-
-	@Override
-	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
-		return configuration.configureOptionsFor( Redis.class );
 	}
 
 	public static JsonNode fromJSON(byte[] json) {
@@ -233,5 +225,10 @@ public class RedisTestHelper implements TestableGridDialect {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
+		return Redis.class;
 	}
 }
