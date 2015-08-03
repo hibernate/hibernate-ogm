@@ -251,9 +251,7 @@ public class RedisDialect extends BaseGridDialect {
 		RedisAssociation redisAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Entity owningEntity = getEntity(
-					key.getEntityKey()
-			);
+			Entity owningEntity = getEmbeddingEntity( key );
 
 			if ( owningEntity != null && owningEntity.getProperties().containsKey(
 					key.getMetadata()
@@ -283,9 +281,7 @@ public class RedisDialect extends BaseGridDialect {
 		RedisAssociation redisAssociation;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Entity owningEntity = getEntity(
-					key.getEntityKey()
-			);
+			Entity owningEntity = getEmbeddingEntity( key );
 
 			if ( owningEntity == null ) {
 				owningEntity = storeEntity( key.getEntityKey(), new Entity(), associationContext );
@@ -299,6 +295,11 @@ public class RedisDialect extends BaseGridDialect {
 		}
 
 		return new org.hibernate.ogm.model.spi.Association( new RedisAssociationSnapshot( redisAssociation, key ) );
+	}
+
+	// Retrieve entity that contains the association, do not enhance with entity key
+	private Entity getEmbeddingEntity(AssociationKey key) {
+		return entityStorageStrategy.getEntity( entityId( key.getEntityKey() ) );
 	}
 
 	@Override
@@ -375,9 +376,7 @@ public class RedisDialect extends BaseGridDialect {
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Entity owningEntity = getEntity(
-					key.getEntityKey()
-			);
+			Entity owningEntity = getEmbeddingEntity( key );
 
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
@@ -389,6 +388,7 @@ public class RedisDialect extends BaseGridDialect {
 		}
 	}
 
+	// Retrieve entity and enhance entity data with the entity key
 	private Entity getEntity(EntityKey key) {
 		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
 		if ( entity != null ) {
