@@ -167,6 +167,21 @@
                 <include>org.hibernate.ogm:hibernate-ogm-cassandra</include>
             </includes>
         </dependencySet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-redis
+        #######################################################################
+        -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>dist/lib/redis</outputDirectory>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-redis</include>
+            </includes>
+        </dependencySet>
     </dependencySets>
 
     <files>
@@ -224,6 +239,12 @@
         <fileSet>
             <directory>target/lib/neo4j</directory>
             <outputDirectory>dist/lib/neo4j</outputDirectory>
+        </fileSet>
+
+        <!--  Google Guava 17.0 for lettuce/Redis -->
+        <fileSet>
+            <directory>target/lib/redis</directory>
+            <outputDirectory>dist/lib/redis</outputDirectory>
         </fileSet>
      </fileSets>
 </assembly>

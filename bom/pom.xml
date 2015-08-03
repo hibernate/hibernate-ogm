@@ -67,6 +67,7 @@
         <!-- end of Cassandra dependencies -->
 
         <lettuceCommonsPoolVersion>2.2</lettuceCommonsPoolVersion>
+        <lettuceGuavaVersion>17.0</lettuceGuavaVersion>
     </properties>
 
     <inceptionYear>2010</inceptionYear>
