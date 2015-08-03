@@ -66,16 +66,7 @@
         <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->
         <!-- end of Cassandra dependencies -->
 
-        <!--
-             The following versions are required for the lettuce driver; We don't expose a managed versions
-             of these libraries through this BOM, these versions are for internal usage to make sure the right
-             JARs end up in the lettuce driver WildFly module. There is a conflict between Cassandra's Guava version
-             and the one used within lettuce.
-        -->
-        <netty4Version>4.0.28.Final</netty4Version>
-        <lettuceGuavaVersion>18.0</lettuceGuavaVersion>
         <lettuceCommonsPoolVersion>2.2</lettuceCommonsPoolVersion>
-        <!-- end of lettuce dependencies -->
     </properties>
 
     <inceptionYear>2010</inceptionYear>
