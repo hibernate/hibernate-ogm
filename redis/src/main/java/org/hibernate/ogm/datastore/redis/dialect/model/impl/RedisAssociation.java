@@ -16,7 +16,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 /**
  * Represents an association stored in Redis, backed either by an association value (external storage of
  * associations) or an association sub-tree within an entity value (embedded storage of associations).
- * <p/>
+ * <p>
  * The owning document must be written back to Redis to make changes to the rows of an association persistent in the
  * data store.
  *

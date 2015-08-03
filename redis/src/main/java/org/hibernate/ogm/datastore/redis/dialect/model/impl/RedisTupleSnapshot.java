@@ -12,11 +12,11 @@ import java.util.Set;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
- * @author Seiya Kawashima <skawashima@uchicago.edu>
+ * @author Seiya Kawashima &lt;skawashima@uchicago.edu&gt;
  */
 public class RedisTupleSnapshot implements TupleSnapshot {
 
-	private Map<String, Object> map;
+	private final Map<String, Object> map;
 
 	public RedisTupleSnapshot(Map<String, Object> map) {
 		this.map = map;

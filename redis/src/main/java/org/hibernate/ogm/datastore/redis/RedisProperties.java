@@ -30,7 +30,7 @@ public final class RedisProperties implements KeyValueStoreProperties, DocumentS
 
 	/**
 	 * Configuration property for setting the expiry of keys. This value is set in milliseconds.
-	 * <p/>
+	 * <p>
 	 * Defaults to none.
 	 *
 	 * @see org.hibernate.ogm.datastore.redis.options.TTL

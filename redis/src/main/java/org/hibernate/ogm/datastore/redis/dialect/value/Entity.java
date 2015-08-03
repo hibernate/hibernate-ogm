@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 /**
  * Contains the information related to a {@link Tuple}. The use of this class is to serialize and deserialize the JSON
  * stored in Redis; Documents have the following structure:
- * <p/>
+ * <p>
  * <pre>
  * {@code
  * {
@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
  * }
  * }
  * </pre>
- * <p/>
+ * <p>
  * Implementation note: The entity's properties are stored in a map, with embedded properties being represented by
  * dot-separated property paths. When (de-)serializing this document from/to JSON via Jackson, this flat representation
  * is converted into a hierarchical representation using nested maps (if embedded properties are present).
@@ -130,7 +130,7 @@ public class Entity extends StructuredValue {
 
 	/**
 	 * Invoked by Jackson for any non-static property.
-	 * <p/>
+	 * <p>
 	 * A {@link Map} creates an additional set of properties, one for each entry of the map.
 	 *
 	 * @param name the property name

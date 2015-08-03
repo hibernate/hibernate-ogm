@@ -14,9 +14,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 
 /**
  * Represents an association stored as a separate Redis value.
- * <p/>
+ * <p>
  * Used to serialize and deserialize the JSON with the following structure:
- * <p/>
+ * <p>
  * { "rows": [{ "key": "value" }] }
  *
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;

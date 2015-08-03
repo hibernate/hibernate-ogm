@@ -11,7 +11,7 @@ import org.hibernate.type.Type;
 
 /**
  * Strategy for serializing/deserializing entities within Redis.
- * <p/>
+ * <p>
  * Every strategy can support a different set of data types.
  *
  * @author Mark Paluch

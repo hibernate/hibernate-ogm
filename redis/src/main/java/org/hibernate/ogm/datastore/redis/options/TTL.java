@@ -6,6 +6,11 @@
  */
 package org.hibernate.ogm.datastore.redis.options;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
@@ -13,15 +18,10 @@ import java.util.concurrent.TimeUnit;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 /**
  * Specifies the <a href="http://redis.io/commands/pexpireat">expiry</a> to be applied on the specific entity.
  * The expiry period starts after persisting the entity. Subsequent persists reset the expiry to the specified value.
- * <p/>
+ * <p>
  * When given on the property-level, this setting will only take effect when the property represents an association. If
  * given for non-association properties, the setting on the property-level will be ignored and the setting from the
  * entity will be applied.

@@ -54,7 +54,7 @@ import com.lambdaworks.redis.protocol.LettuceCharsets;
 
 /**
  * Stores tuples and associations inside Redis.
- * <p/>
+ * <p>
  * Tuples are stored in Redis as a JSON serialization of a {@link Entity} object. Associations are stored in Redis obtained as a
  * JSON serialization of a {@link Association} object either within the entity or external.
  * See {@link org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties#ASSOCIATIONS_STORE} on how to configure
