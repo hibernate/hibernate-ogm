@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonEntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -62,7 +63,7 @@ import com.lambdaworks.redis.protocol.LettuceCharsets;
  *
  * @author Mark Paluch
  */
-public class RedisDialect extends BaseGridDialect {
+public class RedisDialect extends BaseGridDialect implements MultigetGridDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";
@@ -601,5 +602,31 @@ public class RedisDialect extends BaseGridDialect {
 			return null;
 		}
 		return new String( bytes, 0, bytes.length, LettuceCharsets.UTF8 );
+	}
+
+	// MultigetGridDialect
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		byte[][] ids = new byte[keys.length][];
+
+		for ( int i = 0; i < keys.length; i++ ) {
+			ids[i] = entityId( keys[i] );
+		}
+
+		Iterable<Entity> entities = entityStorageStrategy.getEntities( ids );
+		List<Tuple> tuples = new ArrayList<Tuple>( keys.length );
+
+		int i = 0;
+		for ( Entity entity : entities ) {
+			if ( entity != null ) {
+				EntityKey key = keys[i];
+				addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
+				tuples.add( new Tuple( new RedisTupleSnapshot( entity.getProperties() ) ) );
+			}
+			i++;
+		}
+
+		return tuples;
 	}
 }
