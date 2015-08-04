@@ -68,6 +68,7 @@
 
         <lettuceCommonsPoolVersion>2.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>17.0</lettuceGuavaVersion>
+        <netty4Version>4.0.28.Final</netty4Version>
     </properties>
 
     <inceptionYear>2010</inceptionYear>

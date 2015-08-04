@@ -12,19 +12,24 @@
     <resources>
         <resource-root path="lettuce-${lettuceVersion}.jar" />
         <resource-root path="commons-pool2-${lettuceCommonsPoolVersion}.jar" />
+        <resource-root path="netty-buffer-${netty4Version}.jar" />
+        <resource-root path="netty-codec-${netty4Version}.jar" />
+        <resource-root path="netty-common-${netty4Version}.jar" />
+        <resource-root path="netty-transport-${netty4Version}.jar" />
+        <resource-root path="netty-handler-${netty4Version}.jar" />
     </resources>
     <dependencies>
 
         <!-- A dependency for netty -->
         <module name="org.slf4j" />
 
+        <!-- The driver needs to access sun.misc.Unsafe ...-->
+        <module name="sun.jdk" />
+
         <!-- ... and to management API -->
         <module name="javax.api" />
 
         <!-- use Guava from WildFly, that's nice, because WF9 ships with Guava 18 -->
         <module name="com.google.guava" />
-
-        <!-- use netty from WildFly, minimum version is 4.0.26-->
-        <module name="io.netty" />
     </dependencies>
 </module>
