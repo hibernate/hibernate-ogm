@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonEntityStorageStrategy;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -62,7 +63,7 @@ import com.lambdaworks.redis.protocol.LettuceCharsets;
  *
  * @author Mark Paluch
  */
-public class RedisDialect extends BaseGridDialect {
+public class RedisDialect extends BaseGridDialect implements MultigetGridDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";
@@ -83,7 +84,8 @@ public class RedisDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		Entity entity = getEntity( key );
+		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
+
 		if ( entity != null ) {
 			return new Tuple( new RedisTupleSnapshot( entity.getProperties() ) );
 		}
@@ -368,15 +370,6 @@ public class RedisDialect extends BaseGridDialect {
 		}
 	}
 
-	// Retrieve entity and enhance entity data with the entity key
-	private Entity getEntity(EntityKey key) {
-		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
-		if ( entity != null ) {
-			addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
-		}
-		return entity;
-	}
-
 	private void addIdToEntity(Entity entity, String[] columnNames, Object[] columnValues) {
 		for ( int i = 0; i < columnNames.length; i++ ) {
 			entity.set( columnNames[i], columnValues[i] );
@@ -534,16 +527,16 @@ public class RedisDialect extends BaseGridDialect {
 		return entityStorageStrategy;
 	}
 
-	/*
-			 * Construct a key based on the key columns:
-			 * Single key: Use the value as key
-			 * Multiple keys: Serialize the key using a JSON map.
-			 */
+	/**
+	 * Construct a key based on the key columns:
+	 * Single key: Use the value as key
+	 * Multiple keys: Serialize the key using a JSON map.
+	 */
 	private byte[] keyToBytes(String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length == 1 ) {
 
 			if ( columnValues[0] instanceof CharSequence ) {
-				return columnValues[0].toString().getBytes();
+				return toBytes( columnValues[0].toString() );
 			}
 
 			return toBytes( columnValues[0].toString() );
@@ -561,13 +554,12 @@ public class RedisDialect extends BaseGridDialect {
 		return serializationStrategy.serialize( idObject );
 	}
 
-	/*
+	/**
 	 * Deconstruct the key name into its components:
 	 * Single key: Use the value from the key
 	 * Multiple keys: De-serialize the JSON map.
 	 */
 	private Map<String, Object> keyBytesToMap(EntityKeyMetadata entityKeyMetadata, byte[] key) {
-
 		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
 			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) toString( key ) );
 		}
@@ -601,5 +593,31 @@ public class RedisDialect extends BaseGridDialect {
 			return null;
 		}
 		return new String( bytes, 0, bytes.length, LettuceCharsets.UTF8 );
+	}
+
+	// MultigetGridDialect
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		byte[][] ids = new byte[keys.length][];
+
+		for ( int i = 0; i < keys.length; i++ ) {
+			ids[i] = entityId( keys[i] );
+		}
+
+		Iterable<Entity> entities = entityStorageStrategy.getEntities( ids );
+		List<Tuple> tuples = new ArrayList<Tuple>( keys.length );
+
+		int i = 0;
+		for ( Entity entity : entities ) {
+			if ( entity != null ) {
+				EntityKey key = keys[i];
+				addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
+				tuples.add( new Tuple( new RedisTupleSnapshot( entity.getProperties() ) ) );
+			}
+			i++;
+		}
+
+		return tuples;
 	}
 }

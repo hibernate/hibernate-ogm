@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.redis.impl.json;
 
+import java.util.Iterator;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
@@ -40,5 +41,34 @@ public class JsonEntityStorageStrategy  {
 		byte value[] = jsonSerializationStrategy.serialize( entity );
 
 		connection.set( key, value );
+	}
+
+	public Iterable<Entity> getEntities(byte[][] keys) {
+		final Iterator<byte[]> values = connection.mget( keys ).iterator();
+
+		return new Iterable<Entity>() {
+
+			@Override
+			public Iterator<Entity> iterator() {
+				return new Iterator<Entity>() {
+
+					@Override
+					public boolean hasNext() {
+						return values.hasNext();
+					}
+
+					@Override
+					public Entity next() {
+						byte[] value = values.next();
+						return value != null ? jsonSerializationStrategy.deserialize( value, Entity.class ) : null;
+					}
+
+					@Override
+					public void remove() {
+						throw new UnsupportedOperationException( "Removal is not supported" );
+					}
+				};
+			}
+		};
 	}
 }
