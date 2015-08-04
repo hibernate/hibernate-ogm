@@ -1994,7 +1994,7 @@ Address collection as JSON in MongoDB
 
 In case you want to enforce the list-style represention also for maps with a single key column of type `String`
 (e.g. when reading back data persisted by earlier versions of Hibernate OGM),
-you can use the option `hibernate.ogm.datastore.document.map_storage` to do so.
+you can do so by setting the option `hibernate.ogm.datastore.document.map_storage` to the value `AS_LIST`.
 
 .Unidirectional many-to-many using in entity strategy
 ====
