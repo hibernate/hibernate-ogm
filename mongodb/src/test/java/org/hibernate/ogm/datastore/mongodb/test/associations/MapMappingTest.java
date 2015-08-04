@@ -21,9 +21,8 @@ import org.hibernate.ogm.backendtck.associations.collection.types.Enterprise;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.PhoneNumberId;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.MapStorageType;
-import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
@@ -73,7 +72,7 @@ public class MapMappingTest extends OgmTestCase {
 		);
 
 		// clean-up
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		session.delete( user );
 		session.delete( session.load( Address.class, home.getId() ) );
 		session.delete( session.load( Address.class, work.getId() ) );
@@ -122,7 +121,7 @@ public class MapMappingTest extends OgmTestCase {
 		);
 
 		// clean-up
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		session.delete( user );
 		session.delete( session.load( PhoneNumber.class, home.getId() ) );
 		session.delete( session.load( PhoneNumber.class, work.getId() ) );
@@ -135,14 +134,14 @@ public class MapMappingTest extends OgmTestCase {
 
 	@Test
 	public void testMapOfEntityUsingListStrategyConfiguredViaOptionApi() throws Exception {
-		OgmConfiguration cfg = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+		Map<String, Object> settings = new HashMap<String, Object>();
 
-		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( cfg ) )
+		TestHelper.configureOptionsFor( settings, MongoDB.class )
 			.entity( User.class )
 				.property( "addresses", ElementType.METHOD )
 					.mapStorage( MapStorageType.AS_LIST );
 
-		OgmSessionFactory sessionFactory = cfg.buildSessionFactory();
+		OgmSessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings, getAnnotatedClasses() );
 		OgmSession session = sessionFactory.openSession();
 		Transaction tx = session.beginTransaction();
 
@@ -180,7 +179,7 @@ public class MapMappingTest extends OgmTestCase {
 		);
 
 		// clean-up
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		session.delete( user );
 		session.delete( session.load( Address.class, home.getId() ) );
 		session.delete( session.load( Address.class, work.getId() ) );
@@ -230,7 +229,7 @@ public class MapMappingTest extends OgmTestCase {
 		);
 
 		// clean-up
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		session.delete( user );
 		session.delete( session.load( PhoneNumber.class, home.getId() ) );
 		session.delete( session.load( PhoneNumber.class, work.getId() ) );
@@ -279,7 +278,7 @@ public class MapMappingTest extends OgmTestCase {
 		);
 
 		// clean-up
-		user = (User) session.get( User.class, user.getId() );
+		user = session.get( User.class, user.getId() );
 		session.delete( user );
 		session.delete( session.load( PhoneNumber.class, home.getId() ) );
 		session.delete( session.load( PhoneNumber.class, work.getId() ) );
