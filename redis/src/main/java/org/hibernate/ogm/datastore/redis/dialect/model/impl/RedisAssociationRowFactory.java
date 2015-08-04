@@ -16,7 +16,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
-import org.hibernate.ogm.dialect.impl.DotPatternMapHelpers;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 
 /**
  * {@link AssociationRowFactory} which creates association rows based on the map based representation used in Redis.

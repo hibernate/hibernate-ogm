@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.hibernate.ogm.dialect.impl.DotPatternMapHelpers;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.model.spi.Tuple;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
