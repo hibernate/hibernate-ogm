@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
+import org.hibernate.ogm.dialect.impl.DotPatternMapHelpers;
 
 /**
  * {@link AssociationRowFactory} which creates association rows based on the map based representation used in Redis.
@@ -40,7 +42,10 @@ public class RedisAssociationRowFactory extends StructureOptimizerAssociationRow
 	protected AssociationRowAccessor<Map<String, Object>> getAssociationRowAccessor(
 			String[] prefixedColumns,
 			String prefix) {
-		return RedisAssociationRowAccessor.INSTANCE;
+
+		return prefix != null ?
+				new RedisAssociationRowAccessor( prefixedColumns, prefix ) :
+				RedisAssociationRowAccessor.INSTANCE;
 	}
 
 	private static class RedisAssociationRowAccessor implements AssociationRowAccessor<Map<String, Object>> {
@@ -71,7 +76,8 @@ public class RedisAssociationRowFactory extends StructureOptimizerAssociationRow
 
 		@Override
 		public Set<String> getColumnNames(Map<String, Object> row) {
-			Set<String> columnNames = row.keySet();
+			Set<String> columnNames = new HashSet<>( row.keySet() );
+			addColumnNames( row, columnNames, "" );
 			for ( String prefixedColumn : prefixedColumns ) {
 				String unprefixedColumn = unprefix( prefixedColumn );
 				if ( columnNames.contains( unprefixedColumn ) ) {
@@ -82,12 +88,29 @@ public class RedisAssociationRowFactory extends StructureOptimizerAssociationRow
 			return columnNames;
 		}
 
+		private void addColumnNames(Map<String, Object> row, Set<String> columnNames, String prefix) {
+			for ( String field : row.keySet() ) {
+				Object sub = row.get( field );
+				if ( sub instanceof Map ) {
+					addColumnNames( (Map) sub, columnNames, DotPatternMapHelpers.flatten( prefix, field ) );
+				}
+				else {
+					columnNames.add( DotPatternMapHelpers.flatten( prefix, field ) );
+				}
+			}
+		}
+
 		@Override
 		public Object get(Map<String, Object> row, String column) {
 			if ( prefixedColumns.contains( column ) ) {
 				column = unprefix( column );
 			}
-			return row.get( column );
+
+			if ( row.containsKey( column ) ) {
+				return row.get( column );
+			}
+
+			return DotPatternMapHelpers.getValueOrNull( row, column );
 		}
 	}
 }

@@ -20,7 +20,6 @@ import org.hibernate.ogm.backendtck.queries.OptionalStoryBranch;
 import org.hibernate.ogm.backendtck.queries.StoryBranch;
 import org.hibernate.ogm.backendtck.queries.StoryGame;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -195,7 +194,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore("TODO OGM-887: Fix created and expected mapping")
 	public void testEmbeddableCollection() throws Exception {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();

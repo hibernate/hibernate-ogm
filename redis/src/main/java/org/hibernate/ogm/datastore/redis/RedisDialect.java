@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
@@ -324,35 +325,56 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 	}
 
-	private List<Object> getAssociationRows(
-			org.hibernate.ogm.model.spi.Association association,
-			AssociationKey associationKey) {
+	/**
+	 * Returns the rows of the given association as to be stored in the database. Elements of the returned list are
+	 * either
+	 * <ul>
+	 * <li>plain values such as {@code String}s, {@code int}s etc. in case there is exactly one row key column which is
+	 * not part of the association key (in this case we don't need to persist the key name as it can be restored from
+	 * the association key upon loading) or</li>
+	 * <li>{@code Entity}s with keys/values for all row key columns which are not part of the association key</li>
+	 * </ul>
+	 */
+	private List<Object> getAssociationRows(org.hibernate.ogm.model.spi.Association association, AssociationKey key) {
 		List<Object> rows = new ArrayList<Object>( association.size() );
 
 		for ( RowKey rowKey : association.getKeys() ) {
-			Tuple tuple = association.get( rowKey );
+			rows.add( getAssociationRow( association.get( rowKey ), key ) );
+		}
 
-			String[] columnsToPersist = associationKey.getMetadata()
-					.getColumnsWithoutKeyColumns( tuple.getColumnNames() );
+		return rows;
+	}
 
-			// return value itself if there is only a single column to store
-			if ( columnsToPersist.length == 1 ) {
-				Object row = tuple.get( columnsToPersist[0] );
-				rows.add( row );
-			}
-			else {
-				Map<String, Object> row = new HashMap<String, Object>( columnsToPersist.length );
-				for ( String columnName : columnsToPersist ) {
-					Object value = tuple.get( columnName );
-					if ( value != null ) {
-						row.put( columnName, value );
-					}
-				}
+	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
+		String[] columnsToPersist = associationKey.getMetadata()
+				.getColumnsWithoutKeyColumns( row.getColumnNames() );
 
-				rows.add( row );
+		// return value itself if there is only a single column to store
+		if ( columnsToPersist.length == 1 ) {
+			return row.get( columnsToPersist[0] );
+		}
+		Entity rowObject = new Entity();
+		String prefix = getColumnSharedPrefixOfAssociatedEntityLink( associationKey );
+		for ( String column : columnsToPersist ) {
+			Object value = row.get( column );
+			if ( value != null ) {
+				String columnName = column.startsWith( prefix ) ? column.substring( prefix.length() ) : column;
+				rowObject.set( columnName, value );
 			}
 		}
-		return rows;
+
+		return rowObject;
+	}
+
+	private String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {
+		String[] associationKeyColumns = associationKey.getMetadata()
+				.getAssociatedEntityKeyMetadata()
+				.getAssociationKeyColumns();
+		// we used to check that columns are the same (in an ordered fashion)
+		// but to handle List and Map and store indexes / keys at the same level as the id columns
+		// this check is removed
+		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
+		return prefix == null ? "" : prefix + ".";
 	}
 
 	@Override

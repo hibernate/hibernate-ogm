@@ -80,8 +80,8 @@ public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 
 		// then
 		JSONAssert.assertEquals(
-				"{\"games\":[{\"id.gameSequenceNo\":456,\"id.category\":\"primary\"}," +
-						"{\"id.gameSequenceNo\":457,\"id.category\":\"primary\"}]," +
+				"{\"games\":[{\"gameSequenceNo\":456,\"category\":\"primary\"}," +
+						"{\"gameSequenceNo\":457,\"category\":\"primary\"}]," +
 						"\"name\":\"Hamburg Court\"}",
 				representation,
 				JSONCompareMode.NON_EXTENSIBLE

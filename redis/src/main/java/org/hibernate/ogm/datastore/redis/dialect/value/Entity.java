@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.hibernate.ogm.dialect.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.model.spi.Tuple;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -160,6 +161,11 @@ public class Entity extends StructuredValue {
 
 	@JsonIgnore
 	public void removeAssociation(String name) {
-		properties.remove( name );
+		if ( properties.containsKey( name ) ) {
+			properties.remove( name );
+		}
+		else {
+			DotPatternMapHelpers.resetValue( properties, name );
+		}
 	}
 }
