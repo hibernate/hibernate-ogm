@@ -84,7 +84,8 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		Entity entity = getEntity( key );
+		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
+
 		if ( entity != null ) {
 			return new Tuple( new RedisTupleSnapshot( entity.getProperties() ) );
 		}
@@ -369,15 +370,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 	}
 
-	// Retrieve entity and enhance entity data with the entity key
-	private Entity getEntity(EntityKey key) {
-		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
-		if ( entity != null ) {
-			addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
-		}
-		return entity;
-	}
-
 	private void addIdToEntity(Entity entity, String[] columnNames, Object[] columnValues) {
 		for ( int i = 0; i < columnNames.length; i++ ) {
 			entity.set( columnNames[i], columnValues[i] );
@@ -535,16 +527,16 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		return entityStorageStrategy;
 	}
 
-	/*
-			 * Construct a key based on the key columns:
-			 * Single key: Use the value as key
-			 * Multiple keys: Serialize the key using a JSON map.
-			 */
+	/**
+	 * Construct a key based on the key columns:
+	 * Single key: Use the value as key
+	 * Multiple keys: Serialize the key using a JSON map.
+	 */
 	private byte[] keyToBytes(String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length == 1 ) {
 
 			if ( columnValues[0] instanceof CharSequence ) {
-				return columnValues[0].toString().getBytes();
+				return toBytes( columnValues[0].toString() );
 			}
 
 			return toBytes( columnValues[0].toString() );
@@ -562,13 +554,12 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		return serializationStrategy.serialize( idObject );
 	}
 
-	/*
+	/**
 	 * Deconstruct the key name into its components:
 	 * Single key: Use the value from the key
 	 * Multiple keys: De-serialize the JSON map.
 	 */
 	private Map<String, Object> keyBytesToMap(EntityKeyMetadata entityKeyMetadata, byte[] key) {
-
 		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
 			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) toString( key ) );
 		}
