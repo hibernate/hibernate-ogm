@@ -24,7 +24,7 @@ public enum MapStorageType {
 	 *     "work" : 456
 	 * }
 	 * ...
-	 * <pre>
+	 * </pre>
 	 *
 	 * This setting is ignored for all other key column types,
 	 * {@link MapStorageType#AS_LIST} will be used then.
@@ -42,7 +42,7 @@ public enum MapStorageType {
 	 *     { "addressType" : "work", "addressId" : 456 },
 	 * ]
 	 * ...
-	 * <pre>
+	 * </pre>
 	 */
 	AS_LIST;
 }

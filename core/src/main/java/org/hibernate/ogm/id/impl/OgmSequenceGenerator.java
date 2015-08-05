@@ -102,7 +102,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	 *
 	 * Determine the name of the sequence (or table if this resolves to a physical table)
 	 * to use.
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).

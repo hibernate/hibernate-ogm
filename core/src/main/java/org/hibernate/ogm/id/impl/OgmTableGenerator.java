@@ -176,7 +176,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	 * NOTE: Copied from TableGenerator
 	 * <p>
 	 * Determine the table name to use for the generator values.
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @see #getTableName()
