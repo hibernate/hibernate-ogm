@@ -63,18 +63,18 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'homeAddress' : {" +
+					"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'country' : 'France', " +
 						"'street1' : '1 avenue des Champs Elysees'," +
 						"'type' : {" +
-						"'name' : 'main'" +
+							"'name' : 'main'" +
 						"}" +
-						"}, " +
-						"'postal_code' : '75007', " +
-						"'password' : 'like I would tell ya', " +
-						"'version': 0 " +
-						"}"
+					"}, " +
+					"'postal_code' : '75007', " +
+					"'password' : 'like I would tell ya', " +
+					"'version': 0 " +
+				"}"
 		);
 
 		transaction.commit();
@@ -104,16 +104,16 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'homeAddress' : {" +
+					"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'street1' : '1 avenue des Champs Elysees'," +
 						"'type' : {" +
-						"'name' : 'main'" +
+							"'name' : 'main'" +
 						"}" +
-						"}, " +
-						"'postal_code' : '75007', " +
-						"'version': 1 " +
-						"}"
+					"}, " +
+					"'postal_code' : '75007', " +
+					"'version': 1 " +
+				"}"
 		);
 
 		transaction.commit();
@@ -142,13 +142,13 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'homeAddress' : {" +
+					"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'street1' : '1 avenue des Champs Elysees'" +
-						"}, " +
-						"'postal_code' : '75007', " +
-						"'version': 2 " +
-						"}"
+					"}, " +
+					"'postal_code' : '75007', " +
+					"'version': 2 " +
+				"}"
 		);
 
 		transaction.commit();
@@ -178,9 +178,9 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"emmanuel",
 				// expected
 				"{ " +
-						"'postal_code' : '75007', " +
-						"'version': 3 " +
-						"}"
+					"'postal_code' : '75007', " +
+					"'version': 3 " +
+				"}"
 		);
 
 		transaction.commit();
