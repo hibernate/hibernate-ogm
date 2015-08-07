@@ -10,7 +10,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -21,23 +20,18 @@ import org.hibernate.ogm.backendtck.hsearch.Insurance;
 import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
-import org.hibernate.ogm.utils.FileHelper;
 import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.IndexDirectoryManager;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import org.junit.AfterClass;
 import org.junit.Test;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class SimpleEntityMassIndexingTest extends OgmTestCase {
-
-	private static final File indexDir = getBaseIndexDir();
 
 	@Test
 	@SkipByGridDialect(value = GridDialectType.NEO4J, comment = "Neo4j is not compatible with HSEARCH 5")
@@ -105,11 +99,6 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		}
 	}
 
-	@AfterClass
-	public static void deleteIndexDir() throws Exception {
-		FileHelper.delete( indexDir );
-	};
-
 	private void startAndWaitMassIndexing(Class<?> entityType) throws InterruptedException {
 		FullTextSession session = Search.getFullTextSession( openSession() );
 		session.createIndexer( entityType ).purgeAllOnStart( true ).startAndWait();
@@ -132,23 +121,9 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		return new Class<?>[] { Insurance.class, IndexedNews.class, IndexedLabel.class };
 	}
 
-	protected static File getBaseIndexDir() {
-		// Make sure no directory is ever reused across the testsuite as Windows might not be able
-		// to delete the files after usage. See also
-		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154
-		String shortTestName = SimpleEntityMassIndexingTest.class.getSimpleName() + "." + System.currentTimeMillis();
-
-		// the constructor File(File, String) is broken too, see :
-		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
-		// So make sure to use File(String, String) in this case as TestConstants works with absolute paths!
-		File indexPath = new File( IndexDirectoryManager.getIndexDirectory( SimpleEntityMassIndexingTest.class ), shortTestName );
-		return indexPath;
-	}
-
 	@Override
 	protected void configure(Map<String, Object> settings) {
-		settings.put( "hibernate.search.default.indexBase", indexDir.getAbsolutePath() );
-		settings.put( "hibernate.search.default.directory_provider", "filesystem" );
+		settings.put( "hibernate.search.default.directory_provider", "ram" );
 		// Infinispan requires to be set to distribution mode for this test to pass
 		settings.put( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
 	}

@@ -10,39 +10,27 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 
 import org.apache.lucene.search.Query;
-import org.fest.util.Files;
 import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
-import org.hibernate.ogm.utils.IndexDirectoryManager;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import org.junit.After;
 import org.junit.Test;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class AssociationMassIndexerTest extends JpaTestCase {
-
-	private static final File baseDir = getBaseIndexDir();
-
-	@After
-	public void tearDown() throws Exception {
-		super.closeFactory();
-		Files.delete( baseDir );
-	}
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Uses embedded key which is currently not supported by the db query parsers")
@@ -146,23 +134,10 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 		return new Class<?>[] { IndexedNews.class, IndexedLabel.class };
 	}
 
-	protected static File getBaseIndexDir() {
-		// Make sure no directory is ever reused across the testsuite as Windows might not be able
-		// to delete the files after usage. See also
-		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154
-		String shortTestName = AssociationMassIndexerTest.class.getSimpleName() + "." + Math.random();
-
-		// the constructor File(File, String) is broken too, see :
-		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
-		// So make sure to use File(String, String) in this case as TestConstants works with absolute paths!
-		return new File( IndexDirectoryManager.getIndexDirectory( AssociationMassIndexerTest.class ), shortTestName );
-	}
-
 	@Override
 	protected void refineInfo(GetterPersistenceUnitInfo info) {
 		super.refineInfo( info );
-		info.getProperties().setProperty( "hibernate.search.default.indexBase", baseDir.getAbsolutePath() );
-		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "filesystem" );
+		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "ram" );
 		// Infinispan requires to be set to distribution mode for this test to pass
 		info.getProperties().setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
 	}
