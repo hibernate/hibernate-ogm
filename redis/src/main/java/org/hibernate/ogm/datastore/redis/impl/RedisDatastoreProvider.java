@@ -73,20 +73,10 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 	public void start() {
 		try {
 			Hosts.HostAndPort hostAndPort = config.getHosts().getFirst();
-			RedisURI.Builder builder = redis( hostAndPort.getHost(), hostAndPort.getPort() );
-			builder.withSsl( config.isSsl() );
-			builder.withDatabase( config.getDatabaseNumber() );
-
-			if ( config.getPassword() != null ) {
-				builder.withPassword( config.getPassword() );
-			}
-
-			builder.withTimeout( config.getTimeout(), TimeUnit.MILLISECONDS );
-			redisClient = new RedisClient( builder.build() );
+			redisClient = createClient( hostAndPort );
 
 			log.connectingToRedis( config.getHosts().toString(), config.getTimeout() );
 			connection = redisClient.connect( new ByteArrayCodec() );
-
 		}
 		catch (RuntimeException e) {
 			// return a ServiceException to be stack trace friendly
@@ -94,15 +84,32 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		}
 	}
 
+	protected RedisClient createClient(Hosts.HostAndPort hostAndPort) {
+		RedisURI.Builder builder = redis( hostAndPort.getHost(), hostAndPort.getPort() );
+		builder.withSsl( config.isSsl() );
+		builder.withDatabase( config.getDatabaseNumber() );
+
+		if ( config.getPassword() != null ) {
+			builder.withPassword( config.getPassword() );
+		}
+
+		builder.withTimeout( config.getTimeout(), TimeUnit.MILLISECONDS );
+		return new RedisClient( builder.build() );
+	}
+
 	@Override
 	public void stop() {
 		if ( connection != null ) {
 			log.disconnectingFromRedis();
 			connection.close();
-			redisClient.shutdown( 100, 100, TimeUnit.MILLISECONDS );
 			connection = null;
-			redisClient = null;
+			shutdownClient();
 		}
+	}
+
+	protected void shutdownClient() {
+		redisClient.shutdown( 100, 100, TimeUnit.MILLISECONDS );
+		redisClient = null;
 	}
 
 	@Override
