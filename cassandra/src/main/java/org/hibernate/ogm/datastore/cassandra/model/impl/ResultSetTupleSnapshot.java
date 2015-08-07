@@ -7,13 +7,10 @@
 package org.hibernate.ogm.datastore.cassandra.model.impl;
 
 import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Row;
 
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -27,11 +24,9 @@ public class ResultSetTupleSnapshot implements TupleSnapshot {
 
 	private final Row row;
 	private Map<String, Integer> columnNames = new HashMap<String, Integer>();
-	private ProtocolVersion protocolVersion;
 
-	public ResultSetTupleSnapshot(Row row, ProtocolVersion protocolVersion) {
+	public ResultSetTupleSnapshot(Row row) {
 		this.row = row;
-		this.protocolVersion = protocolVersion;
 
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
 		int count = columnDefinitions.size();
@@ -42,14 +37,8 @@ public class ResultSetTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public Object get(String column) {
-
 		Integer index = columnNames.get( column );
-		DataType dataType = row.getColumnDefinitions().getType( index );
-		ByteBuffer byteBuffer = row.getBytesUnsafe( index );
-		if ( byteBuffer == null ) {
-			return null;
-		}
-		Object value = dataType.deserialize( byteBuffer, protocolVersion );
+		Object value = row.getObject( index );
 		return value;
 	}
 

@@ -33,6 +33,7 @@ import org.hibernate.service.spi.Stoppable;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.DriverException;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 /**
  * Datastore service layered on Cassandra's java-driver i.e. CQL3 native transport.
@@ -50,6 +51,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 
 	private Cluster cluster;
 	private Session session;
+	private QueryBuilder queryBuilder;
 	private CassandraSequenceHandler sequenceHandler;
 
 	private final Map<String, Table> metaDataCache = new HashMap<String, Table>();
@@ -81,6 +83,10 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 
 	public Session getSession() {
 		return session;
+	}
+
+	public QueryBuilder getQueryBuilder() {
+		return queryBuilder;
 	}
 
 	public Map<String, Table> getMetaDataCache() {
@@ -121,6 +127,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 				bootstrapSession.close();
 
 				session = cluster.connect( config.getDatabaseName() );
+				queryBuilder = new QueryBuilder( cluster );
 
 				sequenceHandler = new CassandraSequenceHandler(this);
 			}

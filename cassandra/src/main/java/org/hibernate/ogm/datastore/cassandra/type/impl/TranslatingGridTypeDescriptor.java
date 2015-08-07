@@ -18,7 +18,7 @@ import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
- * Cassandra has a more limited range of types than many RDBMS (e.g. no numerics smaller than int),
+ * Cassandra has a more limited range of types than many RDBMS,
  * though it does also have native support for some types they typically lack (e.g. UUIDs).
  * The Cassandra java-driver is very fussy about type bindings, with no support for implicit conversions
  * even when they are safe.

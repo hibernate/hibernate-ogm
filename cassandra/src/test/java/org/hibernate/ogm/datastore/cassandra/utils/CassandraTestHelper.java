@@ -9,9 +9,7 @@ package org.hibernate.ogm.datastore.cassandra.utils;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.quote;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,9 +34,7 @@ import org.hibernate.persister.collection.CollectionPersister;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -65,7 +61,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 	}
 
 	private static boolean isNotNull(String cassandraHostName) {
-		return cassandraHostName != null && cassandraHostName.length() > 0 && ! "null".equals( cassandraHostName );
+		return cassandraHostName != null && cassandraHostName.length() > 0 && !"null".equals( cassandraHostName );
 	}
 
 	private static CassandraDatastoreProvider getProvider(SessionFactory sessionFactory) {
@@ -111,19 +107,11 @@ public class CassandraTestHelper implements TestableGridDialect {
 			ResultSet resultSet = cassandraDatastoreProvider.getSession().execute( query.toString() );
 			// no GROUP BY in CQL, so we do it the hard way...
 			HashSet<Object> uniqs = new HashSet<>();
-			ProtocolVersion protocolVersion = cassandraDatastoreProvider.getSession()
-					.getCluster()
-					.getConfiguration()
-					.getProtocolOptions()
-					.getProtocolVersionEnum();
 			for ( Row row : resultSet ) {
-				DataType dataType = row.getColumnDefinitions().getType( 0 );
-				ByteBuffer byteBuffer = row.getBytesUnsafe( 0 );
-				if ( byteBuffer == null ) {
-					continue;
+				Object value = row.getObject( 0 );
+				if ( value != null ) {
+					uniqs.add( value );
 				}
-				Object value = dataType.deserialize( byteBuffer, protocolVersion );
-				uniqs.add( value );
 			}
 			count += uniqs.size();
 		}
@@ -145,25 +133,16 @@ public class CassandraTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 
 		CassandraDatastoreProvider provider = getProvider( sessionFactory );
-
-
-		Select select = select().all().from( quote( key.getTable() ) );
+		Select select = provider.getQueryBuilder().select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
 		for ( int i = 1; i < key.getColumnNames().length; i++ ) {
 			selectWhere = selectWhere.and( eq( quote( key.getColumnNames()[i] ), QueryBuilder.bindMarker() ) );
 		}
 
-		ProtocolVersion protocolVersion = provider.getSession()
-				.getCluster()
-				.getConfiguration()
-				.getProtocolOptions()
-				.getProtocolVersionEnum();
-
 		PreparedStatement preparedStatement = provider.getSession().prepare( select );
 		BoundStatement boundStatement = new BoundStatement( preparedStatement );
 		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			DataType dataType = preparedStatement.getVariables().getType( i );
-			boundStatement.setBytesUnsafe( i, dataType.serialize( key.getColumnValues()[i], protocolVersion ) );
+			boundStatement.setObject( i, key.getColumnValues()[i] );
 		}
 		ResultSet resultSet = provider.getSession().execute( boundStatement );
 
@@ -175,7 +154,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 		Map<String, Object> result = new HashMap<String, Object>();
 		for ( ColumnDefinitions.Definition definition : row.getColumnDefinitions() ) {
 			String k = definition.getName();
-			Object v = definition.getType().deserialize( row.getBytesUnsafe( k ), protocolVersion );
+			Object v = row.getObject( k );
 			result.put( k, v );
 		}
 		return result;
