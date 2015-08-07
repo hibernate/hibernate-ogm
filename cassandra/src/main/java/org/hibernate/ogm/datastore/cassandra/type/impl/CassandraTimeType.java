@@ -6,27 +6,25 @@
  */
 package org.hibernate.ogm.datastore.cassandra.type.impl;
 
+import java.util.Date;
+
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
-import org.hibernate.type.descriptor.java.ShortTypeDescriptor;
+import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 
 /**
- * Cassandra doesn't do Short, so convert to Integer.
+ * Starting with 2.2 cassandra has a native 'time' (with no days) cql column type. yay.
+ * The driver won't convert convert to/from java.util.Date though, so we need to wire up a custom TypeDescriptor.
  *
  * @author Jonathan Halliday
- * @see TranslatingGridTypeDescriptor
  */
-public class CassandraShortType extends AbstractGenericBasicType<Short> {
-	public static CassandraShortType INSTANCE = new CassandraShortType();
+public class CassandraTimeType extends AbstractGenericBasicType<Date> {
 
-	public CassandraShortType() {
-		super( new TranslatingGridTypeDescriptor( Integer.class ), ShortTypeDescriptor.INSTANCE );
-	}
+	public static CassandraTimeType INSTANCE = new CassandraTimeType();
 
-	@Override
-	public String[] getRegistrationKeys() {
-		return new String[] {getName(), short.class.getName(), Short.class.getName()};
+	public CassandraTimeType() {
+		super( TimeGridTypeDescriptor.INSTANCE, DateTypeDescriptor.INSTANCE );
 	}
 
 	@Override
@@ -36,7 +34,6 @@ public class CassandraShortType extends AbstractGenericBasicType<Short> {
 
 	@Override
 	public String getName() {
-		return "cassandra_short";
+		return "cassandra_time";
 	}
-
 }

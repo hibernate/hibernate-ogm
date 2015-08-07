@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
@@ -34,14 +32,11 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 public class ResultSetAssociationSnapshot implements AssociationSnapshot {
 
 	private Map<RowKey, Row> res = new HashMap<RowKey, Row>();
-	private com.datastax.driver.core.ProtocolVersion protocolVersion;
 
 	public ResultSetAssociationSnapshot(
 			AssociationKey key,
 			ResultSet resultSet,
-			Table tableMetadata,
-			ProtocolVersion protocolVersion) {
-		this.protocolVersion = protocolVersion;
+			Table tableMetadata) {
 
 		if ( resultSet == null ) {
 			res = Collections.EMPTY_MAP;
@@ -61,8 +56,7 @@ public class ResultSetAssociationSnapshot implements AssociationSnapshot {
 		for ( Row row : resultSet ) {
 			Object[] columnValues = new Object[columnNames.length];
 			for ( int i = 0; i < columnNames.length; i++ ) {
-				DataType dataType = row.getColumnDefinitions().getType( columnNames[i] );
-				columnValues[i] = dataType.deserialize( row.getBytesUnsafe( columnNames[i] ), protocolVersion );
+				columnValues[i] = row.getObject( columnNames[i] );
 			}
 			RowKey rowKey = new RowKey( columnNames, columnValues );
 			res.put( rowKey, row );
@@ -71,7 +65,7 @@ public class ResultSetAssociationSnapshot implements AssociationSnapshot {
 
 	@Override
 	public Tuple get(RowKey rowKey) {
-		return new Tuple( new ResultSetTupleSnapshot( res.get( rowKey ), protocolVersion ) );
+		return new Tuple( new ResultSetTupleSnapshot( res.get( rowKey ) ) );
 	}
 
 	@Override

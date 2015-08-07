@@ -22,11 +22,8 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.quote;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 
 /**
  * Abstraction layer for adding id sequence numbers support to Cassandra,
@@ -57,7 +54,7 @@ public class CassandraSequenceHandler {
 
 	private Long nextValueSelect(IdSourceKeyMetadata metadata, String sequenceName) {
 
-		Statement select = select().column( quote( metadata.getValueColumnName() )  )
+		Statement select = provider.getQueryBuilder().select().column( quote( metadata.getValueColumnName() )  )
 				.from( quote( metadata.getName() ) )
 				.where( eq( metadata.getKeyColumnName(), QueryBuilder.bindMarker() ) );
 
@@ -82,7 +79,7 @@ public class CassandraSequenceHandler {
 
 	private Long nextValueInsert(IdSourceKeyMetadata metadata, String sequenceName, Long value) {
 
-		Insert insert = insertInto( quote( metadata.getName() ))
+		Insert insert = provider.getQueryBuilder().insertInto( quote( metadata.getName() ))
 				.value( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) )
 				.value( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value" ) )
 				.ifNotExists();
@@ -104,7 +101,7 @@ public class CassandraSequenceHandler {
 
 	private boolean nextValueUpdate(IdSourceKeyMetadata metadata, String sequenceName, Long oldValue, Long newValue) {
 
-		Statement update = update( quote( metadata.getName() ) )
+		Statement update = provider.getQueryBuilder().update( quote( metadata.getName() ) )
 				.with( set( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value_new" ) ) )
 				.where( eq( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) ) )
 				.onlyIf( eq( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value_old" ) ) );
