@@ -54,7 +54,7 @@ public class ModulesMagicDeckITCassandra {
 				.addClasses( MagicCard.class, MagicCardsCollectionBean.class );
 		String persistenceXml = persistenceXml().exportAsString();
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
-		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate:ogm services, org.hibernate.ogm.cassandra services, org.hibernate.search.orm:${hibernate-search.module.slot} services" );
+		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm services, org.hibernate.ogm.cassandra services, org.hibernate.search.orm:${hibernate-search.module.slot} services" );
 		return webArchive;
 	}
 

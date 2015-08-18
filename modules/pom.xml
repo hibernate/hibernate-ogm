@@ -22,7 +22,7 @@
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
         <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
-        <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
+        <hibernate.ogm.module.slot>main</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.infinispan.module.slot>main</hibernate.ogm.infinispan.module.slot>
         <hibernate.ogm.cassandra.module.slot>main</hibernate.ogm.cassandra.module.slot>

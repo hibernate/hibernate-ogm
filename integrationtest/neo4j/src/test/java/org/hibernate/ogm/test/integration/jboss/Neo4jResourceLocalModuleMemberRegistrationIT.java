@@ -42,7 +42,7 @@ public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRe
 		return new ModuleMemberRegistrationDeployment
 				.Builder( Neo4jResourceLocalModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
-				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.neo4j services" )
+				.manifestDependencies( "org.hibernate.ogm services, org.hibernate.ogm.neo4j services" )
 				.createDeployment();
 	}
 

@@ -11,7 +11,7 @@
         <resource-root path="ehcache-core-${ehcacheVersion}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" slot="${hibernate.ogm.module.slot}" />
+        <module name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
         <module name="javax.api" />

@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.test.integration.jboss;
 
+import static org.junit.Assert.assertEquals;
+
 import javax.inject.Inject;
 
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -14,10 +16,6 @@ import org.hibernate.ogm.test.integration.jboss.model.Member;
 import org.hibernate.ogm.test.integration.jboss.model.PhoneNumber;
 import org.hibernate.ogm.test.integration.jboss.service.PhoneNumberService;
 import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -25,8 +23,8 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Test for the Hibernate OGM module in WildFly using Redis
@@ -46,7 +44,7 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.addClasses( PhoneNumber.class, PhoneNumberService.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies(
-						"org.hibernate:ogm services, org.hibernate.ogm.redis services, org.hibernate.search.orm:${hibernate-search.module.slot} services"
+						"org.hibernate.ogm services, org.hibernate.ogm.redis services, org.hibernate.search.orm:${hibernate-search.module.slot} services"
 				)
 				.createDeployment();
 	}

@@ -16,7 +16,7 @@
         <!-- OGM -->
         <file>
             <source>${hibernate.ogm.module.xml}</source>
-            <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
+            <outputDirectory>/org/hibernate/ogm/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
@@ -85,7 +85,7 @@
         <!-- OGM -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/${hibernate.ogm.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
