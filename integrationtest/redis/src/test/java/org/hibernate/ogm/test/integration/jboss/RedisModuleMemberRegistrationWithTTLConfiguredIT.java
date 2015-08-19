@@ -88,10 +88,9 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		phoneNumberService.createPhoneNumber( "Michael", "123-456" );
 
 		RedisDatastoreProvider provider = getProvider();
-		RedisDialect dialect = getDialect( provider );
 
 		// when
-		byte[] key = dialect.toBytes( "PhoneNumber:Michael" );
+		byte[] key = RedisDialect.toBytes( "PhoneNumber:Michael" );
 		RedisConnection<byte[], byte[]> connection = provider.getConnection();
 		Boolean exists = connection.exists( key );
 		byte[] value = connection.get( key );
