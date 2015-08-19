@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.keyvalue.options.navigation.spi;
 
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreEntityContext;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStorePropertyContext;
 import org.hibernate.ogm.options.navigation.spi.BasePropertyContext;
@@ -21,5 +23,14 @@ public abstract class BaseKeyValueStorePropertyContext<E extends KeyValueStoreEn
 
 	public BaseKeyValueStorePropertyContext(ConfigurationContext context) {
 		super( context );
+	}
+
+	public P mapStorage(MapStorageType mapStorage) {
+		addPropertyOption( new MapStorageOption(), mapStorage );
+
+		// ok; an error would only occur for inconsistently defined context types
+		@SuppressWarnings("unchecked")
+		P context = (P) this;
+		return context;
 	}
 }

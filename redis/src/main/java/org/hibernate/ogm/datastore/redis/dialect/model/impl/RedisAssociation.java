@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.List;
-
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
@@ -55,14 +53,14 @@ public abstract class RedisAssociation {
 	 *
 	 * @return a list with all the rows for this association
 	 */
-	public abstract List<Object> getRows();
+	public abstract Object getRows();
 
 	/**
 	 * Sets the rows of this association. The given list must not contain columns which are part of the association key.
 	 *
 	 * @param rows the rows of the association
 	 */
-	public abstract void setRows(List<Object> rows);
+	public abstract void setRows(Object rows);
 
 	/**
 	 * Returns the Redis value which owns this association, either an {@link Association} or an

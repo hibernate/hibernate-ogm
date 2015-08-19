@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
@@ -26,13 +27,18 @@ class DocumentBasedAssociation extends RedisAssociation {
 	}
 
 	@Override
-	public List<Object> getRows() {
+	public Object getRows() {
 		return document.getRows();
 	}
 
 	@Override
-	public void setRows(List<Object> rows) {
-		document.setRows( rows );
+	public void setRows(Object rows) {
+		if ( rows instanceof List ) {
+			document.setRows( (List) rows );
+		}
+		else {
+			document.setRows( Collections.singletonList( rows ) );
+		}
 	}
 
 	@Override

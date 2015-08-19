@@ -6,10 +6,11 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -31,33 +32,58 @@ class EmbeddedAssociation extends RedisAssociation {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<Object> getRows() {
-		List<Object> rows;
-		Object fieldValue = entity.getProperties().get( associationKeyMetadata.getCollectionRole() );
+	public Object getRows() {
+		Object rows;
+		Object fieldValue = DotPatternMapHelpers.getValueOrNull(
+				entity.getPropertiesAsHierarchy(), associationKeyMetadata.getCollectionRole()
+		);
 
 		if ( fieldValue == null ) {
 			rows = Collections.emptyList();
 		}
 		else if ( associationKeyMetadata.isOneToOne() ) {
-			rows = new ArrayList<Object>( 1 );
-			rows.add( fieldValue );
+			rows = fieldValue;
 		}
 		else {
-			rows = (List<Object>) fieldValue;
+			rows = fieldValue;
 		}
 
 		return rows;
 	}
 
 	@Override
-	public void setRows(List<Object> rows) {
-		if ( rows.isEmpty() ) {
+	public void setRows(Object rows) {
+		if ( isEmpty( rows ) ) {
 			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
 		}
 		else {
-			Object value = associationKeyMetadata.isOneToOne() ? rows.iterator().next() : rows;
-			entity.set( associationKeyMetadata.getCollectionRole(), value );
+
+			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			if ( associationKeyMetadata.isOneToOne() && rows instanceof Collection ) {
+				Object value = ( (Collection) rows ).iterator().next();
+				entity.set( associationKeyMetadata.getCollectionRole(), value );
+			}
+			else {
+				entity.set( associationKeyMetadata.getCollectionRole(), rows );
+			}
 		}
+	}
+
+	protected boolean isEmpty(Object rows) {
+
+		if ( rows == null ) {
+			return true;
+		}
+
+		if ( rows instanceof Collection<?> && ( (Collection<?>) rows ).isEmpty() ) {
+			return true;
+		}
+
+		if ( rows instanceof Map<?, ?> && ( (Map<?, ?>) rows ).isEmpty() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
