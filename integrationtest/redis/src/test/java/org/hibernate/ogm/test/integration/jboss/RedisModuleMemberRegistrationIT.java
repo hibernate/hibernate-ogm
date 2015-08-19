@@ -50,9 +50,6 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 	}
 
 	private static PersistenceDescriptor persistenceXml() {
-		String host = System.getenv( "REDIS_HOSTNAME" );
-		String password = System.getenv( "REDIS_PASSWORD" );
-
 		Properties<PersistenceUnit<PersistenceDescriptor>> propertiesContext = Descriptors.create( PersistenceDescriptor.class )
 				.version( "2.0" )
 				.createPersistenceUnit()
@@ -61,21 +58,16 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.clazz( Member.class.getName() )
 				.clazz( PhoneNumber.class.getName() )
 				.getOrCreateProperties();
-		if ( isNotNull( host ) ) {
-			propertiesContext.createProperty().name( OgmProperties.HOST ).value( host );
-		}
-		if ( isNotNull( password ) ) {
-			propertiesContext.createProperty().name( OgmProperties.PASSWORD ).value( password );
+
+		if ( RedisTestProperties.getPassword() != null ) {
+			propertiesContext.createProperty().name( OgmProperties.PASSWORD ).value( RedisTestProperties.getPassword() );
 		}
 		return propertiesContext
+				.createProperty().name( OgmProperties.HOST ).value( RedisTestProperties.getHost() ).up()
 				.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( Redis.DATASTORE_PROVIDER_NAME ).up()
 				.createProperty().name( OgmProperties.DATABASE ).value( "0" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
-	}
-
-	private static boolean isNotNull(String value) {
-		return value != null && value.length() > 0 && !"null".equals( value );
 	}
 
 	@Test
