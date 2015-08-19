@@ -17,8 +17,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
@@ -132,6 +135,10 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		);
 	}
 
+	private MapStorageType getMapStorage(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( MapStorageOption.class );
+	}
+
 	private Long getTTL(OptionsContext optionsContext) {
 		return optionsContext.getUnique( TTLOption.class );
 	}
@@ -236,7 +243,8 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			Entity owningEntity = getEmbeddingEntity( key );
 
-			if ( owningEntity != null && owningEntity.getProperties().containsKey(
+			if ( owningEntity != null && DotPatternMapHelpers.hasField(
+					owningEntity.getPropertiesAsHierarchy(),
 					key.getMetadata()
 							.getCollectionRole()
 			) ) {
@@ -244,6 +252,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 			}
 		}
 		else {
+
 			Association association = getAssociation( key.getEntityKey() );
 			if ( association != null ) {
 				redisAssociation = RedisAssociation.fromAssociationDocument( association );
@@ -277,7 +286,12 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 			redisAssociation = RedisAssociation.fromAssociationDocument( association );
 		}
 
-		return new org.hibernate.ogm.model.spi.Association( new RedisAssociationSnapshot( redisAssociation, key ) );
+		return new org.hibernate.ogm.model.spi.Association(
+				new RedisAssociationSnapshot(
+						redisAssociation,
+						key
+				)
+		);
 	}
 
 	// Retrieve entity that contains the association, do not enhance with entity key
@@ -289,7 +303,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	public void insertOrUpdateAssociation(
 			AssociationKey associationKey, org.hibernate.ogm.model.spi.Association association,
 			AssociationContext associationContext) {
-		List<Object> rows = getAssociationRows( association, associationKey );
+		Object rows = getAssociationRows( association, associationKey, associationContext );
 
 		RedisAssociation redisAssociation = ( (RedisAssociationSnapshot) association.getSnapshot() ).getRedisAssociation();
 		redisAssociation.setRows( rows );
@@ -335,14 +349,76 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	 * <li>{@code Entity}s with keys/values for all row key columns which are not part of the association key</li>
 	 * </ul>
 	 */
-	private List<Object> getAssociationRows(org.hibernate.ogm.model.spi.Association association, AssociationKey key) {
-		List<Object> rows = new ArrayList<Object>( association.size() );
+	private Object getAssociationRows(
+			org.hibernate.ogm.model.spi.Association association,
+			AssociationKey key,
+			AssociationContext associationContext) {
 
+		boolean organizeByRowKey = organizeByRowKey( association, key, associationContext );
+
+		if ( organizeByRowKey ) {
+			String rowKeyColumn = organizeByRowKey ? key.getMetadata().getRowKeyIndexColumnNames()[0] : null;
+			Map<String, Object> rows = new HashMap<>();
+
+			for ( RowKey rowKey : association.getKeys() ) {
+				Map<String, Object> row = (Map<String, Object>) getAssociationRow( association.get( rowKey ), key );
+
+				String rowKeyValue = (String) row.remove( rowKeyColumn );
+
+				// if there is a single column on the value side left, unwrap it
+				if ( row.keySet().size() == 1 ) {
+					rows.put( rowKeyValue, row.values().iterator().next() );
+				}
+				else {
+					rows.put( rowKeyValue, row );
+				}
+			}
+
+			return rows;
+		}
+
+		List<Object> rows = new ArrayList<Object>( association.size() );
 		for ( RowKey rowKey : association.getKeys() ) {
 			rows.add( getAssociationRow( association.get( rowKey ), key ) );
 		}
 
 		return rows;
+	}
+
+	/**
+	 * Whether the rows of the given association should be stored in a hash using the single row key column as key or
+	 * not.
+	 */
+	private boolean organizeByRowKey(
+			org.hibernate.ogm.model.spi.Association association,
+			AssociationKey key,
+			AssociationContext associationContext) {
+
+		// only in-entity maps can be mapped by row key to prevent huge external association maps
+		if ( !isStoredInEntityStructure(
+				key.getMetadata(),
+				associationContext.getAssociationTypeContext()
+		) ) {
+			return false;
+		}
+
+		if ( association.isEmpty() ) {
+			return false;
+		}
+
+		if ( key.getMetadata().getRowKeyIndexColumnNames().length != 1 ) {
+			return false;
+		}
+
+		Object valueOfFirstRow = association.get( association.getKeys().iterator().next() )
+				.get( key.getMetadata().getRowKeyIndexColumnNames()[0] );
+
+		if ( !( valueOfFirstRow instanceof String ) ) {
+			return false;
+		}
+
+		// The list style may be explicitly enforced for compatibility reasons
+		return getMapStorage( associationContext ) == MapStorageType.BY_KEY;
 	}
 
 	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
@@ -363,7 +439,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 			}
 		}
 
-		return rowObject;
+		return rowObject.getPropertiesAsHierarchy();
 	}
 
 	private String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {

@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.keyvalue.options.navigation.spi;
 
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreEntityContext;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreGlobalContext;
@@ -28,6 +30,15 @@ public abstract class BaseKeyValueStoreGlobalContext<G extends KeyValueStoreGlob
 	@Override
 	public G cacheMapping(CacheMappingType cacheMapping) {
 		addGlobalOption( new CacheMappingOption(), cacheMapping );
+
+		// ok; an error would only occur for inconsistently defined context types
+		@SuppressWarnings("unchecked")
+		G context = (G) this;
+		return context;
+	}
+
+	public G mapStorage(MapStorageType mapStorage) {
+		addGlobalOption( new MapStorageOption(), mapStorage );
 
 		// ok; an error would only occur for inconsistently defined context types
 		@SuppressWarnings("unchecked")
