@@ -1551,7 +1551,7 @@ Key: BankAccount:account_2
 
 With this strategy, Hibernate OGM uses separate association lists
 to store all navigation information.
-Each assocation list has 2 parts.
+Each association list has 2 parts.
 The first is the key which contains the identifier information
 of the association owner and the name of the association table.
 The second part is the `rows` field which stores (into an embedded collection) all ids
