@@ -68,7 +68,9 @@ As of today, we have implemented the following datastore providers:
 * a Ehcache based datastore provider to persist your entities in Ehcache
 * a MongoDB based datastore provider to persist data in a MongoDB database
 * a Neo4j based datastore provider to persist data in the Neo4j graph database
-* a CouchDB based datastore provider to persist data in the CouchDB document store
+* a CouchDB based datastore provider to persist data in the CouchDB document store (experimental)
+* a Cassandra based datastore provider to persist data in Apache Cassandra (experimental)
+* a Redis based datastore provider to persist data in the Redis key/value store (experimental)
 
 To implement JP-QL queries, Hibernate OGM parses the JP-QL string
 and calls the appropriate translator functions to build a native query.

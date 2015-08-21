@@ -22,7 +22,7 @@ As a reminder, it basically boils down to either:
 
 * set the right persistence provider in your `persistence.xml` file
   and create an `EntityManagerFactory` the usual way
-* start via the Hibernate ORM native APIs using `OgmConfiguration`
+* start via the Hibernate ORM native APIs using `StandardServiceRegistryBuilder` and `MetadataSources`
   to boot a `SessionFactory`
 
 === JPA and native Hibernate ORM APIs
@@ -52,7 +52,7 @@ Here are the few exceptions:
 
 ==== Accessing the `OgmSession` API
 
-To execute NoSQL native queries, one approach is to use `OgmSession.createNativeQuery`.
+To execute NoSQL native queries, one approach is to use `OgmSession#createNativeQuery`.
 You can read more about it in <<ogm-query-native>>.
 But let's see how to access an `OgmSession` instance.
 
@@ -76,8 +76,15 @@ This factory in turns produces `OgmSession`.
 ====
 [source, JAVA]
 ----
-OgmConfiguration ogmConfiguration = new OgmConfiguration();
-OgmSessionFactory ogmSessionFactory = ogmConfiguration.buildSessionFactory();
+StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+    .applySetting( OgmProperties.ENABLED, true )
+    .build();
+
+OgmSessionFactory ogmSessionFactory = new MetadataSources( registry )
+    .buildMetadata()
+    .getSessionFactoryBuilder()
+    .unwrap( OgmSessionFactoryBuilder.class )
+    .build();
 OgmSession ogmSession = ogmSessionFactory.openSession();
 NoSQLQuery query = ogmSession.createNativeQuery(...);
 ----

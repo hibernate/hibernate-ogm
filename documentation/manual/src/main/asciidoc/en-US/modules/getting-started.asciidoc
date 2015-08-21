@@ -171,9 +171,8 @@ Create a [filename]`META-INF/persistence.xml` file.
                 NoSQL Datastore provider.
             <property name="hibernate.ogm.datastore.provider" value="infinispan"/>
             -->
-            <!-- defines which JTA Transaction we plan to use -->
-            <property name="hibernate.transaction.jta.platform"
-                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/>
+            <!-- defines which JTA Transaction platform we plan to use -->
+            <property name="hibernate.transaction.jta.platform" value="JBossTS"/>
         </properties>
     </persistence-unit>
 </persistence>

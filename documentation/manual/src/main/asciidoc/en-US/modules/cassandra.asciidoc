@@ -1,6 +1,6 @@
 [[ogm-cassandra]]
 
-== Cassandra
+== Cassandra (Experimental)
 
 http://cassandra.apache.org/[Cassandra] is a distributed column family database.
 
@@ -38,7 +38,7 @@ To add the dependencies via Maven, add the following module:
 </dependency>
 ----
 
-This will pull the cassandra java-driver transparently.
+This will pull the Cassandra Java driver transparently.
 
 If you're not using a dependency management tool,
 copy all the dependencies from the distribution in the directories:
