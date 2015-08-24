@@ -66,15 +66,6 @@ TTL can be configured on entity and association level (see <<ogm-redis-annotatio
 This property has no default value.
 hibernate.ogm.error_handler::
 The fully-qualified class name, class object or an instance of `ErrorHandler` to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
-hibernate.ogm.datastore.redis.entity_storage::
-Defines the way OGM stores entity information in Redis.
-The following two strategies exist (values of the `org.hibernate.ogm.datastore.redis.options.EntityStorageType` enum):
-* `JSON` (store entities as JSON documents with a key) and
-* `HASH` (store entities within hashes. The fields and values are represented as strings within the hash).
-
-`JSON` is the default and recommended option. `HASH` is limited to data types which can be represented as strings.
-Embedded associations, maps and lists are not supported by the `HASH` storage strategy.
-
 hibernate.ogm.datastore.redis.association_storage::
 Defines the way OGM stores association information in Redis.
 The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
@@ -82,6 +73,14 @@ The following two strategies exist (values of the `org.hibernate.ogm.datastore.d
 `ASSOCIATION_DOCUMENT` (store association information in a dedicated document per association).
 `IN_ENTITY` is the default and recommended option
 unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
+hibernate.ogm.datastore.document.map_storage::
+Defines the way OGM stores the contents of map-typed associations in Redis.
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.MapStorageType` enum):
+* `BY_KEY`: map-typed associations with a single key column which is of type `String` will be stored as a sub-document,
+organized by the given key; Not applicable for other types of key columns, in which case always `AS_LIST` will be used
+* `AS_LIST`: map-typed associations will be stored as an array containing a sub-document for each map entry.
+All key and value columns will be contained within the array elements
+The default value is `BY_KEY`.
 
 [NOTE]
 ====
@@ -97,7 +96,9 @@ To ease migration between stores, it is recommended to reference these constants
 
 Hibernate OGM allows to configure store-specific options via Java annotations.
 When working with the Redis backend, you can specify how associations should be stored
-using the `AssociationStorage` annotation
+using the `AssociationStorage` annotation.
+A strategy for storing the contents of map-typed associations can be defined using the `@MapStorage` annotation.
+
 (refer to <<ogm-redis-storage-principles>> to learn more about association storage strategies in general).
 
 The following shows an example:
@@ -761,12 +762,12 @@ Key: GrandMother:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 {
     "grandChildren" : [
             {
-                "name" : "luke",
                 "birthorder" : 0
+                "name" : "luke",
             },
             {
-                "name" : "leia",
                 "birthorder" : 1
+                "name" : "leia",
             }
     ]
 }
@@ -1194,16 +1195,14 @@ public class Address {
 ----
 Key: User:user_001
 { 
-  "addresses" : [
+  "addresses" : {
     { 
-      "addresses_KEY" : "work",
-      "addresses_id" : "address_001"
+      "work" : "address_001"
     },
     {
-      "addresses_KEY" : "home",
-      "addresses_id" : "address_002"
+      "home" : "address_002"
     }
-  ]
+  }
 }
 ----
 
@@ -1224,7 +1223,18 @@ Key: Address:address_002
 ----
 ====
 
-You can use @MapKeyColumn to rename the column containing the key of the map.
+If the map value cannot be represented by a single field (e.g. when referencing a type with a composite id
+or using an embeddable type as map value type),
+a sub-document containing all the required fields will be stored as value.
+
+If the map key either is not of type `String` or it is made up of several columns (composite map key),
+the optimized structure shown in the example above cannot be used.
+In that case the association will be represented by a list of sub-documents, also containing the map key column(s).
+You can use `@MapKeyColumn` to rename the field containing the key of the map,
+otherwise it will default to "<%COLLECTION_ROLE%>_KEY", e.g. "addresses_KEY".
+
+In case you want to enforce the list-style represention also for maps with a single key column of type `String`
+you can use the option `hibernate.ogm.datastore.document.map_storage` to do so.
 
 .Unidirectional one-to-many using maps with @MapKeyColumn
 ====

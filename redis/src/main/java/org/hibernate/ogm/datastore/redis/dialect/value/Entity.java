@@ -7,8 +7,10 @@
 package org.hibernate.ogm.datastore.redis.dialect.value;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
@@ -165,6 +167,13 @@ public class Entity extends StructuredValue {
 			properties.remove( name );
 		}
 		else {
+			Set<String> keys = new HashSet<String>( properties.keySet() );
+			for ( String key : keys ) {
+				if ( key.startsWith( name + "." ) ) {
+					removeAssociation( key );
+				}
+			}
+
 			DotPatternMapHelpers.resetValue( properties, name );
 		}
 	}
