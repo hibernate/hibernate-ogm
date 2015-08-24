@@ -9,12 +9,18 @@ package org.hibernate.ogm.datastore.document.impl;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+
 /**
  * Provides functionality for dealing with (nested) fields of Map documents.
  *
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
+ * @author Mark Paluch
  */
 public class DotPatternMapHelpers {
 
@@ -26,7 +32,7 @@ public class DotPatternMapHelpers {
 	 * @param entity the {@link Map} with the column
 	 * @param column the column to remove
 	 */
-	public static void resetValue(Map<?,?> entity, String column) {
+	public static void resetValue(Map<?, ?> entity, String column) {
 		// fast path for non-embedded case
 		if ( !column.contains( "." ) ) {
 			entity.remove( column );
@@ -35,7 +41,7 @@ public class DotPatternMapHelpers {
 			String[] path = DOT_SEPARATOR_PATTERN.split( column );
 			Object field = entity;
 			int size = path.length;
-			for (int index = 0 ; index < size ; index++) {
+			for ( int index = 0; index < size; index++ ) {
 				String node = path[index];
 				Map parent = (Map) field;
 				field = parent.get( node );
@@ -69,7 +75,7 @@ public class DotPatternMapHelpers {
 		String[] path = DOT_SEPARATOR_PATTERN.split( dotPath );
 		int size = path.length;
 
-		for (int index = 0 ; index < size - 1; index++) {
+		for ( int index = 0; index < size - 1; index++ ) {
 			Object next = entity.get( path[index] );
 			if ( next == null || !( next instanceof Map ) ) {
 				return null;
@@ -91,5 +97,37 @@ public class DotPatternMapHelpers {
 	 */
 	public static String flatten(String left, String right) {
 		return left == null || left.isEmpty() ? right : left + "." + right;
+	}
+
+	/**
+	 * Whether the rows of the given association should be stored in a hash using the single row key column as key or
+	 * not.
+	 */
+	public static boolean organizeAssociationMapByRowKey(
+			org.hibernate.ogm.model.spi.Association association,
+			AssociationKey key,
+			AssociationContext associationContext) {
+
+		if ( association.isEmpty() ) {
+			return false;
+		}
+
+		if ( key.getMetadata().getRowKeyIndexColumnNames().length != 1 ) {
+			return false;
+		}
+
+		Object valueOfFirstRow = association.get( association.getKeys().iterator().next() )
+				.get( key.getMetadata().getRowKeyIndexColumnNames()[0] );
+
+		if ( !( valueOfFirstRow instanceof String ) ) {
+			return false;
+		}
+
+		// The list style may be explicitly enforced for compatibility reasons
+		return getMapStorage( associationContext ) == MapStorageType.BY_KEY;
+	}
+
+	private static MapStorageType getMapStorage(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( MapStorageOption.class );
 	}
 }

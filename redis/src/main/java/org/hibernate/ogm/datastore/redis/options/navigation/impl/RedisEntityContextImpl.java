@@ -9,7 +9,9 @@ package org.hibernate.ogm.datastore.redis.options.navigation.impl;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
+import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.spi.BaseKeyValueStoreEntityContext;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
 import org.hibernate.ogm.datastore.redis.options.navigation.RedisEntityContext;
@@ -43,6 +45,13 @@ public abstract class RedisEntityContextImpl
 		Contracts.assertTrue( value > 0, "value must be greater 0" );
 		Contracts.assertParameterNotNull( timeUnit, "timeUnit" );
 		addEntityOption( new TTLOption(), timeUnit.toMillis( value ) );
+		return this;
+	}
+
+	@Override
+	public RedisEntityContext mapStorage(MapStorageType mapStorage) {
+		Contracts.assertParameterNotNull( mapStorage, "mapStorage" );
+		addEntityOption( new MapStorageOption(), mapStorage );
 		return this;
 	}
 
