@@ -1195,16 +1195,14 @@ public class Address {
 ----
 Key: User:user_001
 { 
-  "addresses" : [
+  "addresses" : {
     { 
-      "addressType" : "work",
-      "addresses_id" : "address_001"
+      "work" : "address_001"
     },
     {
-      "addressType" : "home",
-      "addresses_id" : "address_002"
+      "home" : "address_002"
     }
-  ]
+  }
 }
 ----
 

@@ -19,9 +19,7 @@ import java.util.TreeMap;
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
-import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
@@ -133,10 +131,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		return associationTypeContext.getOptionsContext().getUnique(
 				AssociationStorageOption.class
 		);
-	}
-
-	private MapStorageType getMapStorage(AssociationContext associationContext) {
-		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( MapStorageOption.class );
 	}
 
 	private Long getTTL(OptionsContext optionsContext) {
@@ -354,9 +348,14 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 			AssociationKey key,
 			AssociationContext associationContext) {
 
-		boolean organizeByRowKey = organizeByRowKey( association, key, associationContext );
 
-		if ( organizeByRowKey ) {
+		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey( association, key, associationContext );
+
+		// only in-entity maps can be mapped by row key to prevent huge external association maps
+		if ( isStoredInEntityStructure(
+				key.getMetadata(),
+				associationContext.getAssociationTypeContext()
+		) && organizeByRowKey ) {
 			String rowKeyColumn = organizeByRowKey ? key.getMetadata().getRowKeyIndexColumnNames()[0] : null;
 			Map<String, Object> rows = new HashMap<>();
 
@@ -383,42 +382,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 
 		return rows;
-	}
-
-	/**
-	 * Whether the rows of the given association should be stored in a hash using the single row key column as key or
-	 * not.
-	 */
-	private boolean organizeByRowKey(
-			org.hibernate.ogm.model.spi.Association association,
-			AssociationKey key,
-			AssociationContext associationContext) {
-
-		// only in-entity maps can be mapped by row key to prevent huge external association maps
-		if ( !isStoredInEntityStructure(
-				key.getMetadata(),
-				associationContext.getAssociationTypeContext()
-		) ) {
-			return false;
-		}
-
-		if ( association.isEmpty() ) {
-			return false;
-		}
-
-		if ( key.getMetadata().getRowKeyIndexColumnNames().length != 1 ) {
-			return false;
-		}
-
-		Object valueOfFirstRow = association.get( association.getKeys().iterator().next() )
-				.get( key.getMetadata().getRowKeyIndexColumnNames()[0] );
-
-		if ( !( valueOfFirstRow instanceof String ) ) {
-			return false;
-		}
-
-		// The list style may be explicitly enforced for compatibility reasons
-		return getMapStorage( associationContext ) == MapStorageType.BY_KEY;
 	}
 
 	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
