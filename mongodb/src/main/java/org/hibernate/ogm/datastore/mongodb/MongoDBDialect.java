@@ -25,11 +25,11 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
-import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
@@ -48,7 +48,6 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
-import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
@@ -84,6 +83,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
@@ -529,7 +529,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * </ul>
 	 */
 	private Object getAssociationRows(Association association, AssociationKey key, AssociationContext associationContext) {
-		boolean organizeByRowKey = organizeByRowKey( association, key, associationContext );
+		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey( association, key, associationContext );
 
 		// transform map entries such as ( addressType='home', address_id=123) into the more
 		// natural ( { 'home'=123 }
@@ -563,31 +563,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 			return rows;
 		}
-	}
-
-	/**
-	 * Whether the rows of the given association should be stored in a hash using the single row key column as key or
-	 * not.
-	 */
-	private boolean organizeByRowKey(Association association, AssociationKey key, AssociationContext associationContext) {
-		if ( association.isEmpty() ) {
-			return false;
-		}
-
-		if ( key.getMetadata().getRowKeyIndexColumnNames().length != 1 ) {
-			return false;
-		}
-
-		Object valueOfFirstRow = association.get( association.getKeys().iterator().next() )
-				.get( key.getMetadata().getRowKeyIndexColumnNames()[0] );
-
-		// TODO We may relax this to other single-column key types by conversion through grid type
-		if ( !( valueOfFirstRow instanceof String ) ) {
-			return false;
-		}
-
-		// The list style may be explicitly enforced for compatability reasons
-		return getMapStorage( associationContext ) == MapStorageType.BY_KEY;
 	}
 
 	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
@@ -924,11 +899,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				.getUnique( AssociationDocumentStorageOption.class );
 
 		return AssociationStorageStrategy.getInstance( keyMetadata, associationStorage, associationDocumentStorageType );
-	}
-
-
-	private MapStorageType getMapStorage(AssociationContext associationContext) {
-		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( MapStorageOption.class );
 	}
 
 	@Override
