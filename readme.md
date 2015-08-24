@@ -105,6 +105,27 @@ setting the environment variable `COUCHDB_HOSTNAME` prior to running the test su
     export COUCHDB_HOSTNAME=couchdb-machine
 
 If this variable is not set, the _couchdb_ module still will be compiled and packaged but the tests will be skipped.
+If needed, the port to connect to can be configured through the environment variable `COUCHDB_PORT`.
+
+### Cassandra
+
+For running the tests in the _cassandra_ module an installed Cassandra server is required. Specify its host name by
+setting the environment variable `CASSANDRA_HOSTNAME` prior to running the test suite:
+
+    export CASSANDRA_HOSTNAME=cassandra-machine
+
+If this variable is not set, the _cassandra_ module still will be compiled and packaged but the tests will be skipped.
+If needed, the port to connect to can be configured through the environment variable `CASSANDRA_PORT`.
+
+### Redis
+
+For running the tests in the _redis_ module an installed Redis server is required. Specify its host name by
+setting the environment variable `REDIS_HOSTNAME` prior to running the test suite:
+
+    export REDIS_HOSTNAME=redis-machine
+
+If this variable is not set, the _redis_ module still will be compiled and packaged but the tests will be skipped.
+If needed, the port to connect to can be configured through the environment variable `REDIS_PORT`.
 
 ## Contact
 
