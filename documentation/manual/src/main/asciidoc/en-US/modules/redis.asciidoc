@@ -1196,12 +1196,8 @@ public class Address {
 Key: User:user_001
 { 
   "addresses" : {
-    { 
-      "work" : "address_001"
-    },
-    {
-      "home" : "address_002"
-    }
+    "work" : "address_001",
+    "home" : "address_002"
   }
 }
 ----
