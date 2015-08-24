@@ -1,6 +1,50 @@
 Hibernate OGM Changelog
 =======================
 
+5.0.0.Alpha1 (24-08-2015)
+-------------------------
+
+** Bug
+    * OGM-887 - redis         - Don't map elements within embeddable collections using dot names
+    * OGM-870 - tests         - Fix CompensationSpiTest
+
+** Improvement
+    * OGM-868 - build         - Add the latest commit id in the manifest during the build
+    * OGM-879 - redis         - Embedded Id stored within key and value
+    * OGM-881 - redis         - Use Netty modules provided by WildFly for Redis driver
+    * OGM-866 - neo4j         - Isolate internal Neo4J dependencies from conflicting with user application dependencies
+    * OGM-882 - redis         - Enable MapContentsStoredInSeparateDocumentTest for Redis
+    * OGM-565 - core          - Add a method to GridDialect which allows to get several entities at once
+    * OGM-555 - mongodb       - Use more natural format to store map-typed properties in MongoDB
+    * OGM-880 - redis         - Keep connection alive between tests
+    * OGM-902 - documentation - Documentation fixes for CouchDB/Redis
+    * OGM-903 - build         - Upgrade to ORM 5 Final
+    * OGM-664 - core          - Upgrade to Hibernate ORM 5
+    * OGM-905 - tests         - Use WildFly 10.0.0.Beta2 for integration tests
+    * OGM-867 - mongodb       - Use JSONAssert in MongoDB mapping assertions
+    * OGM-886 - redis         - Apply connection timeout
+    * OGM-878 - tests         - Upgrade to WildFly 10 Beta1
+    * OGM-891 - redis         - Use more natural format to store map-typed properties in Redis
+    * OGM-703 - neo4j         - Upgrade to Neo4j 2.2.x
+    * OGM-874 - redis         - Implement MultigetGridDialect for Redis
+
+** New Feature
+    * OGM-767 - core          - Support loading entities in batch
+    * OGM-810 - mongodb       - Upgrade to MongoDB driver 3.0
+    * OGM-194 - redis         - Support Redis as Datastore
+
+** Sub-task
+    * OGM-770 - core          - Make sure the new ORM bootstrap API covers OGM needs
+    * OGM-805 - core          - Adapt to changed transaction APIs in ORM v5
+
+** Task
+    * OGM-869 - build         - Remove build of modules for EAP6
+    * OGM-895 - tests         - Avoid using a filesystem for index based tests
+    * OGM-896 - build, tests  - The Redis integration tests should not run when the Redis hostname is not set
+    * OGM-864 - documentation - Update reference guide after ORM 5 migration
+    * OGM-698 - build         - Rename core integration module for WildFly
+    * OGM-885 - redis         - Add Redis to distribution ZIP
+
 4.2.0.Final (01-06-2015)
 -------------------------
 
