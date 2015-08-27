@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.model.key.spi;
 
+import java.util.List;
+import java.util.Set;
+
 import org.hibernate.ogm.model.spi.AssociationKind;
 
 /**
@@ -120,6 +123,11 @@ public interface AssociationKeyMetadata {
 	 * @return the association kind
 	 */
 	AssociationKind getAssociationKind();
+
+	/**
+	 * Returns the type of this association, i.e. whether it's a {@link Set}, {@link List} etc.
+	 */
+	AssociationType getAssociationType();
 
 	/**
 	 * Check if the key identify a one-to-one association

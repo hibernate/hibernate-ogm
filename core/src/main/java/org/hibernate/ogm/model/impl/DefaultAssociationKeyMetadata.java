@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 
@@ -34,6 +35,7 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String collectionRole;
 	private final AssociationKind associationKind;
+	private final AssociationType associationType;
 	private final boolean isOneToOne;
 
 	private DefaultAssociationKeyMetadata(Builder builder) {
@@ -46,6 +48,7 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		this.associatedEntityKeyMetadata = builder.associatedEntityKeyMetadata;
 		this.collectionRole = builder.collectionRole;
 		this.associationKind = builder.associationKind;
+		this.associationType = builder.associationType;
 		this.isOneToOne = builder.isOneToOne;
 
 		// table hashing should be specific enough
@@ -62,6 +65,7 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		private AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 		private String collectionRole;
 		private AssociationKind associationKind;
+		private AssociationType associationType;
 		private boolean isOneToOne;
 
 		public Builder table(String table) {
@@ -104,6 +108,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 			return this;
 		}
 
+		public Builder associationType(AssociationType associationType) {
+			this.associationType = associationType;
+			return this;
+		}
+
 		public Builder oneToOne(boolean isOneToOne) {
 			this.isOneToOne = isOneToOne;
 			return this;
@@ -113,8 +122,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 			return new DefaultAssociationKeyMetadata( this );
 		}
 	}
-
-
 
 	@Override
 	public String getTable() {
@@ -249,6 +256,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	@Override
 	public AssociationKind getAssociationKind() {
 		return associationKind;
+	}
+
+	@Override
+	public AssociationType getAssociationType() {
+		return associationType;
 	}
 
 	@Override
