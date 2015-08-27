@@ -12,8 +12,8 @@ import java.util.List;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.AssociationType;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 
 /**
