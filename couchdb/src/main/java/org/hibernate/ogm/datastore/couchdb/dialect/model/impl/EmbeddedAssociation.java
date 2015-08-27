@@ -14,6 +14,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * A {@link CouchDBAssociation} backed by an {@link EntityDocument}.
@@ -41,7 +42,7 @@ class EmbeddedAssociation extends CouchDBAssociation {
 		if ( fieldValue == null ) {
 			rows = Collections.emptyList();
 		}
-		else if ( associationKeyMetadata.isOneToOne() ) {
+		else if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE ) {
 			rows = fieldValue;
 		}
 		else {
@@ -59,8 +60,8 @@ class EmbeddedAssociation extends CouchDBAssociation {
 		else {
 
 			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
-			if ( associationKeyMetadata.isOneToOne() && rows instanceof Collection ) {
-				Object value = ( (Collection) rows ).iterator().next();
+			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
+				Object value = ( (Collection<?>) rows ).iterator().next();
 				entity.set( associationKeyMetadata.getCollectionRole(), value );
 			}
 			else {

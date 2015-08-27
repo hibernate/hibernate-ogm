@@ -353,7 +353,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						.collectionRole( inverseOneToOneProperty )
 						.associationKind( AssociationKind.ASSOCIATION )
 						.associationType( org.hibernate.ogm.model.key.spi.AssociationType.ONE_TO_ONE )
-						.oneToOne( true )
 						.build();
 
 				associationKeyMetadata.put( property, metadata );

@@ -39,6 +39,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -255,7 +256,7 @@ public class CouchDBDialect extends BaseGridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		return associationKeyMetadata.isOneToOne() ||
+		return associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE ||
 				associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
 				associationStorage == AssociationStorageType.IN_ENTITY;
 	}

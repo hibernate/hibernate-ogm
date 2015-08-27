@@ -157,7 +157,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.collectionRole( getUnqualifiedRole() )
 				.associationKind( getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION )
 				.associationType( getAssociationType( collection ) )
-				.oneToOne( false )
 				.build();
 
 		nodeName = collection.getNodeName();
