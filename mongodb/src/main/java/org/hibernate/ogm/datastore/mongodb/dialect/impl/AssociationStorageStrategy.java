@@ -9,8 +9,8 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.AssociationType;
-import org.hibernate.ogm.model.spi.AssociationKind;
 
 /**
  * Represents a strategy for storing associations in MongoDB. Provides an aggregated view on {@link AssociationKind} as

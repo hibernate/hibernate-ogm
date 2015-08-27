@@ -9,8 +9,6 @@ package org.hibernate.ogm.model.key.spi;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.ogm.model.spi.AssociationKind;
-
 /**
  * Stores metadata information common to all keys related
   * to a given association
