@@ -36,7 +36,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	private final String collectionRole;
 	private final AssociationKind associationKind;
 	private final AssociationType associationType;
-	private final boolean isOneToOne;
 
 	private DefaultAssociationKeyMetadata(Builder builder) {
 		this.table = builder.table;
@@ -49,7 +48,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		this.collectionRole = builder.collectionRole;
 		this.associationKind = builder.associationKind;
 		this.associationType = builder.associationType;
-		this.isOneToOne = builder.isOneToOne;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -66,7 +64,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		private String collectionRole;
 		private AssociationKind associationKind;
 		private AssociationType associationType;
-		private boolean isOneToOne;
 
 		public Builder table(String table) {
 			this.table = table;
@@ -110,11 +107,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 
 		public Builder associationType(AssociationType associationType) {
 			this.associationType = associationType;
-			return this;
-		}
-
-		public Builder oneToOne(boolean isOneToOne) {
-			this.isOneToOne = isOneToOne;
 			return this;
 		}
 
@@ -261,11 +253,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	@Override
 	public AssociationType getAssociationType() {
 		return associationType;
-	}
-
-	@Override
-	public boolean isOneToOne() {
-		return isOneToOne;
 	}
 
 	@Override

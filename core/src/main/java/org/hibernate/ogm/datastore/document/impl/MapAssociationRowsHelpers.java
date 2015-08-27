@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * Helpers to transform associative data into association rows.
@@ -36,7 +37,7 @@ public class MapAssociationRowsHelpers {
 			AssociationKey associationKey) {
 		Collection<?> rows = null;
 
-		if ( associationKey.getMetadata().isOneToOne() ) {
+		if ( associationKey.getMetadata().getAssociationType() == AssociationType.ONE_TO_ONE ) {
 			Object oneToOneValue = toManyValue;
 			if ( oneToOneValue != null ) {
 				rows = Collections.singletonList( oneToOneValue );

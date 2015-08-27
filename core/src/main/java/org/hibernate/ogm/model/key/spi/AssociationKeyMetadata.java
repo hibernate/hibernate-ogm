@@ -125,11 +125,4 @@ public interface AssociationKeyMetadata {
 	 * Returns the type of this association, i.e. whether it's a {@link Set}, {@link List} etc.
 	 */
 	AssociationType getAssociationType();
-
-	/**
-	 * Check if the key identify a one-to-one association
-	 *
-	 * @return {@code true} if the association is one-to-one, {@code false} otherwise
-	 */
-	boolean isOneToOne();
 }

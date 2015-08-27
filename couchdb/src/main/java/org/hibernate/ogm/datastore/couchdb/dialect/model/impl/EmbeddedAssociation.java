@@ -13,6 +13,7 @@ import java.util.List;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * A {@link CouchDBAssociation} backed by an {@link EntityDocument}.
@@ -38,7 +39,7 @@ class EmbeddedAssociation extends CouchDBAssociation {
 		if ( fieldValue == null ) {
 			rows = Collections.emptyList();
 		}
-		else if ( associationKeyMetadata.isOneToOne() ) {
+		else if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE ) {
 			rows = new ArrayList<Object>( 1 );
 			rows.add( fieldValue );
 		}
@@ -55,7 +56,7 @@ class EmbeddedAssociation extends CouchDBAssociation {
 			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
 		}
 		else {
-			Object value = associationKeyMetadata.isOneToOne() ? rows.iterator().next() : rows;
+			Object value = associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE ? rows.iterator().next() : rows;
 			entity.set( associationKeyMetadata.getCollectionRole(), value );
 		}
 	}
