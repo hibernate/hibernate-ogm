@@ -12,9 +12,12 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -37,27 +40,39 @@ public class Neo4jEntityQueries extends QueriesBase {
 
 	private final BoundedConcurrentHashMap<String, String> updateEmbeddedPropertyQueryCache;
 	private final BoundedConcurrentHashMap<String, String> findAssociationQueryCache;
+	private final BoundedConcurrentHashMap<Integer, String> multiGetQueryCache;
 
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
-	private final String findEntitiesQuery;
+	private final String findAllEntitiesQuery;
 	private final String findAssociationPartialQuery;
+	private final String multiGetQuery;
 	private final String createEntityQuery;
 	private final String removeEntityQuery;
 	private final String updateEmbeddedNodeQuery;
 	private final String removeEmbdeddedElementQuery;
 
+	/**
+	 * true if we the keys are mapped with a single non embedded property
+	 */
+	private final boolean singlePropertyKey;
+	private final String[] keyColumns;
+
 	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		this.updateEmbeddedPropertyQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
 		this.findAssociationQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
+		this.multiGetQueryCache = new BoundedConcurrentHashMap<Integer, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
 		this.findAssociationPartialQuery = initMatchOwnerEntityNode( entityKeyMetadata );
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
 		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata );
-		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata );
+		this.findAllEntitiesQuery = initFindAllEntitiesQuery( entityKeyMetadata );
+		this.multiGetQuery = initMultiGetEntitiesQuery( entityKeyMetadata );
 		this.createEntityQuery = initCreateEntityQuery( entityKeyMetadata );
 		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
 		this.updateEmbeddedNodeQuery = initUpdateEmbeddedNodeQuery( entityKeyMetadata );
 		this.removeEmbdeddedElementQuery = initRemoveEmbdeddedElementQuery( entityKeyMetadata );
+		this.singlePropertyKey = entityKeyMetadata.getColumnNames().length == 1 && !entityKeyMetadata.getColumnNames()[0].contains( "." );
+		this.keyColumns = entityKeyMetadata.getColumnNames();
 	}
 
 	/*
@@ -159,13 +174,46 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * MATCH (n:ENTITY:table )
 	 * RETURN n
 	 */
-	private static String initFindEntitiesQuery(EntityKeyMetadata entityKeyMetadata) {
+	private static String initFindAllEntitiesQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
 		queryBuilder.append( "(n:" );
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
 		queryBuilder.append( ") RETURN n" );
+		return queryBuilder.toString();
+	}
+
+	/*
+	 * This method will initialize the query string for a multi get.
+	 * The query is dfferent in the two scenarios:
+	 * 1) the id is mapped on a single property:
+	 *
+	 * MATCH (n:ENTITY:table)
+	 * WHERE n.id IN {0}
+	 * RETURN n
+	 *
+	 * 2) id is mapped on multiple columns:
+	 *
+	 * MATCH (n:ENTITY:table)
+	 * WHERE
+	 *
+	 * In this case the query depends on how many id we are retrieving and it will completed later
+	 */
+	private static String initMultiGetEntitiesQuery(EntityKeyMetadata entityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
+		queryBuilder.append( "(n:" );
+		queryBuilder.append( ENTITY );
+		queryBuilder.append( ":" );
+		appendLabel( entityKeyMetadata, queryBuilder );
+		queryBuilder.append( ") ");
+		queryBuilder.append( " WHERE " );
+		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
+			queryBuilder.append( "n." );
+			escapeIdentifier( queryBuilder, entityKeyMetadata.getColumnNames()[0] );
+			queryBuilder.append( " IN {0}" );
+			queryBuilder.append( " RETURN n" );
+		}
 		return queryBuilder.toString();
 	}
 
@@ -268,6 +316,98 @@ public class Neo4jEntityQueries extends QueriesBase {
 	}
 
 	/**
+	 * Find the nodes corresponding to an array of entity keys.
+	 *
+	 * @param executionEngine the {@link GraphDatabaseService} used to run the query
+	 * @param keys an array of keys identifying the nodes to return
+	 * @return the list of nodes representing the entities
+	 */
+	public ResourceIterator<Node> findEntities(GraphDatabaseService executionEngine, EntityKey[] keys) {
+		if ( singlePropertyKey ) {
+			return singlePropertyIdFindEntities( executionEngine, keys );
+		}
+		else {
+			return multiPropertiesIdFindEntities( executionEngine, keys );
+		}
+	}
+
+	/*
+	 * When the id is mapped on several properties
+	 */
+	private ResourceIterator<Node> multiPropertiesIdFindEntities(GraphDatabaseService executionEngine, EntityKey[] keys) {
+		int numberOfKeys = keys.length;
+		String query = multiGetQueryCache.get( numberOfKeys );
+		if ( query == null ) {
+			query = createMultiGetOnMultiplePropertiesId( numberOfKeys );
+			String cached = multiGetQueryCache.putIfAbsent( numberOfKeys, query );
+			if ( cached != null ) {
+				query = cached;
+			}
+		}
+		Map<String, Object> params = multiGetParams( keys );
+		Result result = executionEngine.execute( query, params );
+		return result.columnAs( "n" );
+	}
+
+	private Map<String, Object> multiGetParams(EntityKey[] keys) {
+		// We assume only one metadata type
+		int numberOfColumnNames = keys[0].getColumnNames().length;
+		int numberOfParams = keys.length * numberOfColumnNames;
+		int counter = 0;
+		Map<String, Object> params = new HashMap<>( numberOfParams );
+		for ( int row = 0; row < keys.length; row++ ) {
+			for ( int col = 0; col < keys[row].getColumnValues().length; col++ ) {
+				params.put( String.valueOf( counter++ ), keys[row].getColumnValues()[col] );
+			}
+		}
+		return params;
+	}
+
+	/*
+	 * Example:
+	 *
+	 * MATCH (n:ENTITY:table)
+	 * WHERE (n.id.property1 = {0} AND n.id.property2 = {1} ) OR (n.id.property1 = {2} AND n.id.property2 = {3} )
+	 * RETURN n
+	 */
+	private String createMultiGetOnMultiplePropertiesId(int keysNumber) {
+		StringBuilder builder = new StringBuilder( multiGetQuery );
+		int counter = 0;
+		for ( int row = 0; row < keysNumber; row++ ) {
+			builder.append( "(" );
+			for ( int col = 0; col < keyColumns.length; col++ ) {
+				builder.append( "n." );
+				escapeIdentifier( builder, keyColumns[col] );
+				builder.append( " = {" );
+				builder.append( counter++ );
+				builder.append( "}" );
+				if ( col < keyColumns.length - 1 ) {
+					builder.append( " AND " );
+				}
+			}
+			builder.append( ")" );
+			if ( row < keysNumber - 1 ) {
+				builder.append( " OR " );
+			}
+		}
+		builder.append( " RETURN n" );
+		return builder.toString();
+	}
+
+	/*
+	 * When the id is mapped with a single property
+	 */
+	private ResourceIterator<Node> singlePropertyIdFindEntities(GraphDatabaseService executionEngine, EntityKey[] keys) {
+		Object[] paramsValues = new Object[keys.length];
+		for ( int i = 0; i < keys.length; i++ ) {
+			paramsValues[i] = keys[i].getColumnValues()[0];
+		}
+		Map<String, Object> params = Collections.singletonMap( "0", (Object) paramsValues );
+		Result result = executionEngine.execute( multiGetQuery, params );
+		return result.columnAs( "n" );
+	}
+
+	/**
 	 * Creates the node corresponding to an entity.
 	 *
 	 * @param executionEngine the {@link GraphDatabaseService} used to run the query
@@ -287,7 +427,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * @return an iterator over the nodes representing an entity
 	 */
 	public ResourceIterator<Node> findEntities(GraphDatabaseService executionEngine) {
-		Result result = executionEngine.execute( findEntitiesQuery );
+		Result result = executionEngine.execute( findAllEntitiesQuery );
 		return result.columnAs( "n" );
 	}
 
