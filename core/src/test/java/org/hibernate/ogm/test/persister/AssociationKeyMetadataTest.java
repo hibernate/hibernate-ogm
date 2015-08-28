@@ -15,6 +15,8 @@ import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber;
 import org.hibernate.ogm.backendtck.associations.collection.types.Race;
 import org.hibernate.ogm.backendtck.associations.collection.types.Runner;
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
+import org.hibernate.ogm.backendtck.associations.manytoone.SalesForce;
+import org.hibernate.ogm.backendtck.associations.manytoone.SalesGuy;
 import org.hibernate.ogm.backendtck.associations.onetoone.Husband;
 import org.hibernate.ogm.backendtck.associations.onetoone.Wife;
 import org.hibernate.ogm.backendtck.embeddable.MultiAddressAccount;
@@ -50,6 +52,21 @@ public class AssociationKeyMetadataTest extends OgmTestCase {
 		assertThat( akm.getAssociationType() ).isEqualTo( AssociationType.ONE_TO_ONE );
 	}
 
+	@Test
+	public void testEntityKeyMetadata() {
+		AssociationKeyMetadata akm = getCollectionPersister( BankAccount.class.getName() + ".owners" ).getAssociationKeyMetadata();
+		assertThat( akm.getEntityKeyMetadata().getTable() ).isEqualTo( "BankAccount" );
+
+		akm = getCollectionPersister( AccountOwner.class.getName() + ".bankAccounts" ).getAssociationKeyMetadata();
+		assertThat( akm.getEntityKeyMetadata().getTable() ).isEqualTo( "AccountOwner" );
+
+		akm = getCollectionPersister( SalesForce.class.getName() + ".salesGuys" ).getAssociationKeyMetadata();
+		assertThat( akm.getEntityKeyMetadata().getTable() ).isEqualTo( "SalesForce" );
+
+		akm = getEntityPersister( Husband.class.getName() ).getInverseOneToOneAssociationKeyMetadata( "wife" );
+		assertThat( akm.getEntityKeyMetadata().getTable() ).isEqualTo( "Wife" );
+	}
+
 	private OgmEntityPersister getEntityPersister(String entityName) {
 		return (OgmEntityPersister) ( sfi() ).getEntityPersister( entityName );
 	}
@@ -61,6 +78,6 @@ public class AssociationKeyMetadataTest extends OgmTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { BankAccount.class, AccountOwner.class, Husband.class, Wife.class, MultiAddressAccount.class, Address.class, Race.class,
-				Runner.class, User.class, PhoneNumber.class };
+				Runner.class, User.class, PhoneNumber.class, SalesForce.class, SalesGuy.class };
 	}
 }

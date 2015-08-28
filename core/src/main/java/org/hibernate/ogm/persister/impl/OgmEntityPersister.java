@@ -348,6 +348,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						.table( getTableName() )
 						.columnNames( propertyColumnNames )
 						.rowKeyColumnNames( rowKeyColumnNames )
+						.entityKeyMetadata( otherSidePersister.getEntityKeyMetadata() )
 						.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( entityKeyMetadata.getColumnNames(), entityKeyMetadata ) )
 						.inverse( true )
 						.collectionRole( inverseOneToOneProperty )

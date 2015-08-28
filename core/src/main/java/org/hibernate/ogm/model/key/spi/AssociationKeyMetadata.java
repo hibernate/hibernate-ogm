@@ -61,6 +61,13 @@ public interface AssociationKeyMetadata {
 	String[] getRowKeyIndexColumnNames();
 
 	/**
+	 * Returns meta-data about the entity-key on this side of associations of this key family.
+	 *
+	 * @return meta-data about the entity-key on this side of associations of this key family.
+	 */
+	EntityKeyMetadata getEntityKeyMetadata();
+
+	/**
 	 * Returns meta-data about the entity key referenced by associations of this key family.
 	 *
 	 * @return meta-data about the entity key referenced by associations of this key family.
