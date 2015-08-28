@@ -152,6 +152,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.columnNames( getKeyColumnNames() )
 				.rowKeyColumnNames( rowKeyColumnNames )
 				.rowKeyIndexColumnNames( rowKeyIndexColumnNames )
+				.entityKeyMetadata( ( (OgmEntityPersister) getOwnerEntityPersister() ).getEntityKeyMetadata() )
 				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( getElementColumnNames(), targetEntityKeyMetadata( false ) ) )
 				.inverse( isInverse )
 				.collectionRole( getUnqualifiedRole() )
