@@ -32,10 +32,13 @@ so there is no need to include any of the Java client libraries for CouchDB in y
 The following properties are available to configure CouchDB support in Hibernate OGM:
 
 .CouchDB datastore configuration properties
+
 hibernate.ogm.datastore.provider::
 To use CouchDB as a datastore provider, this property must be set to `couchdb_experimental`
+
 hibernate.ogm.option.configurator::
 The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-couchdb-programmatic-configuration>>)
+
 hibernate.ogm.datastore.host::
 The hostname and port of the CouchDB instance.
 The optional port is concatenated to the host and separated by a colon.
@@ -48,35 +51,52 @@ Let's see a few valid examples:
 +
 Listing multiple initial hosts for fault tolerance is not supported.
 The default value is `127.0.0.1:5984`. If left undefined, the default port is `5984`.
+
 hibernate.ogm.datastore.port::
 Deprecated: use `hibernate.ogm.datastore.host`.
 The port used by the CouchDB instance.
 The default value is `5984`.
+
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.datastore.create_database::
 Whether to create the specified database in case it does not exist or not.
 Can be `true` or `false` (default). Note that the specified user must have the right to
 create databases if set to `true`.
+
 hibernate.ogm.datastore.username::
 The username used when connecting to the CouchDB server.
 Note that this user must have the right to create design documents in the chosen database.
 This property has no default value.
 Hibernate OGM currently does not support accessing CouchDB via HTTPS;
 if you're interested in such functionality, let us know.
+
 hibernate.ogm.datastore.password::
 The password used to connect to the CouchDB server.
 This property has no default value.
 This property is ignored if the username isn't specified.
+
 hibernate.ogm.error_handler::
 The fully-qualified class name, class object or an instance of `ErrorHandler` to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
+
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in CouchDB.
+
 The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
 `IN_ENTITY` (store association information within the entity) and
 `ASSOCIATION_DOCUMENT` (store association information in a dedicated document per association).
+
 `IN_ENTITY` is the default and recommended option
 unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
+
+hibernate.ogm.datastore.document.map_storage::
+Defines the way OGM stores the contents of map-typed associations in CouchDB.
+The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.MapStorageType` enum):
+
+* `BY_KEY`: map-typed associations with a single key column which is of type `String` will be stored as a sub-document,
+organized by the given key; Not applicable for other types of key columns, in which case always `AS_LIST` will be used
+* `AS_LIST`: map-typed associations will be stored as an array containing a sub-document for each map entry.
+All key and value columns will be contained within the array elements
 
 [NOTE]
 ====
@@ -91,9 +111,13 @@ To ease migration between stores, it is recommended to reference these constants
 ==== Annotation based configuration
 
 Hibernate OGM allows to configure store-specific options via Java annotations.
-When working with the CouchDB backend, you can specify how associations should be stored
-using the `AssociationStorage` annotation
-(refer to <<ogm-couchdb-storage-principles>> to learn more about association storage strategies in general).
+
+When working with the CouchDB backend, you can specify the following settings:
+
+* a strategy for storing associations using the `@AssociationStorage` and `@AssociationDocumentStorage` annotations
+* a strategy for storing the contents of map-typed associations using the `@MapStorage` annotation
+
+Refer to <<ogm-couchdb-storage-principles> to learn more about the options related to storing associations.
 
 The following shows an example:
 
@@ -103,6 +127,7 @@ The following shows an example:
 ----
 @Entity
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
+@MapStorage(MapStorageType.AS_LIST)
 public class Zoo {
 
     @OneToMany
@@ -138,6 +163,7 @@ The API allows set options in a type-safe fashion on the global, entity and prop
 When working with CouchDB, you can currently configure the following options using the API:
 
 * association storage strategy (on the global, entity and property level)
+* strategy for storing the contents of map-typed associations
 
 To set this option via the API, you need to create an `OptionConfigurator` implementation
 as shown in the following example:
@@ -155,6 +181,7 @@ public class MyOptionConfigurator extends OptionConfigurator {
             .entity( Zoo.class )
                 .property( "visitors", ElementType.FIELD )
                     .associationStorage( AssociationStorageType.IN_ENTITY )
+                    .mapStorage( MapStorageType.ASLIST )
             .entity( Animal.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
     }
@@ -1331,16 +1358,10 @@ public class Address {
   "$type": "entity",
   "$table": "User",
   "id" : "user_001",
-  "addresses" : [
-    { 
-      "addresses_KEY" : "work",
-      "addresses_id" : "address_001"
-    },
-    {
-      "addresses_KEY" : "home",
-      "addresses_id" : "address_002"
-    }
-  ]
+  "addresses" : {
+    "work" : "address_001",
+    "home" : "address_002"
+  }
 }
 ----
 
@@ -1369,7 +1390,18 @@ public class Address {
 ----
 ====
 
-You can use @MapKeyColumn to rename the column containing the key of the map.
+If the map value cannot be represented by a single field (e.g. when referencing a type with a composite id
+or using an embeddable type as map value type),
+a sub-document containing all the required fields will be stored as value.
+
+If the map key either is not of type `String` or it is made up of several columns (composite map key),
+the optimized structure shown in the example above cannot be used.
+In that case the association will be represented by a list of sub-documents, also containing the map key column(s).
+You can use `@MapKeyColumn` to rename the field containing the key of the map,
+otherwise it will default to "<%COLLECTION_ROLE%>_KEY", e.g. "addresses_KEY".
+
+In case you want to enforce the list-style represention also for maps with a single key column of type `String`
+you can use the option `hibernate.ogm.datastore.document.map_storage` to do so.
 
 .Unidirectional one-to-many using maps with @MapKeyColumn
 ====

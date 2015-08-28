@@ -26,6 +26,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBLongType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBStringType;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
@@ -51,6 +52,8 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
+
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
 /**
  * Stores tuples and associations as JSON documents inside CouchDB.
@@ -121,7 +124,12 @@ public class CouchDBDialect extends BaseGridDialect {
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
-			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getMetadata().getCollectionRole() ) ) {
+
+			if ( owningEntity != null && DotPatternMapHelpers.hasField(
+					owningEntity.getPropertiesAsHierarchy(),
+					key.getMetadata()
+							.getCollectionRole()
+			) ) {
 				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
 			}
 		}
@@ -157,7 +165,7 @@ public class CouchDBDialect extends BaseGridDialect {
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey associationKey, Association association, AssociationContext associationContext) {
-		List<Object> rows = getAssociationRows( association, associationKey );
+		Object rows = getAssociationRows( association, associationKey, associationContext );
 
 		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
 		couchDBAssociation.setRows( rows );
@@ -165,32 +173,63 @@ public class CouchDBDialect extends BaseGridDialect {
 		getDataStore().saveDocument( couchDBAssociation.getOwningDocument() );
 	}
 
-	private List<Object> getAssociationRows(Association association, AssociationKey associationKey) {
-		List<Object> rows = new ArrayList<Object>( association.size() );
+	private Object getAssociationRows(Association association, AssociationKey associationKey, AssociationContext associationContext) {
 
-		for ( RowKey rowKey : association.getKeys() ) {
-			Tuple tuple = association.get( rowKey );
 
-			String[] columnsToPersist = associationKey.getMetadata().getColumnsWithoutKeyColumns( tuple.getColumnNames() );
+		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey(
+				association,
+				associationKey,
+				associationContext
+		);
 
-			// return value itself if there is only a single column to store
-			if ( columnsToPersist.length == 1 ) {
-				Object row = tuple.get( columnsToPersist[0] );
-				rows.add( row );
-			}
-			else {
-				Map<String, Object> row = new HashMap<String, Object>( columnsToPersist.length );
-				for ( String columnName : columnsToPersist ) {
-					Object value = tuple.get( columnName );
-					if ( value != null ) {
-						row.put( columnName, value );
-					}
+		if ( organizeByRowKey ) {
+			String rowKeyColumn = organizeByRowKey ? associationKey.getMetadata().getRowKeyIndexColumnNames()[0] : null;
+			Map<String, Object> rows = new HashMap<>();
+
+			for ( RowKey rowKey : association.getKeys() ) {
+				Map<String, Object> row = (Map<String, Object>) getAssociationRow( association.get( rowKey ), associationKey );
+
+				String rowKeyValue = (String) row.remove( rowKeyColumn );
+
+				// if there is a single column on the value side left, unwrap it
+				if ( row.keySet().size() == 1 ) {
+					rows.put( rowKeyValue, row.values().iterator().next() );
 				}
+				else {
+					rows.put( rowKeyValue, row );
+				}
+			}
 
-				rows.add( row );
+			return rows;
+		}
+
+		List<Object> rows = new ArrayList<Object>( association.size() );
+		for ( RowKey rowKey : association.getKeys() ) {
+			rows.add( getAssociationRow( association.get( rowKey ), associationKey ) );
+		}
+
+		return rows;
+	}
+
+	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
+		String[] columnsToPersist = associationKey.getMetadata()
+				.getColumnsWithoutKeyColumns( row.getColumnNames() );
+
+		// return value itself if there is only a single column to store
+		if ( columnsToPersist.length == 1 ) {
+			return row.get( columnsToPersist[0] );
+		}
+		EntityDocument rowObject = new EntityDocument();
+		String prefix = getColumnSharedPrefixOfAssociatedEntityLink( associationKey );
+		for ( String column : columnsToPersist ) {
+			Object value = row.get( column );
+			if ( value != null ) {
+				String columnName = column.startsWith( prefix ) ? column.substring( prefix.length() ) : column;
+				rowObject.set( columnName, value );
 			}
 		}
-		return rows;
+
+		return rowObject.getPropertiesAsHierarchy();
 	}
 
 	@Override

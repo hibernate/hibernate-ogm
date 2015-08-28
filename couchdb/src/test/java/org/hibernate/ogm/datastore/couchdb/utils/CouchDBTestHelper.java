@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
@@ -37,10 +38,16 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.TestableGridDialect;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+
+import org.json.JSONException;
+import org.skyscreamer.jsonassert.JSONCompare;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.JSONCompareResult;
 
 /**
  * Testing infrastructure for CouchDB.
@@ -142,7 +149,11 @@ public class CouchDBTestHelper implements TestableGridDialect {
 			}
 			else {
 				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
-				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
+				throw logger.unableToRetrieveTheNumberOfAssociations(
+						response.getStatus(),
+						responseEntity.getError(),
+						responseEntity.getReason()
+				);
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -201,7 +212,7 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		}
 	}
 
-	private CouchDBDatastore getDataStore(SessionFactory sessionFactory) {
+	private static CouchDBDatastore getDataStore(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory )
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
@@ -236,5 +247,32 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
 		return new CouchDBDialect( (CouchDBDatastoreProvider) datastoreProvider );
+	}
+
+	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String expectedDbObject) {
+		assertDbObject( sessionFactory, collection, queryDbObject, null, expectedDbObject );
+	}
+
+	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String id, String projectionDbObject, String expectedDbObject) {
+
+		EntityDocument entity = getDataStore( sessionFactory ).getEntity( id );
+		assertJsonEquals( expectedDbObject, entity.toString() );
+	}
+
+	private static void assertJsonEquals(String expectedJson, String actualJson) {
+		try {
+			JSONCompareResult result = JSONCompare.compareJSON(
+					expectedJson,
+					actualJson,
+					JSONCompareMode.LENIENT
+			);
+
+			if ( result.failed() ) {
+				throw new AssertionError(result.getMessage() + "; Actual: " + actualJson);
+			}
+		}
+		catch (JSONException e) {
+			Exceptions.<RuntimeException>sneakyThrow( e );
+		}
 	}
 }

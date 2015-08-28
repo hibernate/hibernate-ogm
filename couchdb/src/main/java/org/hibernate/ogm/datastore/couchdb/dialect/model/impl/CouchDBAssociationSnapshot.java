@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
+import org.hibernate.ogm.datastore.document.impl.MapAssociationRowsHelpers;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 
@@ -25,7 +26,7 @@ public class CouchDBAssociationSnapshot extends AssociationRows {
 	private final CouchDBAssociation couchDbAssociation;
 
 	public CouchDBAssociationSnapshot(CouchDBAssociation association, AssociationKey key) {
-		super( key, association.getRows(), CouchDBAssociationRowFactory.INSTANCE );
+		super( key, MapAssociationRowsHelpers.getRows( association.getRows(), key ), CouchDBAssociationRowFactory.INSTANCE );
 		this.couchDbAssociation = association;
 	}
 

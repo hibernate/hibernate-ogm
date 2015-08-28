@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
@@ -54,6 +53,8 @@ import com.lambdaworks.redis.KeyScanCursor;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.ScanArgs;
 import com.lambdaworks.redis.protocol.LettuceCharsets;
+
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
 /**
  * Stores tuples and associations inside Redis.
@@ -349,7 +350,11 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 			AssociationContext associationContext) {
 
 
-		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey( association, key, associationContext );
+		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey(
+				association,
+				key,
+				associationContext
+		);
 
 		// only in-entity maps can be mapped by row key to prevent huge external association maps
 		if ( isStoredInEntityStructure(
@@ -403,17 +408,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 
 		return rowObject.getPropertiesAsHierarchy();
-	}
-
-	private String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {
-		String[] associationKeyColumns = associationKey.getMetadata()
-				.getAssociatedEntityKeyMetadata()
-				.getAssociationKeyColumns();
-		// we used to check that columns are the same (in an ordered fashion)
-		// but to handle List and Map and store indexes / keys at the same level as the id columns
-		// this check is removed
-		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
-		return prefix == null ? "" : prefix + ".";
 	}
 
 	@Override

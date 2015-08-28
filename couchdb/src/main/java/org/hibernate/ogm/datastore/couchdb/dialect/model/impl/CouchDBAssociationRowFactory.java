@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactor
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
 import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 
 /**
  * {@link AssociationRowFactory} which creates association rows based on the map based representation used in CouchDB.
@@ -38,8 +40,13 @@ public class CouchDBAssociationRowFactory extends StructureOptimizerAssociationR
 	}
 
 	@Override
-	protected AssociationRowAccessor<Map<String, Object>> getAssociationRowAccessor(String[] prefixedColumns, String prefix) {
-		return CouchDBAssociationRowAccessor.INSTANCE;
+	protected AssociationRowAccessor<Map<String, Object>> getAssociationRowAccessor(
+			String[] prefixedColumns,
+			String prefix) {
+
+		return prefix != null ?
+				new CouchDBAssociationRowAccessor( prefixedColumns, prefix ) :
+				CouchDBAssociationRowAccessor.INSTANCE;
 	}
 
 	private static class CouchDBAssociationRowAccessor implements AssociationRow.AssociationRowAccessor<Map<String, Object>> {
@@ -70,7 +77,8 @@ public class CouchDBAssociationRowFactory extends StructureOptimizerAssociationR
 
 		@Override
 		public Set<String> getColumnNames(Map<String, Object> row) {
-			Set<String> columnNames = row.keySet();
+			Set<String> columnNames = new HashSet<>( row.keySet() );
+			addColumnNames( row, columnNames, "" );
 			for ( String prefixedColumn : prefixedColumns ) {
 				String unprefixedColumn = unprefix( prefixedColumn );
 				if ( columnNames.contains( unprefixedColumn ) ) {
@@ -81,12 +89,29 @@ public class CouchDBAssociationRowFactory extends StructureOptimizerAssociationR
 			return columnNames;
 		}
 
+		private void addColumnNames(Map<String, Object> row, Set<String> columnNames, String prefix) {
+			for ( String field : row.keySet() ) {
+				Object sub = row.get( field );
+				if ( sub instanceof Map ) {
+					addColumnNames( (Map) sub, columnNames, DotPatternMapHelpers.flatten( prefix, field ) );
+				}
+				else {
+					columnNames.add( DotPatternMapHelpers.flatten( prefix, field ) );
+				}
+			}
+		}
+
 		@Override
 		public Object get(Map<String, Object> row, String column) {
 			if ( prefixedColumns.contains( column ) ) {
 				column = unprefix( column );
 			}
-			return row.get( column );
+
+			if ( row.containsKey( column ) ) {
+				return row.get( column );
+			}
+
+			return DotPatternMapHelpers.getValueOrNull( row, column );
 		}
 	}
 }

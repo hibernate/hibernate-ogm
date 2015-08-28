@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
-import java.util.List;
-
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
@@ -48,16 +46,16 @@ public abstract class CouchDBAssociation {
 	/**
 	 * Get all the rows of this association. Does not contain columns which are part of the association
 	 * key.
-	 * @return a list with all the rows for this association
+	 * @return an object with all the rows for this association
 	 */
-	public abstract List<Object> getRows();
+	public abstract Object getRows();
 
 	/**
 	 * Sets the rows of this association. The given list must not contain columns which are part of the association key.
 	 *
 	 * @param rows the rows of the association
 	 */
-	public abstract void setRows(List<Object> rows);
+	public abstract void setRows(Object rows);
 
 	/**
 	 * Returns the CouchDB document which owns this association, either an {@link AssociationDocument} or an

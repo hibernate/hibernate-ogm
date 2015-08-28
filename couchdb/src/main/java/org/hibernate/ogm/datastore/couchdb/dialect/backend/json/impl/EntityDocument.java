@@ -7,11 +7,14 @@
 package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
+import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Tuple;
 
@@ -77,7 +80,7 @@ public class EntityDocument extends Document {
 	 */
 	private final Map<String, Object> properties = new HashMap<String, Object>();
 
-	EntityDocument() {
+	public EntityDocument() {
 	}
 
 	public EntityDocument(EntityKey key) {
@@ -221,6 +224,18 @@ public class EntityDocument extends Document {
 
 	@JsonIgnore
 	public void removeAssociation(String name) {
-		properties.remove( name );
+		if ( properties.containsKey( name ) ) {
+			properties.remove( name );
+		}
+		else {
+			Set<String> keys = new HashSet<String>( properties.keySet() );
+			for ( String key : keys ) {
+				if ( key.startsWith( name + "." ) ) {
+					removeAssociation( key );
+				}
+			}
+
+			DotPatternMapHelpers.resetValue( properties, name );
+		}
 	}
 }
