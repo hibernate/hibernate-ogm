@@ -14,6 +14,7 @@ import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * A {@link RedisAssociation} backed by an {@link Entity}.
@@ -31,7 +32,6 @@ class EmbeddedAssociation extends RedisAssociation {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public Object getRows() {
 		Object rows;
 		Object fieldValue = DotPatternMapHelpers.getValueOrNull(
@@ -41,7 +41,7 @@ class EmbeddedAssociation extends RedisAssociation {
 		if ( fieldValue == null ) {
 			rows = Collections.emptyList();
 		}
-		else if ( associationKeyMetadata.isOneToOne() ) {
+		else if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE ) {
 			rows = fieldValue;
 		}
 		else {
@@ -59,7 +59,7 @@ class EmbeddedAssociation extends RedisAssociation {
 		else {
 
 			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
-			if ( associationKeyMetadata.isOneToOne() && rows instanceof Collection ) {
+			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
 				Object value = ( (Collection) rows ).iterator().next();
 				entity.set( associationKeyMetadata.getCollectionRole(), value );
 			}

@@ -12,7 +12,9 @@ import java.util.List;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationType;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 
 /**
@@ -31,10 +33,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	private final String[] rowKeyColumnNames;
 	private final String[] rowKeyIndexColumnNames;
 	private final boolean isInverse;
+	private final EntityKeyMetadata entityKeyMetadata;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String collectionRole;
 	private final AssociationKind associationKind;
-	private final boolean isOneToOne;
+	private final AssociationType associationType;
 
 	private DefaultAssociationKeyMetadata(Builder builder) {
 		this.table = builder.table;
@@ -43,10 +46,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		this.rowKeyColumnNames = builder.rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = builder.rowKeyIndexColumnNames;
 		this.isInverse = builder.isInverse;
+		this.entityKeyMetadata = builder.entityKeyMetadata;
 		this.associatedEntityKeyMetadata = builder.associatedEntityKeyMetadata;
 		this.collectionRole = builder.collectionRole;
 		this.associationKind = builder.associationKind;
-		this.isOneToOne = builder.isOneToOne;
+		this.associationType = builder.associationType;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -59,10 +63,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		private String[] rowKeyColumnNames;
 		private String[] rowKeyIndexColumnNames = ArrayHelper.EMPTY_STRING_ARRAY;
 		private boolean isInverse;
+		private EntityKeyMetadata entityKeyMetadata;
 		private AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 		private String collectionRole;
 		private AssociationKind associationKind;
-		private boolean isOneToOne;
+		private AssociationType associationType;
 
 		public Builder table(String table) {
 			this.table = table;
@@ -89,6 +94,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 			return this;
 		}
 
+		public Builder entityKeyMetadata(EntityKeyMetadata entityKeyMetadata) {
+			this.entityKeyMetadata = entityKeyMetadata;
+			return this;
+		}
+
 		public Builder associatedEntityKeyMetadata(AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 			this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 			return this;
@@ -104,8 +114,8 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 			return this;
 		}
 
-		public Builder oneToOne(boolean isOneToOne) {
-			this.isOneToOne = isOneToOne;
+		public Builder associationType(AssociationType associationType) {
+			this.associationType = associationType;
 			return this;
 		}
 
@@ -113,8 +123,6 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 			return new DefaultAssociationKeyMetadata( this );
 		}
 	}
-
-
 
 	@Override
 	public String getTable() {
@@ -143,6 +151,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	@Override
 	public String[] getRowKeyIndexColumnNames() {
 		return rowKeyIndexColumnNames;
+	}
+
+	@Override
+	public EntityKeyMetadata getEntityKeyMetadata() {
+		return entityKeyMetadata;
 	}
 
 	/**
@@ -252,8 +265,8 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	}
 
 	@Override
-	public boolean isOneToOne() {
-		return isOneToOne;
+	public AssociationType getAssociationType() {
+		return associationType;
 	}
 
 	@Override

@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -49,7 +50,7 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 	private static Collection<?> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
 		Collection<?> rows = null;
 
-		if ( associationKey.getMetadata().isOneToOne() ) {
+		if ( associationKey.getMetadata().getAssociationType() == AssociationType.ONE_TO_ONE ) {
 			Object oneToOneValue = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Object.class );
 			if ( oneToOneValue != null ) {
 				rows = Collections.singletonList( oneToOneValue );

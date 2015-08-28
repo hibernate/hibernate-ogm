@@ -64,10 +64,10 @@ import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
@@ -348,11 +348,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						.table( getTableName() )
 						.columnNames( propertyColumnNames )
 						.rowKeyColumnNames( rowKeyColumnNames )
+						.entityKeyMetadata( otherSidePersister.getEntityKeyMetadata() )
 						.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( entityKeyMetadata.getColumnNames(), entityKeyMetadata ) )
 						.inverse( true )
 						.collectionRole( inverseOneToOneProperty )
 						.associationKind( AssociationKind.ASSOCIATION )
-						.oneToOne( true )
+						.associationType( org.hibernate.ogm.model.key.spi.AssociationType.ONE_TO_ONE )
 						.build();
 
 				associationKeyMetadata.put( property, metadata );

@@ -75,12 +75,13 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.impl.CharacterStringType;
@@ -613,7 +614,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		Object rows = getAssociationRows( association, key, associationContext );
-		Object toStore = key.getMetadata().isOneToOne() ? ( (List<?>) rows ).get( 0 ) : rows;
+		Object toStore = key.getMetadata().getAssociationType() == AssociationType.ONE_TO_ONE ? ( (List<?>) rows ).get( 0 ) : rows;
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			collection = this.getCollection( key.getEntityKey() );

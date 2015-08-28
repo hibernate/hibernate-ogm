@@ -26,10 +26,11 @@ import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.junit.After;
 import org.junit.Before;
@@ -161,7 +162,7 @@ public class CouchDBDialectTest {
 			.inverse( false )
 			.collectionRole( collectionRole )
 			.associationKind( AssociationKind.ASSOCIATION )
-			.oneToOne( false )
+			.associationType( AssociationType.BAG )
 			.build();
 
 		return new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey );

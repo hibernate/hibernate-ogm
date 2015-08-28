@@ -41,11 +41,11 @@ import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.impl.RowKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
@@ -61,7 +61,11 @@ import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
+import org.hibernate.type.ListType;
+import org.hibernate.type.MapType;
+import org.hibernate.type.SetType;
 import org.hibernate.type.Type;
 
 /**
@@ -148,14 +152,35 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.columnNames( getKeyColumnNames() )
 				.rowKeyColumnNames( rowKeyColumnNames )
 				.rowKeyIndexColumnNames( rowKeyIndexColumnNames )
+				.entityKeyMetadata( ( (OgmEntityPersister) getOwnerEntityPersister() ).getEntityKeyMetadata() )
 				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( getElementColumnNames(), targetEntityKeyMetadata( false ) ) )
 				.inverse( isInverse )
 				.collectionRole( getUnqualifiedRole() )
 				.associationKind( getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION )
-				.oneToOne( false )
+				.associationType( getAssociationType( collection ) )
 				.build();
 
 		nodeName = collection.getNodeName();
+	}
+
+	private static org.hibernate.ogm.model.key.spi.AssociationType getAssociationType(Collection collection) {
+		CollectionType collectionType = collection.getCollectionType();
+
+		if ( collectionType.isArrayType() ) {
+			return org.hibernate.ogm.model.key.spi.AssociationType.ARRAY;
+		}
+		else if ( collectionType instanceof SetType ) {
+			return org.hibernate.ogm.model.key.spi.AssociationType.SET;
+		}
+		else if ( collectionType instanceof MapType ) {
+			return org.hibernate.ogm.model.key.spi.AssociationType.MAP;
+		}
+		else if ( collectionType instanceof ListType ) {
+			return org.hibernate.ogm.model.key.spi.AssociationType.LIST;
+		}
+		else {
+			return org.hibernate.ogm.model.key.spi.AssociationType.BAG;
+		}
 	}
 
 	public String getUnqualifiedRole() {

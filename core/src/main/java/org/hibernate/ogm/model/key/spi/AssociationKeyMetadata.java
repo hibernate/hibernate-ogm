@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.model.key.spi;
 
-import org.hibernate.ogm.model.spi.AssociationKind;
 
 /**
  * Stores metadata information common to all keys related
@@ -58,6 +57,13 @@ public interface AssociationKeyMetadata {
 	 * @return the columns names representing the index of the element of the association
 	 */
 	String[] getRowKeyIndexColumnNames();
+
+	/**
+	 * Returns meta-data about the entity-key on this side of associations of this key family.
+	 *
+	 * @return meta-data about the entity-key on this side of associations of this key family.
+	 */
+	EntityKeyMetadata getEntityKeyMetadata();
 
 	/**
 	 * Returns meta-data about the entity key referenced by associations of this key family.
@@ -122,9 +128,7 @@ public interface AssociationKeyMetadata {
 	AssociationKind getAssociationKind();
 
 	/**
-	 * Check if the key identify a one-to-one association
-	 *
-	 * @return {@code true} if the association is one-to-one, {@code false} otherwise
+	 * Returns the type of this association, i.e. whether it's a {@link Set}, {@link List} etc.
 	 */
-	boolean isOneToOne();
+	AssociationType getAssociationType();
 }

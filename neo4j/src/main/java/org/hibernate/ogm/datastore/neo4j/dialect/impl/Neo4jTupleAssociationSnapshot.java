@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
-import org.hibernate.ogm.model.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.util.impl.EmbeddedHelper;
 import org.neo4j.graphdb.Direction;

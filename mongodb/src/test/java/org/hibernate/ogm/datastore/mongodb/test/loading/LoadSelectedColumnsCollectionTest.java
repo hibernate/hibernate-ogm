@@ -42,9 +42,10 @@ import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
@@ -133,7 +134,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				.inverse( false )
 				.collectionRole( "modules" )
 				.associationKind( AssociationKind.ASSOCIATION )
-				.oneToOne( false )
+				.associationType( AssociationType.LIST )
 				.build();
 
 		AssociationKey associationKey = new AssociationKey(
