@@ -60,6 +60,7 @@ import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -131,7 +132,7 @@ import com.mongodb.WriteConcern;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, OptimisticLockingAwareGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -154,6 +155,53 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
+		return createTuple( key, tupleContext, found );
+	}
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		DBCursor cursor = this.getObjects( keys, tupleContext );
+		try {
+			return tuplesResult( keys, tupleContext, cursor );
+		}
+		finally {
+			if ( cursor != null ) {
+				cursor.close();
+			}
+		}
+	}
+
+	/*
+	 * This method assumes that the entries in the cursor might not be in the same order as the keys and some keys might
+	 * not have a matching result in the db.
+	 */
+	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, DBCursor cursor) {
+		// The list is initialized with null because some keys might not have a corresponding value in the cursor
+		List<Tuple> tuples = createResultListWitNulls( keys );
+		for ( DBObject dbObject : cursor ) {
+			for ( int i = 0; i < keys.length; i++ ) {
+				if ( matches( dbObject, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
+					tuples.set( i, createTuple( keys[i], tupleContext, dbObject ) );
+				}
+			}
+		}
+		return tuples;
+	}
+
+	private List<Tuple> createResultListWitNulls(EntityKey[] keys) {
+		List<Tuple> tuples = new ArrayList<>( keys.length );
+		for ( int i = 0; i < keys.length; i++ ) {
+			tuples.add( null );
+		}
+		return tuples;
+	}
+
+	private boolean matches(DBObject dbObject, String[] names, Object[] values) {
+		Object idValue = prepareIdObjectValue( names, values );
+		return dbObject.get( ID_FIELDNAME ).equals( idValue );
+	}
+
+	private Tuple createTuple(EntityKey key, TupleContext tupleContext, DBObject found) {
 		if ( found != null ) {
 			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
 		}
@@ -212,6 +260,23 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collection.findOne( searchObject, projection, readPreference );
 	}
 
+	private DBCursor getObjects(EntityKey[] keys, TupleContext tupleContext) {
+		ReadPreference readPreference = getReadPreference( tupleContext );
+
+		DBCollection collection = getCollection( keys[0].getMetadata() );
+		collection.setReadPreference( readPreference );
+
+		Object[] searchObjects = new Object[keys.length];
+		for ( int i = 0; i < keys.length; i++ ) {
+			searchObjects[i] = prepareIdObjectValue( keys[i].getColumnNames(), keys[i].getColumnValues() );
+		}
+		BasicDBObject projection = getProjection( tupleContext );
+
+		DBObject query = new BasicDBObject();
+		query.put( ID_FIELDNAME, new BasicDBObject( "$in", searchObjects ) );
+		return collection.find( query, projection );
+	}
+
 	private BasicDBObject getProjection(TupleContext tupleContext) {
 		return getProjection( tupleContext.getSelectableColumns() );
 	}
@@ -246,12 +311,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues) {
-		BasicDBObject object;
+		return new BasicDBObject( ID_FIELDNAME, prepareIdObjectValue( columnNames, columnValues ) );
+	}
+
+	private Object prepareIdObjectValue(String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length == 1 ) {
-			object = new BasicDBObject( ID_FIELDNAME, columnValues[0] );
+			return columnValues[0];
 		}
 		else {
-			object = new BasicDBObject();
 			DBObject idObject = new BasicDBObject();
 			for ( int i = 0; i < columnNames.length; i++ ) {
 				String columnName = columnNames[i];
@@ -267,9 +334,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 
 			}
-			object.put( ID_FIELDNAME, idObject );
+			return idObject;
 		}
-		return object;
 	}
 
 	private DBCollection getCollection(String table) {
