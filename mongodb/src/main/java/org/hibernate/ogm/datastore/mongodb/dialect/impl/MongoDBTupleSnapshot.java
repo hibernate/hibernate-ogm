@@ -86,7 +86,13 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 			return getValue( idObject, nestedColumn );
 		}
 		else {
-			return dbObject.get( MongoDBDialect.ID_FIELDNAME );
+			if ( keyMetadata.getColumnNames().length == 1 ) {
+				return dbObject.get( MongoDBDialect.ID_FIELDNAME );
+			}
+			else {
+				DBObject idObject = (DBObject) dbObject.get( MongoDBDialect.ID_FIELDNAME );
+				return idObject.get( column );
+			}
 		}
 	}
 
