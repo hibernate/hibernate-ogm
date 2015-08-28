@@ -12,11 +12,13 @@ import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -40,6 +42,7 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
@@ -95,7 +98,7 @@ import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelExc
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
+public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect, QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
 
 	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintViolation";
 
@@ -182,6 +185,59 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 						key.getMetadata()
 				)
 		);
+	}
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		// We only supports one metadata for now
+		EntityKeyMetadata metadata = keys[0].getMetadata();
+		// The result returned by the query might not be in the same order as the keys.
+		ResourceIterator<Node> nodes = entityQueries.get( metadata ).findEntities( dataBase, keys );
+		try {
+			return tuplesResult( keys, tupleContext, nodes );
+		}
+		finally {
+			nodes.close();
+		}
+	}
+
+	/*
+	 * This method assumes that the nodes might not be in the same order as the keys and some keys might not have a
+	 * matching result in the db.
+	 */
+	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, ResourceIterator<Node> nodes) {
+		// The list is initialized with null because some keys might not have a corresponding node
+		List<Tuple> tuples = createResultListWitNulls( keys );
+		while ( nodes.hasNext() ) {
+			Node node = nodes.next();
+			for ( int i = 0; i < keys.length; i++ ) {
+				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
+					tuples.set( i, new Tuple( new Neo4jTupleSnapshot( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+							keys[i].getMetadata() ) ) );
+				}
+			}
+		}
+		return tuples;
+	}
+
+	private boolean matches(Node node, String[] properties, Object[] values) {
+		for ( int i = 0; i < properties.length; i++ ) {
+			if ( node.hasProperty( properties[i] ) && !node.getProperty( properties[i] ).equals( values[i] )) {
+				return false;
+			}
+			else if ( !node.hasProperty( properties[i] ) && values[i] != null ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private List<Tuple> createResultListWitNulls(EntityKey[] keys) {
+		List<Tuple> tuples = new ArrayList<>( keys.length );
+		for ( int i = 0; i < keys.length; i++ ) {
+			tuples.add( null );
+		}
+		return tuples;
 	}
 
 	@Override
