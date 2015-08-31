@@ -182,7 +182,10 @@ public class CouchDBDialect extends BaseGridDialect {
 				associationContext
 		);
 
-		if ( organizeByRowKey ) {
+		if ( isStoredInEntityStructure(
+				associationKey.getMetadata(),
+				associationContext.getAssociationTypeContext()
+		) && organizeByRowKey ) {
 			String rowKeyColumn = organizeByRowKey ? associationKey.getMetadata().getRowKeyIndexColumnNames()[0] : null;
 			Map<String, Object> rows = new HashMap<>();
 
