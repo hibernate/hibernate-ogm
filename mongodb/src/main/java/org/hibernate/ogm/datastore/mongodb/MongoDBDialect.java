@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
@@ -589,17 +590,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			}
 			return rowObject;
 		}
-	}
-
-	private String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {
-		String[] associationKeyColumns = associationKey.getMetadata()
-				.getAssociatedEntityKeyMetadata()
-				.getAssociationKeyColumns();
-		// we used to check that columns are the same (in an ordered fashion)
-		// but to handle List and Map and store indexes / keys at the same level as the id columns
-		// this check is removed
-		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
-		return prefix == null ? "" : prefix + ".";
 	}
 
 	@Override

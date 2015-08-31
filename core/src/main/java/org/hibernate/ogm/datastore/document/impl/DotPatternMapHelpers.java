@@ -133,6 +133,13 @@ public class DotPatternMapHelpers {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( MapStorageOption.class );
 	}
 
+	/**
+	 * Returns the shared prefix with a trailing dot (.) of the association columns or {@literal null} if there is no shared prefix.
+	 *
+	 * @param associationKey the association key
+	 *
+	 * @return the shared prefix with a trailing dot (.) of the association columns or {@literal null}
+	 */
 	public static String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {
 		String[] associationKeyColumns = associationKey.getMetadata()
 				.getAssociatedEntityKeyMetadata()
