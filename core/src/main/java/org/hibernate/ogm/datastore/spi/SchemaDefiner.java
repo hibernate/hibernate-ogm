@@ -6,8 +6,13 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Set;
+
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.Experimental;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.Configurable;
@@ -36,15 +41,29 @@ public interface SchemaDefiner extends Service {
 	 * Validates the mapped objects such as entities, id generators etc. against any specific requirements of the
 	 * current datastore.
 	 *
-	 * @param factory the session factory
+	 * @param context Provides access to metadata describing the schema to be validated
 	 */
-	void validateMapping(SessionFactoryImplementor factory);
+	void validateMapping(SchemaDefinitionContext context);
 
 	/**
 	 * Initializes the schema in the datastore.
 	 *
-	 * @param database describes the database and its schema(s)
-	 * @param factory the session factory
+	 * @param context Provides access to metadata describing the schema to be initialized
 	 */
-	void initializeSchema(Database database, SessionFactoryImplementor factory);
+	void initializeSchema(SchemaDefinitionContext context);
+
+	/**
+	 * Provides contextual information about the schema objects to be created. Schema initialization should primarily be
+	 * driven via the objects retrievable via {@link Database} and the different types of meta-data.
+	 * <p>
+	 * Please get in touch in case you need access to the session factory for something else than obtaining the current
+	 * datastore provider.
+	 */
+	interface SchemaDefinitionContext {
+		Database getDatabase();
+		Set<EntityKeyMetadata> getAllEntityKeyMetadata();
+		Set<AssociationKeyMetadata> getAllAssociationKeyMetadata();
+		Set<IdSourceKeyMetadata> getAllIdSourceKeyMetadata();
+		SessionFactoryImplementor getSessionFactory();
+	}
 }

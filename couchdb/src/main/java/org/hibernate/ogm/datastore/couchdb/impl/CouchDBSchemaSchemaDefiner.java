@@ -8,8 +8,6 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 
 import java.util.Map.Entry;
 
-import org.hibernate.boot.model.relational.Database;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl.TuplesDesignDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
@@ -31,8 +29,8 @@ public class CouchDBSchemaSchemaDefiner extends BaseSchemaDefiner {
 	private static final Log logger = LoggerFactory.getLogger();
 
 	@Override
-	public void validateMapping(SessionFactoryImplementor factory) {
-		for ( Entry<String, EntityPersister> entityAndPersister : factory.getEntityPersisters().entrySet() ) {
+	public void validateMapping(SchemaDefinitionContext context) {
+		for ( Entry<String, EntityPersister> entityAndPersister : context.getSessionFactory().getEntityPersisters().entrySet() ) {
 			if ( !hasRevisionColumn( ( (OgmEntityPersister) entityAndPersister.getValue() ) ) ) {
 				logger.entityShouldHaveRevisionProperty( entityAndPersister.getKey() );
 			}
@@ -40,8 +38,8 @@ public class CouchDBSchemaSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	@Override
-	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
-		CouchDBDatastoreProvider datastoreProvider = (CouchDBDatastoreProvider) factory.getServiceRegistry().getService( DatastoreProvider.class );
+	public void initializeSchema(SchemaDefinitionContext context) {
+		CouchDBDatastoreProvider datastoreProvider = (CouchDBDatastoreProvider) context.getSessionFactory().getServiceRegistry().getService( DatastoreProvider.class );
 		CouchDBDatastore dataStore = datastoreProvider.getDataStore();
 
 		// create tuple design document if required

@@ -10,13 +10,12 @@ import static java.util.Collections.singletonMap;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.HibernateException;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
-import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
@@ -97,20 +96,24 @@ public class Neo4jSequenceGenerator {
 	 * <p>
 	 * All nodes are created inside the same transaction
 	 *
-	 * @param identifierGenerators the generators representing the sequences
+	 * @param sequences the generators representing the sequences
 	 */
-	public void createSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
-		addUniqueConstraints( identifierGenerators );
-		addSequences( identifierGenerators );
+	public void createSequences(Iterable<Sequence> sequences) {
+		addUniqueConstraintForSequences();
+		addSequences( sequences );
 	}
 
-	private void addUniqueConstraints(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
+	public void createUniqueConstraintsForTableSequences(Iterable<IdSourceKeyMetadata> tableIdGenerators) {
 		Transaction tx = null;
 		try {
 			tx = neo4jDb.beginTx();
-			for ( PersistentNoSqlIdentifierGenerator identifierGenerator : identifierGenerators ) {
-				addUniqueConstraint( identifierGenerator );
+
+			for ( IdSourceKeyMetadata idSourceKeyMetadata : tableIdGenerators ) {
+				if ( idSourceKeyMetadata.getType() == IdSourceType.TABLE ) {
+					addUniqueConstraintForTableBasedSequence( idSourceKeyMetadata );
+				}
 			}
+
 			tx.success();
 		}
 		finally {
@@ -118,18 +121,22 @@ public class Neo4jSequenceGenerator {
 		}
 	}
 
-	private void addUniqueConstraint(PersistentNoSqlIdentifierGenerator identifierGenerator) {
-		if ( identifierGenerator.getGeneratorKeyMetadata().getType() == IdSourceType.SEQUENCE ) {
-			addUniqueConstraintForSequence( identifierGenerator.getGeneratorKeyMetadata() );
-		}
-		if ( identifierGenerator.getGeneratorKeyMetadata().getType() == IdSourceType.TABLE ) {
-			addUniqueConstraintForTableBasedSequence( identifierGenerator.getGeneratorKeyMetadata() );
-		}
-	}
+	private void addUniqueConstraintForSequences() {
+		Transaction tx = null;
+		try {
+			tx = neo4jDb.beginTx();
 
-	private void addUniqueConstraintForSequence(IdSourceKeyMetadata idSourceKeyMetadata) {
-		if ( isMissingUniqueConstraint( NodeLabel.SEQUENCE ) ) {
-			neo4jDb.schema().constraintFor( NodeLabel.SEQUENCE ).assertPropertyIsUnique( SEQUENCE_NAME_PROPERTY ).create();
+			if ( isMissingUniqueConstraint( NodeLabel.SEQUENCE ) ) {
+				neo4jDb.schema()
+					.constraintFor( NodeLabel.SEQUENCE )
+					.assertPropertyIsUnique( SEQUENCE_NAME_PROPERTY )
+					.create();
+			}
+
+			tx.success();
+		}
+		finally {
+			tx.close();
 		}
 	}
 
@@ -159,23 +166,17 @@ public class Neo4jSequenceGenerator {
 	 *
 	 * @param identifierGenerators the generators to process
 	 */
-	private void addSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
+	private void addSequences(Iterable<Sequence> sequences) {
 		Transaction tx = null;
 		try {
 			tx = neo4jDb.beginTx();
-			for ( PersistentNoSqlIdentifierGenerator generator : identifierGenerators ) {
-				addSequence( generator );
+			for ( Sequence sequence : sequences ) {
+				addSequence( sequence );
 			}
 			tx.success();
 		}
 		finally {
 			tx.close();
-		}
-	}
-
-	private void addSequence(PersistentNoSqlIdentifierGenerator identifierGenerator) {
-		if ( identifierGenerator.getGeneratorKeyMetadata().getType() == IdSourceType.SEQUENCE ) {
-			addSequence( identifierGenerator.getGeneratorKeyMetadata(), identifierGenerator.getInitialValue() );
 		}
 	}
 
@@ -198,8 +199,8 @@ public class Neo4jSequenceGenerator {
 	 * MERGE (n:SEQUENCE {sequence_name: {sequenceName}}) ON CREATE SET n.current_value = {initialValue} RETURN n
 	 * </pre>
 	 */
-	private void addSequence(IdSourceKeyMetadata idSourceKeyMetadata, int initialValue) {
-		neo4jDb.execute( SEQUENCE_CREATION_QUERY, params( idSourceKeyMetadata.getName(), initialValue ) );
+	private void addSequence(Sequence sequence) {
+		neo4jDb.execute( SEQUENCE_CREATION_QUERY, params( sequence.getName().render(), sequence.getInitialValue() ) );
 	}
 
 	private Map<String, Object> params(String sequenceName, int initialValue) {

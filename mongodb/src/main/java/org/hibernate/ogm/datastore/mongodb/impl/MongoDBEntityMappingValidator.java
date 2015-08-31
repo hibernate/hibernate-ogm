@@ -6,16 +6,13 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
-import java.util.Set;
-
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.EntityPersister;
@@ -31,12 +28,11 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 	private static final Log log = LoggerFactory.getLogger();
 
 	@Override
-	public void validateMapping(SessionFactoryImplementor factory) {
-		Set<PersistentNoSqlIdentifierGenerator> persistentGenerators = getPersistentGenerators( factory );
-		validateGenerators( persistentGenerators );
-		validateEntityCollectionNames( getAllEntityKeyMetadata( factory ) );
-		validateAssociationNames( getAllAssociationKeyMetadata( factory ) );
-		validateAllPersisters( factory.getEntityPersisters().values() );
+	public void validateMapping(SchemaDefinitionContext context) {
+		validateGenerators( context.getAllIdSourceKeyMetadata() );
+		validateEntityCollectionNames( context.getAllEntityKeyMetadata() );
+		validateAssociationNames( context.getAllAssociationKeyMetadata() );
+		validateAllPersisters( context.getSessionFactory().getEntityPersisters().values() );
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {
@@ -72,9 +68,9 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 		}
 	}
 
-	private void validateGenerators(Iterable<PersistentNoSqlIdentifierGenerator> generators) {
-		for ( PersistentNoSqlIdentifierGenerator identifierGenerator : generators ) {
-			String keyColumn = identifierGenerator.getGeneratorKeyMetadata().getKeyColumnName();
+	private void validateGenerators(Iterable<IdSourceKeyMetadata> allIdSourceKeyMetadata) {
+		for ( IdSourceKeyMetadata idSourceKeyMetadata : allIdSourceKeyMetadata ) {
+			String keyColumn = idSourceKeyMetadata.getKeyColumnName();
 
 			if ( !keyColumn.equals( MongoDBDialect.ID_FIELDNAME ) ) {
 				log.cannotUseGivenPrimaryKeyColumnName( keyColumn, MongoDBDialect.ID_FIELDNAME );

@@ -44,6 +44,7 @@ import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.service.impl.DefaultSchemaInitializationContext;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -75,8 +76,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		dialect1 = new InfinispanDialect( provider1 );
 		dialect2 = new InfinispanDialect( provider2 );
 
-		provider1.getSchemaDefinerType().newInstance().initializeSchema( null, sessionFactory1 );
-		provider2.getSchemaDefinerType().newInstance().initializeSchema( null, sessionFactory2 );
+		provider1.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, sessionFactory1 ) );
+		provider2.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, sessionFactory2 ) );
 	}
 
 	@AfterClass

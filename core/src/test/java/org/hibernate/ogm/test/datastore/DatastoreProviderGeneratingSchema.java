@@ -8,9 +8,7 @@ package org.hibernate.ogm.test.datastore;
 
 import java.util.Iterator;
 
-import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Namespace;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -51,8 +49,8 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 	public static class TestSchemaDefiner extends BaseSchemaDefiner {
 
 		@Override
-		public void initializeSchema(Database database, SessionFactoryImplementor factory) {
-			for ( Namespace namespace : database.getNamespaces() ) {
+		public void initializeSchema(SchemaDefinitionContext context) {
+			for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
 				for (Table table : namespace.getTables() ) {
 					if ( table.isPhysicalTable() ) {
 						String tableName = table.getQuotedName();

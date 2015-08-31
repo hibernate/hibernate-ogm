@@ -10,8 +10,12 @@ package org.hibernate.ogm.id.impl;
 import java.util.Properties;
 
 import org.hibernate.MappingException;
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.ExportableProducer;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.model.relational.QualifiedName;
 import org.hibernate.boot.model.relational.QualifiedNameParser;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.PersistentIdentifierGenerator;
@@ -57,13 +61,14 @@ import org.hibernate.type.Type;
  * @author Lukasz Antoniak (lukasz dot antoniak at gmail dot com)
  * @author Gunnar Morling
  */
-public class OgmSequenceGenerator extends OgmGeneratorBase {
+public class OgmSequenceGenerator extends OgmGeneratorBase implements ExportableProducer {
 
 	private static final Log log = LoggerFactory.make();
 
 	private Type type;
 	private Properties params;
 
+	private QualifiedName logicalQualifiedSequenceName;
 	private String sequenceName;
 	private IdSourceKeyMetadata generatorKeyMetadata;
 
@@ -79,8 +84,9 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 
 		this.type = type;
 		this.params = params;
+		logicalQualifiedSequenceName = determineSequenceName( params, jdbcEnvironment );
 		sequenceName = jdbcEnvironment.getQualifiedObjectNameFormatter().format(
-				determineSequenceName( params, jdbcEnvironment ),
+				logicalQualifiedSequenceName,
 				jdbcEnvironment.getDialect()
 		);
 		generatorKeyMetadata = DefaultIdSourceKeyMetadata.forSequence( sequenceName );
@@ -204,6 +210,21 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		@Override
 		public IdSourceKey getGeneratorKey(SessionImplementor session) {
 			return idSourceKey;
+		}
+	}
+
+	@Override
+	public void registerExportables(Database database) {
+		final Namespace namespace = database.locateNamespace(
+				logicalQualifiedSequenceName.getCatalogName(),
+				logicalQualifiedSequenceName.getSchemaName()
+		);
+		Sequence sequence = namespace.locateSequence( logicalQualifiedSequenceName.getObjectName() );
+		if ( sequence != null ) {
+			sequence.validate( getInitialValue(), getIncrementSize() );
+		}
+		else {
+			sequence = namespace.createSequence( logicalQualifiedSequenceName.getObjectName(), getInitialValue(), getIncrementSize() );
 		}
 	}
 }

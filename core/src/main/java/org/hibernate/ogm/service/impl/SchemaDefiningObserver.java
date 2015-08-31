@@ -21,7 +21,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class SchemaDefiningObserver implements SessionFactoryObserver {
 
-	private Database database;
+	private final Database database;
 
 	public SchemaDefiningObserver(Metadata metadata) {
 		this.database = metadata.getDatabase();
@@ -33,8 +33,13 @@ public class SchemaDefiningObserver implements SessionFactoryObserver {
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 
 		SchemaDefiner schemaInitializer = registry.getService( SchemaDefiner.class );
-		schemaInitializer.validateMapping( sessionFactoryImplementor );
-		schemaInitializer.initializeSchema( database, sessionFactoryImplementor );
+		DefaultSchemaInitializationContext context = new DefaultSchemaInitializationContext(
+				database,
+				sessionFactoryImplementor
+		);
+
+		schemaInitializer.validateMapping( context );
+		schemaInitializer.initializeSchema( context );
 	}
 
 	@Override

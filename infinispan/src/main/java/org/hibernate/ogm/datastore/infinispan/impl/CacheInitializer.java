@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl;
 
-import org.hibernate.boot.model.relational.Database;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.keyvalue.options.spi.CacheMappingOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -22,17 +20,17 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 public class CacheInitializer extends BaseSchemaDefiner {
 
 	@Override
-	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
-		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+	public void initializeSchema(SchemaDefinitionContext context) {
+		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
 
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		InfinispanDatastoreProvider provider = (InfinispanDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 
 		provider.initializePersistenceStrategy(
 				optionsService.context().getGlobalOptions().getUnique( CacheMappingOption.class ),
-				getAllEntityKeyMetadata( factory ),
-				getAllAssociationKeyMetadata( factory ),
-				getAllIdSourceKeyMetadata( factory )
+				context.getAllEntityKeyMetadata(),
+				context.getAllAssociationKeyMetadata(),
+				context.getAllIdSourceKeyMetadata()
 		);
 	}
 }

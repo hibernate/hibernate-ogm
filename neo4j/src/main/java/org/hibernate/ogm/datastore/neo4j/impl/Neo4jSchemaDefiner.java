@@ -8,13 +8,14 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 
 import static org.neo4j.graphdb.DynamicLabel.label;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
@@ -27,7 +28,7 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 import org.jboss.logging.Logger.Level;
@@ -61,18 +62,25 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 	private static final Log log = LoggerFactory.getLogger();
 
 	@Override
-	public void initializeSchema(Database database, SessionFactoryImplementor factory) {
-		SessionFactoryImplementor sessionFactoryImplementor = factory;
+	public void initializeSchema(SchemaDefinitionContext context) {
+		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
 
-		createSequences( sessionFactoryImplementor, provider );
-		createEntityConstraints( provider.getDataBase(), database, factory.getProperties() );
+		createSequences( context.getDatabase(), context.getAllIdSourceKeyMetadata(), provider );
+		createEntityConstraints( provider.getDataBase(), context.getDatabase(), sessionFactoryImplementor.getProperties() );
 	}
 
-	private void createSequences(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
-		Set<PersistentNoSqlIdentifierGenerator> sequences = getPersistentGenerators( sessionFactoryImplementor );
+	private void createSequences(Database database, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata, Neo4jDatastoreProvider provider) {
+		List<Sequence> sequences = new ArrayList<>();
+		for ( Namespace namespace : database.getNamespaces() ) {
+			for ( Sequence sequence : namespace.getSequences() ) {
+				sequences.add( sequence );
+			}
+		}
+
 		provider.getSequenceGenerator().createSequences( sequences );
+		provider.getSequenceGenerator().createUniqueConstraintsForTableSequences( idSourceKeyMetadata );
 	}
 
 	private void createEntityConstraints(GraphDatabaseService neo4jDb, Database database, Properties properties) {
