@@ -8,7 +8,9 @@ package org.hibernate.ogm.datastore.cassandra;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,10 +29,9 @@ import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraTypeMapper;
 import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
 import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetAssociationSnapshot;
 import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleIterator;
-import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleSnapshot;
 import org.hibernate.ogm.datastore.cassandra.query.impl.CassandraParameterMetadataBuilder;
+import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -61,6 +62,8 @@ import org.hibernate.type.Type;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
@@ -168,7 +171,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 		}
 
 		Row row = resultSet.one();
-		Tuple tuple = new Tuple( new ResultSetTupleSnapshot( row ) );
+		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) );
 		return tuple;
 	}
 
@@ -297,21 +300,37 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 			return null;
 		}
 
-		Association association = new Association(
-				new ResultSetAssociationSnapshot(
-						key,
-						resultSet,
-						tableMetadata
-				)
-		);
+		Map<RowKey, Map<String, Object>> rowKeyMap = new HashMap<>();
+
+		List<String> combinedKeys = new LinkedList<String>();
+		combinedKeys.addAll( Arrays.asList( key.getColumnNames() ) );
+		for ( Object column : tableMetadata.getPrimaryKey().getColumns() ) {
+			String name = ((Column) column).getName();
+			if ( !combinedKeys.contains( name ) ) {
+				combinedKeys.add( name );
+			}
+		}
+		String[] columnNames = combinedKeys.toArray( new String[combinedKeys.size()] );
+
+		for ( Row row : resultSet ) {
+
+			Map<String, Object> rowMap = tupleFromRow( row );
+			Object[] resultColumnValues = new Object[columnNames.length];
+			for ( int i = 0; i < columnNames.length; i++ ) {
+				resultColumnValues[i] = rowMap.get( columnNames[i] );
+			}
+			RowKey rowKey = new RowKey( columnNames, resultColumnValues );
+			rowKeyMap.put( rowKey, rowMap );
+		}
+
+		Association association = new Association( new MapAssociationSnapshot( rowKeyMap ) );
 
 		return association;
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
-		return new Association( new ResultSetAssociationSnapshot( key, null, tableMetadata ) );
+		return new Association( new MapAssociationSnapshot( new HashMap<RowKey, Map<String, Object>>() ) );
 	}
 
 	@Override
@@ -449,10 +468,22 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 			Iterator<Row> iter = resultSet.iterator();
 			while ( iter.hasNext() ) {
 				Row row = iter.next();
-				Tuple tuple = new Tuple( new ResultSetTupleSnapshot( row ) );
-				consumer.consume( tuple );
+				consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) ) );
 			}
 		}
+	}
+
+	private Map<String, Object> tupleFromRow(Row row) {
+		Map<String, Object> map = new HashMap<>();
+
+		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
+		int count = columnDefinitions.size();
+		for ( int index = 0; index < count; index++ ) {
+			String columnName = columnDefinitions.getName( index );
+			Object value = row.getObject( index );
+			map.put( columnName, value );
+		}
+		return map;
 	}
 
 	@Override
