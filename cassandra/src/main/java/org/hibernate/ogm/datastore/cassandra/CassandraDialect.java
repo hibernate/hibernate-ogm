@@ -11,7 +11,9 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,8 +31,7 @@ import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraTypeMapper;
 import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
 import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetAssociationSnapshot;
-import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -54,6 +55,7 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ProtocolVersion;
@@ -141,7 +143,7 @@ public class CassandraDialect implements GridDialect {
 		}
 
 		Row row = resultSet.one();
-		Tuple tuple = new Tuple( new ResultSetTupleSnapshot( row, protocolVersion ) );
+		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) );
 		return tuple;
 	}
 
@@ -270,22 +272,37 @@ public class CassandraDialect implements GridDialect {
 			return null;
 		}
 
-		Association association = new Association(
-				new ResultSetAssociationSnapshot(
-						key,
-						resultSet,
-						tableMetadata,
-						protocolVersion
-				)
-		);
+		Map<RowKey, Map<String, Object>> rowKeyMap = new HashMap<>();
+
+		List<String> combinedKeys = new LinkedList<String>();
+		combinedKeys.addAll( Arrays.asList( key.getColumnNames() ) );
+		for ( Object column : tableMetadata.getPrimaryKey().getColumns() ) {
+			String name = ((Column) column).getName();
+			if ( !combinedKeys.contains( name ) ) {
+				combinedKeys.add( name );
+			}
+		}
+		String[] columnNames = combinedKeys.toArray( new String[combinedKeys.size()] );
+
+		for ( Row row : resultSet ) {
+
+			Map<String, Object> rowMap = tupleFromRow( row );
+			Object[] resultColumnValues = new Object[columnNames.length];
+			for ( int i = 0; i < columnNames.length; i++ ) {
+				resultColumnValues[i] = rowMap.get( columnNames[i] );
+			}
+			RowKey rowKey = new RowKey( columnNames, resultColumnValues );
+			rowKeyMap.put( rowKey, rowMap );
+		}
+
+		Association association = new Association( new MapAssociationSnapshot( rowKeyMap ) );
 
 		return association;
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
-		return new Association( new ResultSetAssociationSnapshot( key, null, tableMetadata, protocolVersion ) );
+		return new Association( new MapAssociationSnapshot( new HashMap<RowKey, Map<String, Object>>() ) );
 	}
 
 	@Override
@@ -423,10 +440,28 @@ public class CassandraDialect implements GridDialect {
 			Iterator<Row> iter = resultSet.iterator();
 			while ( iter.hasNext() ) {
 				Row row = iter.next();
-				Tuple tuple = new Tuple( new ResultSetTupleSnapshot( row, protocolVersion ) );
-				consumer.consume( tuple );
+				consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) ) );
 			}
 		}
+	}
+
+	private Map<String, Object> tupleFromRow(Row row) {
+		Map<String, Object> map = new HashMap<>();
+
+		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
+		int count = columnDefinitions.size();
+		for ( int index = 0; index < count; index++ ) {
+
+			String columnName = columnDefinitions.getName( index );
+			DataType dataType = row.getColumnDefinitions().getType( index );
+			ByteBuffer byteBuffer = row.getBytesUnsafe( index );
+			Object value = null;
+			if ( byteBuffer != null ) {
+				value = dataType.deserialize( byteBuffer, protocolVersion );
+			}
+			map.put( columnName, value );
+		}
+		return map;
 	}
 
 	@Override
