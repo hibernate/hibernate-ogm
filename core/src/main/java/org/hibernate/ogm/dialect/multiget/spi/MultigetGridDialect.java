@@ -11,6 +11,7 @@ import java.util.List;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
@@ -24,6 +25,8 @@ public interface MultigetGridDialect extends GridDialect {
 	 * Return the list of tuples with the given columns for a given list of keys.
 	 * The tuples must be returned in the same order as the keys.
 	 * If a key has no matching record, set null to the list entry.
+	 * <p>
+	 * All the keys must have the same {@link EntityKeyMetadata}.
 	 *
 	 * @param keys The array of tuple identifier
 	 * @param tupleContext Contains additional information that might be used to create the tuples
