@@ -163,21 +163,55 @@ Features of a `DatastoreProvider`:
 A data store can have one or more dialects. Dialects describe the style
 how data is mapped to a particular data store. NoSQL data stores imply a
 certain nature, how to map data. Document-oriented data stores encourage
-a entity-as-document pattern where embedded data structures could be
+an entity-as-document pattern where embedded data structures could be
 stored within the document itself. Key-value data stores allow different
 approaches, e. g. storing an entity as JSON document or event storing
-individual key-value pairs that map the entity within a hash table data structure.
-Hibernate OGM allows multiple dialects per data store and users may
-choose the most appropriate one.
+individual key-value pairs that map the entity within a hash table
+data structure. Hibernate OGM allows multiple dialects per data store
+and users may choose the most appropriate one.
 
-Features of a `GridDialect`:
+The most basic support is provided by implementing the `GridDialect`
+interface. Implementing that interface is mandatory to support a
+specific data store.
+
+A `GridDialect` usually supports:
 
 * Create/Read/Update/Delete for entities
 * Create/Read/Update/Delete for associations
-* Query execution
-* Batching/Multi-Get
 * Id/Sequence generator
 * Provides locking strategies
+
+A dialect _may_ optionally implement one or more additional facet
+interfaces to provide a broader support for certain features:
+
+* `QueryableGridDialect`
+* `BatchableGridDialect`
+* `IdentityColumnAwareGridDialect`
+* `OptimisticLockingAwareGridDialect`
+* `MultigetGridDialect`
+
+Features of a `QueryableGridDialect`
+
+* Query execution
+* Support for native queries
+
+Features of a `BatchableGridDialect`
+
+* Operation queueing
+* Execution of queued Create/Update/Delete as a batch
+
+Features of a `IdentityColumnAwareGridDialect`
+
+* Supports the generation of identity values upon data insertion
+
+Features of an `OptimisticLockingAwareGridDialect`
+
+* Finding and altering versioned records in an atomic fashion
+
+Features of a `MultigetGridDialect`
+
+* Retrieve multiple tuples within one operation
+
 
 [TIP]
 ====
@@ -191,21 +225,18 @@ Start with a small feature set to get a feeling for Hibernate OGM.
 You can always extend the features as you proceed.
 ====
 
-[NOTE]
-====
-Data stores tend to provide fancy features such as aggregations or map-reduce.
-It's very likely that you won't utilize these features since Hibernate provides
-own means to implement such functionality.
-====
-
 Hibernate OGM is not opinionated by which means data is stored/loaded
 for a particular data store, but the particular dialect is.
+Hibernate OGM strives for the most natural mapping style.
+The idea is to facilitate integration with other applications
+of that database by sticking to established patterns and idioms of that store.
 
 ==== Entities
 
 Entities are seen by a dialect as `Tuple`. A `Tuple` may contain a
-snapshot (that`s the persistent view of the data) and a set of
-key-value pairs that carry the actual data. Tuple keys use dot-path
+snapshot (that`s the persistent view of the data), a set of
+key-value pairs that carry the actual data, and a list of operations
+to apply onto the original snapshot. Tuple keys use dot-path
 property identifiers to indicate nesting. That comes handy when working
 with document stores because you can build a document structure based on that details.
 
@@ -227,6 +258,8 @@ its values from various sources. Most common configuration sources are:
 * persistence.xml file
 * annotation configuration (entity classes)
 * programmatic configuration
+
+The `org.hibernate.ogm.options` package provides the configuration infrastructure.
 
 You might want to look at `MongoDBConfiguration` or `InfinispanConfiguration`
 to get an idea how configuration works. Configuration is usually read
@@ -269,18 +302,24 @@ Data store-specific types can be handled the same way, check out `StringAsObject
 
 [NOTE]
 ====
-Type-mapping can be an exhausting task. Ask, if you're not sure about it.
+Type-mapping can be an exhausting task. The whole type handling is in flux and is subject
+to change as Hibernate OGM progresses. Ask, if you're not sure about it.
 ====
 
 ==== Tests
 
 Hibernate OGM brings a well suited infrastructure for tests. The test
-infrastructure consists of a generic base class (`OgmTestCase`) for
-tests and a test helper (see `TestableGridDialect`). That classes are used
-to get a different view on data than the frontend-view by the `Session`
-and the `EntityManager`. It is always helpful to create a set of own test
-cases for different scenarios to validate the data is mapped in the way it's
-intended or to verify data store-specific options such as `TTL`.
+infrastructure consists of generic base classes (`OgmTestCase` for OGM and
+`JpaTestCase` for JPA) for tests and a test helper (see `TestableGridDialect`).
+That classes are used to get a different view on data than the frontend-view
+by the `Session` and the `EntityManager`.
+
+[NOTE]
+====
+It is always helpful to create a set of own test cases for different
+scenarios to validate the data is mapped in the way it's intended or
+to verify data store-specific options such as `TTL`.
+====
 
 Another bunch of tests is called the backend TCK. That test classes test nearly
 all aspects of Hibernate OGM viewed from a users' perspective. Tests contain
