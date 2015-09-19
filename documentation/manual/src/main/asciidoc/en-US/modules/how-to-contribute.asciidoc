@@ -125,6 +125,12 @@ added here.
 
 === How to build support for a data store
 
+[TIP]
+.Advanced section
+====
+This is an advanced subject, feel free to skip this section if you are not building a data store.
+====
+
 Hibernate OGM supports various data stores by abstracting them
 with `DatastoreProvider` and `GridDialect`. The supported features vary between data stores,
 and dialects do not have to implement all features. Hibernate OGM implements a TCK
@@ -165,7 +171,7 @@ how data is mapped to a particular data store. NoSQL data stores imply a
 certain nature, how to map data. Document-oriented data stores encourage
 an entity-as-document pattern where embedded data structures could be
 stored within the document itself. Key-value data stores allow different
-approaches, e. g. storing an entity as JSON document or event storing
+approaches, e.g. storing an entity as JSON document or event storing
 individual key-value pairs that map the entity within a hash table
 data structure. Hibernate OGM allows multiple dialects per data store
 and users may choose the most appropriate one.
@@ -223,6 +229,9 @@ support. It helps to have a clear picture about that.
 ====
 Start with a small feature set to get a feeling for Hibernate OGM.
 You can always extend the features as you proceed.
+
+Starting from or studying existing dialects is also an interesting strategy.
+It can be intimidating with complex dialects though.
 ====
 
 Hibernate OGM is not opinionated by which means data is stored/loaded
@@ -233,20 +242,28 @@ of that database by sticking to established patterns and idioms of that store.
 
 ==== Entities
 
-Entities are seen by a dialect as `Tuple`. A `Tuple` may contain a
-snapshot (that`s the persistent view of the data), a set of
-key-value pairs that carry the actual data, and a list of operations
-to apply onto the original snapshot. Tuple keys use dot-path
+Entities are seen by a dialect as `Tuple`. A `Tuple` contains:
+
+* a snapshot (that's the view of the data as loaded from your database),
+* a set of key-value pairs that carry the actual data,
+* and a list of operations to apply onto the original snapshot.
+Tuple keys use dot-path
 property identifiers to indicate nesting. That comes handy when working
 with document stores because you can build a document structure based on that details.
 
 
 ==== Associations
 
-The least NoSQL data stores have built-in support for associations
-between entities (unless you're using a graph database). Associations
-are kind of artificial. Association data can be stored within the
+Most NoSQL data stores have no built-in support for associations
+between entities (unless you're using a graph database).
+
+Hibernate OGM simulates associations for datastore with no support
+by storing the navigational information to go from a given entity
+to its (list of) associated entity.
+This of it as query materialisation.
+This navigational information data can be stored within the
 entity itself or externally (as own documents or relation items).
+
 
 
 ==== Configuration
@@ -254,8 +271,8 @@ entity itself or externally (as own documents or relation items).
 Hibernate OGM uses a sophisticated configuration mechanism that obtains
 its values from various sources. Most common configuration sources are:
 
-* hibernate.properties file
-* persistence.xml file
+* `hibernate.properties` file
+* `persistence.xml` file
 * annotation configuration (entity classes)
 * programmatic configuration
 
@@ -274,7 +291,7 @@ data store-specific options such as `ReadPreference` for MongoDB or `TTL` for Re
 
 ===== Programmatic configuration
 
-Data store support can implement programmatical configuration. The
+Data store support can implement programmatic configuration. The
 configuration splits into three parts:
 
 * Global configuration
