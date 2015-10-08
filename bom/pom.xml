@@ -40,7 +40,7 @@
         <!-- Neo4j does not support Lucene 4 currently-->
         <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
         <hibernateVersion>5.0.0.Final</hibernateVersion>
-        <hibernateSearchVersion>5.4.0.CR2</hibernateSearchVersion>
+        <hibernateSearchVersion>5.5.0.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
@@ -53,7 +53,7 @@
         <scalaLibraryVersion>2.10.5</scalaLibraryVersion>
         <concurrentlinkedhashmapVersion>1.4</concurrentlinkedhashmapVersion>
         <asmVersion>5.0.3</asmVersion>
-        <luceneVersion>4.10.4</luceneVersion>
+        <luceneVersion>5.3.1</luceneVersion>
 
         <!--
              The following versions are required for the Cassandra driver; We don't expose a managed versions
