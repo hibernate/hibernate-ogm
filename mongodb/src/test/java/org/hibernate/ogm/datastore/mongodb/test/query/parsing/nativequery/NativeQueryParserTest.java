@@ -159,4 +159,124 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
+
+	@Test
+	public void shouldParseCountQueryWithLogicalOperatorOR() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.count( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldParseCountQueryWithLogicalOperatorAND() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.count( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldParseCountQueryWithLogicalOperatorNOR() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.count( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldParseCountQueryWithLogicalOperatorNOT() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.count( { '$not': { 'foo' : false } } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$not': { 'foo' : false } } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldParseFindQueryWithLogicalOperatorOR() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.find( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldParseFindQueryWithLogicalOperatorAND() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.find( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldFindCountQueryWithLogicalOperatorNOR() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.find( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldFindeCountQueryWithLogicalOperatorNOT() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.find( { '$not': { 'foo' : false } } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$not': { 'foo' : false } } }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
 }
