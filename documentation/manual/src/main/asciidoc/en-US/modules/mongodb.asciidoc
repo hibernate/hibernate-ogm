@@ -3135,26 +3135,6 @@ The former always maps results to entity types.
 The latter either maps results to entity types or to certain supported forms of projection.
 Note that parameterized queries are not supported by MongoDB, so don't expect `Query#setParameter()` to work.
 
-[WARNING]
-====
-Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
-Currently only `find()` and `count()` queries are supported via the CLI syntax.
-Further query types (including updating queries) may be supported in future revisions.
-
-No cursor operations such as `sort()` are supported.
-Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
-such as `$orderby` within the criteria parameter.
-
-JSON parameters passed via the CLI syntax must be specified using the http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode].
-Specifically, keys need to be given within quotes, e.g. use `db.WILDE_POEM.find({ \"name\" : \"Athanasia\" })`
-instead of `db.WILDE_POEM.find({ name : \"Athanasia\" })`.
-The only relaxation of this is that single quotes may be used when specifying attribute names/values to facilitate embedding
-queries within Java strings, e.g. `db.WILDE_POEM.find({ 'name' : 'Athanasia' })`.
-
-Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
-are not (yet) converted using suitable Hibernate OGM type implementations.
-====
-
 You can execute native queries as shown in the following example:
 
 .Using the JPA API
@@ -3251,6 +3231,48 @@ Poem poem2 = (Poem) session.getNamedQuery( "AthanasiaPoem" )
 Hibernate OGM stores data in a natural way so you can still execute queries using the
 MongoDB driver, the main drawback is that the results are going to be raw MongoDB
 documents and not managed entities.
+
+===== CLI Syntax
+
+[WARNING]
+====
+Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
+====
+
+Hibernate OGM can execute native queries expressed using the MongoDB CLI syntax with some limitation
+Currently only `find()` and `count()` queries are supported via the CLI syntax.
+Further query types (including updating queries) may be supported in future revisions.
+
+No cursor operations such as `sort()` are supported.
+Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
+such as `$orderby` within the criteria parameter.
+
+JSON parameters passed via the CLI syntax must be specified using the
+http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode].
+Specifically, keys need to be given within quotes; the only relaxation of this is that single quotes
+may be used when specifying attribute names/values to facilitate embedding queries within
+Java strings.
+
+.CLI syntax examples
+====
+[source, JAVA]
+----
+
+// Valid syntax
+String valid = "db.OscarWild.find({ \"name\" : \"Athanasia\" })";
+
+String alsoValid = "db.OscarWild.find({ '$or' : [{'name': 'Athanasia' }. {'name': 'Portia' }]})";
+
+// NOT Valid syntax, it will throw an exception: com.mongodb.util.JSONParseException
+String notValid =  "db.WILDE_POEM.find({ name : \"Athanasia\" })".
+
+String alsoNotValid = "db.OscarWild.find({ $or : [{name: 'Athanasia' }. {name: 'Portia' }]})";
+
+----
+====
+
+Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
+are not (yet) converted using suitable Hibernate OGM type implementations.
 
 ==== Hibernate Search
 
