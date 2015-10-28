@@ -26,7 +26,8 @@ public interface MultigetGridDialect extends GridDialect {
 	 * The tuples must be returned in the same order as the keys.
 	 * If a key has no matching record, set null to the list entry.
 	 * <p>
-	 * All the keys must have the same {@link EntityKeyMetadata}.
+	 * All the keys provided will have the same {@link EntityKeyMetadata}.
+	 * In other words they target the same "table".
 	 *
 	 * @param keys The array of tuple identifier
 	 * @param tupleContext Contains additional information that might be used to create the tuples
