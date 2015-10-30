@@ -61,11 +61,8 @@ Integration tests can be run from the integrationtest module and the default beh
 unpack the modules in it and run the tests using Arquillian.
 
 
-[WARNING]
-====
-Be careful when using on existing installation since the modules used by the build are going to be extracted into the
-server you want to run the test, changing the original setup.
-====
+# [WARNING]
+###### Be careful when using on existing installation since the modules used by the build are going to be extracted into the server you want to run the test, changing the original setup.
 
 ### MongoDB
 
