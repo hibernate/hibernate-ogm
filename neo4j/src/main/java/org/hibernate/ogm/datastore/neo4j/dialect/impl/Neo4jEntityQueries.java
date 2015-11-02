@@ -186,7 +186,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 
 	/*
 	 * This method will initialize the query string for a multi get.
-	 * The query is dfferent in the two scenarios:
+	 * The query is different in the two scenarios:
 	 * 1) the id is mapped on a single property:
 	 *
 	 * MATCH (n:ENTITY:table)
@@ -198,7 +198,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * MATCH (n:ENTITY:table)
 	 * WHERE
 	 *
-	 * In this case the query depends on how many id we are retrieving and it will completed later
+	 * In this case the query depends on how many id we are retrieving and it will be completed later
 	 */
 	private static String initMultiGetEntitiesQuery(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
