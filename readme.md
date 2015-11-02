@@ -60,12 +60,9 @@ The distribution bundle is built by default as part of the project build. You ca
 Integration tests can be run from the integrationtest module and the default behaviour is to download the WildFly application server,
 unpack the modules in it and run the tests using Arquillian.
 
-
-[WARNING]
-====
+#### WARNING
 Be careful when using on existing installation since the modules used by the build are going to be extracted into the
 server you want to run the test, changing the original setup.
-====
 
 ### MongoDB
 
