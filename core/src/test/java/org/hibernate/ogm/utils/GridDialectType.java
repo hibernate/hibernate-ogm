@@ -31,9 +31,12 @@ public enum GridDialectType {
 
 	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false  ),
 
+
 	REDIS( "org.hibernate.ogm.datastore.redis.RedisDialect", false, false ),
 
-	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.OrientDBDialect", false, false  );
+	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.OrientDBDialect", false, false  ),
+
+	REDIS_HASH( "org.hibernate.ogm.datastore.redis.RedisHashDialect", false, false );
 
 	private final String dialectClassName;
 	private final boolean isDocumentStore;

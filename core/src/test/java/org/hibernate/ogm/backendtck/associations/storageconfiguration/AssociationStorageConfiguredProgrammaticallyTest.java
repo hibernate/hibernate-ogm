@@ -56,6 +56,10 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.REDIS_HASH },
+			comment = "Only Redis JSON supports in-entity association storage"
+	)
 	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
@@ -87,6 +91,10 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.REDIS_HASH },
+			comment = "Only Redis JSON supports in-entity association storage"
+	)
 	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
@@ -103,6 +111,10 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.REDIS_HASH },
+			comment = "Only Redis JSON supports in-entity association storage"
+	)
 	public void associationStorageSetOnPropertyLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
@@ -122,6 +134,11 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.REDIS_HASH },
+			comment = "Only Redis JSON supports in-entity association storage"
+	)
+
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 

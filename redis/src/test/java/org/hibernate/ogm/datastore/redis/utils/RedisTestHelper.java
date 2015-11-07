@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.redis.utils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,22 +16,26 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.redis.AbstractRedisDialect;
 import org.hibernate.ogm.datastore.redis.Redis;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
+import org.hibernate.ogm.datastore.redis.RedisHashDialect;
+import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.json.JSONException;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambdaworks.redis.api.sync.RedisCommands;
-import org.json.JSONException;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 public class RedisTestHelper implements TestableGridDialect {
 
@@ -54,25 +59,65 @@ public class RedisTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
-		RedisDialect gridDialect = getGridDialect( castProvider );
+		AbstractRedisDialect gridDialect = getGridDialect( castProvider );
 
-		Entity entity = gridDialect.getEntityStorageStrategy().getEntity(
-				gridDialect.entityId(
-						key
-				)
-		);
-
-		if ( entity != null ) {
-			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-				entity.set( key.getColumnNames()[i], key.getColumnValues()[i] );
-			}
+		if ( gridDialect instanceof RedisJsonDialect ) {
+			return extractFromJsonDialect( key, (RedisJsonDialect) gridDialect );
 		}
 
-		return entity.getProperties();
+		if ( gridDialect instanceof RedisHashDialect ) {
+			return extractFromHashDialect( sessionFactory, key, (RedisHashDialect) gridDialect );
+		}
+
+		throw new IllegalStateException( "Unsupported dialect " + gridDialect );
+	}
+
+
+	private Map<String, Object> extractFromJsonDialect(
+			EntityKey key,
+			RedisJsonDialect gridDialect
+	) {
+
+		Entity entity = gridDialect.getEntityStorageStrategy().getEntity(
+				gridDialect.entityId( key )
+		);
+
+		if ( entity == null ) {
+			return null;
+		}
+
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			entity.set( key.getColumnNames()[i], key.getColumnValues()[i] );
+		}
+		return new HashMap<>( entity.getProperties() );
+	}
+
+	private Map<String, Object> extractFromHashDialect(
+			SessionFactory sessionFactory,
+			EntityKey key,
+			RedisHashDialect gridDialect) {
+
+		RedisCommands<String, String> connection = getConnection( sessionFactory );
+
+		String entityId = gridDialect.entityId( key );
+
+		if ( !connection.exists( entityId ) ) {
+			return null;
+		}
+
+		Map<String, String> hgetall = connection.hgetall( entityId );
+
+		Map<String, Object> result = new HashMap<>();
+		result.putAll( hgetall );
+
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			result.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+		}
+
+		return result;
 	}
 
 	private static RedisDatastoreProvider getProvider(SessionFactory sessionFactory) {
-
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService(
 				DatastoreProvider.class
 		);
@@ -84,12 +129,15 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public RedisDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return getDialect( datastoreProvider );
+	public AbstractRedisDialect getGridDialect(DatastoreProvider datastoreProvider) {
+		return getDialect( (RedisDatastoreProvider) datastoreProvider );
 	}
 
-	public static RedisDialect getDialect(DatastoreProvider datastoreProvider) {
-		return new RedisDialect( (RedisDatastoreProvider) datastoreProvider );
+	public static AbstractRedisDialect getDialect(RedisDatastoreProvider datastoreProvider) {
+		if ( TestHelper.getCurrentDialectType() == GridDialectType.REDIS_HASH ) {
+			return new RedisHashDialect( datastoreProvider );
+		}
+		return new RedisJsonDialect( datastoreProvider );
 	}
 
 	@Override
@@ -120,16 +168,13 @@ public class RedisTestHelper implements TestableGridDialect {
 
 		long result = 0;
 		for ( String key : keys ) {
-			if ( key.startsWith( RedisDialect.ASSOCIATIONS ) || key.startsWith( RedisDialect.IDENTIFIERS ) ) {
+			if ( key.startsWith( AbstractRedisDialect.ASSOCIATIONS ) || key.startsWith( AbstractRedisDialect.IDENTIFIERS ) ) {
 				continue;
 			}
 
 			String type = connection.type( key );
 
-			if ( type.equals( "hash" ) ) {
-				result += connection.hlen( key );
-			}
-			else {
+			if ( type.equals( "hash" ) || type.equals( "string" ) ) {
 				result++;
 			}
 		}
@@ -173,11 +218,9 @@ public class RedisTestHelper implements TestableGridDialect {
 		}
 	}
 
-
 	public long getNumberOfGlobalAssociations(SessionFactory sessionFactory) {
-
 		RedisCommands<String, String> connection = getConnection( sessionFactory );
-		return connection.keys( RedisDialect.ASSOCIATIONS + ":*" ).size();
+		return connection.keys( AbstractRedisDialect.ASSOCIATIONS + ":*" ).size();
 	}
 
 	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
@@ -188,7 +231,7 @@ public class RedisTestHelper implements TestableGridDialect {
 
 		for ( String key : keys ) {
 
-			if ( key.startsWith( RedisDialect.ASSOCIATIONS ) || key.startsWith( RedisDialect.IDENTIFIERS ) ) {
+			if ( key.startsWith( AbstractRedisDialect.ASSOCIATIONS ) || key.startsWith( AbstractRedisDialect.IDENTIFIERS ) ) {
 				continue;
 			}
 

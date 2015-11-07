@@ -174,7 +174,37 @@
         </plugins>
     </build>
 
+
     <profiles>
+        <!-- Executes the tests using the JSON dialect -->
+        <profile>
+            <id>redis-json-dialect</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                 <property>
+                     <name>redisDialect</name>
+                     <value>json</value>
+                 </property>
+            </activation>
+            <properties>
+                <gridGialect>org.hibernate.ogm.datastore.redis.RedisJsonDialect</gridGialect>
+            </properties>
+        </profile>
+
+        <!-- Executes the tests using the Hash dialect -->
+        <profile>
+            <id>redis-hash-dialect</id>
+            <activation>
+                 <property>
+                     <name>redisDialect</name>
+                     <value>hash</value>
+                 </property>
+            </activation>
+            <properties>
+                <gridGialect>org.hibernate.ogm.datastore.redis.RedisHashDialect</gridGialect>
+            </properties>
+        </profile>
+
         <profile>
             <id>skip-redis-unit-tests</id>
             <!-- To run the tests you need to define the environment property: REDIS_HOSTNAME -->
