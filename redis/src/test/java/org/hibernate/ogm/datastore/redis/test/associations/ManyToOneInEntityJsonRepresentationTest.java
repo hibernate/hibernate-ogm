@@ -16,7 +16,9 @@ import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 
 import org.junit.Test;
 
@@ -28,6 +30,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Mark Paluch
  */
+@SkipByGridDialect(GridDialectType.REDIS_HASH)
 public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 
 	@Override

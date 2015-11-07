@@ -108,9 +108,8 @@ public class TTLConfiguredProgrammaticallyTest {
 	}
 
 	private long associationTtl() {
-
 		String associationKey = getConnection()
-				.keys( "Associations:Cloud:*" )
+				.keys( "Associations:joinBackupSnowflakes:*" )
 				.get( 0 );
 		return getConnection().pttl( associationKey );
 	}
