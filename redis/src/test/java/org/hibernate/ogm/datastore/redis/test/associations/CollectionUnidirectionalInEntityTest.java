@@ -11,10 +11,13 @@ import java.util.Map;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.CollectionUnidirectionalTest;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect(GridDialectType.REDIS_HASH)
 public class CollectionUnidirectionalInEntityTest extends CollectionUnidirectionalTest {
 
 	@Override

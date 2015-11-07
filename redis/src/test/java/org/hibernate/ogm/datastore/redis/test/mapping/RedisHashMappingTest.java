@@ -6,24 +6,26 @@
  */
 package org.hibernate.ogm.datastore.redis.test.mapping;
 
+import java.util.Map;
+
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.redis.test.RedisOgmTestCase;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 
-import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.MapAssert.entry;
 
 /**
- * Test for Redis JSON mapping.
+ * Test for Redis Hash mapping.
  *
  * @author Mark Paluch
  */
-@SkipByGridDialect(GridDialectType.REDIS_HASH)
-public class RedisJsonMappingTest extends RedisOgmTestCase {
+@SkipByGridDialect(GridDialectType.REDIS)
+public class RedisHashMappingTest extends RedisOgmTestCase {
 
 	@Before
 	public void before() throws Exception {
@@ -31,7 +33,7 @@ public class RedisJsonMappingTest extends RedisOgmTestCase {
 	}
 
 	@Test
-	public void verifyRedisRepresentation() throws JSONException {
+	public void verifyRedisRepresentation() {
 		OgmSession session = openSession();
 		session.getTransaction().begin();
 
@@ -42,10 +44,12 @@ public class RedisJsonMappingTest extends RedisOgmTestCase {
 		session.getTransaction().commit();
 
 		// when
-		String representation = new String( getConnection().get( "Donut:homers-donut") );
+		Map<String, String> map = getConnection().hgetall( "Donut:homers-donut" );
 
 		// then
-		JSONAssert.assertEquals( "{'alias':'pink-donut','radius':7.5,'glaze':2}", representation, JSONCompareMode.STRICT );
+		assertThat( map ).includes( entry( "alias", "pink-donut" ) );
+		assertThat( map ).includes( entry( "radius", "7.5" ) );
+		assertThat( map ).includes( entry( "glaze", "2" ) );
 
 		session.close();
 	}

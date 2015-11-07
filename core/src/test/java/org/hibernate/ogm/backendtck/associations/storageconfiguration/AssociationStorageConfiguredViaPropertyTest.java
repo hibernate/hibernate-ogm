@@ -52,6 +52,11 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.REDIS_HASH },
+			comment = "Only Redis JSON supports in-entity association storage"
+	)
+
 	public void associationStorageSetViaApiTakesPrecedenceOverProperty() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
