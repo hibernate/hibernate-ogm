@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.test.associations;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -19,11 +17,13 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
+
 import org.junit.Test;
+
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import com.lambdaworks.redis.RedisConnection;
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Mark Paluch
@@ -73,8 +73,8 @@ public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 
 		// when
 		String representation = new String(
-				getConnection().get(
-						"Court:{\"id.countryCode\":\"DE\",\"id.sequenceNo\":123}".getBytes()
+				getProvider().getConnection().get(
+						"Court:{\"id.countryCode\":\"DE\",\"id.sequenceNo\":123}"
 				)
 		);
 
@@ -101,10 +101,6 @@ public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 		transaction.commit();
 
 		session.close();
-	}
-
-	protected RedisConnection<byte[], byte[]> getConnection() {
-		return getProvider().getConnection();
 	}
 
 

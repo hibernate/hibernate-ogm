@@ -9,23 +9,19 @@ package org.hibernate.ogm.datastore.redis.test.mapping;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.datastore.redis.test.RedisOgmTestCase;
 import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import com.lambdaworks.redis.RedisConnection;
-
 /**
- * Base for tests.
+ * Test for Redis JSON mapping.
  *
  * @author Mark Paluch
  */
-public class RedisJsonMappingTest extends OgmTestCase {
+public class RedisJsonMappingTest extends RedisOgmTestCase {
 
 	@Before
 	public void before() throws Exception {
@@ -98,23 +94,12 @@ public class RedisJsonMappingTest extends OgmTestCase {
 		session.getTransaction().commit();
 
 		// when
-		String representation = new String( getConnection().get( "Donut:homers-donut".getBytes() ) );
+		String representation = new String( getConnection().get( "Donut:homers-donut") );
 
 		// then
 		JSONAssert.assertEquals( "{'alias':'pink-donut','radius':7.5,'glaze':2}", representation, JSONCompareMode.STRICT );
 
 		session.close();
-	}
-
-	protected RedisConnection<byte[], byte[]> getConnection() {
-		return getProvider().getConnection();
-	}
-
-
-	private RedisDatastoreProvider getProvider() {
-		return (RedisDatastoreProvider) sfi()
-				.getServiceRegistry()
-				.getService( DatastoreProvider.class );
 	}
 
 	@Override

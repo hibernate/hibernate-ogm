@@ -6,28 +6,25 @@
  */
 package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.datastore.redis.test.RedisOgmTestCase;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import com.lambdaworks.redis.RedisConnection;
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for Redis Expiry.
  *
  * @author Mark Paluch
  */
-public class GlobalPropertyTTLTest extends OgmTestCase {
+public class GlobalPropertyTTLTest extends RedisOgmTestCase {
 
 	@Before
 	public void before() throws Exception {
@@ -56,7 +53,7 @@ public class GlobalPropertyTTLTest extends OgmTestCase {
 		session.getTransaction().commit();
 
 		// when
-		Long ttl = getConnection().pttl( "LogRecord:1234".getBytes() );
+		Long ttl = getConnection().pttl( "LogRecord:1234" );
 
 		// then
 		assertThat( ttl ).isGreaterThanOrEqualTo( TimeUnit.DAYS.toMillis( 6 ) );
@@ -80,26 +77,14 @@ public class GlobalPropertyTTLTest extends OgmTestCase {
 		session.getTransaction().commit();
 
 		// when
-		Long bandTTL = getConnection().pttl( "Band:1".getBytes() );
-		Long songTTL = getConnection().pttl( "Associations:Band:1".getBytes() );
+		Long bandTTL = getConnection().pttl( "Band:1" );
+		Long songTTL = getConnection().pttl( "Associations:Band:1" );
 
 		// then
 		assertThat( bandTTL ).isEqualTo( -1L );
 		assertThat( songTTL ).isGreaterThan( TimeUnit.SECONDS.toMillis( 50 ) );
 
 		session.close();
-	}
-
-
-	protected RedisConnection<byte[], byte[]> getConnection() {
-		return getProvider().getConnection();
-	}
-
-
-	private RedisDatastoreProvider getProvider() {
-		return (RedisDatastoreProvider) sfi()
-				.getServiceRegistry()
-				.getService( DatastoreProvider.class );
 	}
 
 	@Override

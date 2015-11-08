@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.redis.test.id;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -54,11 +53,10 @@ public class TableGeneratorTest extends OgmTestCase {
 
 	private void assertCountQueryResult(String key, String expectedCount) {
 
-		String actualCount = RedisDialect.toString(
+		String actualCount =
 				getProvider().getConnection().get(
-						RedisDialect.toBytes( key )
-				)
-		);
+						key
+				);
 
 		assertThat( actualCount ).describedAs( "Count query didn't yield expected result" ).isEqualTo( expectedCount );
 	}

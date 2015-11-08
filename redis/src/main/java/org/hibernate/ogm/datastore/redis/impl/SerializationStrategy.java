@@ -21,22 +21,22 @@ public interface SerializationStrategy {
 	/**
 	 * Deserialize payload into the expected {@code targetType}
 	 *
-	 * @param serialized byte array with in the serialized form
+	 * @param serialized string in the serialized form
 	 * @param targetType expected type
 	 * @param <T> expected type
 	 *
 	 * @return the instance of {@code targetType} or null
 	 */
-	<T> T deserialize(byte[] serialized, Class<T> targetType);
+	<T> T deserialize(String serialized, Class<T> targetType);
 
 	/**
 	 * Serialize the {@code payload} into the target representation.
 	 *
 	 * @param payload the payload
 	 *
-	 * @return byte array containing the target representation
+	 * @return string containing the target representation
 	 */
-	byte[] serialize(Object payload);
+	String serialize(Object payload);
 
 	/**
 	 * If the datastore does not support a {@link Type} the dialect might override it with a custom one.

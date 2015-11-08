@@ -26,6 +26,7 @@ import org.hibernate.service.spi.Stoppable;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.RedisURI;
+import com.lambdaworks.redis.codec.Utf8StringCodec;
 
 import static com.lambdaworks.redis.RedisURI.Builder.redis;
 
@@ -44,7 +45,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	private RedisConfiguration config;
 	private RedisClient redisClient;
-	private RedisConnection<byte[], byte[]> connection;
+	private RedisConnection<String, String> connection;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -76,7 +77,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 			redisClient = createClient( hostAndPort );
 
 			log.connectingToRedis( config.getHosts().toString(), config.getTimeout() );
-			connection = redisClient.connect( new ByteArrayCodec() );
+			connection = redisClient.connect( new Utf8StringCodec() );
 		}
 		catch (RuntimeException e) {
 			// return a ServiceException to be stack trace friendly
@@ -122,7 +123,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		return true;
 	}
 
-	public RedisConnection<byte[], byte[]> getConnection() {
+	public RedisConnection<String, String> getConnection() {
 		return connection;
 	}
 }

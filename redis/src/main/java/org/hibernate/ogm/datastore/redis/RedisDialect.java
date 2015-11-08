@@ -53,7 +53,6 @@ import org.hibernate.type.Type;
 import com.lambdaworks.redis.KeyScanCursor;
 import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.ScanArgs;
-import com.lambdaworks.redis.protocol.LettuceCharsets;
 
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
@@ -73,7 +72,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	public static final String ASSOCIATIONS = "Associations";
 
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
-	private final RedisConnection<byte[], byte[]> connection;
+	private final RedisConnection<String, String> connection;
 	private final JsonSerializationStrategy serializationStrategy = new JsonSerializationStrategy();
 
 	public RedisDialect(RedisDatastoreProvider provider) {
@@ -145,11 +144,11 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		byte[] key = identifierId( request.getKey() );
-		byte[] hget = connection.get( key );
+		String key = identifierId( request.getKey() );
+		String hget = connection.get( key );
 
-		if ( hget == null || hget.length == 0 ) {
-			connection.set( key, toBytes( Long.toString( request.getInitialValue() ) ) );
+		if ( hget == null || hget.length() == 0 ) {
+			connection.set( key, Long.toString( request.getInitialValue() ) );
 			return request.getInitialValue();
 		}
 
@@ -159,9 +158,8 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	@Override
 	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			KeyScanCursor<byte[]> cursor = null;
+			KeyScanCursor<String> cursor = null;
 			String prefix = entityKeyMetadata.getTable() + ":";
-			byte[] prefixBytes = toBytes( prefix );
 
 			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 			do {
@@ -172,62 +170,30 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 					cursor = connection.scan( scanArgs );
 				}
 
-				for ( byte[] key : cursor.getKeys() ) {
+				for ( String key : cursor.getKeys() ) {
 					Entity document = entityStorageStrategy.getEntity( key );
-
-					addKeyValuesFromKeyName( entityKeyMetadata, prefixBytes, key, document );
-
+					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
 					consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
 				}
-
 			} while ( !cursor.isFinished() );
 		}
 	}
 
 	private void addKeyValuesFromKeyName(
 			EntityKeyMetadata entityKeyMetadata,
-			byte[] prefix,
-			byte[] key,
+			String prefix,
+			String key,
 			Entity document) {
-		if ( startsWith( key, prefix ) ) {
+		if ( key.startsWith( prefix ) ) {
 
-			byte[] keyWithoutPrefix = getKeyWithoutTablePrefix( prefix, key );
+			String keyWithoutPrefix = key.substring( prefix.length() );
 
-			Map<String, Object> keys = keyBytesToMap( entityKeyMetadata, keyWithoutPrefix );
+			Map<String, Object> keys = keyToMap( entityKeyMetadata, keyWithoutPrefix );
 
 			for ( Map.Entry<String, Object> entry : keys.entrySet() ) {
 				document.set( entry.getKey(), entry.getValue() );
 			}
 		}
-	}
-
-	private byte[] getKeyWithoutTablePrefix(byte[] prefixBytes, byte[] key) {
-		byte[] keyWithoutPrefix = new byte[key.length - prefixBytes.length];
-		System.arraycopy( key, prefixBytes.length, keyWithoutPrefix, 0, keyWithoutPrefix.length );
-		return keyWithoutPrefix;
-	}
-
-	/**
-	 * Check, whether {@code bytes} starts with {@code prefixBytes}.
-	 *
-	 * @param bytes haystack
-	 * @param prefixBytes needle
-	 *
-	 * @return true, if {@code bytes} starts with {@code prefixBytes}
-	 */
-	private boolean startsWith(byte[] bytes, byte[] prefixBytes) {
-		if ( prefixBytes.length > bytes.length ) {
-			return false;
-		}
-
-		for ( int i = 0; i < prefixBytes.length; i++ ) {
-			if ( bytes[i] != prefixBytes[i] ) {
-				return false;
-			}
-		}
-
-		return true;
-
 	}
 
 	@Override
@@ -472,13 +438,13 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	private Association getAssociation(EntityKey key) {
-		byte[] associationId = associationId( key );
-		List<byte[]> lrange = connection.lrange( associationId, 0, -1 );
+		String associationId = associationId( key );
+		List<String> lrange = connection.lrange( associationId, 0, -1 );
 
 		Association association = new Association();
 
-		for ( byte[] bytes : lrange ) {
-			association.getRows().add( serializationStrategy.deserialize( bytes, Object.class ) );
+		for ( String item : lrange ) {
+			association.getRows().add( serializationStrategy.deserialize( item, Object.class ) );
 		}
 		return association;
 	}
@@ -497,12 +463,12 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	private void expireEntity(EntityKey key, Long ttl) {
-		byte[] associationId = entityId( key );
+		String associationId = entityId( key );
 		connection.pexpire( associationId, ttl );
 	}
 
 	private void storeAssociation(EntityKey key, Association document) {
-		byte[] associationId = associationId( key );
+		String associationId = associationId( key );
 		connection.del( associationId );
 
 		for ( Object row : document.getRows() ) {
@@ -511,7 +477,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	private void expireAssociation(EntityKey key, Long ttl) {
-		byte[] associationId = associationId( key );
+		String associationId = associationId( key );
 		connection.pexpire( associationId, ttl );
 	}
 
@@ -524,59 +490,44 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	/**
-	 * Create a byte[] representation of the identifier key in the format of {@code Identifiers:(table name):(columnId)}.
+	 * Create a String representation of the identifier key in the format of {@code Identifiers:(table name):(columnId)}.
 	 * {@see #IDENTIFIERS}
 	 *
 	 * @param key Key for the identifier
 	 *
-	 * @return byte array containing the key
+	 * @return String containing the key
 	 */
-	private byte[] identifierId(IdSourceKey key) {
-		byte[] prefix = toBytes( IDENTIFIERS + ":" + key.getTable() + ":" );
-		byte[] entityId = keyToBytes( key.getColumnNames(), key.getColumnValues() );
-
-		byte[] identifierId = new byte[prefix.length + entityId.length];
-		System.arraycopy( prefix, 0, identifierId, 0, prefix.length );
-		System.arraycopy( entityId, 0, identifierId, prefix.length, entityId.length );
-
-		return identifierId;
+	private String identifierId(IdSourceKey key) {
+		String prefix = IDENTIFIERS + ":" + key.getTable() + ":";
+		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+		return prefix + entityId;
 	}
 
 	/**
-	 * Create a byte[] representation of the entity key in the format of {@code Association:(table name):(columnId)}.
+	 * Create a String representation of the entity key in the format of {@code Association:(table name):(columnId)}.
 	 * {@see #ASSOCIATIONS}
 	 *
 	 * @param key Key of the association
 	 *
-	 * @return byte array containing the key
+	 * @return String containing the key
 	 */
-	private byte[] associationId(EntityKey key) {
-		byte[] prefix = toBytes( ASSOCIATIONS + ":" + key.getTable() + ":" );
-		byte[] entityId = keyToBytes( key.getColumnNames(), key.getColumnValues() );
-
-		byte[] associationId = new byte[prefix.length + entityId.length];
-		System.arraycopy( prefix, 0, associationId, 0, prefix.length );
-		System.arraycopy( entityId, 0, associationId, prefix.length, entityId.length );
-
-		return associationId;
+	private String associationId(EntityKey key) {
+		String prefix = ASSOCIATIONS + ":" + key.getTable() + ":";
+		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+		return prefix + entityId;
 	}
 
 	/**
-	 * Create a byte[] representation of the key in the format of {@code (table name):(columnId)}.
+	 * Create a String representation of the key in the format of {@code (table name):(columnId)}.
 	 *
 	 * @param key Key of the entity
 	 *
-	 * @return byte array containing the key
+	 * @return String containing the key
 	 */
-	public byte[] entityId(EntityKey key) {
-		byte[] prefix = toBytes( key.getTable() + ":" );
-		byte[] entityId = keyToBytes( key.getColumnNames(), key.getColumnValues() );
-
-		byte[] associationId = new byte[prefix.length + entityId.length];
-		System.arraycopy( prefix, 0, associationId, 0, prefix.length );
-		System.arraycopy( entityId, 0, associationId, prefix.length, entityId.length );
-
-		return associationId;
+	public String entityId(EntityKey key) {
+		String prefix = key.getTable() + ":";
+		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+		return prefix + entityId;
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {
@@ -588,9 +539,9 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	 * Single key: Use the value as key
 	 * Multiple keys: Serialize the key using a JSON map.
 	 */
-	private byte[] keyToBytes(String[] columnNames, Object[] columnValues) {
+	private String keyToString(String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length == 1 ) {
-			return toBytes( columnValues[0].toString() );
+			return columnValues[0].toString();
 		}
 
 		Collator collator = Collator.getInstance( Locale.ENGLISH );
@@ -610,47 +561,17 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	 * Single key: Use the value from the key
 	 * Multiple keys: De-serialize the JSON map.
 	 */
-	private Map<String, Object> keyBytesToMap(EntityKeyMetadata entityKeyMetadata, byte[] key) {
+	private Map<String, Object> keyToMap(EntityKeyMetadata entityKeyMetadata, String key) {
 		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
-			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) toString( key ) );
+			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) key );
 		}
 		return serializationStrategy.deserialize( key, Map.class );
 	}
 
-	/**
-	 * Convert a String to a byte array with UTF-8 encoding.
-	 *
-	 * @param string the String.
-	 *
-	 * @return byte array. Byte array is empty if the {@code string} is null.
-	 */
-	public static byte[] toBytes(String string) {
-		if ( string == null ) {
-			return new byte[0];
-		}
-
-		return string.getBytes( LettuceCharsets.UTF8 );
-	}
-
-	/**
-	 * Convert bytes to String expecting UTF-8 encoding.
-	 *
-	 * @param bytes the bytes
-	 *
-	 * @return the String or null
-	 */
-	public static String toString(byte[] bytes) {
-		if ( bytes == null ) {
-			return null;
-		}
-		return new String( bytes, 0, bytes.length, LettuceCharsets.UTF8 );
-	}
-
 	// MultigetGridDialect
-
 	@Override
 	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
-		byte[][] ids = new byte[keys.length][];
+		String[] ids = new String[keys.length];
 
 		for ( int i = 0; i < keys.length; i++ ) {
 			ids[i] = entityId( keys[i] );

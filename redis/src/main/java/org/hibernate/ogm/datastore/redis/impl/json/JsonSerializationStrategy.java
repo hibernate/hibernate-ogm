@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.redis.impl.json;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.hibernate.ogm.datastore.redis.impl.SerializationStrategy;
 import org.hibernate.ogm.type.spi.GridType;
@@ -24,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JsonSerializationStrategy implements SerializationStrategy {
 
-	private static final byte[] NULL = "null".getBytes();
+	private static final String NULL = "null";
 	private final ObjectMapper objectMapper;
 
 	public JsonSerializationStrategy() {
@@ -32,9 +31,9 @@ public class JsonSerializationStrategy implements SerializationStrategy {
 	}
 
 	@Override
-	public <T> T deserialize(byte[] serialized, Class<T> targetType) {
+	public <T> T deserialize(String serialized, Class<T> targetType) {
 
-		if ( serialized == null || serialized.length == 0 || Arrays.equals( serialized, NULL ) ) {
+		if ( serialized == null || serialized.length() == 0 || NULL.equals( serialized ) ) {
 			return null;
 		}
 
@@ -48,9 +47,9 @@ public class JsonSerializationStrategy implements SerializationStrategy {
 	}
 
 	@Override
-	public byte[] serialize(Object payload) {
+	public String serialize(Object payload) {
 		try {
-			return objectMapper.writer().writeValueAsBytes( payload );
+			return objectMapper.writer().writeValueAsString( payload );
 		}
 		catch (JsonProcessingException e) {
 			throw new IllegalStateException( e );

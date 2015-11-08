@@ -23,28 +23,28 @@ import com.lambdaworks.redis.RedisConnection;
 public class JsonEntityStorageStrategy  {
 
 	private final JsonSerializationStrategy jsonSerializationStrategy;
-	private final RedisConnection<byte[], byte[]> connection;
+	private final RedisConnection<String, String> connection;
 
 	public JsonEntityStorageStrategy(
 			JsonSerializationStrategy jsonSerializationStrategy,
-			RedisConnection<byte[], byte[]> connection) {
+			RedisConnection<String, String> connection) {
 		this.jsonSerializationStrategy = jsonSerializationStrategy;
 		this.connection = connection;
 	}
 
-	public Entity getEntity(byte[] key) {
-		byte[] value = connection.get( key );
+	public Entity getEntity(String key) {
+		String value = connection.get( key );
 		return jsonSerializationStrategy.deserialize( value, Entity.class );
 	}
 
-	public void storeEntity(byte[] key, Entity entity, Set<TupleOperation> operations) {
-		byte value[] = jsonSerializationStrategy.serialize( entity );
+	public void storeEntity(String key, Entity entity, Set<TupleOperation> operations) {
+		String value = jsonSerializationStrategy.serialize( entity );
 
 		connection.set( key, value );
 	}
 
-	public Iterable<Entity> getEntities(byte[][] keys) {
-		final Iterator<byte[]> values = connection.mget( keys ).iterator();
+	public Iterable<Entity> getEntities(String[] keys) {
+		final Iterator<String> values = connection.mget( keys ).iterator();
 
 		return new Iterable<Entity>() {
 
@@ -59,7 +59,7 @@ public class JsonEntityStorageStrategy  {
 
 					@Override
 					public Entity next() {
-						byte[] value = values.next();
+						String value = values.next();
 						return value != null ? jsonSerializationStrategy.deserialize( value, Entity.class ) : null;
 					}
 

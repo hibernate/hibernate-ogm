@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,12 +22,16 @@ import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.Redis;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.TestHelper;
+
 import org.junit.After;
 import org.junit.Test;
+
+import com.lambdaworks.redis.RedisConnection;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for configuring the different association storage modes via the option API.
@@ -102,15 +104,19 @@ public class TTLConfiguredProgrammaticallyTest {
 
 
 	private long cloudTtl() {
-		return getProvider().getConnection().pttl( RedisDialect.toBytes( "Cloud:" + cloud.getId() ) );
+		return getConnection().pttl( "Cloud:" + cloud.getId() );
 	}
 
 	private long associationTtl() {
 
-		byte[] associationKey = getProvider().getConnection()
-				.keys( RedisDialect.toBytes( "Associations:Cloud:*" ) )
+		String associationKey = getConnection()
+				.keys( "Associations:Cloud:*" )
 				.get( 0 );
-		return getProvider().getConnection().pttl( associationKey );
+		return getConnection().pttl( associationKey );
+	}
+
+	private RedisConnection<String, String> getConnection() {
+		return getProvider().getConnection();
 	}
 
 	private RedisDatastoreProvider getProvider() {

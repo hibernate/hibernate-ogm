@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +23,14 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.TestableGridDialect;
-import org.json.JSONException;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lambdaworks.redis.RedisConnection;
+import org.json.JSONException;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 public class RedisTestHelper implements TestableGridDialect {
 
@@ -100,11 +99,11 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		RedisConnection<byte[], byte[]> connection = getConnection( sessionFactory );
+		RedisConnection<String, String> connection = getConnection( sessionFactory );
 		connection.flushall();
 	}
 
-	private RedisConnection<byte[], byte[]> getConnection(SessionFactory sessionFactory) {
+	private RedisConnection<String, String> getConnection(SessionFactory sessionFactory) {
 		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getConnection();
 	}
@@ -116,13 +115,12 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		RedisConnection<byte[], byte[]> connection = getConnection( sessionFactory );
-		List<byte[]> keys = connection.keys( RedisDialect.toBytes( "*" ) );
+		RedisConnection<String, String> connection = getConnection( sessionFactory );
+		List<String> keys = connection.keys( "*" );
 
 		long result = 0;
-		for ( byte[] key : keys ) {
-			String keyAsString = RedisDialect.toString( key );
-			if ( keyAsString.startsWith( RedisDialect.ASSOCIATIONS ) || keyAsString.startsWith( RedisDialect.IDENTIFIERS ) ) {
+		for ( String key : keys ) {
+			if ( key.startsWith( RedisDialect.ASSOCIATIONS ) || key.startsWith( RedisDialect.IDENTIFIERS ) ) {
 				continue;
 			}
 
@@ -147,8 +145,8 @@ public class RedisTestHelper implements TestableGridDialect {
 		RedisDatastoreProvider provider = getProvider( sessionFactory );
 		try {
 
-			byte[] actual = provider.getConnection().get( RedisDialect.toBytes( hash + ":" + key ) );
-			JSONAssert.assertEquals( expectedDbObject, RedisDialect.toString( actual ), JSONCompareMode.LENIENT );
+			String actual = provider.getConnection().get( hash + ":" + key );
+			JSONAssert.assertEquals( expectedDbObject, actual, JSONCompareMode.LENIENT );
 		}
 		catch (JSONException e) {
 			throw new IllegalStateException( e );
@@ -178,27 +176,26 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	public long getNumberOfGlobalAssociations(SessionFactory sessionFactory) {
 
-		RedisConnection<byte[], byte[]> connection = getConnection( sessionFactory );
-		return connection.keys( RedisDialect.toBytes( RedisDialect.ASSOCIATIONS + ":*" ) ).size();
+		RedisConnection<String, String> connection = getConnection( sessionFactory );
+		return connection.keys( RedisDialect.ASSOCIATIONS + ":*" ).size();
 	}
 
 	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
-		RedisConnection<byte[], byte[]> connection = getConnection( sessionFactory );
+		RedisConnection<String, String> connection = getConnection( sessionFactory );
 
 		long associationCount = 0;
-		List<byte[]> keys = connection.keys( RedisDialect.toBytes( "*" ) );
+		List<String> keys = connection.keys( "*" );
 
-		for ( byte[] key : keys ) {
+		for ( String key : keys ) {
 
-			String keyAsString = RedisDialect.toString( key );
-			if ( keyAsString.startsWith( RedisDialect.ASSOCIATIONS ) || keyAsString.startsWith( RedisDialect.IDENTIFIERS ) ) {
+			if ( key.startsWith( RedisDialect.ASSOCIATIONS ) || key.startsWith( RedisDialect.IDENTIFIERS ) ) {
 				continue;
 			}
 
 			String type = connection.type( key );
 
 			if ( "string".equalsIgnoreCase( type ) ) {
-				byte[] value = connection.get( key );
+				String value = connection.get( key );
 				JsonNode jsonNode = fromJSON( value );
 
 				for ( JsonNode node : jsonNode ) {
@@ -212,18 +209,17 @@ public class RedisTestHelper implements TestableGridDialect {
 		return associationCount;
 	}
 
-	public static JsonNode fromJSON(byte[] json) {
-		if ( json == null || json.length == 0 ) {
+	public static JsonNode fromJSON(String json) {
+		if ( json == null || json.length() == 0 ) {
 			return null;
 		}
 
 		try {
 			ObjectMapper objectMapper = new ObjectMapper().configure( JsonParser.Feature.ALLOW_SINGLE_QUOTES, true );
-			return objectMapper.reader().readTree( new ByteArrayInputStream( json ) );
+			return objectMapper.reader().readTree( json );
 		}
 		catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			throw new IllegalStateException( e );
 		}
 	}
 

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 @JsonSerialize(include = Inclusion.NON_NULL)
 public class Association extends StructuredValue {
 
-
 	private List<Object> rows = new ArrayList<Object>();
 
 	public Association() {

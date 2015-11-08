@@ -88,17 +88,17 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		phoneNumberService.createPhoneNumber( "Michael", "123-456" );
 
 		RedisDatastoreProvider provider = getProvider();
+		RedisConnection<String, String> connection = provider.getConnection();
 
 		// when
-		byte[] key = RedisDialect.toBytes( "PhoneNumber:Michael" );
-		RedisConnection<byte[], byte[]> connection = provider.getConnection();
+		String key = "PhoneNumber:Michael";
 		Boolean exists = connection.exists( key );
-		byte[] value = connection.get( key );
+		String value = connection.get( key );
 		Long pttl = connection.pttl( key );
 
 		// then
 		assertTrue( exists );
-		assertTrue( value.length > 10 );
+		assertTrue( value.length() > 10 );
 		assertTrue( pttl.longValue() > 3500 );
 	}
 
