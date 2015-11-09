@@ -115,7 +115,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 			Element previous = entityCache.putIfAbsent( new Element( getKeyProvider().getEntityCacheKey( key ), entityRecord ) );
 			if ( previous != null ) {
-				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, null );
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple );
 			}
 		}
 		else {
