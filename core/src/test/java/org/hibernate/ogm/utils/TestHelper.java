@@ -157,7 +157,6 @@ public class TestHelper {
 		return helper.backendSupportsTransactions();
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
 		return session.get( clazz, id );
 	}
