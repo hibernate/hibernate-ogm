@@ -16,7 +16,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
  *
  * @author Gunnar Morling
  */
-public abstract class DocumentStoreConfiguration {
+public abstract class DataStoreConfiguration {
 
 	/**
 	 * The default host to connect to in case the {@link OgmProperties#HOST} property is not set
@@ -29,7 +29,7 @@ public abstract class DocumentStoreConfiguration {
 	private final String password;
 	private final boolean createDatabase;
 
-	public DocumentStoreConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
+	public DataStoreConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
 				.withDefault( DEFAULT_HOST )
 				.getValue();
