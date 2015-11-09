@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -36,15 +37,16 @@ import org.neo4j.graphdb.ResourceIterator;
  */
 public class Neo4jTestHelper implements TestableGridDialect {
 
+	private static final Map<String, String> hibProperties = readProperties();
 	/**
 	 * Query for counting all entities. This takes embedded entities and temporary nodes (which never should show up
 	 * actually) into account.
 	 */
 	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " RETURN COUNT(n) as count";
 
-	private static final String ASSOCIATION_COUNT_QUERY = "MATCH (n) - [r] -> () RETURN COUNT(DISTINCT type(r)) as count";
+	private static final String ASSOCIATION_COUNT_QUERY = "MATCH (n) -[r]-> () RETURN COUNT(DISTINCT type(r)) as count";
 
-	private static final String ROOT_FOLDER = buildDirectory() + File.separator + "NEO4J";
+	private static final String ROOT_FOLDER = hibProperties.get( Neo4jProperties.DATABASE_PATH ) + File.separator + "NEO4J";
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -88,7 +90,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
-		Map<String, String> properties = new HashMap<String, String>();
+		Map<String, String> properties = new HashMap<String, String>( hibProperties );
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation() );
 		return properties;
 	}
@@ -100,12 +102,15 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		return ROOT_FOLDER + File.separator + "neo4j-db-" + System.currentTimeMillis();
 	}
 
-	private static String buildDirectory() {
+	private static Map<String, String> readProperties() {
 		try {
 			Properties hibProperties = new Properties();
 			hibProperties.load( Thread.currentThread().getContextClassLoader().getResourceAsStream( "hibernate.properties" ) );
-			String buildDirectory = hibProperties.getProperty( Neo4jProperties.DATABASE_PATH );
-			return buildDirectory;
+			Map<String, String> props = new HashMap<>();
+			for ( Map.Entry<Object, Object> entry : hibProperties.entrySet() ) {
+				props.put( String.valueOf( entry.getKey() ), String.valueOf( entry.getValue() ) );
+			}
+			return Collections.unmodifiableMap( props );
 		}
 		catch (IOException e) {
 			throw new RuntimeException( "Missing properties file: hibernate.properties" );
