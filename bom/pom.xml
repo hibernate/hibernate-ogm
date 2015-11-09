@@ -27,7 +27,7 @@
         <infinispanVersion>7.2.1.Final</infinispanVersion>
         <mongodbVersion>3.0.3</mongodbVersion>
         <fongodbVersion>2.0.2</fongodbVersion>
-        <neo4jVersion>2.2.3</neo4jVersion>
+        <neo4jVersion>2.2.6</neo4jVersion>
         <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.1.3</cassandraVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
