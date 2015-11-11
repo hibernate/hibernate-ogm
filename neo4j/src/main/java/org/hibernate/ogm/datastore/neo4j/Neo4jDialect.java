@@ -77,7 +77,7 @@ import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelExc
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jDialect extends BaseNeo4jDialect<GraphDatabaseService> {
+public class Neo4jDialect extends BaseNeo4jDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -447,7 +447,13 @@ public class Neo4jDialect extends BaseNeo4jDialect<GraphDatabaseService> {
 			node.setProperty( operation.getColumn(), operation.getValue() );
 		}
 		catch (ConstraintViolationException e) {
-			throw log.constraintViolation( entityKey, String.valueOf( operation ), e );
+			String message = e.getMessage();
+			if ( message.contains( "already exists" ) ) {
+				throw log.mustNotInsertSameEntityTwice( String.valueOf( operation ), e );
+			}
+			else {
+				throw log.constraintViolation( entityKey, String.valueOf( operation ), e );
+			}
 		}
 	}
 

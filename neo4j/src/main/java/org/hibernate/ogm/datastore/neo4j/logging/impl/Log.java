@@ -33,7 +33,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void errorGeneratingSequence(String sequenceName, @Cause Exception e);
 
 	@Message(id = 1403, value = "Constraint violation for entity %s: %s")
-	HibernateException constraintViolation(EntityKey entityKey, TupleOperation operation, @Cause Exception cause);
+	HibernateException constraintViolation(EntityKey entityKey, String message, @Cause Exception cause);
 
 	@LogMessage(level = WARN)
 	@Message(id = 1404, value = "Neo4j does not support constraints spanning multiple columns. Unique key %1$s for %2$s on columns %3$s cannot be created")
