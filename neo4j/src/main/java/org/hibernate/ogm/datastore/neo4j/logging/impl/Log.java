@@ -13,7 +13,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.spi.TupleOperation;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -53,4 +52,16 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1408, value = "Error while cheking transaction status")
 	HibernateException exceptionWhileChekingTransactionStatus(@Cause Exception e);
+
+	@Message(id = 1409, value = "Neo4j does not support multiple hosts configuration: %s")
+	HibernateException doesNotSupportMultipleHosts(String hosts);
+
+	@Message(id = 1410, value = "An error occurred, malformed database URL. Database host: %s, database port: %03d, database name: %s")
+	HibernateException malformedDataBaseUrl(@Cause Exception e, String databaseHost, int databasePort, String databaseName);
+
+	@Message(id = 1411, value = "%s: %s")
+	HibernateException nativeQueryException( String code, String message, @Cause Exception cause);
+
+	@Message(id = 1412, value = "%s: %s")
+	HibernateException constraintCreationException(String code, String message);
 }
