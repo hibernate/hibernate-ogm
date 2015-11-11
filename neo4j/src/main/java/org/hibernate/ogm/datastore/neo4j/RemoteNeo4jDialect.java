@@ -1,0 +1,487 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
+package org.hibernate.ogm.datastore.neo4j;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.hibernate.AssertionFailure;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.AssociationPropertiesRow;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteMapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationQueries;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTupleAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTupleSnapshot;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNodesTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Relationship;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
+import org.hibernate.ogm.dialect.query.spi.BackendQuery;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
+import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationOperation;
+import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
+
+/**
+ * Abstracts Hibernate OGM from Neo4j.
+ * <p>
+ * A {@link Tuple} is saved as a {@link Node} where the columns are converted into properties of the node.<br>
+ * An {@link Association} is converted into a {@link Relationship} identified by the {@link AssociationKey} and the
+ * {@link RowKey}. The type of the relationship is the value returned by
+ * {@link AssociationKeyMetadata#getCollectionRole()}.
+ * <p>
+ * If the value of a property is set to null the property will be removed (Neo4j does not allow to store null values).
+ *
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ */
+public class RemoteNeo4jDialect extends BaseNeo4jDialect {
+
+	private static final Log log = LoggerFactory.getLogger();
+
+	private final Neo4jClient dataBase;
+
+	private final RemoteSequenceGenerator sequenceGenerator;
+
+	private Map<EntityKeyMetadata, RemoteNeo4jEntityQueries> entityQueries;
+
+	private Map<AssociationKeyMetadata, RemoteNeo4jAssociationQueries> associationQueries;
+
+	private SessionFactoryImplementor sessionFactory;
+
+	public RemoteNeo4jDialect(RemoteNeo4jDatastoreProvider provider) {
+		super( Neo4jTypeConverter.FOR_REMOTE );
+		this.dataBase = provider.getDataStore();
+		sequenceGenerator = provider.getSequenceGenerator();
+	}
+
+	@Override
+	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
+		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
+		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
+		this.sessionFactory = sessionFactoryImplementor;
+	}
+
+	private Map<EntityKeyMetadata, RemoteNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
+			Map<AssociationKeyMetadata, RemoteNeo4jAssociationQueries> associationQueries) {
+		Map<EntityKeyMetadata, RemoteNeo4jEntityQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
+		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
+			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
+			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
+				// Embeddables metadata
+				entityQueries.put( entityKeyMetadata, new RemoteNeo4jEntityQueries( entityKeyMetadata, null ) );
+			}
+		}
+		return entityQueries;
+	}
+
+	private Map<EntityKeyMetadata, RemoteNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, RemoteNeo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, RemoteNeo4jEntityQueries>();
+		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
+		for ( EntityPersister entityPersister : entityPersisters ) {
+			if (entityPersister instanceof OgmEntityPersister ) {
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
+				TupleContext tupleContext = ogmEntityPersister.getTupleContext();
+				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new RemoteNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), tupleContext ) );
+			}
+		}
+		return queryMap;
+	}
+
+	private Map<AssociationKeyMetadata, RemoteNeo4jAssociationQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<AssociationKeyMetadata, RemoteNeo4jAssociationQueries> queryMap = new HashMap<AssociationKeyMetadata, RemoteNeo4jAssociationQueries>();
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		for ( CollectionPersister collectionPersister : collectionPersisters ) {
+			if ( collectionPersister instanceof OgmCollectionPersister ) {
+				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
+				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
+				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
+				queryMap.put( associationKeyMetadata, new RemoteNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
+			}
+		}
+		return queryMap;
+	}
+
+	@Override
+	public Tuple getTuple(EntityKey key, TupleContext context) {
+		RemoteNeo4jEntityQueries queries = entityQueries.get( key.getMetadata() );
+		Node entityNode = queries.findEntity( dataBase, key.getColumnValues() );
+		if ( entityNode == null ) {
+			return null;
+		}
+
+		return new Tuple(
+				new RemoteNeo4jTupleSnapshot(
+						dataBase,
+						queries,
+						entityNode,
+						context.getAllAssociatedEntityKeyMetadata(),
+						context.getAllRoles(),
+						key.getMetadata()
+						)
+				);
+	}
+
+	@Override
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+		// insert
+		final Map<String, EntityKey> toOneAssociations = new HashMap<>();
+		Statements statements = new Statements();
+		Map<String, Object> properties = new HashMap<>();
+		applyTupleOperations( key, tuple, properties, toOneAssociations, statements, tuple.getOperations(), tupleContext );
+		if ( tuple.getSnapshot() instanceof EmptyTupleSnapshot ) {
+			Statement statement = entityQueries.get( key.getMetadata() ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
+			statements.getStatements().add( 0, statement );
+		}
+		else {
+			updateTuple( key, statements, properties );
+		}
+		saveToOneAssociations( statements, key, toOneAssociations );
+		StatementsResponse readEntity = dataBase.executeQueriesInOpenTransaction( statements );
+		validate( readEntity, key, tuple );
+	}
+
+	private void updateTuple(EntityKey key, Statements statements, Map<String, Object> properties) {
+		if ( !properties.isEmpty() ) {
+			Statement statement = entityQueries.get( key.getMetadata() ).getUpdateEntityPropertiesStatement( key.getColumnValues(), properties );
+			statements.addStatement( statement );
+		}
+	}
+
+	private void validate(StatementsResponse readEntity, EntityKey key, Tuple tuple) {
+		if (!readEntity.getErrors().isEmpty() ) {
+			ErrorResponse errorResponse = readEntity.getErrors().get( 0 );
+			switch ( errorResponse.getCode() ) {
+				case Neo4jDialect.CONSTRAINT_VIOLATION_CODE:
+					throw extractException( key, tuple, errorResponse );
+				default:
+					throw new HibernateException( String.valueOf( errorResponse ) );
+			}
+		}
+	}
+
+	private HibernateException extractException(EntityKey key, Tuple tuple, ErrorResponse errorResponse) {
+		if ( errorResponse.getMessage().matches( ".*Node \\d+ already exists with label.*" ) ) {
+			return new TupleAlreadyExistsException( key.getMetadata(), tuple, errorResponse.getMessage() );
+		}
+		else {
+			return log.constraintViolation( key, errorResponse.getMessage(), null );
+		}
+	}
+
+	private void saveToOneAssociations(Statements statements, EntityKey key, final Map<String, EntityKey> toOneAssociations) {
+		for ( Map.Entry<String, EntityKey> entry : toOneAssociations.entrySet() ) {
+			Statement statement = entityQueries.get( key.getMetadata() ).getUpdateOneToOneAssociationStatement( entry.getKey(), key.getColumnValues(), entry.getValue().getColumnValues() );
+			statements.addStatement( statement );
+		}
+	}
+
+	@Override
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+		entityQueries.get( key.getMetadata() ).removeEntity( dataBase, key.getColumnValues() );
+	}
+
+	/**
+	 * When dealing with some scenarios like, for example, a bidirectional association, OGM calls this method twice:
+	 * <p>
+	 * the first time with the information related to the owner of the association and the {@link RowKey},
+	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
+	 * @param associatedEntityKeyMetadata
+	 * @param action
+	 */
+	private Relationship createRelationship(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, AssociationOperation action) {
+		switch ( associationKey.getMetadata().getAssociationKind() ) {
+			case EMBEDDED_COLLECTION:
+				return createRelationshipWithEmbeddedNode( associationKey, associationRow, associatedEntityKeyMetadata, action );
+			case ASSOCIATION:
+				return findOrCreateRelationshipWithEntityNode( associationKey, associationRow, associatedEntityKeyMetadata );
+			default:
+				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getMetadata().getAssociationKind() );
+		}
+	}
+
+	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, AssociationOperation action) {
+		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
+		Object[] relationshipProperties = relationshipProperties( associationKey, action );
+
+		Relationship relationship = associationQueries.get( associationKey.getMetadata() )
+				.createRelationshipForEmbeddedAssociation( dataBase, associationKey, embeddedKey, relationshipProperties );
+		return relationship;
+	}
+
+	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		EntityKey ownerKey = associationKey.getEntityKey();
+		EntityKey targetKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
+		Object[] relationshipProperties = relationshipProperties( associationKey, associationRow );
+
+		return associationQueries.get( associationKey.getMetadata() )
+			.createRelationship( dataBase, ownerKey.getColumnValues(), targetKey.getColumnValues(), relationshipProperties );
+	}
+
+	private Object[] relationshipProperties(AssociationKey associationKey, Tuple associationRow) {
+		String[] indexColumns = associationKey.getMetadata().getRowKeyIndexColumnNames();
+		Object[] properties = new Object[indexColumns.length];
+		for ( int i = 0; i < indexColumns.length; i++ ) {
+			String propertyName = indexColumns[i];
+			properties[i] = associationRow.get( propertyName );
+		}
+		return properties;
+	}
+
+	@Override
+	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
+		EntityKey entityKey = associationKey.getEntityKey();
+		Node entityNode = entityQueries.get( entityKey.getMetadata() ).findEntity( dataBase, entityKey.getColumnValues() );
+		if ( entityNode == null ) {
+			return null;
+		}
+
+		Map<RowKey, Tuple> tuples = createAssociationMap( associationKey, associationContext, entityKey );
+		return new Association( new RemoteNeo4jAssociationSnapshot( tuples ) );
+	}
+
+	private Map<RowKey, Tuple> createAssociationMap(AssociationKey associationKey, AssociationContext associationContext, EntityKey entityKey) {
+		String relationshipType = associationContext.getAssociationTypeContext().getRoleOnMainSide();
+		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
+
+		ClosableIterator<AssociationPropertiesRow> relationships = entityQueries.get( entityKey.getMetadata() )
+				.findAssociation( dataBase, entityKey.getColumnValues(), relationshipType );
+		while ( relationships.hasNext() ) {
+			AssociationPropertiesRow row = relationships.next();
+			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
+			RemoteNeo4jTupleAssociationSnapshot snapshot = new RemoteNeo4jTupleAssociationSnapshot( dataBase,
+					associationQueries.get( associationKey.getMetadata() ), row, associationKey, associatedEntityKeyMetadata );
+			RowKey rowKey = convert( associationKey, snapshot );
+			tuples.put( rowKey, new Tuple( snapshot ) );
+		}
+		return tuples;
+	}
+
+	private RowKey convert(AssociationKey associationKey, RemoteNeo4jTupleAssociationSnapshot snapshot) {
+		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
+		Object[] values = new Object[columnNames.length];
+
+		for ( int i = 0; i < columnNames.length; i++ ) {
+			values[i] = snapshot.get( columnNames[i] );
+		}
+
+		return new RowKey( columnNames, values );
+	}
+
+	@Override
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+		// If this is the inverse side of a bi-directional association, we don't create a relationship for this; this
+		// will happen when updating the main side
+		if ( key.getMetadata().isInverse() ) {
+			return;
+		}
+
+		for ( AssociationOperation action : association.getOperations() ) {
+			applyAssociationOperation( association, key, action, associationContext );
+		}
+	}
+
+	@Override
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+		// If this is the inverse side of a bi-directional association, we don't manage the relationship from this side
+		if ( key.getMetadata().isInverse() ) {
+			return;
+		}
+
+		associationQueries.get( key.getMetadata() ).removeAssociation( dataBase, key );
+	}
+
+	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
+		switch ( operation.getType() ) {
+		case CLEAR:
+			removeAssociation( key, associationContext );
+			break;
+		case PUT:
+			putAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
+			break;
+		case REMOVE:
+			removeAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
+			break;
+		}
+	}
+
+	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		createRelationship( associationKey, action.getValue(), associatedEntityKeyMetadata, action );
+	}
+
+	private Object[] relationshipProperties(AssociationKey associationKey, AssociationOperation action) {
+		Object[] relationshipProperties = new Object[associationKey.getMetadata().getRowKeyIndexColumnNames().length];
+		String[] indexColumns = associationKey.getMetadata().getRowKeyIndexColumnNames();
+		for ( int i = 0; i < indexColumns.length; i++ ) {
+			relationshipProperties[i] = action.getValue().get( indexColumns[i] );
+		}
+		return relationshipProperties;
+	}
+
+	private void removeAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		associationQueries.get( associationKey.getMetadata() ).removeAssociationRow( dataBase, associationKey, action.getKey() );
+	}
+
+	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, Statements statements, Set<TupleOperation> operations, TupleContext tupleContext) {
+		Set<String> processedAssociationRoles = new HashSet<String>();
+
+		for ( TupleOperation operation : operations ) {
+			applyOperation( entityKey, tuple, node, toOneAssociations, statements, operation, tupleContext, processedAssociationRoles );
+		}
+	}
+
+	private void applyOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, Statements statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		switch ( operation.getType() ) {
+		case PUT:
+			putTupleOperation( entityKey, tuple, node, toOneAssociations, statements, operation, tupleContext, processedAssociationRoles );
+			break;
+		case PUT_NULL:
+		case REMOVE:
+			removeTupleOperation( entityKey, node, operation, statements, tupleContext, processedAssociationRoles );
+			break;
+		}
+	}
+
+	private void removeTupleOperation(EntityKey entityKey, Map<String, Object> ownerNode, TupleOperation operation, Statements statements, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
+				// Embedded node
+				Statement statement = entityQueries.get( entityKey.getMetadata() ).removeEmbeddedColumnStatement( entityKey.getColumnValues(),
+						operation.getColumn() );
+				statements.addStatement( statement );
+			}
+			else {
+				Statement statement = entityQueries.get( entityKey.getMetadata() ).removeColumnStatement( entityKey.getColumnValues(), operation.getColumn() );
+				statements.addStatement( statement );
+			}
+		}
+		else {
+			String associationRole = tupleContext.getRole( operation.getColumn() );
+			if ( !processedAssociationRoles.contains( associationRole ) ) {
+				entityQueries.get( entityKey.getMetadata() ).removeToOneAssociation( dataBase, entityKey.getColumnValues(), associationRole );
+			}
+		}
+	}
+
+	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, Statements statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		if ( tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+			// the column represents a to-one association, map it as relationship
+			putOneToOneAssociation( entityKey, tuple, node, toOneAssociations, operation, tupleContext, processedAssociationRoles );
+		}
+		else if ( isPartOfRegularEmbedded( entityKey.getMetadata().getColumnNames(), operation.getColumn() ) ) {
+			Statement statement = entityQueries.get( entityKey.getMetadata() ).updateEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
+			statements.addStatement( statement );
+		}
+		else {
+			putProperty( entityKey, node, operation );
+		}
+	}
+
+	private void putProperty(EntityKey entityKey, Map<String, Object> node, TupleOperation operation) {
+		node.put( operation.getColumn(), operation.getValue() );
+	}
+
+	private void putOneToOneAssociation(EntityKey ownerKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		String associationRole = tupleContext.getRole( operation.getColumn() );
+
+		if ( !processedAssociationRoles.contains( associationRole ) ) {
+			processedAssociationRoles.add( associationRole );
+
+			EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+
+			toOneAssociations.put( associationRole, targetKey );
+		}
+	}
+
+	@Override
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+			RemoteNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadatas );
+			ClosableIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
+			while ( queryNodes.hasNext() ) {
+				Node next = queryNodes.next();
+				Tuple tuple = new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, queries, next, entityKeyMetadata, entityPersister( entityKeyMetadata ) ) );
+				consumer.consume( tuple );
+			}
+		}
+	}
+
+	@Override
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters) {
+		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
+		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
+		Statement statement = new Statement( nativeQuery, parameters );
+		Statements statements = new Statements();
+		statements.addStatement( statement );
+		StatementsResponse response = null;
+		if ( backendQuery.getSingleEntityKeyMetadataOrNull() != null ) {
+			response = dataBase.executeQueriesInOpenTransaction( statements );
+			EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
+			RemoteNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
+			OgmEntityPersister entityPersister = entityPersister( entityKeyMetadata );
+			return new RemoteNodesTupleIterator( dataBase, queries, response, entityKeyMetadata, entityPersister );
+		}
+		else {
+			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
+			response = dataBase.executeQueriesInOpenTransaction( statements );
+			return new RemoteMapsTupleIterator( response );
+		}
+	}
+
+	@Override
+	public Number nextValue(NextValueRequest request) {
+		return sequenceGenerator.nextValue( request.getKey(), request.getIncrement(), request.getInitialValue() );
+	}
+
+	private OgmEntityPersister entityPersister(EntityKeyMetadata entityKeyMetadata) {
+		Map<String, EntityPersister> entityPersisters = sessionFactory.getEntityPersisters();
+		OgmEntityPersister found = null;
+		for ( EntityPersister entityPersister : entityPersisters.values() ) {
+			if ( entityPersister instanceof OgmEntityPersister ) {
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
+				if ( entityKeyMetadata.equals( ogmEntityPersister.getEntityKeyMetadata() ) ) {
+					break;
+				}
+			}
+		}
+		return found;
+	}
+}
