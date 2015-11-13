@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.spi;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
@@ -40,4 +41,6 @@ public interface AssociationContext {
 	 * @return A tuple representing the entity on the current side of the association
 	 */
 	Tuple getEntityTuple();
+
+	TransactionCoordinator getTransactionCoordinator();
 }

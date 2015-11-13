@@ -31,8 +31,10 @@ import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
+import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.entity.impl.BatchableEntityLoader;
@@ -556,6 +558,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
 			OgmEntityPersister persister = getEntityPersisters()[0];
+			TupleContext tupleContext = tupleContext( session, persister );
 			if ( loadSeveralIds( qp ) ) {
 				// here we expect to receive QueryParameters.positionalParameters full of ids and thus of the same type.
 				// if that's not the case, we are in a bit of a trouble :)
@@ -566,7 +569,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 					keys[index] = EntityKeyBuilder.fromPersister( persister, (Serializable) qp.getPositionalParameterValues()[index], session );
 				}
 				if ( multigetGridDialect != null ) {
-					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext() ) ) {
+					for ( Tuple tuple : multigetGridDialect.getTuples( keys, tupleContext ) ) {
 						if ( tuple != null ) {
 							resultset.addTuple( tuple );
 						}
@@ -574,7 +577,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 				}
 				else {
 					for ( EntityKey entityKey : keys ) {
-						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+						Tuple entry = gridDialect.getTuple( entityKey, tupleContext );
 						if ( entry != null ) {
 							resultset.addTuple( entry );
 						}
@@ -583,7 +586,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 			}
 			else {
 				final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
-				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
+				Tuple entry = gridDialect.getTuple( key, tupleContext );
 				if ( entry != null ) {
 					resultset.addTuple( entry );
 				}
@@ -615,6 +618,12 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 			}
 		}
 		return resultset;
+	}
+
+	private TupleContext tupleContext(SessionImplementor session, OgmEntityPersister persister) {
+		TupleContext tupleContext = persister.getTupleContext( session );
+		tupleContext = new TupleContextImpl( tupleContext, session.getTransactionCoordinator() );
+		return tupleContext;
 	}
 
 	private Object getResultColumnOrRow(Object[] row) {

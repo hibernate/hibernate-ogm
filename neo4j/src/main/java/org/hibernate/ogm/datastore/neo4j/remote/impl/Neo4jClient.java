@@ -7,14 +7,11 @@
 package org.hibernate.ogm.datastore.neo4j.remote.impl;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
 import org.hibernate.ogm.datastore.neo4j.remote.facade.impl.Neo4jAuthenticationFacade;
 import org.hibernate.ogm.datastore.neo4j.remote.facade.impl.Neo4jTransactionFacade;
-import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.transaction.impl.Transaction;
@@ -34,8 +31,6 @@ public class Neo4jClient implements AutoCloseable {
 	 * Size of the client connection pool used by the RestEasy HTTP client
 	 */
 	private static final int CONNECTION_POOL_SIZE = 10;
-
-	private final ThreadLocal<Long> transactionId = new ThreadLocal<>();
 
 	/**
 	 * Client for accessing the server
@@ -76,39 +71,8 @@ public class Neo4jClient implements AutoCloseable {
 		client.close();
 	}
 
-	public Response executeQuery(String query) {
-		Statement statement = new Statement();
-		statement.setStatement( query );
-
-		Statements statements = new Statements();
-		statements.setStatements( Arrays.asList( statement ) );
-
-		return neo4jFacade.executeQuery( statements );
-	}
-
-	public Response executeQuery(String query, Map<String, Object> params) {
-		Statement statement = new Statement();
-		statement.setStatement( query );
-		statement.setParameters( params );
-
-		return executeQuery( statement );
-	}
-
-	public Response executeQuery(Statement statement) {
-		Statements statements = new Statements();
-		statements.setStatements( Arrays.asList( statement ) );
-
-		if ( transactionId.get() != null ) {
-			return neo4jFacade.executeQuery( transactionId.get(), statements );
-		}
-		else {
-			return neo4jFacade.executeQuery( statements );
-		}
-	}
-
-	public StatementsResponse executeQueriesInOpenTransaction(Statements statements) {
-		Long id = transactionId.get();
-		Response executeQuery = neo4jFacade.executeQuery( id, statements );
+	public StatementsResponse executeQueriesInOpenTransaction(Long txId, Statements statements) {
+		Response executeQuery = neo4jFacade.executeQuery( txId, statements );
 		try {
 			return executeQuery.readEntity( StatementsResponse.class );
 		}
@@ -133,8 +97,6 @@ public class Neo4jClient implements AutoCloseable {
 		try {
 			URI location = response.getLocation();
 			Transaction transaction = new Transaction( this, location );
-			Long id = transaction.getId();
-			transactionId.set( id );
 			return transaction;
 		}
 		finally {
@@ -143,28 +105,12 @@ public class Neo4jClient implements AutoCloseable {
 	}
 
 	public void commit(Long txId) {
-		Long id = transactionId.get();
-		if ( id != null ) {
-			Response response = neo4jFacade.commit( id );
-			try {
-				transactionId.remove();
-			}
-			finally {
-				response.close();
-			}
-		}
+		Response response = neo4jFacade.commit( txId );
+		response.close();
 	}
 
 	public void rollback(Long txId) {
-		Long id = transactionId.get();
-		if ( id != null ) {
-			Response response = neo4jFacade.rollback( id );
-			try {
-				transactionId.remove();
-			}
-			finally {
-				response.close();
-			}
-		}
+		Response response = neo4jFacade.rollback( txId );
+		response.close();
 	}
 }

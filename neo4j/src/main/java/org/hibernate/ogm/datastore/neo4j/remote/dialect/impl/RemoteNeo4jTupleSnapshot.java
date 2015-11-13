@@ -37,19 +37,21 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 
 	private final Map<String, Node> toOneEntities;
 	private final RemoteNeo4jEntityQueries queries;
+	private final 	Long txId;
 
-	public RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, RemoteNeo4jEntityQueries queries, Node node, EntityKeyMetadata entityKeyMetadata, OgmEntityPersister ogmEntityPersister) {
-		this( neo4jClient, queries, node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata, ogmEntityPersister );
+	public RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, Long txId, RemoteNeo4jEntityQueries queries, Node node, EntityKeyMetadata entityKeyMetadata, OgmEntityPersister ogmEntityPersister) {
+		this( neo4jClient, txId, queries, node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata, ogmEntityPersister );
 	}
 
-	public RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, RemoteNeo4jEntityQueries queries, Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
-		this( neo4jClient, queries, node, associatedEntityKeyMetadata, rolesByColumn, entityKeyMetadata, null );
+	public RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, Long txId, RemoteNeo4jEntityQueries queries, Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
+		this( neo4jClient, txId, queries, node, associatedEntityKeyMetadata, rolesByColumn, entityKeyMetadata, null );
 	}
 
-	private RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, RemoteNeo4jEntityQueries queries, Node node,
+	private RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, Long txId, RemoteNeo4jEntityQueries queries, Node node,
 			Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata,
 			OgmEntityPersister ogmEntityPersister) {
 		this.neo4jClient = neo4jClient;
+		this.txId = txId;
 		this.queries = queries;
 		this.node = node;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
@@ -85,7 +87,7 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 		Node associatedEntity = toOneEntities.get( associationrole );
 		if ( associatedEntity == null ) {
 			// Not cached, let's look for it
-			associatedEntity = queries.findAssociatedEntity( neo4jClient, keyValues(), associationrole );
+			associatedEntity = queries.findAssociatedEntity( neo4jClient, txId, keyValues(), associationrole );
 			if ( associatedEntity == null ) {
 				return null;
 			}
@@ -108,7 +110,7 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 	private Object readEmbeddedProperty(String column) {
 		String embeddedPath = column.substring( 0, column.lastIndexOf( "." ) );
 		Object[] keyValues = keyValues();
-		Node embeddedNode = queries.findEmbeddedNode( neo4jClient, keyValues, embeddedPath );
+		Node embeddedNode = queries.findEmbeddedNode( neo4jClient, txId, keyValues, embeddedPath );
 		if ( embeddedNode == null ) {
 			return null;
 		}

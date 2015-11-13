@@ -20,6 +20,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.EntityPersister;
@@ -222,9 +223,11 @@ public class AssociationPersister {
 	 */
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
+			Tuple entityTuple = hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null;
 			associationContext = new AssociationContextImpl(
 					associationTypeContext,
-					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null
+					entityTuple,
+					session.getTransactionCoordinator()
 			);
 		}
 

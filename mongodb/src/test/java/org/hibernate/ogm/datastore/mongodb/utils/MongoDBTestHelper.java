@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -68,6 +69,11 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DB db = provider.getDatabase();
@@ -82,6 +88,12 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 	private boolean isSystemCollection(String collectionName) {
 		return collectionName.startsWith( "system." );
+	}
+
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -183,8 +195,8 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( session.getSessionFactory() );
 		DBObject finder = new BasicDBObject( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
 		DBObject result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
 		replaceIdentifierColumnName( result, key );

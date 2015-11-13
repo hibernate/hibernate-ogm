@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.ws.rs.core.Response;
-
 import org.fest.util.Files;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
@@ -32,14 +32,19 @@ import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvide
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
+import org.hibernate.ogm.datastore.neo4j.remote.transaction.impl.Neo4jTransactionDriver;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.service.spi.Stoppable;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.ResourceIterator;
@@ -66,13 +71,23 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	private static final String DELETE_ALL = "MATCH (n) OPTIONAL MATCH (n) -[r]-> () DELETE n,r";
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		DatastoreProvider provider = getProvider( session.getSessionFactory() );
+		return getNumberOfEntities( session, provider );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		DatastoreProvider provider = getProvider( sessionFactory );
+		return getNumberOfEntities( null, provider );
+	}
+
+	private long getNumberOfEntities(Session session, DatastoreProvider provider) {
 		if ( isRemote( provider ) ) {
 			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDataStore();
 			Statement statement = new Statement( ENTITY_COUNT_QUERY );
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
-			return readCountFromResponse( remoteNeo4j, statement );
+			return readCountFromResponse( session, remoteNeo4j, statement );
 		}
 		else {
 			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDataBase();
@@ -84,16 +99,26 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfAssociations(Session session) {
+		BaseDatastoreProvider provider = getProvider( session.getSessionFactory() );
+		return getNumberOfAssociations( session, provider );
+	}
+
+	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		BaseDatastoreProvider provider = getProvider( sessionFactory );
+		return getNumberOfAssociations( null, provider );
+	}
+
+	private long getNumberOfAssociations(Session session, BaseDatastoreProvider provider) {
 		if ( isRemote( provider ) ) {
-			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) getProvider( sessionFactory ) ).getDataStore();
+			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider).getDataStore();
 			Statement statement = new Statement( ASSOCIATION_COUNT_QUERY );
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
-			return readCountFromResponse( remoteNeo4j, statement );
+			return readCountFromResponse( session, remoteNeo4j, statement );
 		}
 		else {
-			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) getProvider( sessionFactory ) ).getDataBase();
+			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider).getDataBase();
 			ResourceIterator<Long> result = graphDb.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
 			Long count = result.next();
 			result.close();
@@ -101,22 +126,39 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		}
 	}
 
-	private long readCountFromResponse(Neo4jClient remoteNeo4j, Statement statement) {
-		Response response = remoteNeo4j.executeQuery( statement );
-		try {
-			RowStatementsResponse readEntity = response.readEntity( RowStatementsResponse.class );
-			return ( (Integer) readEntity.getResults().get( 0 ).getData().get( 0 ).getRow().get( 0 ) ).longValue();
+	private long readCountFromResponse(Session session, Neo4jClient remoteNeo4j, Statement statement) {
+		Statements statements = new Statements();
+		statements.addStatement( statement );
+		StatementsResponse response = null;
+		if ( session != null ) {
+			Long transactionId = transactionId( session );
+			if ( transactionId != null ) {
+				response = remoteNeo4j.executeQueriesInOpenTransaction( transactionId, statements );
+			}
+			else {
+				// Transaction rollbacked or committed
+				response = remoteNeo4j.executeQueriesInNewTransaction( statements );
+			}
 		}
-		finally {
-			response.close();
+		else {
+			response = remoteNeo4j.executeQueriesInNewTransaction( statements );
 		}
+		return ( (Integer) response.getResults().get( 0 ).getData().get( 0 ).getRow().get( 0 ) ).longValue();
+	}
+
+	private Long transactionId(Session session) {
+		Neo4jTransactionDriver driver = (Neo4jTransactionDriver) ( ( (SessionImplementor) session ).getTransactionCoordinator().getTransactionDriverControl() );
+		Long transactionId = driver.getTransactionId();
+		return transactionId;
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		Map<String, Object> tuple = new HashMap<String, Object>();
-		GridDialect dialect = getDialect( sessionFactory );
-		TupleSnapshot snapshot = dialect.getTuple( key, GridDialectOperationContexts.emptyTupleContext() ).getSnapshot();
+		GridDialect dialect = getDialect( session.getSessionFactory() );
+		TransactionCoordinator transactionCoordinator = ( (SessionImplementor) session ).getTransactionCoordinator();
+		TupleContext tupleContext = new TupleContextImpl( GridDialectOperationContexts.emptyTupleContext(), transactionCoordinator );
+		TupleSnapshot snapshot = dialect.getTuple( key, tupleContext ).getSnapshot();
 		for ( String column : snapshot.getColumnNames() ) {
 			tuple.put( column, snapshot.get( column ) );
 		}
@@ -148,7 +190,9 @@ public class Neo4jTestHelper implements TestableGridDialect {
 			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDataStore();
 			Statement statement = new Statement( DELETE_ALL );
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
-			remoteNeo4j.executeQuery( statement ).close();
+			Statements statements = new Statements();
+			statements.addStatement( statement );
+			remoteNeo4j.executeQueriesInNewTransaction( statements );
 		}
 		else {
 			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDataBase();

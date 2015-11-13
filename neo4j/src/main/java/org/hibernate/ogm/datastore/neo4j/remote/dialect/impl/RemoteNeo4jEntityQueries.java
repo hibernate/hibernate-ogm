@@ -43,10 +43,10 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		super( entityKeyMetadata, tupleContext );
 	}
 
-	public Node findEntity(Neo4jClient executionEngine, Object[] columnValues) {
+	public Node findEntity(Neo4jClient executionEngine, Long transactionId, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
 		String query = getFindEntityQuery();
-		List<StatementResult> results = executeQuery( executionEngine, query, params );
+		List<StatementResult> results = executeQuery( executionEngine, transactionId, query, params );
 		if ( results != null ) {
 			Row row = results.get( 0 ).getData().get( 0 );
 			if ( row.getGraph().getNodes().size() > 0 ) {
@@ -56,11 +56,11 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return null;
 	}
 
-	public Node findAssociatedEntity(Neo4jClient neo4jClient, Object[] keyValues, String associationrole) {
+	public Node findAssociatedEntity(Neo4jClient neo4jClient, Long txId, Object[] keyValues, String associationrole) {
 		Map<String, Object> params = params( keyValues );
 		String query = getFindAssociatedEntityQuery( associationrole );
 		if ( query != null ) {
-			List<StatementResult> results = executeQuery( neo4jClient, query, params );
+			List<StatementResult> results = executeQuery( neo4jClient, txId, query, params );
 			if ( results != null ) {
 				Row row = results.get( 0 ).getData().get( 0 );
 				if ( row.getGraph().getNodes().size() > 0 ) {
@@ -94,13 +94,13 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return new Statement( query, params( paramsValues ) );
 	}
 
-	public void removeEntity(Neo4jClient executionEngine, Object[] columnValues) {
-		executeQuery( executionEngine, getRemoveEntityQuery(), params( columnValues ) );
+	public void removeEntity(Neo4jClient executionEngine, Long txId, Object[] columnValues) {
+		executeQuery( executionEngine, txId, getRemoveEntityQuery(), params( columnValues ) );
 	}
 
-	public ClosableIterator<Node> findEntities(Neo4jClient executionEngine) {
+	public ClosableIterator<Node> findEntities(Neo4jClient executionEngine, Long txId) {
 		String query = getFindEntitiesQuery();
-		List<StatementResult> results = executeQuery( executionEngine, query, null );
+		List<StatementResult> results = executeQuery( executionEngine, txId, query, null );
 		if ( results != null ) {
 			Row row = results.get( 0 ).getData().get( 0 );
 			if ( row.getGraph().getNodes().size() > 0 ) {
@@ -118,14 +118,14 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return new Statement( query, params );
 	}
 
-	private List<StatementResult> executeQuery(Neo4jClient executionEngine, String query, Map<String, Object> properties, String... dataContents) {
+	private List<StatementResult> executeQuery(Neo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
 		Statements statements = new Statements();
 		statements.addStatement( query, properties, dataContents );
-		return executeQuery( executionEngine, statements );
+		return executeQuery( executionEngine, txId, statements );
 	}
 
-	private List<StatementResult> executeQuery(Neo4jClient executionEngine, Statements statements) {
-		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( statements );
+	private List<StatementResult> executeQuery(Neo4jClient executionEngine, Long txId, Statements statements) {
+		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( txId, statements );
 		validate( statementsResponse );
 		List<StatementResult> results = statementsResponse.getResults();
 		if ( results == null || results.isEmpty() ) {
@@ -163,7 +163,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ClosableIterator<AssociationPropertiesRow> findAssociation(Neo4jClient executionEngine, Object[] columnValues, String role) {
+	public ClosableIterator<AssociationPropertiesRow> findAssociation(Neo4jClient executionEngine, Long txId, Object[] columnValues, String role) {
 		// Find the target node
 		String queryForAssociation = getFindAssociationQuery( role );
 
@@ -175,7 +175,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		Statements statements = new Statements();
 		statements.addStatement( queryForAssociation, params, Statement.AS_ROW );
 		statements.addStatement( queryForEmbedded, params, Statement.AS_ROW );
-		List<StatementResult> response = executeQuery( executionEngine, statements );
+		List<StatementResult> response = executeQuery( executionEngine, txId, statements );
 
 		if ( response != null ) {
 			List<Row> data = response.get( 0 ).getData();
@@ -234,17 +234,17 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return path.substring( 1 );
 	}
 
-	public Node findEmbeddedNode(Neo4jClient neo4jClient, Object[] keyValues, String embeddedPath) {
-		List<StatementResult> results = executeQuery( neo4jClient, getFindEmbeddedNodeQueries().get( embeddedPath ), params( keyValues ) );
+	public Node findEmbeddedNode(Neo4jClient neo4jClient, Long txId, Object[] keyValues, String embeddedPath) {
+		List<StatementResult> results = executeQuery( neo4jClient, txId, getFindEmbeddedNodeQueries().get( embeddedPath ), params( keyValues ) );
 		if ( results == null ) {
 			return null;
 		}
 		return results.get( 0 ).getData().get( 0 ).getGraph().getNodes().get( 0 );
 	}
 
-	public void removeToOneAssociation(Neo4jClient executionEngine, Object[] columnValues, String associationRole) {
+	public void removeToOneAssociation(Neo4jClient executionEngine, Long txId, Object[] columnValues, String associationRole) {
 		Map<String, Object> params = params( ArrayHelper.concat( columnValues, associationRole ) );
-		executeQuery( executionEngine, getRemoveToOneAssociation(), params );
+		executeQuery( executionEngine, txId, getRemoveToOneAssociation(), params );
 	}
 
 	private static class ClosableIteratorAdapter<T> implements ClosableIterator<T> {

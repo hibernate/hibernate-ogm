@@ -13,6 +13,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Contracts;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
@@ -25,21 +26,23 @@ public class AssociationContextImpl implements AssociationContext {
 	private final AssociationTypeContext associationTypeContext;
 	private final OperationsQueue operationsQueue;
 	private final Tuple entityTuple;
+	private final TransactionCoordinator transactionCoordinator;
 
-	public AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple) {
-		this( associationTypeContext, entityTuple, null );
+	public AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple, TransactionCoordinator transactionCoordinator) {
+		this( associationTypeContext, entityTuple, null, transactionCoordinator );
 	}
 
 	public AssociationContextImpl(AssociationContextImpl original, OperationsQueue operationsQueue) {
-		this( original.associationTypeContext, original.entityTuple, operationsQueue );
+		this( original.associationTypeContext, original.entityTuple, operationsQueue, original.transactionCoordinator );
 	}
 
-	private AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple, OperationsQueue operationsQueue) {
+	private AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple, OperationsQueue operationsQueue, TransactionCoordinator transactionCoordinator) {
 		Contracts.assertParameterNotNull( associationTypeContext, "associationTypeContext" );
 
 		this.associationTypeContext = associationTypeContext;
 		this.entityTuple = entityTuple;
 		this.operationsQueue = operationsQueue;
+		this.transactionCoordinator = transactionCoordinator;
 	}
 
 	@Override
@@ -50,6 +53,11 @@ public class AssociationContextImpl implements AssociationContext {
 	@Override
 	public OperationsQueue getOperationsQueue() {
 		return operationsQueue;
+	}
+
+	@Override
+	public TransactionCoordinator getTransactionCoordinator() {
+		return transactionCoordinator;
 	}
 
 	@Override

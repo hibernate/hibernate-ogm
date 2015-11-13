@@ -29,14 +29,10 @@ public class RemoteJtaTransactionCoordinator extends ForwardingTransactionCoordi
 		this.remoteNeo4j = provider.getDataStore();
 	}
 
-	public long getTransactionId() {
-		return tx.getId();
-	}
-
 	@Override
 	public TransactionDriver getTransactionDriverControl() {
 		TransactionDriver driver = super.getTransactionDriverControl();
-		return new Neo4jTransactionDriver( driver );
+		return new RemoteTransactionDriver( driver );
 	}
 
 	@Override
@@ -98,10 +94,18 @@ public class RemoteJtaTransactionCoordinator extends ForwardingTransactionCoordi
 		}
 	}
 
-	private class Neo4jTransactionDriver extends ForwardingTransactionDriver {
+	private class RemoteTransactionDriver extends ForwardingTransactionDriver implements Neo4jTransactionDriver {
 
-		public Neo4jTransactionDriver(TransactionDriver delegate) {
+		public RemoteTransactionDriver(TransactionDriver delegate) {
 			super( delegate );
+		}
+
+		@Override
+		public Long getTransactionId() {
+			if ( tx == null ) {
+				return null;
+			}
+			return tx.getId();
 		}
 
 		@Override

@@ -29,7 +29,7 @@ public interface QueryableGridDialect<T extends Serializable> extends GridDialec
 	 * @param queryParameters parameters passed for this query
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-	ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters);
+	ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters, QueryContext queryContext);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.

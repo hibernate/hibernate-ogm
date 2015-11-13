@@ -21,6 +21,7 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -92,6 +93,11 @@ public class EmbeddableStateFinderTest {
 
 			@Override
 			public OperationsQueue getOperationsQueue() {
+				return null;
+			}
+
+			@Override
+			public TransactionCoordinator getTransactionCoordinator() {
 				return null;
 			}
 		};

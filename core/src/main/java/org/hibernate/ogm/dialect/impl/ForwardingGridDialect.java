@@ -22,6 +22,7 @@ import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDi
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryContext;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -181,8 +182,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	 */
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
-		return queryableGridDialect.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters, QueryContext context) {
+		return queryableGridDialect.executeBackendQuery( query, queryParameters, context);
 	}
 
 	@Override

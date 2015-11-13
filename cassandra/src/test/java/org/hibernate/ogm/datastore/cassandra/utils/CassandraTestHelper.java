@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Table;
@@ -79,6 +80,11 @@ public class CassandraTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		CassandraDatastoreProvider cassandraDatastoreProvider = getProvider( sessionFactory );
 		long count = 0;
@@ -92,6 +98,11 @@ public class CassandraTestHelper implements TestableGridDialect {
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -142,9 +153,9 @@ public class CassandraTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 
-		CassandraDatastoreProvider provider = getProvider( sessionFactory );
+		CassandraDatastoreProvider provider = getProvider( session.getSessionFactory() );
 
 
 		Select select = select().all().from( quote( key.getTable() ) );

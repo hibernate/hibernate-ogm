@@ -26,10 +26,12 @@ public class RemoteNodesTupleIterator extends RemoteMapsTupleIterator {
 	private final Neo4jClient dataBase;
 	private final RemoteNeo4jEntityQueries entityQueries;
 	private final OgmEntityPersister ogmEntityPersister;
+	private final Long txId;
 
-	public RemoteNodesTupleIterator(Neo4jClient dataBase, RemoteNeo4jEntityQueries entityQueries, StatementsResponse result, EntityKeyMetadata entityKeyMetadata, OgmEntityPersister ogmEntityPersister) {
+	public RemoteNodesTupleIterator(Neo4jClient dataBase,Long txId, RemoteNeo4jEntityQueries entityQueries, StatementsResponse result, EntityKeyMetadata entityKeyMetadata, OgmEntityPersister ogmEntityPersister) {
 		super( result );
 		this.dataBase = dataBase;
+		this.txId = txId;
 		this.entityQueries = entityQueries;
 		this.entityKeyMetadata = entityKeyMetadata;
 		this.ogmEntityPersister = ogmEntityPersister;
@@ -41,6 +43,6 @@ public class RemoteNodesTupleIterator extends RemoteMapsTupleIterator {
 	}
 
 	private Tuple createTuple(Node node) {
-		return new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, entityQueries, node, entityKeyMetadata, ogmEntityPersister ) );
+		return new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, entityKeyMetadata, ogmEntityPersister ) );
 	}
 }

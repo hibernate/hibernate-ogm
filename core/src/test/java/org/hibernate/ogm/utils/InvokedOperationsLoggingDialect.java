@@ -29,6 +29,7 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryContext;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -166,8 +167,8 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
-		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, QueryContext context) {
+		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters, context );
 		log( "executeBackendQuery", query.toString() + ", " + queryParameters.toString(), "tbd." );
 		return result;
 	}

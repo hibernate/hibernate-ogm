@@ -37,7 +37,7 @@ public class RemoteLocalTransactionCoordinator extends ForwardingTransactionCoor
 	@Override
 	public TransactionDriver getTransactionDriverControl() {
 		TransactionDriver driver = super.getTransactionDriverControl();
-		return new Neo4jTransactionDriver( driver );
+		return new RemoteTransactionDriver( driver );
 	}
 
 	private void success() {
@@ -54,10 +54,18 @@ public class RemoteLocalTransactionCoordinator extends ForwardingTransactionCoor
 		}
 	}
 
-	private class Neo4jTransactionDriver extends ForwardingTransactionDriver {
+	private class RemoteTransactionDriver extends ForwardingTransactionDriver implements Neo4jTransactionDriver {
 
-		public Neo4jTransactionDriver(TransactionDriver delegate) {
+		public RemoteTransactionDriver(TransactionDriver delegate) {
 			super( delegate );
+		}
+
+		@Override
+		public Long getTransactionId() {
+			if ( tx == null ) {
+				return null;
+			}
+			return tx.getId();
 		}
 
 		@Override

@@ -35,14 +35,14 @@ public class RemoteNeo4jAssociationQueries extends AssociationQueries {
 		super( ownerEntityKeyMetadata, associationKeyMetadata );
 	}
 
-	public void removeAssociation(Neo4jClient dataBase, AssociationKey associationKey) {
-		executeQuery( dataBase, removeAssociationQuery, params( associationKey.getEntityKey().getColumnValues() ) );
+	public void removeAssociation(Neo4jClient dataBase, Long txId, AssociationKey associationKey) {
+		executeQuery( dataBase, txId, removeAssociationQuery, params( associationKey.getEntityKey().getColumnValues() ) );
 	}
 
-	public Relationship findRelationship(Neo4jClient dataBase, AssociationKey associationKey, RowKey rowKey) {
+	public Relationship findRelationship(Neo4jClient dataBase, Long txId, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues = relationshipValues( associationKey, rowKey );
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
-		List<StatementResult> results = executeQuery( dataBase, findRelationshipQuery, params( queryValues ) );
+		List<StatementResult> results = executeQuery( dataBase, txId, findRelationshipQuery, params( queryValues ) );
 		if ( results != null ) {
 			Row row = results.get( 0 ).getData().get( 0 );
 			if ( row.getGraph().getRelationships().size() > 0 ) {
@@ -52,32 +52,32 @@ public class RemoteNeo4jAssociationQueries extends AssociationQueries {
 		return null;
 	}
 
-	public Relationship createRelationshipForEmbeddedAssociation(Neo4jClient executionEngine, AssociationKey associationKey, EntityKey embeddedKey,
+	public Relationship createRelationshipForEmbeddedAssociation(Neo4jClient executionEngine, Long txId, AssociationKey associationKey, EntityKey embeddedKey,
 			Object[] relationshipProperties) {
 		String query = initCreateEmbeddedAssociationQuery( associationKey, embeddedKey );
 		Object[] queryValues = createRelationshipForEmbeddedQueryValues( associationKey, embeddedKey, relationshipProperties );
 		Map<String, Object> params = params( queryValues );
-		List<StatementResult> result = executeQuery( executionEngine, query, params );
+		List<StatementResult> result = executeQuery( executionEngine, txId, query, params );
 		return result.get( 0 ).getData().get( 0 ).getGraph().getRelationships().get( 0 );
 	}
 
-	public Relationship createRelationship(Neo4jClient dataBase, Object[] ownerKeyValues, Object[] targetKeyValues, Object[] relationshipProperties) {
+	public Relationship createRelationship(Neo4jClient dataBase, Long txId, Object[] ownerKeyValues, Object[] targetKeyValues, Object[] relationshipProperties) {
 		Object[] concat = ArrayHelper.concat( Arrays.asList( ownerKeyValues, targetKeyValues, relationshipProperties ) );
 		Map<String, Object> params = params( concat );
-		List<StatementResult> results = executeQuery( dataBase, createRelationshipQuery, params );
+		List<StatementResult> results = executeQuery( dataBase, txId, createRelationshipQuery, params );
 		return results.get( 0 ).getData().get( 0 ).getGraph().getRelationships().get( 0 );
 	}
 
-	public void removeAssociationRow(Neo4jClient database, AssociationKey associationKey, RowKey rowKey) {
+	public void removeAssociationRow(Neo4jClient database, Long txId, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues = relationshipValues( associationKey, rowKey );
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
-		executeQuery( database, removeAssociationRowQuery, params( queryValues ) );
+		executeQuery( database, txId, removeAssociationRowQuery, params( queryValues ) );
 	}
 
-	private static List<StatementResult> executeQuery(Neo4jClient executionEngine, String query, Map<String, Object> properties) {
+	private static List<StatementResult> executeQuery(Neo4jClient executionEngine, Long txId, String query, Map<String, Object> properties) {
 		Statements statements = new Statements();
 		statements.addStatement( query, properties );
-		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( statements );
+		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( txId, statements );
 		validate( statementsResponse );
 		List<StatementResult> results = statementsResponse.getResults();
 		if ( results == null || results.isEmpty() ) {

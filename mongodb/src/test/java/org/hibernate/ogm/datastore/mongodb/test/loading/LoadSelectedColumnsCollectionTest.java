@@ -156,7 +156,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
-				new Tuple( new MongoDBTupleSnapshot( null, null, null ) )
+				new Tuple( new MongoDBTupleSnapshot( null, null, null ) ),
+				null
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
