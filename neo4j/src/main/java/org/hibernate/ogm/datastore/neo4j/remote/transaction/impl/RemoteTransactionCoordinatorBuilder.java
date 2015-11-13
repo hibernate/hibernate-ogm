@@ -14,7 +14,7 @@ import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
- * Builder for {@link Neo4jTransactionCoordinator}.
+ * Builder for a Neo4j remote {@link TransactionCoordinator}.
  *
  * @author Davide D'Alto
  */

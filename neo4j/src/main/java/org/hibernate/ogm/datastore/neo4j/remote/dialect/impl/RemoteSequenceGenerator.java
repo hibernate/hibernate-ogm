@@ -101,9 +101,7 @@ public class RemoteSequenceGenerator {
 	/**
 	 * Create the sequence nodes setting the initial value if the node does not exists already.
 	 * <p>
-	 * All nodes are created inside the same transaction
-	 *
-	 * @param identifierGenerators the generators representing the sequences
+	 * All nodes are created inside the same transaction.
 	 */
 	public void createSequencesConstraints(Statements statements, Iterable<Sequence> sequences) {
 		addUniqueConstraintForSequences( statements );
