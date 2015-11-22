@@ -35,6 +35,8 @@ import org.hibernate.persister.entity.EntityPersister;
  * @author Gunnar Morling
  */
 public class AssociationPersister {
+	private static final Log log = LoggerFactory.make();
+
 	private GridType keyGridType;
 	private Object key;
 	private SessionImplementor session;
@@ -220,7 +222,7 @@ public class AssociationPersister {
 	 * Returns an {@link AssociationContext} to be passed to {@link GridDialect} operations targeting the association
 	 * managed by this persister.
 	 */
-	private AssociationContext getAssociationContext() {
+	public AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
 			associationContext = new AssociationContextImpl(
 					associationTypeContext,
