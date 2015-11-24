@@ -37,6 +37,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
@@ -53,8 +54,9 @@ public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
 	private static final String TX_CONTROL_CLASS_NAME = "com.arjuna.ats.arjuna.coordinator.TxControl";
-	private static final GridDialectType gridDialectType = determineGridDialectType();
-	private static final TestableGridDialect helper = instantiate( gridDialectType.loadTestableGridDialectClass() );
+	private static final GridModule GRID_MODULE = determineGridModule();
+	private static final TestableGridDialect helper = instantiate( GRID_MODULE.loadTestableGridDialectClass() );
+	private static final GridDialectType GRID_DIALECT_TYPE = determineGridDialectType();
 
 	static {
 		Class<?> txControlClass = loadClass( TX_CONTROL_CLASS_NAME );
@@ -80,14 +82,25 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
-	private static GridDialectType determineGridDialectType() {
-		for ( GridDialectType gridType : GridDialectType.values() ) {
+	private static GridModule determineGridModule() {
+		for ( GridModule gridType : GridModule.values() ) {
 			Class<TestableGridDialect> testDialectClass = gridType.loadTestableGridDialectClass();
 			if ( testDialectClass != null ) {
 				return gridType;
 			}
 		}
 
+		return GridModule.HASHMAP;
+	}
+
+	private static GridDialectType determineGridDialectType() {
+		Class<? extends GridDialect> gridDialectClass = getCurrentGridDialect();
+		for ( GridDialectType gridDialectType : GridDialectType.values() ) {
+			Class<TestableGridDialect> testDialectClass = gridDialectType.loadGridDialectClass();
+			if ( testDialectClass != null && testDialectClass.isAssignableFrom( gridDialectClass ) ) {
+				return gridDialectType;
+			}
+		}
 		return GridDialectType.HASHMAP;
 	}
 
@@ -110,12 +123,18 @@ public class TestHelper {
 		return getNumberOfEntities( em.unwrap( Session.class ) );
 	}
 
+	public static GridModule getCurrentModule() {
+		return GRID_MODULE;
+	}
 	public static GridDialectType getCurrentDialectType() {
-		return gridDialectType;
+		return GRID_DIALECT_TYPE;
 	}
 
 	public static AvailableDatastoreProvider getCurrentDatastoreProvider() {
 		return DatastoreProviderHolder.INSTANCE;
+	}
+	public static Class<? extends GridDialect> getCurrentGridDialect() {
+		return GridDialectHolder.INSTANCE;
 	}
 
 	public static GridDialect getCurrentGridDialect(DatastoreProvider datastoreProvider) {
@@ -206,7 +225,7 @@ public class TestHelper {
 	}
 
 	public static StandardServiceRegistry getDefaultTestStandardServiceRegistry(Map<String, Object> settings) {
-		TestHelper.getCurrentDialectType();
+		TestHelper.getCurrentModule();
 
 		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
 
@@ -257,9 +276,10 @@ public class TestHelper {
 		return configurable.configureOptionsFor( datastoreType );
 	}
 
-	private static Class<?> loadClass(String className) {
+	@SuppressWarnings("unchecked")
+	static <T> Class<T> loadClass(String className) {
 		try {
-			return Class.forName( className, true, TestHelper.class.getClassLoader() );
+			return (Class<T>) Class.forName( className, true, TestHelper.class.getClassLoader() );
 		}
 		catch ( ClassNotFoundException e ) {
 			//ignore -- try using the class loader of context first
@@ -270,7 +290,7 @@ public class TestHelper {
 		try {
 			ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 			if ( contextClassLoader != null ) {
-				return Class.forName( className, false, contextClassLoader );
+				return (Class<T>) Class.forName( className, false, contextClassLoader );
 			}
 			else {
 				return null;
@@ -281,25 +301,119 @@ public class TestHelper {
 		}
 	}
 
+	private static class GridDialectHolder {
+
+		private static final Class<? extends GridDialect> INSTANCE = getGridDialect();
+
+		private static Class<? extends GridDialect> getGridDialect() {
+			Object gridDialect = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
+					.getService( GridDialect.class );
+
+			return GridDialects.getWrappedDialect( (GridDialect) gridDialect );
+		}
+
+		private static AvailableDatastoreProvider findByShortName(String value) {
+			if ( AvailableDatastoreProvider.isShortName( value ) ) {
+				return AvailableDatastoreProvider.byShortName( value );
+			}
+			return null;
+		}
+
+		private static AvailableDatastoreProvider findByExactClassName(String value) {
+			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+				if ( provider.getDatastoreProviderClassName().equals( value ) ) {
+					return provider;
+				}
+			}
+			return null;
+		}
+
+		private static AvailableDatastoreProvider findByAssignableType(String value) {
+			Class<?> configuredProviderClass = loadClass( value );
+			if ( configuredProviderClass == null ) {
+				return null;
+			}
+
+			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+				Class<?> availableProviderClass = loadClass( provider.getDatastoreProviderClassName() );
+
+				if ( availableProviderClass != null &&
+						availableProviderClass.isAssignableFrom( configuredProviderClass ) ) {
+					return provider;
+				}
+			}
+			return null;
+		}
+	}
+
 	private static class DatastoreProviderHolder {
 
 		private static final AvailableDatastoreProvider INSTANCE = getDatastoreProvider();
 
 		private static AvailableDatastoreProvider getDatastoreProvider() {
-			// This ignores the case where the provider is given as class or FQN; That's ok for now, can be extended if
-			// needed
 			Object datastoreProviderProperty = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
-				.getService( ConfigurationService.class )
-				.getSettings()
-				.get( OgmProperties.DATASTORE_PROVIDER );
+					.getService( ConfigurationService.class )
+					.getSettings()
+					.get( OgmProperties.DATASTORE_PROVIDER );
 
-			AvailableDatastoreProvider provider = datastoreProviderProperty != null ? AvailableDatastoreProvider.byShortName( datastoreProviderProperty.toString() ) : null;
-
-			if ( provider == null ) {
-				throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );
+			if ( datastoreProviderProperty == null ) {
+				return null;
 			}
 
-			return provider;
+			String value = datastoreProviderProperty.toString();
+
+			// try to resolve by short name
+			AvailableDatastoreProvider byShortName = findByShortName( value );
+			if ( byShortName != null ) {
+				return byShortName;
+			}
+
+			// try to resolve by exact class name
+			AvailableDatastoreProvider byClassName = findByExactClassName( value );
+			if ( byClassName != null ) {
+				return byClassName;
+			}
+
+			// try to resolve by assignable type (allows matching on subtypes of a data store provider)
+			AvailableDatastoreProvider byAssignableType = findByAssignableType( value );
+			if ( byAssignableType != null ) {
+				return byAssignableType;
+			}
+
+			throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );
+		}
+
+		private static AvailableDatastoreProvider findByShortName(String value) {
+			if ( AvailableDatastoreProvider.isShortName( value ) ) {
+				return AvailableDatastoreProvider.byShortName( value );
+			}
+			return null;
+		}
+
+		private static AvailableDatastoreProvider findByExactClassName(String value) {
+			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+				if ( provider.getDatastoreProviderClassName().equals( value ) ) {
+					return provider;
+				}
+			}
+			return null;
+		}
+
+		private static AvailableDatastoreProvider findByAssignableType(String value) {
+			Class<?> configuredProviderClass = loadClass( value );
+			if ( configuredProviderClass == null ) {
+				return null;
+			}
+
+			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+				Class<?> availableProviderClass = loadClass( provider.getDatastoreProviderClassName() );
+
+				if ( availableProviderClass != null &&
+						availableProviderClass.isAssignableFrom( configuredProviderClass ) ) {
+					return provider;
+				}
+			}
+			return null;
 		}
 	}
 }

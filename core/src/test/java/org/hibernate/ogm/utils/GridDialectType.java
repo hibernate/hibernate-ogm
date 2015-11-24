@@ -17,46 +17,34 @@ package org.hibernate.ogm.utils;
 */
 public enum GridDialectType {
 
-	HASHMAP( "org.hibernate.ogm.utils.HashMapTestHelper", false, false ) {
-		@Override public Class<TestableGridDialect> loadTestableGridDialectClass() {
-			return null; //this one is special, we want it only as fallback when all others fail
-		}
-	},
+	HASHMAP( "org.hibernate.ogm.datastore.map.impl.MapDialect", false, false ),
 
-	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper", false, false ),
+	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.InfinispanDialect", false, false),
 
-	EHCACHE( "org.hibernate.ogm.datastore.ehcache.utils.EhcacheTestHelper", false, false ),
+	EHCACHE( "org.hibernate.ogm.datastore.ehcache.EhcacheDialect", false, false ),
 
-	MONGODB( "org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper", true, true ),
+	MONGODB( "org.hibernate.ogm.datastore.mongodb.MongoDBDialect", true, true ),
 
-	NEO4J( "org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper", false, true ),
+	NEO4J( "org.hibernate.ogm.datastore.neo4j.Neo4jDialect", false, true),
 
-	COUCHDB( "org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper", true, false ),
+	COUCHDB( "org.hibernate.ogm.datastore.couchdb.CouchDBDialect", true, false ),
 
-	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.utils.CassandraTestHelper", false, false ),
+	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false  ),
 
-	REDIS( "org.hibernate.ogm.datastore.redis.utils.RedisTestHelper", false, false );
+	REDIS( "org.hibernate.ogm.datastore.redis.RedisDialect", false, false );
 
-	private final String testHelperClassName;
+	private final String dialectClassName;
 	private final boolean isDocumentStore;
 	private final boolean supportsQueries;
 
-	GridDialectType(String testHelperClassName, boolean isDocumentStore, boolean supportsQueries) {
-		this.testHelperClassName = testHelperClassName;
+	GridDialectType(String dialectClassName, boolean isDocumentStore, boolean supportsQueries) {
+		this.dialectClassName = dialectClassName;
 		this.isDocumentStore = isDocumentStore;
 		this.supportsQueries = supportsQueries;
 	}
 
-	@SuppressWarnings("unchecked")
-	public Class<TestableGridDialect> loadTestableGridDialectClass() {
-		Class<TestableGridDialect> classForName = null;
-		try {
-			classForName = (Class<TestableGridDialect>) Class.forName( testHelperClassName );
-		}
-		catch (ClassNotFoundException e) {
-			//ignore this: might not be available
-		}
-		return classForName;
+	public Class<TestableGridDialect> loadGridDialectClass() {
+		return TestHelper.loadClass( dialectClassName );
 	}
 
 	/**

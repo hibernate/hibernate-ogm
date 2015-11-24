@@ -7,6 +7,8 @@
 package org.hibernate.ogm.utils;
 
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -28,7 +30,7 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 	@Override
 	public void run(RunNotifier notifier) {
 		if ( isTestClassSkipped() || areAllTestMethodsSkipped() ) {
-			notifier.fireTestIgnored( Description.createSuiteDescription( super.getTestClass().getJavaClass() ) );
+			skipTest( notifier );
 		}
 		else {
 			super.run( notifier );
@@ -38,20 +40,32 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 	@Override
 	protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
 		if ( isTestMethodSkipped( method ) ) {
-			notifier.fireTestIgnored( describeChild( method ) );
+			skipTest( method, notifier );
 		}
 		else {
 			super.runChild( method, notifier );
 		}
 	}
 
-	protected boolean isTestClassSkipped() {
-		return isTestClassSkippedByDialect() || isTestClassSkippedByDatastoreProvider();
+	/**
+	 * Skip a whole test class.
+	 */
+	protected void skipTest(RunNotifier notifier) {
+		notifier.fireTestIgnored( Description.createSuiteDescription( super.getTestClass().getJavaClass() ) );
 	}
 
-	private boolean isTestClassSkippedByDialect() {
-		SkipByGridDialect skipByGridDialect = getTestClass().getJavaClass().getAnnotation( SkipByGridDialect.class );
-		return skipByGridDialect != null ? isSkipped( skipByGridDialect ) : false;
+	/**
+	 * Skip a test method.
+	 */
+	protected void skipTest(FrameworkMethod method, RunNotifier notifier) {
+		notifier.fireTestIgnored( describeChild( method ) );
+	}
+
+	/**
+	 * Whether the test class is skipped by {@link SkipByDatastoreProvider}.
+	 */
+	protected boolean isTestClassSkipped() {
+		return isTestClassSkippedByDatastoreProvider() || isTestClassSkippedByGridDialect();
 	}
 
 	private boolean isTestClassSkippedByDatastoreProvider() {
@@ -59,34 +73,35 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 		return skipByDatastoreProvider != null ? isSkipped( skipByDatastoreProvider ) : false;
 	}
 
+	private boolean isTestClassSkippedByGridDialect() {
+		SkipByGridDialect skipByGridDialect = getTestClass().getJavaClass().getAnnotation( SkipByGridDialect.class );
+
+		return skipByGridDialect != null ? isSkipped( skipByGridDialect ) : false;
+	}
+
+
 	/**
-	 * Whether the given method is to be skipped or not, by means of the {@link SkipByGridDialect} either given on the
+	 * Whether the given method is to be skipped or not, by means of the {@link SkipByDatastoreProvider} or {@link SkipByGridDialect} either given on the
 	 * method itself or on the class of the test.
 	 */
 	protected boolean isTestMethodSkipped(final FrameworkMethod method) {
-		if ( isTestMethodSkippedByDialect( method ) || isTestMethodSkippedByDatastoreProvider( method ) ) {
+		if ( isTestMethodSkippedByDatastoreProvider( method ) || isTestMethodSkippedByGridDialect( method ) ) {
 			return true;
 		}
 
 		return isTestClassSkipped();
 	}
 
-	private boolean isTestMethodSkippedByDialect(FrameworkMethod method) {
-		SkipByGridDialect skipByGridDialect = method.getAnnotation( SkipByGridDialect.class );
-		if ( skipByGridDialect != null ) {
-			return isSkipped( skipByGridDialect );
-		}
-
-		return false;
-	}
-
 	private boolean isTestMethodSkippedByDatastoreProvider(FrameworkMethod method) {
 		SkipByDatastoreProvider skipByDatastoreProvider = method.getAnnotation( SkipByDatastoreProvider.class );
-		if ( skipByDatastoreProvider != null ) {
-			return isSkipped( skipByDatastoreProvider );
-		}
 
-		return false;
+		return skipByDatastoreProvider != null ? isSkipped( skipByDatastoreProvider ) : false;
+	}
+
+	private boolean isTestMethodSkippedByGridDialect(FrameworkMethod method) {
+		SkipByGridDialect skipByGridDialect = method.getAnnotation( SkipByGridDialect.class );
+
+		return skipByGridDialect != null ? isSkipped( skipByGridDialect ) : false;
 	}
 
 	protected boolean areAllTestMethodsSkipped() {
@@ -99,16 +114,6 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 		return true;
 	}
 
-	private boolean isSkipped(SkipByGridDialect skipByGridDialect) {
-		for ( GridDialectType gridDialectType : skipByGridDialect.value() ) {
-			if ( gridDialectType.equals( TestHelper.getCurrentDialectType() ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private boolean isSkipped(SkipByDatastoreProvider skipByDatastoreProvider) {
 		for ( AvailableDatastoreProvider datastoreProvider : skipByDatastoreProvider.value() ) {
 			if ( datastoreProvider == TestHelper.getCurrentDatastoreProvider() ) {
@@ -118,4 +123,21 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 
 		return false;
 	}
+
+	private boolean isSkipped(SkipByGridDialect skipByGridDialect) {
+		Class<? extends GridDialect> actualGridDialectClass = TestHelper.getCurrentGridDialect();
+
+		for ( GridDialectType gridDialectType : skipByGridDialect.value() ) {
+			Class<TestableGridDialect> gridDialectClass = gridDialectType.loadGridDialectClass();
+			if ( gridDialectClass == null ) {
+				continue;
+			}
+
+			if ( gridDialectClass.isAssignableFrom( actualGridDialectClass ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

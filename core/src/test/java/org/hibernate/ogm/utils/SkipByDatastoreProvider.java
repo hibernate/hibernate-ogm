@@ -24,12 +24,12 @@ import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 public @interface SkipByDatastoreProvider {
 
 	/**
-	 * The datastore provider(s) on which to skip the test
+	 * The datastore provider(s) on which to skip the test.
 	 */
 	AvailableDatastoreProvider[] value();
 
 	/**
-	 * Optional comment describing the reason for skipping the test
+	 * Optional comment describing the reason for skipping the test.
 	 */
 	String comment() default "";
 
