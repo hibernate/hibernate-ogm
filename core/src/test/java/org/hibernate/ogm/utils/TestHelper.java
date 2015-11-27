@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.utils;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,6 +43,8 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -123,9 +123,6 @@ public class TestHelper {
 		return getNumberOfEntities( em.unwrap( Session.class ) );
 	}
 
-	public static GridModule getCurrentModule() {
-		return GRID_MODULE;
-	}
 	public static GridDialectType getCurrentDialectType() {
 		return GRID_DIALECT_TYPE;
 	}
@@ -225,8 +222,6 @@ public class TestHelper {
 	}
 
 	public static StandardServiceRegistry getDefaultTestStandardServiceRegistry(Map<String, Object> settings) {
-		TestHelper.getCurrentModule();
-
 		StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
 
 		for ( Entry<String, String> setting : getDefaultTestSettings().entrySet() ) {
