@@ -27,6 +27,7 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.PostLoadEvent;
 import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
@@ -791,11 +792,14 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 
 		//important: reuse the same event instances for performance!
 		final PreLoadEvent pre;
+		final PostLoadEvent post;
 		if ( session.isEventSource() ) {
 			pre = new PreLoadEvent( (EventSource) session );
+			post = new PostLoadEvent( (EventSource) session );
 		}
 		else {
 			pre = null;
+			post = null;
 		}
 
 		if ( hydratedObjects != null ) {
@@ -820,6 +824,11 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 			}
 		}
 
+		if ( hydratedObjects != null ) {
+			for ( Object hydratedObject : hydratedObjects ) {
+				TwoPhaseLoad.postLoad( hydratedObject, session, post );
+			}
+		}
 	}
 
 	/**
