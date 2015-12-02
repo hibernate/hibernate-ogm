@@ -210,8 +210,8 @@ If you use maven, it should look like this:
 [subs="verbatim,attributes"]
 ----
 <dependency>
-    <groupId>org.jboss.jbossts</groupId>
-    <artifactId>jbossjta</artifactId>
+    <groupId>org.jboss.narayana.jta</groupId>
+    <artifactId>narayana-jta</artifactId>
     <version>{jboss-jta-version}</version>
 </dependency>
 ----
