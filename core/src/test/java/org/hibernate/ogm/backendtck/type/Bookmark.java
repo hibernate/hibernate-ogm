@@ -63,9 +63,17 @@ public class Bookmark {
 	@Type(type = "numeric_boolean")
 	private boolean isShared;
 
-	// byte arrays
+	// Lobs
 	@Lob
 	private byte[] lob;
+
+	@Lob
+	private String lobWithString;
+
+	@Lob
+	private Long lobWithLong;
+
+	// byte arrays
 	private byte[] data;
 
 	// enum type
@@ -313,5 +321,21 @@ public class Bookmark {
 
 	public void setDelimiter(Character delimiter) {
 		this.delimiter = delimiter;
+	}
+
+	public String getLobWithString() {
+		return lobWithString;
+	}
+
+	public void setLobWithString(String clob) {
+		this.lobWithString = clob;
+	}
+
+	public Long getLobWithLong() {
+		return lobWithLong;
+	}
+
+	public void setLobWithLong(Long lobWithLong) {
+		this.lobWithLong = lobWithLong;
 	}
 }
