@@ -36,7 +36,7 @@ public class BufferingGridTypeDescriptor implements GridTypeDescriptor {
 			@Override
 			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
 
-				byte[] byteArray = (byte[]) javaTypeDescriptor.unwrap( value, value.getClass(), options );
+				byte[] byteArray = javaTypeDescriptor.unwrap( value, byte[].class, options );
 				ByteBuffer byteBuffer = ByteBuffer.wrap( byteArray.clone() );
 				resultset.put( names[0], byteBuffer );
 			}
