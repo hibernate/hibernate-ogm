@@ -48,9 +48,11 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
+import org.hibernate.ogm.type.impl.SerializableAsStringType;
 import org.hibernate.ogm.type.impl.StringType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.BinaryType;
+import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
@@ -299,6 +301,10 @@ public class CouchDBDialect extends BaseGridDialect {
 		}
 		else if ( type == BinaryType.INSTANCE ) {
 			return CouchDBBlobType.INSTANCE;
+		}
+		else if ( type instanceof SerializableToBlobType ) {
+			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
+			return new SerializableAsStringType<>( exposedType.getJavaTypeDescriptor() );
 		}
 
 		return null;

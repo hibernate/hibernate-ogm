@@ -19,6 +19,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.EnumType;
+import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.Type;
 import org.hibernate.usertype.UserType;
 
@@ -60,6 +61,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		tmpMap.put( org.hibernate.type.CalendarType.INSTANCE, CalendarType.INSTANCE );
 		tmpMap.put( org.hibernate.type.BinaryType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
 		tmpMap.put( org.hibernate.type.MaterializedBlobType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
+		tmpMap.put( org.hibernate.type.MaterializedClobType.INSTANCE, StringType.INSTANCE );
 		tmpMap.put( org.hibernate.type.ImageType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
 		tmpMap.put( org.hibernate.type.UUIDBinaryType.INSTANCE, UUIDType.INSTANCE );
 		tmpMap.put( org.hibernate.type.UUIDCharType.INSTANCE, UUIDType.INSTANCE );
@@ -77,6 +79,10 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		GridType dialectType = dialect.overrideType( type );
 		if ( dialectType != null ) {
 			return dialectType;
+		}
+		else if ( type instanceof SerializableToBlobType ) {
+			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
+			return new SerializableAsByteArrayType<>( exposedType.getJavaTypeDescriptor() );
 		}
 		else if ( type instanceof AbstractStandardBasicType ) {
 			AbstractStandardBasicType<?> exposedType = (AbstractStandardBasicType<?>) type;
