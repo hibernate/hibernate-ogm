@@ -91,9 +91,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.ejb</groupId>
-            <artifactId>ejb-api</artifactId>
-            <version>3.0</version>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <version>1.0.0.Final</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -104,7 +104,7 @@
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
-            <version>1.0-SP4</version>
+            <version>1.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -129,8 +129,8 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <version.wildfly>10.0.0.Beta2</version.wildfly>
-                <version.org.wildfly.arquillian>1.0.0.Alpha5</version.org.wildfly.arquillian>
+                <version.wildfly>10.0.0.CR4</version.wildfly>
+                <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
                 <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
             </properties>
             <dependencies>
