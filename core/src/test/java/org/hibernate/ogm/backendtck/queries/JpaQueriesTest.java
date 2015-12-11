@@ -152,10 +152,12 @@ public class JpaQueriesTest extends JpaTestCase {
 
 	@After
 	public void closeEmAndRemoveEntities() throws Exception {
-		em.getTransaction().commit();
-		removeEntities();
-		em.close();
-
+		//Do not hide the real cause with an NPE if there are initialisation issues:
+		if ( em != null ) {
+			em.getTransaction().commit();
+			removeEntities();
+			em.close();
+		}
 	}
 
 	@Override
