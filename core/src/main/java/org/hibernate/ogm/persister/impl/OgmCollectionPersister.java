@@ -88,8 +88,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridDialect gridDialect;
 	private final AssociationKeyMetadata associationKeyMetadata;
 
-	private final String nodeName;
-
 	/**
 	 * The {@link OgmCollectionPersister} from the other side of this association in case it represents the main side of
 	 * a bi-directional many-to-many association, {@code null} otherwise.
@@ -159,8 +157,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.associationKind( getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION )
 				.associationType( getAssociationType( collection ) )
 				.build();
-
-		nodeName = collection.getNodeName();
 	}
 
 	private static org.hibernate.ogm.model.key.spi.AssociationType getAssociationType(Collection collection) {
