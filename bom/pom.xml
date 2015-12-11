@@ -44,6 +44,7 @@
         <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
+        <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
@@ -180,7 +181,7 @@
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                <version>1.0.0.Final</version>
+                <version>${jbossJtaAPIVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
