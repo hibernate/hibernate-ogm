@@ -73,8 +73,12 @@
         </module>
 
         <module name="IllegalImport">
+
             <!-- Making sure Jackson 1.x is not used; Jackson 2.x should be used instead-->
             <property name="illegalPkgs" value="org.codehaus.jackson"/>
+
+            <!-- Dom4J is still being used internally by Hibernate ORM but we're getting rid of it. Avoid it in OGM -->
+            <property name="illegalPkgs" value="org.dom4j"/>
         </module>
     </module>
 
