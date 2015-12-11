@@ -14,13 +14,18 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
-
 import org.junit.Test;
 
 /**
  * @author David Williams
  */
+@SkipByGridDialect(
+		value = { GridDialectType.CASSANDRA },
+		comment = "Zoo.animals set - bag semantics unsupported (no primary key)"
+)
 public class PostLoadTest extends JpaTestCase {
 
 	/**
@@ -50,6 +55,34 @@ public class PostLoadTest extends JpaTestCase {
 
 		assertNotNull( zoo );
 		assertEquals( 3, zoo.getNrOfAnimals() );
+
+		em.getTransaction().commit();
+		em.close();
+	}
+
+	@Test
+	public void testFieldSetInPostLoadByListener() {
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+
+		Zoo zoo = new Zoo();
+		zoo.setId( 1 );
+
+		Set<Animal> animals = new HashSet<Animal>();
+		animals.add( createAnimal( "Giraffe" ) );
+		animals.add( createAnimal( "Elephant" ) );
+		animals.add( createAnimal( "Panda" ) );
+		zoo.setAnimals( animals );
+
+		em.persist( zoo );
+		em.getTransaction().commit();
+		em.clear();
+
+		em.getTransaction().begin();
+		zoo = em.find( Zoo.class, zoo.getId() );
+
+		assertNotNull( zoo );
+		assertEquals( 3, zoo.getNrOfAnimalsByListener() );
 
 		em.getTransaction().commit();
 		em.close();

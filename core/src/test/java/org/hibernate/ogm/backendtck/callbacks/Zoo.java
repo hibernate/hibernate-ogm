@@ -8,16 +8,21 @@ package org.hibernate.ogm.backendtck.callbacks;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.Id;
 import javax.persistence.PostLoad;
 import javax.persistence.Transient;
+
+import org.hibernate.ogm.backendtck.callbacks.Zoo.ZooEventListener;
 
 /**
  * @author David Williams
  */
 @Entity
+@EntityListeners(ZooEventListener.class)
 public class Zoo {
 
 	@Id
@@ -27,6 +32,7 @@ public class Zoo {
 	private Set<Animal> animals = new HashSet<Animal>();
 
 	private int nrOfAnimals;
+	private int nrOfAnimalsByListener;
 
 	public Integer getId() {
 		return id;
@@ -49,8 +55,21 @@ public class Zoo {
 		return nrOfAnimals;
 	}
 
+	@Transient
+	public int getNrOfAnimalsByListener() {
+		return nrOfAnimalsByListener;
+	}
+
 	@PostLoad
 	public void postLoad() {
 		nrOfAnimals = animals.size();
+	}
+
+	public static class ZooEventListener {
+
+		@PostLoad
+		public void postLoad(Zoo zoo) {
+			zoo.nrOfAnimalsByListener = zoo.animals.size();
+		}
 	}
 }
