@@ -9,7 +9,6 @@ package org.hibernate.ogm.type.spi;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.dom4j.Node;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
@@ -106,8 +105,6 @@ public interface GridType extends Serializable {
 	 * @return The java type class handled by this type.
 	 */
 	Class<?> getReturnedClass();
-
-	boolean isXMLElement();
 
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
@@ -307,18 +304,6 @@ public interface GridType extends Serializable {
 	throws HibernateException;
 
 	/**
-	 * A representation of the value to be embedded in an XML element.
-	 *
-	 * @param node the XML element
-	 * @param value the object to embed
-	 * @param factory the session factory
-	 *
-	 * @throws HibernateException if an error occurs embedding the value
-	 */
-	void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory)
-	throws HibernateException;
-
-	/**
 	 * A representation of the value to be embedded in a log file.
 	 *
 	 * @param value the object to convert into a string to log
@@ -329,17 +314,6 @@ public interface GridType extends Serializable {
 	 */
 	String toLoggableString(Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
-
-	/**
-	 * Parse the XML representation of an instance.
-	 *
-	 * @param xml the XML node
-	 * @param factory the session factory
-	 * @return an instance of the type
-	 *
-	 * @throws HibernateException if an error occurs
-	 */
-	Object fromXMLNode(Node xml, Mapping factory) throws HibernateException;
 
 	/**
 	 * Returns the abbreviated name of the type.

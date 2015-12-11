@@ -9,7 +9,6 @@ package org.hibernate.ogm.type.impl;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.dom4j.Node;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.NotYetImplementedException;
@@ -141,11 +140,6 @@ public abstract class AbstractGenericBasicType<T>
 		return false;
 	}
 
-	@Override
-	public final boolean isXMLElement() {
-		return false;
-	}
-
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public final boolean isSame(Object x, Object y) {
@@ -264,17 +258,6 @@ public abstract class AbstractGenericBasicType<T>
 	@SuppressWarnings({ "unchecked" })
 	public final String toLoggableString(Object value, SessionFactoryImplementor factory) {
 		return javaTypeDescriptor.extractLoggableRepresentation( (T) value );
-	}
-
-	@Override
-	@SuppressWarnings({ "unchecked" })
-	public final void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory) {
-		node.setText( toString( (T) value ) );
-	}
-
-	@Override
-	public final Object fromXMLNode(Node xml, Mapping factory) {
-		return fromString( xml.getText() );
 	}
 
 	@Override

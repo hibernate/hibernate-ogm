@@ -9,7 +9,6 @@ package org.hibernate.ogm.type.impl;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.dom4j.Node;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
@@ -67,12 +66,6 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
-	@Deprecated
-	public boolean isXMLElement() {
-		return delegate.isXMLElement();
-	}
-
-	@Override
 	public boolean isSame(Object x, Object y) throws HibernateException {
 		return delegate.isSame( x, y );
 	}
@@ -122,20 +115,8 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
-	@Deprecated
-	public void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory) throws HibernateException {
-		delegate.setToXMLNode( node, value, factory );
-	}
-
-	@Override
 	public String toLoggableString(Object value, SessionFactoryImplementor factory) throws HibernateException {
 		return delegate.toLoggableString( value, factory );
-	}
-
-	@Override
-	@Deprecated
-	public Object fromXMLNode(Node xml, Mapping factory) throws HibernateException {
-		return delegate.fromXMLNode( xml, factory );
 	}
 
 	@Override
