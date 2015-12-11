@@ -68,7 +68,7 @@
          So the property needs to be defined in the global parent pom -->
         <hibernate-search.module.slot>main</hibernate-search.module.slot>
         <!-- Following might not match the slot, for example when 'main' is being used. Needed in docs URL rendering. -->
-        <hibernate-search-major-minor-version>5.2</hibernate-search-major-minor-version>
+        <hibernate-search-major-minor-version>5.5</hibernate-search-major-minor-version>
         <!-- For documentation, to omit the slot when not needed: -->
         <hibernate-search-full-module-id>org.hibernate.search.orm</hibernate-search-full-module-id>
     </properties>
