@@ -89,7 +89,7 @@
 
                 <!-- Optional dependencies for infinispan -->
                 <include>org.infinispan:infinispan-lucene-directory</include>
-                <include>org.hibernate:hibernate-search-infinispan</include>
+                <include>org.infinispan:infinispan-directory-provider</include>
             </includes>
         </dependencySet>
 

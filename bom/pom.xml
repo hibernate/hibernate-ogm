@@ -264,10 +264,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <!-- Hibernate Search / Infinispan integration -->
             <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search-infinispan</artifactId>
-                <version>${hibernateSearchVersion}</version>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-directory-provider</artifactId>
+                <version>${infinispanVersion}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>hibernate-search-analyzers</artifactId>

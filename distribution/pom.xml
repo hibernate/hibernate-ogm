@@ -173,8 +173,8 @@
  
         <!-- Not required by the infinispan module itself, but we still want to package these-->
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-directory-provider</artifactId>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
