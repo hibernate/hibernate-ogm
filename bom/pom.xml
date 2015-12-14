@@ -61,7 +61,6 @@
              of these libraries through this BOM, these versions are for internal usage to make sure the right
              JARs end up in the C* driver WildFly module
         -->
-        <nettyVersion>3.9.0.Final</nettyVersion>
         <codahaleMetricsVersion>3.0.2</codahaleMetricsVersion>
         <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
         <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->

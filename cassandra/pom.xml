@@ -90,6 +90,17 @@
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty-handler</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>netty-handler</artifactId>
+            <groupId>io.netty</groupId>
+            <version>${netty4Version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
