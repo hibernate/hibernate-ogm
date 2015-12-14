@@ -587,6 +587,9 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 				addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
 				tuples.add( new Tuple( new RedisTupleSnapshot( entity.getProperties() ) ) );
 			}
+			else {
+				tuples.add( null );
+			}
 			i++;
 		}
 
