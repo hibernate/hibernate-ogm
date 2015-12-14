@@ -160,9 +160,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
-		DBCursor cursor = this.getObjects( keys, tupleContext );
+		if ( keys.length == 0 ) {
+			return Collections.emptyList();
+		}
+
+		Object[] searchObjects = new Object[keys.length];
+		for ( int i = 0; i < keys.length; i++ ) {
+			searchObjects[i] = prepareIdObjectValue( keys[i].getColumnNames(), keys[i].getColumnValues() );
+		}
+
+		DBCursor cursor = this.getObjects( keys[0].getMetadata(), searchObjects, tupleContext );
 		try {
-			return tuplesResult( keys, tupleContext, cursor );
+			return tuplesResult( keys, searchObjects, tupleContext, cursor );
 		}
 		finally {
 			if ( cursor != null ) {
@@ -175,12 +184,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * This method assumes that the entries in the cursor might not be in the same order as the keys and some keys might
 	 * not have a matching result in the db.
 	 */
-	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, DBCursor cursor) {
+	private List<Tuple> tuplesResult(EntityKey[] keys, Object[] searchObjects, TupleContext tupleContext, DBCursor cursor) {
 		// The list is initialized with null because some keys might not have a corresponding value in the cursor
-		List<Tuple> tuples = createResultListWitNulls( keys );
+		List<Tuple> tuples = createResultListWitNulls( searchObjects.length );
 		for ( DBObject dbObject : cursor ) {
-			for ( int i = 0; i < keys.length; i++ ) {
-				if ( matches( dbObject, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
+			for ( int i = 0; i < searchObjects.length; i++ ) {
+				if ( dbObject.get( ID_FIELDNAME ).equals( searchObjects[i] ) ) {
 					tuples.set( i, createTuple( keys[i], tupleContext, dbObject ) );
 				}
 			}
@@ -188,17 +197,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return tuples;
 	}
 
-	private List<Tuple> createResultListWitNulls(EntityKey[] keys) {
-		List<Tuple> tuples = new ArrayList<>( keys.length );
-		for ( int i = 0; i < keys.length; i++ ) {
+	private List<Tuple> createResultListWitNulls(int length) {
+		List<Tuple> tuples = new ArrayList<>( length );
+		for ( int i = 0; i < length; i++ ) {
 			tuples.add( null );
 		}
 		return tuples;
-	}
-
-	private boolean matches(DBObject dbObject, String[] names, Object[] values) {
-		Object idValue = prepareIdObjectValue( names, values );
-		return dbObject.get( ID_FIELDNAME ).equals( idValue );
 	}
 
 	private Tuple createTuple(EntityKey key, TupleContext tupleContext, DBObject found) {
@@ -260,16 +264,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collection.findOne( searchObject, projection, readPreference );
 	}
 
-	private DBCursor getObjects(EntityKey[] keys, TupleContext tupleContext) {
+	private DBCursor getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext tupleContext) {
 		ReadPreference readPreference = getReadPreference( tupleContext );
 
-		DBCollection collection = getCollection( keys[0].getMetadata() );
+		DBCollection collection = getCollection( entityKeyMetadata );
 		collection.setReadPreference( readPreference );
 
-		Object[] searchObjects = new Object[keys.length];
-		for ( int i = 0; i < keys.length; i++ ) {
-			searchObjects[i] = prepareIdObjectValue( keys[i].getColumnNames(), keys[i].getColumnValues() );
-		}
 		BasicDBObject projection = getProjection( tupleContext );
 
 		DBObject query = new BasicDBObject();
