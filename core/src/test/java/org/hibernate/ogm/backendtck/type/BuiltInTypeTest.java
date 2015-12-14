@@ -35,7 +35,6 @@ import org.junit.Test;
  * @author Hardy Ferentschik
  */
 public class BuiltInTypeTest extends OgmTestCase {
-	private static final Random RANDOM = new Random();
 	private static TimeZone originalTimeZone = null;
 
 	private Calendar calendar;
@@ -79,7 +78,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	@Test
 	public void testIntegerSupport() throws Exception {
-		bookmark.setStockCount( RANDOM.nextInt() );
+		bookmark.setStockCount( Integer.MAX_VALUE );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
 		assertEquals( "Integer value does not match", bookmark.getStockCount(), loadedBookmark.getStockCount() );
@@ -95,7 +94,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	@Test
 	public void testLongSupport() throws Exception {
-		bookmark.setUserId( RANDOM.nextLong() );
+		// The Rest API will convert by default to an integer if the value is smaller that Integer.MAX_VALUE
+		// or Long if it's bigger.
+		// Keeping this value shorter than Integer.MAX_VALUE will test that we are using the right converter.
+		bookmark.setUserId( 666L );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
 		assertEquals( "Long value does not match", bookmark.getUserId(), loadedBookmark.getUserId() );

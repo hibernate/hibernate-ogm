@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.test.util.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
+import org.hibernate.ogm.remote.impl.DatabaseIdentifier;
 import org.junit.Test;
 
 /**

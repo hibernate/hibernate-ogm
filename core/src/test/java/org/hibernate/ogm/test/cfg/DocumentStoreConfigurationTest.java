@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DataStoreConfiguration;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /**
- * Unit test for {@link DocumentStoreConfiguration}.
+ * Unit test for {@link DataStoreConfiguration}.
  *
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
@@ -33,7 +33,7 @@ public class DocumentStoreConfigurationTest {
 	public final ExpectedException thrown = ExpectedException.none();
 
 	private Map<String, String> configurationValues;
-	private DocumentStoreConfiguration configuration;
+	private DataStoreConfiguration configuration;
 
 	@Before
 	public void setUp() {
@@ -185,7 +185,7 @@ public class DocumentStoreConfigurationTest {
 		assertThat( configuration.isCreateDatabase() ).isTrue();
 	}
 
-	private static class TestDocumentStoreConfiguration extends DocumentStoreConfiguration {
+	private static class TestDocumentStoreConfiguration extends DataStoreConfiguration {
 
 		public TestDocumentStoreConfiguration(Map<?, ?> configurationValues) {
 			super( new ConfigurationPropertyReader( configurationValues ), 1234 );

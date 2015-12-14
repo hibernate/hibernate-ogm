@@ -12,6 +12,7 @@ import java.util.Map;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
@@ -87,4 +88,6 @@ public interface TupleContext {
 	 * execution of operations
 	 */
 	OperationsQueue getOperationsQueue();
+
+	TransactionCoordinator getTransactionCoordinator();
 }

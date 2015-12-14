@@ -15,6 +15,7 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.impl.StringHelper;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
@@ -27,6 +28,7 @@ public class TupleContextImpl implements TupleContext {
 	private final List<String> selectableColumns;
 	private final OptionsContext optionsContext;
 	private final OperationsQueue operationsQueue;
+	private final TransactionCoordinator transactionCoordinator;
 
 	/**
 	 * Information of the associated entity stored per foreign key column names
@@ -35,20 +37,26 @@ public class TupleContextImpl implements TupleContext {
 
 	private final Map<String, String> roles;
 
-	public TupleContextImpl(TupleContextImpl original, OperationsQueue operationsQueue) {
-		this( original.selectableColumns, original.associatedEntityMetadata, original.roles, original.optionsContext, operationsQueue );
+	public TupleContextImpl(TupleContext original, TransactionCoordinator transactionCoordinator) {
+		this( original.getSelectableColumns(), original.getAllAssociatedEntityKeyMetadata(), original.getAllRoles(), original.getOptionsContext(), original.getOperationsQueue(), transactionCoordinator );
+	}
+
+	public TupleContextImpl(TupleContext original, OperationsQueue operationsQueue) {
+		this( original.getSelectableColumns(), original.getAllAssociatedEntityKeyMetadata(), original.getAllRoles(), original.getOptionsContext(), operationsQueue, original.getTransactionCoordinator() );
 	}
 
 	public TupleContextImpl(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles, OptionsContext optionsContext) {
-		this( selectableColumns, associatedEntityMetadata, roles, optionsContext, null );
+		this( selectableColumns, associatedEntityMetadata, roles, optionsContext, null, null );
 	}
 
-	private TupleContextImpl(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles, OptionsContext optionsContext, OperationsQueue operationsQueue) {
+	private TupleContextImpl(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles,
+			OptionsContext optionsContext, OperationsQueue operationsQueue, TransactionCoordinator transactionCoordinator) {
 		this.selectableColumns = selectableColumns;
 		this.associatedEntityMetadata = Collections.unmodifiableMap( associatedEntityMetadata );
 		this.roles = Collections.unmodifiableMap( roles );
 		this.optionsContext = optionsContext;
 		this.operationsQueue = operationsQueue;
+		this.transactionCoordinator = transactionCoordinator;
 	}
 
 	@Override
@@ -59,6 +67,11 @@ public class TupleContextImpl implements TupleContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	@Override
+	public TransactionCoordinator getTransactionCoordinator() {
+		return transactionCoordinator;
 	}
 
 	@Override

@@ -144,16 +144,20 @@ public class TestHelper {
 		return configurationType;
 	}
 
-	public static long getNumberOfEntities( Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
+	public static long getNumberOfEntities( Session session ) {
+		return helper.getNumberOfEntities( session );
 	}
 
 	public static long getNumberOfEntities(SessionFactory sessionFactory) {
 		return helper.getNumberOfEntities( sessionFactory );
 	}
 
-	public static Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return helper.extractEntityTuple( sessionFactory, key );
+	public static Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		return helper.extractEntityTuple( session, key );
+	}
+
+	public static long getNumberOfAssociations(Session session) {
+		return helper.getNumberOfAssociations( session );
 	}
 
 	public static long getNumberOfAssociations(SessionFactory sessionFactory) {
@@ -173,7 +177,6 @@ public class TestHelper {
 		return helper.backendSupportsTransactions();
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
 		return session.get( clazz, id );
 	}

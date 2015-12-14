@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
-import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DataStoreConfiguration;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
@@ -15,7 +15,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class CouchDBConfiguration extends DocumentStoreConfiguration {
+public class CouchDBConfiguration extends DataStoreConfiguration {
 
 	public static final int DEFAULT_PORT = 5984;
 

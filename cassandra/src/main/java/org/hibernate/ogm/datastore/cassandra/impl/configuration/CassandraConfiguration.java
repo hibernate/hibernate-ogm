@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.cassandra.impl.configuration;
 
-import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DataStoreConfiguration;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
@@ -15,7 +15,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
  *
  * @author Jonathan Halliday
  */
-public class CassandraConfiguration extends DocumentStoreConfiguration {
+public class CassandraConfiguration extends DataStoreConfiguration {
 
 	private static final int DEFAULT_PORT = 9042;
 

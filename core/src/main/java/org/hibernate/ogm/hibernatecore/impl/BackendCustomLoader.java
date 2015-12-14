@@ -24,6 +24,7 @@ import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.ScalarReturn;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryContext;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
@@ -32,6 +33,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.type.Type;
 
 /**
@@ -83,7 +85,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( queryParameters );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, queryParameters );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -182,8 +184,23 @@ public class BackendCustomLoader extends CustomLoader {
 			);
 		}
 
-		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
-			return gridDialect.executeBackendQuery( query, queryParameters );
+		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters) {
+			TransactionCoordinator coordinator = session.getTransactionCoordinator();
+			return gridDialect.executeBackendQuery( query, queryParameters, new BackendQueryContext( coordinator ) );
+		}
+	}
+
+	private static class BackendQueryContext implements QueryContext {
+
+		private final TransactionCoordinator coordinator;
+
+		public BackendQueryContext(TransactionCoordinator coordinator) {
+			this.coordinator = coordinator;
+		}
+
+		@Override
+		public TransactionCoordinator getTransactionCoordinator() {
+			return coordinator;
 		}
 	}
 }

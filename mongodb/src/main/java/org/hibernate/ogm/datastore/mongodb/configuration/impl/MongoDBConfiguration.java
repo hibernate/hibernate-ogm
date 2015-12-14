@@ -18,7 +18,7 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
-import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DataStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -36,7 +36,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
  * @author Gunnar Morling
  * @author Hardy Ferentschik
  */
-public class MongoDBConfiguration extends DocumentStoreConfiguration {
+public class MongoDBConfiguration extends DataStoreConfiguration {
 
 	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
 

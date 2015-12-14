@@ -23,9 +23,9 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.couchdb.test.dialect.CouchDBDialectTest;
-import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.remote.impl.DatabaseIdentifier;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
