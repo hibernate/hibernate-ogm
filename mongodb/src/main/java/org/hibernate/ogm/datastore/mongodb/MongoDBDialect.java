@@ -186,21 +186,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 */
 	private List<Tuple> tuplesResult(EntityKey[] keys, Object[] searchObjects, TupleContext tupleContext, DBCursor cursor) {
 		// The list is initialized with null because some keys might not have a corresponding value in the cursor
-		List<Tuple> tuples = createResultListWitNulls( searchObjects.length );
+		List<Tuple> tuples = CollectionHelper.initializeSizedList( searchObjects.length, null );
 		for ( DBObject dbObject : cursor ) {
 			for ( int i = 0; i < searchObjects.length; i++ ) {
 				if ( dbObject.get( ID_FIELDNAME ).equals( searchObjects[i] ) ) {
 					tuples.set( i, createTuple( keys[i], tupleContext, dbObject ) );
 				}
 			}
-		}
-		return tuples;
-	}
-
-	private List<Tuple> createResultListWitNulls(int length) {
-		List<Tuple> tuples = new ArrayList<>( length );
-		for ( int i = 0; i < length; i++ ) {
-			tuples.add( null );
 		}
 		return tuples;
 	}

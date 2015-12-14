@@ -12,7 +12,6 @@ import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,6 +70,7 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -189,6 +189,10 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		if ( keys.length == 0 ) {
+			return Collections.emptyList();
+		}
+
 		// We only supports one metadata for now
 		EntityKeyMetadata metadata = keys[0].getMetadata();
 		// The result returned by the query might not be in the same order as the keys.
@@ -207,7 +211,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	 */
 	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, ResourceIterator<Node> nodes) {
 		// The list is initialized with null because some keys might not have a corresponding node
-		List<Tuple> tuples = createResultListWitNulls( keys );
+		List<Tuple> tuples = CollectionHelper.initializeSizedList( keys.length, null );
 		while ( nodes.hasNext() ) {
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
@@ -230,14 +234,6 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 			}
 		}
 		return true;
-	}
-
-	private List<Tuple> createResultListWitNulls(EntityKey[] keys) {
-		List<Tuple> tuples = new ArrayList<>( keys.length );
-		for ( int i = 0; i < keys.length; i++ ) {
-			tuples.add( null );
-		}
-		return tuples;
 	}
 
 	@Override
