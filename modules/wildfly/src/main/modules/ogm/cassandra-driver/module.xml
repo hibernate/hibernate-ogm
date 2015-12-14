@@ -11,7 +11,11 @@
     </properties>
     <resources>
         <resource-root path="cassandra-driver-core-${cassandraVersion}.jar" />
-        <resource-root path="netty-${nettyVersion}.jar" />
+        <resource-root path="netty-buffer-${netty4Version}.jar" />
+        <resource-root path="netty-codec-${netty4Version}.jar" />
+        <resource-root path="netty-common-${netty4Version}.jar" />
+        <resource-root path="netty-handler-${netty4Version}.jar" />
+        <resource-root path="netty-transport-${netty4Version}.jar" />
         <resource-root path="metrics-core-${codahaleMetricsVersion}.jar" />
         <resource-root path="guava-${cassandraGuavaVersion}.jar" />
     </resources>
