@@ -12,12 +12,14 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonBlobType;
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonByteType;
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonLongType;
+import org.hibernate.ogm.datastore.redis.impl.RedisSerializableType;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.MaterializedBlobType;
+import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
@@ -53,7 +55,12 @@ public class RedisJsonTypeConverter {
 	 *
 	 * @return the corresponding GridType
 	 */
-	public AbstractGenericBasicType<Object> convert(Type type) {
+	public GridType convert(Type type) {
+		if ( type instanceof SerializableToBlobType ) {
+			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
+			return new RedisSerializableType<>( exposedType.getJavaTypeDescriptor() );
+		}
+
 		return (AbstractGenericBasicType<Object>) conversionMap.get( type );
 	}
 }

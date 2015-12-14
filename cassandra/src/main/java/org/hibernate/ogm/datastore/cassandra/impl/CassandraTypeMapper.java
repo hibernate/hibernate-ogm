@@ -11,6 +11,7 @@ import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraCalendarDateType
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraCalendarType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraCharacterType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraPrimitiveByteArrayType;
+import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraSerializableType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraShortType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraTrueFalseType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraYesNoType;
@@ -29,6 +30,7 @@ import org.hibernate.ogm.type.impl.TimestampType;
 import org.hibernate.ogm.type.impl.UrlType;
 
 import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.TrueFalseType;
 import org.hibernate.type.Type;
@@ -89,6 +91,10 @@ public enum CassandraTypeMapper {
 			return "int";
 		}
 
+		if ( gridType instanceof CassandraSerializableType ) {
+			return "blob";
+		}
+
 		// attempt a sane default for anything we don't recognise
 		if ( cqlType == null ) {
 			cqlType = "text";
@@ -129,6 +135,11 @@ public enum CassandraTypeMapper {
 
 		if ( type == TrueFalseType.INSTANCE ) {
 			return CassandraTrueFalseType.INSTANCE;
+		}
+
+		if ( type instanceof SerializableToBlobType ) {
+			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
+			return new CassandraSerializableType<>( exposedType.getJavaTypeDescriptor() );
 		}
 
 		return null;

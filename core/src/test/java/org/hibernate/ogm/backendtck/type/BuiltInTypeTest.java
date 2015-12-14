@@ -169,6 +169,23 @@ public class BuiltInTypeTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testLongAsLobSupport() throws Exception {
+		bookmark.setLobWithLong( Long.MIN_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Original and loaded data do not match!", (Long) Long.MIN_VALUE, (Long) loadedBookmark.getLobWithLong() );
+	}
+
+	@Test
+	public void testStringAsLobSupport() throws Exception {
+		String text = "Very long text ...";
+		bookmark.setLobWithString( text );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Original and loaded data do not match!", text, loadedBookmark.getLobWithString() );
+	}
+
+	@Test
 	public void testByteArraySupport() throws Exception {
 		byte[] testData = new byte[200];
 		new Random().nextBytes( testData );
