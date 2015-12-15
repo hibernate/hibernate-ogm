@@ -13,23 +13,18 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * @author Emmanuel Bernard
  */
 public class ManyToOneTest extends OgmTestCase {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void testUnidirectionalManyToOne() throws Exception {
@@ -72,50 +67,53 @@ public class ManyToOneTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testAssociationOwnerNotManagedException() throws Exception {
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM000082" );
+	@TestForIssue(jiraKey = "OGM-931")
+	public void canPersistAssociationToDetachedEntity() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
 
+		// Persist employer
 		Employer employer = new Employer();
 		employer.setId( "employer-1" );
 		employer.setName( "Hibernate" );
-
-		Session session = openSession();
-		Transaction transaction = session.beginTransaction();
 		session.save( employer );
-		session.flush();
+
 		transaction.commit();
 		session.clear();
 
-		// Create Employee and Map it with Employeer.
+		transaction = session.beginTransaction();
+
+		// Create employee and associate it with detached employer
 		Employee employee = new Employee();
 		employee.setId( "employee-1" );
 		employee.setName( "DNadar" );
 		employee.setEmployer( employer );
+		session.save( employee );
 
-		try {
-			transaction = session.beginTransaction();
-			session.save( employee );
-			session.flush();
-			transaction.commit();
-			transaction = null;
-		}
-		finally {
-			if ( transaction != null ) {
-				transaction.rollback();
-			}
-			session.close();
+		transaction.commit();
+		session.clear();
 
-			session = openSession();
-			transaction = session.beginTransaction();
-			session.delete( session.get( Employer.class, employer.getId() ) );
-			Employee saved = session.get( Employee.class, employee.getId() );
-			if ( saved != null ) {
-				session.delete( saved );
-			}
-			transaction.commit();
-			session.close();
-		}
+		transaction = session.beginTransaction();
+
+		// Load association from main side
+		Employee loadedEmployee = session.get( Employee.class, "employee-1" );
+		assertThat( loadedEmployee.getEmployer().getName() ).isEqualTo( "Hibernate" );
+
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+
+		// Load association from inverse side
+		Employer loadedEmployer = session.get( Employer.class, "employer-1" );
+		assertThat( loadedEmployer.getEmployees() ).onProperty( "name" ).containsOnly( "DNadar" );
+
+		// Clean up
+		session.delete( loadedEmployer.getEmployees().iterator().next() );
+		session.delete( loadedEmployer );
+
+		transaction.commit();
+		session.close();
 	}
 
 	private Long expectedAssociations() {

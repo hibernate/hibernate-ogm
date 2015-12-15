@@ -8,6 +8,7 @@ package org.hibernate.ogm.persister.impl;
 
 import java.io.Serializable;
 
+import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -159,7 +160,7 @@ class EntityAssociationUpdater {
 		associationPersister.getAssociation().put( rowKey, associationRow );
 
 		if ( associationPersister.getAssociationContext().getEntityTuple() == null ) {
-			throw log.entityTupleNotFound( associationPersister.getAssociationKey().getEntityKey() );
+			throw log.entityTupleNotFound( associationKeyMetadata.getCollectionRole(), associationPersister.getAssociationKey().getEntityKey() );
 		}
 
 		associationPersister.flushToDatastore();
@@ -204,8 +205,9 @@ class EntityAssociationUpdater {
 	 * Returns the object referenced by the specified property (which represents an association).
 	 */
 	private Object getReferencedEntity(int propertyIndex) {
-		GridType propertyType = persister.getGridPropertyTypes()[propertyIndex];
+		Object referencedEntity = null;
 
+		GridType propertyType = persister.getGridPropertyTypes()[propertyIndex];
 		Serializable id = (Serializable) propertyType.hydrate(
 				resultset, persister.getPropertyColumnNames( propertyIndex ), session, null
 		);
@@ -215,12 +217,20 @@ class EntityAssociationUpdater {
 					propertyType.getReturnedClass().getName()
 			);
 
-			return session.getPersistenceContext().getEntity(
+			// OGM-931 Loading the entity through Session#get() to make sure it is fetched from the store if it is
+			// detached atm. but also to benefit from 2L caching etc.
+			Class<?> entityType = hostingEntityPersister.getMappedClass();
+			referencedEntity = ( (Session) session ).get( entityType, id );
+
+			// In case the entity is scheduled for deletion, obtain it from the PC
+			if ( referencedEntity == null ) {
+				referencedEntity = session.getPersistenceContext().getEntity(
 					session.generateEntityKey( id, hostingEntityPersister )
-			);
+				);
+			}
 		}
 
-		return null;
+		return referencedEntity;
 	}
 
 	/**

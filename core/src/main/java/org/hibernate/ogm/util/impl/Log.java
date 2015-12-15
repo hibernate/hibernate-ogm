@@ -276,6 +276,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 81, value = "The value set for the configuration property '%1$s' must be a long number. Found '%2$s'.")
 	HibernateException notALong(String propertyName, String value);
 
-	@Message(id = 82, value = "The owner of the association cannot be found in the session: %s")
-	HibernateException entityTupleNotFound(EntityKey entityKey);
+	@Message(id = 82, value = "The entity at the inverse side of the association '%1$s' cannot be found in the session: %2$s")
+	HibernateException entityTupleNotFound(String collectionRole, EntityKey entityKey);
 }
