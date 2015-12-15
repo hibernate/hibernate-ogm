@@ -1,4 +1,5 @@
 # Hibernate OGM
+Test
 
 Version: 5.0.0.Alpha1 - 24 Aug 2015
 
