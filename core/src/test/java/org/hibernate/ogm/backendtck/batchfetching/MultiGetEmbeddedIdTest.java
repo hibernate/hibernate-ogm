@@ -118,25 +118,6 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 		}
 	}
 
-	@Test
-	public void testGetTuplesDuplicated() throws Exception {
-		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
-
-			EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( SPLENDOR ) };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
-
-			assertThat( tuples.get( 0 ).get( "id.publisher" ) ).isEqualTo( SPLENDOR.getId().getPublisher() );
-			assertThat( tuples.get( 0 ).get( "id.name" ) ).isEqualTo( SPLENDOR.getId().getName() );
-
-			assertThat( tuples.get( 1 ).get( "id.publisher" ) ).isEqualTo( SPLENDOR.getId().getPublisher() );
-			assertThat( tuples.get( 1 ).get( "id.name" ) ).isEqualTo( SPLENDOR.getId().getName() );
-
-			session.getTransaction().commit();
-		}
-	}
-
 	@Before
 	public void prepareDataset() {
 		try (OgmSession session = openSession()) {
