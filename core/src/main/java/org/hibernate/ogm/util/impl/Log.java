@@ -22,6 +22,7 @@ import org.hibernate.TransactionException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.service.spi.ServiceException;
 import org.jboss.logging.BasicLogger;
@@ -274,4 +275,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 81, value = "The value set for the configuration property '%1$s' must be a long number. Found '%2$s'.")
 	HibernateException notALong(String propertyName, String value);
+
+	@Message(id = 82, value = "The owner of the association cannot be found in the session: %s")
+	HibernateException entityTupleNotFound(EntityKey entityKey);
 }

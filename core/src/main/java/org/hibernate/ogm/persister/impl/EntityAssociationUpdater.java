@@ -158,6 +158,10 @@ class EntityAssociationUpdater {
 		}
 		associationPersister.getAssociation().put( rowKey, associationRow );
 
+		if ( associationPersister.getAssociationContext().getEntityTuple() == null ) {
+			throw log.entityTupleNotFound( associationPersister.getAssociationKey().getEntityKey() );
+		}
+
 		associationPersister.flushToDatastore();
 	}
 

@@ -13,17 +13,23 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Emmanuel Bernard
  */
 public class ManyToOneTest extends OgmTestCase {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void testUnidirectionalManyToOne() throws Exception {
@@ -63,6 +69,51 @@ public class ManyToOneTest extends OgmTestCase {
 		session.close();
 
 		checkCleanCache();
+	}
+
+	@Test
+	public void testAssociationOwnerNotManagedException() throws Exception {
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000082" );
+
+		Employeer employeer = new Employeer();
+		employeer.setName( "Hibernate" );
+
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		session.save( employeer );
+		session.flush();
+		transaction.commit();
+		session.clear();
+
+		// Create Employee and Map it with Employeer.
+		Employee employee = new Employee();
+		employee.setName( "DNadar" );
+		employee.setEmployeer( employeer );
+
+		try {
+			transaction = session.beginTransaction();
+			session.save( employee );
+			session.flush();
+			transaction.commit();
+			transaction = null;
+		}
+		finally {
+			if ( transaction != null ) {
+				transaction.rollback();
+			}
+			session.close();
+
+			session = openSession();
+			transaction = session.beginTransaction();
+			session.delete( session.get( Employeer.class, employeer.getId() ) );
+			Employee saved = session.get( Employee.class, employee.getId() );
+			if ( saved != null ) {
+				session.delete( saved );
+			}
+			transaction.commit();
+			session.close();
+		}
 	}
 
 	private Long expectedAssociations() {
@@ -308,7 +359,9 @@ public class ManyToOneTest extends OgmTestCase {
 				Beer.class,
 				Brewery.class,
 				Game.class,
-				Court.class
+				Court.class,
+				Employee.class,
+				Employeer.class
 		};
 	}
 }
