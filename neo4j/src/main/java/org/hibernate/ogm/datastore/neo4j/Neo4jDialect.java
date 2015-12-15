@@ -218,6 +218,8 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
 					tuples.set( i, new Tuple( new Neo4jTupleSnapshot( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
 							keys[i].getMetadata() ) ) );
+					// We assume there are no duplicated keys
+					break;
 				}
 			}
 		}

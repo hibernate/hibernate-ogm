@@ -191,6 +191,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			for ( int i = 0; i < searchObjects.length; i++ ) {
 				if ( dbObject.get( ID_FIELDNAME ).equals( searchObjects[i] ) ) {
 					tuples.set( i, createTuple( keys[i], tupleContext, dbObject ) );
+					// We assume there are no duplicated keys
+					break;
 				}
 			}
 		}

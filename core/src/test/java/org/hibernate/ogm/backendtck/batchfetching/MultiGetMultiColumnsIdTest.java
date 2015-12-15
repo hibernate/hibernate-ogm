@@ -115,25 +115,6 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 		}
 	}
 
-	@Test
-	public void testGetTuplesDuplicated() throws Exception {
-		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
-
-			EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( SPLENDOR ) };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
-
-			assertThat( tuples.get( 0 ).get( "publisher" ) ).isEqualTo( SPLENDOR.getPublisher() );
-			assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
-
-			assertThat( tuples.get( 1 ).get( "publisher" ) ).isEqualTo( SPLENDOR.getPublisher() );
-			assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
-
-			session.getTransaction().commit();
-		}
-	}
-
 	private EntityKey key(BoardGame boardGame) {
 		Object[] values = { boardGame.getName(), boardGame.getPublisher() };
 		return new EntityKey( METADATA, values );
