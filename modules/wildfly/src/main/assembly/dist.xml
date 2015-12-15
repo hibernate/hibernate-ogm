@@ -137,11 +137,6 @@
              <unpack>false</unpack>
              <includes>
                  <include>com.datastax.cassandra:cassandra-driver-core</include>
-                 <include>io.netty:netty-buffer</include>
-                 <include>io.netty:netty-codec</include>
-                 <include>io.netty:netty-common</include>
-                 <include>io.netty:netty-transport</include>
-                 <include>io.netty:netty-handler</include>
                  <include>com.codahale.metrics:metrics-core</include>
                  <include>com.google.guava:guava</include>
              </includes>
@@ -162,11 +157,6 @@
              <unpack>false</unpack>
              <includes>
                  <include>biz.paluch.redis:lettuce</include>
-                 <include>io.netty:netty-buffer</include>
-                 <include>io.netty:netty-codec</include>
-                 <include>io.netty:netty-common</include>
-                 <include>io.netty:netty-transport</include>
-                 <include>io.netty:netty-handler</include>
                  <include>org.apache.commons:commons-pool2</include>
               </includes>
        </dependencySet>
