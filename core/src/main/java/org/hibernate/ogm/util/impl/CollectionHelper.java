@@ -6,12 +6,10 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,16 +83,6 @@ public class CollectionHelper {
 			}
 		}
 		return true;
-	}
-
-	public static <T> List<T> initializeSizedList(int length, T value) {
-		List<T> lsit = new ArrayList<>( length );
-
-		for ( int i = 0; i < length; i++ ) {
-			lsit.add( value );
-		}
-
-		return lsit;
 	}
 
 	private static class ClosableIteratorWrapper<T> implements ClosableIterator<T> {

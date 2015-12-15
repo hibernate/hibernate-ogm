@@ -12,6 +12,7 @@ import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,7 +71,6 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
-import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -211,19 +211,19 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	 */
 	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, ResourceIterator<Node> nodes) {
 		// The list is initialized with null because some keys might not have a corresponding node
-		List<Tuple> tuples = CollectionHelper.initializeSizedList( keys.length, null );
+		Tuple[] tuples = new Tuple[keys.length];
 		while ( nodes.hasNext() ) {
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
-					tuples.set( i, new Tuple( new Neo4jTupleSnapshot( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
-							keys[i].getMetadata() ) ) );
+					tuples[i] = new Tuple( new Neo4jTupleSnapshot( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+							keys[i].getMetadata() ) );
 					// We assume there are no duplicated keys
 					break;
 				}
 			}
 		}
-		return tuples;
+		return Arrays.asList( tuples );
 	}
 
 	private boolean matches(Node node, String[] properties, Object[] values) {
