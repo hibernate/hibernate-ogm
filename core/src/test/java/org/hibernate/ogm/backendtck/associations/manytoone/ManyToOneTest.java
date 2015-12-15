@@ -56,10 +56,10 @@ public class ManyToOneTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		emmanuel = (Member) session.get( Member.class, emmanuel.getId() );
+		emmanuel = session.get( Member.class, emmanuel.getId() );
 		jug = emmanuel.getMemberOf();
 		session.delete( emmanuel );
-		jerome = (Member) session.get( Member.class, jerome.getId() );
+		jerome = session.get( Member.class, jerome.getId() );
 		session.delete( jerome );
 		session.delete( jug );
 		transaction.commit();
@@ -76,20 +76,22 @@ public class ManyToOneTest extends OgmTestCase {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM000082" );
 
-		Employeer employeer = new Employeer();
-		employeer.setName( "Hibernate" );
+		Employer employer = new Employer();
+		employer.setId( "employer-1" );
+		employer.setName( "Hibernate" );
 
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		session.save( employeer );
+		session.save( employer );
 		session.flush();
 		transaction.commit();
 		session.clear();
 
 		// Create Employee and Map it with Employeer.
 		Employee employee = new Employee();
+		employee.setId( "employee-1" );
 		employee.setName( "DNadar" );
-		employee.setEmployeer( employeer );
+		employee.setEmployer( employer );
 
 		try {
 			transaction = session.beginTransaction();
@@ -106,7 +108,7 @@ public class ManyToOneTest extends OgmTestCase {
 
 			session = openSession();
 			transaction = session.beginTransaction();
-			session.delete( session.get( Employeer.class, employeer.getId() ) );
+			session.delete( session.get( Employer.class, employer.getId() ) );
 			Employee saved = session.get( Employee.class, employee.getId() );
 			if ( saved != null ) {
 				session.delete( saved );
@@ -145,10 +147,10 @@ public class ManyToOneTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		force = session.get( SalesForce.class, force.getId() );
 		assertNotNull( force.getSalesGuys() );
 		assertEquals( 2, force.getSalesGuys().size() );
-		simon = (SalesGuy) session.get( SalesGuy.class, simon.getId() );
+		simon = session.get( SalesGuy.class, simon.getId() );
 		// purposely faulty
 		// force.getSalesGuys().remove( simon );
 		session.delete( simon );
@@ -156,7 +158,7 @@ public class ManyToOneTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		force = session.get( SalesForce.class, force.getId() );
 		assertNotNull( force.getSalesGuys() );
 		assertEquals( 1, force.getSalesGuys().size() );
 		session.delete( force.getSalesGuys().iterator().next() );
@@ -190,16 +192,16 @@ public class ManyToOneTest extends OgmTestCase {
 
 		// removing one sales guy, leaving the other in place
 		transaction = session.beginTransaction();
-		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		force = session.get( SalesForce.class, force.getId() );
 		assertEquals( 2, force.getSalesGuys().size() );
-		SalesGuy salesGuy = (SalesGuy) session.get( SalesGuy.class, eric.getId() );
+		SalesGuy salesGuy = session.get( SalesGuy.class, eric.getId() );
 		salesGuy.setSalesForce( null );
 		force.getSalesGuys().remove( salesGuy );
 		transaction.commit();
 		session.clear();
 
 		transaction = session.beginTransaction();
-		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		force = session.get( SalesForce.class, force.getId() );
 		assertEquals( 1, force.getSalesGuys().size() );
 		salesGuy = force.getSalesGuys().iterator().next();
 		assertThat( salesGuy.getName() ).isEqualTo( "Simon" );
@@ -293,11 +295,11 @@ public class ManyToOneTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		SalesGuy salesGuy = (SalesGuy) session.get( SalesGuy.class, "eric" );
+		SalesGuy salesGuy = session.get( SalesGuy.class, "eric" );
 		assertThat( salesGuy.getSalesForce() ).describedAs( "Stale association should be exposed as null" ).isNull();
 		session.delete( salesGuy );
 
-		salesGuy = (SalesGuy) session.get( SalesGuy.class, "simon" );
+		salesGuy = session.get( SalesGuy.class, "simon" );
 		assertThat( salesGuy.getSalesForce() ).describedAs( "Stale association should be exposed as null" ).isNull();
 		session.delete( salesGuy );
 
@@ -337,7 +339,7 @@ public class ManyToOneTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		Court localCourt = (Court) session.get( Court.class, new Court.CourtId( "DE", 123 ) );
+		Court localCourt = session.get( Court.class, new Court.CourtId( "DE", 123 ) );
 		assertThat( localCourt.getGames() ).hasSize( 2 );
 		for ( Game game : localCourt.getGames() ) {
 			session.delete( game );
@@ -361,7 +363,7 @@ public class ManyToOneTest extends OgmTestCase {
 				Game.class,
 				Court.class,
 				Employee.class,
-				Employeer.class
+				Employer.class
 		};
 	}
 }

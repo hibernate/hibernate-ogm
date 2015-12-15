@@ -12,18 +12,14 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "Employer")
-public class Employeer implements Serializable {
+public class Employer implements Serializable {
 
 	private static final long serialVersionUID = -8732345803771451030L;
 	private String id;
@@ -32,8 +28,6 @@ public class Employeer implements Serializable {
 	private Set<Employee> employees = new HashSet<>();
 
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	public String getId() {
 		return id;
 	}
@@ -50,7 +44,7 @@ public class Employeer implements Serializable {
 		this.name = name;
 	}
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "employeer")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "employer")
 	@Cascade({ CascadeType.PERSIST, CascadeType.SAVE_UPDATE, CascadeType.DELETE })
 	public Set<Employee> getEmployees() {
 		return employees;
