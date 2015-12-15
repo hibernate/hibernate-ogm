@@ -50,6 +50,35 @@
         <dependency>
             <groupId>biz.paluch.redis</groupId>
             <artifactId>lettuce</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty-handler</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>netty-common</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>netty-transport</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>netty-handler</artifactId>
+            <groupId>io.netty</groupId>
+            <version>${netty4Version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>netty-common</artifactId>
+            <groupId>io.netty</groupId>
+            <version>${netty4Version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>netty-transport</artifactId>
+            <groupId>io.netty</groupId>
+            <version>${netty4Version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
