@@ -76,23 +76,20 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	}
 
 	private Object getKeyColumnValue(String column) {
-		// for composite ids we need to get the value from the _id DBObject
-		if ( column.contains( MongoDBDialect.PROPERTY_SEPARATOR ) ) {
-			DBObject idObject = (DBObject) dbObject.get( MongoDBDialect.ID_FIELDNAME );
+		Object idField = dbObject.get( MongoDBDialect.ID_FIELDNAME );
 
-			// the name of the column, without the leading "_id."
-			String nestedColumn = column.substring( column.indexOf( MongoDBDialect.PROPERTY_SEPARATOR ) + 1 );
-
-			return getValue( idObject, nestedColumn );
+		// single-column key will be stored as is
+		if ( keyMetadata.getColumnNames().length == 1 ) {
+			return idField;
 		}
+		// multi-column key nested within DBObject
 		else {
-			if ( keyMetadata.getColumnNames().length == 1 ) {
-				return dbObject.get( MongoDBDialect.ID_FIELDNAME );
+			// the name of the column within the id object
+			if ( column.contains( MongoDBDialect.PROPERTY_SEPARATOR ) ) {
+				column = column.substring( column.indexOf( MongoDBDialect.PROPERTY_SEPARATOR ) + 1 );
 			}
-			else {
-				DBObject idObject = (DBObject) dbObject.get( MongoDBDialect.ID_FIELDNAME );
-				return idObject.get( column );
-			}
+
+			return getValue( (DBObject) idField, column );
 		}
 	}
 
