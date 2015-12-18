@@ -25,7 +25,7 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 	private static final Log log = LoggerFactory.make();
 
 	private final AttributeConverter converter;
-	private final GridTypeDescriptor delegate;
+	private final GridTypeToGridTypeDescriptorAdapter delegate;
 	private final JavaTypeDescriptor intermediateJavaTypeDescriptor;
 
 	public AttributeConverterGridTypeDescriptorAdaptor(
@@ -36,6 +36,10 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 		// take the intermediary type gridType and transform it into a GridTypeDescriptor
 		this.delegate =  new GridTypeToGridTypeDescriptorAdapter( delegate );
 		this.intermediateJavaTypeDescriptor = intermediateJavaTypeDescriptor;
+	}
+
+	public GridType unwrapTargetGridType() {
+		return delegate.gridType;
 	}
 
 	@Override

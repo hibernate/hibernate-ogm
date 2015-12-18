@@ -1,0 +1,36 @@
+package HibernateOGMGenerated;
+
+message Bookmark_id {
+	required string id = 1;
+}
+
+message Bookmark {
+	required string id = 1;
+	optional string classifier = 2;
+	optional int32 classifierAsOrdinal = 3;
+	optional int64 creationCalendar = 4;
+	optional int64 creationDate = 5;
+	optional bytes data = 6;
+	optional string delimiter = 7;
+	optional string description = 8;
+	optional int64 destructionCalendar = 9;
+	optional int64 destructionDate = 10;
+	optional bytes displayMask = 11;
+	optional bool favourite = 12;
+	optional string isPrivate = 13;
+	optional string isRead = 14;
+	optional int32 isShared = 15;
+	optional bytes lob = 16;
+	optional bytes lobWithLong = 17;
+	optional string lobWithString = 18;
+	optional string serialNumber = 19;
+	optional string siteWeight = 20;
+	optional int32 stockCount = 21;
+	optional double taxPercentage = 22;
+	optional int64 updateTime = 23;
+	optional string url = 24;
+	optional int32 urlPort = 25;
+	optional int64 userId = 26;
+	optional string visitCount = 27;
+	optional float visitRatio = 28;
+}

@@ -10,9 +10,12 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -98,19 +101,24 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		}
 	}
 
-	private void startAndWaitMassIndexing(Class<?> entityType) throws InterruptedException {
+	private void startAndWaitMassIndexing(Class<?> entityType) throws InterruptedException, IOException {
 		FullTextSession session = Search.getFullTextSession( openSession() );
 		session.createIndexer( entityType ).purgeAllOnStart( true ).startAndWait();
-		int numDocs = session.getSearchFactory().getIndexReaderAccessor().open( entityType ).numDocs();
-		session.close();
+		final int numDocs;
+		try ( IndexReader indexReader = session.getSearchFactory().getIndexReaderAccessor().open( entityType ) ) {
+			numDocs = indexReader.numDocs();
+		}
 		assertThat( numDocs ).isGreaterThan( 0 );
 	}
 
-	private void purgeAll(Class<?> entityType) {
+	private void purgeAll(Class<?> entityType) throws IOException {
 		FullTextSession session = Search.getFullTextSession( openSession() );
 		session.purgeAll( entityType );
 		session.flushToIndexes();
-		int numDocs = session.getSearchFactory().getIndexReaderAccessor().open( entityType ).numDocs();
+		final int numDocs;
+		try ( IndexReader indexReader = session.getSearchFactory().getIndexReaderAccessor().open( entityType ) ) {
+			numDocs = indexReader.numDocs();
+		}
 		session.close();
 		assertThat( numDocs ).isEqualTo( 0 );
 	}

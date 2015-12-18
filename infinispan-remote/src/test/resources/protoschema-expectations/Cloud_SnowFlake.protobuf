@@ -1,0 +1,40 @@
+package HibernateOGMGenerated;
+
+message SnowFlake_id {
+	required string id = 1;
+}
+
+message SnowFlake {
+	required string id = 1;
+	optional string description = 2;
+}
+
+message joinBackupSnowflakes_id {
+	required string Cloud_id = 1;
+	required string backupSnowFlakes_id = 2;
+}
+
+message joinBackupSnowflakes {
+	required string Cloud_id = 1;
+	required string backupSnowFlakes_id = 2;
+}
+
+message joinProducedSnowflakes_id {
+	required string Cloud_id = 1;
+	required string producedSnowFlakes_id = 2;
+}
+
+message joinProducedSnowflakes {
+	required string Cloud_id = 1;
+	required string producedSnowFlakes_id = 2;
+}
+
+message Cloud_id {
+	required string id = 1;
+}
+
+message Cloud {
+	required string id = 1;
+	optional double length = 2;
+	optional string type = 3;
+}

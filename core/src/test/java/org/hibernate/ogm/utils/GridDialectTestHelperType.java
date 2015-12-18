@@ -25,6 +25,7 @@ public enum GridDialectTestHelperType {
 	},
 
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper" ),
+	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteTestHelper" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.utils.EhcacheTestHelper" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper" ),
 	NEO4J( "org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper" ),

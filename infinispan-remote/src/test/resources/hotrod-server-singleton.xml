@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+
+<!--
+    This is the testing configuration, running in LOCAL clustering mode to speedup tests.
+-->
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
+    xmlns="urn:infinispan:config:8.2">
+
+    <cache-container name="HibernateOGM-Testsuite" default-cache="DEFAULT" statistics="false">
+
+        <jmx duplicate-domains="true"/>
+
+        <!-- *************************** -->
+        <!--   Default cache settings    -->
+        <!-- *************************** -->
+        <local-cache name="DEFAULT">
+            <data-container
+                  key-equivalence="org.infinispan.commons.equivalence.ByteArrayEquivalence"
+                  value-equivalence="org.infinispan.commons.equivalence.ByteArrayEquivalence" />
+            <expiration interval="-1"/>
+        </local-cache>
+
+        <!-- Currently the needed caches need to be enabled server-side (can't be created from the client) -->
+        <local-cache name="Hypothesis" />
+        <local-cache name="Helicopter" />
+        <local-cache name="Cloud" />
+        <local-cache name="SnowFlake" />
+        <local-cache name="joinBackupSnowflakes" />
+        <local-cache name="joinProducedSnowflakes" />
+        <local-cache name="Insurance" />
+        <local-cache name="Song" />
+        <local-cache name="Actor" />
+        <local-cache name="CondominiumBuilding" />
+        <local-cache name="CondominiumBuilding_Condominium" />
+        <local-cache name="Tower" />
+        <local-cache name="tower_floor" />
+        <local-cache name="Condominium" />
+        <local-cache name="Floor" />
+        <local-cache name="Pulsar" />
+        <local-cache name="Planet" />
+        <local-cache name="StoryGame" />
+        <local-cache name="StoryGame_chaoticBranches" />
+        <local-cache name="StoryGame_neutralBranches" />
+        <local-cache name="StoryGame_evilBranch.additionalEndings" />
+        <local-cache name="StoryGame_goodBranch.additionalEndings" />
+        <local-cache name="Video" />
+        <local-cache name="Music" />
+        <local-cache name="Composer" />
+        <local-cache name="MakeupArtistWithCompositeKey" />
+        <local-cache name="MakeupArtist" />
+        <local-cache name="DistributedRevisionControl" />
+        <local-cache name="Feeling" />
+        <local-cache name="Bookmark" />
+        <local-cache name="Hero" />
+        <local-cache name="Court" />
+        <local-cache name="Member" />
+        <local-cache name="SalesGuy" />
+        <local-cache name="Brewery" />
+        <local-cache name="Beer" />
+        <local-cache name="JUG" />
+        <local-cache name="Employee" />
+        <local-cache name="Game" />
+        <local-cache name="SalesForce" />
+        <local-cache name="Employer" />
+        <local-cache name="BoardGame" />
+        <local-cache name="Movie" />
+        <local-cache name="Shipment" />
+        <local-cache name="IndexedLabel" />
+        <local-cache name="IndexedNews" />
+        <local-cache name="CoffeeMug" />
+        <local-cache name="Lid" />
+        <local-cache name="Tournament" />
+        <local-cache name="Director" />
+        <local-cache name="Director_Tournament" />
+        <local-cache name="Poem" />
+        <local-cache name="CommunityMember" />
+        <local-cache name="employee" />
+        <local-cache name="Galaxy_stars" />
+        <local-cache name="Galaxy" />
+        <local-cache name="Author" />
+        <local-cache name="Address" />
+        <local-cache name="User_PhoneNumber" />
+        <local-cache name="User" />
+        <local-cache name="AlTERNATIVE_PHONE_NUMBER" />
+        <local-cache name="Nicks" />
+        <local-cache name="User_Address" />
+        <local-cache name="PhoneNumber" />
+        <local-cache name="AlTERNATIVE_PRIORITY" />
+        <local-cache name="Enterprise_departments" />
+        <local-cache name="Enterprise" />
+        <local-cache name="Enterprise_revenueByDepartment" />
+        <local-cache name="News" />
+        <local-cache name="Label" />
+        <local-cache name="HeroClub_Hero" />
+        <local-cache name="Hero" />
+        <local-cache name="HeroClub" />
+        <local-cache name="Student" />
+        <local-cache name="Contact" />
+        <local-cache name="Product" />
+        <local-cache name="Zoo_animals" />
+        <local-cache name="Husband" />
+        <local-cache name="PolarCloud" />
+        <local-cache name="Account" />
+        <local-cache name="Order" />
+        <local-cache name="MultiAddressAccount" />
+        <local-cache name="Contact" />
+        <local-cache name="SingleBoardComputer" />
+        <local-cache name="ClassRoom" />
+        <local-cache name="ClassRoom_Student" />
+        <local-cache name="Wheel" />
+        <local-cache name="Basket" />
+        <local-cache name="Cavalier" />
+        <local-cache name="Zoo" />
+        <local-cache name="PolarCloud_SnowFlake" />
+        <local-cache name="AnnotatedCloud_SnowFlake" />
+        <local-cache name="Vehicule" />
+        <local-cache name="NetworkSwitch" />
+        <local-cache name="Horse" />
+        <local-cache name="PatchCable" />
+        <local-cache name="Wife" />
+        <local-cache name="AnnotatedCloud" />
+        <local-cache name="AccountWithPhone" />
+        <local-cache name="AccountWithPhone_phoneNumber.alternatives" />
+        <local-cache name="MultiAddressAccount_addresses" />
+        <local-cache name="Order_shippingAddress.phone.alternatives" />
+        <local-cache name="Basket_Product" />
+        <local-cache name="AccountOwner" />
+        <local-cache name="AccountOwner_BankAccount" />
+        <local-cache name="BankAccount" />
+        <local-cache name="Car" />
+        <local-cache name="Car_Tire" />
+        <local-cache name="Tire" />
+        <local-cache name="Child" />
+        <local-cache name="Father" />
+        <local-cache name="Father_child" />
+        <local-cache name="GrandMother" />
+        <local-cache name="GrandMother_grandChildren" />
+        <local-cache name="Race" />
+        <local-cache name="Race_Runners" />
+        <local-cache name="Runner" />
+        <local-cache name="Printer" />
+
+        <local-cache name="sequences" />
+        <local-cache name="hibernate_sequences" />
+
+    </cache-container>
+</infinispan>

@@ -26,6 +26,7 @@
         <module>core</module>
         <!-- <module>ehcache</module> Is only enabled when not running in Java 9: see the profiles section-->
         <!-- <module>infinispan</module> Is only enabled when not running in Java 9: see the profiles section-->
+        <!-- <module>infinispan-remote</module> Is only enabled when not running in Java 9: see the profiles section-->
         <module>mongodb</module>
         <!-- <module>neo4j</module> Is only enabled when not running in Java 9: see the profiles section-->
         <module>couchdb</module>
@@ -40,6 +41,7 @@
         <!-- JDK version required to build OGM; requiring 1.8 as WildFly 10 requires JDK 1.8; We still create
              1.7 byte code to run in other environments -->
         <minJdkVersion>1.8</minJdkVersion>
+        <jdkTargetForProcessor>1.7</jdkTargetForProcessor>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
@@ -450,7 +452,7 @@
                                 <processors>
                                     <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
                                 </processors>
-                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.7 -target 1.7</compilerArguments>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${jdkTargetForProcessor} -target ${jdkTargetForProcessor}</compilerArguments>
                             </configuration>
                         </execution>
                     </executions>
@@ -768,6 +770,7 @@
             <modules>
                 <module>ehcache</module>
                 <module>infinispan</module>
+                <module>infinispan-remote</module>
                 <module>neo4j</module>
                 <!-- The WildFly modules require the other modules to be enabled too -->
                 <module>modules</module>

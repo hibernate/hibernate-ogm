@@ -12,6 +12,7 @@ import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
 import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
@@ -33,7 +34,7 @@ import org.junit.Test;
  * @author Guillaume Smet
  */
 @SkipByGridDialect(
-		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH },
+		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, INFINISPAN_REMOTE },
 		comment = "We need a QueryParserService to be able to perform these queries.")
 public class QueriesWithAssociationsTest extends OgmJpaTestCase {
 
