@@ -33,7 +33,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.CASSANDRA },
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.CASSANDRA },
 		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
 )
 public class AssociationStorageConfiguredProgrammaticallyTest extends AssociationStorageTestBase {
@@ -228,25 +228,27 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 
 	@After
 	public void removeCloudAndSnowflakes() {
-		Session session = sessions.openSession();
-		Transaction transaction = session.beginTransaction();
+		if ( sessions != null ) {
+			try ( Session session = sessions.openSession() ) {
+				Transaction transaction = session.beginTransaction();
 
-		if ( cloud != null ) {
-			Cloud cloudToDelete = (Cloud) session.get( Cloud.class, cloud.getId() );
-			for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
-				session.delete( current );
+				if ( cloud != null ) {
+					Cloud cloudToDelete = (Cloud) session.get( Cloud.class, cloud.getId() );
+					for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
+						session.delete( current );
+					}
+					for ( SnowFlake current : cloudToDelete.getBackupSnowFlakes() ) {
+						session.delete( current );
+					}
+					session.delete( cloudToDelete );
+				}
+
+				transaction.commit();
 			}
-			for ( SnowFlake current : cloudToDelete.getBackupSnowFlakes() ) {
-				session.delete( current );
-			}
-			session.delete( cloudToDelete );
+
+			assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+			assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 		}
-
-		transaction.commit();
-		session.close();
-
-		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 	}
 
 	private void setupSessionFactory(Map<String, Object> settings) {

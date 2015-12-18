@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-parent</artifactId>
+        <version>5.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>hibernate-ogm-infinispan-remote</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Hibernate OGM for Infinispan over Hot Rod</name>
+    <description>Persist objects in Infinispan over Hot Rod, the remote client protocol of Infinispan</description>
+
+    <properties>
+        <jdkTargetForProcessor>1.8</jdkTargetForProcessor>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan.protostream</groupId>
+            <artifactId>protostream</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-lucene</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-server-hotrod</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-server-hotrod</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.takari.junit</groupId>
+            <artifactId>takari-cpsuite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Allow using Java8 code as Java8 is the requirement for Infinispan 8 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <configuration>
+                    <signature>
+                        <groupId>org.codehaus.mojo.signature</groupId>
+                        <artifactId>java18</artifactId>
+                        <version>1.0</version>
+                    </signature>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                   <forkMode>once</forkMode>
+                    <excludes>
+                        <!-- Skip a long-running test of a prototype class -->
+                        <exclude>**/ClusteredConcurrentTimestampRegionTestCase.java</exclude>
+                    </excludes>
+                     <!--
+                          java.net.preferIPv4Stack :
+                             There are problems with multicast and IPv6 on some
+                          OS/JDK combos, so we tell Java to use IPv4. If you
+                          have problems with multicast when running the tests
+                          you can try setting this to 'false', although typically
+                          that won't be helpful.
+
+                          jgroups.ping.timeout=500 :
+                             Tell JGroups to only wait a short time for PING
+                          responses before determining coordinator. Speeds cluster
+                          formation during integration tests. (This is too
+                          low a value for a real system; only use for tests.)
+
+                          jgroups.udp.enable_bundling=false :
+                             Disable the JGroups message bundling feature
+                          to speed tests and avoid FLUSH issue
+                           -->
+                    <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false</argLine>
+                    <skipExec>${skipUnitTests}</skipExec>
+                    <!-- Apache Lucene uses assertions which currently fail on JDK9: -->
+                    <!-- not sure yet how that is going to be resolved, but it's not an OGM problem. -->
+                    <enableAssertions>false</enableAssertions>
+                    <dependenciesToScan>
+                        <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+                    </dependenciesToScan>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>org.hibernate.ogm.datastore.infinispanremote.utils.HotrodServerLifecycle</value>
+                        </property>
+                    </properties>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <showWarnings>true</showWarnings>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                    <!-- Annotation processor is run as an independent step -->
+                    <proc>none</proc>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>test</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skipUnitTests>false</skipUnitTests>
+            </properties>
+        </profile>
+     </profiles>
+</project>
