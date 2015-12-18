@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-integrationtest</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.0.Beta1</version>
     </parent>
     <artifactId>hibernate-ogm-integrationtest-mongodb</artifactId>
     <name>Hibernate OGM Integration Tests for MongoDB</name>
