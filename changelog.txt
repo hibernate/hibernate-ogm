@@ -1,6 +1,37 @@
 Hibernate OGM Changelog
 =======================
 
+5.0.0.Beta1 (18-12-2015)
+-------------------------
+
+** Bug
+    * OGM-917 - mongodb                         - Embeddable key with single column not working with MongoDB
+
+** Improvement
+    * OGM-935 - core                            - Upgrade to Hibernate ORM 5.0.5.Final
+    * OGM-928 - redis                           - Use Strings in RedisConnection instead of byte array
+    * OGM-915 - core                            - Provide easy access to all required meta-data to schema definers
+    * OGM-904 - couchdb                         - Use more natural format to store map-typed properties in CouchDB
+    * OGM-931 - core                            - Allow to persist an entity with association to non-managed entity
+    * OGM-929 - tests                           - Refactor test runners for skip by provider and skip by dialect
+    * OGM-894 - cassandra                       - Support Cassandra 2.2 type mappings
+
+** New Feature
+    * OGM-927 - mongodb, query                  - Native CLI queries don't support logical operator
+    * OGM-933 - core                            - Implement PostLoad annotation support
+    * OGM-145 - core                            - Expose the collection type (Map, Set, List etc) so that the underlying structure might be smarter
+    * OGM-907 - mongodb, neo4j                  - Implement MultigetGridDialect for relevant Dialects
+    * OGM-914 - core                            - Expose entity key metadata through association key meta data
+    * OGM-930 - cassandra, core, couchdb, redis - Map basic properties annotated with @Lob
+
+** Task
+    * OGM-938 - build                           - Upgrade to Hibernate Search 5.5.1.Final
+    * OGM-939 - tests                           - Upgrade to WildFly 10.0.0.CR4 and related EE7 components
+    * OGM-936 - infinispan                      - Upgrade to Infinispan 8.0.2.Final
+    * OGM-925 - build                           - Upgrade Hibernate Search and Apache Lucene to 5.5.0.Final and 5.3.1
+    * OGM-890 - build, redis                    - Use Netty modules provided by WildFly for Redis driver
+    * OGM-916 - documentation                   - Write a how-to guide for creating an OGM dialect
+
 5.0.0.Alpha1 (24-08-2015)
 -------------------------
 
