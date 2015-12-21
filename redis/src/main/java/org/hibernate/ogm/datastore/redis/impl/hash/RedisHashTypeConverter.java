@@ -13,11 +13,13 @@ import org.hibernate.ogm.datastore.redis.impl.RedisJsonBlobType;
 import org.hibernate.ogm.datastore.redis.impl.RedisJsonByteType;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
+import org.hibernate.ogm.type.impl.SerializableAsStringType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.BinaryType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.EnumType;
 import org.hibernate.type.MaterializedBlobType;
+import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
@@ -48,6 +50,7 @@ public class RedisHashTypeConverter {
 		conversion.put( StandardBasicTypes.BYTE, RedisHashType.BYTE );
 		conversion.put( BinaryType.INSTANCE, RedisJsonBlobType.INSTANCE );
 		conversion.put( MaterializedBlobType.INSTANCE, RedisJsonBlobType.INSTANCE );
+		conversion.put( StandardBasicTypes.SERIALIZABLE, RedisJsonBlobType.INSTANCE );
 
 		conversion.put( StandardBasicTypes.BOOLEAN, RedisHashType.BOOLEAN );
 		conversion.put( StandardBasicTypes.NUMERIC_BOOLEAN, RedisHashType.NUMERIC_BOOLEAN );
@@ -70,6 +73,10 @@ public class RedisHashTypeConverter {
 				EnumType enumType = (EnumType) customType.getUserType();
 				return ( new RedisHashEnumType( customType, enumType ) );
 			}
+		}
+
+		if(type instanceof SerializableToBlobType) {
+			return new SerializableAsStringType(( (SerializableToBlobType) type ).getJavaTypeDescriptor());
 		}
 
 		return conversionMap.get( type );
