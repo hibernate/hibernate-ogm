@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.redis.test.mapping;
 
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.ogm.OgmSession;
@@ -15,6 +16,8 @@ import org.hibernate.ogm.utils.SkipByGridDialect;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import org.json.JSONException;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
@@ -50,6 +53,39 @@ public class RedisHashMappingTest extends RedisOgmTestCase {
 		assertThat( map ).includes( entry( "alias", "pink-donut" ) );
 		assertThat( map ).includes( entry( "radius", "7.5" ) );
 		assertThat( map ).includes( entry( "glaze", "2" ) );
+
+		session.close();
+	}
+
+	@Test
+	public void canStoreAndLoadEntitiesWithIdGeneratorAndAssociation() throws JSONException {
+		OgmSession session = openSession();
+		session.getTransaction().begin();
+
+		// given
+		Plant ficus = new Plant( 181 );
+		session.persist( ficus );
+
+		Family family = new Family( "family-1", "Moraceae", ficus );
+		session.persist( family );
+
+		session.getTransaction().commit();
+
+		// when
+		Map<String, String> familyRepresentation = getConnection().hgetall( "Family:family-1" );
+		Map<String, String> plantRepresentation = getConnection().hgetall( "Plant:1" );
+		List<String> associationRepresentation = getConnection().lrange( "Associations:Family_Plant:family-1", 0, -1 );
+
+		// then
+
+		assertThat( familyRepresentation ).includes( entry( "name", "Moraceae" ) ).includes(
+				entry(
+						"id",
+						"family-1"
+				)
+		);
+		assertThat( plantRepresentation ).includes( entry( "height", "181" ) ).includes( entry( "id", "1" ) );
+		assertThat( associationRepresentation ).contains( "\"1\"" );
 
 		session.close();
 	}
