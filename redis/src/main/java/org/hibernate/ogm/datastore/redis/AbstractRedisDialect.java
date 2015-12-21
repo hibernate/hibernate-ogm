@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.redis;
 
 import java.text.Collator;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -22,6 +23,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
@@ -82,7 +84,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		return prefix + entityId;
 	}
 
-
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		remove( key );
@@ -93,7 +94,7 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 			String prefix,
 			String key,
 			Entity document) {
-		if ( startsWith( key, prefix ) ) {
+		if ( key.startsWith( prefix ) ) {
 
 			String keyWithoutPrefix = getKeyWithoutTablePrefix( prefix, key );
 
@@ -138,19 +139,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 	protected String getKeyWithoutTablePrefix(String prefixBytes, String key) {
 		return key.substring( prefixBytes.length() );
-	}
-
-	/**
-	 * Check, whether {@code bytes} starts with {@code prefixBytes}.
-	 *
-	 * @param bytes haystack
-	 * @param prefixBytes needle
-	 *
-	 * @return true, if {@code bytes} starts with {@code prefixBytes}
-	 */
-	protected boolean startsWith(String bytes, String prefixBytes) {
-		return bytes.startsWith( prefixBytes );
-
 	}
 
 	protected void setAssociationTTL(
@@ -212,7 +200,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		}
 	}
 
-
 	/**
 	 * Create a String representation of the entity key in the format of {@code Association:(table name):(columnId)}.
 	 * {@see #ASSOCIATIONS}
@@ -242,7 +229,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 		return prefix + entityId;
 	}
-
 
 	/**
 	 * Construct a key based on the key columns:
@@ -278,4 +264,48 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		return strategy.deserialize( key, Map.class );
 	}
 
+	/**
+	 * Retrieve association from a Redis List or Redis Set, depending on the association type.
+	 * @param key the association key
+	 * @return the association
+	 */
+	protected org.hibernate.ogm.datastore.redis.dialect.value.Association getAssociation(AssociationKey key) {
+		String associationId = associationId( key );
+		Collection<String> rows;
+
+		if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
+			rows = connection.smembers( associationId );
+		}
+		else {
+			rows = connection.lrange( associationId, 0, -1 );
+		}
+
+		org.hibernate.ogm.datastore.redis.dialect.value.Association association = new org.hibernate.ogm.datastore.redis.dialect.value.Association();
+
+		for ( String item : rows ) {
+			association.getRows().add( strategy.deserialize( item, Object.class ) );
+		}
+		return association;
+	}
+
+	/**
+	 * Store an association to a Redis List or Redis Set, depending on the association type.
+	 * @param key the association key
+	 * @param association the association document
+	 */
+	protected void storeAssociation(
+			AssociationKey key,
+			org.hibernate.ogm.datastore.redis.dialect.value.Association association) {
+		String associationId = associationId( key );
+		connection.del( associationId );
+
+		for ( Object row : association.getRows() ) {
+			if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
+				connection.sadd( associationId, strategy.serialize( row ) );
+			}
+			else {
+				connection.rpush( associationId, strategy.serialize( row ) );
+			}
+		}
+	}
 }
