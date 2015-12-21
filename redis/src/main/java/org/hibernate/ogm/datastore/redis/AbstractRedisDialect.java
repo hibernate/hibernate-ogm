@@ -222,7 +222,8 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	 * @return byte array containing the key
 	 */
 	protected String associationId(AssociationKey key) {
-		String prefix = ASSOCIATIONS + ":" + key.getTable() + ":";
+		String prefix = ASSOCIATIONS + ":" + key.getMetadata().getTable() + ":" + key.getMetadata()
+				.getCollectionRole() + ":";
 		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
 
 		return prefix + entityId;
