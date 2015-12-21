@@ -92,7 +92,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		storeEntity( key, map, tupleContext.getOptionsContext(), tuple.getOperations() );
 	}
 
-
 	@Override
 	public boolean isStoredInEntityStructure(
 			AssociationKeyMetadata keyMetadata,
@@ -112,7 +111,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 				AssociationStorageOption.class
 		);
 	}
-
 
 	@Override
 	public org.hibernate.ogm.model.spi.Association getAssociation(
@@ -281,7 +279,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			KeyScanCursor<String> cursor = null;
 			String prefix = entityKeyMetadata.getTable() + ":";
-			String prefixBytes = prefix;
 
 			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 			do {
@@ -295,7 +292,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 				for ( String key : cursor.getKeys() ) {
 					Entity document = entityStorageStrategy.getEntity( key );
 
-					addKeyValuesFromKeyName( entityKeyMetadata, prefixBytes, key, document );
+					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
 
 					consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
 				}
@@ -303,7 +300,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			} while ( !cursor.isFinished() );
 		}
 	}
-
 
 	private void storeEntity(
 			EntityKey key,
@@ -335,19 +331,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
 	}
 
-
-	private Association getAssociation(AssociationKey key) {
-		String associationId = associationId( key );
-		List<String> lrange = connection.lrange( associationId, 0, -1 );
-
-		Association association = new Association();
-
-		for ( String bytes : lrange ) {
-			association.getRows().add( strategy.deserialize( bytes, Object.class ) );
-		}
-		return association;
-	}
-
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
 		Long currentTtl = connection.pttl( entityId( key ) );
 
@@ -359,15 +342,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 		setEntityTTL( key, currentTtl, getTTL( associationContext ) );
 		return entity;
-	}
-
-	private void storeAssociation(AssociationKey key, Association document) {
-		String associationId = associationId( key );
-		connection.del( associationId );
-
-		for ( Object row : document.getRows() ) {
-			connection.rpush( associationId, strategy.serialize( row ) );
-		}
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {
