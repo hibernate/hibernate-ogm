@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.redis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -377,6 +378,10 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 	@Override
 	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		if ( keys.length == 0 ) {
+			return Collections.emptyList();
+		}
+
 		String ids[] = new String[keys.length];
 
 		for ( int i = 0; i < keys.length; i++ ) {
@@ -392,6 +397,9 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 				EntityKey key = keys[i];
 				addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
 				tuples.add( new Tuple( new RedisTupleSnapshot( entity.getProperties() ) ) );
+			}
+			else {
+				tuples.add( null );
 			}
 			i++;
 		}
