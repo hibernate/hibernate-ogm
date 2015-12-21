@@ -75,8 +75,8 @@ public class RedisHashTypeConverter {
 			}
 		}
 
-		if(type instanceof SerializableToBlobType) {
-			return new SerializableAsStringType(( (SerializableToBlobType) type ).getJavaTypeDescriptor());
+		if ( type instanceof SerializableToBlobType ) {
+			return new SerializableAsStringType( ( (SerializableToBlobType) type ).getJavaTypeDescriptor() );
 		}
 
 		return conversionMap.get( type );

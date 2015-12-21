@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.redis;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -40,9 +38,9 @@ import com.lambdaworks.redis.ScanArgs;
 
 /**
  * Stores tuples and associations inside Redis using hash data structures.
- * <p/>
+ * <p>
  * Tuples are stored in Redis within hashes. Associations are stored in Redis obtained as either single values or a
- * JSON serialization of a {@link org.hibernate.ogm.datastore.redis.dialect.value.Association} object in list data structures.
+ * JSON serialization of a {@link org.hibernate.ogm.datastore.redis.dialect.value.Association} object in list/set data structures.
  *
  * @author Mark Paluch
  */
@@ -58,7 +56,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	}
 
 	@Override
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({"unchecked", "rawtypes" })
 	public Tuple getTuple(
 			EntityKey key, TupleContext tupleContext) {
 		String entityIdString = entityId( key );
@@ -188,24 +186,6 @@ public class RedisHashDialect extends AbstractRedisDialect {
 		);
 	}
 
-	private org.hibernate.ogm.datastore.redis.dialect.value.Association getAssociation(AssociationKey key) {
-		String associationId = associationId( key );
-		Collection<String> rows;
-		if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
-			rows = connection.smembers( associationId );
-		}
-		else {
-			rows = connection.lrange( associationId, 0, -1 );
-		}
-
-		org.hibernate.ogm.datastore.redis.dialect.value.Association association = new org.hibernate.ogm.datastore.redis.dialect.value.Association();
-
-		for ( String item : rows ) {
-			association.getRows().add( strategy.deserialize( item, Object.class ) );
-		}
-		return association;
-	}
-
 	@Override
 	public void insertOrUpdateAssociation(
 			AssociationKey associationKey, Association association, AssociationContext associationContext) {
@@ -220,22 +200,6 @@ public class RedisHashDialect extends AbstractRedisDialect {
 				(org.hibernate.ogm.datastore.redis.dialect.value.Association) redisAssociation.getOwningDocument()
 		);
 		setAssociationTTL( associationKey, associationContext, currentTtl );
-	}
-
-	private void storeAssociation(
-			AssociationKey key,
-			org.hibernate.ogm.datastore.redis.dialect.value.Association document) {
-		String associationId = associationId( key );
-		connection.del( associationId );
-
-		for ( Object row : document.getRows() ) {
-			if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
-				connection.sadd( associationId, strategy.serialize( row ) );
-			}
-			else {
-				connection.rpush( associationId, strategy.serialize( row ) );
-			}
-		}
 	}
 
 	private Object getAssociationRows(
