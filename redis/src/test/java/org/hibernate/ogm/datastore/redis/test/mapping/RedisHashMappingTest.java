@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.redis.test.mapping;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public class RedisHashMappingTest extends RedisOgmTestCase {
 		// when
 		Map<String, String> familyRepresentation = getConnection().hgetall( "Family:family-1" );
 		Map<String, String> plantRepresentation = getConnection().hgetall( "Plant:1" );
-		List<String> associationRepresentation = getConnection().lrange( "Associations:Family_Plant:family-1", 0, -1 );
+		Collection<String> associationRepresentation = getConnection().lrange( "Associations:Family_Plant:members:family-1", 0, -1 );
 
 		// then
 
