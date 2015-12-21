@@ -78,7 +78,7 @@ public class GlobalPropertyTTLTest extends RedisOgmTestCase {
 
 		// when
 		Long bandTTL = getConnection().pttl( "Band:1" );
-		Long songTTL = getConnection().pttl( "Associations:Band_Song:1" );
+		Long songTTL = getConnection().pttl( "Associations:Band_Song:songs:1" );
 
 		// then
 		assertThat( bandTTL ).isEqualTo( -1L );
