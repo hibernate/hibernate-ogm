@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
@@ -95,15 +96,33 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	@Override
 	public void insertOrUpdateTuple(
 			EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException {
-		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
-		Map<String, String> entity = new HashMap<>();
-		List<String> toDelete1 = new ArrayList<>();
 
+		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
+		MapHelpers.applyTupleOpsOnMap( tuple, map );
+
+		Map<String, String> entity = getEntityForUpdate( key, tuple );
+		List<String> toDelete = getKeysForRemoval( tuple );
+
+		String entityId = entityId( key );
+		Long currentTtl = connection.pttl( entityId( key ) );
+
+		if ( !toDelete.isEmpty() ) {
+			connection.hdel( entityId, toDelete.toArray( new String[toDelete.size()] ) );
+		}
+
+		if ( !entity.isEmpty() ) {
+			connection.hmset( entityId, entity );
+		}
+
+		setEntityTTL( key, currentTtl, getTTL( tupleContext.getOptionsContext() ) );
+	}
+
+	private Map<String, String> getEntityForUpdate(EntityKey key, Tuple tuple) {
+		Map<String, String> entity = new HashMap<>();
 		for ( TupleOperation action : tuple.getOperations() ) {
+
 			switch ( action.getType() ) {
 				case PUT:
-					map.put( action.getColumn(), action.getValue() );
-
 					// TODO: IllegalStateException when value is not String/Character?
 					if ( action.getValue() instanceof Character ) {
 						entity.put( action.getColumn(), action.getValue().toString() );
@@ -112,27 +131,23 @@ public class RedisHashDialect extends AbstractRedisDialect {
 						entity.put( action.getColumn(), (String) action.getValue() );
 					}
 					break;
+			}
+		}
+		return entity;
+	}
+
+	private List<String> getKeysForRemoval(Tuple tuple) {
+		List<String> toDelete = new ArrayList<>();
+
+		for ( TupleOperation action : tuple.getOperations() ) {
+			switch ( action.getType() ) {
 				case REMOVE:
 				case PUT_NULL:
-					map.remove( action.getColumn() );
-					toDelete1.add( action.getColumn() );
+					toDelete.add( action.getColumn() );
 					break;
 			}
 		}
-
-		String entityId = entityId( key );
-		Long currentTtl = connection.pttl( entityId( key ) );
-
-		if ( !toDelete1.isEmpty() ) {
-			String[] toDelete2 = toDelete1.toArray( new String[toDelete1.size()] );
-			connection.hdel( entityId, toDelete2 );
-		}
-
-		if ( !entity.isEmpty() ) {
-			connection.hmset( entityId, entity );
-		}
-
-		setEntityTTL( key, currentTtl, getTTL( tupleContext.getOptionsContext() ) );
+		return toDelete;
 	}
 
 	@Override

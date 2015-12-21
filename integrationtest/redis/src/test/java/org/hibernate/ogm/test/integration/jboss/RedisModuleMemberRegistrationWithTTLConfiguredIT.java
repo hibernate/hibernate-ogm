@@ -13,7 +13,7 @@ import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.redis.Redis;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
+import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
 import org.hibernate.ogm.datastore.redis.RedisProperties;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -117,8 +117,8 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		return RedisDatastoreProvider.class.cast( provider );
 	}
 
-	public static RedisDialect getDialect(DatastoreProvider datastoreProvider) {
-		return new RedisDialect( (RedisDatastoreProvider) datastoreProvider );
+	public static RedisJsonDialect getDialect(DatastoreProvider datastoreProvider) {
+		return new RedisJsonDialect( (RedisDatastoreProvider) datastoreProvider );
 	}
 
 }
