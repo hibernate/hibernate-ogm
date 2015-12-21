@@ -17,7 +17,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.CustomType;
 
 /**
- * Enum type that represents the ordinal value as String.
+ * Store {@link Enum} types either by using names as {@link String} or using the ordinal value as {@link String}.
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
  */
 public class RedisHashEnumType extends EnumType {
@@ -38,12 +38,11 @@ public class RedisHashEnumType extends EnumType {
 			log.tracef( "binding [null] to parameter [$s]", names[0] );
 		}
 		else {
-			Object endValue = isOrdinal ?
+			Object endValue = isOrdinal() ?
 					Integer.toString( ( (Enum<?>) value ).ordinal() ) :
 					( (Enum<?>) value ).name();
 			log.tracef( "binding [$s] to parameter(s) $s", endValue, names[0] );
 			resultset.put( names[0], endValue );
 		}
 	}
-
 }

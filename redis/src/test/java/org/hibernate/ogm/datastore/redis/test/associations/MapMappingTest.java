@@ -34,7 +34,7 @@ import static org.hibernate.ogm.datastore.redis.utils.RedisTestHelper.assertDbOb
  * @author Gunnar Morling
  * @author Mark Paluch
  */
-@SkipByGridDialect(GridDialectType.REDIS_HASH)
+@SkipByGridDialect(value = GridDialectType.REDIS_HASH, comment = "RedisHashDialect does not support embedded structures/associations")
 public class MapMappingTest extends OgmTestCase {
 
 	@Test
