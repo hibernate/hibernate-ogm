@@ -26,6 +26,8 @@ import com.mongodb.util.JSON;
  * <ul>
  * <li>find(criteria)</li>
  * <li>find(criteria, projection)</li>
+ * <li>count()</li>
+ * <li>count(criteria)</li>
  * </ul>
  * The parameter values must be given as JSON objects adhering to the <a
  * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
@@ -49,7 +51,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule FindQuery() {
-		return Sequence( Db(), Separator(), Collection(), Separator(), Operation() );
+		return Sequence( Db(),  Collection(),  Operation() );
 	}
 
 	/**
@@ -63,17 +65,27 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	@SuppressNode
 	public Rule Db() {
-		return Sequence( ZeroOrMore( WhiteSpace() ), "db " );
+		return Sequence( ZeroOrMore( WhiteSpace() ), "db ", Separator() );
 	}
 
 	@SuppressSubnodes
 	public Rule Collection() {
-		return Sequence( OneOrMore( TestNot( Separator() ), ANY ), builder.setCollection( match() ) );
+		return Sequence( OneOrMore( TestNot( Reserved() ), ANY ), builder.setCollection( match() ) );
+		//TODO it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
+		// cf. https://docs.mongodb.org/manual/faq/developers/#are-there-any-restrictions-on-the-names-of-collections
 	}
 
 	@SuppressNode
 	public Rule Separator() {
 		return Sequence( ZeroOrMore( WhiteSpace() ), ". " );
+	}
+
+	public Rule Reserved() {
+		return FirstOf(
+				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
+				Sequence( Count(), builder.setOperation( Operation.COUNT ) )
+		);
+		//TODO there is many more than `find` an `count` but as this time we only support `find` and `count`
 	}
 
 	public Rule Operation() {
@@ -85,6 +97,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule Find() {
 		return Sequence(
+				Separator(),
 				"find ",
 				"( ",
 				Json(), builder.setCriteria( match() ),
@@ -95,6 +108,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule Count() {
 		return Sequence(
+				Separator(),
 				"count ",
 				"( ",
 				Optional( Sequence( Json(), builder.setCriteria( match() ) ) ),
@@ -115,7 +129,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 						Optional( Pair() )
 				).suppressNode(),
 				"} "
-				);
+		);
 	}
 
 	public Rule Pair() {
