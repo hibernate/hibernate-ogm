@@ -12,6 +12,7 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.RecoveringParseRunner;
@@ -279,4 +280,21 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-900")
+	public void shouldSupportDotInCollectionName() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.POEM.COM.count()");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "POEM.COM" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+
 }
