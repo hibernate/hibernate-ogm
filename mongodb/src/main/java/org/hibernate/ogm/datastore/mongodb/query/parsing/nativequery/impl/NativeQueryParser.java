@@ -71,7 +71,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	@SuppressSubnodes
 	public Rule Collection() {
 		return Sequence( OneOrMore( TestNot( Reserved() ), ANY ), builder.setCollection( match() ) );
-		//TODO it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
+		//TODO OGM-949 it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
 		// cf. https://docs.mongodb.org/manual/faq/developers/#are-there-any-restrictions-on-the-names-of-collections
 	}
 
@@ -81,10 +81,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf(
-				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
-				Sequence( Count(), builder.setOperation( Operation.COUNT ) )
-		);
+		return FirstOf( Find(), Count() );
 		//TODO there is many more than `find` an `count` but as this time we only support `find` and `count`
 	}
 
