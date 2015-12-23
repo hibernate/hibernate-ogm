@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.MappingException;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Assert;
@@ -53,6 +54,14 @@ public class CollectionNamingValidationTest {
 		assertTableCausesException( DollarNamedTable.class, "OGM001222" );
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-900")
+	public void shouldSupportDotInCollectionName() {
+		OgmSessionFactory ogmSessionFactory = TestHelper.getDefaultTestSessionFactory( DottedNamedTable.class );
+		assertThat( ogmSessionFactory.getAllClassMetadata().containsKey( DottedNamedTable.class.getName() ));
+	}
+
+
 	private void assertTableCausesException(Class<?> mappedType, String expectedExceptionPrefix) {
 		try {
 			TestHelper.getDefaultTestSessionFactory( mappedType );
@@ -87,6 +96,11 @@ public class CollectionNamingValidationTest {
 	public static class InvalidColumnsTable {
 		@Id Long id;
 		@Column(name = "$DOLLARS") String field;
+	}
+
+	@Entity @Table(name = "table.with.dot")
+	public static class DottedNamedTable {
+		@Id Long id;
 	}
 
 }
