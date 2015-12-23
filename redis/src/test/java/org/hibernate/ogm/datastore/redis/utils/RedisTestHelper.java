@@ -27,7 +27,7 @@ import org.hibernate.ogm.utils.TestableGridDialect;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lambdaworks.redis.RedisConnection;
+import com.lambdaworks.redis.api.sync.RedisCommands;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -99,11 +99,11 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		RedisConnection<String, String> connection = getConnection( sessionFactory );
+		RedisCommands<String, String> connection = getConnection( sessionFactory );
 		connection.flushall();
 	}
 
-	private RedisConnection<String, String> getConnection(SessionFactory sessionFactory) {
+	private RedisCommands<String, String> getConnection(SessionFactory sessionFactory) {
 		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getConnection();
 	}
@@ -115,7 +115,7 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		RedisConnection<String, String> connection = getConnection( sessionFactory );
+		RedisCommands<String, String> connection = getConnection( sessionFactory );
 		List<String> keys = connection.keys( "*" );
 
 		long result = 0;
@@ -176,12 +176,12 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	public long getNumberOfGlobalAssociations(SessionFactory sessionFactory) {
 
-		RedisConnection<String, String> connection = getConnection( sessionFactory );
+		RedisCommands<String, String> connection = getConnection( sessionFactory );
 		return connection.keys( RedisDialect.ASSOCIATIONS + ":*" ).size();
 	}
 
 	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
-		RedisConnection<String, String> connection = getConnection( sessionFactory );
+		RedisCommands<String, String> connection = getConnection( sessionFactory );
 
 		long associationCount = 0;
 		List<String> keys = connection.keys( "*" );

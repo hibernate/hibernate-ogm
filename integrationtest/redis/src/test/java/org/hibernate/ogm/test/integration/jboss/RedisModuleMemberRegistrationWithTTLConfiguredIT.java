@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.lambdaworks.redis.RedisConnection;
+import com.lambdaworks.redis.api.sync.RedisCommands;
 
 /**
  * Test for the Hibernate OGM module in WildFly using Redis
@@ -88,7 +88,7 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		phoneNumberService.createPhoneNumber( "Michael", "123-456" );
 
 		RedisDatastoreProvider provider = getProvider();
-		RedisConnection<String, String> connection = provider.getConnection();
+		RedisCommands<String, String> connection = provider.getConnection();
 
 		// when
 		String key = "PhoneNumber:Michael";

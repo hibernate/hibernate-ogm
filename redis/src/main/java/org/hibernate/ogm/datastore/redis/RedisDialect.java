@@ -51,8 +51,8 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import com.lambdaworks.redis.KeyScanCursor;
-import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.ScanArgs;
+import com.lambdaworks.redis.api.sync.RedisCommands;
 
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
@@ -72,7 +72,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	public static final String ASSOCIATIONS = "Associations";
 
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
-	private final RedisConnection<String, String> connection;
+	private final RedisCommands<String, String> connection;
 	private final JsonSerializationStrategy serializationStrategy = new JsonSerializationStrategy();
 
 	public RedisDialect(RedisDatastoreProvider provider) {
