@@ -6,10 +6,10 @@
  */
 package org.hibernate.ogm.datastore.cassandra.model.impl;
 
-import com.datastax.driver.core.ResultSet;
-
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
+
+import com.datastax.driver.core.ResultSet;
 
 /**
  * Wraps Cassandra java-driver ResultSet.
@@ -49,4 +49,10 @@ public class ResultSetTupleIterator implements ClosableIterator<Tuple> {
 		count++;
 		return new Tuple( new ResultSetTupleSnapshot( resultSet.one() ) );
 	}
+
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+
 }
