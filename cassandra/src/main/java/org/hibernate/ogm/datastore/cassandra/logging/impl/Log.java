@@ -43,4 +43,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1606, value = "Failed to execute CQL operation %1$s")
 	HibernateException failToExecuteCQL(String cqlStatement, @Cause RuntimeException e);
+
+	@Message(id = 1607, value = "Failed to prepare CQL operation %1$s")
+	HibernateException failToPrepareCQL(String cqlStatement, @Cause Throwable e);
 }
