@@ -31,7 +31,7 @@ public enum GridDialectType {
 
 	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false  ),
 
-	REDIS( "org.hibernate.ogm.datastore.redis.RedisJsonDialect", false, false ),
+	REDIS_JSON( "org.hibernate.ogm.datastore.redis.RedisJsonDialect", false, false ),
 
 	REDIS_HASH( "org.hibernate.ogm.datastore.redis.RedisHashDialect", false, false );
 
