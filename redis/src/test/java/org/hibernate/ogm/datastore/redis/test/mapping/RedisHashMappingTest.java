@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.redis.test.mapping;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.redis.test.RedisOgmTestCase;
 import org.hibernate.ogm.utils.GridDialectType;
@@ -15,16 +18,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.json.JSONException;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.MapAssert.entry;
 
 /**
- * Test for Redis JSON mapping.
+ * Test for Redis Hash mapping.
  *
  * @author Mark Paluch
  */
-@SkipByGridDialect(GridDialectType.REDIS_HASH)
-public class RedisJsonMappingTest extends RedisOgmTestCase {
+@SkipByGridDialect(GridDialectType.REDIS_JSON)
+public class RedisHashMappingTest extends RedisOgmTestCase {
 
 	@Before
 	public void before() throws Exception {
@@ -32,7 +36,7 @@ public class RedisJsonMappingTest extends RedisOgmTestCase {
 	}
 
 	@Test
-	public void verifyRedisRepresentation() throws JSONException {
+	public void verifyRedisRepresentation() {
 		OgmSession session = openSession();
 		session.getTransaction().begin();
 
@@ -43,14 +47,12 @@ public class RedisJsonMappingTest extends RedisOgmTestCase {
 		session.getTransaction().commit();
 
 		// when
-		String representation = getConnection().get( "Donut:homers-donut" );
+		Map<String, String> map = getConnection().hgetall( "Donut:homers-donut" );
 
 		// then
-		JSONAssert.assertEquals(
-				"{'alias':'pink-donut','radius':7.5,'glaze':2}",
-				representation,
-				JSONCompareMode.STRICT
-		);
+		assertThat( map ).includes( entry( "alias", "pink-donut" ) );
+		assertThat( map ).includes( entry( "radius", "7.5" ) );
+		assertThat( map ).includes( entry( "glaze", "2" ) );
 
 		session.close();
 	}
@@ -70,21 +72,22 @@ public class RedisJsonMappingTest extends RedisOgmTestCase {
 		session.getTransaction().commit();
 
 		// when
-		String familyRepresentation = getConnection().get( "Family:family-1" );
-		String plantRepresentation = getConnection().get( "Plant:1" );
+		Map<String, String> familyRepresentation = getConnection().hgetall( "Family:family-1" );
+		Map<String, String> plantRepresentation = getConnection().hgetall( "Plant:1" );
+		Collection<String> associationRepresentation = getConnection().lrange(
+				"Associations:Family_Plant:members:family-1", 0, -1
+		);
 
 		// then
-		JSONAssert.assertEquals(
-				"{\"members\":[1],\"name\":\"Moraceae\"}",
-				familyRepresentation,
-				JSONCompareMode.STRICT
-		);
 
-		JSONAssert.assertEquals(
-				"{\"height\":181}",
-				plantRepresentation,
-				JSONCompareMode.STRICT
+		assertThat( familyRepresentation ).includes( entry( "name", "Moraceae" ) ).includes(
+				entry(
+						"id",
+						"family-1"
+				)
 		);
+		assertThat( plantRepresentation ).includes( entry( "height", "181" ) ).includes( entry( "id", "1" ) );
+		assertThat( associationRepresentation ).contains( "\"1\"" );
 
 		session.close();
 	}

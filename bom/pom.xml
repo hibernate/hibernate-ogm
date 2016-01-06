@@ -31,7 +31,7 @@
         <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.2.0-rc3</cassandraVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
-        <lettuceVersion>3.2.Final</lettuceVersion>
+        <lettuceVersion>4.0.2.Final</lettuceVersion>
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler19Version>2.0.4</neo4jCypherCompiler19Version>
         <neo4jCypherCompiler20Version>2.0.4</neo4jCypherCompiler20Version>
@@ -66,8 +66,8 @@
         <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->
         <!-- end of Cassandra dependencies -->
 
-        <lettuceCommonsPoolVersion>2.2</lettuceCommonsPoolVersion>
-        <lettuceGuavaVersion>17.0</lettuceGuavaVersion>
+        <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
+        <lettuceGuavaVersion>18.0</lettuceGuavaVersion>
         <netty4Version>4.0.26.Final</netty4Version>
     </properties>
 

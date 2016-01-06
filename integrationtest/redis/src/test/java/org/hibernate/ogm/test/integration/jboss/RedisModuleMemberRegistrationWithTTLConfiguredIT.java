@@ -13,7 +13,7 @@ import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.redis.Redis;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
+import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
 import org.hibernate.ogm.datastore.redis.RedisProperties;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.lambdaworks.redis.RedisConnection;
+import com.lambdaworks.redis.api.sync.RedisCommands;
 
 /**
  * Test for the Hibernate OGM module in WildFly using Redis
@@ -88,7 +88,7 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		phoneNumberService.createPhoneNumber( "Michael", "123-456" );
 
 		RedisDatastoreProvider provider = getProvider();
-		RedisConnection<String, String> connection = provider.getConnection();
+		RedisCommands<String, String> connection = provider.getConnection();
 
 		// when
 		String key = "PhoneNumber:Michael";
@@ -117,8 +117,8 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		return RedisDatastoreProvider.class.cast( provider );
 	}
 
-	public static RedisDialect getDialect(DatastoreProvider datastoreProvider) {
-		return new RedisDialect( (RedisDatastoreProvider) datastoreProvider );
+	public static RedisJsonDialect getDialect(DatastoreProvider datastoreProvider) {
+		return new RedisJsonDialect( (RedisDatastoreProvider) datastoreProvider );
 	}
 
 }

@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
+import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -24,8 +24,9 @@ import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
 import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.RedisURI;
+import com.lambdaworks.redis.api.StatefulRedisConnection;
+import com.lambdaworks.redis.api.sync.RedisCommands;
 import com.lambdaworks.redis.codec.Utf8StringCodec;
 
 import static com.lambdaworks.redis.RedisURI.Builder.redis;
@@ -45,11 +46,11 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	private RedisConfiguration config;
 	private RedisClient redisClient;
-	private RedisConnection<String, String> connection;
+	private StatefulRedisConnection<String, String> connection;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		return RedisDialect.class;
+		return RedisJsonDialect.class;
 	}
 
 	@Override
@@ -95,7 +96,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		}
 
 		builder.withTimeout( config.getTimeout(), TimeUnit.MILLISECONDS );
-		return new RedisClient( builder.build() );
+		return RedisClient.create( builder.build() );
 	}
 
 	@Override
@@ -123,7 +124,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		return true;
 	}
 
-	public RedisConnection<String, String> getConnection() {
-		return connection;
+	public RedisCommands<String, String> getConnection() {
+		return connection.sync();
 	}
 }
