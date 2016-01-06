@@ -23,7 +23,7 @@ public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
 
 	@Test
 	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB, GridDialectType.REDIS
+		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB, GridDialectType.REDIS_JSON
 	})
 	public void testWhichAlwaysFails() {
 		fail( "This should never be executed" );

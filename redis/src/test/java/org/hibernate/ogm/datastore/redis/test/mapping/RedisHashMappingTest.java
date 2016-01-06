@@ -27,7 +27,7 @@ import static org.fest.assertions.MapAssert.entry;
  *
  * @author Mark Paluch
  */
-@SkipByGridDialect(GridDialectType.REDIS)
+@SkipByGridDialect(GridDialectType.REDIS_JSON)
 public class RedisHashMappingTest extends RedisOgmTestCase {
 
 	@Before
