@@ -6,12 +6,16 @@
  */
 package org.hibernate.ogm.backendtck.type.custom;
 
+import java.net.URL;
 import javax.persistence.AttributeConverter;
 
 import org.junit.Test;
 
 import org.hibernate.Session;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -50,6 +54,44 @@ public class JpaConvertCustomTypeTest extends OgmTestCase {
 		session.getTransaction().commit();
 
 		session.close();
+	}
+
+	@Test
+	public void testGridTypeForIntermediaryTypeIsUsed() throws Exception {
+		Session session = openSession();
+		session.getTransaction().begin();
+		Printer printer = new Printer();
+		printer.name = new MyString( "somefoo" );
+		URL url = new URL( "http://example.com" );
+		printer.url = url;
+		session.persist( printer );
+		session.getTransaction().commit();
+
+		session.clear();
+
+		session.getTransaction().begin();
+		printer = session.get( Printer.class, printer.id );
+		assertThat( printer ).isNotNull();
+		assertThat( printer.url ).isEqualTo( url );
+		session.delete( printer );
+		session.getTransaction().commit();
+
+		session.close();
+	}
+
+	@Test
+	public void testGridTypeForIntermediaryTypeNotSupported() throws Exception {
+		OgmConfiguration cfg = new OgmConfiguration();
+		cfg.addAnnotatedClass( OtherPrinter.class );
+
+		try {
+			OgmSessionFactory sf = cfg.buildSessionFactory();
+			sf.close();
+			assertThat( true == false ).as( "We should fail as the AttributeConverter is not supported" );
+		}
+		catch (Exception e) {
+			assertThat( e.getCause().getCause().getMessage() ).startsWith( "OGM000084" );
+		}
 	}
 
 	@Override
@@ -92,6 +134,38 @@ public class JpaConvertCustomTypeTest extends OgmTestCase {
 		@Override
 		public String toString() {
 			return string;
+		}
+	}
+
+	public static class URLToMyStringConverter implements AttributeConverter<URL, MyString> {
+
+		@Override
+		public MyString convertToDatabaseColumn(URL attribute) {
+			if ( attribute == null ) {
+				return null;
+			}
+			return new MyString( UrlTypeDescriptor.INSTANCE.toString( attribute ) );
+		}
+
+		@Override
+		public URL convertToEntityAttribute(MyString dbData) {
+			if ( dbData == null ) {
+				return null;
+			}
+			return UrlTypeDescriptor.INSTANCE.fromString( dbData.toString() );
+		}
+	}
+
+	public static class URLToURLConverter implements AttributeConverter<URL, URL> {
+
+		@Override
+		public URL convertToDatabaseColumn(URL attribute) {
+			return attribute;
+		}
+
+		@Override
+		public URL convertToEntityAttribute(URL dbData) {
+			return dbData;
 		}
 	}
 }

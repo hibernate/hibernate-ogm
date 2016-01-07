@@ -4,6 +4,13 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
+
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.backendtck.type.custom;
 
 import java.net.URL;
@@ -17,15 +24,13 @@ import javax.persistence.Id;
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
 @Entity
-public class Printer {
+public class OtherPrinter {
 	@Id
 	@GeneratedValue
 	public UUID id;
 
-	@Convert(converter = JpaConvertCustomTypeTest.MyStringToUpperCaseAndBackConverter.class)
-	public JpaConvertCustomTypeTest.MyString name;
-
-	@Convert(converter = JpaConvertCustomTypeTest.URLToURLConverter.class)
+	// should crash and burn as MyString is not a supported type
+	@Convert(converter = JpaConvertCustomTypeTest.URLToMyStringConverter.class)
 	public URL url;
 
 }
