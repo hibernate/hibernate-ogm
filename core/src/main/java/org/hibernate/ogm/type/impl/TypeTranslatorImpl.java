@@ -15,7 +15,6 @@ import org.hibernate.cfg.AttributeConverterDefinition;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.type.descriptor.impl.AttributeConverterGridTypeDescriptorAdaptor;
 import org.hibernate.ogm.type.descriptor.impl.GridTypeDescriptor;
-import org.hibernate.ogm.type.descriptor.impl.PassThroughGridTypeDescriptor;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
@@ -81,7 +80,8 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		typeConverter = Collections.unmodifiableMap( tmpMap );
 	}
 
-	@Override public GridType getType(Type type) {
+	@Override
+	public GridType getType(Type type) {
 		if ( type == null ) {
 			return null;
 		}
@@ -98,8 +98,6 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		}
 		else if ( type instanceof AttributeConverterTypeAdapter<?> ) {
 			// Handles JPA AttributeConverter integration logic
-
-
 			return buildAttributeConverterGridTypeAdaptor( (AttributeConverterTypeAdapter<?>) type );
 
 		}
@@ -142,36 +140,31 @@ public class TypeTranslatorImpl implements TypeTranslator {
 	}
 
 	/*
-	   We directly pass the converter "database" type as value to the Tuple
-	   This means that some expected conversion might be missed, e.g.:
-	   - a user converts from CustomUUID to UUID
-	   - she expects UUID to then be converted to the right datastore "native" type (e.g. MongoUUID - made up)
-	   - but the current code will pass UUID to MongoDB
-	   That makes @Converters non fully portable for complex cases
-	   To fix that we would need
-	   - something akeen to JDBC Type to define a native datastore type: this would be declared by the GridType
-	   - a registry to link these JDBC Types to their default GridTypeDescriptor instance
-	   see buildAttributeConverterGridTypeAdaptor
-
 	   Logic modeled after {@link SimpleValue#buildAttributeConverterTypeAdapter}
+
+	   Adapt AttributeConverter to GridType.
+	   Most of the logic is done by the AttributeConverterGridTypeDescriptorAdaptor class
+	   which will call the attribute converter and then call the GridType compliant with the intermediary type
 	 */
 	private <T> AttributeConverterGridTypeAdaptor<T> buildAttributeConverterGridTypeAdaptor(AttributeConverterTypeAdapter<T> specificType) {
 		// Rebuild the definition as we need some generic type extraction logic from it
 		AttributeConverterDefinition attributeConverterDefinition = new AttributeConverterDefinition( specificType.getAttributeConverter(), false );
 		final Class databaseColumnJavaType = attributeConverterDefinition.getDatabaseColumnType();
 
-		//TODO in OGM we don't have the notion of JDBCType to express the datastore targeted type
-		//     nor a registry of targeted type to GridTypeDescriptor
-		//     so we cannot do the SqlTypeDescriptor guess done in {@link SimpleValue}
-		//     In the mean time we pass through and expect the targeted type of the converted to be native
-		GridTypeDescriptor gridTypeDescriptor = PassThroughGridTypeDescriptor.INSTANCE;
+		// Find the GridType for the intermediary datastore Java type (from the attribute converter
+		Type intermediaryORMType = typeResolver.basic( databaseColumnJavaType.getName() );
+		if ( intermediaryORMType == null ) {
+			throw log.cannotFindTypeForAttributeConverter( specificType.getAttributeConverter().getClass(), databaseColumnJavaType );
+		}
+		GridType intermediaryOGMGridType = this.getType( intermediaryORMType );
+
 		// find the JavaTypeDescriptor representing the "intermediate database type representation".
 		final JavaTypeDescriptor intermediateJavaTypeDescriptor = JavaTypeDescriptorRegistry.INSTANCE.getDescriptor( databaseColumnJavaType );
 		// and finally construct the adapter, which injects the AttributeConverter calls into the binding/extraction
 		// 		process...
 		final GridTypeDescriptor gridTypeDescriptorAdapter = new AttributeConverterGridTypeDescriptorAdaptor(
 				attributeConverterDefinition.getAttributeConverter(),
-				gridTypeDescriptor,
+				intermediaryOGMGridType,
 				intermediateJavaTypeDescriptor
 		);
 		return new AttributeConverterGridTypeAdaptor<T>(specificType, gridTypeDescriptorAdapter);

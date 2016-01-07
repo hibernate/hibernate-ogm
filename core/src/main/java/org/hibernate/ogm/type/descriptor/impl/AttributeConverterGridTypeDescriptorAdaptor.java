@@ -9,9 +9,10 @@ package org.hibernate.ogm.type.descriptor.impl;
 import javax.persistence.AttributeConverter;
 import javax.persistence.PersistenceException;
 
-import org.jboss.logging.Logger;
-
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
@@ -21,7 +22,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
 public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDescriptor {
-	private static final Logger log = Logger.getLogger( AttributeConverterGridTypeDescriptorAdaptor.class );
+	private static final Log log = LoggerFactory.make();
 
 	private final AttributeConverter converter;
 	private final GridTypeDescriptor delegate;
@@ -29,10 +30,11 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 
 	public AttributeConverterGridTypeDescriptorAdaptor(
 			AttributeConverter converter,
-			GridTypeDescriptor delegate,
+			GridType delegate,
 			JavaTypeDescriptor intermediateJavaTypeDescriptor) {
 		this.converter = converter;
-		this.delegate = delegate;
+		// take the intermediary type gridType and transform it into a GridTypeDescriptor
+		this.delegate =  new GridTypeToGridTypeDescriptorAdapter( delegate );
 		this.intermediateJavaTypeDescriptor = intermediateJavaTypeDescriptor;
 	}
 
@@ -57,7 +59,12 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 				}
 
 				log.debugf( "Converted value on binding : %s -> %s", value, convertedValue );
-				realBinder.bind( resultset, convertedValue, names );
+				try {
+					realBinder.bind( resultset, convertedValue, names );
+				}
+				catch ( Exception e ) {
+					throw log.failureWhenUsingAttributeConverter( converter.getClass(), e );
+				}
 			}
 		};
 	}
@@ -84,9 +91,49 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 					throw pe;
 				}
 				catch (RuntimeException re) {
-					throw new PersistenceException( "Error attempting to apply AttributeConverter", re );
+					throw log.failureWhenUsingAttributeConverter( converter.getClass(), re );
 				}
 			}
 		};
+	}
+
+	/**
+	 * Converts GridTypeDescriptor calls to GridType calls.
+	 * <p/>
+	 * That's a bit cyclic as usually GridType do use GridTypeDescriptor but they don't *have to*
+	 * and there is no way to extract the GridTypeDescriptor out of a GridType.
+	 * So we call the GridType API that usually delegates to the GridTypeDescriptor.
+	 */
+	private static class GridTypeToGridTypeDescriptorAdapter implements GridTypeDescriptor {
+		private final GridType gridType;
+
+		public GridTypeToGridTypeDescriptorAdapter(GridType gridType) {
+			this.gridType = gridType;
+		}
+
+		@Override
+		public <X> GridValueBinder<X> getBinder(JavaTypeDescriptor<X> javaTypeDescriptor) {
+			return new GridValueBinder<X>() {
+				@Override
+				public void bind(Tuple resultset, X value, String[] names) {
+					// We don't have the session, but it is usually never used
+					// we could clean that up with a new GridType contract later
+					gridType.nullSafeSet( resultset, value, names, null );
+				}
+			};
+		}
+
+		@Override
+		public <X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor) {
+			return new GridValueExtractor<X>() {
+				@Override
+				@SuppressWarnings( "unchecked" )
+				public X extract(Tuple resultset, String name) {
+					// session and owner are usually ignored, so passing null
+					// we could clean that up with a new GridType contract later
+					return (X) gridType.nullSafeGet( resultset, name, null, null );
+				}
+			};
+		}
 	}
 }

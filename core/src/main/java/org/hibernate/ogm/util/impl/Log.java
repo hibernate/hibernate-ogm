@@ -14,6 +14,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 
+import javax.persistence.PersistenceException;
 import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
@@ -278,4 +279,11 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 82, value = "The entity at the inverse side of the association '%1$s' cannot be found in the session: %2$s")
 	HibernateException entityTupleNotFound(String collectionRole, EntityKey entityKey);
+
+	@Message(id = 83, value = "Failure when using JPA AttributeConverter [%1$s]. Is the datastore type of the converter a supported type for your datastore?")
+	PersistenceException failureWhenUsingAttributeConverter(@FormatWith(ClassObjectFormatter.class) Class<?> converterClass, @Cause Exception e);
+
+	@Message(id = 84, value = "Unable to find basic type support for [%2$s] when using JPA AttributeConverter [%1$s]." +
+			"Is the datastore type of the converter a supported type for your datastore?")
+	PersistenceException cannotFindTypeForAttributeConverter(@FormatWith(ClassObjectFormatter.class) Class<?> converted, @FormatWith(ClassObjectFormatter.class) Class<?> databaseColumnJavaType);
 }
