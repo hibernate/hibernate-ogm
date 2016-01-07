@@ -118,8 +118,7 @@ public class CassandraDialect implements GridDialect {
 			session.prepare( statement );
 		}
 		catch (ExecutionException e) {
-			log.failToPrepareCQL( statement.getQueryString(), e.getCause() );
-			throw new RuntimeException( e.getCause() );
+			throw log.failToPrepareCQL( statement.getQueryString(), e.getCause() );
 		}
 
 		try {
@@ -130,8 +129,7 @@ public class CassandraDialect implements GridDialect {
 			return session.execute( boundStatement );
 		}
 		catch (DriverException e) {
-			log.failToExecuteCQL( statement.getQueryString(), e );
-			throw e;
+			throw log.failToExecuteCQL( statement.getQueryString(), e );
 		}
 	}
 
