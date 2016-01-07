@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
@@ -230,26 +229,26 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple();
+		return new Tuple( new Neo4jTupleSnapshot( key.getMetadata() ) );
 	}
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Node node;
+		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
+		Node node = snapshot.getNode();
 
 		// insert
-		if ( tuple.getSnapshot() instanceof EmptyTupleSnapshot ) {
+		if ( node == null ) {
 			node = insertTuple( key, tuple );
+			snapshot.setNode( node );
 			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 			GraphLogger.log( "Inserted node: %1$s", node );
 		}
 		// update
 		else {
-			node = ( (Neo4jTupleSnapshot) tuple.getSnapshot() ).getNode();
 			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 			GraphLogger.log( "Updated node: %1$s", node );
 		}
-
 	}
 
 	private Node insertTuple(EntityKey key, Tuple tuple) {
