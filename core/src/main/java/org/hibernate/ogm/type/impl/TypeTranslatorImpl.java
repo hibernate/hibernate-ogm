@@ -25,6 +25,7 @@ import org.hibernate.type.CustomType;
 import org.hibernate.type.EnumType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.Type;
+import org.hibernate.type.TypeResolver;
 import org.hibernate.type.descriptor.converter.AttributeConverterTypeAdapter;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptorRegistry;
@@ -38,11 +39,15 @@ public class TypeTranslatorImpl implements TypeTranslator {
 
 	private static final Log log = LoggerFactory.make();
 
+	// ORM Type to OGM GridType relation
 	private final Map<Type, GridType> typeConverter;
 	private final GridDialect dialect;
+	// ORM type resolver
+	private final TypeResolver typeResolver;
 
-	public TypeTranslatorImpl(GridDialect dialect) {
+	public TypeTranslatorImpl(GridDialect dialect, TypeResolver typeResolver) {
 		this.dialect = dialect;
+		this.typeResolver = typeResolver;
 
 		Map<Type, GridType> tmpMap = newHashMap( 20 );
 		tmpMap.put( org.hibernate.type.ClassType.INSTANCE, ClassType.INSTANCE );
