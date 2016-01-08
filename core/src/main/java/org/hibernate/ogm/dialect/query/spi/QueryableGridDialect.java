@@ -8,7 +8,6 @@ package org.hibernate.ogm.dialect.query.spi;
 
 import java.io.Serializable;
 
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.spi.Tuple;
 

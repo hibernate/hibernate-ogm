@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
@@ -24,6 +23,7 @@ import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.ScalarReturn;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
@@ -82,8 +82,8 @@ public class BackendCustomLoader extends CustomLoader {
 	}
 
 	@Override
-	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( queryParameters );
+	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );

@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
@@ -29,6 +28,7 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;

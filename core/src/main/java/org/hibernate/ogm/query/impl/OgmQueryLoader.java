@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
@@ -22,6 +21,7 @@ import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
@@ -64,10 +64,10 @@ public class OgmQueryLoader extends QueryLoader {
 	}
 
 	@Override
-	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
+	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
 			throws HibernateException {
 
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( queryParameters );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
 		try {
 			if ( hasScalars ) {
 				return listOfArrays( session, tuples );

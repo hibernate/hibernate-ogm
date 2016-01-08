@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
@@ -22,6 +21,7 @@ import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDi
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
