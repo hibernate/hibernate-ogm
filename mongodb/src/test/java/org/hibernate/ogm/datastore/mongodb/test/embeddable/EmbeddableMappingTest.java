@@ -15,12 +15,11 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.embeddable.Account;
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.AddressType;
-import org.hibernate.ogm.backendtck.queries.StoryBranch;
 import org.hibernate.ogm.backendtck.queries.Ending;
 import org.hibernate.ogm.backendtck.queries.OptionalStoryBranch;
+import org.hibernate.ogm.backendtck.queries.StoryBranch;
 import org.hibernate.ogm.backendtck.queries.StoryGame;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -84,7 +83,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		Account loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		Account loadedAccount = session.get( Account.class, account.getLogin() );
 
 		// When
 
@@ -125,7 +124,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount = session.get( Account.class, account.getLogin() );
 
 		// When
 		// set a nested embedded to null
@@ -161,7 +160,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount = session.get( Account.class, account.getLogin() );
 
 		// When
 		// set all properties of an embedded to null
@@ -191,7 +190,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction.commit();
 		// Clean-Up
 		transaction = session.beginTransaction();
-		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount = session.get( Account.class, account.getLogin() );
 		session.delete( loadedAccount );
 		transaction.commit();
 
@@ -199,7 +198,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore("TODO OGM-801: Adapt expected mapping")
 	public void testEmbeddableCollection() throws Exception {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
