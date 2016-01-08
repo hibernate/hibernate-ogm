@@ -22,12 +22,16 @@ import org.hibernate.type.descriptor.java.MutabilityPlan;
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
 public class AttributeConverterGridTypeAdaptor<T> extends AbstractGenericBasicType<T> {
-	private final MutabilityPlan mutabilityPlan;
-	private final AttributeConverterTypeAdapter<T> ormAdapter;
-	private String description;
 
-	// GridTypeDescriptor is passed and constructed by the called because it needs to be passed to the super constructor
-	// also it is like what ORM does
+	private final MutabilityPlan<T> mutabilityPlan;
+	private final AttributeConverterTypeAdapter<T> ormAdapter;
+	private final String description;
+
+	/**
+	 * GridTypeDescriptor is passed and constructed by the caller because it needs to be passed to the super constructor.
+	 * Also it is like what ORM does.
+	 */
+	@SuppressWarnings("unchecked")
 	public AttributeConverterGridTypeAdaptor(AttributeConverterTypeAdapter<T> ormAdapter, GridTypeDescriptor gridTypeDescriptorAdapter) {
 		super( gridTypeDescriptorAdapter, ormAdapter.getJavaTypeDescriptor() );
 		this.ormAdapter = ormAdapter;

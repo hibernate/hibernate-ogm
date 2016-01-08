@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.cfg.AttributeConverterDefinition;
+import org.hibernate.mapping.SimpleValue;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.type.descriptor.impl.AttributeConverterGridTypeDescriptorAdaptor;
 import org.hibernate.ogm.type.descriptor.impl.GridTypeDescriptor;
@@ -139,17 +140,17 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		throw log.unableToFindGridType( type.getClass().getName() );
 	}
 
-	/*
-	   Logic modeled after {@link SimpleValue#buildAttributeConverterTypeAdapter}
-
-	   Adapt AttributeConverter to GridType.
-	   Most of the logic is done by the AttributeConverterGridTypeDescriptorAdaptor class
-	   which will call the attribute converter and then call the GridType compliant with the intermediary type
+	/**
+	 * Logic modeled after {@link SimpleValue#buildAttributeConverterTypeAdapter}
+	 * <p>
+	 * Adapt AttributeConverter to GridType. Most of the logic is done by the
+	 * AttributeConverterGridTypeDescriptorAdaptor class which will call the attribute converter and then call the
+	 * GridType compliant with the intermediary type
 	 */
 	private <T> AttributeConverterGridTypeAdaptor<T> buildAttributeConverterGridTypeAdaptor(AttributeConverterTypeAdapter<T> specificType) {
 		// Rebuild the definition as we need some generic type extraction logic from it
 		AttributeConverterDefinition attributeConverterDefinition = new AttributeConverterDefinition( specificType.getAttributeConverter(), false );
-		final Class databaseColumnJavaType = attributeConverterDefinition.getDatabaseColumnType();
+		final Class<?> databaseColumnJavaType = attributeConverterDefinition.getDatabaseColumnType();
 
 		// Find the GridType for the intermediary datastore Java type (from the attribute converter
 		Type intermediaryORMType = typeResolver.basic( databaseColumnJavaType.getName() );
@@ -159,7 +160,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		GridType intermediaryOGMGridType = this.getType( intermediaryORMType );
 
 		// find the JavaTypeDescriptor representing the "intermediate database type representation".
-		final JavaTypeDescriptor intermediateJavaTypeDescriptor = JavaTypeDescriptorRegistry.INSTANCE.getDescriptor( databaseColumnJavaType );
+		final JavaTypeDescriptor<?> intermediateJavaTypeDescriptor = JavaTypeDescriptorRegistry.INSTANCE.getDescriptor( databaseColumnJavaType );
 		// and finally construct the adapter, which injects the AttributeConverter calls into the binding/extraction
 		// 		process...
 		final GridTypeDescriptor gridTypeDescriptorAdapter = new AttributeConverterGridTypeDescriptorAdaptor(
