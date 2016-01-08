@@ -8,6 +8,7 @@ package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -19,6 +20,10 @@ import org.hibernate.ogm.util.Experimental;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
 import org.hibernate.type.Type;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Dialect abstracting Hibernate OGM from the grid implementation.
@@ -183,4 +188,17 @@ public interface GridDialect extends Service {
 	 * same primary key
 	 */
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
+
+	/**
+	 * //TODO doc
+	 * @param tableName
+	 * @param indexAnnotations
+     * @return
+     */
+	List<OgmIndexSpec> getIndexSpec(String tableName, Map<String, Annotation> indexAnnotations);
+
+	/**
+	 * //TODO doc
+	 */
+	void createIndex(OgmIndexSpec indexSpec);
 }

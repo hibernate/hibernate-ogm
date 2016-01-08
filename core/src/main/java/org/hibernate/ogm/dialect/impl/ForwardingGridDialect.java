@@ -7,6 +7,7 @@
 package org.hibernate.ogm.dialect.impl;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -165,6 +167,16 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return gridDialect.getDuplicateInsertPreventionStrategy( entityKeyMetadata );
+	}
+
+	@Override
+	public List<OgmIndexSpec> getIndexSpec(String tableName, Map<String, Annotation> indexAnnotations) {
+		return gridDialect.getIndexSpec(tableName,indexAnnotations);
+	}
+
+	@Override
+	public void createIndex(OgmIndexSpec indexSpec) {
+		gridDialect.createIndex(indexSpec);
 	}
 
 	/*

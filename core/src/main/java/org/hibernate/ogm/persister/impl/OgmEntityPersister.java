@@ -9,6 +9,8 @@ package org.hibernate.ogm.persister.impl;
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.index.OgmIndex;
 import org.hibernate.ogm.compensation.impl.InvocationCollectingGridDialect;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
@@ -56,6 +59,7 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.loader.entity.impl.BatchingEntityLoaderBuilder;
 import org.hibernate.ogm.loader.entity.impl.OgmBatchableEntityLoaderBuilder;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -148,7 +152,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private Map<String, AssociationKeyMetadata> inverseOneToOneAssociationKeyMetadata;
 
-	/**
+    /**
+     * TODO some doc here
+     */
+    private Map<String, Annotation> indexAnnotations;
+
+    /**
 	 * Stores for each property whether it potentially represents the main side of a bi-directional association whose
 	 * other side needs to be managed by this persister.
 	 * <p>
@@ -218,6 +227,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
+
+		this.indexAnnotations = getOgmIndexAnnotations(persistentClass.getMappedClass());
 
 		this.discriminator = discriminator;
 
@@ -406,6 +417,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return columnNames;
 	}
 
+
+
+
+
+
 	/**
 	 * Returns the names of all those columns which represent a collection to be stored within the owning entity
 	 * structure (element collections and/or *-to-many associations, depending on the dialect's capabilities).
@@ -518,6 +534,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 
+		//TODO inject the index definitions from annotation here below in the TupleContextImpl
 		return new TupleContextImpl(
 				selectableColumnNames( discriminator ),
 				associatedEntityKeyMetadata,
@@ -525,6 +542,47 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				optionsService.context().getEntityOptions( getMappedClass() )
 		);
 	}
+
+
+	public void createIndex(OgmIndexSpec indexSpec)
+	{
+		gridDialect.createIndex(indexSpec);
+	}
+
+	public List<OgmIndexSpec> getIndexSpec()
+	{
+		return gridDialect.getIndexSpec(tableName,indexAnnotations);
+	}
+
+	private Map<String, Annotation> getOgmIndexAnnotations(Class cls) {
+        Map<String, Annotation> indexAnnotations = new HashMap<>();
+        for (Field field : cls.getDeclaredFields()) {
+            Class type = field.getType();
+            String name = field.getName();
+
+            Annotation[] annotations = field.getDeclaredAnnotations();
+            if (null!= annotations && annotations.length>=1) {
+
+				for (Annotation annotation : annotations)
+				{
+					Annotation[] annotationsAnnottions = annotation.annotationType().getAnnotations();
+					OgmIndex indexMetaAnnotation = annotation.annotationType()
+							.getAnnotation( OgmIndex.class );
+					if (indexMetaAnnotation !=null)
+					{
+						if (indexAnnotations.put(name, annotation)!=null)
+						{
+							throw new IllegalStateException( "Field "+name + " of "+cls.getName()
+									+ " can not be indexed with more than OgmIndex meta-annotated annotation");
+						}
+					}
+				}
+			}
+        }
+        return indexAnnotations;
+    }
+
+	//TODO method to create the collection with annotations
 
 	public GridType getGridIdentifierType() {
 		return gridIdentifierType;
@@ -1406,7 +1464,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridDialect.createTuple( key, getTupleContext() );
+			resultset = gridDialect.createTuple( key, getTupleContext() ); // look here
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -1713,6 +1771,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	public TupleContext getTupleContext() {
 		return tupleContext;
 	}
+
+
+
 
 	public String getJpaEntityName() {
 		return jpaEntityName;

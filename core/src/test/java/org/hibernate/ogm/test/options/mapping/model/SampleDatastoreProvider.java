@@ -14,12 +14,17 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Gunnar Morling
@@ -84,6 +89,15 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 
 		@Override
 		public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		}
+
+		@Override
+		public List<OgmIndexSpec> getIndexSpec(String tableName, Map<String, Annotation> indexAnnotations) {
+			return null;
+		}
+
+		@Override
+		public void createIndex(OgmIndexSpec indexSpec) {
 		}
 	}
 }

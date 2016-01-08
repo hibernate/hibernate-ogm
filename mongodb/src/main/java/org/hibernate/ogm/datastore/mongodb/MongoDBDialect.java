@@ -11,6 +11,7 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnaps
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -40,12 +42,12 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
+import org.hibernate.ogm.datastore.mongodb.index.Indexed;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
-import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
-import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
-import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.*;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
@@ -76,6 +78,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -97,16 +100,6 @@ import org.parboiled.Parboiled;
 import org.parboiled.errors.ErrorUtils;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.support.ParsingResult;
-
-import com.mongodb.AggregationOutput;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.DuplicateKeyException;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -362,6 +355,33 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		BasicDBObject subQuery = this.getSubQuery( operator, query );
 		query.append( operator, subQuery.append( column, value ) );
 	}
+
+
+	@Override
+	public List<OgmIndexSpec> getIndexSpec(String tableName, Map<String, Annotation> indexAnnotations) {
+
+		List<OgmIndexSpec> indexSpecs = new ArrayList<>();
+		for (String field: indexAnnotations.keySet())
+		{
+			indexSpecs.add(new IndexSpec(tableName, field, (Indexed) indexAnnotations.get(field)));
+		}
+		return indexSpecs;
+	}
+
+
+	@Override
+	public void createIndex(OgmIndexSpec ogmIndexSpec)
+	{
+		try{
+		IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
+		getCollection(indexSpec.getCollection()).createIndex(indexSpec.getIndexKeys(),indexSpec.getIndexOptions());}
+		catch (MongoException e) {
+			//TODO process mongo error code e.getCode()
+			throw new RuntimeException(e);
+		}
+	}
+
+
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
@@ -822,6 +842,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 
+
 	private ClosableIterator<Tuple> doAggregate(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
 		List<DBObject> pipeline = new ArrayList<DBObject>();
 
@@ -1017,6 +1038,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		if ( INSERT == snapshot.getSnapshotType() ) {
 			prepareForInsert( inserts, snapshot, entityKey, tuple, writeConcern );
+			//TODO create indexes here ?
 		}
 		else {
 			// Object already exists in the db or has invalid fields:

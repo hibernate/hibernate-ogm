@@ -7,15 +7,22 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
+import org.hibernate.ogm.datastore.mongodb.index.Indexed;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.EntityPersister;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Performs sanity checks of the mapped objects.
@@ -33,7 +40,29 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 		validateEntityCollectionNames( context.getAllEntityKeyMetadata() );
 		validateAssociationNames( context.getAllAssociationKeyMetadata() );
 		validateAllPersisters( context.getSessionFactory().getEntityPersisters().values() );
+		validateAndCreateIndexes( context.getSessionFactory().getEntityPersisters().values() );
 	}
+
+	private void validateAndCreateIndexes( Iterable<EntityPersister> persisters) {
+		for ( EntityPersister persister : persisters ) {
+			if ( persister instanceof OgmEntityPersister ) {
+				OgmEntityPersister ogmPersister = (OgmEntityPersister) persister;
+				List<OgmIndexSpec> indexSpecs = ogmPersister.getIndexSpec();
+				for( OgmIndexSpec ogmIndexSpec : indexSpecs)
+				{
+					IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
+					validateIndexSpec(indexSpec);
+					ogmPersister.createIndex(indexSpec);
+				}
+			}
+		}
+	}
+
+	private void validateIndexSpec(IndexSpec indexSpec)
+	{
+		//TODO
+	}
+
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {
 		for ( EntityPersister persister : persisters ) {
