@@ -14,6 +14,7 @@ import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.ForeignKey;
+import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
@@ -101,18 +102,36 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 		while ( fkMappings.hasNext() ) {
 			ForeignKey foreignKey = fkMappings.next();
 
-			List<String> fkColumnNames = new ArrayList<String>();
-
-			Iterator<Column> fkColumnIterator = foreignKey.getColumnIterator();
-			while ( fkColumnIterator.hasNext() ) {
-				Column column = fkColumnIterator.next();
-				fkColumnNames.add( column.getName() );
-			}
+			List<String> fkColumnNames = extractColumnNames( foreignKey.getColumnIterator() );
 
 			// cassandra won't allow single index on multiple cols, so index first col only.
 			if ( !primaryKeys.contains( fkColumnNames.get( 0 ) ) ) {
 				datastoreProvider.createSecondaryIndexIfNeeded( table.getName(), fkColumnNames.get( 0 ) );
 			}
 		}
+
+
+		Iterator<Index> indexIterator = table.getIndexIterator();
+		while ( indexIterator.hasNext() ) {
+			Index index = indexIterator.next();
+
+			List<String> columnNames = extractColumnNames( index.getColumnIterator() );
+
+			// cassandra won't allow single index on multiple cols, so index first col only.
+			if ( !primaryKeys.contains( columnNames.get( 0 ) ) ) {
+				datastoreProvider.createSecondaryIndexIfNeeded( table.getName(), columnNames.get( 0 ) );
+			}
+		}
+	}
+
+	private List<String> extractColumnNames(Iterator<Column> columnIterator) {
+		List<String> columnNames = new ArrayList<String>();
+
+		while ( columnIterator.hasNext() ) {
+			Column column = columnIterator.next();
+			columnNames.add( column.getName() );
+		}
+
+		return columnNames;
 	}
 }
