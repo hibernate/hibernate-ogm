@@ -6,18 +6,18 @@
  */
 package org.hibernate.ogm.backendtck.type.custom;
 
-import java.net.URL;
-import javax.persistence.AttributeConverter;
+import static org.fest.assertions.Assertions.assertThat;
 
-import org.junit.Test;
+import java.net.URL;
+
+import javax.persistence.AttributeConverter;
 
 import org.hibernate.Session;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Test;
 
 /**
  * Test the JPA @Convert logic in OGM
@@ -39,8 +39,8 @@ public class JpaConvertCustomTypeTest extends OgmTestCase {
 		Session session = openSession();
 		session.getTransaction().begin();
 		Printer printer = new Printer();
-		printer.name = new MyString( "SomeFoo" );
-		assertThat( printer.name.toString() ).isEqualTo( "SomeFoo" );
+		printer.name = new MyString( "somefoo" );
+		assertThat( printer.name.toString() ).isEqualTo( "somefoo" );
 		session.persist( printer );
 		session.getTransaction().commit();
 
@@ -130,10 +130,40 @@ public class JpaConvertCustomTypeTest extends OgmTestCase {
 			this.string = string;
 		}
 
-
 		@Override
 		public String toString() {
 			return string;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ( ( string == null ) ? 0 : string.hashCode() );
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if ( this == obj ) {
+				return true;
+			}
+			if ( obj == null ) {
+				return false;
+			}
+			if ( getClass() != obj.getClass() ) {
+				return false;
+			}
+			MyString other = (MyString) obj;
+			if ( string == null ) {
+				if ( other.string != null ) {
+					return false;
+				}
+			}
+			else if ( !string.equals( other.string ) ) {
+				return false;
+			}
+			return true;
 		}
 	}
 
