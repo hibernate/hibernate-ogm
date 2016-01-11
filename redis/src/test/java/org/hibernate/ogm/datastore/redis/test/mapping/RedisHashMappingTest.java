@@ -75,7 +75,7 @@ public class RedisHashMappingTest extends RedisOgmTestCase {
 		Map<String, String> familyRepresentation = getConnection().hgetall( "Family:family-1" );
 		Map<String, String> plantRepresentation = getConnection().hgetall( "Plant:1" );
 		Collection<String> associationRepresentation = getConnection().lrange(
-				"Associations:Family_Plant:members:family-1", 0, -1
+				"Associations:Family_Plant:family-1:members", 0, -1
 		);
 
 		// then
