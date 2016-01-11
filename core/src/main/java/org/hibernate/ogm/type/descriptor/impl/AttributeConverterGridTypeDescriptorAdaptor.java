@@ -99,7 +99,7 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 
 	/**
 	 * Converts GridTypeDescriptor calls to GridType calls.
-	 * <p/>
+	 * <p>
 	 * That's a bit cyclic as usually GridType do use GridTypeDescriptor but they don't *have to*
 	 * and there is no way to extract the GridTypeDescriptor out of a GridType.
 	 * So we call the GridType API that usually delegates to the GridTypeDescriptor.

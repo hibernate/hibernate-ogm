@@ -10,7 +10,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 
 /**
  * Represents a NoSQL query as to be executed via
- * {@link QueryableGridDialect#executeBackendQuery(BackendQuery, org.hibernate.engine.spi.QueryParameters)}.
+ * {@link QueryableGridDialect#executeBackendQuery(BackendQuery, QueryParameters)}.
  * <p>
  * The wrapped query object generally represents the query in the native form supported by a given datastore, e.g. a
  * String in a native query syntax or an object-based query representation such as the {@code DBObject}-based query

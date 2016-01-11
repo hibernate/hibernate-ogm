@@ -235,17 +235,17 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
-		Node node = snapshot.getNode();
 
 		// insert
-		if ( node == null ) {
-			node = insertTuple( key, tuple );
+		if ( snapshot.isNew() ) {
+			Node node = insertTuple( key, tuple );
 			snapshot.setNode( node );
 			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 			GraphLogger.log( "Inserted node: %1$s", node );
 		}
 		// update
 		else {
+			Node node = snapshot.getNode();
 			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 			GraphLogger.log( "Updated node: %1$s", node );
 		}

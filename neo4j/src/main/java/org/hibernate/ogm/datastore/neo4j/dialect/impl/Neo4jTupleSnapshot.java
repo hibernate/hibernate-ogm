@@ -56,7 +56,7 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public Object get(String column) {
-		if ( node == null ) {
+		if ( isNew() ) {
 			return null;
 		}
 		else if ( associatedEntityKeyMetadata.containsKey( column ) ) {
@@ -108,12 +108,12 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public boolean isEmpty() {
-		return node == null ? true : !node.getPropertyKeys().iterator().hasNext();
+		return isNew() ? true : !node.getPropertyKeys().iterator().hasNext();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
-		if ( node == null ) {
+		if ( isNew() ) {
 			return Collections.emptySet();
 		}
 
@@ -131,5 +131,14 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
 	public void setNode(Node node) {
 		this.node = node;
+	}
+
+	/**
+	 * Whether this snapshot has been newly created (meaning it doesn't have an actual {@link Node} yet) or not. A node
+	 * will be in the "new" state between the {@code createTuple()} call and the next {@code insertOrUpdateTuple()}
+	 * call.
+	 */
+	public boolean isNew() {
+		return node == null;
 	}
 }
