@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
+import java.util.Map;
+
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
@@ -34,6 +36,20 @@ public abstract class RedisAssociation {
 			Entity entity,
 			AssociationKeyMetadata associationKeyMetadata) {
 		return new EmbeddedAssociation( entity, associationKeyMetadata );
+	}
+
+	/**
+	 * Creates a {@link RedisAssociation} from the given {@link java.util.Map} and association name.
+	 *
+	 * @param entity the owner of the association
+	 * @param associationKeyMetadata association key meta-data
+	 *
+	 * @return a {@link RedisAssociation} representing the association
+	 */
+	public static RedisAssociation fromEmbeddedAssociation(
+			Map<String, String> entity,
+			AssociationKeyMetadata associationKeyMetadata) {
+		return new HashEmbeddedAssociation( entity, associationKeyMetadata );
 	}
 
 	/**
