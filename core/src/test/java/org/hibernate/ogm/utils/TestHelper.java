@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.utils;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -43,8 +45,6 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -304,39 +304,6 @@ public class TestHelper {
 					.getService( GridDialect.class );
 
 			return GridDialects.getWrappedDialect( (GridDialect) gridDialect );
-		}
-
-		private static AvailableDatastoreProvider findByShortName(String value) {
-			if ( AvailableDatastoreProvider.isShortName( value ) ) {
-				return AvailableDatastoreProvider.byShortName( value );
-			}
-			return null;
-		}
-
-		private static AvailableDatastoreProvider findByExactClassName(String value) {
-			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
-				if ( provider.getDatastoreProviderClassName().equals( value ) ) {
-					return provider;
-				}
-			}
-			return null;
-		}
-
-		private static AvailableDatastoreProvider findByAssignableType(String value) {
-			Class<?> configuredProviderClass = loadClass( value );
-			if ( configuredProviderClass == null ) {
-				return null;
-			}
-
-			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
-				Class<?> availableProviderClass = loadClass( provider.getDatastoreProviderClassName() );
-
-				if ( availableProviderClass != null &&
-						availableProviderClass.isAssignableFrom( configuredProviderClass ) ) {
-					return provider;
-				}
-			}
-			return null;
 		}
 	}
 
