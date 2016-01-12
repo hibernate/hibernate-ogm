@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutionException;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
@@ -36,7 +35,9 @@ import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
@@ -480,8 +481,15 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	public ClosableIterator<Tuple> executeBackendQuery(
 			BackendQuery<String> query, QueryParameters queryParameters) {
 
+		Object[] parameters = new Object[queryParameters.getPositionalParameters().size()];
+		int i = 0;
+		for ( TypedGridValue parameter : queryParameters.getPositionalParameters() ) {
+			parameters[i] = parameter.getValue();
+			i++;
+		}
+
 		ResultSet resultSet = bindAndExecute(
-				queryParameters.getPositionalParameterValues(),
+				parameters,
 				session.newSimpleStatement( query.getQuery() )
 		);
 

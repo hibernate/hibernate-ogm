@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -23,10 +25,12 @@ public class QueryParameters {
 
 	private final RowSelection rowSelection;
 	private final Map<String, TypedGridValue> namedParameters;
+	private final List<TypedGridValue> positionalParameters;
 
-	public QueryParameters(RowSelection rowSelection, Map<String, TypedGridValue> namedParameters) {
+	public QueryParameters(RowSelection rowSelection, Map<String, TypedGridValue> namedParameters, List<TypedGridValue> positionalParameters) {
 		this.rowSelection = rowSelection;
 		this.namedParameters = namedParameters;
+		this.positionalParameters = positionalParameters;
 	}
 
 	public static QueryParameters fromOrmQueryParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
@@ -37,7 +41,16 @@ public class QueryParameters {
 			namedParameters.put( parameter.getKey(), TypedGridValue.fromOrmTypedValue( parameter.getValue(), typeTranslator ) );
 		}
 
-		return new QueryParameters( selection, namedParameters );
+		List<TypedGridValue> positionalParameters = new ArrayList<>( parameters.getPositionalParameterTypes().length );
+		for ( int i = 0; i < parameters.getPositionalParameterTypes().length; i++) {
+			positionalParameters.add(
+					new TypedGridValue(
+							typeTranslator.getType( parameters.getPositionalParameterTypes()[i] ),
+							parameters.getPositionalParameterValues()[i]
+					)
+			);
+		}
+		return new QueryParameters( selection, namedParameters, positionalParameters );
 	}
 
 	public RowSelection getRowSelection() {
@@ -46,5 +59,9 @@ public class QueryParameters {
 
 	public Map<String, TypedGridValue> getNamedParameters() {
 		return namedParameters;
+	}
+
+	public List<TypedGridValue> getPositionalParameters() {
+		return positionalParameters;
 	}
 }
