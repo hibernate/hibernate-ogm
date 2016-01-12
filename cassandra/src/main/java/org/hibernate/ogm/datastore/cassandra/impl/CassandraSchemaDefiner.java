@@ -17,6 +17,8 @@ import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
+import org.hibernate.ogm.datastore.cassandra.logging.impl.Log;
+import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -30,6 +32,8 @@ import org.hibernate.type.Type;
  * @author Jonathan Halliday
  */
 public class CassandraSchemaDefiner extends BaseSchemaDefiner {
+
+	private static final Log LOG = LoggerFactory.getLogger();
 
 	@Override
 	public void initializeSchema(SchemaDefinitionContext context) {
@@ -96,42 +100,30 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	private void processIndexes(CassandraDatastoreProvider datastoreProvider, Table table, List<String> primaryKeys) {
-
 		// cassandra won't allow table scanning, so we need to explicitly index for the fk relations:
 		Iterator<ForeignKey> fkMappings = table.getForeignKeyIterator();
 		while ( fkMappings.hasNext() ) {
 			ForeignKey foreignKey = fkMappings.next();
-
-			List<String> fkColumnNames = extractColumnNames( foreignKey.getColumnIterator() );
-
-			// cassandra won't allow single index on multiple cols, so index first col only.
-			if ( !primaryKeys.contains( fkColumnNames.get( 0 ) ) ) {
-				datastoreProvider.createSecondaryIndexIfNeeded( table.getName(), fkColumnNames.get( 0 ) );
-			}
+			createSecondaryIndex( datastoreProvider, table, foreignKey.getName(), foreignKey.getColumnIterator() );
 		}
-
 
 		Iterator<Index> indexIterator = table.getIndexIterator();
 		while ( indexIterator.hasNext() ) {
 			Index index = indexIterator.next();
-
-			List<String> columnNames = extractColumnNames( index.getColumnIterator() );
-
-			// cassandra won't allow single index on multiple cols, so index first col only.
-			if ( !primaryKeys.contains( columnNames.get( 0 ) ) ) {
-				datastoreProvider.createSecondaryIndexIfNeeded( table.getName(), columnNames.get( 0 ) );
-			}
+			createSecondaryIndex( datastoreProvider, table, index.getName(), index.getColumnIterator() );
 		}
 	}
 
-	private List<String> extractColumnNames(Iterator<Column> columnIterator) {
-		List<String> columnNames = new ArrayList<String>();
-
-		while ( columnIterator.hasNext() ) {
-			Column column = columnIterator.next();
-			columnNames.add( column.getName() );
+	private void createSecondaryIndex(CassandraDatastoreProvider datastoreProvider, Table table, String sourceName, Iterator<Column> columns) {
+		if ( !columns.hasNext() ) {
+			throw LOG.indexWithNoColumns( table.getName(), sourceName );
 		}
 
-		return columnNames;
+		datastoreProvider.createSecondaryIndexIfNeeded( table.getName(), columns.next().getName() );
+
+		// cassandra won't allow single index on multiple cols, so index first col only.
+		if ( columns.hasNext() ) {
+			LOG.multiColumnIndexNotSupported( table.getName(), sourceName );
+		}
 	}
 }

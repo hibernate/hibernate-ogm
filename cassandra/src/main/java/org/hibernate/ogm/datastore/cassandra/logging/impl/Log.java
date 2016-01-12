@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.cassandra.logging.impl;
 import static org.jboss.logging.Logger.Level.INFO;
 
 import org.hibernate.HibernateException;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -46,4 +47,11 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1607, value = "Failed to prepare CQL operation %1$s")
 	HibernateException failToPrepareCQL(String cqlStatement, @Cause Throwable e);
+
+	@Message(id = 1608, value = "Cannot create secondary index for index/key named '%2$s' with no columns for table '%1$s'")
+	HibernateException indexWithNoColumns(String tableName, String name);
+
+	@LogMessage(level = Level.WARN)
+	@Message(id = 1609, value = "Cannot create multi-column secondary index for index/key named '%2$s' for table '%1$s'; Only considering first index column")
+	void multiColumnIndexNotSupported(String tableName, String name);
 }
