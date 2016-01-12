@@ -122,6 +122,45 @@ public class OneToOneTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testBidirectionalOneToOneCompositeId() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Victim victim = new Victim( new PersonId( "John", "Doe" ) );
+		Offender offender = new Offender( new PersonId( "Max", "Mustermann" ));
+		victim.setOffender( offender );
+		offender.setVictim( victim );
+		session.persist( victim );
+		session.persist( offender );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		victim = session.get( Victim.class, victim.getId() );
+		assertNotNull( victim );
+		assertNotNull( victim.getOffender() );
+		session.clear();
+		offender = session.get( Offender.class, offender.getId() );
+		assertNotNull( offender );
+		victim = offender.getVictim();
+		assertNotNull( victim );
+		assertNotNull( victim.getId() );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		victim = session.get( Victim.class, victim.getId() );
+		assertNotNull( victim );
+		assertNotNull( victim.getOffender() );
+		session.clear();
+		offender = session.get( Offender.class, offender.getId() );
+		assertNotNull( offender );
+		session.delete( victim );
+		session.delete( offender );
+		transaction.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
@@ -130,7 +169,9 @@ public class OneToOneTest extends OgmTestCase {
 				Vehicule.class,
 				Wheel.class,
 				Husband.class,
-				Wife.class
+				Wife.class,
+				Offender.class,
+				Victim.class
 		};
 	}
 }
