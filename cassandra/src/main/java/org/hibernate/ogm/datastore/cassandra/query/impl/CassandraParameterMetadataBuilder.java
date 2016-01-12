@@ -8,10 +8,6 @@ package org.hibernate.ogm.datastore.cassandra.query.impl;
 
 import java.util.Map;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.engine.query.spi.OrdinalParameterDescriptor;
 import org.hibernate.engine.query.spi.ParameterMetadata;
@@ -19,6 +15,10 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.type.Type;
+
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
 
 /**
  * {@link ParameterMetadataBuilder} for native Cassandra CQL queries.
@@ -38,11 +38,9 @@ public class CassandraParameterMetadataBuilder implements ParameterMetadataBuild
 
 	@Override
 	public ParameterMetadata buildParameterMetadata(String nativeQuery) {
-
 		PreparedStatement preparedStatement = session.prepare( nativeQuery );
 		ColumnDefinitions columnDefinitions = preparedStatement.getVariables();
 		OrdinalParameterDescriptor[] ordinalDescriptors = new OrdinalParameterDescriptor[columnDefinitions.size()];
-
 
 		if ( columnDefinitions.size() > 0 ) {
 
@@ -56,7 +54,6 @@ public class CassandraParameterMetadataBuilder implements ParameterMetadataBuild
 			for ( ColumnDefinitions.Definition definition : columnDefinitions ) {
 				String name = definition.getName();
 				Column column = table.getColumn( Identifier.toIdentifier( name ) );
-				column.getValue().getType();
 				Type hibernateType = column.getValue().getType();
 				// cassandra side index is 0-based, hibernate side index is 1-based
 				int index = columnDefinitions.getIndexOf( name );
