@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.cassandra.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,7 +19,6 @@ import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -37,7 +37,7 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 2 );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 2, new BigInteger( "10" ) );
 	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
 
 	private EntityManager em;

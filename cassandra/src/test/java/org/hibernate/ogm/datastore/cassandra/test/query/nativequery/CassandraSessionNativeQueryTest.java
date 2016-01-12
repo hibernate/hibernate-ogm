@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.cassandra.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -16,7 +17,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ import org.junit.Test;
 public class CassandraSessionNativeQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 2, new BigInteger( "10" ) );
 	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde" );
 
 	@Before
@@ -196,6 +196,26 @@ public class CassandraSessionNativeQueryTest extends OgmTestCase {
 
 			OscarWildePoem uniqueResult = (OscarWildePoem) query.uniqueResult();
 			assertThat( uniqueResult ).isEqualTo( portia );
+			transaction.commit();
+		}
+		finally {
+			session.clear();
+			session.close();
+		}
+	}
+
+	@Test
+	public void testUniqueResultFromNativeQueryWithParameterRequiringTypeConversion() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		try {
+			String nativeQuery = "SELECT * FROM \"WILDE_POEM\" WHERE score=?";
+			SQLQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			query.setParameter( 0, new BigInteger( "10" ) );
+
+			OscarWildePoem uniqueResult = (OscarWildePoem) query.uniqueResult();
+			assertThat( uniqueResult ).isEqualTo( athanasia );
 			transaction.commit();
 		}
 		finally {

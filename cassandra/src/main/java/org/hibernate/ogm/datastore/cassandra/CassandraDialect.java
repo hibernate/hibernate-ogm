@@ -483,8 +483,11 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 
 		Object[] parameters = new Object[queryParameters.getPositionalParameters().size()];
 		int i = 0;
+		Tuple dummy = new Tuple();
+
 		for ( TypedGridValue parameter : queryParameters.getPositionalParameters() ) {
-			parameters[i] = parameter.getValue();
+			parameter.getType().nullSafeSet( dummy, parameter.getValue(), new String[]{ "dummy" }, null );
+			parameters[i] = dummy.get( "dummy" );
 			i++;
 		}
 

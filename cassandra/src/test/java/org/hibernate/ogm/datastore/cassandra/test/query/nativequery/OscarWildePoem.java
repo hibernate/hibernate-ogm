@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.cassandra.test.query.nativequery;
 
+import java.math.BigInteger;
+
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.EntityResult;
@@ -22,7 +24,8 @@ import javax.persistence.Table;
 		indexes = {
 				@Index(name = "test_name_index", columnList = "name"),
 				@Index(name = "test_author_index", columnList = "author"),
-				@Index(name = "test_rating_index", columnList = "rating")
+				@Index(name = "test_rating_index", columnList = "rating"),
+				@Index(name = "test_score_index", columnList = "score")
 		}
 )
 
@@ -56,6 +59,7 @@ public class OscarWildePoem {
 	private String name;
 	private String author;
 	private byte rating;
+	private BigInteger score;
 
 	public OscarWildePoem() {
 	}
@@ -66,11 +70,12 @@ public class OscarWildePoem {
 		this.author = author;
 	}
 
-	public OscarWildePoem(Long id, String name, String author, byte rating) {
+	public OscarWildePoem(Long id, String name, String author, byte rating, BigInteger score) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
 		this.rating = rating;
+		this.score = score;
 	}
 
 	@Id
@@ -106,41 +111,78 @@ public class OscarWildePoem {
 		this.rating = rating;
 	}
 
+	public BigInteger getScore() {
+		return score;
+	}
+
+	public void setScore(BigInteger score) {
+		this.score = score;
+	}
+
 	@Override
-	public boolean equals(Object o) {
-		if ( this == o ) {
+	public boolean equals(Object obj) {
+		if ( this == obj ) {
 			return true;
 		}
-		if ( o == null || getClass() != o.getClass() ) {
+		if ( obj == null ) {
 			return false;
 		}
-
-		OscarWildePoem that = (OscarWildePoem) o;
-
-		if ( rating != that.rating ) {
+		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		if ( id != null ? !id.equals( that.id ) : that.id != null ) {
+		OscarWildePoem other = (OscarWildePoem) obj;
+		if ( author == null ) {
+			if ( other.author != null ) {
+				return false;
+			}
+		}
+		else if ( !author.equals( other.author ) ) {
 			return false;
 		}
-		if ( name != null ? !name.equals( that.name ) : that.name != null ) {
+		if ( id == null ) {
+			if ( other.id != null ) {
+				return false;
+			}
+		}
+		else if ( !id.equals( other.id ) ) {
 			return false;
 		}
-		return !(author != null ? !author.equals( that.author ) : that.author != null);
-
+		if ( name == null ) {
+			if ( other.name != null ) {
+				return false;
+			}
+		}
+		else if ( !name.equals( other.name ) ) {
+			return false;
+		}
+		if ( rating != other.rating ) {
+			return false;
+		}
+		if ( score == null ) {
+			if ( other.score != null ) {
+				return false;
+			}
+		}
+		else if ( !score.equals( other.score ) ) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		int result = id != null ? id.hashCode() : 0;
-		result = 31 * result + (name != null ? name.hashCode() : 0);
-		result = 31 * result + (author != null ? author.hashCode() : 0);
-		result = 31 * result + (int) rating;
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( author == null ) ? 0 : author.hashCode() );
+		result = prime * result + ( ( id == null ) ? 0 : id.hashCode() );
+		result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
+		result = prime * result + rating;
+		result = prime * result + ( ( score == null ) ? 0 : score.hashCode() );
 		return result;
 	}
 
 	@Override
 	public String toString() {
-		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", rating=" + rating + "]";
+		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", rating=" + rating + ", score=" + score + "]";
 	}
 }
