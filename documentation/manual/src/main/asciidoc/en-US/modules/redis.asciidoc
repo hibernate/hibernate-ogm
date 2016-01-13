@@ -810,7 +810,7 @@ AccountWithPhone collection
 Key: AccountWithPhone:2
 id=2
 
-Key: Associations:AccountWithPhone:mobileNumbers:2
+Key: Associations:AccountWithPhone:2:mobileNumbers
 [
    "+1-222-555-0222",
    "+1-202-555-0333"
@@ -845,7 +845,7 @@ public class GrandChild {
 
 [source, JSON]
 ----
-Key: Associations:GrandMother_grandChildren:grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331
+Key: Associations:GrandMother_grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331:grandChildren
 
 [ "Luke", "Leia" ]
 ----
@@ -885,7 +885,7 @@ public class GrandChild {
 
 [source, JSON]
 ----
-Key: Associations:GrandMother_grandChildren:grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331
+Key: Associations:GrandMother_grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331:grandChildren
 [
     "{\"name\":\"Luke\",\"birthorder\":\"0\"}",
     "{\"name\":\"Leia\",\"birthorder\":\"1\"}"
@@ -1262,7 +1262,7 @@ Key: Product:Beer
 }
 ----
 
-Redis List Associations:Basket_Product:davide_basket
+Redis List Associations:davide_basket:Basket_Product
 [source, JSON]
 ----
 Rows:
@@ -1685,7 +1685,7 @@ Each association has 2 parts.
 The first is the key. The key consists of a prefix, the identifier information
 of the association owner, and the name of the association table.
 
-"Associations:<%ASSOCIATION_TABLE%>:<%COLLECTION_ROLE%>:<%ASSOCIATION_ID%>", e.g. "Associations:AccountOwner:BankAccount:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76".
+"Associations:<%ASSOCIATION_TABLE%>:<%ASSOCIATION_ID%>:<%COLLECTION_ROLE%>", e.g. "Associations:AccountOwner:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76:BankAccount".
 
 The second part is the `rows` field which stores (into an embedded collection) all ids
 that the current instance is related to.
@@ -1694,7 +1694,7 @@ that the current instance is related to.
 ====
 [source, JSON]
 ----
-Key: Associations:AccountOwner:BankAccount:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76
+Key: Associations:AccountOwner:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76:BankAccount
 [
     "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
 ]
@@ -1708,7 +1708,7 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
 ====
 [source, JSON]
 ----
-Key: Associations:AccountOwner:BankAccount:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76
+Key: Associations:AccountOwner:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76:BankAccount
 [
     "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
 ]
@@ -1781,7 +1781,7 @@ Key: Product:Pretzel
 
 [source, JSON]
 ----
-Key: Associations:Basket_Product:products:davide_basket
+Key: Associations:Basket_Product:davide_basket:products
 [
    "Beer",
    "Pretzel"
