@@ -21,7 +21,7 @@ import javax.persistence.Table;
  */
 @Entity
 //@Table(name="POEM")
-//@Table(name="POEM", indexes = @Index(columnList = "author", name = "author_idx", unique=false))
+@Table(name="T_POEM", indexes = @Index(columnList = "author ASC", name = "author_idx", unique=true))
 //@WriteConcern(WriteConcernType.ACKNOWLEDGED)
 public class Poem {
 

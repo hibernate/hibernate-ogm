@@ -42,6 +42,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.index.OgmIndex;
 import org.hibernate.ogm.compensation.impl.InvocationCollectingGridDialect;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
@@ -99,6 +100,9 @@ import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
+
+import javax.persistence.Index;
+
 /**
  * Basic functionality for persisting an entity using OGM.
  * TODO most of the non persister code SIC comes from {@link org.hibernate.persister.entity.UnionSubclassEntityPersister}
@@ -153,9 +157,18 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private Map<String, AssociationKeyMetadata> inverseOneToOneAssociationKeyMetadata;
 
     /**
-     * TODO some doc here
+     * TODO get rid of this, cf Gunnar comments
      */
     private Map<String, Annotation> indexAnnotations;
+
+	/**
+	 * TODO doc
+	 */
+	private Iterator<org.hibernate.mapping.Index> jpaIndexAnnotations;
+	/**
+	 * TODO doc
+	 */
+	private Iterator<UniqueKey> uniqueKeyIterator;
 
     /**
 	 * Stores for each property whether it potentially represents the main side of a bi-directional association whose
@@ -229,6 +242,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		);
 
 		this.indexAnnotations = getOgmIndexAnnotations(persistentClass.getMappedClass());
+		this.jpaIndexAnnotations = persistentClass.getTable().getIndexIterator();
+		this.uniqueKeyIterator = persistentClass.getTable().getUniqueKeyIterator();
 
 		this.discriminator = discriminator;
 

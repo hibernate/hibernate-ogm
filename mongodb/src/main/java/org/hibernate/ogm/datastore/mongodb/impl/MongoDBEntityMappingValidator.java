@@ -6,12 +6,17 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.mapping.Index;
+import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
 import org.hibernate.ogm.datastore.mongodb.index.Indexed;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -21,6 +26,8 @@ import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.EntityPersister;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +40,7 @@ import java.util.Map;
 public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
+	private List<IndexSpec> indexSpecs;
 
 	@Override
 	public void validateMapping(SchemaDefinitionContext context) {
@@ -40,10 +48,56 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 		validateEntityCollectionNames( context.getAllEntityKeyMetadata() );
 		validateAssociationNames( context.getAllAssociationKeyMetadata() );
 		validateAllPersisters( context.getSessionFactory().getEntityPersisters().values() );
-		validateAndCreateIndexes( context.getSessionFactory().getEntityPersisters().values() );
+		validateIndexSpecs( context );
 	}
 
-	private void validateAndCreateIndexes( Iterable<EntityPersister> persisters) {
+	@Override
+	public void initializeSchema( SchemaDefinitionContext context) {
+		for(IndexSpec indexSpec : indexSpecs)
+		{
+
+			OgmDialect ogmDialect = (OgmDialect) context.getSessionFactory()
+					.getDialect();
+			ogmDialect.getGridDialect().createIndex(indexSpec);
+		}
+		String toto = "toto";
+	}
+
+	private void validateIndexSpecs( SchemaDefinitionContext context ) {
+		indexSpecs= new ArrayList<>();
+		Database database = context.getDatabase();
+		for(Table table : database.getDefaultNamespace().getTables())
+		{
+			Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
+			while(keys.hasNext())
+			{
+				IndexSpec indexSpec = new IndexSpec( keys.next() );
+				validateIndexSpec(indexSpec);
+				indexSpecs.add(indexSpec);
+			}
+			Iterator<Index> indexes = table.getIndexIterator();
+			while(indexes.hasNext())
+			{
+				IndexSpec indexSpec = new IndexSpec( indexes.next() );
+				validateIndexSpec(indexSpec);
+				indexSpecs.add(indexSpec);
+			}
+		}
+	}
+
+	/*private void createIndexes() {
+
+				for( OgmIndexSpec ogmIndexSpec : indexSpecs)
+				{
+					IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
+					validateIndexSpec(indexSpec);
+					ogmPersister.createIndex(indexSpec);
+				}
+
+
+	}*/
+
+	/*private void validateAndCreateIndexes( Iterable<EntityPersister> persisters) {
 		for ( EntityPersister persister : persisters ) {
 			if ( persister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmPersister = (OgmEntityPersister) persister;
@@ -56,7 +110,7 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 				}
 			}
 		}
-	}
+	}*/
 
 	private void validateIndexSpec(IndexSpec indexSpec)
 	{

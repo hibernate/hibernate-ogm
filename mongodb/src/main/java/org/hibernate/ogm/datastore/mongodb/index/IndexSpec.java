@@ -8,7 +8,12 @@ package org.hibernate.ogm.datastore.mongodb.index;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.Index;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.index.OgmIndexSpec;
+
+import java.util.Map;
 
 /**
  * Spec for specifying the Index to be applied to a Mongo collection field
@@ -90,14 +95,36 @@ public class IndexSpec implements OgmIndexSpec {
 		this.unique = index.unique();
 	}
 
+	private DBObject indexKeys;
+
+	public IndexSpec(UniqueKey uniqueKey) {
+
+		indexKeys =  new BasicDBObject();
+		this.addIndexKeys(uniqueKey.getColumnOrderMap());
+		this.name = uniqueKey.getName();
+		this.collection = uniqueKey.getTable().getName();
+	}
+
+	public IndexSpec(Index next) {
+	}
+
+
 	public String getCollection() {
 		return collection;
 	}
 
+	private void addIndexKeys(Map<Column,String> columnOrderMap) {
+		for(Column column : columnOrderMap.keySet())
+		{
+			indexKeys.put(column.getName(),(columnOrderMap.get(column).equals("asc")) ? 1 : -1);
+		}
+	}
+
 	public DBObject getIndexKeys() {
-		DBObject dbo = new BasicDBObject();
+		return indexKeys;
+		/*DBObject dbo = new BasicDBObject();
 		dbo.put(field,order.getIndexKeyValue());
-		return dbo;
+		return dbo;*/
 	}
 
 	public DBObject getIndexOptions() {
