@@ -466,7 +466,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 		}
 	}
 
-	private Map<String, Object> tupleFromRow(Row row) {
+	public static Map<String, Object> tupleFromRow(Row row) {
 		Map<String, Object> map = new HashMap<>();
 
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
