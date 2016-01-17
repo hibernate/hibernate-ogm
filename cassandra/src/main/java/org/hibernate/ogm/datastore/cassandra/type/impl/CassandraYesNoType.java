@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.cassandra.type.impl;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.descriptor.impl.StringMappedGridTypeDescriptor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 
 /**
@@ -21,7 +20,7 @@ public class CassandraYesNoType extends AbstractGenericBasicType<Boolean> {
 	public static final CassandraYesNoType INSTANCE = new CassandraYesNoType();
 
 	public CassandraYesNoType() {
-		super( StringMappedGridTypeDescriptor.INSTANCE, org.hibernate.type.YesNoType.INSTANCE.getJavaTypeDescriptor() );
+		super( CharacterStringGridTypeDescriptor.INSTANCE, org.hibernate.type.YesNoType.INSTANCE.getJavaTypeDescriptor() );
 	}
 
 	@Override

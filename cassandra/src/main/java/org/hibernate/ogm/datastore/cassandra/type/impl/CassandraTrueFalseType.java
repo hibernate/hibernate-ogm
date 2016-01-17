@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.cassandra.type.impl;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.descriptor.impl.StringMappedGridTypeDescriptor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 
 /**
@@ -21,7 +20,7 @@ public class CassandraTrueFalseType extends AbstractGenericBasicType<Boolean> {
 	public static final CassandraTrueFalseType INSTANCE = new CassandraTrueFalseType();
 
 	public CassandraTrueFalseType() {
-		super( StringMappedGridTypeDescriptor.INSTANCE, org.hibernate.type.TrueFalseType.INSTANCE.getJavaTypeDescriptor() );
+		super( CharacterStringGridTypeDescriptor.INSTANCE, org.hibernate.type.TrueFalseType.INSTANCE.getJavaTypeDescriptor() );
 	}
 
 	@Override
