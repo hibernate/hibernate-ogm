@@ -21,10 +21,6 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
 import org.hibernate.type.Type;
 
-import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Dialect abstracting Hibernate OGM from the grid implementation.
  * <p>
@@ -190,15 +186,11 @@ public interface GridDialect extends Service {
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
 
 	/**
-	 * //TODO doc
-	 * @param tableName
-	 * @param indexAnnotations
-     * @return
+	 * If IndexSpec are to be found in the {@link org.hibernate.ogm.datastore.spi.SchemaDefiner.SchemaDefinitionContext)
+	 * once validated, the {@link org.hibernate.ogm.datastore.spi.BaseSchemaDefiner} will trigger this ro create
+	 * the associated Index in the datastore.
+     *
+	 * @param indexSpec the datastore index specifications
      */
-	List<OgmIndexSpec> getIndexSpec(String tableName, Map<String, Annotation> indexAnnotations);
-
-	/**
-	 * //TODO doc
-	 */
 	void createIndex(OgmIndexSpec indexSpec);
 }

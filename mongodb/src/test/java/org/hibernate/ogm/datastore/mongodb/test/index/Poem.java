@@ -6,10 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.index;
 
-import org.hibernate.ogm.datastore.mongodb.index.Indexed;
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcern;
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -28,7 +24,6 @@ public class Poem {
 	private String id;
 	private String name;
 
-	@Indexed()
 	private String author;
 
 	Poem() {

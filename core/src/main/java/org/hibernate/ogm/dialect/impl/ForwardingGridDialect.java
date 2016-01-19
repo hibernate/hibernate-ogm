@@ -7,7 +7,6 @@
 package org.hibernate.ogm.dialect.impl;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 
@@ -170,13 +169,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public List<OgmIndexSpec> getIndexSpec(String tableName, Map<String, Annotation> indexAnnotations) {
-		return gridDialect.getIndexSpec(tableName,indexAnnotations);
-	}
-
-	@Override
 	public void createIndex(OgmIndexSpec indexSpec) {
-		gridDialect.createIndex(indexSpec);
+		gridDialect.createIndex( indexSpec );
 	}
 
 	/*
@@ -292,4 +286,6 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
+
+
 }

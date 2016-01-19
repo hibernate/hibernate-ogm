@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.spi;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -44,4 +45,19 @@ public abstract class BaseGridDialect implements GridDialect {
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
+
+	/**
+	 * If IndexSpec are to be found in the {@link org.hibernate.ogm.datastore.spi.SchemaDefiner.SchemaDefinitionContext)
+	 * once validated, the {@link org.hibernate.ogm.datastore.spi.BaseSchemaDefiner} will trigger this ro create
+	 * the associated Index in the datastore
+	 *
+	 * This is not implemented in this Base class, override and implement it to provide Index support
+	 *
+	 * @param indexSpec the datastore index specifications
+	 */
+	@Override
+	public void createIndex(OgmIndexSpec indexSpec) {
+	}
+
+
 }

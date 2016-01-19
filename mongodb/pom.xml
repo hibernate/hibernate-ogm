@@ -150,7 +150,7 @@
         <profile>
             <id>embedded-mongodb</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <datastoreProvider>mongodb</datastoreProvider>
@@ -282,6 +282,7 @@
         <profile>
             <id>external-mongodb</id>
             <activation>
+                 <activeByDefault>true</activeByDefault>
                  <property>
                      <name>mongodbProvider</name>
                      <value>external</value>

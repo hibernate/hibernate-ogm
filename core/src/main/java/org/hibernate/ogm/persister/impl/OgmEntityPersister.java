@@ -9,8 +9,6 @@ package org.hibernate.ogm.persister.impl;
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,8 +40,6 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
-import org.hibernate.mapping.UniqueKey;
-import org.hibernate.ogm.index.OgmIndex;
 import org.hibernate.ogm.compensation.impl.InvocationCollectingGridDialect;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
@@ -60,7 +56,6 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
-import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.loader.entity.impl.BatchingEntityLoaderBuilder;
 import org.hibernate.ogm.loader.entity.impl.OgmBatchableEntityLoaderBuilder;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -100,9 +95,6 @@ import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
-
-import javax.persistence.Index;
-
 /**
  * Basic functionality for persisting an entity using OGM.
  * TODO most of the non persister code SIC comes from {@link org.hibernate.persister.entity.UnionSubclassEntityPersister}
@@ -156,21 +148,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private Map<String, AssociationKeyMetadata> inverseOneToOneAssociationKeyMetadata;
 
-    /**
-     * TODO get rid of this, cf Gunnar comments
-     */
-    private Map<String, Annotation> indexAnnotations;
-
 	/**
-	 * TODO doc
-	 */
-	private Iterator<org.hibernate.mapping.Index> jpaIndexAnnotations;
-	/**
-	 * TODO doc
-	 */
-	private Iterator<UniqueKey> uniqueKeyIterator;
-
-    /**
 	 * Stores for each property whether it potentially represents the main side of a bi-directional association whose
 	 * other side needs to be managed by this persister.
 	 * <p>
@@ -240,10 +218,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
-
-		this.indexAnnotations = getOgmIndexAnnotations(persistentClass.getMappedClass());
-		this.jpaIndexAnnotations = persistentClass.getTable().getIndexIterator();
-		this.uniqueKeyIterator = persistentClass.getTable().getUniqueKeyIterator();
 
 		this.discriminator = discriminator;
 
@@ -432,11 +406,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return columnNames;
 	}
 
-
-
-
-
-
 	/**
 	 * Returns the names of all those columns which represent a collection to be stored within the owning entity
 	 * structure (element collections and/or *-to-many associations, depending on the dialect's capabilities).
@@ -549,7 +518,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 
-		//TODO inject the index definitions from annotation here below in the TupleContextImpl
 		return new TupleContextImpl(
 				selectableColumnNames( discriminator ),
 				associatedEntityKeyMetadata,
@@ -557,47 +525,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				optionsService.context().getEntityOptions( getMappedClass() )
 		);
 	}
-
-
-	public void createIndex(OgmIndexSpec indexSpec)
-	{
-		gridDialect.createIndex(indexSpec);
-	}
-
-	public List<OgmIndexSpec> getIndexSpec()
-	{
-		return gridDialect.getIndexSpec(tableName,indexAnnotations);
-	}
-
-	private Map<String, Annotation> getOgmIndexAnnotations(Class cls) {
-        Map<String, Annotation> indexAnnotations = new HashMap<>();
-        for (Field field : cls.getDeclaredFields()) {
-            Class type = field.getType();
-            String name = field.getName();
-
-            Annotation[] annotations = field.getDeclaredAnnotations();
-            if (null!= annotations && annotations.length>=1) {
-
-				for (Annotation annotation : annotations)
-				{
-					Annotation[] annotationsAnnottions = annotation.annotationType().getAnnotations();
-					OgmIndex indexMetaAnnotation = annotation.annotationType()
-							.getAnnotation( OgmIndex.class );
-					if (indexMetaAnnotation !=null)
-					{
-						if (indexAnnotations.put(name, annotation)!=null)
-						{
-							throw new IllegalStateException( "Field "+name + " of "+cls.getName()
-									+ " can not be indexed with more than OgmIndex meta-annotated annotation");
-						}
-					}
-				}
-			}
-        }
-        return indexAnnotations;
-    }
-
-	//TODO method to create the collection with annotations
 
 	public GridType getGridIdentifierType() {
 		return gridIdentifierType;
@@ -664,9 +591,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( log.isTraceEnabled() ) {
 			log.trace(
 					"initializing lazy properties of: " +
-					MessageHelper.infoString( this, id, getFactory() ) +
-					", field access: " + fieldName
-				);
+							MessageHelper.infoString( this, id, getFactory() ) +
+							", field access: " + fieldName
+			);
 		}
 
 		if ( hasCache() ) {
@@ -741,8 +668,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( log.isTraceEnabled() ) {
 			log.trace(
 					"Forcing version increment [" + MessageHelper.infoString( this, id, getFactory() ) +
-					"; " + getVersionType().toLoggableString( currentVersion, getFactory() ) +
-					" -> " + getVersionType().toLoggableString( nextVersion, getFactory() ) + "]"
+							"; " + getVersionType().toLoggableString( currentVersion, getFactory() ) +
+							" -> " + getVersionType().toLoggableString( nextVersion, getFactory() ) + "]"
 			);
 		}
 
@@ -795,7 +722,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		AssociationPersister associationPersister = new AssociationPersister(
 				inversePersister.getMappedClass()
-				)
+		)
 				.gridDialect( gridDialect )
 				.key( uniqueKey, gridUniqueKeyType )
 				.associationKeyMetadata( associationKeyMetadata )
@@ -856,37 +783,37 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.UPGRADE )
-			);
+		);
 		loaders.put(
 				LockMode.UPGRADE_NOWAIT,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.UPGRADE_NOWAIT )
-			);
+		);
 		loaders.put(
 				LockMode.FORCE,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.FORCE )
-			);
+		);
 		loaders.put(
 				LockMode.PESSIMISTIC_READ,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_READ )
-			);
+		);
 		loaders.put(
 				LockMode.PESSIMISTIC_WRITE,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_WRITE )
-			);
+		);
 		loaders.put(
 				LockMode.PESSIMISTIC_FORCE_INCREMENT,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_FORCE_INCREMENT )
-			);
+		);
 		loaders.put( LockMode.OPTIMISTIC, createEntityLoader( LockMode.OPTIMISTIC) );
 		loaders.put( LockMode.OPTIMISTIC_FORCE_INCREMENT, createEntityLoader( LockMode.OPTIMISTIC_FORCE_INCREMENT ) );
 
@@ -895,12 +822,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				"merge",
 				createEntityLoader( LockMode.READ )
 				//new CascadeEntityLoader( this, CascadingAction.MERGE, getFactory() )
-			);
+		);
 		loaders.put(
 				"refresh",
 				createEntityLoader( LockMode.READ )
 				//new CascadeEntityLoader( this, CascadingAction.REFRESH, getFactory() )
-			);
+		);
 	}
 
 
@@ -986,7 +913,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			final Object object,
 			final Loadable rootLoadable,
 			//We probably don't need suffixedColumns, use column names instead
-		//final String[][] suffixedPropertyColumns,
+			//final String[][] suffixedPropertyColumns,
 			final boolean allProperties,
 			final SessionImplementor session) throws HibernateException {
 
@@ -1041,7 +968,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			String[] propNames,
 			String[] propSubclassNames,
 			boolean sequentialSelectEmpty
-			) {
+	) {
 		Object value;
 		if ( !propertySelectable[index] ) {
 			value = PropertyAccessStrategyBackRefImpl.UNKNOWN;
@@ -1205,7 +1132,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						boolean[] versionability = getPropertyVersionability(); //TODO: is this really necessary????
 						boolean[] includeOldField = entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL
 								? getPropertyUpdateability()
-										: propsToUpdate;
+								: propsToUpdate;
 
 						//TODO do a diff on the properties value from resultset and the dirty value
 						GridType[] types = gridPropertyTypes;
@@ -1220,7 +1147,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 								boolean[] settable = type.toColumnNullness( oldFields[i], factory );
 								final Object snapshotValue = type.nullSafeGet(
 										resultset, getPropertyColumnNames( i ), session, object
-										);
+								);
 
 								if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
 									raiseStaleObjectStateException( id );
@@ -1479,7 +1406,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridDialect.createTuple( key, getTupleContext() ); // look here
+			resultset = gridDialect.createTuple( key, getTupleContext() );
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -1530,12 +1457,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			if ( mightRequireInverseAssociationManagement ) {
 				new EntityAssociationUpdater( this )
-					.id( id )
-					.resultset( currentState )
-					.session( session )
-					.tableIndex( j )
-					.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
-					.removeNavigationalInformationFromInverseSide();
+						.id( id )
+						.resultset( currentState )
+						.session( session )
+						.tableIndex( j )
+						.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+						.removeNavigationalInformationFromInverseSide();
 			}
 
 			if ( optimisticLockingAwareGridDialect != null && isVersioned() ) {
@@ -1786,9 +1713,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	public TupleContext getTupleContext() {
 		return tupleContext;
 	}
-
-
-
 
 	public String getJpaEntityName() {
 		return jpaEntityName;

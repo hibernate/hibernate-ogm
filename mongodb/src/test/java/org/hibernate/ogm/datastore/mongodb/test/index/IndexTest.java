@@ -8,16 +8,13 @@ package org.hibernate.ogm.datastore.mongodb.test.index;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.mongodb.test.associations.ordercolumn.Episode;
-import org.hibernate.ogm.datastore.mongodb.test.associations.ordercolumn.TvShow;
-import org.hibernate.ogm.datastore.mongodb.test.associations.ordercolumn.Writer;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
 import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
 
 /**
- * Test for the mapping of bi-directional associations with order columns.
+ * Testing Mongo Single Field Indexes
  *
  * @author Francois Le Droff
  */

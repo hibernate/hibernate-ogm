@@ -78,34 +78,19 @@ public class IndexSpec implements OgmIndexSpec {
 
 	//TODO storageEngine
 
-	/**
-	 * //TODO we dont support compound index yet : for that we'll have to have a map of field and order
-	 * @param field the Field that will be indexed
-	 *
-	 */
-	public IndexSpec(String collection, String field, Indexed index)
-	{
-		this.field = field;
-		this.collection = collection;
-		this.order = index.order();
-		this.background = index.background();
-		this.expireAfterSeconds = index.expireAfterSeconds();
-		this.name = index.name();
-		this.sparse = index.sparse();
-		this.unique = index.unique();
-	}
 
 	private DBObject indexKeys;
 
 	public IndexSpec(UniqueKey uniqueKey) {
 
 		indexKeys =  new BasicDBObject();
-		this.addIndexKeys(uniqueKey.getColumnOrderMap());
+		this.addIndexKeys( uniqueKey.getColumnOrderMap() );
 		this.name = uniqueKey.getName();
 		this.collection = uniqueKey.getTable().getName();
 	}
 
 	public IndexSpec(Index next) {
+		//TODO the jpa index parsing
 	}
 
 
@@ -114,38 +99,33 @@ public class IndexSpec implements OgmIndexSpec {
 	}
 
 	private void addIndexKeys(Map<Column,String> columnOrderMap) {
-		for(Column column : columnOrderMap.keySet())
-		{
-			indexKeys.put(column.getName(),(columnOrderMap.get(column).equals("asc")) ? 1 : -1);
+		for ( Column column : columnOrderMap.keySet() ) {
+			indexKeys.put( column.getName(),( columnOrderMap.get( column ).equals( "asc" ) ) ? 1 : -1 );
 		}
 	}
 
 	public DBObject getIndexKeys() {
 		return indexKeys;
-		/*DBObject dbo = new BasicDBObject();
-		dbo.put(field,order.getIndexKeyValue());
-		return dbo;*/
 	}
 
 	public DBObject getIndexOptions() {
 
 		DBObject dbo = new BasicDBObject();
-		if(!name.isEmpty()) {
-			dbo.put("name", name);
+		if (!name.isEmpty()) {
+			dbo.put( "name", name );
 		}
 		if (unique) {
-			dbo.put("unique", true);
+			dbo.put( "unique", true );
 		}
 		if (sparse) {
-			dbo.put("sparse", true);
+			dbo.put( "sparse", true );
 		}
 		if (background) {
-			dbo.put("background", true);
+			dbo.put( "background", true );
 		}
 		if (expireAfterSeconds >= 0) {
-			dbo.put("expireAfterSeconds", expireAfterSeconds);
+			dbo.put( "expireAfterSeconds", expireAfterSeconds );
 		}
-
 		return dbo;
 	}
 

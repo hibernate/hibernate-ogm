@@ -12,12 +12,10 @@ import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
-import org.hibernate.ogm.datastore.mongodb.index.Indexed;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.dialect.impl.OgmDialect;
-import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -25,17 +23,16 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.EntityPersister;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Performs sanity checks of the mapped objects.
  *
  * @author Gunnar Morling
  * @author Sanne Grinovero
+ * @author Francois Le
  */
 public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 
@@ -53,68 +50,44 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema( SchemaDefinitionContext context) {
-		for(IndexSpec indexSpec : indexSpecs)
-		{
-
+		for ( IndexSpec indexSpec : indexSpecs ) {
 			OgmDialect ogmDialect = (OgmDialect) context.getSessionFactory()
 					.getDialect();
-			ogmDialect.getGridDialect().createIndex(indexSpec);
+			ogmDialect.getGridDialect().createIndex( indexSpec );
 		}
-		String toto = "toto";
 	}
 
 	private void validateIndexSpecs( SchemaDefinitionContext context ) {
-		indexSpecs= new ArrayList<>();
+		indexSpecs = new ArrayList<>();
 		Database database = context.getDatabase();
-		for(Table table : database.getDefaultNamespace().getTables())
-		{
+		for ( Table table : database.getDefaultNamespace().getTables() ) {
 			Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
-			while(keys.hasNext())
-			{
+			while( keys.hasNext() ) {
 				IndexSpec indexSpec = new IndexSpec( keys.next() );
-				validateIndexSpec(indexSpec);
-				indexSpecs.add(indexSpec);
+				if ( validateIndexSpec( indexSpec ) ) {
+					indexSpecs.add( indexSpec );
+				}
 			}
 			Iterator<Index> indexes = table.getIndexIterator();
-			while(indexes.hasNext())
-			{
+			while( indexes.hasNext() ) {
 				IndexSpec indexSpec = new IndexSpec( indexes.next() );
-				validateIndexSpec(indexSpec);
-				indexSpecs.add(indexSpec);
+				validateIndexSpec( indexSpec );
+				if ( validateIndexSpec( indexSpec ) ) {
+					indexSpecs.add( indexSpec );
+				}
 			}
 		}
 	}
 
-	/*private void createIndexes() {
-
-				for( OgmIndexSpec ogmIndexSpec : indexSpecs)
-				{
-					IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
-					validateIndexSpec(indexSpec);
-					ogmPersister.createIndex(indexSpec);
-				}
-
-
-	}*/
-
-	/*private void validateAndCreateIndexes( Iterable<EntityPersister> persisters) {
-		for ( EntityPersister persister : persisters ) {
-			if ( persister instanceof OgmEntityPersister ) {
-				OgmEntityPersister ogmPersister = (OgmEntityPersister) persister;
-				List<OgmIndexSpec> indexSpecs = ogmPersister.getIndexSpec();
-				for( OgmIndexSpec ogmIndexSpec : indexSpecs)
-				{
-					IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
-					validateIndexSpec(indexSpec);
-					ogmPersister.createIndex(indexSpec);
-				}
-			}
+	private boolean validateIndexSpec(IndexSpec indexSpec) {
+		if ( indexSpec.getIndexKeys().keySet().isEmpty() ) { //TODO more validation
+			log.error( "No valid IndexKeys found in indexSpec on collection" + indexSpec.getCollection() );
+			//TODO this is happening in org.hibernate.ogm.datastore.mongodb.test.associations.AssociationCompositeKeyMongoDBFormatTest.testOrderedListAndCompositeId()
+			return false;
 		}
-	}*/
-
-	private void validateIndexSpec(IndexSpec indexSpec)
-	{
-		//TODO
+		else {
+			return true;
+		}
 	}
 
 
@@ -154,7 +127,6 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 	private void validateGenerators(Iterable<IdSourceKeyMetadata> allIdSourceKeyMetadata) {
 		for ( IdSourceKeyMetadata idSourceKeyMetadata : allIdSourceKeyMetadata ) {
 			String keyColumn = idSourceKeyMetadata.getKeyColumnName();
-
 			if ( !keyColumn.equals( MongoDBDialect.ID_FIELDNAME ) ) {
 				log.cannotUseGivenPrimaryKeyColumnName( keyColumn, MongoDBDialect.ID_FIELDNAME );
 			}
