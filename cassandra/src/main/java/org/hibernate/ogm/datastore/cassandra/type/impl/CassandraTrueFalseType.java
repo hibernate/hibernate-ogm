@@ -20,7 +20,7 @@ public class CassandraTrueFalseType extends AbstractGenericBasicType<Boolean> {
 	public static final CassandraTrueFalseType INSTANCE = new CassandraTrueFalseType();
 
 	public CassandraTrueFalseType() {
-		super( CharacterStringGridTypeDescriptor.INSTANCE, org.hibernate.type.TrueFalseType.INSTANCE.getJavaTypeDescriptor() );
+		super( new TranslatingGridTypeDescriptor( String.class ), org.hibernate.type.TrueFalseType.INSTANCE.getJavaTypeDescriptor() );
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class CassandraYesNoType extends AbstractGenericBasicType<Boolean> {
 	public static final CassandraYesNoType INSTANCE = new CassandraYesNoType();
 
 	public CassandraYesNoType() {
-		super( CharacterStringGridTypeDescriptor.INSTANCE, org.hibernate.type.YesNoType.INSTANCE.getJavaTypeDescriptor() );
+		super( new TranslatingGridTypeDescriptor( String.class ), org.hibernate.type.YesNoType.INSTANCE.getJavaTypeDescriptor() );
 	}
 
 	@Override
