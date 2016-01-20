@@ -37,6 +37,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -444,5 +445,10 @@ public class CassandraDialect implements GridDialect {
 	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return null;
+	}
+
+	@Override
+	public void createIndex(OgmIndexSpec indexSpec) {
+		//TODO implement Cassandra Index support https://hibernate.atlassian.net/browse/OGM-958
 	}
 }
