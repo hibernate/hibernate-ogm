@@ -39,6 +39,7 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
@@ -76,6 +77,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -105,6 +107,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
@@ -426,7 +429,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					case REMOVE:
 						MongoHelpers.resetValue( dbObject, column );
 						break;
-					}
+				}
 			}
 		}
 		return dbObject;
@@ -442,27 +445,27 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			String column = operation.getColumn();
 			if ( notInIdField( snapshot, column ) ) {
 				switch ( operation.getType() ) {
-				case PUT:
-					this.addSubQuery( "$set", updater, column, operation.getValue() );
-					break;
-				case PUT_NULL:
-				case REMOVE:
-					// try and find if this column is within an embeddable and if that embeddable is null
-					// if true, unset the full embeddable
-					String nullEmbeddable = embeddableStateFinder.getOuterMostNullEmbeddableIfAny( column );
-					if ( nullEmbeddable != null ) {
-						// we have a null embeddable
-						if ( ! nullEmbeddables.contains( nullEmbeddable ) ) {
-							// we have not processed it yet
-							this.addSubQuery( "$unset", updater, nullEmbeddable, Integer.valueOf( 1 ) );
-							nullEmbeddables.add( nullEmbeddable );
+					case PUT:
+						this.addSubQuery( "$set", updater, column, operation.getValue() );
+						break;
+					case PUT_NULL:
+					case REMOVE:
+						// try and find if this column is within an embeddable and if that embeddable is null
+						// if true, unset the full embeddable
+						String nullEmbeddable = embeddableStateFinder.getOuterMostNullEmbeddableIfAny( column );
+						if ( nullEmbeddable != null ) {
+							// we have a null embeddable
+							if ( ! nullEmbeddables.contains( nullEmbeddable ) ) {
+								// we have not processed it yet
+								this.addSubQuery( "$unset", updater, nullEmbeddable, Integer.valueOf( 1 ) );
+								nullEmbeddables.add( nullEmbeddable );
+							}
 						}
-					}
-					else {
-						// simply unset the column
-						this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
-					}
-					break;
+						else {
+							// simply unset the column
+							this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
+						}
+						break;
 				}
 			}
 		}
@@ -858,7 +861,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
-			EntityKeyMetadata entityKeyMetadata) {
+										   EntityKeyMetadata entityKeyMetadata) {
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
 		if ( query.getOrderBy() != null ) {
 			cursor.sort( query.getOrderBy() );
@@ -1052,6 +1055,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
+
+	@Override
+	public void createIndex(OgmIndexSpec ogmIndexSpec) {
+		try {
+			IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
+			getCollection( indexSpec.getCollection()).createIndex( indexSpec.getIndexKeys(), indexSpec.getIndexOptions() );
+		}
+		catch (MongoException e) {
+			// TODO process mongo error code e.getCode()
+			throw new RuntimeException( e );
+		}
+	}
+
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
 		DBCollection collection = getCollection( entityKey );

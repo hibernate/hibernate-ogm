@@ -591,9 +591,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( log.isTraceEnabled() ) {
 			log.trace(
 					"initializing lazy properties of: " +
-					MessageHelper.infoString( this, id, getFactory() ) +
-					", field access: " + fieldName
-				);
+							MessageHelper.infoString( this, id, getFactory() ) +
+							", field access: " + fieldName
+			);
 		}
 
 		if ( hasCache() ) {
@@ -668,8 +668,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( log.isTraceEnabled() ) {
 			log.trace(
 					"Forcing version increment [" + MessageHelper.infoString( this, id, getFactory() ) +
-					"; " + getVersionType().toLoggableString( currentVersion, getFactory() ) +
-					" -> " + getVersionType().toLoggableString( nextVersion, getFactory() ) + "]"
+							"; " + getVersionType().toLoggableString( currentVersion, getFactory() ) +
+							" -> " + getVersionType().toLoggableString( nextVersion, getFactory() ) + "]"
 			);
 		}
 
@@ -722,7 +722,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		AssociationPersister associationPersister = new AssociationPersister(
 				inversePersister.getMappedClass()
-				)
+		)
 				.gridDialect( gridDialect )
 				.key( uniqueKey, gridUniqueKeyType )
 				.associationKeyMetadata( associationKeyMetadata )
@@ -783,37 +783,37 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.UPGRADE )
-			);
+		);
 		loaders.put(
 				LockMode.UPGRADE_NOWAIT,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.UPGRADE_NOWAIT )
-			);
+		);
 		loaders.put(
 				LockMode.FORCE,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.FORCE )
-			);
+		);
 		loaders.put(
 				LockMode.PESSIMISTIC_READ,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_READ )
-			);
+		);
 		loaders.put(
 				LockMode.PESSIMISTIC_WRITE,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_WRITE )
-			);
+		);
 		loaders.put(
 				LockMode.PESSIMISTIC_FORCE_INCREMENT,
 				disableForUpdate ?
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_FORCE_INCREMENT )
-			);
+		);
 		loaders.put( LockMode.OPTIMISTIC, createEntityLoader( LockMode.OPTIMISTIC) );
 		loaders.put( LockMode.OPTIMISTIC_FORCE_INCREMENT, createEntityLoader( LockMode.OPTIMISTIC_FORCE_INCREMENT ) );
 
@@ -822,12 +822,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				"merge",
 				createEntityLoader( LockMode.READ )
 				//new CascadeEntityLoader( this, CascadingAction.MERGE, getFactory() )
-			);
+		);
 		loaders.put(
 				"refresh",
 				createEntityLoader( LockMode.READ )
 				//new CascadeEntityLoader( this, CascadingAction.REFRESH, getFactory() )
-			);
+		);
 	}
 
 
@@ -913,7 +913,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			final Object object,
 			final Loadable rootLoadable,
 			//We probably don't need suffixedColumns, use column names instead
-		//final String[][] suffixedPropertyColumns,
+			//final String[][] suffixedPropertyColumns,
 			final boolean allProperties,
 			final SessionImplementor session) throws HibernateException {
 
@@ -968,7 +968,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			String[] propNames,
 			String[] propSubclassNames,
 			boolean sequentialSelectEmpty
-			) {
+	) {
 		Object value;
 		if ( !propertySelectable[index] ) {
 			value = PropertyAccessStrategyBackRefImpl.UNKNOWN;
@@ -1132,7 +1132,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						boolean[] versionability = getPropertyVersionability(); //TODO: is this really necessary????
 						boolean[] includeOldField = entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL
 								? getPropertyUpdateability()
-										: propsToUpdate;
+								: propsToUpdate;
 
 						//TODO do a diff on the properties value from resultset and the dirty value
 						GridType[] types = gridPropertyTypes;
@@ -1147,7 +1147,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 								boolean[] settable = type.toColumnNullness( oldFields[i], factory );
 								final Object snapshotValue = type.nullSafeGet(
 										resultset, getPropertyColumnNames( i ), session, object
-										);
+								);
 
 								if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
 									raiseStaleObjectStateException( id );
@@ -1457,12 +1457,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			if ( mightRequireInverseAssociationManagement ) {
 				new EntityAssociationUpdater( this )
-					.id( id )
-					.resultset( currentState )
-					.session( session )
-					.tableIndex( j )
-					.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
-					.removeNavigationalInformationFromInverseSide();
+						.id( id )
+						.resultset( currentState )
+						.session( session )
+						.tableIndex( j )
+						.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+						.removeNavigationalInformationFromInverseSide();
 			}
 
 			if ( optimisticLockingAwareGridDialect != null && isVersioned() ) {
