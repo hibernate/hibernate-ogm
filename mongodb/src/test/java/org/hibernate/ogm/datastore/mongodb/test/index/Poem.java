@@ -11,14 +11,13 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
-
 /**
  * @author Francois Le Droff
  */
 @Entity
-//@Table(name="POEM")
-@Table(name="T_POEM", indexes = @Index(columnList = "author ASC", name = "author_idx", unique=true))
-//@WriteConcern(WriteConcernType.ACKNOWLEDGED)
+// @Table(name="POEM")
+@Table(name = "T_POEM", indexes = @Index(columnList = "author ASC", name = "author_idx", unique = true) )
+// @WriteConcern(WriteConcernType.ACKNOWLEDGED)
 public class Poem {
 
 	private String id;

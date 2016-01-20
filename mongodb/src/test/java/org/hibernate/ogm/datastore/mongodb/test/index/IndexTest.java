@@ -11,8 +11,6 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
-
 /**
  * Testing Mongo Single Field Indexes
  *
@@ -25,8 +23,7 @@ public class IndexTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction tx = session.beginTransaction();
 
-
-		Poem barbara = new Poem( "barbara", "Barbara" , "Jacques Prevert");
+		Poem barbara = new Poem("barbara", "Barbara", "Jacques Prevert");
 
 		session.persist( barbara );
 		tx.commit();
@@ -35,24 +32,14 @@ public class IndexTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		/*
-		assertDbObject(
-				session.getSessionFactory(),
-				// collection
-				"TvShow",
-				// query
-				"{ '_id' : 'tvshow-1' }",
-				// expected
-				"{" +
-					"'_id' : 'tvshow-1', " +
-					"'episodes' : [ " +
-						"{ 'idx' : 2, 'id' : 'episode-3'} ," +
-						"{ 'idx' : 1, 'id' : 'episode-2'} ," +
-						"{ 'idx' : 0, 'id' : 'episode-1'}" +
-					"]," +
-					"'name' : 'Baking Bread'" +
-				"}"
-		);
-		*/
+		 * assertDbObject( session.getSessionFactory(), // collection "TvShow",
+		 * // query "{ '_id' : 'tvshow-1' }", // expected "{" +
+		 * "'_id' : 'tvshow-1', " + "'episodes' : [ " +
+		 * "{ 'idx' : 2, 'id' : 'episode-3'} ," +
+		 * "{ 'idx' : 1, 'id' : 'episode-2'} ," +
+		 * "{ 'idx' : 0, 'id' : 'episode-1'}" + "]," + "'name' : 'Baking Bread'"
+		 * + "}" );
+		 */
 
 		// Clean-Up
 		barbara = (Poem) session.get( Poem.class, "barbara" );
@@ -63,7 +50,6 @@ public class IndexTest extends OgmTestCase {
 
 		checkCleanCache();
 	}
-
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
