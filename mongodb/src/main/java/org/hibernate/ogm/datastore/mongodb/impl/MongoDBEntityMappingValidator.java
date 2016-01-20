@@ -62,14 +62,14 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 		Database database = context.getDatabase();
 		for ( Table table : database.getDefaultNamespace().getTables() ) {
 			Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
-			while( keys.hasNext() ) {
+			while ( keys.hasNext() ) {
 				IndexSpec indexSpec = new IndexSpec( keys.next() );
 				if ( validateIndexSpec( indexSpec ) ) {
 					indexSpecs.add( indexSpec );
 				}
 			}
 			Iterator<Index> indexes = table.getIndexIterator();
-			while( indexes.hasNext() ) {
+			while ( indexes.hasNext() ) {
 				IndexSpec indexSpec = new IndexSpec( indexes.next() );
 				validateIndexSpec( indexSpec );
 				if ( validateIndexSpec( indexSpec ) ) {

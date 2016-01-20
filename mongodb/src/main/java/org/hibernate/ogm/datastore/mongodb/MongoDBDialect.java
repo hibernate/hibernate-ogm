@@ -370,14 +370,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void createIndex(OgmIndexSpec ogmIndexSpec)
-	{
-		try{
-		IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
-		getCollection(indexSpec.getCollection()).createIndex(indexSpec.getIndexKeys(),indexSpec.getIndexOptions());}
+	public void createIndex(OgmIndexSpec ogmIndexSpec) {
+		try {
+			IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
+			getCollection( indexSpec.getCollection()).createIndex( indexSpec.getIndexKeys(), indexSpec.getIndexOptions() );
+		}
 		catch (MongoException e) {
-			//TODO process mongo error code e.getCode()
-			throw new RuntimeException(e);
+			// TODO process mongo error code e.getCode()
+			throw new RuntimeException( e );
 		}
 	}
 
