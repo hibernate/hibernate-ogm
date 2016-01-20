@@ -58,6 +58,4 @@ public abstract class BaseGridDialect implements GridDialect {
 	@Override
 	public void createIndex(OgmIndexSpec indexSpec) {
 	}
-
-
 }

@@ -150,7 +150,7 @@
         <profile>
             <id>embedded-mongodb</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <datastoreProvider>mongodb</datastoreProvider>
@@ -261,10 +261,10 @@
         <profile>
             <id>fongo</id>
             <activation>
-                 <property>
-                     <name>mongodbProvider</name>
-                     <value>fongo</value>
-                 </property>
+                <property>
+                    <name>mongodbProvider</name>
+                    <value>fongo</value>
+                </property>
             </activation>
             <properties>
                 <datastoreProvider>fongo</datastoreProvider>
@@ -282,11 +282,10 @@
         <profile>
             <id>external-mongodb</id>
             <activation>
-                 <activeByDefault>true</activeByDefault>
-                 <property>
-                     <name>mongodbProvider</name>
-                     <value>external</value>
-                 </property>
+                <property>
+                    <name>mongodbProvider</name>
+                    <value>external</value>
+                </property>
             </activation>
             <properties>
                 <datastoreProvider>mongodb</datastoreProvider>

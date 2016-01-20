@@ -286,6 +286,4 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
-
-
 }
