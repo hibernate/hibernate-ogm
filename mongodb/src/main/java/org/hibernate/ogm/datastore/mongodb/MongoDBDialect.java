@@ -860,8 +860,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return stage;
 	}
 
-	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
-										   EntityKeyMetadata entityKeyMetadata) {
+	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
 		if ( query.getOrderBy() != null ) {
 			cursor.sort( query.getOrderBy() );
