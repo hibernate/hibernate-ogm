@@ -60,7 +60,6 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
@@ -87,7 +86,6 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 
 	private final CassandraDatastoreProvider provider;
 	private final Session session;
-	private final CodecRegistry codecRegistry;
 	private final QueryBuilder queryBuilder;
 	private final LoadingCache<String, PreparedStatement> preparedStatementCache;
 
@@ -95,10 +93,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 		this.provider = provider;
 		session = provider.getSession();
 		queryBuilder = provider.getQueryBuilder();
-		codecRegistry = session
-				.getCluster()
-				.getConfiguration()
-				.getCodecRegistry();
+
 
 		preparedStatementCache = CacheBuilder.newBuilder()
 				.maximumSize( 100000 )
