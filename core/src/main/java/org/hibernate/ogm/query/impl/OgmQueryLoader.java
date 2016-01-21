@@ -19,16 +19,19 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.loader.hql.QueryLoader;
+import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.type.Type;
 
 /**
@@ -67,7 +70,7 @@ public class OgmQueryLoader extends QueryLoader {
 	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
 			throws HibernateException {
 
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
 		try {
 			if ( hasScalars ) {
 				return listOfArrays( session, tuples );
@@ -143,8 +146,16 @@ public class OgmQueryLoader extends QueryLoader {
 			this.query = query;
 		}
 
-		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
-			return gridDialect.executeBackendQuery( query, queryParameters );
+		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters) {
+			return gridDialect.executeBackendQuery( query, queryParameters, transactionContext( session ) );
+		}
+
+		private TransactionContext transactionContext(SessionImplementor session) {
+			TransactionCoordinator transactionCoordinator = session.getTransactionCoordinator();
+			if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
+				return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+			}
+			return null;
 		}
 	}
 }

@@ -12,7 +12,7 @@ import org.hibernate.ogm.model.spi.Association;
 
 /**
  * Represents one execution of
- * {@link GridDialect#insertOrUpdateAssociation(AssociationKey, Association, org.hibernate.ogm.dialect.spi.AssociationContext)}.
+ * {@link GridDialect#insertOrUpdateAssociation(AssociationKey, Association, org.hibernate.ogm.dialect.spi.AssociationContext, org.hibernate.ogm.dialect.spi.TransactionContext)}
  *
  * @author Gunnar Morling
  */

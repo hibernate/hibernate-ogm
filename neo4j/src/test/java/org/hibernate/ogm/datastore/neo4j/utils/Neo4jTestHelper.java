@@ -70,7 +70,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tuple = new HashMap<String, Object>();
 		GridDialect dialect = getDialect( sessionFactory );
-		TupleSnapshot snapshot = dialect.getTuple( key, GridDialectOperationContexts.emptyTupleContext() ).getSnapshot();
+		TupleSnapshot snapshot = dialect.getTuple( key, GridDialectOperationContexts.emptyTupleContext(), null ).getSnapshot();
 		for ( String column : snapshot.getColumnNames() ) {
 			tuple.put( column, snapshot.get( column ) );
 		}

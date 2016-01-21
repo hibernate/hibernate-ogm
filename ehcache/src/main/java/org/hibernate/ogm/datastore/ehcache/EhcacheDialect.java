@@ -31,6 +31,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -84,7 +85,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		final Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 		final Element element = entityCache.get( getKeyProvider().getEntityCacheKey( key ) );
 		if ( element != null ) {
@@ -106,7 +107,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
@@ -125,12 +126,12 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		getCacheManager().getEntityCache( key.getMetadata() ).remove( getKeyProvider().getEntityCacheKey( key ) );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		final Cache<AK> associationCache = getCacheManager().getAssociationCache( key.getMetadata() );
 		final Element element = associationCache.get( getKeyProvider().getAssociationCacheKey( key ) );
 
@@ -153,7 +154,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		Map<SerializableRowKey, Map<String, Object>> associationRows = ( (SerializableMapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
 
 		for ( AssociationOperation action : association.getOperations() ) {
@@ -174,7 +175,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		getCacheManager().getAssociationCache( key.getMetadata() ).remove( getKeyProvider().getAssociationCacheKey( key ) );
 	}
 

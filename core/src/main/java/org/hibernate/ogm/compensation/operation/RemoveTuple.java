@@ -11,7 +11,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * Represents one execution of
- * {@link GridDialect#removeTuple(EntityKey, org.hibernate.ogm.dialect.spi.TupleContext)}.
+ * {@link GridDialect#removeTuple(EntityKey, org.hibernate.ogm.dialect.spi.TupleContext, org.hibernate.ogm.dialect.spi.TransactionContext)}
  *
  * @author Gunnar Morling
  */

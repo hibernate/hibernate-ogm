@@ -11,18 +11,22 @@ import java.io.Serializable;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
+import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 
 /**
  * Implements the logic for updating associations. Configured in a fluent manner, followed by a call to
@@ -35,8 +39,6 @@ import org.hibernate.persister.entity.EntityPersister;
  * @author Gunnar Morling
  */
 public class AssociationPersister {
-	private static final Log log = LoggerFactory.make();
-
 	private GridType keyGridType;
 	private Object key;
 	private SessionImplementor session;
@@ -142,7 +144,7 @@ public class AssociationPersister {
 	public Association getAssociation() {
 		if ( association == null ) {
 			AssociationKey key = getAssociationKey();
-			association = gridDialect.getAssociation( key, getAssociationContext() );
+			association = gridDialect.getAssociation( key, getAssociationContext(), getTransactionContext() );
 			if (association == null) {
 				association = gridDialect.createAssociation( key, getAssociationContext() );
 			}
@@ -155,7 +157,7 @@ public class AssociationPersister {
 	 */
 	public Association getAssociationOrNull() {
 		if ( association == null ) {
-			association = gridDialect.getAssociation( getAssociationKey(), getAssociationContext() );
+			association = gridDialect.getAssociation( getAssociationKey(), getAssociationContext(), getTransactionContext() );
 		}
 		return association;
 	}
@@ -165,11 +167,11 @@ public class AssociationPersister {
 	 */
 	public void flushToDatastore() {
 		if ( getAssociation().isEmpty() ) {
-			gridDialect.removeAssociation( getAssociationKey(), getAssociationContext() );
+			gridDialect.removeAssociation( getAssociationKey(), getAssociationContext(), getTransactionContext() );
 			association = null;
 		}
 		else {
-			gridDialect.insertOrUpdateAssociation( getAssociationKey(), getAssociation(), getAssociationContext() );
+			gridDialect.insertOrUpdateAssociation( getAssociationKey(), getAssociation(), getAssociationContext(), getTransactionContext() );
 		}
 
 		updateHostingEntityIfRequired();
@@ -224,12 +226,21 @@ public class AssociationPersister {
 	 */
 	public AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
+			Tuple entityTuple = hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null;
 			associationContext = new AssociationContextImpl(
 					associationTypeContext,
-					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null
+					entityTuple
 			);
 		}
 
 		return associationContext;
+	}
+
+	private TransactionContext getTransactionContext() {
+		TransactionCoordinator transactionCoordinator = session.getTransactionCoordinator();
+		if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
+			return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+		}
+		return null;
 	}
 }

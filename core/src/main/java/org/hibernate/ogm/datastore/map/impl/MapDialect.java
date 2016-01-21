@@ -22,6 +22,7 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -67,7 +68,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		Map<String, Object> entityMap = provider.getEntityTuple( key );
 		if ( entityMap == null ) {
 			return null;
@@ -78,7 +79,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	}
 
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
 		List<Map<String, Object>> mapResults = provider.getEntityTuples( keys );
 		List<Tuple> results = new ArrayList<>( mapResults.size() );
 		// should be done with a lambda for the tuple creation but that's for demo purposes
@@ -96,18 +97,18 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		Map<String,Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		provider.removeEntityTuple( key );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		Map<RowKey, Map<String, Object>> associationMap = provider.getAssociation( key );
 		return associationMap == null ? null : new Association( new MapAssociationSnapshot( associationMap ) );
 	}
@@ -120,12 +121,12 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		MapHelpers.updateAssociation( association );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		provider.removeAssociation( key );
 	}
 

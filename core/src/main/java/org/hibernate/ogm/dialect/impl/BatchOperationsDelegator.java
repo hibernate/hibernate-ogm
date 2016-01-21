@@ -16,6 +16,7 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -81,19 +82,19 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		TupleContext contextWithQueue = new TupleContextImpl(
 				(TupleContextImpl) tupleContext,
 				getOperationQueue()
 		);
 
-		return super.getTuple( key, contextWithQueue );
+		return super.getTuple( key, contextWithQueue, transactionContext );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		if ( isBatchDisabled() ) {
-			super.insertOrUpdateTuple( key, tuple, tupleContext );
+			super.insertOrUpdateTuple( key, tuple, tupleContext, transactionContext );
 		}
 		else {
 			getOperationQueue().add( new InsertOrUpdateTupleOperation( tuple, key, tupleContext ) );
@@ -101,9 +102,9 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		if ( isBatchDisabled() ) {
-			super.removeTuple( key, tupleContext );
+			super.removeTuple( key, tupleContext, transactionContext );
 		}
 		else {
 			getOperationQueue().add( new RemoveTupleOperation( key, tupleContext ) );
@@ -111,8 +112,8 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		return super.getAssociation( key, withQueue( associationContext ) );
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
+		return super.getAssociation( key, withQueue( associationContext ), transactionContext );
 	}
 
 	@Override
@@ -121,9 +122,9 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		if ( isBatchDisabled() ) {
-			super.insertOrUpdateAssociation( key, association, withQueue( associationContext ) );
+			super.insertOrUpdateAssociation( key, association, withQueue( associationContext ), transactionContext );
 		}
 		else {
 			getOperationQueue().add( new InsertOrUpdateAssociationOperation( association, key, withQueue( associationContext ) ) );
@@ -131,9 +132,9 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		if ( isBatchDisabled() ) {
-			super.removeAssociation( key, withQueue( associationContext ) );
+			super.removeAssociation( key, withQueue( associationContext ), transactionContext );
 		}
 		else {
 			getOperationQueue().add( new RemoveAssociationOperation( key, withQueue( associationContext ) ) );

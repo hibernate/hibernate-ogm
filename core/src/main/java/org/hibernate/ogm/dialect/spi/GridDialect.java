@@ -47,16 +47,17 @@ public interface GridDialect extends Service {
 	 *
 	 * @param key The tuple identifier
 	 * @param tupleContext Contains additional information that might be used to create the tuple
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 * @return the tuple identified by the key
 	 */
-	Tuple getTuple(EntityKey key, TupleContext tupleContext);
+	Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext);
 
 	/**
 	 * Creates a new tuple for the given entity key.
 	 * <p>
 	 * Only invoked if no tuple is present yet for the given key. Implementations should not perform a round-trip to the
 	 * datastore but rather return a transient instance. The OGM engine will invoke
-	 * {@link #insertOrUpdateTuple(EntityKey, Tuple, TupleContext)} subsequently.
+	 * {@link #insertOrUpdateTuple(EntityKey, Tuple, TupleContext, TransactionContext)} subsequently.
 	 * <p>
 	 * Columns in the tuple may represent properties of the corresponding entity as well as *-to-one associations to
 	 * other entities. Implementations may choose to persist the latter e.g. in form of fields or as actual
@@ -75,33 +76,36 @@ public interface GridDialect extends Service {
 	 * @param key The tuple identifier
 	 * @param tuple The list of operations to execute
 	 * @param tupleContext Contains additional information that might be used to create or update the tuple
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 * @throws TupleAlreadyExistsException upon insertion of a tuple with an already existing unique identifier
 	 */
-	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException;
+	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) throws TupleAlreadyExistsException;
 
 	/**
 	 * Remove the tuple for a given key
 	 *
 	 * @param key The tuple identifier
 	 * @param tupleContext Contains additional information that might be used to remove the tuple
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 */
-	void removeTuple(EntityKey key, TupleContext tupleContext);
+	void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext);
 
 	/**
 	 * Return the list of tuples corresponding to a given association and the given context
 	 *
 	 * @param key Identifies the association
 	 * @param associationContext Contains additional information that might be used to get the association
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 * @return a list of tuples
 	 */
-	Association getAssociation(AssociationKey key, AssociationContext associationContext);
+	Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext);
 
 	/**
 	 * Creates a new (empty) association for storing the tuples representing the rows corresponding to the given key.
 	 * <p>
 	 * Only invoked if the association does not yet exist in the datastore. Implementations should not perform a
 	 * round-trip to the datastore but rather return a transient instance. The OGM engine will invoke
-	 * {@link #insertOrUpdateAssociation(AssociationKey, Association, AssociationContext)} subsequently.
+	 * {@link #insertOrUpdateAssociation(AssociationKey, Association, AssociationContext, TransactionContext)} subsequently.
 	 *
 	 * @param key Identifies the association
 	 * @param associationContext Contains additional information that might be used to create the association
@@ -115,16 +119,18 @@ public interface GridDialect extends Service {
 	 * @param key Identifies the association
 	 * @param association The list of operations to execute
 	 * @param associationContext Contains additional information that might be used to create the association
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 */
-	void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext);
+	void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association
 	 *
 	 * @param key Identifies the association
 	 * @param associationContext Contains additional information that might be used to remove an association
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 */
-	void removeAssociation(AssociationKey key, AssociationContext associationContext);
+	void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext);
 
 	/**
 	 * Whether the specified association is stored within an entity structure or not. E.g. dialects for document stores

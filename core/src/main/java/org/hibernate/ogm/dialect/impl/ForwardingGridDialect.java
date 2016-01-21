@@ -30,6 +30,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -98,8 +99,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		return gridDialect.getTuple( key, tupleContext );
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
+		return gridDialect.getTuple( key, tupleContext, transactionContext );
 	}
 
 	@Override
@@ -108,18 +109,18 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		gridDialect.insertOrUpdateTuple( key, tuple, tupleContext );
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
+		gridDialect.insertOrUpdateTuple( key, tuple, tupleContext, transactionContext );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		gridDialect.removeTuple( key, tupleContext );
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
+		gridDialect.removeTuple( key, tupleContext, transactionContext );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		return gridDialect.getAssociation( key, associationContext );
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
+		return gridDialect.getAssociation( key, associationContext, transactionContext );
 	}
 
 	@Override
@@ -128,13 +129,13 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
-		gridDialect.insertOrUpdateAssociation( key, association, associationContext );
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
+		gridDialect.insertOrUpdateAssociation( key, association, associationContext, transactionContext );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		gridDialect.removeAssociation( key, associationContext );
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
+		gridDialect.removeAssociation( key, associationContext, transactionContext );
 	}
 
 	@Override
@@ -181,8 +182,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	 */
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
-		return queryableGridDialect.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters, TransactionContext transactionContext) {
+		return queryableGridDialect.executeBackendQuery( query, queryParameters, transactionContext );
 	}
 
 	@Override
@@ -237,8 +238,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	 */
 
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
-		return multigetGridDialect.getTuples( keys, tupleContext );
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
+		return multigetGridDialect.getTuples( keys, tupleContext, transactionContext );
 	}
 
 	/*

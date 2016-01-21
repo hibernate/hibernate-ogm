@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.query.spi;
 import java.io.Serializable;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
@@ -26,9 +27,10 @@ public interface QueryableGridDialect<T extends Serializable> extends GridDialec
 	 * @param query the query to execute in a representation understood by the underlying datastore. May have been
 	 * created by converting a JP-QL query or from a (named) native query.
 	 * @param queryParameters parameters passed for this query
+	 * @param transactionContext Contains information related to the running transaction, it might be null when the db does not require transacitons
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-	ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters);
+	ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters, TransactionContext transactionContext);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.

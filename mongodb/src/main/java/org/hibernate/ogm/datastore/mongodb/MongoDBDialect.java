@@ -74,6 +74,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -154,13 +155,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		DBObject found = this.getObject( key, tupleContext );
 		return createTuple( key, tupleContext, found );
 	}
 
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
 		if ( keys.length == 0 ) {
 			return Collections.emptyList();
 		}
@@ -364,7 +365,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
 
 		DBObject updater = objectForUpdate( tuple, idObject, tupleContext );
@@ -485,7 +486,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		DBCollection collection = getCollection( key );
 		DBObject toDelete = prepareIdObject( key );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
@@ -530,7 +531,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
 		if ( isEmbeddedAssociation( key ) && isInTheQueue( key.getEntityKey(), associationContext ) ) {
@@ -655,7 +656,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		DBCollection collection;
 		DBObject query;
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
@@ -687,7 +688,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
@@ -786,7 +787,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters, TransactionContext transactionContext) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
 		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
@@ -980,7 +981,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
 					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
-					removeAssociation( remove.getAssociationKey(), remove.getContext() );
+					removeAssociation( remove.getAssociationKey(), remove.getContext(), null );
 				}
 				else {
 					throw new UnsupportedOperationException( "Operation not supported on MongoDB: " + operation.getClass().getName() );
@@ -1005,7 +1006,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			batchedInserts.remove( entityKey );
 		}
 		else {
-			removeTuple( entityKey, tupleOperation.getTupleContext() );
+			removeTuple( entityKey, tupleOperation.getTupleContext(), null );
 		}
 	}
 
@@ -1020,7 +1021,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else {
 			// Object already exists in the db or has invalid fields:
-			insertOrUpdateTuple( entityKey, tuple, tupleOperation.getTupleContext() );
+			insertOrUpdateTuple( entityKey, tuple, tupleOperation.getTupleContext(), null );
 		}
 	}
 
@@ -1040,11 +1041,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				MongoHelpers.setValue( documentForInsertion, collectionRole, embeddedElements );
 			}
 			else {
-				insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+				insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext(), null );
 			}
 		}
 		else {
-			insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+			insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext(), null );
 		}
 	}
 

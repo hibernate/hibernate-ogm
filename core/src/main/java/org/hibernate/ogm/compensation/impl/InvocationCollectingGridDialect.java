@@ -43,6 +43,7 @@ import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.exception.impl.Exceptions;
@@ -68,11 +69,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		InsertOrUpdateTupleImpl insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, tuple );
 
 		try {
-			super.insertOrUpdateTuple( key, tuple, tupleContext );
+			super.insertOrUpdateTuple( key, tuple, tupleContext, transactionContext );
 		}
 		catch (Exception e) {
 			handleException( insertOrUpdateTuple, e );
@@ -149,11 +150,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		RemoveTuple removeTuple = new RemoveTupleImpl( key );
 
 		try {
-			super.removeTuple( key, tupleContext );
+			super.removeTuple( key, tupleContext, transactionContext );
 		}
 		catch (Exception e) {
 			handleException( removeTuple, e );
@@ -179,11 +180,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		InsertOrUpdateAssociation insertOrUpdateAssociation = new InsertOrUpdateAssociationImpl( key, association );
 
 		try {
-			super.insertOrUpdateAssociation( key, association, associationContext );
+			super.insertOrUpdateAssociation( key, association, associationContext, transactionContext );
 		}
 		catch (Exception e) {
 			handleException( insertOrUpdateAssociation, e );
@@ -193,11 +194,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		RemoveAssociation removeAssociation = new RemoveAssociationImpl( key );
 
 		try {
-			super.removeAssociation( key, associationContext );
+			super.removeAssociation( key, associationContext, transactionContext );
 		}
 		catch (Exception e) {
 			handleException( removeAssociation, e );

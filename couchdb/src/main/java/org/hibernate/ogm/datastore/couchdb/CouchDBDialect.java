@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.couchdb;
 
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -56,8 +59,6 @@ import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-
 /**
  * Stores tuples and associations as JSON documents inside CouchDB.
  * <p>
@@ -76,7 +77,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
@@ -91,7 +92,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
 
 		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
@@ -117,12 +118,12 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		removeDocumentIfPresent( Identifier.createEntityId( key ) );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
@@ -167,7 +168,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey associationKey, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey associationKey, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		Object rows = getAssociationRows( association, associationKey, associationContext );
 
 		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
@@ -239,7 +240,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null ) {

@@ -53,6 +53,7 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -160,7 +161,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext context) {
+	public Tuple getTuple(EntityKey key, TupleContext context, TransactionContext transactionContext) {
 		Node entityNode = entityQueries.get( key.getMetadata() ).findEntity( dataBase, key.getColumnValues() );
 		if ( entityNode == null ) {
 			return null;
@@ -177,7 +178,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
 		if ( keys.length == 0 ) {
 			return Collections.emptyList();
 		}
@@ -233,7 +234,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
 
 		// insert
@@ -275,7 +276,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		entityQueries.get( key.getMetadata() ).removeEntity( dataBase, key.getColumnValues() );
 	}
 
@@ -332,7 +333,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext, TransactionContext transactionContext) {
 		EntityKey entityKey = associationKey.getEntityKey();
 		Node entityNode = entityQueries.get( entityKey.getMetadata() ).findEntity( dataBase, entityKey.getColumnValues() );
 		GraphLogger.log( "Found owner node: %1$s", entityNode );
@@ -382,7 +383,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		// If this is the inverse side of a bi-directional association, we don't create a relationship for this; this
 		// will happen when updating the main side
 		if ( key.getMetadata().isInverse() ) {
@@ -390,7 +391,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 
 		for ( AssociationOperation action : association.getOperations() ) {
-			applyAssociationOperation( association, key, action, associationContext );
+			applyAssociationOperation( association, key, action, associationContext, transactionContext );
 		}
 	}
 
@@ -415,7 +416,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		// If this is the inverse side of a bi-directional association, we don't manage the relationship from this side
 		if ( key.getMetadata().isInverse() ) {
 			return;
@@ -424,10 +425,10 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		associationQueries.get( key.getMetadata() ).removeAssociation( dataBase, key );
 	}
 
-	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
+	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext, TransactionContext transactionContext) {
 		switch ( operation.getType() ) {
 		case CLEAR:
-			removeAssociation( key, associationContext );
+			removeAssociation( key, associationContext, transactionContext );
 			break;
 		case PUT:
 			putAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
@@ -612,7 +613,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TransactionContext transactionContext) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		Result result = dataBase.execute( nativeQuery, parameters );

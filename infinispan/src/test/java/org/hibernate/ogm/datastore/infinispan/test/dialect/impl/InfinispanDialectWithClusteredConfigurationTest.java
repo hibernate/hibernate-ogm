@@ -98,10 +98,10 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext(), null );
 
 		// then
-		Tuple readTuple = dialect2.getTuple( key, null );
+		Tuple readTuple = dialect2.getTuple( key, null, null );
 		assertThat( readTuple.get( "foo" ) ).isEqualTo( "bar" );
 	}
 
@@ -137,10 +137,10 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Association association = dialect1.createAssociation( key, null );
 		association.put( rowKey, tuple );
-		dialect1.insertOrUpdateAssociation( key, association, null );
+		dialect1.insertOrUpdateAssociation( key, association, null, null );
 
 		// then
-		Association readAssociation = dialect2.getAssociation( key, null );
+		Association readAssociation = dialect2.getAssociation( key, null, null );
 		Tuple readKey = readAssociation.get( rowKey );
 		assertThat( readKey ).isNotNull();
 		assertThat( readKey.get( "zip" ) ).isEqualTo( "zap" );
@@ -158,7 +158,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext(), null );
 
 		// then
 		MyConsumer consumer = new MyConsumer();

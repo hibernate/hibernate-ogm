@@ -18,6 +18,7 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -55,17 +56,17 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		log.tracef( "Reading tuple with key %1$s and context %2$s", key, tupleContext );
-		return super.getTuple( key, tupleContext );
+		return super.getTuple( key, tupleContext, transactionContext );
 	}
 
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
 		if ( log.isTraceEnabled() ) {
 			log.tracef( "Reading tuples with keys %1$s and context %2$s", Arrays.toString( keys ), tupleContext );
 		}
-		return super.getTuples( keys, tupleContext );
+		return super.getTuples( keys, tupleContext, transactionContext );
 	}
 
 	@Override
@@ -75,26 +76,26 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		if ( tuple.getSnapshot().isEmpty() ) {
 			log.tracef( "Inserting tuple with key %1$s into datastore", key );
 		}
 		else {
 			log.tracef( "Updating tuple with key %1$s in datastore", key );
 		}
-		super.insertOrUpdateTuple( key, tuple, tupleContext );
+		super.insertOrUpdateTuple( key, tuple, tupleContext, transactionContext );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		log.tracef( "Removing tuple with key %1$s from datastore", key );
-		super.removeTuple( key, tupleContext );
+		super.removeTuple( key, tupleContext, transactionContext );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		log.tracef( "Reading association with key %1$s from datastore and context %2$s", key, associationContext );
-		return super.getAssociation( key, associationContext );
+		return super.getAssociation( key, associationContext, transactionContext );
 	}
 
 	@Override
@@ -104,20 +105,20 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		if ( association.getSnapshot().size() == 0 ) {
 			log.tracef( "Creating association with key %1$s in datastore", key );
 		}
 		else {
 			log.tracef( "Updating association with key %1$s in datastore", key );
 		}
-		super.insertOrUpdateAssociation( key, association, associationContext );
+		super.insertOrUpdateAssociation( key, association, associationContext, transactionContext );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		log.tracef( "Removing association with key %1$s from datastore", key );
-		super.removeAssociation( key, associationContext );
+		super.removeAssociation( key, associationContext, transactionContext );
 	}
 
 	@Override
@@ -139,8 +140,8 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TransactionContext transactionContext) {
 		log.tracef( "Executing backend query: %1$s", query.getQuery() );
-		return super.executeBackendQuery( query, queryParameters );
+		return super.executeBackendQuery( query, queryParameters, transactionContext );
 	}
 }
