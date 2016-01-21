@@ -27,6 +27,8 @@ public enum GridDialectType {
 
 	NEO4J( "org.hibernate.ogm.datastore.neo4j.Neo4jDialect", false, true),
 
+	NEO4J_REMOTE( "org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect", false, true),
+
 	COUCHDB( "org.hibernate.ogm.datastore.couchdb.CouchDBDialect", true, false ),
 
 	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false  ),

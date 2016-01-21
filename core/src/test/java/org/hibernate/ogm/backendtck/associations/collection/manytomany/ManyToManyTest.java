@@ -7,9 +7,13 @@
 package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.TestHelper.get;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
+
+import java.util.EnumSet;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -135,7 +139,7 @@ public class ManyToManyTest extends OgmTestCase {
 	}
 
 	private int expectedAssociationNumber() {
-		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
+		if ( EnumSet.of( NEO4J, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
 			// In Neo4j relationships are bidirectional
 			return 1;
 		}
