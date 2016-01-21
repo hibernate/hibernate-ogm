@@ -47,7 +47,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		EntityKey key = new EntityKey( new DefaultEntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
-		Map<String, Object> entityTuple = extractEntityTuple( sessions, key );
+		Map<String, Object> entityTuple = extractEntityTuple( session, key );
 		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ) );
 
 		EntityPersister persister = ( (SessionFactoryImplementor) session.getSessionFactory() )

@@ -8,6 +8,7 @@ package org.hibernate.ogm.utils;
 
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -26,8 +27,18 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 public class HashMapTestHelper implements TestableGridDialect {
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		return getEntityMap( sessionFactory ).size();
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -36,8 +47,8 @@ public class HashMapTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return getEntityMap( sessionFactory ).get( key );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		return getEntityMap( session.getSessionFactory() ).get( key );
 	}
 
 	private static Map<EntityKey, Map<String, Object>> getEntityMap(SessionFactory sessionFactory) {
