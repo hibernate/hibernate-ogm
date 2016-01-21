@@ -117,7 +117,7 @@ public class ManyToOneTest extends OgmTestCase {
 	}
 
 	private Long expectedAssociations() {
-		if ( TestHelper.getCurrentDialectType() == GridDialectType.NEO4J ) {
+		if ( TestHelper.getCurrentDialectType() == GridDialectType.NEO4J || TestHelper.getCurrentDialectType() == GridDialectType.NEO4J_REMOTE ) {
 			// A relationship is created in Neo4j that will result in the count
 			return 1L;
 		}

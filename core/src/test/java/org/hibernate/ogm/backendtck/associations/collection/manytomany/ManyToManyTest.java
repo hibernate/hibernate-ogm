@@ -135,7 +135,7 @@ public class ManyToManyTest extends OgmTestCase {
 	}
 
 	private int expectedAssociationNumber() {
-		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
+		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) || TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J_REMOTE )) {
 			// In Neo4j relationships are bidirectional
 			return 1;
 		}
