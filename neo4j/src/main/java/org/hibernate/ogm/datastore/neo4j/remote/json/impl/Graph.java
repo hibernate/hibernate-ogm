@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Results of a {@link Statement} expressed as graph elements.
+ *
  * @author Davide D'Alto
  */
 public class Graph {

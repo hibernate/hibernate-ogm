@@ -9,6 +9,11 @@ package org.hibernate.ogm.datastore.neo4j.remote.json.impl;
 import java.util.List;
 
 /**
+ * The result of a {@link Statement} expressed as rows or {@link Graph}.
+ *
+ * @see Statement#AS_GRAPH
+ * @see Statement#AS_ROW
+ *
  * @author Davide D'Alto
  */
 public class Row {
