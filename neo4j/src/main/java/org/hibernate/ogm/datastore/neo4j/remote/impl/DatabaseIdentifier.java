@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.couchdb.util.impl;
+package org.hibernate.ogm.datastore.neo4j.remote.impl;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
- * Provides all information required to connect to a CouchDB database.
+ * Provides all information required to connect to a Neo4j database.
  *
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
@@ -38,8 +38,8 @@ public class DatabaseIdentifier {
 		this.userName = userName;
 		this.password = password;
 
-		serverUri = new URL( PROTOCOL, host, port, "" ).toURI();
-		databaseUri = new URL( PROTOCOL, host, port, SLASH + databaseName ).toURI();
+		this.serverUri = new URL( PROTOCOL, host, port, "" ).toURI();
+		this.databaseUri = new URL( PROTOCOL, host, port, SLASH + databaseName ).toURI();
 	}
 
 	public String getHost() {
@@ -60,16 +60,16 @@ public class DatabaseIdentifier {
 	}
 
 	/**
-	 * Returns the URI of the CouchDB server, e.g. "http://localhost:5984".
+	 * Returns the URI of the Neo4j server, e.g. "http:://localhost:5984".
 	 *
-	 * @return the URI of the CouchDB server
+	 * @return the URI of the Neo4j server
 	 */
 	public URI getServerUri() {
 		return serverUri;
 	}
 
 	/**
-	 * Returns the URI of the database, e.g. "http://localhost:5984/mydb".
+	 * Returns the URI of the database, e.g. "http:://localhost:5984/mydb".
 	 *
 	 * @return the URI of the database
 	 */
