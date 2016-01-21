@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -57,8 +58,8 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		RedisDatastoreProvider castProvider = getProvider( session.getSessionFactory() );
 		AbstractRedisDialect gridDialect = getGridDialect( castProvider );
 
 		if ( gridDialect instanceof RedisJsonDialect ) {
@@ -66,7 +67,7 @@ public class RedisTestHelper implements TestableGridDialect {
 		}
 
 		if ( gridDialect instanceof RedisHashDialect ) {
-			return extractFromHashDialect( sessionFactory, key, (RedisHashDialect) gridDialect );
+			return extractFromHashDialect( session.getSessionFactory(), key, (RedisHashDialect) gridDialect );
 		}
 
 		throw new IllegalStateException( "Unsupported dialect " + gridDialect );
@@ -162,6 +163,11 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		RedisCommands<String, String> connection = getConnection( sessionFactory );
 		List<String> keys = connection.keys( "*" );
@@ -196,6 +202,11 @@ public class RedisTestHelper implements TestableGridDialect {
 		catch (JSONException e) {
 			throw new IllegalStateException( e );
 		}
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -36,6 +37,11 @@ import org.infinispan.Cache;
 public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		int entityCount = 0;
 		Set<Cache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<Cache<?, ?>, Boolean>() );
@@ -49,6 +55,11 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		}
 
 		return entityCount;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -68,9 +79,9 @@ public class InfinispanTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		InfinispanDatastoreProvider provider = getProvider( sessionFactory );
-		return getEntityCache( sessionFactory, key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		InfinispanDatastoreProvider provider = getProvider( session.getSessionFactory() );
+		return getEntityCache( session.getSessionFactory(), key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
 	}
 
 	private static Cache<?, Map<String, Object>> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {

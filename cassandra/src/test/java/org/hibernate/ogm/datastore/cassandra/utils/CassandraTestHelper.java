@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Table;
@@ -42,7 +43,6 @@ import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -82,6 +82,11 @@ public class CassandraTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		CassandraDatastoreProvider cassandraDatastoreProvider = getProvider( sessionFactory );
 		long count = 0;
@@ -95,6 +100,11 @@ public class CassandraTestHelper implements TestableGridDialect {
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -137,9 +147,9 @@ public class CassandraTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		CassandraDatastoreProvider provider = getProvider( session.getSessionFactory() );
 
-		CassandraDatastoreProvider provider = getProvider( sessionFactory );
 		Select select = provider.getQueryBuilder().select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
 		for ( int i = 1; i < key.getColumnNames().length; i++ ) {
@@ -224,7 +234,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 			values.add( e.getValue() );
 		}
 
-		Session session = provider.getSession();
+		com.datastax.driver.core.Session session = provider.getSession();
 
 		PreparedStatement preparedStatement = session.prepare( select );
 		BoundStatement boundStatement = new BoundStatement( preparedStatement );
