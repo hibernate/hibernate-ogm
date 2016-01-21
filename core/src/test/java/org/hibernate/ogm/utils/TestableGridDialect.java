@@ -8,6 +8,7 @@ package org.hibernate.ogm.utils;
 
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
@@ -27,9 +28,23 @@ public interface TestableGridDialect {
 	/**
 	 * Returns the number of entities in the datastore
 	 *
+	 * @param session
+	 */
+	long getNumberOfEntities(Session session);
+
+	/**
+	 * Returns the number of entities in the datastore
+	 *
 	 * @param sessionFactory
 	 */
 	long getNumberOfEntities(SessionFactory sessionFactory);
+
+	/**
+	 * Returns the number of associations in the datastore
+	 *
+	 * @param session
+	 */
+	long getNumberOfAssociations(Session session);
 
 	/**
 	 * Returns the number of associations in the datastore
@@ -50,11 +65,11 @@ public interface TestableGridDialect {
 	/**
 	 * Loads a specific entity tuple directly from the data store by entity key
 	 *
-	 * @param sessionFactory
+	 * @param session
 	 * @param key
 	 * @return the loaded tuple, or null of nothing was found
 	 */
-	Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key);
+	Map<String, Object> extractEntityTuple(Session session, EntityKey key);
 
 	/**
 	 * Returning false will disable all tests which verify transaction isolation or rollback capabilities.

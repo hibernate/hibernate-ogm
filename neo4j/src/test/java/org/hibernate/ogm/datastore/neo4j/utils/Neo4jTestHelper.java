@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.fest.util.Files;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -50,6 +51,16 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	private static final String ROOT_FOLDER = hibProperties.get( Neo4jProperties.DATABASE_PATH ) + File.separator + "NEO4J";
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
 		ResourceIterator<Long> result = graphDb.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
@@ -68,9 +79,9 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		Map<String, Object> tuple = new HashMap<String, Object>();
-		GridDialect dialect = getDialect( sessionFactory );
+		GridDialect dialect = getDialect( session.getSessionFactory() );
 		TupleSnapshot snapshot = dialect.getTuple( key, GridDialectOperationContexts.emptyTupleContext() ).getSnapshot();
 		for ( String column : snapshot.getColumnNames() ) {
 			tuple.put( column, snapshot.get( column ) );
