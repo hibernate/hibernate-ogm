@@ -57,7 +57,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		tuples.add( tuple );
 		ogmLoadingContext.setTuples( tuples );
-		List<Object> entities = loader.loadEntities( (SessionImplementor) session, LockOptions.NONE, ogmLoadingContext );
+		List<Object> entities = loader.loadEntitiesFromTuples( (SessionImplementor) session, LockOptions.NONE, ogmLoadingContext );
 		assertThat( entities.size() ).isEqualTo( 1 );
 		assertThat( ( (Feeling) entities.get( 0 ) ).getName() ).isEqualTo( "Moody" );
 		transaction.commit();

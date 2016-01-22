@@ -19,8 +19,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
+import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.search.backend.AddLuceneWork;
@@ -199,12 +199,12 @@ public class TupleIndexer implements SessionAwareRunnable {
 	private Object entity(Session session, Tuple tuple) {
 		SessionImplementor sessionImplementor = (SessionImplementor) session;
 		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
-		OgmLoader loader = (OgmLoader) persister.getAppropriateLoader( LockOptions.READ, sessionImplementor );
+		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, sessionImplementor );
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		tuples.add( tuple );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		ogmLoadingContext.setTuples( tuples );
-		List<Object> entities = loader.loadEntities( sessionImplementor, LockOptions.NONE, ogmLoadingContext );
+		List<Object> entities = loader.loadEntitiesFromTuples( sessionImplementor, LockOptions.NONE, ogmLoadingContext );
 		return entities.get( 0 );
 	}
 
