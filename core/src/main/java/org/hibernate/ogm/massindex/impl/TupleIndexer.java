@@ -8,7 +8,7 @@ package org.hibernate.ogm.massindex.impl;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -199,13 +199,13 @@ public class TupleIndexer implements SessionAwareRunnable {
 	private Object entity(Session session, Tuple tuple) {
 		SessionImplementor sessionImplementor = (SessionImplementor) session;
 		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
+
 		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, sessionImplementor );
-		List<Tuple> tuples = new ArrayList<Tuple>();
-		tuples.add( tuple );
+
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
-		ogmLoadingContext.setTuples( tuples );
+		ogmLoadingContext.setTuples( Collections.singletonList( tuple ) );
 		List<Object> entities = loader.loadEntitiesFromTuples( sessionImplementor, LockOptions.NONE, ogmLoadingContext );
+
 		return entities.get( 0 );
 	}
-
 }
