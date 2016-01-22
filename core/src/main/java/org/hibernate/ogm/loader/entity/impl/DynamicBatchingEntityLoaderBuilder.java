@@ -28,6 +28,8 @@ import org.hibernate.loader.entity.EntityJoinWalker;
 import org.hibernate.loader.entity.EntityLoader;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.loader.spi.AfterLoadAction;
+import org.hibernate.ogm.loader.impl.OgmLoadingContext;
+import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
 import org.hibernate.persister.entity.OuterJoinLoadable;
 import org.hibernate.pretty.MessageHelper;
 import org.jboss.logging.Logger;
@@ -72,9 +74,9 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				innerEntityLoaderBuilder );
 	}
 
-	public static class DynamicBatchingEntityLoader extends BatchingEntityLoader {
+	public static class DynamicBatchingEntityLoader extends BatchingEntityLoader implements TupleBasedEntityLoader {
 		private final int maxBatchSize;
-		private final UniqueEntityLoader singleKeyLoader;
+		private final TupleBasedEntityLoader singleKeyLoader;
 		private final BatchableEntityLoader dynamicLoader;
 
 		public DynamicBatchingEntityLoader(
@@ -118,6 +120,11 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 			System.arraycopy( batch, 0, idsToLoad, 0, numberOfIds );
 
 			return doBatchLoad( id, dynamicLoader, session, idsToLoad, optionalObject, lockOptions );
+		}
+
+		@Override
+		public List<Object> loadEntitiesFromTuples(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
+			return singleKeyLoader.loadEntitiesFromTuples( session, lockOptions, ogmContext );
 		}
 	}
 

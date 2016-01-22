@@ -65,7 +65,7 @@ import org.hibernate.type.Type;
  *
  * @author Emmanuel Bernard
  */
-public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
+public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, TupleBasedEntityLoader {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -215,7 +215,8 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader {
 	 * @param ogmContext The context with the information to load the entities
 	 * @return the list of entities corresponding to the given context
 	 */
-	public List<Object> loadEntities(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
+	@Override
+	public List<Object> loadEntitiesFromTuples(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
 		return loadEntity( null, null, session, lockOptions, ogmContext );
 	}
 

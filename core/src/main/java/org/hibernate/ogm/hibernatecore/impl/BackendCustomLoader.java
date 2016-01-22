@@ -25,8 +25,8 @@ import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
-import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
+import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
@@ -100,10 +100,10 @@ public class BackendCustomLoader extends CustomLoader {
 	// At the moment we only support the case where one entity type is returned
 	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
-		OgmLoader loader = getLoader( session, returnedClass );
+		TupleBasedEntityLoader loader = getLoader( session, returnedClass );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		ogmLoadingContext.setTuples( getTuplesAsList( tuples ) );
-		return loader.loadEntities( session, LockOptions.NONE, ogmLoadingContext );
+		return loader.loadEntitiesFromTuples( session, LockOptions.NONE, ogmLoadingContext );
 	}
 
 	private List<Tuple> getTuplesAsList(ClosableIterator<Tuple> tuples) {
@@ -158,9 +158,9 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private OgmLoader getLoader(SessionImplementor session, Class<?> entityClass) {
+	private TupleBasedEntityLoader getLoader(SessionImplementor session, Class<?> entityClass) {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
-		OgmLoader loader = (OgmLoader) persister.getAppropriateLoader( LockOptions.READ, session );
+		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, session );
 		return loader;
 	}
 
