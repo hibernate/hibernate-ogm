@@ -107,6 +107,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private static final int TABLE_SPAN = 1;
 
+	/**
+	 * Used as batch fetch size in case the current dialect is capable of multiget but {@code @BatchSize} hasn't been
+	 * given. It's sensible to apply multiget in such case implicitly to avoid n+1 selects as we can't do fetch joins in
+	 * OGM.
+	 */
+	private static final int DEFAULT_MULTIGET_BATCH_SIZE = 50;
 	private static final Log log = LoggerFactory.make();
 
 	private final EntityDiscriminator discriminator;
@@ -223,11 +229,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		// TODO batch logic copied from AbstractEntityPersister
 		// remove copy by increasing visibility in super class
-		int batch = persistentClass.getBatchSize();
-		if ( batch == -1 ) {
-			batch = factory.getSettings().getDefaultBatchFetchSize();
-		}
-		batchSize = batch;
+		batchSize = determineBatchSize(
+				canGridDialectDoMultiget,
+				persistentClass.getBatchSize(),
+				factory.getSessionFactoryOptions().getDefaultBatchFetchSize()
+		);
 
 		//SPACES
 		//TODO: i'm not sure, but perhaps we should exclude
@@ -319,6 +325,26 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		usesNonAtomicOptimisticLocking = initUsesNonAtomicOptimisticLocking();
 
 		initLockers();
+	}
+
+	/**
+	 * Returns the effective batch size. If the dialect is multiget capable and a batch size has been configured, use
+	 * that one, otherwise the default.
+	 */
+	private static int determineBatchSize(boolean canGridDialectDoMultiget, int classBatchSize, int configuredDefaultBatchSize) {
+		// if the dialect does not support it, don't batch so that we can avoid skewing the ORM fetch statistics
+		if ( !canGridDialectDoMultiget ) {
+			return -1;
+		}
+		else if ( classBatchSize != -1 ) {
+			return classBatchSize;
+		}
+		else if ( configuredDefaultBatchSize != -1 ) {
+			return configuredDefaultBatchSize;
+		}
+		else {
+			return DEFAULT_MULTIGET_BATCH_SIZE;
+		}
 	}
 
 	// Required to avoid null pointer errors when super.postInstantiate() is called
@@ -832,6 +858,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 
 	// TODO copied from AsbtactEntityPersister: change the visibility
+	@Override
 	public UniqueEntityLoader getAppropriateLoader(LockOptions lockOptions, SessionImplementor session) {
 //		if ( queryLoader != null ) {
 //			// if the user specified a custom query loader we need to that
@@ -871,8 +898,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	protected UniqueEntityLoader createEntityLoader(LockMode lockMode, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		//FIXME add support to lock mode and loadQueryInfluencers
-		// if the dialect does not support it, don't batch so that we can avoid skewing the ORM fetch statistics
-		int batchSize = canGridDialectDoMultiget ? this.batchSize : 1;
+
 		return BatchingEntityLoaderBuilder.getBuilder( getFactory() )
 				.buildLoader( this, batchSize, lockMode, getFactory(), loadQueryInfluencers, new OgmBatchableEntityLoaderBuilder() );
 	}
@@ -1665,6 +1691,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	protected GridType[] getGridPropertyTypes() {
 		return gridPropertyTypes;
+	}
+
+	@Override
+	public boolean isBatchLoadable() {
+		return batchSize > 1;
 	}
 
 	@Override
