@@ -6,22 +6,12 @@
  */
 package org.hibernate.ogm.loader.entity.impl;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-
-import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.loader.entity.EntityLoader;
 import org.hibernate.loader.entity.UniqueEntityLoader;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.OuterJoinLoadable;
-import org.hibernate.type.Type;
 
 /**
  * DO NOT CHANGE: this class is copied from ORM 5 and changes will be backported at some point
@@ -84,116 +74,6 @@ public abstract class BatchingEntityLoaderBuilder {
 
 
 	/**
-	 * Non LoadPlan based UniqueEntityLoader.
-	 */
-	//TODO: instances should be provided to the buildLoader method optionally
-	public static class LegacyEntityLoaderBuilder implements BatchableEntityLoaderBuilder {
-
-		static BatchableEntityLoaderBuilder INSTANCE = new LegacyEntityLoaderBuilder();
-
-		/**
-		 * Converts an EntityLoader into a BatchableEntityLoader bridging hierarchies.
-		 */
-		private static class BatchableEntityLoaderAdaptor implements BatchableEntityLoader {
-			private final EntityLoader delegate;
-
-			public BatchableEntityLoaderAdaptor(EntityLoader delegate) {
-				this.delegate = delegate;
-			}
-
-			@Override
-			public List<?> loadEntityBatch(SessionImplementor session, Serializable[] ids, Type idType, Object optionalObject, String optionalEntityName, Serializable optionalId, EntityPersister persister, LockOptions lockOptions)
-					throws HibernateException {
-				return delegate.loadEntityBatch( session, ids, idType, optionalObject, optionalEntityName, optionalId, persister, lockOptions );
-			}
-
-			// rest of the methods inherited from UniqueEntityLoader
-
-			@Override
-			public Object load(Serializable id, Object optionalObject, SessionImplementor session)
-					throws HibernateException {
-				return delegate.load( id, optionalObject, session );
-			}
-
-			@Override
-			public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
-				return delegate.load( id, optionalObject, session, lockOptions );
-			}
-		}
-
-		/**
-		 * The DynamicEntityLoader has a specific method for batching.
-		 * This adaptor makes sure to call this specific one.
-		 */
-		private static class BatchableDynamicEntityLoaderAdaptor implements BatchableEntityLoader {
-			private final DynamicBatchingEntityLoaderBuilder.DynamicEntityLoader delegate;
-
-			public BatchableDynamicEntityLoaderAdaptor(DynamicBatchingEntityLoaderBuilder.DynamicEntityLoader delegate) {
-				this.delegate = delegate;
-			}
-
-			@Override
-			public List<?> loadEntityBatch(SessionImplementor session, Serializable[] ids, Type idType, Object optionalObject, String optionalEntityName, Serializable optionalId, EntityPersister persister, LockOptions lockOptions)
-					throws HibernateException {
-				QueryParameters qp = buildQueryParameters( ids[0], ids, optionalObject, lockOptions, persister );
-				return delegate.doEntityBatchFetch( session, qp, ids );
-			}
-
-			protected QueryParameters buildQueryParameters(
-					Serializable id,
-					Serializable[] ids,
-					Object optionalObject,
-					LockOptions lockOptions,
-					EntityPersister persister) {
-				Type[] types = new Type[ids.length];
-				Arrays.fill( types, persister.getIdentifierType() );
-
-				QueryParameters qp = new QueryParameters();
-				qp.setPositionalParameterTypes( types );
-				qp.setPositionalParameterValues( ids );
-				qp.setOptionalObject( optionalObject );
-				qp.setOptionalEntityName( persister.getEntityName() );
-				qp.setOptionalId( id );
-				qp.setLockOptions( lockOptions );
-				return qp;
-			}
-
-			// rest of the methods inherited from UniqueEntityLoader
-
-			@Override
-			public Object load(Serializable id, Object optionalObject, SessionImplementor session)
-					throws HibernateException {
-				return delegate.load( id, optionalObject, session );
-			}
-
-			@Override
-			public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
-				return delegate.load( id, optionalObject, session, lockOptions );
-			}
-		}
-
-		@Override
-		public BatchableEntityLoader buildLoader(OuterJoinLoadable persister, int batchSize, LockMode lockMode, SessionFactoryImplementor factory, LoadQueryInfluencers influencers) {
-			return new BatchableEntityLoaderAdaptor( new EntityLoader( persister, batchSize, lockMode, factory, influencers ) );
-		}
-
-		@Override
-		public BatchableEntityLoader buildLoader(OuterJoinLoadable persister, int batchSize, LockOptions lockOptions, SessionFactoryImplementor factory, LoadQueryInfluencers influencers) {
-			return new BatchableEntityLoaderAdaptor( new EntityLoader( persister, batchSize, lockOptions, factory, influencers ) );
-		}
-
-		@Override
-		public BatchableEntityLoader buildDynamicLoader(OuterJoinLoadable persister, int batchSize, LockMode lockMode, SessionFactoryImplementor factory, LoadQueryInfluencers influencers) {
-			return new BatchableDynamicEntityLoaderAdaptor( new DynamicBatchingEntityLoaderBuilder.DynamicEntityLoader( persister, batchSize, lockMode, factory, influencers ) );
-		}
-
-		@Override
-		public BatchableEntityLoader buildDynamicLoader(OuterJoinLoadable persister, int batchSize, LockOptions lockOptions, SessionFactoryImplementor factory, LoadQueryInfluencers influencers) {
-			return new BatchableDynamicEntityLoaderAdaptor( new DynamicBatchingEntityLoaderBuilder.DynamicEntityLoader( persister, batchSize, lockOptions, factory, influencers ) );
-		}
-	}
-
-	/**
 	 * Builds a batch-fetch capable loader based on the given persister, lock-mode, etc.
 	 *
 	 * @param persister The entity persister
@@ -212,8 +92,6 @@ public abstract class BatchingEntityLoaderBuilder {
 			SessionFactoryImplementor factory,
 			LoadQueryInfluencers influencers,
 			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
-		// defaults to the legacy ORM EntityLoader
-		innerEntityLoaderBuilder = innerEntityLoaderBuilder == null ? LegacyEntityLoaderBuilder.INSTANCE : innerEntityLoaderBuilder;
 		if ( batchSize <= 1 ) {
 			// no batching
 			return buildNonBatchingLoader( persister, lockMode, factory, influencers, innerEntityLoaderBuilder );
@@ -266,8 +144,6 @@ public abstract class BatchingEntityLoaderBuilder {
 			SessionFactoryImplementor factory,
 			LoadQueryInfluencers influencers,
 			BatchableEntityLoaderBuilder innerEntityLoaderBuilder) {
-		// defaults to the legacy ORM EntityLoader
-		innerEntityLoaderBuilder = innerEntityLoaderBuilder == null ? LegacyEntityLoaderBuilder.INSTANCE : innerEntityLoaderBuilder;
 		if ( batchSize <= 1 ) {
 			// no batching
 			return buildNonBatchingLoader( persister, lockOptions, factory, influencers, innerEntityLoaderBuilder );
