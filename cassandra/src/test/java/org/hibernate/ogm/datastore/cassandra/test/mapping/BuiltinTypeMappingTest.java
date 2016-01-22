@@ -14,7 +14,6 @@ import org.hibernate.ogm.backendtck.type.Bookmark;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -70,7 +69,6 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore("OGM-962 True/False mapping needs to be fixed")
 	public void trueFalseTypeMapping() {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -85,7 +83,6 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore("OGM-962 Yes/No mapping needs to be fixed")
 	public void yesNoTypeMapping() {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();

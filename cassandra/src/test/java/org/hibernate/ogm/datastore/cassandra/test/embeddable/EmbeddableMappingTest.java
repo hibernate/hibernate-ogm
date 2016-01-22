@@ -8,19 +8,14 @@ package org.hibernate.ogm.datastore.cassandra.test.embeddable;
 
 import static org.hibernate.ogm.datastore.cassandra.utils.CassandraTestHelper.rowAssertion;
 
-import java.util.Arrays;
-
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.embeddable.Account;
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.AddressType;
-import org.hibernate.ogm.backendtck.queries.Ending;
 import org.hibernate.ogm.backendtck.queries.OptionalStoryBranch;
-import org.hibernate.ogm.backendtck.queries.StoryBranch;
 import org.hibernate.ogm.backendtck.queries.StoryGame;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -159,39 +154,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		session.delete( loadedAccount );
 		transaction.commit();
 
-		session.close();
-	}
-
-	@Test
-	@Ignore("@ElementCollection seems not to work in Cassandra if no @OrderColumn is specified")
-	public void testEmbeddableCollection() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
-
-		// Given, When
-		// If the value is not big enough, it gets converted as integer
-		Long id = Long.MAX_VALUE;
-		StoryGame story = new StoryGame( id, null );
-		story.setGoodBranch( new StoryBranch( "you go to the village", new Ending( "village ending - everybody is happy", 1 ) ) );
-		story.setEvilBranch( new StoryBranch( "you kill the villagers" ) );
-		story.setChaoticBranches( Arrays.asList(
-				new OptionalStoryBranch( "search the evil [artifact]", "you punish the bandits", null ),
-				new OptionalStoryBranch( "assassinate the leader of the party", null, new Ending( "you become a demon", 10 ) ) ) );
-		story.setNeutralBranches( Arrays.asList(
-				new OptionalStoryBranch( "steal the [artifact]", null, null ),
-				new OptionalStoryBranch( "kill the king", null, null ) ) );
-
-		session.persist( story );
-		transaction.commit();
-		session.clear();
-		transaction = session.beginTransaction();
-
-		// Then
-		// TODO test the expected mapping
-
-		session.delete( story );
-		transaction.commit();
-		session.clear();
 		session.close();
 	}
 
