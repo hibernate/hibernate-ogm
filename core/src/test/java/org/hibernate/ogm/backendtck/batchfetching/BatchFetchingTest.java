@@ -23,6 +23,7 @@ import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.stat.Statistics;
 import org.junit.Test;
 
@@ -32,13 +33,13 @@ import org.junit.Test;
 public class BatchFetchingTest extends OgmTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Tower.class, Floor.class};
+		return new Class<?>[] { Tower.class, Floor.class, CondominiumBuilding.class, Condominium.class };
 	}
 
 	@Test
 	public void testLoadSeveralFloorsByBatch() throws Exception {
 		Session session = openSession();
-		Tower tower = prepareDataset( session );
+		Tower tower = prepareTower( session );
 		session.clear();
 
 		session.beginTransaction();
@@ -77,7 +78,7 @@ public class BatchFetchingTest extends OgmTestCase {
 
 		session.getTransaction().commit();
 
-		cleanDataset( session, tower );
+		cleanTower( session, tower );
 		session.close();
 	}
 
@@ -85,7 +86,7 @@ public class BatchFetchingTest extends OgmTestCase {
 	public void testLoadSeveralFloorsFromTower() throws Exception {
 
 		Session session = openSession();
-		Tower tower = prepareDataset( session );
+		Tower tower = prepareTower( session );
 		session.clear();
 
 		// now read the tower and its floors to detect 1+n patterns;
@@ -117,32 +118,102 @@ public class BatchFetchingTest extends OgmTestCase {
 					"getTuple"
 			);
 		}
-		cleanDataset( session, tower );
+		cleanTower( session, tower );
 		session.close();
 	}
 
-	private void cleanDataset(Session session, Tower tower) {
+	@Test
+	@TestForIssue(jiraKey = "OGM-945")
+	public void testMultigetIsAppliedWithoutExplicitBatchSizeGiven() throws Exception {
+		Session session = openSession();
+		prepareCondoBuilding( session );
+		session.clear();
+
+		// now read the condo building and its appartments to detect 1+n patterns;
+		session.beginTransaction();
+		CondominiumBuilding condoBuilding = session.get( CondominiumBuilding.class, "cb-1" );
+
+		Statistics statistics = session.getSessionFactory().getStatistics();
+		statistics.setStatisticsEnabled( true );
+		statistics.clear();
+		assertEquals( 0, statistics.getEntityStatistics( Condominium.class.getName() ).getFetchCount() );
+		getOperationsLogger().reset();
+		Assertions.assertThat( condoBuilding.getCondominiums() ).hasSize( 3 );
+
+		// if a multiget, we load all entities as one go, otherwise we don't
+		int fetchSize = isMultigetDialect() ? 1 : 3;
+		assertEquals( fetchSize, statistics.getEntityStatistics( Condominium.class.getName() ).getFetchCount() );
+		session.getTransaction().commit();
+
+		if ( isMultigetDialect() ) {
+			assertThat( getOperations() ).containsExactly(
+					"getAssociation",
+					"getTuples"
+			);
+		}
+		else {
+			assertThat( getOperations() ).containsExactly(
+					"getAssociation",
+					"getTuple",
+					"getTuple",
+					"getTuple"
+			);
+		}
+		cleanCondoBuilding( session );
+		session.close();
+	}
+
+	private void cleanTower(Session session, Tower tower) {
 		session.beginTransaction();
 		session.delete( session.get( Tower.class, tower.getId() ) );
 		for ( Floor currentFloor : tower.getFloors() ) {
 			session.delete( session.get( Floor.class, currentFloor.getId() ) );
 		}
+
+		session.delete( new CondominiumBuilding( "cb-1" ) );
+
 		session.getTransaction().commit();
 	}
 
-	private Tower prepareDataset(Session session) {
+	private Tower prepareTower(Session session) {
 		session.beginTransaction();
 		Tower tower = new Tower();
 		tower.setName( "Pise" );
+
 		Floor floor = new Floor();
 		floor.setLevel( 0 );
 		tower.getFloors().add( floor );
+
 		floor = new Floor();
 		floor.setLevel( 1 );
 		tower.getFloors().add( floor );
+
 		session.persist( tower );
 		session.getTransaction().commit();
+
 		return tower;
+	}
+
+	private void cleanCondoBuilding(Session session) {
+		session.beginTransaction();
+		session.delete( session.get( CondominiumBuilding.class, "cb-1" ) );
+		session.getTransaction().commit();
+	}
+
+	private CondominiumBuilding prepareCondoBuilding(Session session) {
+		session.beginTransaction();
+
+		CondominiumBuilding condoBuilding = new CondominiumBuilding();
+		condoBuilding.setId( "cb-1" );
+
+		condoBuilding.getCondominiums().add( new Condominium( "condo-1", 110 ) );
+		condoBuilding.getCondominiums().add( new Condominium( "condo-2", 90 ) );
+		condoBuilding.getCondominiums().add( new Condominium( "condo-3", 135 ) );
+		session.persist( condoBuilding );
+
+		session.getTransaction().commit();
+
+		return condoBuilding;
 	}
 
 	private boolean isMultigetDialect() {
