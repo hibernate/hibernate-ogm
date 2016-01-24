@@ -80,7 +80,7 @@ import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Result;
-import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
+import org.neo4j.kernel.api.exceptions.schema.UniquePropertyConstraintViolationKernelException;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -258,7 +258,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		catch (QueryExecutionException qee) {
 			if ( CONSTRAINT_VIOLATION_CODE.equals( qee.getStatusCode() ) ) {
 				Throwable cause = findRecognizableCause( qee );
-				if ( cause instanceof UniqueConstraintViolationKernelException ) {
+				if ( cause instanceof UniquePropertyConstraintViolationKernelException ) {
 					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, qee );
 				}
 			}

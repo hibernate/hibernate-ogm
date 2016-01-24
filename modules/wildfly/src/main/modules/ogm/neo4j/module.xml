@@ -10,10 +10,6 @@
         <resource-root path="hibernate-ogm-neo4j-${project.version}.jar" />
         <resource-root path="neo4j-${neo4jVersion}.jar" />
         <resource-root path="neo4j-cypher-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompiler19Version}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompiler20Version}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.1-${neo4jCypherCompiler21Version}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.2-${neo4jCypherCompiler22Version}.jar" />
         <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
         <resource-root path="neo4j-udc-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graph-algo-${neo4jVersion}.jar" />

@@ -183,10 +183,6 @@
                   <include>org.neo4j:neo4j-graph-matching</include>
                   <include>org.neo4j:neo4j-jmx</include>
                   <include>org.neo4j:neo4j-cypher</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-1.9</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-2.0</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-2.1</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-2.2</include>
               </includes>
        </dependencySet>
        <dependencySet>
@@ -199,12 +195,21 @@
                   <include>org.apache.lucene:lucene-core</include>
                   <include>org.neo4j:neo4j-io</include>
                   <include>org.neo4j:neo4j-lucene-index</include>
-                  <include>org.parboiled:parboiled-scala_2.10</include>
+                  <include>org.parboiled:parboiled-scala_2.11</include>
                   <include>org.scala-lang:scala-reflect</include>
                   <include>org.scala-lang:scala-library</include>
+                  <include>org.scala-lang.modules:scala-parser-combinators_2.11</include>
                   <include>org.neo4j:neo4j-primitive-collections</include>
+                  <include>org.neo4j:neo4j-codegen</include>
                   <include>org.neo4j:neo4j-unsafe</include>
+                  <include>org.neo4j:neo4j-function</include>
+                  <include>org.neo4j:neo4j-logging</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-1.9_2.11</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-2.2_2.11</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-2.3</include>
+                  <include>org.neo4j:neo4j-cypher-frontend-2.3</include>
                   <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
+                  <include>org.apache.commons:commons-lang3</include>
               </includes>
        </dependencySet>
        <!-- HQL -->

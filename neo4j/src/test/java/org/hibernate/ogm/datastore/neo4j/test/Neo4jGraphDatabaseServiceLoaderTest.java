@@ -19,7 +19,6 @@ import org.hibernate.ogm.datastore.neo4j.impl.Neo4jGraphDatabaseServiceFactoryPr
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.junit.Test;
-import org.neo4j.graphdb.DependencyResolver;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -36,8 +35,7 @@ import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.graphdb.traversal.BidirectionalTraversalDescription;
 import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
-import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.impl.factory.GraphDatabaseFacade;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -51,7 +49,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		Neo4jGraphDatabaseServiceFactoryProvider graphService = new Neo4jGraphDatabaseServiceFactoryProvider();
 		GraphDatabaseService db = graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
-		assertThat( db.getClass() ). isEqualTo( EmbeddedGraphDatabase.class );
+		assertThat( db.getClass() ). isEqualTo( GraphDatabaseFacade.class );
 	}
 
 	@Test
@@ -93,7 +91,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 	}
 
-	public static class MockGraphDatabaseService implements GraphDatabaseService, GraphDatabaseAPI {
+	public static class MockGraphDatabaseService implements GraphDatabaseService {
 
 		private final boolean configurationReadable;
 
@@ -191,21 +189,6 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public BidirectionalTraversalDescription bidirectionalTraversalDescription() {
-			return null;
-		}
-
-		@Override
-		public DependencyResolver getDependencyResolver() {
-			return null;
-		}
-
-		@Override
-		public org.neo4j.kernel.impl.store.StoreId storeId() {
-			return null;
-		}
-
-		@Override
-		public String getStoreDir() {
 			return null;
 		}
 
