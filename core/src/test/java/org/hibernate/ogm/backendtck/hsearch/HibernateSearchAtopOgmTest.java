@@ -27,7 +27,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-@SkipByGridDialect(value = GridDialectType.NEO4J, comment = "Neo4j is not compatible with HSEARCH 5")
+@SkipByGridDialect(value = { GridDialectType.NEO4J, GridDialectType.NEO4J_REMOTE }, comment = "Neo4j is not compatible with HSEARCH 5")
 public class HibernateSearchAtopOgmTest extends JpaTestCase {
 
 	@Test

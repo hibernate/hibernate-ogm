@@ -45,12 +45,14 @@ import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
 import org.hibernate.ogm.dialect.impl.GridDialects;
+import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
@@ -84,6 +86,7 @@ import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.access.internal.PropertyAccessStrategyBackRefImpl;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tuple.GenerationTiming;
 import org.hibernate.tuple.NonIdentifierAttribute;
@@ -573,8 +576,16 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private Tuple getResultsetById(Serializable id, SessionImplementor session) {
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
+		final Tuple resultset = gridDialect.getTuple( key, getTupleContext( session ), transactionContext( session ) );
 		return resultset;
+	}
+
+	private TransactionContext transactionContext(SessionImplementor session) {
+		TransactionCoordinator transactionCoordinator = session.getTransactionCoordinator();
+		if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
+			return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+		}
+		return null;
 	}
 
 	@Override
@@ -679,10 +690,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key, getTupleContext() );
+		TransactionContext transactionContext = transactionContext( session );
+		TupleContext context = getTupleContext( session );
+		final Tuple resultset = gridDialect.getTuple( key, context, transactionContext );
 		checkVersionAndRaiseSOSE( id, currentVersion, session, resultset );
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+		gridDialect.insertOrUpdateTuple( key, resultset, context, transactionContext );
 		return nextVersion;
 	}
 
@@ -1102,8 +1115,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 				Tuple resultset = null;
 
+				TransactionContext transactionContext = transactionContext( session );
 				if ( mightRequireInverseAssociationManagement || usesNonAtomicOptimisticLocking ) {
-					resultset = gridDialect.getTuple( key, getTupleContext() );
+					resultset = gridDialect.getTuple( key, getTupleContext( session ), transactionContext );
 				}
 				else {
 					OgmEntityEntryState extraState = entry.getExtraState( OgmEntityEntryState.class );
@@ -1111,7 +1125,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						resultset = extraState.getTuple();
 					}
 					if ( resultset == null ) {
-						resultset = gridDialect.getTuple( key, getTupleContext() );
+						resultset = gridDialect.getTuple( key, getTupleContext( session ), transactionContext );
 					}
 				}
 
@@ -1167,7 +1181,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					Tuple oldVersionTuple = new Tuple();
 					oldVersionTuple.put( getVersionColumnName(), oldVersion );
 
-					boolean success = optimisticLockingAwareGridDialect.updateTupleWithOptimisticLock( key, oldVersionTuple, resultset, getTupleContext() );
+					boolean success = optimisticLockingAwareGridDialect.updateTupleWithOptimisticLock( key, oldVersionTuple, resultset, getTupleContext( session ) );
 
 					// If there is an error handler registered, pass the applied/failed operation to it as needed
 					if ( success ) {
@@ -1190,7 +1204,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					}
 				}
 				else {
-					gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+					gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext( session ), transactionContext( session ) );
 				}
 
 				if ( mightRequireInverseAssociationManagement ) {
@@ -1297,7 +1311,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		//insert operations are always dynamic in OGM
 		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
 
-		Tuple tuple = identityColumnAwareGridDialect.createTuple( entityKeyMetadata, getTupleContext() );
+		TupleContext tupleContext = getTupleContext( session );
+		Tuple tuple = identityColumnAwareGridDialect.createTuple( entityKeyMetadata, tupleContext );
 
 		// add the discriminator
 		if ( discriminator.isNeeded() ) {
@@ -1306,7 +1321,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		// dehydrate
 		dehydrate( tuple, fields, propertiesToInsert, 0, null, session );
-		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, getTupleContext() );
+		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, tupleContext );
 		Serializable id = (Serializable) getGridIdentifierType().hydrate( tuple, getIdentifierColumnNames(), session, object );
 		addToInverseAssociations( tuple, 0, id, session );
 
@@ -1351,7 +1366,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Tuple resultset = null;
 
 			if ( duplicateInsertPreventionStrategy == DuplicateInsertPreventionStrategy.LOOK_UP ) {
-				resultset = gridDialect.getTuple( key, this.getTupleContext() );
+				resultset = gridDialect.getTuple( key, this.getTupleContext( session ), transactionContext( session ) );
 
 				if ( j == 0 && resultset != null ) {
 					if ( invocationCollectingGridDialect == null ) {
@@ -1359,7 +1374,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					}
 					else {
 						try {
-							invocationCollectingGridDialect.onInsertOrUpdateTupleFailure( key, resultset, new TupleAlreadyExistsException( entityKeyMetadata, resultset, null ) );
+							invocationCollectingGridDialect.onInsertOrUpdateTupleFailure( key, resultset, new TupleAlreadyExistsException( entityKeyMetadata, resultset ) );
 						}
 						catch ( TupleAlreadyExistsException taee ) {
 							throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), taee );
@@ -1378,7 +1393,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			dehydrate( resultset, fields, propertiesToInsert, j, id, session );
 
 			try {
-				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext( session ), transactionContext( session ) );
 			}
 			catch ( TupleAlreadyExistsException taee ) {
 				throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), taee );
@@ -1406,7 +1421,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridDialect.createTuple( key, getTupleContext() );
+			resultset = gridDialect.createTuple( key, getTupleContext( session ) );
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -1435,7 +1450,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		Tuple currentState = null;
 
 		if ( mightRequireInverseAssociationManagement || usesNonAtomicOptimisticLocking ) {
-			currentState = gridDialect.getTuple( key, getTupleContext() );
+			currentState = gridDialect.getTuple( key, getTupleContext( session ), transactionContext( session ) );
 		}
 
 		if ( usesNonAtomicOptimisticLocking ) {
@@ -1469,7 +1484,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				Tuple versionTuple = new Tuple();
 				versionTuple.put( getVersionColumnName(), version );
 
-				boolean success = optimisticLockingAwareGridDialect.removeTupleWithOptimisticLock( key, versionTuple, getTupleContext() );
+				boolean success = optimisticLockingAwareGridDialect.removeTupleWithOptimisticLock( key, versionTuple, getTupleContext( session ) );
 
 				// If there is an error handler registered, pass the applied/failed operation to it as needed
 				if ( success ) {
@@ -1492,7 +1507,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 			}
 			else {
-				gridDialect.removeTuple( key, getTupleContext() );
+				gridDialect.removeTuple( key, getTupleContext( session ), transactionContext( session ) );
 			}
 		}
 	}
@@ -1710,7 +1725,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return spaces;
 	}
 
-	public TupleContext getTupleContext() {
+	public TupleContext getTupleContext(SessionImplementor session) {
 		return tupleContext;
 	}
 

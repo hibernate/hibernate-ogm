@@ -20,9 +20,12 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.Transaction;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -33,6 +36,7 @@ import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +70,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			MultigetGridDialect dialect = multiGetGridDialect();
 
 			EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT, transactionContext( session ) );
 
 			assertThat( tuples.get( 0 ).get( "id.publisher" ) ).isEqualTo( SPLENDOR.getId().getPublisher() );
 			assertThat( tuples.get( 0 ).get( "id.name" ) ).isEqualTo( SPLENDOR.getId().getName() );
@@ -93,7 +97,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			MultigetGridDialect dialect = multiGetGridDialect();
 
 			EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT, transactionContext( session ) );
 
 			assertThat( tuples.get( 0 ) ).isNull();
 
@@ -112,7 +116,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			MultigetGridDialect dialect = multiGetGridDialect();
 
 			EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT, transactionContext( session ) );
 
 			assertThat( tuples ).containsExactly( null, null, null, null );
 		}
@@ -138,6 +142,14 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			delete( session, KING_OF_TOKYO );
 			tx.commit();
 		}
+	}
+
+	private TransactionContext transactionContext(OgmSession session) {
+		TransactionCoordinator transactionCoordinator = ( (SessionImplementor) session ).getTransactionCoordinator();
+		if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
+			return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+		}
+		return null;
 	}
 
 	private void delete(OgmSession session, BoardGame boardGame) {

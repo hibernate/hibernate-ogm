@@ -75,9 +75,9 @@ public class CouchDBDialectTest {
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 
-		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext() );
+		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext(), null );
 
-		Tuple actualTuple = dialect.getTuple( key, emptyTupleContext() );
+		Tuple actualTuple = dialect.getTuple( key, emptyTupleContext(), null );
 
 		assertThat( actualTuple.get( "id" ) ).isEqualTo( createdTuple.get( "id" ) );
 	}
@@ -87,7 +87,7 @@ public class CouchDBDialectTest {
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 		dialect.createTuple( key, emptyTupleContext() );
 
-		dialect.removeTuple( key, emptyTupleContext() );
+		dialect.removeTuple( key, emptyTupleContext(), null );
 
 		assertThat( new CouchDBTestHelper().getNumberOfEntities( datastoreProvider.getDataStore() ) ).isEqualTo( 0 );
 	}
@@ -99,9 +99,9 @@ public class CouchDBDialectTest {
 		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 		createdTuple.put( "name", "and" );
 
-		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext() );
+		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext(), null );
 
-		Tuple tuple = dialect.getTuple( key, emptyTupleContext() );
+		Tuple tuple = dialect.getTuple( key, emptyTupleContext(), null );
 		assertThat( (String) tuple.get( "name" ) ).isEqualTo( "and" );
 	}
 
@@ -129,7 +129,7 @@ public class CouchDBDialectTest {
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
 		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 		Tuple tuple = dialect.createTuple( entityKey, emptyTupleContext() );
-		dialect.insertOrUpdateTuple( entityKey, tuple, emptyTupleContext() );
+		dialect.insertOrUpdateTuple( entityKey, tuple, emptyTupleContext(), null );
 
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
@@ -143,9 +143,9 @@ public class CouchDBDialectTest {
 
 		RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, associationTuple );
-		dialect.insertOrUpdateAssociation( key, createAssociation, emptyAssociationContext() );
+		dialect.insertOrUpdateAssociation( key, createAssociation, emptyAssociationContext(), null );
 
-		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext() );
+		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext(), null );
 		assertThat( actualAssociation.get( rowKey ).hashCode() ).isNotNull();
 	}
 

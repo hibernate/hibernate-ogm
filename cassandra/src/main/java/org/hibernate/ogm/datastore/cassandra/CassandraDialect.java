@@ -44,6 +44,7 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -148,7 +149,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 
 		Select select = queryBuilder.select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
@@ -176,7 +177,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext)
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext)
 			throws TupleAlreadyExistsException {
 
 		List<TupleOperation> updateOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );
@@ -241,7 +242,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 
 		Delete delete = queryBuilder.delete().from( quote( key.getTable() ) );
 		Delete.Where deleteWhere = delete.where(
@@ -255,7 +256,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
 		@SuppressWarnings("unchecked")
 		List<Column> tablePKCols = tableMetadata.getPrimaryKey().getColumns();
@@ -330,7 +331,8 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	public void insertOrUpdateAssociation(
 			AssociationKey key,
 			Association association,
-			AssociationContext associationContext) {
+			AssociationContext associationContext,
+			TransactionContext transactionContext) {
 
 		if ( key.getMetadata().isInverse() ) {
 			return;
@@ -402,7 +404,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		if ( key.getMetadata().isInverse() ) {
 			return;
 		}
@@ -502,8 +504,7 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(
-			BackendQuery<String> query, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> query, QueryParameters queryParameters, TransactionContext transactionContext) {
 
 		Object[] parameters = new Object[queryParameters.getPositionalParameters().size()];
 		int i = 0;

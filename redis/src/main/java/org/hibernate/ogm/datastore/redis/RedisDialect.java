@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.redis;
 
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +37,7 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -53,8 +56,6 @@ import org.hibernate.type.Type;
 import com.lambdaworks.redis.KeyScanCursor;
 import com.lambdaworks.redis.ScanArgs;
 import com.lambdaworks.redis.api.sync.RedisCommands;
-
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
 /**
  * Stores tuples and associations inside Redis.
@@ -86,7 +87,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
 
 		if ( entity != null ) {
@@ -103,14 +104,14 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, map );
 		storeEntity( key, map, tupleContext.getOptionsContext(), tuple.getOperations() );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		remove( key );
 	}
 
@@ -199,7 +200,8 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	@Override
 	public org.hibernate.ogm.model.spi.Association getAssociation(
 			AssociationKey key,
-			AssociationContext associationContext) {
+			AssociationContext associationContext,
+			TransactionContext transactionContext) {
 		RedisAssociation redisAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
@@ -264,7 +266,8 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	@Override
 	public void insertOrUpdateAssociation(
 			AssociationKey associationKey, org.hibernate.ogm.model.spi.Association association,
-			AssociationContext associationContext) {
+			AssociationContext associationContext,
+			TransactionContext transactionContext) {
 		Object rows = getAssociationRows( association, associationKey, associationContext );
 
 		RedisAssociation redisAssociation = ( (RedisAssociationSnapshot) association.getSnapshot() ).getRedisAssociation();
@@ -378,7 +381,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			Entity owningEntity = getEmbeddingEntity( key );
 
@@ -570,7 +573,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 
 	// MultigetGridDialect
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
 		String[] ids = new String[keys.length];
 
 		for ( int i = 0; i < keys.length; i++ ) {

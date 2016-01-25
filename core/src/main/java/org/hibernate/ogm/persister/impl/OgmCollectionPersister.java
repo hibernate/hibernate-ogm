@@ -29,9 +29,11 @@ import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
+import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.impl.OgmBasicCollectionLoader;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -60,6 +62,7 @@ import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
@@ -621,7 +624,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			OgmEntityPersister persister = (OgmEntityPersister) getElementPersister();
 			final EntityKey entityKey = EntityKeyBuilder.fromPersister( persister, entityId, session );
 
-			final Tuple entityTuple = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+			final Tuple entityTuple = gridDialect.getTuple( entityKey, persister.getTupleContext( session ), transactionContext( session ) );
 			// the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if ( entityTuple == null ) {
 				return;
@@ -640,7 +643,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext() );
+			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext( session ), transactionContext( session ) );
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
@@ -685,6 +688,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			associationPersister.flushToDatastore();
 		}
+	}
+
+	private TransactionContext transactionContext(SessionImplementor session) {
+		TransactionCoordinator transactionCoordinator = session.getTransactionCoordinator();
+		if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
+			return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+		}
+		return null;
 	}
 
 	private RowKey getInverseRowKey(Tuple associationRow) {

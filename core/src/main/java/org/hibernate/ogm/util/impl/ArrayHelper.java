@@ -8,6 +8,7 @@ package org.hibernate.ogm.util.impl;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -84,6 +85,20 @@ public class ArrayHelper {
 		System.arraycopy( first, 0, result, 0, firstLength );
 		System.arraycopy( second, 0, result, firstLength, secondLength );
 
+		return result;
+	}
+
+	public static <T> T[] concat(List<T[]> arrays) {
+		T[] result = arrays.get( 0 );
+		for ( int i = 1; i < arrays.size(); i++ ) {
+			int firstLength = result.length;
+			int secondLength = arrays.get( i ).length;
+			@SuppressWarnings("unchecked")
+			T[] joined = (T[]) Array.newInstance( result.getClass().getComponentType(), firstLength + secondLength );
+			System.arraycopy( result, 0, joined, 0, firstLength );
+			System.arraycopy( arrays.get( i ), 0, joined, firstLength, secondLength );
+			result = joined;
+		}
 		return result;
 	}
 }

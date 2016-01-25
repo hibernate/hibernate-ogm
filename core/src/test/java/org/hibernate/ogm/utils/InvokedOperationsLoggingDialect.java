@@ -31,6 +31,7 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -82,15 +83,15 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		Tuple tuple = super.getTuple( key, tupleContext );
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
+		Tuple tuple = super.getTuple( key, tupleContext, transactionContext );
 		log( "getTuple", key.toString(), tuple != null ? tuple.toString() : "null" );
 		return tuple;
 	}
 
 	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
-		List<Tuple> tuples = super.getTuples( keys, tupleContext );
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext) {
+		List<Tuple> tuples = super.getTuples( keys, tupleContext, transactionContext );
 		log( "getTuples", Arrays.toString( keys ), tuples != null ? tuples.toString() : "null" );
 		return tuples;
 	}
@@ -103,20 +104,20 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		super.insertOrUpdateTuple( key, tuple, tupleContext );
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
+		super.insertOrUpdateTuple( key, tuple, tupleContext, transactionContext );
 		log( "insertOrUpdateTuple", key.toString() + ", " + tuple.toString(), "VOID" );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		super.removeTuple( key, tupleContext );
+	public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
+		super.removeTuple( key, tupleContext, transactionContext );
 		log( "removeTuple", key.toString(), "VOID" );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		Association association = super.getAssociation( key, associationContext );
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
+		Association association = super.getAssociation( key, associationContext, transactionContext );
 		log( "getAssociation", key.toString(), toShortString( association ) );
 		return association;
 	}
@@ -129,14 +130,14 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
-		super.insertOrUpdateAssociation( key, association, associationContext );
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
+		super.insertOrUpdateAssociation( key, association, associationContext, transactionContext );
 		log( "insertOrUpdateAssociation", key.toString() + ", " + toShortString( association ), "VOID" );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		super.removeAssociation( key, associationContext );
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
+		super.removeAssociation( key, associationContext, transactionContext );
 		log( "removeAssociation", key.toString(), "VOID" );
 	}
 
@@ -166,8 +167,8 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
-		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TransactionContext transactionContext) {
+		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters, transactionContext );
 		log( "executeBackendQuery", query.toString() + ", " + queryParameters.toString(), "tbd." );
 		return result;
 	}

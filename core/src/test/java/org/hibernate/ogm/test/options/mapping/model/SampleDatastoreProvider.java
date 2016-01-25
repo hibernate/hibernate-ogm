@@ -13,6 +13,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -37,7 +38,7 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+		public Tuple getTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 			return null;
 		}
 
@@ -47,15 +48,15 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+		public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext, TransactionContext transactionContext) {
 		}
 
 		@Override
-		public void removeTuple(EntityKey key, TupleContext tupleContext) {
+		public void removeTuple(EntityKey key, TupleContext tupleContext, TransactionContext transactionContext) {
 		}
 
 		@Override
-		public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+		public Association getAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 			return null;
 		}
 
@@ -65,11 +66,11 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+		public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext, TransactionContext transactionContext) {
 		}
 
 		@Override
-		public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+		public void removeAssociation(AssociationKey key, AssociationContext associationContext, TransactionContext transactionContext) {
 		}
 
 		@Override

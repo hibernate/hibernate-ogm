@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.multiget.spi;
 import java.util.List;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -33,5 +34,5 @@ public interface MultigetGridDialect extends GridDialect {
 	 * @param tupleContext Contains additional information that might be used to create the tuples
 	 * @return the list of tuples identified by the keys
 	 */
-	List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext);
+	List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext, TransactionContext transactionContext);
 }

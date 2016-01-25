@@ -11,7 +11,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 
 /**
  * Represents one execution of
- * {@link GridDialect#removeAssociation(AssociationKey, org.hibernate.ogm.dialect.spi.AssociationContext)}.
+ * {@link GridDialect#removeAssociation(AssociationKey, org.hibernate.ogm.dialect.spi.AssociationContext, org.hibernate.ogm.dialect.spi.TransactionContext)}
  *
  * @author Gunnar Morling
  */

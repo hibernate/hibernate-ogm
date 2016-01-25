@@ -159,7 +159,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new Tuple( new MongoDBTupleSnapshot( null, null, null ) )
 		);
 
-		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
+		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext, null );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		final DBObject assocObject = associationSnapshot.getDBObject();
 		this.checkLoading( assocObject );
@@ -182,7 +182,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				TestOptionContext.INSTANCE
 		);
 
-		return getService( GridDialect.class ).getTuple( key, tupleContext );
+		return getService( GridDialect.class ).getTuple( key, tupleContext, null );
 	}
 
 	protected <S extends Service> S getService(Class<S> serviceRole) {

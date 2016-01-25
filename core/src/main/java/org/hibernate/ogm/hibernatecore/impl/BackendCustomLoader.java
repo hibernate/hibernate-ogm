@@ -21,10 +21,12 @@ import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.ScalarReturn;
+import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
@@ -32,6 +34,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.type.Type;
 
 /**
@@ -83,7 +86,8 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
+		TransactionContext transactionContext = transactionContext( session );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ), transactionContext );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -95,6 +99,14 @@ public class BackendCustomLoader extends CustomLoader {
 		finally {
 			tuples.close();
 		}
+	}
+
+	private TransactionContext transactionContext(SessionImplementor session) {
+		TransactionCoordinator transactionCoordinator = session.getTransactionCoordinator();
+		if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
+			return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+		}
+		return null;
 	}
 
 	// At the moment we only support the case where one entity type is returned
@@ -182,8 +194,8 @@ public class BackendCustomLoader extends CustomLoader {
 			);
 		}
 
-		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
-			return gridDialect.executeBackendQuery( query, queryParameters );
+		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters, TransactionContext transactionContext) {
+			return gridDialect.executeBackendQuery( query, queryParameters, transactionContext );
 		}
 	}
 }
