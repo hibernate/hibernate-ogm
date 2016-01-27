@@ -39,7 +39,12 @@ The following properties are available to configure Redis support in Hibernate O
 hibernate.ogm.datastore.provider::
 To use Redis as a datastore provider, this property must be set to `redis_experimental`
 hibernate.ogm.datastore.grid_dialect::
-The dialect type how Hibernate OGM Redis maps entities and associations within Redis. The following two dialects exist: `org.hibernate.ogm.datastore.redis.RedisJsonDialect` (store entities as JSON documents within Redis keys. Associations are mapped to Redis lists/sets) and `org.hibernate.ogm.datastore.redis.RedisHashDialect` (store entities as key-value pairs within Redis hashes. Associations are mapped as JSON documents to Redis lists/sets)
+The dialect type how Hibernate OGM Redis maps entities and associations within Redis.
+The following two dialects exist:
+`org.hibernate.ogm.datastore.redis.RedisJsonDialect` (store entities as JSON documents within Redis keys.
+Associations are mapped to Redis lists/sets) and
+`org.hibernate.ogm.datastore.redis.RedisHashDialect` (store entities as key-value pairs within Redis hashes.
+Associations are mapped as JSON documents to Redis lists/sets)
 hibernate.ogm.datastore.host::
 The hostname and port of the Redis instance.
 The optional port is concatenated to the host and separated by a colon.
@@ -187,7 +192,7 @@ setting a value to null will be the same as removing the field
 in the corresponding object in the db.
 ====
 
-Hibernate OGM support by default the following types:
+Hibernate OGM supports by default the following types:
 
 * [classname]`java.lang.String`
 
@@ -416,6 +421,7 @@ public class NewsPaper {
 ----
 Key: News:939c892d-1129-4aff-abf8-e6c26e59dcb
 {
+    "title": "On the merits of NoSQL",
     "paper": {
         "name": "NoSQL journal of prophecies",
         "owner": "Delphy"
@@ -543,7 +549,10 @@ Key: GrandMother:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 [[redis-hash-mapping]]
 ==== Hash mapping
 
-The Redis Hash mapping dialect maps entities to key-value pairs. It stores the data within Redis hashes. Hashes support partial updates. While the JSON dialect discards not mapped fields in the entity model the hash dialect does not touch fields that are not mapped to the entity model.
+The Redis Hash mapping dialect maps entities to key-value pairs.
+It stores the data within Redis hashes. Hashes support partial updates.
+While the JSON dialect discards not mapped fields in the entity model the hash dialect
+does not touch fields that are not mapped to the entity model.
 
 [[redis-built-in-types-hash]]
 ===== Properties and built-in types
@@ -555,7 +564,7 @@ setting a value to null will be the same as removing the field
 in the corresponding object in the db.
 ====
 
-Hibernate OGM support by default the following types:
+Hibernate OGM supports by default the following types:
 
 * [classname]`java.lang.String`
 
@@ -2123,11 +2132,9 @@ Two main strategies are supported:
 1. <<redis-table-id-generation-strategy, TABLE>>
 2. <<redis-sequence-id-generation-strategy, SEQUENCE>>
 
-Both strategy will operate in the keys starting with `Identifiers` containing the last value of the id. The difference
+Both strategies will operate in the keys starting with `Identifiers` containing the last value of the id. The difference
 between the two strategies is the name of the key containing the values.
 
-Hibernate OGM goes not support the `IDENTITY` strategy and an exception is thrown at startup
-when it is used.
 The `AUTO` strategy is the same as the <<redis-sequence-id-generation-strategy, SEQUENCE>> one.
 
 The next value is obtained using Redis' http://redis.io/commands/hincrby[HINCRBY] command
@@ -2231,7 +2238,7 @@ Key: Song:2
 
 [source, JSON]
 ----
-Key: Identifiers:hibernate_sequences:hibernate_sequence
+Key: Identifiers:hibernate_sequences
 Value: 2
 ----
 ====
@@ -2270,7 +2277,7 @@ Key: Song:2
 
 [source, JSON]
 ----
-Key: Identifiers:hibernate_sequences:song_sequence_name
+Key: Identifiers:song_sequence
 Value: 21
 ----
 ====
