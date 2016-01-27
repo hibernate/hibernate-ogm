@@ -59,14 +59,19 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		String key = identifierId( request.getKey() );
-		String hget = connection.get( key );
+		String value = connection.get( key );
 
-		if ( hget == null ) {
+		if ( value == null ) {
 			connection.set( key, Long.toString( request.getInitialValue() ) );
 			return request.getInitialValue();
 		}
 
 		return connection.incrby( key, request.getIncrement() );
+	}
+
+	@Override
+	public boolean supportsSequences() {
+		return true;
 	}
 
 	/**
@@ -78,10 +83,13 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	 * @return byte array containing the key
 	 */
 	protected String identifierId(IdSourceKey key) {
-		String prefix = IDENTIFIERS + ":" + key.getTable() + ":";
-		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+		String prefix = IDENTIFIERS + ":" + key.getTable();
 
-		return prefix + entityId;
+		if ( key.getColumnNames() != null ) {
+			String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+			return prefix + ":" + entityId;
+		}
+		return prefix;
 	}
 
 	@Override
