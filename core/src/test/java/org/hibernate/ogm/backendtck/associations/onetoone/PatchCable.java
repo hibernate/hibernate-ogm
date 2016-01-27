@@ -17,38 +17,38 @@ import javax.persistence.OneToOne;
  * @author Mark Paluch
  */
 @Entity
-public class Victim {
+public class PatchCable {
 
 	@EmbeddedId
-	private PersonId id;
+	private MediaId id;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumns({
-			@JoinColumn(name = "firstName"),
-			@JoinColumn(name = "lastName")
+			@JoinColumn(name = "vendor"),
+			@JoinColumn(name = "type")
 	})
-	private Offender offender;
+	private NetworkSwitch networkSwitch;
 
-	public Victim() {
+	public PatchCable() {
 	}
 
-	public Victim(PersonId id) {
+	public PatchCable(MediaId id) {
 		this.id = id;
 	}
 
-	public PersonId getId() {
+	public MediaId getId() {
 		return id;
 	}
 
-	public void setId(PersonId id) {
+	public void setId(MediaId id) {
 		this.id = id;
 	}
 
-	public Offender getOffender() {
-		return offender;
+	public NetworkSwitch getNetworkSwitch() {
+		return networkSwitch;
 	}
 
-	public void setOffender(Offender offender) {
-		this.offender = offender;
+	public void setNetworkSwitch(NetworkSwitch networkSwitch) {
+		this.networkSwitch = networkSwitch;
 	}
 }
