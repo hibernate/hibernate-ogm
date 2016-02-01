@@ -27,6 +27,7 @@
         <infinispanVersion>8.0.2.Final</infinispanVersion>
         <mongodbVersion>3.0.3</mongodbVersion>
         <fongodbVersion>2.0.2</fongodbVersion>
+        <orientdbVersion>2.1.9</orientdbVersion>
         <neo4jVersion>2.3.2</neo4jVersion>
         <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.2.0-rc3</cassandraVersion>
@@ -462,6 +463,18 @@
                 <groupId>biz.paluch.redis</groupId>
                 <artifactId>lettuce</artifactId>
                 <version>${lettuceVersion}</version>
+            </dependency>
+
+            <!-- OrientDB -->
+            <dependency>
+                <groupId>com.orientechnologies</groupId>
+                <artifactId>orientdb-core</artifactId>
+                <version>${orientdbVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.orientechnologies</groupId>
+                <artifactId>orientdb-jdbc</artifactId>
+                <version>${orientdbVersion}</version>
             </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
