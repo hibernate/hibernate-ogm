@@ -8,6 +8,8 @@ package org.hibernate.ogm.datastore.cassandra.test.mapping;
 
 import static org.hibernate.ogm.datastore.cassandra.utils.CassandraTestHelper.rowAssertion;
 
+import java.util.UUID;
+
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.type.Bookmark;
@@ -35,6 +37,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		bookmark.setPrivate( true );
 		bookmark.setRead( true );
 		bookmark.setShared( true );
+		bookmark.setSerialNumber( UUID.fromString( "59339fd6-b3d5-4876-a031-9ab43f09e642" ) );
 
 		session.persist( bookmark );
 		transaction.commit();
@@ -104,6 +107,20 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		rowAssertion( session.getSessionFactory(), "Bookmark" )
 				.keyColumn( "id", bookmarkId )
 				.assertColumn( "isShared", 1 )
+				.execute();
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void uuidMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		rowAssertion( session.getSessionFactory(), "Bookmark" )
+				.keyColumn( "id", bookmarkId )
+				.assertColumn( "serialNumber", UUID.fromString( "59339fd6-b3d5-4876-a031-9ab43f09e642" ) )
 				.execute();
 
 		transaction.commit();
