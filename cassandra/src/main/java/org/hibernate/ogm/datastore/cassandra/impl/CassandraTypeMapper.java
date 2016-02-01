@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraPrimitiveByteArr
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraSerializableType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraTimeType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraTrueFalseType;
+import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraUuidType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraYesNoType;
 import org.hibernate.ogm.type.impl.BooleanType;
 import org.hibernate.ogm.type.impl.ByteType;
@@ -63,6 +64,7 @@ public enum CassandraTypeMapper {
 		mapper.put( TimestampType.INSTANCE, "timestamp" );
 		mapper.put( ByteType.INSTANCE, "tinyint" );
 		mapper.put( ShortType.INSTANCE, "smallint" );
+		mapper.put( CassandraUuidType.INSTANCE, "uuid" );
 
 		mapper.put( CassandraDateType.INSTANCE, "date" );
 		mapper.put( CassandraTimeType.INSTANCE, "time" );
@@ -139,6 +141,10 @@ public enum CassandraTypeMapper {
 		if ( type instanceof SerializableToBlobType ) {
 			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
 			return new CassandraSerializableType<>( exposedType.getJavaTypeDescriptor() );
+		}
+
+		if ( type == StandardBasicTypes.UUID_BINARY ) {
+			return CassandraUuidType.INSTANCE;
 		}
 
 		return null;
