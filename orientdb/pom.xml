@@ -62,16 +62,22 @@
         </dependency>
 
         <dependency>
-            <groupId>com.orientechnologies</groupId></groupId>
+            <groupId>com.orientechnologies</groupId>
             <artifactId>orientdb-core</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.orientechnologies</groupId></groupId>
+            <groupId>com.orientechnologies</groupId>
             <artifactId>orientdb-jdbc</artifactId>
         </dependency>
 
         <!-- Testing -->
+        <!-- //TODO Remove this -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

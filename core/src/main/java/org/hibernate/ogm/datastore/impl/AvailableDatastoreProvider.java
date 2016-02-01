@@ -22,7 +22,8 @@ public enum AvailableDatastoreProvider {
 	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider" ),
 	COUCHDB_EXPERIMENTAL( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" ),
 	CASSANDRA_EXPERIMENTAL( "org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider" ),
-	REDIS_EXPERIMENTAL( "org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider" );
+	REDIS_EXPERIMENTAL( "org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider" ),
+	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.impl.OrientDBDatastoreProvider" );
 
 	private String datastoreProviderClassName;
 
