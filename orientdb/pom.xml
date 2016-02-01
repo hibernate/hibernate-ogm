@@ -72,12 +72,23 @@
         </dependency>
 
         <!-- Testing -->
-        <!-- //TODO Remove this -->
+        
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-lucene</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-parser</artifactId>
+            <scope>test</scope>
+        </dependency>
+            
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
