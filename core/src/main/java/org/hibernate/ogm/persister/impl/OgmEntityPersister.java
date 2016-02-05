@@ -139,6 +139,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
 
+	// Copy from AbstractEntityPersister
+	// TODO increase visibility in superclass?
+	protected final int batchSize;
+
+
 	//service references
 	private final GridDialect gridDialect;
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
