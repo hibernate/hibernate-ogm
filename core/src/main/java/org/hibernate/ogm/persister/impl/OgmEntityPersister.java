@@ -136,7 +136,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	// Copy from AbstractEntityPersister
 	// TODO increase visibility in superclass?
-	private final int batchSize;
+	protected final int batchSize;
 
 
 	//service references
