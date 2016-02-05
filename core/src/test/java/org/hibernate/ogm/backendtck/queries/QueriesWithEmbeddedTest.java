@@ -34,7 +34,7 @@ import org.junit.rules.ExpectedException;
  * @author Davide D'Alto
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
+		value = { GridDialectType.CASSANDRA, GridDialectType.IGNITE },
 		comment = "Collection of embeddeds - bag semantics unsupported (no primary key)"
 )
 public class QueriesWithEmbeddedTest extends OgmTestCase {
