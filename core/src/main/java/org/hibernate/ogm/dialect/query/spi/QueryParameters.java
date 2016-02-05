@@ -53,7 +53,7 @@ public class QueryParameters {
 					)
 			);
 		}
-		return positionalParameters;
+		return new QueryParameters( selection, namedParameters, positionalParameters, parameters.getQueryHints() );
 	}
 
 	private static Map<String, TypedGridValue> createNamedParameters(SessionFactoryImplementor factory, org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
