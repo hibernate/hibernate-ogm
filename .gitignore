@@ -23,7 +23,7 @@ bin/
 
 # NetBeans specific files/directories
 .nbattrs
-
+licenseheader.txt
 #build
 target/
 
