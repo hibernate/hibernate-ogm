@@ -14,7 +14,7 @@ import com.orientechnologies.orient.core.id.ORecordId;
 import org.hibernate.datastore.ogm.orientdb.type.descriptor.java.ORecordIdTypeDescriptor;
 
 /**
- * @author chernolyassv
+ * @author Sergey Chernolyas (sergey.chernolyas@gmail.com)
  */
 public class ORecordIdGridType extends AbstractGenericBasicType<ORecordId> {
 

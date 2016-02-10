@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import org.hibernate.datastore.ogm.orientdb.constant.OrientDBConstant;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.Log;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -17,7 +18,7 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
- * @author chernolyassv
+ * @author Sergey Chernolyas (sergey.chernolyas@gmail.com)
  */
 public class ResultSetTupleIterator implements ClosableIterator<Tuple> {
 
@@ -32,7 +33,6 @@ public class ResultSetTupleIterator implements ClosableIterator<Tuple> {
 	@Override
 	public boolean hasNext() {
 		try {
-			log.info( "3.hasNext. resultSet.isLast():" + resultSet.isLast() );
 			return !resultSet.isLast();
 		}
 		catch (SQLException e) {
@@ -43,8 +43,6 @@ public class ResultSetTupleIterator implements ClosableIterator<Tuple> {
 
 	@Override
 	public Tuple next() {
-		log.info( "call next()" );
-
 		try {
 			resultSet.next();
 			return convert();
@@ -61,7 +59,10 @@ public class ResultSetTupleIterator implements ClosableIterator<Tuple> {
 			int fieldNum = i + 1;
 			map.put( resultSet.getMetaData().getColumnName( fieldNum ), resultSet.getObject( fieldNum ) );
 		}
-		map.put( "@rid", resultSet.getObject( "@rid" ) );
+		for ( String systemField : OrientDBConstant.SYSTEM_FIELDS ) {
+			map.put( systemField, resultSet.getObject( systemField ) );
+		}
+
 		log.info( "field map: " + map );
 		return new Tuple( new MapTupleSnapshot( map ) );
 	}

@@ -4,13 +4,16 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.datastore.ogm.orientdb.utils;
+package org.hibernate.datastore.ogm.orientdb;
 
-import org.hibernate.ogm.backendtck.simpleentity.CRUDTest;
+import org.hibernate.ogm.cfg.OgmProperties;
 
 /**
- * @author Davide D'Alto
+ * @author Sergey Chernolyas (sergey.chernolyas@gmail.com)
  */
-public class OrientDBTest extends CRUDTest {
+public class OrientDBProperties implements OgmProperties {
+
+	private OrientDBProperties() {
+	}
 
 }
