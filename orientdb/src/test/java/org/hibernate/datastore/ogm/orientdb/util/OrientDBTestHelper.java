@@ -4,12 +4,12 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.datastore.ogm.orientdb.utils;
+package org.hibernate.datastore.ogm.orientdb.util;
 
+import com.orientechnologies.orient.core.id.ORecordId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.BasicConfigurator;
 import org.hibernate.SessionFactory;
 import org.hibernate.datastore.ogm.orientdb.OrientDB;
@@ -23,8 +23,6 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.TestableGridDialect;
 
-import com.orientechnologies.orient.core.id.ORecordId;
-
 /**
  * @author Sergey Chernolyas (sergey.chernolyas@gmail.com)
  */
@@ -36,7 +34,8 @@ public class OrientDBTestHelper implements TestableGridDialect {
 	public OrientDBTestHelper() {
 		BasicConfigurator.configure();
 		// create OrientDB in memory
-		org.hibernate.datastore.ogm.orientdb.util.MemoryDBUtil.createDbFactory( "jdbc:orient:memory:test" );
+		MemoryDBUtil.createDbFactory( "memory:test" );
+
 	}
 
 	@Override
@@ -58,19 +57,22 @@ public class OrientDBTestHelper implements TestableGridDialect {
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		System.out.println( "org.hibernate.datastore.ogm.orientdb.util.OrientDBTestHelper.getNumberOfAssociations()" );
-		throw new UnsupportedOperationException( "Not supported yet." );
+		throw new UnsupportedOperationException( "Not supported yet." ); // To change body of generated methods, choose
+																			// Tools | Templates.
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
 		System.out.println( "org.hibernate.datastore.ogm.orientdb.util.OrientDBTestHelper.getNumberOfAssociations()" );
-		throw new UnsupportedOperationException( "Not supported yet." );
+		throw new UnsupportedOperationException( "Not supported yet." ); // To change body of generated methods, choose
+																			// Tools | Templates.
 	}
 
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		System.out.println( "org.hibernate.datastore.ogm.orientdb.util.OrientDBTestHelper.extractEntityTuple()" );
-		throw new UnsupportedOperationException( "Not supported yet." );
+		throw new UnsupportedOperationException( "Not supported yet." ); // To change body of generated methods, choose
+																			// Tools | Templates.
 	}
 
 	@Override

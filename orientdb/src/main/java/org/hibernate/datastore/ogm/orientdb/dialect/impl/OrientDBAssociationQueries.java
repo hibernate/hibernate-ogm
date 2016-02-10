@@ -12,7 +12,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * @author chernolyassv
+ * @author Sergey Chernolyas (sergey.chernolyas@gmail.com)
  */
 public class OrientDBAssociationQueries extends QueriesBase {
 
@@ -25,5 +25,4 @@ public class OrientDBAssociationQueries extends QueriesBase {
 		this.ownerEntityKeyMetadata = ownerEntityKeyMetadata;
 		this.associationKeyMetadata = associationKeyMetadata;
 	}
-
 }
