@@ -24,16 +24,16 @@
     <modules>
         <module>bom</module>
         <module>core</module>
-        <module>ehcache</module>
         <module>infinispan</module>
-        <module>mongodb</module>
+        <module>ehcache</module>
+        <module>mongodb</module>  
         <module>neo4j</module>
-        <module>couchdb</module>
+        <module>orientdb</module>
+       <module>couchdb</module>
         <module>cassandra</module>
         <module>redis</module>
-        <module>orientdb</module>
         <module>modules</module>
-        <module>performance</module>
+        <module>performance</module>       
     </modules>
 
     <properties>

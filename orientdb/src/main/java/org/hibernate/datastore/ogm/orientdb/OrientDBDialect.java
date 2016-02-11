@@ -6,7 +6,6 @@
  */
 package org.hibernate.datastore.ogm.orientdb;
 
-import com.orientechnologies.orient.core.id.ORecordId;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -53,18 +52,15 @@ import org.hibernate.type.Type;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.datastore.ogm.orientdb.constant.OrientDBConstant;
 import org.hibernate.datastore.ogm.orientdb.dialect.impl.OrientDBAssociationSnapshot;
 import org.hibernate.datastore.ogm.orientdb.dialect.impl.OrientDBTupleAssociationSnapshot;
 import org.hibernate.datastore.ogm.orientdb.dialect.impl.ResultSetTupleIterator;
-import org.hibernate.datastore.ogm.orientdb.dto.Edge;
 import org.hibernate.datastore.ogm.orientdb.impl.OrientDBSchemaDefiner;
-import org.hibernate.datastore.ogm.orientdb.utils.AssociationUtil;
 import org.hibernate.datastore.ogm.orientdb.utils.EntityKeyUtil;
-import org.hibernate.datastore.ogm.orientdb.utils.TupleUtil;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -110,6 +106,21 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 	}
 
 	@Override
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		throw new UnsupportedOperationException( "forEachTuple!.Not supported yet." );
+	}
+
+	@Override
+	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
+		ArrayList<Tuple> tuples = new ArrayList<>( keys.length );
+		for ( EntityKey key : keys ) {
+			log.info( "getTuples:EntityKey:" + key + "; tupleContext" + tupleContext );
+			tuples.add( getTuple( key, tupleContext ) );
+		}
+		return tuples;
+	}
+
+	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		log.info( "createTuple:EntityKey:" + key + "; tupleContext" + tupleContext + "; tupleContext.getClass():" + tupleContext.getClass() );
 		return new Tuple( new OrientDBTupleSnapshot( tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(), key.getMetadata() ) );
@@ -140,24 +151,22 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 			boolean existsPrimaryKey = EntityKeyUtil.existsPrimaryKeyInDB( provider.getConnection(), key );
 			log.info( "insertOrUpdateTuple:Key:" + dbKeyName + " exists in database ? " + existsPrimaryKey );
 
-			List<String> classPropertyNames = TupleUtil.loadClassPropertyNames( connection,
-					(ORecordId) tuple.get( OrientDBConstant.SYSTEM_RID ) );
-			log.info( "insertOrUpdateTuple:Key:" + dbKeyName + "; classPropertyNames " + classPropertyNames );
-			log.info( "insertOrUpdateTuple:Key:" + dbKeyName + "; propertis for join " + TupleUtil.getFieldsForJoin( tupleContext, classPropertyNames ) );
-
 			if ( existsPrimaryKey ) {
 				// it is update
 				queryBuffer.append( "update  " ).append( key.getTable() ).append( "  set " );
 
 				for ( String columnName : tuple.getColumnNames() ) {
-					if ( !classPropertyNames.contains( columnName ) ) {
-						// it is field for join or system field
+					if ( OrientDBConstant.SYSTEM_FIELDS.contains( columnName ) || columnName.equals( dbKeyName ) ) {
 						continue;
 					}
 					// @TODO correct type
-					queryBuffer.append( " " ).append( columnName ).append( "='" ).append( tuple.get( columnName ) ).append( "'," );
+					queryBuffer.append( " " ).append( columnName ).append( "=" );
+					EntityKeyUtil.setFieldValue( queryBuffer, tuple.get( columnName ) );
+					queryBuffer.append( "," );
 				}
 				queryBuffer.setLength( queryBuffer.length() - 1 );
+				queryBuffer.append( " WHERE " ).append( dbKeyName ).append( "=" );
+				EntityKeyUtil.setFieldValue( queryBuffer, dbKeyValue );
 			}
 			else {
 				// it is insert with business key which set already
@@ -168,10 +177,12 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 						continue;
 					}
 					// @TODO correct type
-					queryBuffer.append( " " ).append( columnName ).append( "='" ).append( tuple.get( columnName ) ).append( "'," );
+					queryBuffer.append( " " ).append( columnName ).append( "=" );
+					EntityKeyUtil.setFieldValue( queryBuffer, tuple.get( columnName ) );
+					queryBuffer.append( "," );
 				}
 				queryBuffer.append( dbKeyName ).append( " = " );
-				EntityKeyUtil.setPrimaryKeyValue( queryBuffer, dbKeyValue );
+				EntityKeyUtil.setFieldValue( queryBuffer, dbKeyValue );
 			}
 
 			log.info( "insertOrUpdateTuple:Key:" + dbKeyName + " (" + dbKeyValue + ").  query:" + queryBuffer.toString() );
@@ -267,7 +278,7 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 
 		try {
 			queryBuffer.append( "DELETE VERTEX " ).append( key.getTable() ).append( " where " ).append( dbKeyName ).append( " = " );
-			EntityKeyUtil.setPrimaryKeyValue( queryBuffer, dbKeyValue );
+			EntityKeyUtil.setFieldValue( queryBuffer, dbKeyValue );
 			log.info( "removeTuple:Key:" + dbKeyName + " (" + dbKeyValue + "). query: " + queryBuffer );
 			PreparedStatement pstmt = connection.prepareStatement( queryBuffer.toString() );
 			log.info( "removeTuple:Key:" + dbKeyName + " (" + dbKeyValue + "). remove: " + pstmt.executeUpdate() );
@@ -302,12 +313,12 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 
 	private Map<RowKey, Tuple> createAssociationMap(AssociationKey associationKey, AssociationContext associationContext) throws SQLException {
 
-		List<Edge> relationships = entityQueries.get( associationKey.getEntityKey().getMetadata() )
+		List<Map<String, Object>> relationships = entityQueries.get( associationKey.getEntityKey().getMetadata() )
 				.findAssociation( provider.getConnection(), associationKey, associationContext );
 
 		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
-		for ( Edge relationship : relationships ) {
+		for ( Map<String, Object> relationship : relationships ) {
 			OrientDBTupleAssociationSnapshot snapshot = new OrientDBTupleAssociationSnapshot( relationship, associationKey, associationContext );
 			RowKey rowKey = convert( associationKey, snapshot );
 			tuples.put( rowKey, new Tuple( snapshot ) );
@@ -338,55 +349,41 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		log.info( "insertOrUpdateAssociation: AssociationKey:" + key + "; AssociationContext:" + associationContext + "; association:" + association );
 
-		Tuple outEntityTuple = associationContext.getEntityTuple();
-		String inClassName = key.getTable();
-		String inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() );
-		Object inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() );
-		String edgeClassName = AssociationUtil.getMappedByFieldName( associationContext );
-		ORecordId outRid = (ORecordId) outEntityTuple.get( OrientDBConstant.SYSTEM_RID );
-
-		log.info( "insertOrUpdateAssociation: outRid:" + outRid + "; inClassName:" + inClassName
-				+ "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName + "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:"
-				+ edgeClassName );
-		try {
-			ORecordId inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inBusinessPrimaryKeyName, inBusinessPrimaryKeyValue );
-			if ( outRid == null ) {
-				// try foun rid in db
-				// @TODO search rid for 'out' direction
-				throw new UnsupportedOperationException( "insertOrUpdateAssociation! Not supported yet." );
-			}
-
-			AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid );
-			AssociationUtil.insertAssociation( provider.getConnection(), edgeClassName, outRid, inRid );
-		}
-		catch (SQLException sqle) {
-			log.error( "Error!", sqle );
-			throw new RuntimeException( "Can not insert or update association", sqle );
-		}
+		/*
+		 * Tuple outEntityTuple = associationContext.getEntityTuple(); String inClassName = key.getTable(); String
+		 * inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() ); Object
+		 * inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() ); String edgeClassName =
+		 * AssociationUtil.getMappedByFieldName( associationContext ); ORecordId outRid = (ORecordId)
+		 * outEntityTuple.get( OrientDBConstant.SYSTEM_RID ); log.info( "insertOrUpdateAssociation: outRid:" + outRid +
+		 * "; inClassName:" + inClassName + "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName +
+		 * "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:" + edgeClassName ); try { ORecordId
+		 * inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inBusinessPrimaryKeyName,
+		 * inBusinessPrimaryKeyValue ); if ( outRid == null ) { // try foun rid in db // @TODO search rid for 'out'
+		 * direction throw new UnsupportedOperationException( "insertOrUpdateAssociation! Not supported yet." ); }
+		 * AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid );
+		 * AssociationUtil.insertAssociation( provider.getConnection(), edgeClassName, outRid, inRid ); } catch
+		 * (SQLException sqle) { log.error( "Error!", sqle ); throw new RuntimeException(
+		 * "Can not insert or update association", sqle ); }
+		 */
 
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.info( "removeAssociation: AssociationKey:" + key + "; AssociationContext:" + associationContext + ";" );
-		Tuple outEntityTuple = associationContext.getEntityTuple();
-		String inClassName = key.getTable();
-		Object inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() );
-		Object inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() );
-		String edgeClassName = AssociationUtil.getMappedByFieldName( associationContext );
-		ORecordId outRid = (ORecordId) outEntityTuple.get( OrientDBConstant.SYSTEM_RID );
-
-		log.info( "removeAssociation: outRid:" + outRid + "; inClassName:" + inClassName
-				+ "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName + "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:"
-				+ edgeClassName );
-		try {
-			ORecordId inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inClassName, inBusinessPrimaryKeyValue );
-			AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid );
-		}
-		catch (SQLException sqle) {
-			log.error( "Error!", sqle );
-			throw new RuntimeException( "Can not insert or update association", sqle );
-		}
+		/*
+		 * Tuple outEntityTuple = associationContext.getEntityTuple(); String inClassName = key.getTable(); Object
+		 * inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() ); Object
+		 * inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() ); String edgeClassName =
+		 * AssociationUtil.getMappedByFieldName( associationContext ); ORecordId outRid = (ORecordId)
+		 * outEntityTuple.get( OrientDBConstant.SYSTEM_RID ); log.info( "removeAssociation: outRid:" + outRid +
+		 * "; inClassName:" + inClassName + "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName +
+		 * "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:" + edgeClassName ); try { ORecordId
+		 * inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inClassName, inBusinessPrimaryKeyValue
+		 * ); AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid ); } catch
+		 * (SQLException sqle) { log.error( "Error!", sqle ); throw new RuntimeException(
+		 * "Can not insert or update association", sqle ); }
+		 */
 	}
 
 	@Override
@@ -404,18 +401,6 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 	@Override
 	public boolean supportsSequences() {
 		return true;
-	}
-
-	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		throw new UnsupportedOperationException( "forEachTuple!.Not supported yet." );
-	}
-
-	@Override
-	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
-		throw new UnsupportedOperationException( "getTuples! Not supported yet." ); // To change body of generated
-																					// methods, choose
-		// Tools | Templates.
 	}
 
 	@Override
@@ -549,7 +534,7 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 
 	@Override
 	public GridType overrideType(Type type) {
-		log.info( "overrideType:" + type.getName() + ";" + type.getReturnedClass() );
+		// log.info( "overrideType:" + type.getName() + ";" + type.getReturnedClass() );
 		GridType gridType = null;
 		if ( type.getName().equals( "com.orientechnologies.orient.core.id.ORecordId" ) ) {
 			gridType = ORecordIdGridType.INSTANCE;

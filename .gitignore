@@ -31,3 +31,4 @@ target/
 test-output/
 transaction.log
 infinispan.log
+/orientdb/nbproject/

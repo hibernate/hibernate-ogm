@@ -38,7 +38,7 @@ public class TupleUtil {
 
 		return classPropertyNames;
 	}
-
+@Deprecated
 	public static Set<String> getFieldsForJoin(TupleContext tupleContext, Collection<String> classPropertyNames) {
 		Set<String> systemAndClassProperties = new HashSet<>( 20 );
 		systemAndClassProperties.addAll( classPropertyNames );
