@@ -91,9 +91,9 @@ public class OrientDBEntityQueries extends QueriesBase {
 			for ( int i = 0; i < rs.getMetaData().getColumnCount(); i++ ) {
 				int dbFieldNo = i + 1;
 				String dbColumnName = metadata.getColumnName( dbFieldNo );
-				if ( isLinkedProperty( dbColumnName ) ) {
+				/*if ( isLinkedProperty( dbColumnName ) ) {
 					continue;
-				}
+				} */
 				Object dbValue = rs.getObject( dbColumnName );
 				LOG.info( i + " dbColumnName " + dbColumnName + "; dbValue class:" + dbValue.getClass() );
 				dbValues.put( dbColumnName, dbValue );

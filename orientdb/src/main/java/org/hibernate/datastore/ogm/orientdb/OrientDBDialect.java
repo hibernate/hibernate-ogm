@@ -6,6 +6,7 @@
  */
 package org.hibernate.datastore.ogm.orientdb;
 
+import com.orientechnologies.orient.core.id.ORecordId;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -59,6 +60,8 @@ import org.hibernate.datastore.ogm.orientdb.dialect.impl.OrientDBAssociationSnap
 import org.hibernate.datastore.ogm.orientdb.dialect.impl.OrientDBTupleAssociationSnapshot;
 import org.hibernate.datastore.ogm.orientdb.dialect.impl.ResultSetTupleIterator;
 import org.hibernate.datastore.ogm.orientdb.impl.OrientDBSchemaDefiner;
+import org.hibernate.datastore.ogm.orientdb.type.spi.ORidBagGridType;
+import org.hibernate.datastore.ogm.orientdb.utils.AssociationUtil;
 import org.hibernate.datastore.ogm.orientdb.utils.EntityKeyUtil;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -334,7 +337,7 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 
 		for ( int i = 0; i < columnNames.length; i++ ) {
 			values[i] = snapshot.get( columnNames[i] );
-			log.info( "convert: columnName:" + columnNames[i] + "; value" + values[i] );
+			log.info( "convert: columnName:" + columnNames[i] + "; value:" + values[i] );
 		}
 		return new RowKey( columnNames, values );
 	}
@@ -349,22 +352,32 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		log.info( "insertOrUpdateAssociation: AssociationKey:" + key + "; AssociationContext:" + associationContext + "; association:" + association );
 
-		/*
-		 * Tuple outEntityTuple = associationContext.getEntityTuple(); String inClassName = key.getTable(); String
-		 * inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() ); Object
-		 * inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() ); String edgeClassName =
-		 * AssociationUtil.getMappedByFieldName( associationContext ); ORecordId outRid = (ORecordId)
-		 * outEntityTuple.get( OrientDBConstant.SYSTEM_RID ); log.info( "insertOrUpdateAssociation: outRid:" + outRid +
-		 * "; inClassName:" + inClassName + "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName +
-		 * "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:" + edgeClassName ); try { ORecordId
-		 * inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inBusinessPrimaryKeyName,
-		 * inBusinessPrimaryKeyValue ); if ( outRid == null ) { // try foun rid in db // @TODO search rid for 'out'
-		 * direction throw new UnsupportedOperationException( "insertOrUpdateAssociation! Not supported yet." ); }
-		 * AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid );
-		 * AssociationUtil.insertAssociation( provider.getConnection(), edgeClassName, outRid, inRid ); } catch
-		 * (SQLException sqle) { log.error( "Error!", sqle ); throw new RuntimeException(
-		 * "Can not insert or update association", sqle ); }
-		 */
+		
+	/*	Tuple outEntityTuple = associationContext.getEntityTuple();
+            String inClassName = key.getTable();
+            String inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName(key.getEntityKey());
+            Object inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue(key.getEntityKey());
+            String edgeClassName
+                    = AssociationUtil.getMappedByFieldName(associationContext);
+            ORecordId outRid = (ORecordId) outEntityTuple.get(OrientDBConstant.SYSTEM_RID);
+            log.info("insertOrUpdateAssociation: outRid:" + outRid
+                    + "; inClassName:" + inClassName + "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName
+                    + "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:" + edgeClassName);
+            try {
+                ORecordId inRid = EntityKeyUtil.findRid(provider.getConnection(), inClassName, inBusinessPrimaryKeyName,
+                        inBusinessPrimaryKeyValue);
+                if (outRid == null) { 
+                    // try foun rid in db // @TODO search rid for 'out' direction 
+                    throw new UnsupportedOperationException("insertOrUpdateAssociation! Not supported yet.");
+                }
+                AssociationUtil.removeAssociation(provider.getConnection(), edgeClassName, outRid, inRid);
+                AssociationUtil.insertAssociation(provider.getConnection(), edgeClassName, outRid, inRid);
+            } catch (SQLException sqle) {
+                log.error("Error!", sqle);
+                throw new RuntimeException(
+                        "Can not insert or update association", sqle);
+            } */
+		 
 
 	}
 
@@ -372,17 +385,17 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.info( "removeAssociation: AssociationKey:" + key + "; AssociationContext:" + associationContext + ";" );
 		/*
-		 * Tuple outEntityTuple = associationContext.getEntityTuple(); String inClassName = key.getTable(); Object
-		 * inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() ); Object
-		 * inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() ); String edgeClassName =
-		 * AssociationUtil.getMappedByFieldName( associationContext ); ORecordId outRid = (ORecordId)
-		 * outEntityTuple.get( OrientDBConstant.SYSTEM_RID ); log.info( "removeAssociation: outRid:" + outRid +
-		 * "; inClassName:" + inClassName + "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName +
-		 * "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:" + edgeClassName ); try { ORecordId
-		 * inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inClassName, inBusinessPrimaryKeyValue
-		 * ); AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid ); } catch
-		 * (SQLException sqle) { log.error( "Error!", sqle ); throw new RuntimeException(
-		 * "Can not insert or update association", sqle ); }
+		  Tuple outEntityTuple = associationContext.getEntityTuple(); String inClassName = key.getTable(); Object
+		  inBusinessPrimaryKeyName = EntityKeyUtil.findPrimaryKeyName( key.getEntityKey() ); Object
+		  inBusinessPrimaryKeyValue = EntityKeyUtil.findPrimaryKeyValue( key.getEntityKey() ); String edgeClassName =
+		  AssociationUtil.getMappedByFieldName( associationContext ); ORecordId outRid = (ORecordId)
+		  outEntityTuple.get( OrientDBConstant.SYSTEM_RID ); log.info( "removeAssociation: outRid:" + outRid +
+		  "; inClassName:" + inClassName + "; inBusinessPrimaryKeyName:" + inBusinessPrimaryKeyName +
+		  "; inBusinessPrimaryKeyValue:" + inBusinessPrimaryKeyValue + ";mappedBy:" + edgeClassName ); try { ORecordId
+		  inRid = EntityKeyUtil.findRid( provider.getConnection(), inClassName, inClassName, inBusinessPrimaryKeyValue
+		  ); AssociationUtil.removeAssociation( provider.getConnection(), edgeClassName, outRid, inRid ); } catch
+		  (SQLException sqle) { log.error( "Error!", sqle ); throw new RuntimeException(
+		  "Can not insert or update association", sqle ); }
 		 */
 	}
 
@@ -468,10 +481,6 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 
 	@Override
 	public String parseNativeQuery(String nativeQuery) {
-		log.info( "1.parseNativeQuery.native query: " + nativeQuery );
-		// We return given native SQL query as they is; Currently there is no API for validating OrientDB queries
-		// without
-		// actually executing them
 		return nativeQuery;
 
 	}
@@ -534,10 +543,12 @@ public class OrientDBDialect extends BaseGridDialect implements MultigetGridDial
 
 	@Override
 	public GridType overrideType(Type type) {
-		// log.info( "overrideType:" + type.getName() + ";" + type.getReturnedClass() );
+		log.info( "overrideType:" + type.getName() + ";" + type.getReturnedClass() );
 		GridType gridType = null;
 		if ( type.getName().equals( "com.orientechnologies.orient.core.id.ORecordId" ) ) {
 			gridType = ORecordIdGridType.INSTANCE;
+		} else if ( type.getName().equals( "com.orientechnologies.orient.core.db.record.ridbag.ORidBag" ) ) {
+			gridType = ORidBagGridType.INSTANCE;
 		}
 		else {
 			gridType = super.overrideType( type ); // To change body of generated methods, choose Tools | Templates.
