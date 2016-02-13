@@ -154,18 +154,43 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipExec>${skipRedisUnitTests}</skipExec>
+                    <!-- Skip the main run here. Dialect-specific executions are defined below -->
+                    <skipExec>true</skipExec>
                     <environmentVariables>
                         <REDIS_HOSTNAME>${env.REDIS_HOSTNAME}</REDIS_HOSTNAME>
                         <REDIS_PORT>${env.REDIS_PORT}</REDIS_PORT>
                     </environmentVariables>
                     <forkMode>once</forkMode>
-
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
-
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>redis-json</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skipExec>${skipRedisUnitTests}</skipExec>
+                            <systemProperties>
+                                <hibernate.ogm.datastore.grid_dialect>org.hibernate.ogm.datastore.redis.RedisJsonDialect</hibernate.ogm.datastore.grid_dialect>
+                            </systemProperties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>redis-hash</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skipExec>${skipRedisUnitTests}</skipExec>
+                            <systemProperties>
+                                <hibernate.ogm.datastore.grid_dialect>org.hibernate.ogm.datastore.redis.RedisHashDialect</hibernate.ogm.datastore.grid_dialect>
+                            </systemProperties>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -173,6 +198,7 @@
             </plugin>
         </plugins>
     </build>
+
 
     <profiles>
         <profile>

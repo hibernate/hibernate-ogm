@@ -59,9 +59,11 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 		}
 		else {
 			log.tracef( "found [$s] as column [$s]", object, name );
-			if ( object instanceof Integer ) {
+			if ( isOrdinal ) {
 				initEnumValues();
-				int ordinal = ( (Integer) object ).intValue();
+				int ordinal = object instanceof Number ?
+						( (Number) object ).intValue() :
+						Integer.parseInt( object.toString() );
 				if ( ordinal < 0 || ordinal >= enumValues.length ) {
 					throw new IllegalArgumentException( "Unknown ordinal value for enum " + coreEnumType.returnedClass() + ": " + ordinal );
 				}

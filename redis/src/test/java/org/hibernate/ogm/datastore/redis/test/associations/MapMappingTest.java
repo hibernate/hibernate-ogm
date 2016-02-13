@@ -21,7 +21,9 @@ import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.Ph
 import org.hibernate.ogm.backendtck.associations.collection.types.User;
 import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.redis.Redis;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
 
 import org.junit.Test;
@@ -32,6 +34,7 @@ import static org.hibernate.ogm.datastore.redis.utils.RedisTestHelper.assertDbOb
  * @author Gunnar Morling
  * @author Mark Paluch
  */
+@SkipByGridDialect(value = GridDialectType.REDIS_HASH, comment = "RedisHashDialect does not support embedded structures/associations")
 public class MapMappingTest extends OgmTestCase {
 
 	@Test

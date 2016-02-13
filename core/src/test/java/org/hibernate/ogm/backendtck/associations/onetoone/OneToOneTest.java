@@ -122,6 +122,45 @@ public class OneToOneTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testBidirectionalOneToOneCompositeId() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		PatchCable patchCable = new PatchCable( new MediaId( "Belkin", "cat7" ) );
+		NetworkSwitch networkSwitch = new NetworkSwitch( new MediaId( "Frisco", "AS500" ));
+		patchCable.setNetworkSwitch( networkSwitch );
+		networkSwitch.setPatchCable( patchCable );
+		session.persist( patchCable );
+		session.persist( networkSwitch );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		patchCable = session.get( PatchCable.class, patchCable.getId() );
+		assertNotNull( patchCable );
+		assertNotNull( patchCable.getNetworkSwitch() );
+		session.clear();
+		networkSwitch = session.get( NetworkSwitch.class, networkSwitch.getId() );
+		assertNotNull( networkSwitch );
+		patchCable = networkSwitch.getPatchCable();
+		assertNotNull( patchCable );
+		assertNotNull( patchCable.getId() );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		patchCable = session.get( PatchCable.class, patchCable.getId() );
+		assertNotNull( patchCable );
+		assertNotNull( patchCable.getNetworkSwitch() );
+		session.clear();
+		networkSwitch = session.get( NetworkSwitch.class, networkSwitch.getId() );
+		assertNotNull( networkSwitch );
+		session.delete( patchCable );
+		session.delete( networkSwitch );
+		transaction.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
@@ -130,7 +169,9 @@ public class OneToOneTest extends OgmTestCase {
 				Vehicule.class,
 				Wheel.class,
 				Husband.class,
-				Wife.class
+				Wife.class,
+				NetworkSwitch.class,
+				PatchCable.class
 		};
 	}
 }

@@ -6,19 +6,21 @@ http://redis.io/[Redis] is a key-value datastore
 which stores your data in a variety of data structures. Although there is no one-and-only style
 how to map data between data structures and Redis, two major styles are are most common:
 
-* Storing entities as JSON documents
-* Storing entities as a bunch of String-based key-value pairs
+* Storing entities using keys as JSON documents
+* Storing entities using hashes as key-value pairs
 
 [NOTE]
 ====
 Support for Redis is considered an EXPERIMENTAL feature as of this release.
 In particular you should be prepared for possible changes to the persistent representation of mapped objects in future releases.
 
-Also be aware of the fact that partial updates are unsupported at the moment
+
+Also be aware of the fact that partial updates using the JSON dialect are unsupported at the moment
 Instead always the entire document will be replaced during updates.
 This means that fields possibly written by other applications but not mapped to properties in your domain model will get lost.
 
-The `ASSOCIATION_DOCUMENT` mode for storing associations should be used with care
+The JSON dialect supports two modes for storing associations:
+The `ASSOCIATION_DOCUMENT` mode should be used with care
 as there is potential for lost updates (https://hibernate.atlassian.net/browse/OGM-461[OGM-461]).
 It is recommended to use the `IN_ENTITY` mode (which is the default).
 
@@ -36,6 +38,13 @@ The following properties are available to configure Redis support in Hibernate O
 .Redis datastore configuration properties
 hibernate.ogm.datastore.provider::
 To use Redis as a datastore provider, this property must be set to `redis_experimental`
+hibernate.ogm.datastore.grid_dialect::
+The dialect type how Hibernate OGM Redis maps entities and associations within Redis.
+The following two dialects exist:
+`org.hibernate.ogm.datastore.redis.RedisJsonDialect` (store entities as JSON documents within Redis keys.
+Associations are mapped to Redis lists/sets) and
+`org.hibernate.ogm.datastore.redis.RedisHashDialect` (store entities as key-value pairs within Redis hashes.
+Associations are mapped as JSON documents to Redis lists/sets)
 hibernate.ogm.datastore.host::
 The hostname and port of the Redis instance.
 The optional port is concatenated to the host and separated by a colon.
@@ -68,11 +77,11 @@ hibernate.ogm.error_handler::
 The fully-qualified class name, class object or an instance of `ErrorHandler` to get notified upon errors during flushes (see <<ogm-api-error-handler>>)
 hibernate.ogm.datastore.redis.association_storage::
 Defines the way OGM stores association information in Redis.
-The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
+The following two strategies exist for the JSON dialect (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
 `IN_ENTITY` (store association information within the entity) and
 `ASSOCIATION_DOCUMENT` (store association information in a dedicated document per association).
 `IN_ENTITY` is the default and recommended option
-unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
+unless the association navigation data is much bigger than the core of the document and leads to performance degradation. The Redis hash dialect supports only the `ASSOCIATION_DOCUMENT` strategy.
 hibernate.ogm.datastore.document.map_storage::
 Defines the way OGM stores the contents of map-typed associations in Redis.
 The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.MapStorageType` enum):
@@ -161,11 +170,20 @@ as per the configuration of that specific property which takes precedence over t
 
 Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
 so that third party applications not using Hibernate OGM can still read
-and update the same datastore.
-The following describe how entities and associations are mapped to Redis documents by Hibernate OGM.
+and update the same datastore. Hibernate OGM facilitates two styles of data mapping within Redis:
 
-[[redis-built-in-types]]
-==== Properties and built-in types
+* JSON
+* Redis Hash
+
+The following describe how entities and associations are mapped to Redis data structures by Hibernate OGM.
+
+[[redis-json-mapping]]
+==== JSON mapping
+
+The JSON mapping dialect maps entities to JSON documents and stores the JSON data within Redis keys. A document is self-contained and does not support partial updates.
+
+[[redis-built-in-types-json]]
+===== Properties and built-in types
 
 [NOTE]
 ====
@@ -174,7 +192,7 @@ setting a value to null will be the same as removing the field
 in the corresponding object in the db.
 ====
 
-Hibernate OGM support by default the following types:
+Hibernate OGM supports by default the following types:
 
 * [classname]`java.lang.String`
 
@@ -284,7 +302,7 @@ Hibernate OGM support by default the following types:
   { "url" : "http://www.hibernate.org/" }
 ----
 
-==== Entities
+===== Entities
 
 Entities are stored as JSON documents and not as BLOBs
 which means each entity property will be translated into a document field.
@@ -367,254 +385,6 @@ public class News {
 ----
 ====
 
-===== Identifiers
-
-Redis keys are derived from the Entity name and its Id separated by a colon (`:`).
-String-based Id's are used directly within the key, non-string keys are encoded to JSON.
-You can use any persistable Java type as identifier type, e.g. `String` or `long`.
-Hibernate OGM will convert the `@Id` property into a part of the key name
-so you can name the entity id like you want.
-
-====
-[source, JAVA]
-----
-@Entity
-public class News {
-
-    @Id
-    @Column
-    private long id;
-
-    // fields, getters, setters ...
-}
-----
-
-Key-Scheme for `News` entity with an Id of `42`
-
-[source, JSON]
-----
-  News:42
-----
-
-[source, JAVA]
-----
-@Entity
-@Table(name="Article")
-public class News {
-
-    @Id
-    @Column(name="code")
-    private String id;
-
-    // fields, getters, setters ...
-}
-----
-
-Key-Scheme for `News` entity with an Id of `breaking-news`
-
-[source, JSON]
-----
-Article:breaking-news
-----
-====
-
-Note that you also can work with embedded ids (via `@EmbeddedId`),
-Composite Id's are mapped to a JSON object containing keys and values.
-Hibernate OGM thus will create a concatenated representation of the embedded id's properties in this case.
-The columns are sorted in alphabetical order to guarantee the same order.
-
-.Entity with @EmbeddedId
-====
-[source, JAVA]
-----
-@Entity
-public class News {
-
-    @EmbeddedId
-    private NewsID newsId;
-
-    // getters, setters ...
-}
-
-@Embeddable
-public class NewsID implements Serializable {
-
-    private String title;
-    private String author;
-
-    // getters, setters ...
-}
-----
-
-Resulting key:
-[source, JSON]
-----
-News:{"newsId.author": "Guillaume, "newsId.title": "How to use Hibernate OGM ?"},
-----
-====
-
-===== Identifier generation strategies
-
-You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]`@GeneratedValue` annotation.
-
-Two main strategies are supported:
-
-1. <<redis-table-id-generation-strategy, TABLE>>
-2. <<redis-sequence-id-generation-strategy, SEQUENCE>>
-
-Both strategy will operate in the keys starting with `Identifiers` containing the last value of the id. The difference
-between the two strategies is the name of the key containing the values.
-
-Hibernate OGM goes not support the `IDENTITY` strategy and an exception is thrown at startup
-when it is used.
-The `AUTO` strategy is the same as the <<redis-sequence-id-generation-strategy, SEQUENCE>> one.
-
-The next value is obtained using Redis' http://redis.io/commands/hincrby[HINCRBY] command
-that guarantees to create atomic updates to the underlying data structure.
-
-[[redis-table-id-generation-strategy]]
-*1) TABLE generation strategy*
-
-.Id generation strategy TABLE using default values
-
-====
-[source, JAVA]
-----
-@Entity
-public class Video {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    private Integer id;
-    private String name
-
-    // getters, setters, ...
-}
-----
-
-[source, JSON]
-----
-Key: Video:1
-{
-   "name": "Scream",
-   "director": "Wes Craven"
-}
-----
-
-[source, JSON]
-----
-Key: Identifiers:hibernate_sequences:default
-Value: 1
-----
-====
-
-.Id generation strategy TABLE using a custom table
-====
-[source, JAVA]
-----
-@Entity
-public class Video {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "video")
-    @TableGenerator(
-            name = "video",
-            table = "sequences",
-            pkColumnName = "key",
-            pkColumnValue = "video",
-            valueColumnName = "seed"
-    )
-    private Integer id;
-
-    private String name;
-
-    // getter, setters, ...
-}
-----
-
-[source, JSON]
-----
-Key: Identifiers:sequences:video
-Value: 2
-----
-====
-
-[[redis-sequence-id-generation-strategy]]
-*2) SEQUENCE generation strategy*
-
-.SEQUENCE id generation strategy using default values
-====
-[source, JAVA]
-----
-@Entity
-public class Song {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
-  private Long id;
-
-  private String title;
-
-  // getters, setters ...
-}
-----
-
-[source, JSON]
-----
-Key: Song:2
-{
-   "title": "Ave Maria",
-   "singer": "Charlotte Church"
-}
-----
-
-[source, JSON]
-----
-Key: Identifiers:hibernate_sequences:hibernate_sequence
-Value: 2
-----
-====
-
-.SEQUENCE id generation strategy using custom values
-====
-[source, JAVA]
-----
-@Entity
-public class Song {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "songSequenceGenerator")
-  @SequenceGenerator(
-      name = "songSequenceGenerator",
-      sequenceName = "song_sequence",
-      initialValue = 2,
-      allocationSize = 20
-  )
-  private Long id;
-
-  private String title;
-
-  // getters, setters ...
-}
-----
-
-[source, JSON]
-----
-Key: Song:2
-{
-   "title": "Ave Maria",
-   "singer": "Charlotte Church"
-}
-----
-
-[source, JSON]
-----
-Key: Identifiers:hibernate_sequences:song_sequence_name
-Value: 21
-----
-====
-
 ===== Embedded objects and collections
 
 Hibernate OGM stores elements annotated with [classname]`@Embedded`
@@ -651,6 +421,7 @@ public class NewsPaper {
 ----
 Key: News:939c892d-1129-4aff-abf8-e6c26e59dcb
 {
+    "title": "On the merits of NoSQL",
     "paper": {
         "name": "NoSQL journal of prophecies",
         "owner": "Delphy"
@@ -774,6 +545,363 @@ Key: GrandMother:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 ----
 ====
 
+
+[[redis-hash-mapping]]
+==== Hash mapping
+
+The Redis Hash mapping dialect maps entities to key-value pairs.
+It stores the data within Redis hashes. Hashes support partial updates.
+While the JSON dialect discards not mapped fields in the entity model the hash dialect
+does not touch fields that are not mapped to the entity model.
+
+[[redis-built-in-types-hash]]
+===== Properties and built-in types
+
+[NOTE]
+====
+Hibernate OGM doesn't store null values in Redis,
+setting a value to null will be the same as removing the field
+in the corresponding object in the db.
+====
+
+Hibernate OGM supports by default the following types:
+
+* [classname]`java.lang.String`
+
+[source, JSON]
+----
+text=Hello world!
+----
+
+* [classname]`java.lang.Character` (or char primitive)
+
+[source, JSON]
+----
+delimiter=/
+----
+
+* [classname]`java.lang.Boolean` (or boolean primitive)
+
+[source, JSON]
+----
+favorite=true  # default mapping
+favorite=T     # if @Type(type = "true_false") is given
+favorite=Y     # if @Type(type = "yes_no") is given
+favorite=1     # if @Type(type = "numeric_boolean") is given
+----
+
+* [classname]`java.lang.Byte` (or byte primitive)
+
+[source, JSON]
+----
+ display_mask=Rg==
+----
+_Redis Hash stores byte data as base64-encoded string_
+
+* [classname]`java.lang.Short` (or short primitive)
+
+[source, JSON]
+----
+urlPort=80
+----
+
+* [classname]`java.lang.Integer` (or int primitive)
+
+[source, JSON]
+----
+stockCount=12309
+----
+
+* [classname]`java.lang.Long` (or long primitive)
+
+[source, JSON]
+----
+userId=-6718902786625749549
+----
+
+* [classname]`java.lang.Float` (or float primitive)
+
+[source, JSON]
+----
+visitRatio=10.4
+----
+
+* [classname]`java.lang.Double` (or double primitive)
+
+[source, JSON]
+----
+tax_percentage=12.34
+----
+
+* [classname]`java.math.BigDecimal`
+
+[source, JSON]
+----
+site_weight=21.77
+----
+
+* [classname]`java.math.BigInteger`
+
+[source, JSON]
+----
+site_weight=444
+----
+
+* [classname]`java.util.Calendar`
+
+[source, JSON]
+----
+creation=2014-11-18T15:51:26.252Z
+----
+
+* [classname]`java.util.Date`
+
+[source, JSON]
+----
+last_update=2014-11-18T15:51:26.252Z
+----
+
+* [classname]`java.util.UUID`
+
+[source, JSON]
+----
+serialNumber=71f5713d-69c4-4b62-ad15-aed8ce8d10e0
+----
+
+* [classname]`java.util.URL`
+
+[source, JSON]
+----
+url=http://www.hibernate.org/
+----
+
+===== Entities
+
+Entities are stored as key-value pairs within Redis hashes.
+Each entity property will be translated into a hash field and is represented as `java.lang.String`.
+The Redis hash dialect supports only flat data structures hence nested entities and associations
+are represented as JSON documents within the association documents in Redis lists/sets.
+You can use the name property of the [classname]`@Table` and [classname]`@Column` annotations
+to rename the collections and the document's fields if you need to.
+
+Redis has no built-in mechanism for detecting concurrent updates to one and the same document.
+
+The following shows an example of an entity and its persistent representation in Redis.
+
+.Example of an entity and its representation in Redis
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+
+    @Version
+    @Column(name="version")
+    private int version;
+
+    private String title;
+
+    private String description;
+
+    //getters, setters ...
+}
+----
+
+[source, JSON]
+----
+version=1
+title=On the merits of NoSQL
+description=This paper discuss why NoSQL will save the world for good
+----
+====
+
+Redis doesn't have a concept of "tables";
+Instead all values are stored in a hash as key values. The hash key contains the table name and the primary key of the entity.
+Thus Hibernate OGM needs to add two additional attributes:
+
+.Rename field and collection using @Table and @Column
+====
+[source, JAVA]
+----
+@Entity
+@Table(name="Article")
+public class News {
+
+    @Id
+    @Column(name="code")
+    private String id;
+
+    @Version
+    @Column(name="revision")
+    private int revision;
+
+    private String title;
+
+    @Column(name="desc")
+    private String description;
+
+    //getters, setters ...
+}
+----
+
+[source, JSON]
+----
+revision=1
+title=On the merits of NoSQL
+desc=This paper discuss why NoSQL will save the world for good
+----
+====
+
+===== Embedded objects and collections
+
+Hibernate OGM stores elements annotated with [classname]`@Embedded`
+or [classname]`@ElementCollection` as nested documents of the owning entity.
+
+.Embedded object
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+    private String title;
+
+    @Embedded
+    private NewsPaper paper;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsPaper {
+
+    private String name;
+    private String owner;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: News:939c892d-1129-4aff-abf8-e6c26e59dcb
+paper.name=NoSQL journal of prophecies
+paper.owner=Delphy
+----
+====
+
+.@ElementCollection with primitive types
+====
+[source, JAVA]
+----
+@Entity
+public class AccountWithPhone {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<String> mobileNumbers;
+
+    // getters, setters ...
+}
+----
+
+AccountWithPhone collection
+
+[source, JSON]
+----
+Key: AccountWithPhone:2
+id=2
+
+Key: Associations:AccountWithPhone:2:mobileNumbers
+[
+   "+1-222-555-0222",
+   "+1-202-555-0333"
+]
+----
+====
+
+.@ElementCollection with one attribute
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: Associations:GrandMother_grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331:grandChildren
+
+[ "Luke", "Leia" ]
+----
+====
+
+The class [classname]`GrandChild` has only one attribute `name`,
+this means that Hibernate OGM doesn't need to store the name of the attribute.
+
+If the nested document has two or more fields, like in the following example,
+Hibernate OGM will store the name of the fields as well.
+
+.@ElementCollection with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    @OrderColumn( name = "birth_order" )
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: Associations:GrandMother_grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331:grandChildren
+[
+    "{\"name\":\"Luke\",\"birthorder\":\"0\"}",
+    "{\"name\":\"Leia\",\"birthorder\":\"1\"}"
+]
+----
+====
+
 ==== Associations
 
 Hibernate OGM Redis provides two strategies to store navigation information for associations:
@@ -797,7 +925,7 @@ The field that stores the relationship information is named like the entity prop
 [NOTE]
 ====
 When using this strategy the annotations `@JoinTable` will be ignored because no collection is created
-for associations.
+for associations. This strategy is supported only using the JSON dialect.
 
 You can use `@JoinColumn` to change the name of the field that stores the foreign key (as an example, see
 <<redis-in-entity-one-to-one-join-column>>).
@@ -1143,7 +1271,7 @@ Key: Product:Beer
 }
 ----
 
-Redis List Associations:Basket_Product:davide_basket
+Redis List Associations:davide_basket:Basket_Product
 [source, JSON]
 ----
 Rows:
@@ -1194,7 +1322,7 @@ public class Address {
 [source, JSON]
 ----
 Key: User:user_001
-{ 
+{
   "addresses" : {
     "work" : "address_001",
     "home" : "address_002"
@@ -1215,7 +1343,7 @@ Key: Address:address_001
 Key: Address:address_002
 {
   "city" : "Paris"
-} 
+}
 ----
 ====
 
@@ -1263,9 +1391,9 @@ public class Address {
 [source, JSON]
 ----
 Key: User:user_001
-{ 
+{
   "addresses" : [
-    { 
+    {
       "addressType" : "work",
       "addresses_id" : "address_001"
     },
@@ -1290,7 +1418,7 @@ Key: Address:address_001
 Key: Address:address_002
 {
   "city" : "Paris"
-} 
+}
 ----
 ====
 
@@ -1349,7 +1477,7 @@ Key: Member:emmanuel
 ----
 ====
 
-.Bidirectional many-to-one 
+.Bidirectional many-to-one
 ====
 [source, JAVA]
 ----
@@ -1484,7 +1612,7 @@ Key: Student:mario
 ----
 ====
 
-.Bidirectional many-to-many 
+.Bidirectional many-to-many
 ====
 [source, JAVA]
 ----
@@ -1555,11 +1683,19 @@ Key: BankAccount:account_2
 [[redis-association-document-strategy]]
 ===== Association document strategy
 
-With this strategy, Hibernate OGM uses separate association lists
-to store all navigation information.
-Each association list has 2 parts.
-The first is the key which contains the identifier information
-of the association owner and the name of the association table.
+With this strategy, Hibernate OGM uses separate association data structures
+to store all navigation information. The association data structure depends on
+the type of the association:
+
+* Bag, List, Map, One-to-one: Redis List
+* Set: Redis Set
+
+Each association has 2 parts.
+The first is the key. The key consists of a prefix, the identifier information
+of the association owner, and the name of the association table.
+
+"Associations:<%ASSOCIATION_TABLE%>:<%ASSOCIATION_ID%>:<%COLLECTION_ROLE%>", e.g. "Associations:AccountOwner:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76:BankAccount".
+
 The second part is the `rows` field which stores (into an embedded collection) all ids
 that the current instance is related to.
 
@@ -1567,7 +1703,7 @@ that the current instance is related to.
 ====
 [source, JSON]
 ----
-Key: Associations:AccountOwner:BankAccount:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76
+Key: Associations:AccountOwner:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76:BankAccount
 [
     "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
 ]
@@ -1581,7 +1717,7 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
 ====
 [source, JSON]
 ----
-Key: Associations:AccountOwner:BankAccount:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76
+Key: Associations:AccountOwner:4f5b48ad-f074-4a64-8cf4-1f9c54a33f76:BankAccount
 [
     "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
 ]
@@ -1654,7 +1790,7 @@ Key: Product:Pretzel
 
 [source, JSON]
 ----
-Key: Associations:Basket:Product:davide_basket
+Key: Associations:Basket_Product:davide_basket:products
 [
    "Beer",
    "Pretzel"
@@ -1900,6 +2036,252 @@ Key: Association:AccountOwner:BankAccount:owners:account_1
 ----
 ====
 
+=== Identifiers
+
+Redis keys are derived from the Entity name and its Id separated by a colon (`:`).
+String-based Id's are used directly within the key, non-string keys are encoded to JSON.
+You can use any persistable Java type as identifier type, e.g. `String` or `long`.
+Hibernate OGM will convert the `@Id` property into a part of the key name
+so you can name the entity id like you want.
+
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    @Column
+    private long id;
+
+    // fields, getters, setters ...
+}
+----
+
+Key-Scheme for `News` entity with an Id of `42`
+
+[source, JSON]
+----
+  News:42
+----
+
+[source, JAVA]
+----
+@Entity
+@Table(name="Article")
+public class News {
+
+    @Id
+    @Column(name="code")
+    private String id;
+
+    // fields, getters, setters ...
+}
+----
+
+Key-Scheme for `News` entity with an Id of `breaking-news`
+
+[source, JSON]
+----
+Article:breaking-news
+----
+====
+
+Note that you also can work with embedded ids (via `@EmbeddedId`),
+Composite Id's are mapped to a JSON object containing keys and values.
+Hibernate OGM thus will create a concatenated representation of the embedded id's properties in this case.
+The columns are sorted in alphabetical order to guarantee the same order.
+
+.Entity with @EmbeddedId
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @EmbeddedId
+    private NewsID newsId;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsID implements Serializable {
+
+    private String title;
+    private String author;
+
+    // getters, setters ...
+}
+----
+
+Resulting key:
+[source, JSON]
+----
+News:{"newsId.author": "Guillaume, "newsId.title": "How to use Hibernate OGM ?"},
+----
+====
+
+==== Identifier generation strategies
+
+You can assign id values yourself or let Hibernate OGM generate the value using the
+[classname]`@GeneratedValue` annotation.
+
+Two main strategies are supported:
+
+1. <<redis-table-id-generation-strategy, TABLE>>
+2. <<redis-sequence-id-generation-strategy, SEQUENCE>>
+
+Both strategies will operate in the keys starting with `Identifiers` containing the last value of the id. The difference
+between the two strategies is the name of the key containing the values.
+
+The `AUTO` strategy is the same as the <<redis-sequence-id-generation-strategy, SEQUENCE>> one.
+
+The next value is obtained using Redis' http://redis.io/commands/hincrby[HINCRBY] command
+that guarantees to create atomic updates to the underlying data structure.
+
+[[redis-table-id-generation-strategy]]
+*1) TABLE generation strategy*
+
+.Id generation strategy TABLE using default values
+
+====
+[source, JAVA]
+----
+@Entity
+public class Video {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private Integer id;
+    private String name
+
+    // getters, setters, ...
+}
+----
+
+[source, JSON]
+----
+Key: Video:1
+{
+   "name": "Scream",
+   "director": "Wes Craven"
+}
+----
+
+[source, JSON]
+----
+Key: Identifiers:hibernate_sequences:default
+Value: 1
+----
+====
+
+.Id generation strategy TABLE using a custom table
+====
+[source, JAVA]
+----
+@Entity
+public class Video {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "video")
+    @TableGenerator(
+            name = "video",
+            table = "sequences",
+            pkColumnName = "key",
+            pkColumnValue = "video",
+            valueColumnName = "seed"
+    )
+    private Integer id;
+
+    private String name;
+
+    // getter, setters, ...
+}
+----
+
+[source, JSON]
+----
+Key: Identifiers:sequences:video
+Value: 2
+----
+====
+
+[[redis-sequence-id-generation-strategy]]
+*2) SEQUENCE generation strategy*
+
+.SEQUENCE id generation strategy using default values
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: Song:2
+{
+   "title": "Ave Maria",
+   "singer": "Charlotte Church"
+}
+----
+
+[source, JSON]
+----
+Key: Identifiers:hibernate_sequences
+Value: 2
+----
+====
+
+.SEQUENCE id generation strategy using custom values
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "songSequenceGenerator")
+  @SequenceGenerator(
+      name = "songSequenceGenerator",
+      sequenceName = "song_sequence",
+      initialValue = 2,
+      allocationSize = 20
+  )
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: Song:2
+{
+   "title": "Ave Maria",
+   "singer": "Charlotte Church"
+}
+----
+
+[source, JSON]
+----
+Key: Identifiers:song_sequence
+Value: 21
+----
+====
+
 === Transactions
 
 The Redis dialect does not support transactions for now.
@@ -1919,4 +2301,3 @@ Hibernate OGM is a work in progress
 and we are actively working on JP-QL query support.
 
 In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM.
-

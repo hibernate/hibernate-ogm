@@ -7,6 +7,13 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
+import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
+import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
+import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
+import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
+import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
 import static org.hibernate.ogm.utils.SessionHelper.asProjectionResults;
 import static org.hibernate.ogm.utils.SessionHelper.delete;
 import static org.hibernate.ogm.utils.SessionHelper.persist;
@@ -19,7 +26,6 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.id.Label;
 import org.hibernate.ogm.backendtck.id.News;
 import org.hibernate.ogm.backendtck.id.NewsID;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SessionHelper.ProjectionResult;
 import org.hibernate.ogm.utils.SkipByGridDialect;
@@ -37,7 +43,7 @@ import org.junit.rules.ExpectedException;
  * @author Davide D'Alto
  */
 @SkipByGridDialect(
-	value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS },
+	value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH },
 	comment = "Hibernate Search does not store properties of the @EmbeddedId by default in the index, it requires the use of @FieldBridge."
 			+ "It is also not sufficient to add a custom field bridge because the properties of the embedded id won't be recognized as properties of the entity."
 			+ "There is a JIRA to keep track of this: OGM-849")

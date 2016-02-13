@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
-import org.hibernate.ogm.datastore.redis.RedisDialect;
+import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -50,7 +50,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		return RedisDialect.class;
+		return RedisJsonDialect.class;
 	}
 
 	@Override

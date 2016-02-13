@@ -6,15 +6,12 @@
  */
 package org.hibernate.ogm.datastore.redis;
 
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -27,14 +24,10 @@ import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonEntityStorageStrategy;
-import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
-import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
-import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
-import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -42,7 +35,6 @@ import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
@@ -51,13 +43,11 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import com.lambdaworks.redis.KeyScanCursor;
+import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.ScanArgs;
-import com.lambdaworks.redis.api.sync.RedisCommands;
-
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
 /**
- * Stores tuples and associations inside Redis.
+ * Stores tuples and associations inside Redis as JSON.
  * <p>
  * Tuples are stored in Redis as a JSON serialization of a {@link Entity} object. Associations are stored in Redis obtained as a
  * JSON serialization of a {@link Association} object either within the entity or external.
@@ -66,23 +56,21 @@ import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.get
  *
  * @author Mark Paluch
  */
-public class RedisDialect extends BaseGridDialect implements MultigetGridDialect {
+public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGridDialect {
 
-	public static final String IDENTIFIERS = "Identifiers";
-	public static final String ASSOCIATIONS = "Associations";
+	protected final RedisConnection<String, String> connection;
 
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
-	private final RedisCommands<String, String> connection;
-	private final JsonSerializationStrategy serializationStrategy = new JsonSerializationStrategy();
 
-	public RedisDialect(RedisDatastoreProvider provider) {
-		this.connection = provider.getConnection();
-		this.entityStorageStrategy = new JsonEntityStorageStrategy( serializationStrategy, connection );
+	public RedisJsonDialect(RedisDatastoreProvider provider) {
+		super( provider.getConnection() );
+		connection = provider.getConnection();
+		this.entityStorageStrategy = new JsonEntityStorageStrategy( strategy, connection );
 	}
 
 	@Override
 	public GridType overrideType(Type type) {
-		return serializationStrategy.overrideType( type );
+		return strategy.overrideType( type );
 	}
 
 	@Override
@@ -98,20 +86,10 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( new RedisTupleSnapshot( new HashMap<String, Object>() ) );
-	}
-
-	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, map );
 		storeEntity( key, map, tupleContext.getOptionsContext(), tuple.getOperations() );
-	}
-
-	@Override
-	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		remove( key );
 	}
 
 	@Override
@@ -134,68 +112,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		);
 	}
 
-	private Long getTTL(OptionsContext optionsContext) {
-		return optionsContext.getUnique( TTLOption.class );
-	}
-
-	private Long getTTL(AssociationContext associationContext) {
-		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( TTLOption.class );
-	}
-
-	@Override
-	public Number nextValue(NextValueRequest request) {
-		String key = identifierId( request.getKey() );
-		String hget = connection.get( key );
-
-		if ( hget == null || hget.length() == 0 ) {
-			connection.set( key, Long.toString( request.getInitialValue() ) );
-			return request.getInitialValue();
-		}
-
-		return connection.incrby( key, request.getIncrement() );
-	}
-
-	@Override
-	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			KeyScanCursor<String> cursor = null;
-			String prefix = entityKeyMetadata.getTable() + ":";
-
-			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
-			do {
-				if ( cursor != null ) {
-					cursor = connection.scan( cursor, scanArgs );
-				}
-				else {
-					cursor = connection.scan( scanArgs );
-				}
-
-				for ( String key : cursor.getKeys() ) {
-					Entity document = entityStorageStrategy.getEntity( key );
-					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
-					consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
-				}
-			} while ( !cursor.isFinished() );
-		}
-	}
-
-	private void addKeyValuesFromKeyName(
-			EntityKeyMetadata entityKeyMetadata,
-			String prefix,
-			String key,
-			Entity document) {
-		if ( key.startsWith( prefix ) ) {
-
-			String keyWithoutPrefix = key.substring( prefix.length() );
-
-			Map<String, Object> keys = keyToMap( entityKeyMetadata, keyWithoutPrefix );
-
-			for ( Map.Entry<String, Object> entry : keys.entrySet() ) {
-				document.set( entry.getKey(), entry.getValue() );
-			}
-		}
-	}
-
 	@Override
 	public org.hibernate.ogm.model.spi.Association getAssociation(
 			AssociationKey key,
@@ -215,7 +131,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 		else {
 
-			Association association = getAssociation( key.getEntityKey() );
+			Association association = getAssociation( key );
 			if ( association != null ) {
 				redisAssociation = RedisAssociation.fromAssociationDocument( association );
 			}
@@ -283,21 +199,8 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 		else {
 			Long currentTtl = connection.pttl( entityId( associationKey.getEntityKey() ) );
-			storeAssociation( associationKey.getEntityKey(), (Association) redisAssociation.getOwningDocument() );
+			storeAssociation( associationKey, (Association) redisAssociation.getOwningDocument() );
 			setAssociationTTL( associationKey, associationContext, currentTtl );
-		}
-	}
-
-	private void setAssociationTTL(
-			AssociationKey associationKey,
-			AssociationContext associationContext,
-			Long currentTtl) {
-		Long ttl = getTTL( associationContext );
-		if ( ttl != null ) {
-			expireAssociation( associationKey.getEntityKey(), ttl );
-		}
-		else if ( currentTtl != null && currentTtl > 0 ) {
-			expireAssociation( associationKey.getEntityKey(), currentTtl );
 		}
 	}
 
@@ -311,7 +214,7 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 	 * <li>{@code Entity}s with keys/values for all row key columns which are not part of the association key</li>
 	 * </ul>
 	 */
-	private Object getAssociationRows(
+	protected Object getAssociationRows(
 			org.hibernate.ogm.model.spi.Association association,
 			AssociationKey key,
 			AssociationContext associationContext) {
@@ -356,27 +259,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		return rows;
 	}
 
-	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
-		String[] columnsToPersist = associationKey.getMetadata()
-				.getColumnsWithoutKeyColumns( row.getColumnNames() );
-
-		// return value itself if there is only a single column to store
-		if ( columnsToPersist.length == 1 ) {
-			return row.get( columnsToPersist[0] );
-		}
-		Entity rowObject = new Entity();
-		String prefix = getColumnSharedPrefixOfAssociatedEntityLink( associationKey );
-		for ( String column : columnsToPersist ) {
-			Object value = row.get( column );
-			if ( value != null ) {
-				String columnName = column.startsWith( prefix ) ? column.substring( prefix.length() ) : column;
-				rowObject.set( columnName, value );
-			}
-		}
-
-		return rowObject.getPropertiesAsHierarchy();
-	}
-
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
@@ -388,13 +270,34 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 			}
 		}
 		else {
-			removeAssociation( key.getEntityKey() );
+			removeAssociation( key );
 		}
 	}
 
-	private void addIdToEntity(Entity entity, String[] columnNames, Object[] columnValues) {
-		for ( int i = 0; i < columnNames.length; i++ ) {
-			entity.set( columnNames[i], columnValues[i] );
+	@Override
+	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+			KeyScanCursor<String> cursor = null;
+			String prefix = entityKeyMetadata.getTable() + ":";
+
+			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
+			do {
+				if ( cursor != null ) {
+					cursor = connection.scan( cursor, scanArgs );
+				}
+				else {
+					cursor = connection.scan( scanArgs );
+				}
+
+				for ( String key : cursor.getKeys() ) {
+					Entity document = entityStorageStrategy.getEntity( key );
+
+					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
+
+					consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
+				}
+
+			} while ( !cursor.isFinished() );
 		}
 	}
 
@@ -428,27 +331,6 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
 	}
 
-	private void setEntityTTL(EntityKey key, Long currentTtl, Long configuredTTL) {
-		if ( configuredTTL != null ) {
-			expireEntity( key, configuredTTL );
-		}
-		else if ( currentTtl != null && currentTtl > 0 ) {
-			expireEntity( key, currentTtl );
-		}
-	}
-
-	private Association getAssociation(EntityKey key) {
-		String associationId = associationId( key );
-		List<String> lrange = connection.lrange( associationId, 0, -1 );
-
-		Association association = new Association();
-
-		for ( String item : lrange ) {
-			association.getRows().add( serializationStrategy.deserialize( item, Object.class ) );
-		}
-		return association;
-	}
-
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
 		Long currentTtl = connection.pttl( entityId( key ) );
 
@@ -462,116 +344,19 @@ public class RedisDialect extends BaseGridDialect implements MultigetGridDialect
 		return entity;
 	}
 
-	private void expireEntity(EntityKey key, Long ttl) {
-		String associationId = entityId( key );
-		connection.pexpire( associationId, ttl );
-	}
-
-	private void storeAssociation(EntityKey key, Association document) {
-		String associationId = associationId( key );
-		connection.del( associationId );
-
-		for ( Object row : document.getRows() ) {
-			connection.rpush( associationId, serializationStrategy.serialize( row ) );
-		}
-	}
-
-	private void expireAssociation(EntityKey key, Long ttl) {
-		String associationId = associationId( key );
-		connection.pexpire( associationId, ttl );
-	}
-
-	private void removeAssociation(EntityKey key) {
-		connection.del( associationId( key ) );
-	}
-
-	private void remove(EntityKey key) {
-		connection.del( entityId( key ) );
-	}
-
-	/**
-	 * Create a String representation of the identifier key in the format of {@code Identifiers:(table name):(columnId)}.
-	 * {@see #IDENTIFIERS}
-	 *
-	 * @param key Key for the identifier
-	 *
-	 * @return String containing the key
-	 */
-	private String identifierId(IdSourceKey key) {
-		String prefix = IDENTIFIERS + ":" + key.getTable() + ":";
-		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
-		return prefix + entityId;
-	}
-
-	/**
-	 * Create a String representation of the entity key in the format of {@code Association:(table name):(columnId)}.
-	 * {@see #ASSOCIATIONS}
-	 *
-	 * @param key Key of the association
-	 *
-	 * @return String containing the key
-	 */
-	private String associationId(EntityKey key) {
-		String prefix = ASSOCIATIONS + ":" + key.getTable() + ":";
-		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
-		return prefix + entityId;
-	}
-
-	/**
-	 * Create a String representation of the key in the format of {@code (table name):(columnId)}.
-	 *
-	 * @param key Key of the entity
-	 *
-	 * @return String containing the key
-	 */
-	public String entityId(EntityKey key) {
-		String prefix = key.getTable() + ":";
-		String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
-		return prefix + entityId;
-	}
-
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {
 		return entityStorageStrategy;
 	}
 
-	/**
-	 * Construct a key based on the key columns:
-	 * Single key: Use the value as key
-	 * Multiple keys: Serialize the key using a JSON map.
-	 */
-	private String keyToString(String[] columnNames, Object[] columnValues) {
-		if ( columnNames.length == 1 ) {
-			return columnValues[0].toString();
-		}
-
-		Collator collator = Collator.getInstance( Locale.ENGLISH );
-		collator.setStrength( Collator.SECONDARY );
-
-		Map<String, Object> idObject = new TreeMap<>( collator );
-
-		for ( int i = 0; i < columnNames.length; i++ ) {
-			idObject.put( columnNames[i], columnValues[i] );
-		}
-
-		return serializationStrategy.serialize( idObject );
-	}
-
-	/**
-	 * Deconstruct the key name into its components:
-	 * Single key: Use the value from the key
-	 * Multiple keys: De-serialize the JSON map.
-	 */
-	private Map<String, Object> keyToMap(EntityKeyMetadata entityKeyMetadata, String key) {
-		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
-			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) key );
-		}
-		return serializationStrategy.deserialize( key, Map.class );
-	}
-
 	// MultigetGridDialect
+
 	@Override
 	public List<Tuple> getTuples(EntityKey[] keys, TupleContext tupleContext) {
-		String[] ids = new String[keys.length];
+		if ( keys.length == 0 ) {
+			return Collections.emptyList();
+		}
+
+		String ids[] = new String[keys.length];
 
 		for ( int i = 0; i < keys.length; i++ ) {
 			ids[i] = entityId( keys[i] );

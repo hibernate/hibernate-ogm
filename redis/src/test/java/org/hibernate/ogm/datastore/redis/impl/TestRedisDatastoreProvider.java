@@ -30,7 +30,7 @@ public class TestRedisDatastoreProvider extends RedisDatastoreProvider {
 					new Thread( "RedisClient shutdown hook" ) {
 						@Override
 						public void run() {
-							redisClient.shutdown( 100, 100, TimeUnit.MILLISECONDS );
+							redisClient.shutdown( 0, 0, TimeUnit.MILLISECONDS );
 						}
 					}
 			);

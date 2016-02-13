@@ -13,7 +13,7 @@ import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 
 /**
- * @author Mark PAluch
+ * @author Mark Paluch
  */
 public class ManyToManyDocumentTest extends ManyToManyTest {
 
