@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0"
+    xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+    
+    <persistence-unit name="hibernateOgmJpaUnit" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+
+        <!-- JPA entities must be registered here -->
+        <class>org.hibernate.datastore.ogm.orientdb.jpa.Customer</class>
+
+        <properties>
+            <property name="hibernate.ogm.datastore.provider" value="orientdb"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:orient:memory:test" />
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:orient:remote:localhost/pizza" />  -->
+            <property name="javax.persistence.jdbc.driver" value="com.orientechnologies.orient.jdbc.OrientJdbcDriver"/>    
+            <property name="javax.persistence.jdbc.user" value="admin"/>    
+            <property name="javax.persistence.jdbc.password" value="admin"/>  
+            <property name="hibernate.search.Rules.directory_provider" value="filesystem"/>  
+            <property name="hibernate.search.default.indexBase" value="./target/lucene/indexes"/>
+            <property name="hibernate.show_sql" value="true"/> 
+            <property name="hibernate.transaction.factory_class" value="org.hibernate.transaction.JDBCTransactionFactory"/> 
+            <property name="hibernate.current_session_context_clas" value="thread"/> 
+            
+             
+        </properties>
+    </persistence-unit>
+</persistence>
