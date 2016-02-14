@@ -186,6 +186,11 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
+	public int executeBackendUpdateQuery(BackendQuery<T> query, QueryParameters queryParameters) {
+		return queryableGridDialect.executeBackendUpdateQuery( query, queryParameters );
+	}
+
+	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return queryableGridDialect.getParameterMetadataBuilder();
 	}
