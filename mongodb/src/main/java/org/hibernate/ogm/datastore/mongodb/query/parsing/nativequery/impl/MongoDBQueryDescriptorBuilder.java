@@ -16,13 +16,18 @@ import com.mongodb.util.JSON;
  * Builder for {@link MongoDBQueryDescriptor}s.
  *
  * @author Gunnar Morling
+ * @author Thorsten Möller
  */
 public class MongoDBQueryDescriptorBuilder {
 
 	private String collection;
 	private Operation operation;
-	private String criteria;
-	private String projection;
+	private String criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
+	                           //                      document or array of documents to insert for an INSERT query.
+	private String projection; // Overloaded to be the 'update' for Operation.UPDATE.
+	private String orderBy;    // Overloaded to be the optional { upsert: <boolean>, multi: <boolean>, writeConcern: <document> } argument object for Operation.UPDATE,
+	                           //                      optional { ordered: <boolean>, writeConcern: <document> } argument object for an INSERT query,
+	                           //                      optional { justOne: <boolean>, writeConcern: <document> } argument object for a REMOVE query.
 
 	public boolean setCollection(String collection) {
 		this.collection = collection.trim();
@@ -32,7 +37,7 @@ public class MongoDBQueryDescriptorBuilder {
 	public boolean setOperation(Operation operation) {
 		this.operation = operation;
 		return true;
-	};
+	}
 
 	public boolean setCriteria(String criteria) {
 		this.criteria = criteria;
@@ -43,8 +48,19 @@ public class MongoDBQueryDescriptorBuilder {
 		this.projection = projection;
 		return true;
 	}
+	
+	public boolean setOrderBy(String orderBy) {
+		this.orderBy = orderBy;
+		return true;
+	}
 
 	public MongoDBQueryDescriptor build() {
-		return new MongoDBQueryDescriptor( collection, operation, (DBObject) JSON.parse( criteria ), (DBObject) JSON.parse( projection ), null, null );
+		return new MongoDBQueryDescriptor(
+				collection,
+				operation,
+				criteria == null ? null : (DBObject) JSON.parse( criteria ),
+				projection == null ? null : (DBObject) JSON.parse( projection ),
+				orderBy == null ? null: (DBObject) JSON.parse( orderBy ),
+				null );
 	}
 }

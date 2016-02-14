@@ -15,6 +15,7 @@ import org.hibernate.ogm.model.spi.Tuple;
  * A facet for {@link GridDialect} implementations which support the execution of native queries.
  *
  * @author Gunnar Morling
+ * @author Thorsten Möller
  *
  * @param <T> The type of native queries supported by this dialect
  */
@@ -29,6 +30,22 @@ public interface QueryableGridDialect<T extends Serializable> extends GridDialec
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
 	ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters);
+
+	/**
+	 * Returns the result of a native update query executed on the backend.
+	 * <p>
+	 * Precise semantics of an <i>update</i> are subject to design choices made
+	 * for the actual database system in the backend. In particular, it may implement
+	 * non-classical notions of consistency such as <i>eventual consistency</i>
+	 * (rather than (conflict) serializablity as in most relational SQL database
+	 * systems).
+	 *
+	 * @param query the query to execute in a representation understood by the underlying datastore. May have been
+	 * created by converting a JP-QL query or from a (named) native query.
+	 * @param queryParameters parameters passed for this query
+	 * @return the number of elements that have been updated.
+	 */
+	int executeBackendUpdateQuery(BackendQuery<T> query, QueryParameters queryParameters);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.
