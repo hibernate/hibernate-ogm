@@ -802,8 +802,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		// Recap, Section 3.8.15 of the JPA specification states: "The use of named parameters is not defined for
 		// native queries. Only positional parameter binding for SQL queries may be used by portable applications."
 		// This should apply analogously to MongoDB native queries.
-		if ( !queryParameters.getNamedParameters().isEmpty() )
-			throw new IllegalArgumentException( "The use of named parameters is not defined for native queries; c.f. JPA spec, Section 3.8.15." );
+//		if ( !queryParameters.getNamedParameters().isEmpty() )
+//			throw new IllegalArgumentException( "The use of named parameters is not defined for native queries; c.f. JPA spec, Section 3.8.15." );
 		if ( !queryParameters.getPositionalParameters().isEmpty() ) // TODO Implement binding positional parameters.
 			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
 
