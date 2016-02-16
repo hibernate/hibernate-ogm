@@ -94,13 +94,11 @@ public class OrientDBTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public boolean isEmpty() {
-		LOG.info( "isEmpty" );
 		return dbNameValueMap.isEmpty();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
-		LOG.info( "getColumnNames" );
 		return dbNameValueMap.keySet();
 	}
 

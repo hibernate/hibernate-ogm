@@ -6,6 +6,7 @@
  */
 package org.hibernate.datastore.ogm.orientdb;
 
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -18,13 +19,15 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.FlushModeType;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-import static junit.framework.Assert.assertEquals;
 import org.apache.log4j.BasicConfigurator;
 import org.hibernate.datastore.ogm.orientdb.jpa.BuyingOrder;
 import org.hibernate.datastore.ogm.orientdb.jpa.Customer;
-import org.hibernate.datastore.ogm.orientdb.util.MemoryDBUtil;
+import org.hibernate.datastore.ogm.orientdb.jpa.Pizza;
+import org.hibernate.datastore.ogm.orientdb.jpa.Product;
+import org.hibernate.datastore.ogm.orientdb.utils.MemoryDBUtil;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -46,12 +49,13 @@ public class OrientDbAssociationTest {
     private static final Logger LOG = Logger.getLogger(OrientDbAssociationTest.class.getName());
     private static EntityManager em;
     private static EntityManagerFactory emf;
+    private static OrientGraphNoTx graphNoTx;
 
     @BeforeClass
     public static void setUpClass() {
         LOG.log(Level.INFO, "start");
         // MemoryDBUtil.prepareDb("remote:localhost/pizza");
-        MemoryDBUtil.createDbFactory("memory:test");
+        graphNoTx=MemoryDBUtil.createDbFactory(OrientDBSimpleTest.MEMORY_TEST);
         BasicConfigurator.configure();
         emf = Persistence.createEntityManagerFactory("hibernateOgmJpaUnit");
         em = emf.createEntityManager();
@@ -65,18 +69,17 @@ public class OrientDbAssociationTest {
         if (em != null) {
             em.close();
             emf.close();
-
         }
-        MemoryDBUtil.getOrientGraphFactory().close();
+        graphNoTx.shutdown();
+        MemoryDBUtil.recrateInMemoryDn(OrientDBSimpleTest.MEMORY_TEST);
+        
     }
 
     @Before
     public void setUp() {
-
         if (em.getTransaction().isActive() ) {
             em.getTransaction().rollback();
         }
-
     }
 
     @After
@@ -101,7 +104,41 @@ public class OrientDbAssociationTest {
             BuyingOrder buyingOrder2 = new BuyingOrder();
             buyingOrder2.setOrderKey("3322");
             em.persist(buyingOrder2);
-
+            
+            Product sausage = new Product();
+            sausage.setName("Sausage");
+            em.persist(sausage);
+            
+            Product olive = new Product();
+            olive.setName("Olive");
+            em.persist(olive);
+            
+            Product cheese = new Product();
+            cheese.setName("Cheese");
+            em.persist(cheese);
+            
+            Pizza pizza1 = new Pizza();
+            pizza1.setName("Super Papa");
+            em.persist(pizza1);
+            
+            Pizza pizza2 = new Pizza();
+            pizza2.setName("Cheese");
+            em.persist(pizza2);
+            
+            pizza2.setProducts(new LinkedList<>(Arrays.asList(cheese, olive)));
+            em.merge(pizza2);
+            
+            
+            pizza1.setProducts(new LinkedList<>(Arrays.asList(cheese, olive,sausage)));
+            em.merge(pizza1);
+            
+            cheese.setPizzas(new LinkedList<Pizza>(Arrays.asList(pizza1,pizza2)));
+            em.merge(cheese);
+            olive.setPizzas(new LinkedList<Pizza>(Arrays.asList(pizza1,pizza2)));
+            em.merge(olive);
+            sausage.setPizzas(new LinkedList<Pizza>(Arrays.asList(pizza1)));
+            
+            
             buyingOrder1.setOwner(customer);
             em.merge(buyingOrder1);
 
@@ -121,7 +158,7 @@ public class OrientDbAssociationTest {
         }
     }
 
- 
+    @Test
     public void test2AddNewAssociations() throws Exception {
         LOG.log(Level.INFO, "start");
         try {
@@ -202,7 +239,6 @@ public class OrientDbAssociationTest {
 
     @Test
     public void test4ReadAllAssociations() throws Exception {
-
         LOG.log(Level.INFO, "start");
         try {
             em.getTransaction().begin();

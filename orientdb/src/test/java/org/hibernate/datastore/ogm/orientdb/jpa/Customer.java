@@ -6,23 +6,28 @@
 package org.hibernate.datastore.ogm.orientdb.jpa;
 
 import com.orientechnologies.orient.core.id.ORecordId;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-
-import javax.persistence.Version;
 import javax.persistence.PostPersist;
+import javax.persistence.PrePersist;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Version;
+import org.hibernate.annotations.Type;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.Log;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.LoggerFactory;
-
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -38,8 +43,7 @@ import org.hibernate.search.annotations.Store;
 		@NamedQuery(name = "Customer.findAll", query = "SELECT c FROM Customer c"),
 		@NamedQuery(name = "Country.findByName", query = "SELECT c FROM Customer c WHERE c.name = :name") })
 public class Customer {
-
-    private static Log log = LoggerFactory.getLogger();
+        private static Log log = LoggerFactory.getLogger();
 
 	@Id
 	@Column(name = "bKey")
@@ -55,7 +59,23 @@ public class Customer {
 	private String name;
 	@OneToMany(mappedBy = "owner")
 	private List<BuyingOrder> orders;
-
+        
+        @Enumerated(EnumType.STRING)
+        private Status status;
+        
+        @Temporal(TemporalType.DATE)
+        private Date createdDate;
+        
+        @Type(type = "yes_no")
+	private boolean blocked;
+        
+        
+        @PrePersist
+        public void prePersist() {
+            setCreatedDate(Calendar.getInstance().getTime());
+            setBlocked(false);
+        }
+        
 	public Long getbKey() {
 		return bKey;
 	}
@@ -95,6 +115,33 @@ public class Customer {
 	public void setVersion(int version) {
 		this.version = version;
 	}
+
+        public Status getStatus() {
+                return status;
+        }
+
+        public void setStatus(Status status) {
+            this.status = status;
+        }
+
+        public Date getCreatedDate() {
+            return createdDate;
+        }
+
+        public void setCreatedDate(Date createdDate) {
+            this.createdDate = createdDate;
+        }
+
+        public boolean isBlocked() {
+            return blocked;
+        }
+
+        public void setBlocked(boolean blocked) {
+            this.blocked = blocked;
+        }
+        
+        
+        
 
 	@Override
 	public int hashCode() {

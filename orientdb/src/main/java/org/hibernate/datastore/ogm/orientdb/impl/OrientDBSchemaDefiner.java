@@ -41,9 +41,14 @@ import org.hibernate.type.LongType;
 import org.hibernate.type.ShortType;
 import org.hibernate.type.DateType;
 import org.hibernate.type.BinaryType;
+import org.hibernate.type.ByteType;
+import org.hibernate.type.CustomType;
 import org.hibernate.type.EntityType;
+import org.hibernate.type.EnumType;
 import org.hibernate.type.ManyToOneType;
 import org.hibernate.type.OneToOneType;
+import org.hibernate.type.YesNoType;
+import org.hibernate.usertype.UserType;
 
 /**
  * @author Sergey Chernolyas <sergey.chernolyas@gmail.com>
@@ -56,17 +61,20 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
         private static final Map<Class, Class> RETURNED_CLASS_TYPE_MAPPING;
 	private static final Set<Class> SEQ_TYPES;
 	private static final Set<Class> RELATIONS_TYPES;
+        private static final String CREATE_PROPERTY_TEMPLATE = "create property {0}.{1} {2}";
 
 	static {
 		Map<Class, String> map = new HashMap<>();
 
-		map.put( IntegerType.class, "integer" );
+		map.put( ByteType.class, "byte" );
+                map.put( IntegerType.class, "integer" );
 		map.put( ShortType.class, "short" );
 		map.put( LongType.class, "long" );
 		map.put( FloatType.class, "float" );
 		map.put( DoubleType.class, "double" );
 		map.put( DateType.class, "date" );
 		map.put( BooleanType.class, "boolean" );
+                map.put( YesNoType.class, "string" );
 		map.put( StringType.class, "string" );
 		map.put( BinaryType.class, "binary" ); // byte[]
 		map.put( BigDecimalType.class, "decimal" );
@@ -110,9 +118,11 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 
 	private void createEntities(SchemaDefinitionContext context) throws SQLException {
 		for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
+                    log.info( "namespace: " + namespace.getName() );
 			for ( Table table : namespace.getTables() ) {
 				log.info( "table: " + table );
 				log.info( "tableName: " + table.getName() );
+                                boolean isMappingTable = isMapingTable(table);
 				String classQuery = createClassQuery( table );
 				log.info( "create class query: " + classQuery );
 				provider.getConnection().createStatement().execute( classQuery );
@@ -145,16 +155,35 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 						provider.getConnection().createStatement().execute( propertyQuery );
 					}
 				}
-				PrimaryKey primaryKey = table.getPrimaryKey();
-				log.info( "primaryKey: " + primaryKey );
-				for ( String primaryKeyQuery : createPrimaryKey( primaryKey ) ) {
-					log.info( "primary key query: " + primaryKeyQuery );
-					provider.getConnection().createStatement().execute( primaryKeyQuery );
-				}
-
+                                if (!isMappingTable) {
+                                        PrimaryKey primaryKey = table.getPrimaryKey();
+                                        if (primaryKey!=null) {
+                                                log.info( "primaryKey: " + primaryKey );
+                                                for ( String primaryKeyQuery : createPrimaryKey( primaryKey ) ) {
+                                                    log.info( "primary key query: " + primaryKeyQuery );
+                                                    provider.getConnection().createStatement().execute( primaryKeyQuery );
+                                                }
+                                        } else {
+                                                log.info( "Table " + table.getName()+" has not primary key" );
+                                        }
+                                }
 			}
 		}
+                //@TODO  create default sequence for hibernate
+                provider.getConnection().createStatement().execute( "CREATE SEQUENCE HIBERNATE_SEQUENCE TYPE ORDERED START 1" );
 	}
+        
+        private boolean isMapingTable(Table table) {
+            
+            int tableColumns = 0;
+            for (Iterator iterator = table.getColumnIterator(); iterator.hasNext();) {
+                Object next = iterator.next();
+                log.info( "column: " + next );
+                tableColumns++;
+            }
+            log.info( "table columns: " +tableColumns);            
+            return table.getPrimaryKey()==null && tableColumns==2;
+        }
 
 	private Class searchMappedByReturnedClass(SchemaDefinitionContext context, Collection<Table> tables, EntityType type, Column currentColumn) {
 		String tableName = type.getAssociatedJoinable( context.getSessionFactory() ).getTableName();
@@ -198,18 +227,47 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 	}
         
         private String createValueProperyQuery(Table table, Column column, Class targetTypeClass) {
+            
 		Value value =  column.getValue();
-		String orientDbTypeName = TYPE_MAPPING.get( targetTypeClass);
-
-		if ( orientDbTypeName == null ) {
-			throw new UnsupportedOperationException( "Unkwoun type: " + value.getType().getClass() );
-		}
-		return MessageFormat.format( "create property {0}.{1} {2}",
+                log.info( "1.Column "+column.getName()+" :" + targetTypeClass );
+                String query = null;
+                
+                if (targetTypeClass.equals(CustomType.class)) {
+                    CustomType type = (CustomType) value.getType();
+                    log.info( "2.Column "+column.getName()+" :" + type.getUserType() );
+                    UserType userType =type.getUserType();
+                    if (userType instanceof EnumType) {
+                            EnumType enumType = (EnumType) type.getUserType();                        
+                            query= MessageFormat.format(CREATE_PROPERTY_TEMPLATE,
+				table.getName(), column.getName(), TYPE_MAPPING.get(enumType.isOrdinal() ? IntegerType.class:StringType.class));
+                            
+                    } else {
+                        throw new UnsupportedOperationException( "Unsupported user type: " + userType.getClass());
+                    }
+                } else {
+                    String orientDbTypeName = TYPE_MAPPING.get( targetTypeClass);
+                    if ( orientDbTypeName == null ) {
+                        	throw new UnsupportedOperationException( "Unsupported type: " + targetTypeClass );
+                    }
+                    query= MessageFormat.format(CREATE_PROPERTY_TEMPLATE,
 				table.getName(), column.getName(), orientDbTypeName );
+                }
+                return query;
+                
+		
 	}
+    
 
 	private List<String> createPrimaryKey(PrimaryKey primaryKey) {
 		List<String> queries = new ArrayList<>( 2 );
+                log.info( "primaryKey.getColumns().size(): " + primaryKey.getColumns().size() );
+                
+                if (primaryKey.getColumns().size()>1) {
+                    //@TODO  Check fields for create primary index
+                    return queries;
+                }
+                
+                
 		String table = primaryKey.getTable().getName();
 		StringBuilder columns = new StringBuilder();
 		for ( Iterator<Column> iterator = primaryKey.getColumnIterator(); iterator.hasNext(); ) {
@@ -222,7 +280,7 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 		String uniqueIndex = "CREATE INDEX " + table + "_" + columns.toString().toLowerCase() + "_pk ON " + table + "(" + columns.toString().replace( '_', ',' )
 				+ ") UNIQUE";
 		queries.add( uniqueIndex );
-		log.info( "primaryKey.getColumns().size(): " + primaryKey.getColumns().size() );
+		
 		log.info( "primaryKey.getColumns().get(0).getValue().getType().getClass(): " + primaryKey.getColumns().get( 0 ).getValue().getType().getClass() );
 		if ( primaryKey.getColumns().size() == 1 && SEQ_TYPES.contains( primaryKey.getColumns().get( 0 ).getValue().getType().getClass() ) ) {
 			StringBuilder seq = new StringBuilder( 100 );
@@ -233,6 +291,8 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 		}
 		return queries;
 	}
+        
+         
 
 	public static String generateSeqName(String tableName, String primaryKeyName) {
 		StringBuilder buffer = new StringBuilder();

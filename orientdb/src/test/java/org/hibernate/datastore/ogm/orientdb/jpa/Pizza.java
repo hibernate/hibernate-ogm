@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Version;
 import org.hibernate.search.annotations.Indexed;
@@ -32,6 +33,10 @@ public class Pizza {
 	private String name;
 	@OneToMany(mappedBy = "buying")
 	private List<OrderItem> orderItems;
+        
+        @ManyToMany
+        private List<Product> products;
+        
 	@Version
 	@Column(name = "@version")
 	private int version;
@@ -77,6 +82,15 @@ public class Pizza {
 	public void setRid(ORecordId rid) {
 		this.rid = rid;
 	}
+
+        public List<Product> getProducts() {
+            return products;
+        }
+
+        public void setProducts(List<Product> products) {
+              this.products = products;
+        }
+        
 
 	@Override
 	public int hashCode() {

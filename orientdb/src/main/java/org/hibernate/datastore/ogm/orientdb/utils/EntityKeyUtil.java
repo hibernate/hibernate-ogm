@@ -12,6 +12,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 import org.hibernate.datastore.ogm.orientdb.constant.OrientDBConstant;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.Log;
@@ -25,10 +28,18 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 public class EntityKeyUtil {
 
 	private static final Log log = LoggerFactory.getLogger();
+        private static final String ORIENTDB_DATE_FORMAT = "yyyy-MM-dd";
 
 	public static void setFieldValue(StringBuilder queryBuffer, Object dbKeyValue) {
-		if ( dbKeyValue instanceof String || dbKeyValue instanceof UUID ) {
+            log.info("dbKeyValue class;"+dbKeyValue.getClass());
+		if ( dbKeyValue instanceof String || dbKeyValue instanceof UUID || dbKeyValue instanceof Character ) {
 			queryBuffer.append( "'" ).append( dbKeyValue ).append( "'" );
+		} else if ( dbKeyValue instanceof Date ) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime((Date) dbKeyValue);
+                        String formattedStr = (new SimpleDateFormat(ORIENTDB_DATE_FORMAT)).format(calendar.getTime());
+			queryBuffer.append( "date('" ).append( formattedStr ).append( "','")
+                                .append("yyyy-MM-dd").append("')" );
 		}
 		else {
 			queryBuffer.append( dbKeyValue );

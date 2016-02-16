@@ -8,10 +8,6 @@
 package org.hibernate.datastore.ogm.orientdb.type.spi;
 
 import com.orientechnologies.orient.core.db.record.ridbag.ORidBag;
-
-import com.orientechnologies.orient.core.id.ORecordId;
-import org.hibernate.MappingException;
-import org.hibernate.datastore.ogm.orientdb.type.descriptor.java.ORecordIdTypeDescriptor;
 import org.hibernate.MappingException;
 import org.hibernate.datastore.ogm.orientdb.type.descriptor.java.ORidBagTypeDescriptor;
 import org.hibernate.engine.spi.Mapping;

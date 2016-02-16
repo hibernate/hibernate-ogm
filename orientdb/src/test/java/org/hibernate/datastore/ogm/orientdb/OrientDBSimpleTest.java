@@ -7,6 +7,7 @@
 package org.hibernate.datastore.ogm.orientdb;
 
 import com.orientechnologies.orient.core.id.ORecordId;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,7 +19,8 @@ import javax.persistence.Query;
 import org.apache.log4j.BasicConfigurator;
 import org.hibernate.datastore.ogm.orientdb.jpa.Customer;
 import org.hibernate.datastore.ogm.orientdb.jpa.Pizza;
-import org.hibernate.datastore.ogm.orientdb.util.MemoryDBUtil;
+import org.hibernate.datastore.ogm.orientdb.jpa.Status;
+import org.hibernate.datastore.ogm.orientdb.utils.MemoryDBUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,22 +37,24 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OrientDBSimpleTest {
-
+        public static final String MEMORY_TEST = "memory:test";
 	private static final Logger LOG = Logger.getLogger( OrientDBSimpleTest.class.getName() );
 	private static EntityManager em;
 	private static EntityManagerFactory emf;
+        private static OrientGraphNoTx graphNoTx;
 
 	@BeforeClass
 	public static void setUpClass() {
 		LOG.log( Level.INFO, "start" );
 		// MemoryDBUtil.prepareDb("remote:localhost/pizza");
-		MemoryDBUtil.createDbFactory( "memory:test" );
+		graphNoTx=MemoryDBUtil.createDbFactory(MEMORY_TEST);
 		BasicConfigurator.configure();
 		emf = Persistence.createEntityManagerFactory( "hibernateOgmJpaUnit" );
 		em = emf.createEntityManager();
 		em.setFlushMode( FlushModeType.COMMIT );
 
 	}
+    
 
 	@AfterClass
 	public static void tearDownClass() {
@@ -60,7 +64,8 @@ public class OrientDBSimpleTest {
 			emf.close();
 
 		}
-		MemoryDBUtil.getOrientGraphFactory().close();
+		graphNoTx.shutdown();
+                MemoryDBUtil.recrateInMemoryDn(MEMORY_TEST);
 	}
 
 	@Before
@@ -79,6 +84,7 @@ public class OrientDBSimpleTest {
 			em.getTransaction().begin();
 			Customer newCustomer = new Customer();
 			newCustomer.setName( "test" );
+                        newCustomer.setStatus(Status.VIP);
 			LOG.log( Level.INFO, "New Customer ready for  persit" );
 			em.persist( newCustomer );
 			em.flush();
@@ -135,6 +141,8 @@ public class OrientDBSimpleTest {
 			LOG.log( Level.INFO, "customer.getbKey():{0}", customer.getbKey() );
 			LOG.log( Level.INFO, "customer.getName(): {0}", customer.getName() );
 			LOG.log( Level.INFO, "customer.getRid(): {0}", customer.getRid() );
+                        LOG.log( Level.INFO, "customer.isBlocked(): {0}", customer.isBlocked() );
+                        LOG.log( Level.INFO, "customer.getCreatedDate(): {0}", customer.getCreatedDate() );
 			assertEquals( Long.valueOf( 2L ), customer.getbKey() );
 			assertNotNull( customer.getRid() );
 		}

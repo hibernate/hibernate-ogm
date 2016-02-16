@@ -83,23 +83,6 @@
         <!-- Testing -->
         
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-lucene</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.hql</groupId>
-            <artifactId>hibernate-hql-parser</artifactId>
-            <scope>test</scope>
-        </dependency>
-            
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -149,6 +132,15 @@
             <groupId>io.takari.junit</groupId>
             <artifactId>takari-cpsuite</artifactId>
             <scope>test</scope>
+        </dependency>
+        
+         <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-parser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-lucene</artifactId>
         </dependency>
         
     </dependencies>
