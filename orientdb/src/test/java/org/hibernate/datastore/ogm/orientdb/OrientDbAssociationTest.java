@@ -18,6 +18,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.FlushModeType;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import static junit.framework.Assert.assertEquals;
 import org.apache.log4j.BasicConfigurator;
 import org.hibernate.datastore.ogm.orientdb.jpa.BuyingOrder;
 import org.hibernate.datastore.ogm.orientdb.jpa.Customer;
@@ -71,6 +72,11 @@ public class OrientDbAssociationTest {
 
     @Before
     public void setUp() {
+
+        if (em.getTransaction().isActive() ) {
+            em.getTransaction().rollback();
+        }
+
     }
 
     @After
@@ -81,7 +87,7 @@ public class OrientDbAssociationTest {
     @Test
     public void test1LinkAllAssociations() throws Exception {
         LOG.log(Level.INFO, "start");
-        
+
         try {
             em.getTransaction().begin();
             Customer customer = new Customer();
@@ -98,6 +104,7 @@ public class OrientDbAssociationTest {
 
             buyingOrder1.setOwner(customer);
             em.merge(buyingOrder1);
+
             buyingOrder2.setOwner(customer);
             em.merge(buyingOrder2);
 
@@ -114,8 +121,88 @@ public class OrientDbAssociationTest {
         }
     }
 
+ 
+    public void test2AddNewAssociations() throws Exception {
+        LOG.log(Level.INFO, "start");
+        try {
+            em.getTransaction().begin();
+            BuyingOrder buyingOrder3 = new BuyingOrder();
+            buyingOrder3.setOrderKey("4433");
+            em.persist(buyingOrder3);
+            Query query = em.createNativeQuery("select from Customer where name='Ivahoe'", Customer.class);
+            Customer customer = (Customer) query.getResultList().get(0);
+
+            buyingOrder3.setOwner(customer);
+            em.merge(buyingOrder3);
+            
+            
+            List<BuyingOrder> list = customer.getOrders();
+            list.add(buyingOrder3);
+            em.merge(customer);
+            em.getTransaction().commit();
+            
+            em.clear();
+            
+            em.getTransaction().begin();
+            
+            query = em.createNativeQuery("select from Customer where name='Ivahoe'", Customer.class);
+            customer = (Customer) query.getResultList().get(0);
+            list = customer.getOrders();
+            assertEquals(3l,list.size());
+            em.getTransaction().commit();
+            
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Error", e);
+            em.getTransaction().rollback();
+            throw e;
+        }
+    }
+    
     @Test
-    public void test2ReadAllAssociations() throws Exception {
+    public void test3RemoveAssociations() throws Exception {
+        LOG.log(Level.INFO, "start");
+        try {
+            em.getTransaction().begin();
+            List<BuyingOrder> list = null;
+            
+            Customer customer = null;
+            BuyingOrder removeOrder = null;
+            Query query = em.createNativeQuery("select from Customer where name='Ivahoe'", Customer.class);
+            customer = (Customer) query.getResultList().get(0);
+            list = new LinkedList<>();            
+            for (BuyingOrder buyingOrder : customer.getOrders()) {
+                if (!buyingOrder.getOrderKey().equals("4433")) {
+                    list.add(buyingOrder);
+                } else {
+                    removeOrder = buyingOrder;
+                    LOG.log(Level.INFO, "RemovedOrder: {0}",removeOrder.getbKey());
+                }
+            }
+            LOG.log(Level.INFO, "Orders size. old: {0}; new:{1}",new Object[]{customer.getOrders().size(),list.size()});
+            customer.setOrders(list);
+            em.merge(customer);
+            removeOrder.setOwner(null);
+            em.merge(removeOrder);
+            em.getTransaction().commit();            
+            em.clear();
+            
+            em.getTransaction().begin();            
+            query = em.createNativeQuery("select from Customer where name='Ivahoe'", Customer.class);
+            customer = (Customer) query.getResultList().get(0);
+            list = customer.getOrders();
+            assertEquals( 2l,list.size());
+            em.getTransaction().commit();
+            
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Error", e);
+            em.getTransaction().rollback();
+            throw e;
+        }
+    }
+
+    @Test
+    public void test4ReadAllAssociations() throws Exception {
+
         LOG.log(Level.INFO, "start");
         try {
             em.getTransaction().begin();

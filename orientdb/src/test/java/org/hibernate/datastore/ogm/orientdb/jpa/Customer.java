@@ -16,7 +16,13 @@ import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+
 import javax.persistence.Version;
+import javax.persistence.PostPersist;
+import javax.persistence.Version;
+import org.hibernate.datastore.ogm.orientdb.logging.impl.Log;
+import org.hibernate.datastore.ogm.orientdb.logging.impl.LoggerFactory;
+
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
@@ -32,6 +38,8 @@ import org.hibernate.search.annotations.Store;
 		@NamedQuery(name = "Customer.findAll", query = "SELECT c FROM Customer c"),
 		@NamedQuery(name = "Country.findByName", query = "SELECT c FROM Customer c WHERE c.name = :name") })
 public class Customer {
+
+    private static Log log = LoggerFactory.getLogger();
 
 	@Id
 	@Column(name = "bKey")

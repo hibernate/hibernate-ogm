@@ -98,6 +98,7 @@ public class EntityKeyUtil {
 		if ( rs.next() ) {
 			log.info( "findRid: find" );
 			rid = (ORecordId) rs.getObject( OrientDBConstant.SYSTEM_RID );
+                        log.info( "findRid: rid: "+rid );
 		}
 		return rid;
 	}
