@@ -26,7 +26,7 @@ public class EntityKeyUtil {
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	public static void setPrimaryKeyValue(StringBuilder queryBuffer, Object dbKeyValue) {
+	public static void setFieldValue(StringBuilder queryBuffer, Object dbKeyValue) {
 		if ( dbKeyValue instanceof String || dbKeyValue instanceof UUID ) {
 			queryBuffer.append( "'" ).append( dbKeyValue ).append( "'" );
 		}
@@ -34,6 +34,7 @@ public class EntityKeyUtil {
 			queryBuffer.append( dbKeyValue );
 		}
 	}
+        
 
 	public static Object findPrimaryKeyValue(EntityKey key) {
 		Object dbKeyValue = null;
@@ -71,7 +72,7 @@ public class EntityKeyUtil {
 		buffer.append( " where " );
 		buffer.append( dbKeyName );
 		buffer.append( " = " );
-		EntityKeyUtil.setPrimaryKeyValue( buffer, dbKeyValue );
+		EntityKeyUtil.setFieldValue( buffer, dbKeyValue );
 		log.info( "existsPrimaryKeyInDB:Key:" + dbKeyName + " ; query:" + buffer.toString() );
 
 		ResultSet rs = stmt.executeQuery( buffer.toString() );
@@ -90,7 +91,7 @@ public class EntityKeyUtil {
 		buffer.append( " where " );
 		buffer.append( businessKeyName );
 		buffer.append( " = " );
-		EntityKeyUtil.setPrimaryKeyValue( buffer, businessKeyValue );
+		EntityKeyUtil.setFieldValue( buffer, businessKeyValue );
 		log.info( "findRid:className:" + buffer.toString() );
 		ORecordId rid = null;
 		ResultSet rs = connection.createStatement().executeQuery( buffer.toString() );

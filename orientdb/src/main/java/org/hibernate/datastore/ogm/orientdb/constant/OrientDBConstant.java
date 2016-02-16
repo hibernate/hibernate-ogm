@@ -7,6 +7,7 @@
 
 package org.hibernate.datastore.ogm.orientdb.constant;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,11 +22,13 @@ public class OrientDBConstant {
 	public static final String SYSTEM_RID = "@rid";
 
 	public static final Set<String> SYSTEM_FIELDS;
+        public static final Set<String> LINK_FIELDS;
 
 	static {
 		Set<String> set = new HashSet<>();
 		set.add( SYSTEM_RID );
 		set.add( SYSTEM_VERSION );
 		SYSTEM_FIELDS = Collections.unmodifiableSet( set );
+                LINK_FIELDS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"in_","out_"})));
 	}
 }

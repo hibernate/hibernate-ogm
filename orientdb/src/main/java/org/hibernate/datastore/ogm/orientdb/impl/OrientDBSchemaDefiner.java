@@ -53,6 +53,7 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
 	private static final Map<Class, String> TYPE_MAPPING;
+        private static final Map<Class, Class> RETURNED_CLASS_TYPE_MAPPING;
 	private static final Set<Class> SEQ_TYPES;
 	private static final Set<Class> RELATIONS_TYPES;
 
@@ -71,8 +72,14 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 		map.put( BigDecimalType.class, "decimal" );
 
 		TYPE_MAPPING = Collections.unmodifiableMap( map );
-
-		Set<Class> set1 = new HashSet<>();
+                
+                Map<Class, Class> map1 = new HashMap<>();
+                map1.put(Long.class, LongType.class);
+                map1.put(Integer.class, IntegerType.class);
+                map1.put(String.class, StringType.class);
+                RETURNED_CLASS_TYPE_MAPPING =  Collections.unmodifiableMap( map1 );
+                
+                Set<Class> set1 = new HashSet<>();
 		set1.add( IntegerType.class );
 		set1.add( LongType.class );
 		SEQ_TYPES = Collections.unmodifiableSet( set1 );
@@ -121,19 +128,15 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 					else if ( RELATIONS_TYPES.contains( column.getValue().getType().getClass() ) ) {
 						// @TODO refactor it
 						Value value = column.getValue();
-						if ( value.getType().getClass().equals( ManyToOneType.class ) ) {
-							ManyToOneType type = (ManyToOneType) column.getValue().getType();
-							String mappedByName = searchMappedByName( context, namespace.getTables(), type, column );
-							log.info( "create edge query: " + createEdgeType( mappedByName ) );
-							provider.getConnection().createStatement().execute( createEdgeType( mappedByName ) );
-
-						}
-						else if ( value.getType().getClass().equals( OneToOneType.class ) ) {
-							OneToOneType type = (OneToOneType) column.getValue().getType();
-							String mappedByName = searchMappedByName( context, namespace.getTables(), type, column );
-							log.info( "create edge query: " + createEdgeType( mappedByName ) );
-							provider.getConnection().createStatement().execute( createEdgeType( mappedByName ) );
-						}
+						Class mappedByClass = searchMappedByReturnedClass( context, namespace.getTables(),(EntityType) value.getType(), column );
+                                                String propertyQuery = createValueProperyQuery( table, column, RETURNED_CLASS_TYPE_MAPPING.get(mappedByClass) );
+						log.info( "create foreign key property query: " + propertyQuery );
+						provider.getConnection().createStatement().execute( propertyQuery );
+                                                
+                                                //@TODO support fields 'in_' and 'out_' for native queries 
+                                                String mappedByName = searchMappedByName( context, namespace.getTables(), (EntityType) value.getType(), column );
+                                                log.info( "create edge query: " + createEdgeType( mappedByName ) );
+						provider.getConnection().createStatement().execute( createEdgeType( mappedByName ) );
 
 					}
 					else {
@@ -153,7 +156,20 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 		}
 	}
 
-	private String searchMappedByName(SchemaDefinitionContext context, Collection<Table> tables, EntityType type, Column currentColumn) {
+	private Class searchMappedByReturnedClass(SchemaDefinitionContext context, Collection<Table> tables, EntityType type, Column currentColumn) {
+		String tableName = type.getAssociatedJoinable( context.getSessionFactory() ).getTableName();
+
+		Class primaryKeyClass = null;
+		for ( Table table : tables ) {
+			if ( table.getName().equals( tableName ) ) {
+				log.info( "primary key type: " +  table.getPrimaryKey().getColumn( 0 ).getValue().getType().getReturnedClass());
+                                primaryKeyClass=table.getPrimaryKey().getColumn( 0 ).getValue().getType().getReturnedClass();
+			}
+		}
+                return primaryKeyClass;
+	}
+        
+        private String searchMappedByName(SchemaDefinitionContext context, Collection<Table> tables, EntityType type, Column currentColumn) {
 		String columnName = currentColumn.getName();
 		String tableName = type.getAssociatedJoinable( context.getSessionFactory() ).getTableName();
 
@@ -165,7 +181,7 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 		}
 		return columnName.replace( "_" + primaryKeyName, "" );
 
-	}
+	}	
 
 	private String createClassQuery(Table table) {
 		return MessageFormat.format( "create class {0} extends V", table.getName() );
@@ -178,13 +194,16 @@ public class OrientDBSchemaDefiner extends BaseSchemaDefiner {
 
 	private String createValueProperyQuery(Table table, Column column) {
 		SimpleValue simpleValue = (SimpleValue) column.getValue();
-		log.info( "simpleValue.getType(): " + simpleValue.getType() );
-		String orientDbTypeName = TYPE_MAPPING.get( simpleValue.getType().getClass() );
+		return createValueProperyQuery(table, column, simpleValue.getType().getClass());
+	}
+        
+        private String createValueProperyQuery(Table table, Column column, Class targetTypeClass) {
+		Value value =  column.getValue();
+		String orientDbTypeName = TYPE_MAPPING.get( targetTypeClass);
 
 		if ( orientDbTypeName == null ) {
-			throw new UnsupportedOperationException( "Unkwoun type: " + simpleValue.getType().getClass() );
+			throw new UnsupportedOperationException( "Unkwoun type: " + value.getType().getClass() );
 		}
-
 		return MessageFormat.format( "create property {0}.{1} {2}",
 				table.getName(), column.getName(), orientDbTypeName );
 	}

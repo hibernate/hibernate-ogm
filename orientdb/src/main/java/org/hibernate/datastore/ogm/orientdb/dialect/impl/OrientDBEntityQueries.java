@@ -6,9 +6,7 @@
  */
 package org.hibernate.datastore.ogm.orientdb.dialect.impl;
 
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.id.ORecordId;
-import com.orientechnologies.orient.core.record.impl.ODocument;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -19,20 +17,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import org.hibernate.datastore.ogm.orientdb.constant.OrientDBConstant;
-import org.hibernate.datastore.ogm.orientdb.dto.Edge;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.Log;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.LoggerFactory;
-import org.hibernate.datastore.ogm.orientdb.utils.AssociationUtil;
 import org.hibernate.datastore.ogm.orientdb.utils.EntityKeyUtil;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
-import com.orientechnologies.orient.core.db.record.ridbag.ORidBag;
-import org.hibernate.datastore.ogm.orientdb.utils.ORidBagUtil;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 
 /**
@@ -79,7 +72,7 @@ public class OrientDBEntityQueries extends QueriesBase {
 			else {
 				// search by business key
 				query.append( entityKey.getTable() ).append( " WHERE " ).append( dbKeyName ).append( " = " );
-				EntityKeyUtil.setPrimaryKeyValue( query, dbKeyValue );
+				EntityKeyUtil.setFieldValue( query, dbKeyValue );
 			}
 		}
 		else {
@@ -98,16 +91,13 @@ public class OrientDBEntityQueries extends QueriesBase {
 			for ( int i = 0; i < rs.getMetaData().getColumnCount(); i++ ) {
 				int dbFieldNo = i + 1;
 				String dbColumnName = metadata.getColumnName( dbFieldNo );
+				if ( isLinkedProperty( dbColumnName ) ) {
+					continue;
+				}
 				Object dbValue = rs.getObject( dbColumnName );
 				LOG.info( i + " dbColumnName " + dbColumnName + "; dbValue class:" + dbValue.getClass() );
-				if ( dbValue instanceof ORidBag ) {
-					ORidBag bag = (ORidBag) dbValue;
-					Map<String, Object> inSideValue = loadInSide( executionEngine, bag );
-					dbValues.put( dbColumnName, inSideValue );
-				}
-				else {
-					dbValues.put( dbColumnName, dbValue );
-				}
+				dbValues.put( dbColumnName, dbValue );
+
 			}
 			LOG.info( " entiry values from db: " + dbValues );
 		}
@@ -118,86 +108,59 @@ public class OrientDBEntityQueries extends QueriesBase {
 		return dbValues;
 	}
 
-	private EntityKey createEntityKeyByRid(ORecordId rid) {
-		return new EntityKey( new DefaultEntityKeyMetadata( "", new String[]{ "@rid" } ), new Object[]{ rid } );
-	}
-
-	private Map<String, Object> loadInSide(Connection connection, ORidBag bag) throws SQLException {
-
-		Map<String, Object> map = null;
-		for ( Iterator<OIdentifiable> it = bag.iterator(); it.hasNext(); ) {
-			OIdentifiable id = it.next();
-
-			ORecordId rid = new ORecordId( id.getIdentity() );
-			// @TODO think about depth !!!!
-			Map<String, Object> inField = findEntity( connection, createEntityKeyByRid( rid ) );
-			if ( inField.containsKey( "in" ) ) {
-				map = ( (ODocument) inField.get( "in" ) ).toMap();
-				Map<String, Object> map1 = new LinkedHashMap<>();
-				for ( Entry<String, Object> entry : map.entrySet() ) {
-					String key = entry.getKey();
-					Object value = entry.getValue();
-					if ( value instanceof ORidBag ) {
-						LOG.info( "remove entiry key from map: " + key );
-						map1.put( key, ORidBagUtil.convertORidBagToString( (ORidBag) value ) );
-					}
-					else {
-						map1.put( key, value );
-					}
-				}
-				return map1;
+	private boolean isLinkedProperty(String propertyName) {
+		for ( String linkFieldStarts : OrientDBConstant.LINK_FIELDS ) {
+			if ( propertyName.startsWith( linkFieldStarts ) ) {
+				return true;
 			}
 		}
-		return map;
-
+		return false;
 	}
 
-	public List<Edge> findAssociation(Connection connection, AssociationKey associationKey, AssociationContext associationContext) throws SQLException {
-		List<Edge> edges = new LinkedList<>();
+	private EntityKey createEntityKeyByRid(ORecordId rid) {
+		return new EntityKey( new DefaultEntityKeyMetadata( "", new String[]{ OrientDBConstant.SYSTEM_RID } ), new Object[]{ rid } );
+	}
+
+	public List<Map<String, Object>> findAssociation(Connection connection, AssociationKey associationKey, AssociationContext associationContext)
+			throws SQLException {
+		List<Map<String, Object>> association = new LinkedList<>();
 		LOG.info( "findAssociation: associationKey:" + associationKey + "; associationContext:" + associationContext );
-		String edgeName = AssociationUtil.getMappedByFieldName( associationContext );
-		LOG.info( "findAssociation: mappedByFieldName: " + edgeName );
+
 		// EntityKey entityKey = associationKey.getEntityKey();
 		StringBuilder query = new StringBuilder( 100 );
-		Tuple mappedByOwnerTupe = associationContext.getEntityTuple();
-		ORidBag mappedByRids = (ORidBag) mappedByOwnerTupe.get( "out_".concat( edgeName ) );
-		if ( mappedByRids != null ) {
-			LOG.info( "findAssociation: mappedByRids: " + mappedByRids.toString() );
+		query.append( "SELECT FROM " ).append( associationKey.getTable() ).append( " WHERE " );
+		for ( int i = 0; i < associationKey.getColumnNames().length; i++ ) {
+			String name = associationKey.getColumnNames()[i];
+			Object value = associationKey.getColumnValues()[i];
+			query.append( name ).append( "=" ).append( value );
 		}
 
-		ORecordId rid = extractRid( associationContext );
-		if ( rid != null ) {
-			// Entity has field '@rid'. Nice!
-			query.append( "SELECT FROM " ).append( edgeName ).append( " WHERE out = " ).append( extractRid( associationContext ) );
-		}
-		else {
-			throw new UnsupportedOperationException( "findAssociation without @rid not supported yet!" );
-		}
 		LOG.info( "findAssociation: query:" + query );
 
 		Statement stmt = connection.createStatement();
-		try {
-			ResultSet rs = stmt.executeQuery( query.toString() );
-			while ( rs.next() ) {
-				Edge edge = new Edge();
-				Object in = rs.getObject( "in" );
-				Object out = rs.getObject( "out" );
-				edge.setIn( (ODocument) in );
-				edge.setOut( (ODocument) out );
-				edges.add( edge );
-			}
-			LOG.info( "findAssociation: edges:" + edges.size() );
 
-		}
-		catch (SQLException sqle) {
-			if ( isClassNotFoundInDB( sqle ) ) {
-				return edges;
+		ResultSet rs = stmt.executeQuery( query.toString() );
+		while ( rs.next() ) {
+			Map<String, Object> dbValues = new LinkedHashMap<>();
+			ResultSetMetaData metadata = rs.getMetaData();
+			for ( String systemField : OrientDBConstant.SYSTEM_FIELDS ) {
+				dbValues.put( systemField, rs.getObject( systemField ) );
 			}
-			else {
-				throw sqle;
+			for ( int i = 0; i < rs.getMetaData().getColumnCount(); i++ ) {
+				int dbFieldNo = i + 1;
+				String dbColumnName = metadata.getColumnName( dbFieldNo );
+				if ( isLinkedProperty( dbColumnName ) ) {
+					continue;
+				}
+				Object dbValue = rs.getObject( dbColumnName );
+				dbValues.put( dbColumnName, dbValue );
 			}
+			LOG.info( " entiry values from db: " + dbValues );
+			association.add( dbValues );
 		}
-		return edges;
+		LOG.info( "findAssociation: edges:" + association.size() );
+
+		return association;
 	}
 
 	private ORecordId extractRid(AssociationContext associationContext) {

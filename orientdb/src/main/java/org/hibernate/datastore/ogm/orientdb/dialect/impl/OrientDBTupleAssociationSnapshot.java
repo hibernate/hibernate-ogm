@@ -10,12 +10,10 @@ package org.hibernate.datastore.ogm.orientdb.dialect.impl;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.hibernate.datastore.ogm.orientdb.dto.Edge;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.Log;
 import org.hibernate.datastore.ogm.orientdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
-import com.orientechnologies.orient.core.record.impl.ODocument;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
 
@@ -26,12 +24,12 @@ import org.hibernate.ogm.model.key.spi.AssociationKind;
 public class OrientDBTupleAssociationSnapshot implements TupleSnapshot {
 
 	private static Log log = LoggerFactory.getLogger();
-	private Edge relationship;
+	private Map<String, Object> relationship;
 	private AssociationKey associationKey;
 	private AssociationContext associationContext;
 	private final Map<String, Object> properties;
 
-	public OrientDBTupleAssociationSnapshot(Edge relationship, AssociationKey associationKey, AssociationContext associationContext) {
+	public OrientDBTupleAssociationSnapshot(Map<String, Object> relationship, AssociationKey associationKey, AssociationContext associationContext) {
 		log.info( "OrientDBTupleAssociationSnapshot: AssociationKey:" + associationKey + "; AssociationContext" + associationContext );
 		this.relationship = relationship;
 		this.associationKey = associationKey;
@@ -42,14 +40,6 @@ public class OrientDBTupleAssociationSnapshot implements TupleSnapshot {
 	private Map<String, Object> collectProperties() {
 		Map<String, Object> properties = new LinkedHashMap<String, Object>();
 		String[] rowKeyColumnNames = associationKey.getMetadata().getRowKeyColumnNames();
-
-		ODocument ownerNode = relationship.getOut();
-
-		for ( int i = 0; i < ownerNode.fields(); i++ ) {
-			log.info( "owner field: " + ownerNode.fieldNames()[i] );
-		}
-
-		ODocument targetNode = relationship.getIn();
 
 		// Index columns
 		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
@@ -65,12 +55,8 @@ public class OrientDBTupleAssociationSnapshot implements TupleSnapshot {
 				}
 			}
 
-			for ( int j = 0; j < ownerNode.fields(); j++ ) {
-				if ( ownerNode.fieldNames()[j].equals( rowKeyColumn ) ) {
-					properties.put( rowKeyColumn, ownerNode.field( rowKeyColumn ) );
-				}
-			}
 		}
+		properties.putAll( relationship );
 
 		log.info( "1.collectProperties: " + properties );
 
