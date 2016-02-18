@@ -18,11 +18,14 @@ import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
@@ -34,7 +37,6 @@ public class IgniteTestHelper implements TestableGridDialect {
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		int entityCount = 0;
 		Set<IgniteCache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<?, ?>, Boolean>() );
-
 		for ( EntityPersister entityPersister : ( (SessionFactoryImplementor) sessionFactory ).getEntityPersisters().values() ) {
 			IgniteCache<?, ?> entityCache = getEntityCache( sessionFactory, ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
 			if ( !processedCaches.contains( entityCache ) ) {
@@ -42,13 +44,21 @@ public class IgniteTestHelper implements TestableGridDialect {
 				processedCaches.add( entityCache );
 			}
 		}
-
 		return entityCount;
 	}
 	
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		return 0;
+		int associationCount = 0;
+		Set<IgniteCache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<?, ?>, Boolean>() );
+		for ( CollectionPersister colleactionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
+			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
+			if ( !processedCaches.contains( associationCache ) ) {
+				associationCount += associationCache.size(CachePeekMode.ALL);
+				processedCaches.add( associationCache );
+			}
+		}
+		return associationCount;
 	}
 
 	@Override
@@ -99,11 +109,16 @@ public class IgniteTestHelper implements TestableGridDialect {
 		return castProvider.getEntityCache( entityKeyMetadata );
 	}
 	
+	public static IgniteCache<String, BinaryObject> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
+		IgniteDatastoreProvider castProvider = getProvider( sessionFactory );
+		return castProvider.getAssociationCache(associationKeyMetadata);
+	}
+	
 	private static IgniteDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry()
 				.getService( DatastoreProvider.class );
 		if ( !( IgniteDatastoreProvider.class.isInstance( provider ) ) ) {
-			throw new RuntimeException( "Not testing with Ehcache, cannot extract underlying cache" );
+			throw new RuntimeException( "Not testing with Ignite, cannot extract underlying cache" );
 		}
 		return IgniteDatastoreProvider.class.cast( provider );
 	}

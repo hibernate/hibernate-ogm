@@ -172,6 +172,13 @@
             </plugin>
 		</plugins>
 	</build>
+	
+	<repositories>
+        <repository>
+            <id>GridGain External Repository</id>
+            <url>http://www.gridgainsystems.com/nexus/content/repositories/external</url>
+        </repository>
+	</repositories>	
     
     <profiles>
         <profile>

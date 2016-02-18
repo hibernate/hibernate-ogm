@@ -6,7 +6,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hibernate.QueryException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -26,6 +29,9 @@ import org.hibernate.hql.internal.ast.util.NodeTraverser;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
+import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
+import org.hibernate.ogm.type.impl.EnumType;
+import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import antlr.ANTLRException;
@@ -94,7 +100,18 @@ public class IgniteHqlQueryParser {
 		}
 	}
 	
+	private void validate() {
+		if (selectClause.isScalarSelect()) {
+			for (Type type : selectClause.getQueryReturnTypes()){
+				if (type.isEntityType() || type.isAssociationType() || type.isCollectionType() || type.isComponentType())
+					throw new IgniteHibernateException("Query with entity in projections are not supported");
+			}
+		}
+	}
+	
 	public IgniteQueryDescriptor buildQueryDescriptor() {
+		
+		validate();
 		
 		// took this code from QueryTranslatorImpl
 		try {
@@ -124,12 +141,6 @@ public class IgniteHqlQueryParser {
 				buf.append(fromSql);
 				resultSql = buf.toString();
 			}
-			else {
-				for (Type type : selectClause.getQueryReturnTypes()){
-					if (type.isEntityType() || type.isAssociationType() || type.isCollectionType() || type.isComponentType())
-						throw new IgniteHibernateException("Query with entity in projections are not supported");
-				}
-			}
 			
 			return new IgniteQueryDescriptor(query, resultSql, selectClause, querySpaces);
 		}
@@ -139,6 +150,35 @@ public class IgniteHqlQueryParser {
 			log.error( "Converted antlr.RecognitionException", e );
 			throw QuerySyntaxException.convert( e, query );
 		}
+		catch (Exception e){
+			log.error("Error while parsing HQL query. ", e);
+			throw new IgniteHibernateException(e);
+		}
+	}
+	
+	public static List<Object> createParameterList(String originSql, Map<String, TypedGridValue> parameterMap) {
+		List<Object> result = new ArrayList<>();
+		int pos = 0;
+		String subStr = originSql;
+		Pattern pattern = Pattern.compile(".*?(:\\w+).*");
+		Matcher matcher = pattern.matcher(subStr);
+		while (matcher.matches()){
+			String param = matcher.group(1);
+			String paramName = param.substring(1);
+			GridType type = parameterMap.get(paramName).getType();
+			Object value = parameterMap.get(paramName).getValue();
+			// костыль для EnumType, потому что ОООООЧЕНЬ умные ребята, которые писали hibernate-ogm, слишком хорошо все улучшили!!!  
+			if (type instanceof EnumType){
+				if (((EnumType)type).isOrdinal())
+					value = ((Enum)parameterMap.get(paramName).getValue()).ordinal();
+			}
+			result.add(value);
+			pos = subStr.indexOf(param) + param.length();
+			subStr = subStr.substring(pos);
+			matcher = pattern.matcher(subStr);
+		}
+				
+		return result;
 	}
 	
 	private HqlParser parse(String hql, SessionFactoryImplementor sessionFactory) throws TokenStreamException, RecognitionException {
