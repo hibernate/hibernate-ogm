@@ -2,7 +2,6 @@ package org.hibernate.ogm.datastore.ignite.configuration.impl;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.hql.spi.QueryTranslatorFactory;
-import org.hibernate.ogm.datastore.ignite.dialect.criteria.spi.CriteriaGridDialectInitiator;
 import org.hibernate.ogm.datastore.ignite.jpa.impl.IgniteOgmPersisterClassResolver;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteQueryTranslatorFactory;
 import org.hibernate.persister.spi.PersisterClassResolver;
@@ -27,11 +26,9 @@ public class IgniteServiceRegistryInitializer implements ServiceContributor
 	{
 //		serviceRegistryBuilder.addInitiator(IgnitePersisterClassResolverInitiator.INSTANCE);
 		serviceRegistryBuilder.addService(PersisterClassResolver.class, new IgniteOgmPersisterClassResolver());
-		serviceRegistryBuilder.addInitiator(CriteriaGridDialectInitiator.INSTANCE);
-		//serviceRegistryBuilder.addInitiator(IgniteQueryTranslatorFactoryInitiator.INSTANCE);
+//		serviceRegistryBuilder.addInitiator(CriteriaGridDialectInitiator.INSTANCE);
+//		serviceRegistryBuilder.addInitiator(IgniteQueryTranslatorFactoryInitiator.INSTANCE);
 		serviceRegistryBuilder.addService(QueryTranslatorFactory.class, new IgniteQueryTranslatorFactory());
-		
-//		serviceRegistryBuilder.addInitiator(IgniteSessionFactoryServiceRegistryFactoryInitiator.INSTANCE);
 	}
 
 }

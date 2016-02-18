@@ -46,17 +46,17 @@ public class IgniteCriteriaTest extends BaseIgniteTest {
 	//@Ignore
 	public void testCriteria() throws Exception {
 		OgmSession session = openSession();
-		ObjectId personId = new ObjectId(38, 2222, 3333);
+		String personId = (new ObjectId(38, 2222, 3333)).toString();
 		
 		Client oldClient = (Client)session.get(Client.class, personId);
 		if (oldClient != null)
 			testRemove(session, oldClient);
 		
-		Client client = new Client(personId.toString(), "Criteria client", "Клиента для теста Criteria");
+		Client client = new Client(personId, "Criteria client", "Клиента для теста Criteria");
 		testInsert(session, client);
 		
 		Criteria criteria = session.createCriteria(Client.class);
-		criteria.add(Restrictions.eq("id.megaId", 38))
+		criteria.add(Restrictions.eq("id", personId))
 				.add(Restrictions.like("name", "%client"));
 		
 		List<Client> list = criteria.list();
