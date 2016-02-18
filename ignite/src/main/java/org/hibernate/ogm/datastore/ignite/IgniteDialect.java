@@ -2,6 +2,7 @@ package org.hibernate.ogm.datastore.ignite;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.ignite.loader.criteria.impl.CriteriaCustomQuery;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteQueryDescriptor;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteSqlQueryParser;
@@ -320,7 +322,7 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 		else
 			throw new IgniteHibernateException("Can't find cache name");
 		SqlFieldsQuery sqlQuery = new SqlFieldsQuery(backendQuery.getQuery().getSql());
-		sqlQuery.setArgs(IgniteQueryDescriptor.createParameterList(backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters()).toArray());
+		sqlQuery.setArgs(IgniteHqlQueryParser.createParameterList(backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters()).toArray());
 
 		setLocalQuery(sqlQuery, queryParameters.getQueryHints());
 		
@@ -535,7 +537,13 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 				if (associationMap != null) {
 					for (BinaryObject portableKey : associationMap.keySet()){
 						BinaryObject portableValue = associationMap.get(portableKey);  
-						RowKey rowKey = portableKey.<RowKey>deserialize();
+						RowKey rowKey_tmp = portableKey.<RowKey>deserialize();
+						// sort arrays in RowKey for correct comparing of keys
+						String[] columnNames = rowKey_tmp.getColumnNames();
+						Object[] columnValues = rowKey_tmp.getColumnValues();
+						Arrays.sort(rowKey_tmp.getColumnNames());
+						Arrays.sort(rowKey_tmp.getColumnValues());
+						RowKey rowKey = new RowKey(columnNames, columnValues);
 						portableMap.put(rowKey, portableValue);
 					}
 				}

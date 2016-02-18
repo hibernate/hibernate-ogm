@@ -22,6 +22,8 @@ public class IgniteTest extends BaseIgniteTest {
 		
 		testInsert(session, client);
 		
+		session = openSession();
+		
 		client = (Client)session.get(Client.class, client.getId(), new LockOptions(LockMode.PESSIMISTIC_READ));
 		
 		client.setName("!!!!!!!!!!!!!!");

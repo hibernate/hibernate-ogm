@@ -14,6 +14,8 @@ import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgniteEx;
 import org.apache.ignite.internal.IgnitionEx;
 import org.apache.ignite.internal.processors.cache.IgniteCacheProxy;
+import org.apache.ignite.thread.IgniteThread;
+import org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
 import org.hibernate.ogm.datastore.ignite.configuration.impl.IgniteProviderConfiguration;
@@ -50,6 +52,8 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	protected JtaPlatform jtaPlatform;
 	protected IgniteEx cacheManager;
 	protected IgniteProviderConfiguration config;
+	/** true - если мы запускаемся внутри серверной ноды (для распределённых задач) */
+	private boolean localNode = false;
 	
 	public IgniteCache<String, BinaryObject> getEntityCache(String entityCacheName) {
 		IgniteCache<String, BinaryObject> cache = cacheManager.cache(entityCacheName);
@@ -112,7 +116,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	
 	@Override
 	public void stop() {
-		if (cacheManager != null) {
+		if (cacheManager != null && !localNode) {
 			cacheManager.close();
 			Ignition.stop(cacheManager.name(), true);
 		}
@@ -121,30 +125,46 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	
 	private String createGridName()
 	{
-		String result = config.getUrl().getPath();
-		result = result.replaceAll("[\\,\\\",:,\\*,\\/,\\\\]", "_");
+		String result = null;
+		if (config.getUrl() != null)
+		{
+			result = config.getUrl().getPath();
+			result = result.replaceAll("[\\,\\\",:,\\*,\\/,\\\\]", "_");
+		}
 		return result;
 	}
 
 	@Override
 	public void start() {
 		try {
-			gridName = createGridName();
-			try {
-				cacheManager = (IgniteEx)Ignition.ignite(gridName);
+			localNode = Thread.currentThread() instanceof IgniteThread; //vk: мы на локальной ноде. берём ее инстанс
+			if (localNode)
+			{
+				cacheManager = (IgniteEx)Ignition.localIgnite();
+				gridName = cacheManager.name(); 
 			}
-			catch (IgniteIllegalStateException iise) {
-				//not found, then start
-				IgniteConfiguration conf = IgnitionEx.loadConfiguration(config.getUrl()).get1();
-				conf.setGridName(gridName);
-				// для ignite.1.5.1.final
-				conf.getTransactionConfiguration().setTxManagerFactory(new IgniteTransactionManagerFactory(jtaPlatform));
-				// для ignite.1.5.1-b1
-//				conf.getTransactionConfiguration().setTxManagerLookupClassName("org.hibernate.ogm.datastore.ignite.impl.IgniteTransactionManagerLookup");
-//				IgniteTransactionManagerLookup.setJtaPlatform(jtaPlatform);
-				cacheManager = (IgniteEx)Ignition.start(conf);
-				
+			else
+			{
+				gridName = createGridName();
+				try 
+				{
+					if (gridName != null)
+						cacheManager = (IgniteEx)Ignition.ignite(gridName);
+					else
+						cacheManager = (IgniteEx)Ignition.ignite();
+				}
+				catch (IgniteIllegalStateException iise) 
+				{
+					//not found, then start
+					IgniteConfiguration conf = IgnitionEx.loadConfiguration(config.getUrl()).get1();
+					conf.setGridName(gridName);
+					if (!(jtaPlatform instanceof NoJtaPlatform))
+						conf.getTransactionConfiguration().setTxManagerFactory(new IgniteTransactionManagerFactory(jtaPlatform));
+					cacheManager = (IgniteEx)Ignition.start(conf);
+					
+				}
 			}
+			
 		}
 		catch (Exception e){
 			throw log.unableToStartDatastoreProvider(e);

@@ -7,6 +7,9 @@ import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
+/**
+ * vk: 09.02.16. убрал его использование. удалить
+ */
 public class CriteriaGridDialectInitiator implements StandardServiceInitiator<CriteriaGridDialect> {
 
 	public static final CriteriaGridDialectInitiator INSTANCE = new CriteriaGridDialectInitiator();

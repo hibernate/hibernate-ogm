@@ -426,6 +426,31 @@
 						</list>
 					</property>
 				</bean>
+<!-- For test QueryWithParametersTest -->
+				<bean id="Movie" parent="cache-template">
+					<property name="name" value="Movie" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Movie" />
+								<property name="queryFields">
+									<map>
+										<entry key="genre" value="java.lang.Integer" />
+										<entry key="title" value="java.lang.String" />
+										<entry key="suitableForKids" value="java.lang.String" />
+										<entry key="releaseDate" value="java.util.Date" />
+										<entry key="viewerRating" value="java.lang.Byte" />
+									</map>
+								</property>
+								<property name="ascendingFields">
+									<map>
+										<entry key="id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
+				</bean>
 				
 								
 				<!-- For test IgniteTest -->

@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.jpa.JPAStandaloneORMAndOGMTest",
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
 //	"org.hibernate.ogm.backendtck.massindex.SimpleEntityMassIndexingTest",
-	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
+//	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
 //	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.simpleentity.InheritanceTest",
 //	"org.hibernate.ogm.backendtck.simpleentity.NullableFieldValueTest",
 //	"org.hibernate.ogm.backendtck.simpleentity.CRUDTest",
-//	"org.hibernate.ogm.backendtck.type.BuiltInTypeTest",
+	"org.hibernate.ogm.backendtck.type.BuiltInTypeTest",
 //	"org.hibernate.ogm.backendtck.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptorTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest"
 })

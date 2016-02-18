@@ -5,16 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.ScalarReturn;
-import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.type.Type;
 
 public class IgniteQueryDescriptor implements Serializable {
@@ -53,7 +48,7 @@ public class IgniteQueryDescriptor implements Serializable {
 		// SQL queries working only for scalars queries
 		this.hasScalar = true;
 		this.customQueryReturns = null;
-		this.querySpaces = Collections.EMPTY_SET;
+		this.querySpaces = Collections.emptySet();
 	}
 	
 	public String getOriginalSql() {
@@ -76,21 +71,4 @@ public class IgniteQueryDescriptor implements Serializable {
 		return querySpaces;
 	}
 
-	public static List<Object> createParameterList(String originSql, Map<String, TypedGridValue> parameterMap){
-		List<Object> result = new ArrayList<>();
-		int pos = 0;
-		String subStr = originSql;
-		Pattern pattern = Pattern.compile(".*?(:\\w+).*");
-		Matcher matcher = pattern.matcher(subStr);
-		while (matcher.matches()){
-			String param = matcher.group(1);
-			result.add(parameterMap.get(param.substring(1)).getValue());
-			pos = subStr.indexOf(param) + param.length();
-			subStr = subStr.substring(pos);
-			matcher = pattern.matcher(subStr);
-		}
-				
-		return result;
-	}
-	
 }
