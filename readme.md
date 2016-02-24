@@ -124,6 +124,18 @@ setting the environment variable `REDIS_HOSTNAME` prior to running the test suit
 If this variable is not set, the _redis_ module still will be compiled and packaged but the tests will be skipped.
 If needed, the port to connect to can be configured through the environment variable `REDIS_PORT`.
 
+Tests with the _redis_ module can be started using a Makefile. The Makefile takes care of downloading and compiling
+a recent Redis version, starts a single Redis Standalone and four Redis Cluster nodes and can start the tests.
+
+     make test # Make me happy and run tests against Redis Standalone and Redis Cluster
+     make test-standalone
+     make test-cluster
+
+Commands to spin up/shut down the Redis instances:
+
+    make start
+    make stop
+
 ## Contact
 
 Latest Documentation:

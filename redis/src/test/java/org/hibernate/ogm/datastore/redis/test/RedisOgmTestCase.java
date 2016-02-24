@@ -11,6 +11,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
 
 import com.lambdaworks.redis.api.sync.RedisCommands;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
 /**
  * Base class for OGM Redis tests providing access to the {@link RedisDatastoreProvider} and the {@link RedisCommands}.
@@ -18,7 +19,7 @@ import com.lambdaworks.redis.api.sync.RedisCommands;
  */
 public abstract class RedisOgmTestCase extends OgmTestCase {
 
-	protected RedisCommands<String, String> getConnection() {
+	protected RedisClusterCommands<String, String> getConnection() {
 		return getProvider().getConnection();
 	}
 

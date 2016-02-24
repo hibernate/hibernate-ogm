@@ -43,12 +43,11 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import com.lambdaworks.redis.KeyScanCursor;
-import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.ScanArgs;
 
 /**
  * Stores tuples and associations inside Redis as JSON.
- * <p>
+ * <p/>
  * Tuples are stored in Redis as a JSON serialization of a {@link Entity} object. Associations are stored in Redis obtained as a
  * JSON serialization of a {@link Association} object either within the entity or external.
  * See {@link org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties#ASSOCIATIONS_STORE} on how to configure
@@ -58,13 +57,10 @@ import com.lambdaworks.redis.ScanArgs;
  */
 public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGridDialect {
 
-	protected final RedisConnection<String, String> connection;
-
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
 
 	public RedisJsonDialect(RedisDatastoreProvider provider) {
 		super( provider.getConnection() );
-		connection = provider.getConnection();
 		this.entityStorageStrategy = new JsonEntityStorageStrategy( strategy, connection );
 	}
 
@@ -282,12 +278,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 			do {
-				if ( cursor != null ) {
-					cursor = connection.scan( cursor, scanArgs );
-				}
-				else {
-					cursor = connection.scan( scanArgs );
-				}
+				cursor = scan( cursor, scanArgs );
 
 				for ( String key : cursor.getKeys() ) {
 					Entity document = entityStorageStrategy.getEntity( key );

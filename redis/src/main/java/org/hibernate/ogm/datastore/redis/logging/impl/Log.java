@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.datastore.redis.logging.impl;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -36,4 +38,16 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1704, value = "The value set for the configuration property '" + OgmProperties.DATABASE + "' must be a number between 0 and 15. Found '%s'.")
 	HibernateException illegalDatabaseValue(int value);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1605, value = "Cannot determine redis_mode from INFO output. Found '%s'.")
+	void cannotDetermineRedisMode(String value);
+
+	@LogMessage(level = DEBUG)
+	@Message(id = 1606, value = "Connected Redis node runs in mode '%s'.")
+	void connectedRedisNodeRunsIn(String redisMode);
+
+	@LogMessage(level = INFO)
+	@Message(id = 1607, value = "Connecting to Redis Cluster at %1$s with a timeout set at %2$d millisecond(s)")
+	void connectingToRedisCluster(String hosts, long timeout);
 }
