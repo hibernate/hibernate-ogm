@@ -31,7 +31,7 @@
         <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.2.0-rc3</cassandraVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
-        <lettuceVersion>4.0.2.Final</lettuceVersion>
+        <lettuceVersion>4.1.Final</lettuceVersion>
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler19Version>2.0.5</neo4jCypherCompiler19Version>
         <neo4jCypherCompiler22Version>2.2.6</neo4jCypherCompiler22Version>

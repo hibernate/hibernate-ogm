@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.lambdaworks.redis.api.sync.RedisCommands;
+import com.lambdaworks.redis.cluster.api.async.RedisClusterAsyncCommands;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
 /**
  * Test for the Hibernate OGM module in WildFly using Redis
@@ -88,7 +90,7 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 		phoneNumberService.createPhoneNumber( "Michael", "123-456" );
 
 		RedisDatastoreProvider provider = getProvider();
-		RedisCommands<String, String> connection = provider.getConnection();
+		RedisClusterCommands<String, String> connection = provider.getConnection();
 
 		// when
 		String key = "PhoneNumber:Michael";

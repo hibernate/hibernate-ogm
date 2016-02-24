@@ -273,12 +273,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 
 			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 			do {
-				if ( cursor != null ) {
-					cursor = connection.scan( cursor, scanArgs );
-				}
-				else {
-					cursor = connection.scan( scanArgs );
-				}
+				cursor = scan( cursor, scanArgs );
 
 				for ( String key : cursor.getKeys() ) {
 					Map<String, String> hgetall = connection.hgetall( key );

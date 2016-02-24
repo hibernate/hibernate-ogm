@@ -159,6 +159,7 @@
                     <environmentVariables>
                         <REDIS_HOSTNAME>${env.REDIS_HOSTNAME}</REDIS_HOSTNAME>
                         <REDIS_PORT>${env.REDIS_PORT}</REDIS_PORT>
+                        <REDIS_CLUSTER>${env.REDIS_CLUSTER}</REDIS_CLUSTER>
                     </environmentVariables>
                     <forkMode>once</forkMode>
                     <dependenciesToScan>

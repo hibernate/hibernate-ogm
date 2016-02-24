@@ -26,6 +26,7 @@ bin/
 
 #build
 target/
+work/
 
 #test output
 test-output/
