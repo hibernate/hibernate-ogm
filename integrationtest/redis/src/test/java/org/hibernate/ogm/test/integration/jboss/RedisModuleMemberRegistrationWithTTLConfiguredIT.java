@@ -32,8 +32,6 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.lambdaworks.redis.api.sync.RedisCommands;
-import com.lambdaworks.redis.cluster.api.async.RedisClusterAsyncCommands;
 import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
 /**
