@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.impl;
 
 import java.util.List;
@@ -21,7 +27,7 @@ public class IgniteSessionImpl extends OgmSessionImpl {
 	public IgniteSessionImpl(OgmSessionFactory factory, EventSource delegate) {
 		super( factory, delegate );
 	}
-	
+
 	@Override
 	public Criteria createCriteria(Class persistentClass) {
 		errorIfClosed();
@@ -47,22 +53,23 @@ public class IgniteSessionImpl extends OgmSessionImpl {
 		throw new NotSupportedException( "OGM-23", "Criteria queries with entityName are not supported. Use createCriteria(Class persistanseClass))" );
 	}
 
-	@Override 
+	@Override
 	public List<?> list(Criteria criteria) throws HibernateException {
 		CriteriaImpl criteriaImpl = (CriteriaImpl) criteria;
-		
-		if (!criteriaImpl.getLockModes().isEmpty())
+
+		if (!criteriaImpl.getLockModes().isEmpty()) {
 			throw new HibernateException("Criteria queries with LockModes not supported");
-		
+		}
+
 		errorIfClosed();
 		checkTransactionSynchStatus();
-		
+
 		CriteriaCustomQuery query = new CriteriaCustomQuery(criteriaImpl, getFactory(), getLoadQueryInfluencers(), this);
 		OgmCriteriaLoader loader = new OgmCriteriaLoader(query, getFactory());
-		
-		return loader.list(getDelegate(), null);
+
+		return loader.list( getDelegate(), null );
 	}
-	
+
 	// Copied from org.hibernate.internal.SessionImpl.checkTransactionSynchStatus() to mimic same behaviour
 	private void checkTransactionSynchStatus() {
 		pulseTransactionCoordinator();
@@ -75,7 +82,7 @@ public class IgniteSessionImpl extends OgmSessionImpl {
 			getDelegate().getTransactionCoordinator().pulse();
 		}
 	}
-	
+
 	// Copied from org.hibernate.internal.SessionImpl.delayedAfterCompletion() to mimic same behaviour
 	private void delayedAfterCompletion() {
 		TransactionCoordinator transactionCoordinator = getDelegate().getTransactionCoordinator();

@@ -1,10 +1,15 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite;
 
 import org.apache.ignite.binary.BinaryObjectException;
 import org.jetbrains.annotations.Nullable;
 
-public interface PortableBuilderDelegate
-{
+public interface PortableBuilderDelegate {
     /**
      * Returns value assigned to the specified field.
      * If the value is a portable object instance of {@code GridPortableBuilder} will be returned,
@@ -15,7 +20,7 @@ public interface PortableBuilderDelegate
      * @param name Field name.
      * @return Filed value.
      */
-    public <T> T getField(String name);
+	<T> T getField(String name);
 
     /**
      * Sets field value.
@@ -24,7 +29,7 @@ public interface PortableBuilderDelegate
      * @param val Field value (cannot be {@code null}).
      * @see PortableObject#metaData()
      */
-    public PortableBuilderDelegate setField(String name, Object val);
+	PortableBuilderDelegate setField(String name, Object val);
 
     /**
      * Sets field value with value type specification.
@@ -36,7 +41,7 @@ public interface PortableBuilderDelegate
      * @param type Field type.
      * @see PortableObject#metaData()
      */
-    public <T> PortableBuilderDelegate setField(String name, @Nullable T val, Class<? super T> type);
+	<T> PortableBuilderDelegate setField(String name, @Nullable T val, Class<? super T> type);
 
     /**
      * Sets field value.
@@ -46,7 +51,7 @@ public interface PortableBuilderDelegate
      * @param name Field name.
      * @param builder Builder for object field.
      */
-    public PortableBuilderDelegate setField(String name, @Nullable PortableBuilderDelegate builder);
+	PortableBuilderDelegate setField(String name, @Nullable PortableBuilderDelegate builder);
 
     /**
      * Removes field from this builder.
@@ -54,7 +59,7 @@ public interface PortableBuilderDelegate
      * @param fieldName Field name.
      * @return {@code this} instance for chaining.
      */
-    public PortableBuilderDelegate removeField(String fieldName);
+	PortableBuilderDelegate removeField(String fieldName);
 
     /**
      * Sets hash code for resulting portable object returned by {@link #build()} method.
@@ -64,7 +69,7 @@ public interface PortableBuilderDelegate
      * @param hashCode Hash code.
      * @return {@code this} instance for chaining.
      */
-    public PortableBuilderDelegate hashCode(int hashCode);
+	PortableBuilderDelegate hashCode(int hashCode);
 
     /**
      * Builds portable object.
@@ -72,5 +77,5 @@ public interface PortableBuilderDelegate
      * @return Portable object.
      * @throws PortableException In case of error.
      */
-    public PortableObjectDelegate build() throws BinaryObjectException;
+	PortableObjectDelegate build() throws BinaryObjectException;
 }

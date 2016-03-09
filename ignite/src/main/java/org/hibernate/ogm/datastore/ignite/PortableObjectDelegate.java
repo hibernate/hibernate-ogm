@@ -1,16 +1,21 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite;
 
 import org.apache.ignite.binary.BinaryObjectException;
 import org.jetbrains.annotations.Nullable;
 
-public interface PortableObjectDelegate
-{
+public interface PortableObjectDelegate {
     /**
      * Gets portable object type ID.
      *
      * @return Type ID.
      */
-    public int typeId();
+	int typeId();
     /**
      * Gets field value.
      *
@@ -18,14 +23,14 @@ public interface PortableObjectDelegate
      * @return Field value.
      * @throws PortableException In case of any other error.
      */
-    @Nullable public <F> F field(String fieldName) throws BinaryObjectException;
+	@Nullable <F> F field(String fieldName) throws BinaryObjectException;
     /**
      * Checks whether field is set.
      *
      * @param fieldName Field name.
      * @return {@code true} if field is set.
      */
-    public boolean hasField(String fieldName);
+	boolean hasField(String fieldName);
     /**
      * Gets fully deserialized instance of portable object.
      *
@@ -33,13 +38,14 @@ public interface PortableObjectDelegate
      * @throws PortableInvalidClassException If class doesn't exist.
      * @throws PortableException In case of any other error.
      */
-    @Nullable public <T> T deserialize() throws BinaryObjectException;
+	@Nullable <T> T deserialize() throws BinaryObjectException;
     /**
      * Copies this portable object.
      *
      * @return Copy of this portable object.
      */
-    public PortableObjectDelegate clone() throws CloneNotSupportedException;
+	PortableObjectDelegate clone() throws CloneNotSupportedException ;
+
 //    /**
 //     * Gets meta data for this portable object.
 //     *
@@ -47,6 +53,6 @@ public interface PortableObjectDelegate
 //     * @throws PortableException In case of error.
 //     */
 //    @Nullable public PortableMetadata metaData() throws PortableException;
-    
-    public Object getInternalInstance();
+
+	Object getInternalInstance();
 }

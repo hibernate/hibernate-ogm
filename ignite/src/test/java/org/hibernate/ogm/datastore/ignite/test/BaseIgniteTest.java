@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.test;
 
 import java.io.Serializable;
@@ -13,56 +19,63 @@ public abstract class BaseIgniteTest extends OgmTestCase {
 	@Override
 	protected OgmSession openSession() {
 		OgmSession session = super.openSession();
-		Assert.assertEquals(IgniteSessionImpl.class, session.getClass());
+		Assert.assertEquals( IgniteSessionImpl.class, session.getClass() );
 		return session;
 	}
-	
+
 	public Object testGet(Class<?> clazz, Serializable id) throws Exception {
 		OgmSession session = openSession();
-		Object result = session.get(clazz, id);
+		Object result = session.get( clazz, id );
 		session.close();
 		return result;
 	}
-	
+
 	public void testInsert(OgmSession session, Object object) throws Exception {
 		boolean active = session.getTransaction().getStatus() == TransactionStatus.ACTIVE;
-		if (!active)
+		if (!active) {
 			session.getTransaction().begin();
-		session.persist(object);
-		if (!active)
+		}
+		session.persist( object );
+		if (!active) {
 			session.getTransaction().commit();
+		}
 	}
-	
-	public void testUpdateNewSession(Object object){
+
+	public void testUpdateNewSession(Object object) {
 		OgmSession session = null;
 		try {
 			session = openSession();
 			session.getTransaction().begin();
-			session.saveOrUpdate(object);
+			session.saveOrUpdate( object );
 			session.getTransaction().commit();
 		}
 		finally {
-			if (session != null)
+			if (session != null) {
 				session.close();
+			}
 		}
 	}
-	
+
 	public void testUpdate(OgmSession session, Object object) {
 		boolean active = session.getTransaction().getStatus() == TransactionStatus.ACTIVE;
-		if (!active)
+		if (!active) {
 			session.getTransaction().begin();
-		session.saveOrUpdate(object);
-		if (!active)
+		}
+		session.saveOrUpdate( object );
+		if (!active) {
 			session.getTransaction().commit();
+		}
 	}
-	
+
 	public void testRemove(OgmSession session, Object object) throws Exception {
 		boolean active = session.getTransaction().getStatus() == TransactionStatus.ACTIVE;
-		if (!active)
+		if (!active) {
 			session.getTransaction().begin();
-		session.delete(object);
-		if (!active)
+		}
+		session.delete( object );
+		if (!active) {
 			session.getTransaction().commit();
+		}
 	}
 
 }

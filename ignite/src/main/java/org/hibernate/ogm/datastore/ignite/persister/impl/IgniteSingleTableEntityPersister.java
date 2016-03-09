@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.persister.impl;
 
 import java.util.Map;
@@ -24,7 +30,7 @@ public class IgniteSingleTableEntityPersister extends SingleTableOgmEntityPersis
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
 			final PersisterCreationContext creationContext) throws HibernateException {
-		super(persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext);
+		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext );
 	}
 
 	@Override
@@ -32,29 +38,29 @@ public class IgniteSingleTableEntityPersister extends SingleTableOgmEntityPersis
 			throws MappingException {
 		return new IgniteLoader(new OgmEntityPersister[] { this }, batchSize);
 	}
-	
+
 	@Override
 	protected UniqueEntityLoader createEntityLoader(LockMode lockMode, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		return new IgniteLoader(new OgmEntityPersister[] { this }, batchSize);
 	}
-	
+
 	@Override
 	protected String filterFragment(String alias, Set<String> treatAsDeclarations) {
 		// TODO: filters are not supported in OGM yet
 		return "";
 	}
-	
+
 	@Override
 	public String filterFragment(String alias,  Map enabledFilters, Set<String> treatAsDeclarations) {
 		// TODO: filters are not supported in OGM yet
 		return "";
 	}
-	
+
 	@Override
 	public String filterFragment(String alias,  Map enabledFilters) {
 		// TODO: filters are not supported in OGM yet
 		return "";
 	}
-	
+
 }

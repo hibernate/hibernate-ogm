@@ -1,7 +1,12 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.impl;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
@@ -37,99 +42,93 @@ import org.hibernate.service.spi.Stoppable;
 
 /**
  * Provides access to a Ignite instance
- * 
+ *
  * @author Dmitriy Kozlov
  *
  */
-public class IgniteDatastoreProvider extends BaseDatastoreProvider 
+public class IgniteDatastoreProvider extends BaseDatastoreProvider
 							implements Startable, Stoppable, ServiceRegistryAwareService, Configurable {
 
 	private static final long serialVersionUID = 2278253954737494852L;
 
 	private static final Log log = LoggerFactory.getLogger();
-	
-	private String gridName;
+
 	protected JtaPlatform jtaPlatform;
 	protected IgniteEx cacheManager;
 	protected IgniteProviderConfiguration config;
-	/** true - если мы запускаемся внутри серверной ноды (для распределённых задач) */
+
+	private String gridName;
+	/** true - if we run inside the server node (for distributed tasks) */
 	private boolean localNode = false;
-	
+
 	public IgniteCache<String, BinaryObject> getEntityCache(String entityCacheName) {
-		IgniteCache<String, BinaryObject> cache = cacheManager.cache(entityCacheName);
-		if (cache == null)
-		{
+		IgniteCache<String, BinaryObject> cache = cacheManager.cache( entityCacheName );
+		if (cache == null) {
 			CacheConfiguration<String, BinaryObject> config = new CacheConfiguration<>();
-			config.setName(entityCacheName);
-			cache = cacheManager.getOrCreateCache(config);
+			config.setName( entityCacheName );
+			cache = cacheManager.getOrCreateCache( config );
 		}
-		// для ignite.1.5.1-b1
+		// ignite.1.5.1-b1
 //		cache = ((IgniteCacheProxy<String, BinaryObject>)cache).keepPortable();
-		// для ignite.1.5.1.final
-		cache = ((IgniteCacheProxy<String, BinaryObject>)cache).keepBinary();
+		// ignite.1.5.1.final
+		cache = ((IgniteCacheProxy<String, BinaryObject>) cache).keepBinary();
 		return cache;
 	}
-	
+
 	public IgniteCache<String, BinaryObject> getEntityCache(EntityKeyMetadata keyMetaData) {
-		String entityCacheName = getKeyProvider().getEntityCache(keyMetaData);
-		return getEntityCache(entityCacheName);
+		String entityCacheName = getKeyProvider().getEntityCache( keyMetaData );
+		return getEntityCache( entityCacheName );
 	}
-	
+
 	public IgniteCache<String, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetaData) {
-		String entityCacheName = getKeyProvider().getAssociationCache(keyMetaData);
-		IgniteCache<String, BinaryObject> cache = cacheManager.cache(entityCacheName);
-		if (cache == null)
-		{
+		String entityCacheName = getKeyProvider().getAssociationCache( keyMetaData );
+		IgniteCache<String, BinaryObject> cache = cacheManager.cache( entityCacheName );
+		if (cache == null) {
 			CacheConfiguration<String, BinaryObject> config = new CacheConfiguration<>();
-			config.setName(entityCacheName);
-			cache = cacheManager.getOrCreateCache(config);
+			config.setName( entityCacheName );
+			cache = cacheManager.getOrCreateCache( config );
 		}
-		// для ignite.1.5.1-b1
+		// ignite.1.5.1-b1
 //		cache = ((IgniteCacheProxy<String, BinaryObject>)cache).keepPortable();
-		// для ignite.1.5.1.final
-		cache = ((IgniteCacheProxy<String, BinaryObject>)cache).keepBinary();
+		// ignite.1.5.1.final
+		cache = ((IgniteCacheProxy<String, BinaryObject>) cache).keepBinary();
 		return cache;
 	}
-	
+
 	public IgniteCache<String, Object> getIdSourceCache(IdSourceKeyMetadata keyMetaData) {
-		String idSourceCacheName = getKeyProvider().getIdSourceCache(keyMetaData);
-		IgniteCache<String, Object> cache = cacheManager.cache(idSourceCacheName);
-		if (cache == null)
-		{
+		String idSourceCacheName = getKeyProvider().getIdSourceCache( keyMetaData );
+		IgniteCache<String, Object> cache = cacheManager.cache( idSourceCacheName );
+		if (cache == null) {
 			CacheConfiguration<String, Object> config = new CacheConfiguration<>();
-			config.setName(idSourceCacheName);
-			cache = cacheManager.getOrCreateCache(config);
+			config.setName( idSourceCacheName );
+			cache = cacheManager.getOrCreateCache( config );
 		}
-			 
 		return cache;
 	}
-	
+
 	public BinaryObjectBuilder getBinaryObjectBuilder(String type) {
-		return cacheManager.binary().builder(type);
+		return cacheManager.binary().builder( type );
 	}
-	
+
 	@Override
 	public void configure(Map map) {
 		config = new IgniteProviderConfiguration();
-		config.initialize(map);
+		config.initialize( map );
 	}
-	
+
 	@Override
 	public void stop() {
 		if (cacheManager != null && !localNode) {
 			cacheManager.close();
-			Ignition.stop(cacheManager.name(), true);
+			Ignition.stop( cacheManager.name(), true );
 		}
-		
 	}
-	
-	private String createGridName()
-	{
+
+	private String createGridName() {
 		String result = null;
-		if (config.getUrl() != null)
-		{
+		if (config.getUrl() != null) {
 			result = config.getUrl().getPath();
-			result = result.replaceAll("[\\,\\\",:,\\*,\\/,\\\\]", "_");
+			result = result.replaceAll( "[\\,\\\",:,\\*,\\/,\\\\]", "_" );
 		}
 		return result;
 	}
@@ -137,71 +136,65 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	@Override
 	public void start() {
 		try {
-			localNode = Thread.currentThread() instanceof IgniteThread; //vk: мы на локальной ноде. берём ее инстанс
-			if (localNode)
-			{
-				cacheManager = (IgniteEx)Ignition.localIgnite();
-				gridName = cacheManager.name(); 
+			localNode = Thread.currentThread() instanceof IgniteThread; //vk: take local node instance
+			if (localNode) {
+				cacheManager = (IgniteEx) Ignition.localIgnite();
+				gridName = cacheManager.name();
 			}
-			else
-			{
+			else {
 				gridName = createGridName();
-				try 
-				{
-					if (gridName != null)
-						cacheManager = (IgniteEx)Ignition.ignite(gridName);
-					else
-						cacheManager = (IgniteEx)Ignition.ignite();
+				try {
+					if (gridName != null) {
+						cacheManager = (IgniteEx) Ignition.ignite( gridName );
+					}
+					else {
+						cacheManager = (IgniteEx) Ignition.ignite();
+					}
 				}
-				catch (IgniteIllegalStateException iise) 
-				{
+				catch (IgniteIllegalStateException iise) {
 					//not found, then start
-					IgniteConfiguration conf = IgnitionEx.loadConfiguration(config.getUrl()).get1();
-					conf.setGridName(gridName);
-					if (!(jtaPlatform instanceof NoJtaPlatform))
-						conf.getTransactionConfiguration().setTxManagerFactory(new IgniteTransactionManagerFactory(jtaPlatform));
-					cacheManager = (IgniteEx)Ignition.start(conf);
-					
+					IgniteConfiguration conf = IgnitionEx.loadConfiguration( config.getUrl() ).get1();
+					conf.setGridName( gridName );
+					if (!(jtaPlatform instanceof NoJtaPlatform)) {
+						conf.getTransactionConfiguration().setTxManagerFactory( new IgniteTransactionManagerFactory( jtaPlatform ) );
+					}
+					cacheManager = (IgniteEx) Ignition.start( conf );
 				}
 			}
-			
 		}
-		catch (Exception e){
-			throw log.unableToStartDatastoreProvider(e);
+		catch (Exception e) {
+			throw log.unableToStartDatastoreProvider( e );
 		}
 	}
-	
+
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistryImplementor) {
 		this.jtaPlatform = serviceRegistryImplementor.getService( JtaPlatform.class );
 	}
-	
+
 	@Override
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
 		return IgniteCacheInitializer.class;
 	}
-	
+
 	public IgniteKeyProvider getKeyProvider() {
 		return IgniteKeyProvider.INSTANCE;
 	}
-	
-	public IgniteAtomicSequence atomicSequence(String name, int initialValue, boolean create)
-	{
-		return cacheManager.atomicSequence(name, initialValue, create);
+
+	public IgniteAtomicSequence atomicSequence(String name, int initialValue, boolean create) {
+		return cacheManager.atomicSequence( name, initialValue, create );
 	}
-	
+
 	public boolean isClientMode() {
 		return cacheManager.configuration().isClientMode();
 	}
-	
+
 	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() 
-	{
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 		return IgniteQueryParserService.class;
 	}
 
-	public String getGridName()
-	{
+	public String getGridName() {
 		return gridName;
 	}
 

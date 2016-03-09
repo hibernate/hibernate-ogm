@@ -6,33 +6,31 @@
  */
 package org.hibernate.ogm.datastore.ignite.type.impl;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.math.BigInteger;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.datastore.ignite.type.descriptor.impl.IgniteGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.PassThroughGridTypeDescriptor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
-import org.hibernate.type.descriptor.java.CalendarTypeDescriptor;
+import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
 
 /**
  * Ignite calendar type for DataGrid
- * Ignite does not support java.Util.Calendar, so this type convert it to java.util.Date
- * @author Dmitriy Kozlov
- *
+ * org.hibernate.ogm.type.impl.BigIntegerType maps BigInteger to String
+ * @author Victor Kadachigov
  */
-public class IgniteCalendarType extends AbstractGenericBasicType<Calendar> {
-	public static final IgniteCalendarType INSTANCE = new IgniteCalendarType();
+public class IgniteBigIntegerType extends AbstractGenericBasicType<BigInteger> {
+	public static final IgniteBigIntegerType INSTANCE = new IgniteBigIntegerType();
 
 	private static final long serialVersionUID = -2936715569041031331L;
 
-	public IgniteCalendarType() {
-		super( new IgniteGridTypeDescriptor(Date.class), CalendarTypeDescriptor.INSTANCE );
+	public IgniteBigIntegerType() {
+		super( new PassThroughGridTypeDescriptor(), BigIntegerTypeDescriptor.INSTANCE );
 	}
 
 	@Override
 	public String getName() {
-		return "calendar";
+		return "big_integer";
 	}
 
 	@Override

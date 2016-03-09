@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.persistencestrategy;
 
 import java.io.Externalizable;
@@ -15,23 +21,23 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
  */
 public class IgniteSerializableEntityKey implements Externalizable {
 
-	private String[] columnNames;
-	private Object[] columnValues;
-	
 	/**
 	 * To be incremented when the structure of this type changes. Based on the version of a serialized representation,
 	 * specific handling can be implemented in {@link #readExternal(ObjectInput)}.
 	 */
 	private static final int VERSION = 1;
-	
+
+	private String[] columnNames;
+	private Object[] columnValues;
+
 	public IgniteSerializableEntityKey() {
 	}
-	
+
 	public IgniteSerializableEntityKey(EntityKey key) {
 		columnNames = key.getColumnNames();
 		columnValues = key.getColumnValues();
 	}
-	
+
 	public String[] getColumnNames() {
 		return columnNames;
 	}
@@ -44,34 +50,39 @@ public class IgniteSerializableEntityKey implements Externalizable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode(columnNames);
-		result = prime * result + Arrays.hashCode(columnValues);
+		result = prime * result + Arrays.hashCode( columnNames );
+		result = prime * result + Arrays.hashCode( columnValues );
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		IgniteSerializableEntityKey other = (IgniteSerializableEntityKey) obj;
-		if (!Arrays.equals(columnNames, other.columnNames))
+		if (!Arrays.equals( columnNames, other.columnNames )) {
 			return false;
-		if (!Arrays.equals(columnValues, other.columnValues))
+		}
+		if (!Arrays.equals( columnValues, other.columnValues )) {
 			return false;
+		}
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return "IgniteSerializableEntityKey [columnNames="
-				+ Arrays.toString(columnNames) + ", columnValues="
-				+ Arrays.toString(columnValues) + "]";
+				+ Arrays.toString( columnNames ) + ", columnValues="
+				+ Arrays.toString( columnValues ) + "]";
 	}
-	
+
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		VersionChecker.readAndCheckVersion( in, VERSION, IgniteSerializableEntityKey.class );
@@ -79,7 +90,7 @@ public class IgniteSerializableEntityKey implements Externalizable {
 		columnNames = (String[]) in.readObject();
 		columnValues = (Object[]) in.readObject();
 	}
-	
+
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt( VERSION );
@@ -87,6 +98,4 @@ public class IgniteSerializableEntityKey implements Externalizable {
 		out.writeObject( columnValues );
 	}
 
-	
-	
 }

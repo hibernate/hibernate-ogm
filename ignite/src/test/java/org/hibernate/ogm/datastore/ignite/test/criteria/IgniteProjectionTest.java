@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.test.criteria;
 
 import java.util.List;
@@ -19,55 +25,53 @@ import org.slf4j.LoggerFactory;
 
 public class IgniteProjectionTest extends BaseIgniteTest {
 
-	private static final Logger log = LoggerFactory.getLogger(IgniteProjectionTest.class);
-	
+	private static final Logger log = LoggerFactory.getLogger( IgniteProjectionTest.class );
+
 	@Test
 	@Ignore
 	public void test() throws Exception {
-		log.info("==> test()");
-		
+		log.info( "==> test()" );
+
 		OgmSession session = openSession();
 		ObjectId personId = new ObjectId(38, 2222, 3333);
-		
-		Client oldClient = (Client)session.get(Client.class, personId);
-		if (oldClient != null)
-			testRemove(session, oldClient);
-		
-		Client client = new Client(personId.toString(), "Criteria client", "Клиента для теста Criteria");
-		testInsert(session, client);
-		
-		Criteria criteria = session.createCriteria(Client.class);
-		criteria.setProjection(Projections.projectionList()
-								.add(Projections.property("id")))
+
+		Client oldClient = (Client) session.get( Client.class, personId );
+		if (oldClient != null) {
+			testRemove( session, oldClient );
+		}
+
+		Client client = new Client(personId.toString(), "Criteria client", "Client for Criteria test");
+		testInsert( session, client );
+
+		Criteria criteria = session.createCriteria( Client.class );
+		criteria.setProjection( Projections.projectionList()
+								.add( Projections.property( "id" ) ) )
 								.setResultTransformer(
-					new ResultTransformer()
-					{
+					new ResultTransformer() {
 						private static final long serialVersionUID = -7196534330429544778L;
 
 						@Override
 						@SuppressWarnings("rawtypes")
-						public List transformList(List collection)
-						{
+						public List transformList(List collection) {
 							return collection;
 						}
 						@Override
-						public Object transformTuple(Object[] tuple, String[] aliases)
-						{
-							return (String)tuple[0];
+						public Object transformTuple(Object[] tuple, String[] aliases) {
+							return (String) tuple[0];
 						}
 					}
 				);
-		
-		criteria.add(Restrictions.eq("id.megaId", 38))
-				.add(Restrictions.like("name", "%client"));
-		
+
+		criteria.add( Restrictions.eq( "id.megaId", 38 ) )
+				.add( Restrictions.like( "name", "%client" ) );
+
 		List list = criteria.list();
-		
-		Assert.assertTrue("Неверное количество найденных клиентов", list.size() > 0);
-		
-		log.info("<== test()");
+
+		Assert.assertTrue( "Incorrect number of clients ", list.size() > 0 );
+
+		log.info( "<== test()" );
 	}
-	
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Client.class, Deposit.class};

@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.test;
 
 import javax.persistence.Basic;
@@ -8,28 +14,28 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Persister;
 
-@Table(schema="CLIENT_PERSON", name="Client")
+@Table(schema = "CLIENT_PERSON", name = "Client")
 @Entity
-@Persister(impl=org.hibernate.ogm.datastore.ignite.persister.impl.IgniteSingleTableEntityPersister.class)
+@Persister(impl = org.hibernate.ogm.datastore.ignite.persister.impl.IgniteSingleTableEntityPersister.class)
 public class NewClient {
-	
+
 	@EmbeddedId
 	private ObjectId id;
 	@Basic
-	@Column(name="NAME_")
+	@Column(name = "NAME_")
 	private String name;
 	@Basic
-	@Column(name="INFO")
+	@Column(name = "INFO")
 	private String information;
 	@Basic
-	@Column(name="FIELD")
+	@Column(name = "FIELD")
 	private String field;
-	
+
 	public NewClient() {
-		
+
 	}
-	
-	public NewClient(ObjectId id, String name, String information, String field){
+
+	public NewClient(ObjectId id, String name, String information, String field) {
 		this.id = id;
 		this.name = name;
 		this.information = information;
@@ -82,33 +88,48 @@ public class NewClient {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		NewClient other = (NewClient) obj;
 		if (field == null) {
-			if (other.field != null)
+			if (other.field != null) {
 				return false;
-		} else if (!field.equals(other.field))
+			}
+		}
+		else if (!field.equals( other.field )) {
 			return false;
+		}
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
-		} else if (!id.equals(other.id))
+			}
+		}
+		else if (!id.equals( other.id )) {
 			return false;
+		}
 		if (information == null) {
-			if (other.information != null)
+			if (other.information != null) {
 				return false;
-		} else if (!information.equals(other.information))
+			}
+		}
+		else if (!information.equals( other.information )) {
 			return false;
+		}
 		if (name == null) {
-			if (other.name != null)
+			if (other.name != null) {
 				return false;
-		} else if (!name.equals(other.name))
+			}
+		}
+		else if (!name.equals( other.name )) {
 			return false;
+		}
 		return true;
 	}
 }

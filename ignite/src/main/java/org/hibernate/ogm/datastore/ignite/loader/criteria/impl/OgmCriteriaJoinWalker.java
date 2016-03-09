@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.loader.criteria.impl;
 
 import org.hibernate.engine.spi.LoadQueryInfluencers;
@@ -14,25 +20,25 @@ public class OgmCriteriaJoinWalker extends CriteriaJoinWalker {
 			CriteriaQueryTranslator translator,
 			SessionFactoryImplementor factory, CriteriaImpl criteria,
 			String rootEntityName, LoadQueryInfluencers loadQueryInfluencers) {
-		super(persister, translator, factory, criteria, rootEntityName,
-				loadQueryInfluencers);
+		super( persister, translator, factory, criteria, rootEntityName,
+				loadQueryInfluencers );
 	}
-	
+
 	public OgmCriteriaJoinWalker(OuterJoinLoadable persister,
 			CriteriaQueryTranslator translator,
 			SessionFactoryImplementor factory, CriteriaImpl criteria,
 			String rootEntityName, LoadQueryInfluencers loadQueryInfluencers,
 			String alias) {
-		super(persister, translator, factory, criteria, rootEntityName,
-				loadQueryInfluencers, alias);
+		super( persister, translator, factory, criteria, rootEntityName,
+				loadQueryInfluencers, alias );
 	}
-	
+
 	public String getFromString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append(((OuterJoinLoadable)getPersister()).fromTableFragment(getAlias()));
-		buf.append(((Joinable)getPersister()).fromJoinFragment( getAlias(), true, true ));
-		buf.append(mergeOuterJoins(getAssociations()).toFromFragmentString());
+		buf.append( ((OuterJoinLoadable) getPersister()).fromTableFragment( getAlias() ) );
+		buf.append( ((Joinable) getPersister()).fromJoinFragment( getAlias(), true, true ) );
+		buf.append( mergeOuterJoins( getAssociations() ).toFromFragmentString() );
 		return buf.length() > 0 ? "FROM " + buf.toString() : "";
 	}
-	
+
 }

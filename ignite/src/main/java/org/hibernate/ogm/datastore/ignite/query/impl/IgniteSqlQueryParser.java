@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.query.impl;
 
 import java.util.ArrayList;
@@ -16,14 +22,14 @@ public class IgniteSqlQueryParser {
 	private static final String DOMAIN_PLACEHOLDER = "h-domain";
 	private static final String CATALOG_PLACEHOLDER = "h-catalog";
 	private static final String SCHEMA_PLACEHOLDER = "h-schema";
-	
+
 	protected final String originalQuery;
 	protected ParserContext context;
-	
+
 	private Map namedParameters = new HashMap();
 	private long aliasesFound;
-	
-	protected static interface ParserContext {
+
+	protected /*static ???*/ interface ParserContext {
 		boolean isEntityAlias(String aliasName);
 		SQLLoadable getEntityPersisterByAlias(String alias);
 		String getEntitySuffixByAlias(String alias);
@@ -32,23 +38,23 @@ public class IgniteSqlQueryParser {
 		String getCollectionSuffixByAlias(String alias);
 		Map getPropertyResultsMapByAlias(String alias);
 	}
-	
+
 	public IgniteSqlQueryParser(String query, ParserContext context) {
 		this.originalQuery = query;
 		this.context = context;
 	}
-	
+
 	public IgniteSqlQueryParser(String query) {
 		this.originalQuery = query;
 		this.context = new DefaultParserContext();
 	}
-	
+
 	public Map getNamedParameters() {
 		return namedParameters;
 	}
 
 	public boolean queryHasAliases() {
-		return aliasesFound>0;
+		return aliasesFound > 0;
 	}
 
 	public String process() {
@@ -56,11 +62,11 @@ public class IgniteSqlQueryParser {
 		processedSql = substituteParams( processedSql );
 		return processedSql;
 	}
-	
+
 	public IgniteQueryDescriptor buildQueryDescriptor() {
 		return new IgniteQueryDescriptor(originalQuery, process());
 	}
-	
+
 	private String substituteBrackets(String sqlQuery) throws QueryException {
 
 		StringBuilder result = new StringBuilder( sqlQuery.length() + 20 );
@@ -103,10 +109,10 @@ public class IgniteSqlQueryParser {
 				else if ( SCHEMA_PLACEHOLDER.equals( aliasPath ) ) {
 					final String schemaName = ""; //factory.getSettings().getDefaultSchemaName();
 					if ( schemaName != null ) {
-						result.append(schemaName);
-						result.append(".");
+						result.append( schemaName );
+						result.append( "." );
 					}
-				} 
+				}
 				// Catalog replacement
 				else if ( CATALOG_PLACEHOLDER.equals( aliasPath ) ) {
 					final String catalogName = ""; //factory.getSettings().getDefaultCatalogName();
@@ -126,10 +132,10 @@ public class IgniteSqlQueryParser {
 						// it is a simple table alias {foo}
 						result.append( aliasPath );
 						aliasesFound++;
-					} 
+					}
 					else {
 						// passing through anything we do not know : to support jdbc escape sequences HB-898
-						result.append( '{' ).append(aliasPath).append( '}' );					
+						result.append( '{' ).append( aliasPath ).append( '}' );
 					}
 				}
 				else {
@@ -139,7 +145,7 @@ public class IgniteSqlQueryParser {
 						String propertyName = aliasPath.substring( firstDot + 1 );
 						result.append( resolveCollectionProperties( aliasName, propertyName ) );
 						aliasesFound++;
-					} 
+					}
 					else if ( context.isEntityAlias( aliasName ) ) {
 						// it is a property reference {foo.bar}
 						String propertyName = aliasPath.substring( firstDot + 1 );
@@ -148,7 +154,7 @@ public class IgniteSqlQueryParser {
 					}
 					else {
 						// passing through anything we do not know : to support jdbc escape sequences HB-898
-						result.append( '{' ).append(aliasPath).append( '}' );
+						result.append( '{' ).append( aliasPath ).append( '}' );
 					}
 				}
 			}
@@ -157,7 +163,7 @@ public class IgniteSqlQueryParser {
 		// Possibly handle :something parameters for the query ?
 
 		return result.toString();
-	}	
+	}
 
 	private String resolveCollectionProperties(
 			String aliasName,
@@ -168,14 +174,14 @@ public class IgniteSqlQueryParser {
 		String collectionSuffix = context.getCollectionSuffixByAlias( aliasName );
 
 		if ( "*".equals( propertyName ) ) {
-			if( !fieldResults.isEmpty() ) {
+			if (!fieldResults.isEmpty()) {
 				throw new QueryException("Using return-propertys together with * syntax is not supported.");
 			}
-			
+
 			String selectFragment = collectionPersister.selectFragment( aliasName, collectionSuffix );
 			aliasesFound++;
-			return selectFragment 
-						+ ", " 
+			return selectFragment
+						+ ", "
 						+ resolveProperties( aliasName, propertyName );
 		}
 		else if ( "element.*".equals( propertyName ) ) {
@@ -185,11 +191,11 @@ public class IgniteSqlQueryParser {
 			String[] columnAliases;
 
 			// Let return-propertys override whatever the persister has for aliases.
-			columnAliases = ( String[] ) fieldResults.get(propertyName);
-			if ( columnAliases==null ) {
+			columnAliases = (String[]) fieldResults.get( propertyName );
+			if ( columnAliases == null ) {
 				columnAliases = collectionPersister.getCollectionPropertyColumnAliases( propertyName, collectionSuffix );
 			}
-			
+
 			if ( columnAliases == null || columnAliases.length == 0 ) {
 				throw new QueryException(
 						"No column name found for property [" + propertyName + "] for alias [" + aliasName + "]",
@@ -206,20 +212,20 @@ public class IgniteSqlQueryParser {
 			}
 			aliasesFound++;
 			return columnAliases[0];
-		
+
 		}
 	}
 	private String resolveProperties(
 			String aliasName,
-	        String propertyName) {
+			String propertyName) {
 		Map fieldResults = context.getPropertyResultsMapByAlias( aliasName );
 		SQLLoadable persister = context.getEntityPersisterByAlias( aliasName );
 		String suffix = context.getEntitySuffixByAlias( aliasName );
 
-		if ( "*".equals( propertyName ) ) {
-			if( !fieldResults.isEmpty() ) {
+		if ("*".equals( propertyName )) {
+			if (!fieldResults.isEmpty()) {
 				throw new QueryException("Using return-propertys together with * syntax is not supported.");
-			}			
+			}
 			aliasesFound++;
 			return persister.selectFragment( aliasName, suffix ) ;
 		}
@@ -245,7 +251,7 @@ public class IgniteSqlQueryParser {
 						"SQL queries only support properties mapped to a single column - property [" + propertyName + "] is mapped to " + columnAliases.length + " columns.",
 						originalQuery
 				);
-			}			
+			}
 			aliasesFound++;
 			return columnAliases[0];
 		}
@@ -269,7 +275,7 @@ public class IgniteSqlQueryParser {
 
 		return recognizer.result.toString();
 	}
-	
+
 	private static class DefaultParserContext implements ParserContext {
 		@Override
 		public boolean isEntityAlias(String aliasName) {
@@ -300,7 +306,6 @@ public class IgniteSqlQueryParser {
 			return null;
 		}
 	}
-	
 
 	public static class ParameterSubstitutionRecognizer implements ParameterParser.Recognizer {
 		StringBuilder result = new StringBuilder();
@@ -346,7 +351,7 @@ public class IgniteSqlQueryParser {
 				namedParameterBindPoints.put( name, list );
 			}
 			else {
-				( ( List ) o ).add( loc );
+				((List) o).add( loc );
 			}
 		}
 	}
