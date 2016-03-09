@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.persister.impl;
 
 import java.util.Map;
@@ -19,7 +25,7 @@ public class IgniteOgmCollectionPersister extends OgmCollectionPersister {
 			CollectionRegionAccessStrategy cacheAccessStrategy,
 			PersisterCreationContext persisterCreationContext)
 			throws MappingException, CacheException {
-		super(collection, cacheAccessStrategy, persisterCreationContext);
+		super( collection, cacheAccessStrategy, persisterCreationContext );
 	}
 
 	@Override
@@ -38,42 +44,42 @@ public class IgniteOgmCollectionPersister extends OgmCollectionPersister {
 
 	@Override
 	public String whereJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses) {
-		return StringUtils.defaultString(super.whereJoinFragment(alias, innerJoin, includeSubclasses));
+		return StringUtils.defaultString( super.whereJoinFragment( alias, innerJoin, includeSubclasses ) );
 	}
 
 	@Override
 	public String whereJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses, Set<String> treatAsDeclarations) {
-		return StringUtils.defaultString(super.whereJoinFragment(alias, innerJoin, includeSubclasses, treatAsDeclarations));
+		return StringUtils.defaultString( super.whereJoinFragment( alias, innerJoin, includeSubclasses, treatAsDeclarations ) );
 	}
 
 	@Override
 	public String fromJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses) {
-		return StringUtils.defaultString(super.fromJoinFragment(alias, innerJoin, includeSubclasses));
+		return StringUtils.defaultString( super.fromJoinFragment( alias, innerJoin, includeSubclasses ) );
 	}
 
 	@Override
 	public String fromJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses, Set<String> treatAsDeclarations) {
-		return StringUtils.defaultString(super.fromJoinFragment(alias, innerJoin, includeSubclasses, treatAsDeclarations));
+		return StringUtils.defaultString( super.fromJoinFragment( alias, innerJoin, includeSubclasses, treatAsDeclarations ) );
 	}
 
 	@Override
 	public String filterFragment(String alias, Map enabledFilters) throws MappingException {
-		return StringUtils.defaultString(super.filterFragment(alias, enabledFilters));
+		return StringUtils.defaultString( super.filterFragment( alias, enabledFilters ) );
 	}
 
 	@Override
 	public String filterFragment(String alias, Map enabledFilters, Set<String> treatAsDeclarations) throws MappingException {
-		return StringUtils.defaultString(super.filterFragment(alias, enabledFilters, treatAsDeclarations));
+		return StringUtils.defaultString( super.filterFragment( alias, enabledFilters, treatAsDeclarations ) );
 	}
 
 	@Override
 	public String oneToManyFilterFragment(String alias) throws MappingException {
-		return StringUtils.defaultString(super.oneToManyFilterFragment(alias));
+		return StringUtils.defaultString( super.oneToManyFilterFragment( alias ) );
 	}
 
 	@Override
 	public String oneToManyFilterFragment(String alias, Set<String> treatAsDeclarations) {
-		return StringUtils.defaultString(super.oneToManyFilterFragment(alias, treatAsDeclarations));
+		return StringUtils.defaultString( super.oneToManyFilterFragment( alias, treatAsDeclarations ) );
 	}
 
 	@Override

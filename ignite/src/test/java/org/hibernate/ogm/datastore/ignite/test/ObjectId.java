@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.test;
 
 import java.io.Serializable;
@@ -7,22 +13,31 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
-public class ObjectId implements Serializable, Comparable<ObjectId> 
-{
+public class ObjectId implements Serializable, Comparable<ObjectId> {
 	private static final long serialVersionUID = 612335064581936822L;
 
 	@Basic
-	@Column(name="ID_MAJOR")
+	@Column(name = "ID_MAJOR")
 	private int majorId;
-	
+
 	@Basic
-	@Column(name="ID_MINOR")
+	@Column(name = "ID_MINOR")
 	private int minorId;
-	
+
 	@Basic
-	@Column(name="ID_MEGA")
+	@Column(name = "ID_MEGA")
 	private int megaId;
-	
+
+	public ObjectId() {
+		this( 0, 0, 0 );
+	}
+
+	public ObjectId(int megaId, int majorId, int minorId) {
+		this.megaId = megaId;
+		this.majorId = majorId;
+		this.minorId = minorId;
+	}
+
 	public int getMegaId() {
 		return megaId;
 	}
@@ -31,54 +46,35 @@ public class ObjectId implements Serializable, Comparable<ObjectId>
 		this.megaId = megaId;
 	}
 
-	public ObjectId()
-	{
-		this(0, 0, 0);
-	}
-
-	public ObjectId(int megaId, int majorId, int minorId)
-	{
-		this.megaId = megaId;
-		this.majorId = majorId;
-		this.minorId = minorId;
-	}
-	
-	public int getMajorId()
-	{
+	public int getMajorId() {
 		return majorId;
 	}
-	public void setMajorId(int majorId)
-	{
+	public void setMajorId(int majorId) {
 		this.majorId = majorId;
 	}
-	public int getMinorId()
-	{
+	public int getMinorId() {
 		return minorId;
 	}
-	public void setMinorId(int minorId)
-	{
+	public void setMinorId(int minorId) {
 		this.minorId = minorId;
 	}
-	
-	public boolean isEmpty()
-	{
+
+	public boolean isEmpty() {
 		return megaId == 0 && majorId == 0 && minorId == 0;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return megaId + "-" + majorId + "-" + minorId;
 	}
 
 	@Override
-	public int compareTo(ObjectId o)
-	{
+	public int compareTo(ObjectId o) {
 		int result = 0;
-		if (o == null) 
+		if (o == null) {
 			result = 1;
-		else if (o != this)
-		{ 
+		}
+		else if (o != this) {
 			ObjectId otherId = o;
 			result = (megaId < otherId.getMegaId() ? -1 : (majorId == otherId.getMegaId() ? 0 : 1));
 			if (result == 0) {
@@ -92,8 +88,7 @@ public class ObjectId implements Serializable, Comparable<ObjectId>
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
 		result = PRIME * result + megaId;
@@ -103,12 +98,17 @@ public class ObjectId implements Serializable, Comparable<ObjectId>
 	}
 
 	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
 		final ObjectId other = (ObjectId) obj;
-		if (megaId != other.megaId || majorId != other.majorId || minorId != other.minorId) return false;
+		if (megaId != other.megaId || majorId != other.majorId || minorId != other.minorId) {
+			return false;
+		}
 		return true;
 	}
 }

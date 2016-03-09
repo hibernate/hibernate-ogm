@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.test;
 
 public class ClientBaseObject implements Comparable<ClientBaseObject> {
@@ -5,7 +11,7 @@ public class ClientBaseObject implements Comparable<ClientBaseObject> {
 	protected ObjectId id;
 	protected ObjectId clientId;
 	protected boolean changed = false;
-	
+
 	public ObjectId getId() {
 		return id;
 	}
@@ -32,15 +38,20 @@ public class ClientBaseObject implements Comparable<ClientBaseObject> {
 
 	@Override
 	public int compareTo(ClientBaseObject o) {
-		if (id == null || clientId == null) throw new NullPointerException("ID is null");
-		if (o != null){
-			if (clientId.compareTo(o.getClientId()) == 0)
-				return (o != this) ? ((o != null) ? id.compareTo(o.getId()) : 1) : 0;
-			else
-				return clientId.compareTo(o.getClientId());
+		if (id == null || clientId == null) {
+			throw new NullPointerException("ID is null");
 		}
-		else 
+		if (o != null) {
+			if (clientId.compareTo( o.getClientId() ) == 0) {
+				return (o != this) ? ((o != null) ? id.compareTo( o.getId() ) : 1) : 0;
+			}
+			else {
+				return clientId.compareTo( o.getClientId() );
+			}
+		}
+		else {
 			return 1;
+		}
 	}
 
 	@Override
@@ -55,24 +66,33 @@ public class ClientBaseObject implements Comparable<ClientBaseObject> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		ClientBaseObject other = (ClientBaseObject) obj;
 		if (clientId == null) {
-			if (other.clientId != null)
+			if (other.clientId != null) {
 				return false;
-		} else if (!clientId.equals(other.clientId))
+			}
+		}
+		else if (!clientId.equals( other.clientId )) {
 			return false;
+		}
 		if (id == null) {
-			if (other.id != null)
+			if (other.id != null) {
 				return false;
-		} else if (!id.equals(other.id))
+			}
+		}
+		else if (!id.equals( other.id )) {
 			return false;
+		}
 		return true;
 	}
-	
+
 }

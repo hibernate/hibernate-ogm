@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.loader.criteria;
 
 import java.io.Serializable;
@@ -34,7 +40,7 @@ import org.hibernate.type.Type;
 
 /**
  * Extension point for a loader that executes criteria queries.
- * 
+ *
  * @author Dmitriy Kozlov
  *
  */
@@ -44,23 +50,23 @@ public class OgmCriteriaLoader extends CustomLoader {
 	private final TypeTranslator typeTranslator;
 	private final OgmCriteriaLoaderContext loaderContext;
 	private final SqlStatementLogger statementLogger;
-	
+
 	public OgmCriteriaLoader(CriteriaCustomQuery criteriaQuery, SessionFactoryImplementor factory) throws HibernateException {
-		super(criteriaQuery, factory);
+		super( criteriaQuery, factory );
 		this.criteriaQuery = criteriaQuery;
 		this.typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
-		this.loaderContext = getLoaderContext(criteriaQuery, factory);
+		this.loaderContext = getLoaderContext( criteriaQuery, factory );
 		this.statementLogger = factory.getServiceRegistry().getService( JdbcServices.class ).getSqlStatementLogger();
-
 	}
-	
+
 	private static OgmCriteriaLoaderContext getLoaderContext(CriteriaCustomQuery criteriaQuery, SessionFactoryImplementor factory) {
 		CriteriaGridDialect gridDialect = factory.getServiceRegistry().getService( CriteriaGridDialect.class );
-		if (gridDialect == null)
+		if (gridDialect == null) {
 			throw new HibernateException("Criteria not supported for current dialect ");
+		}
 		return new OgmCriteriaLoaderContext(gridDialect, criteriaQuery);
 	}
-	
+
 	/**
 	 * Whether this query is a selection of a complete entity or not. Queries mixing scalar values and entire entities
 	 * in one result are not supported atm.
@@ -74,26 +80,27 @@ public class OgmCriteriaLoader extends CustomLoader {
 
 		return false;
 	}
-	
+
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
 			throws HibernateException {
-		
-		statementLogger.logStatement(getSQLString());
+
+		statementLogger.logStatement( getSQLString() );
 
 		ClosableIterator<Tuple> tuples = loaderContext.executeQuery();
 		try {
-			if (isEntityQuery(criteriaQuery.getCustomQueryReturns()))
+			if (isEntityQuery( criteriaQuery.getCustomQueryReturns() )) {
 				return listOfEntities( session, resultTypes, tuples );
-			else
-				return getTransformedResult(listOfArrays(session, tuples), criteriaQuery.getCriteria().getResultTransformer());
+			}
+			else {
+				return getTransformedResult( listOfArrays( session, tuples ), criteriaQuery.getCriteria().getResultTransformer() );
+			}
 		}
 		finally {
 			tuples.close();
 		}
-		
 	}
-	
+
 	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
@@ -104,7 +111,7 @@ public class OgmCriteriaLoader extends CustomLoader {
 		}
 		return results;
 	}
-	
+
 	private <T> T entity(SessionImplementor session, Tuple tuple, OgmLoader loader) {
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		ogmLoadingContext.setTuples( Arrays.asList( tuple ) );
@@ -118,11 +125,11 @@ public class OgmCriteriaLoader extends CustomLoader {
 		OgmLoader loader = new IgniteLoader( new OgmEntityPersister[] { persister }, -1 /* vk: FIXME: where is batchSize value??? */ );
 		return loader;
 	}
-	
-	private List getTransformedResult(List result, ResultTransformer resultTransformer){
-		return resultTransformer.transformList(result);
+
+	private List getTransformedResult(List result, ResultTransformer resultTransformer) {
+		return resultTransformer.transformList( result );
 	}
-	
+
 	private List<Object> listOfArrays(SessionImplementor session, Iterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
@@ -166,16 +173,17 @@ public class OgmCriteriaLoader extends CustomLoader {
 //			}
 //			else {
 			ResultTransformer resultTransformer = criteriaQuery.getCriteria().getResultTransformer();
-			if (resultTransformer != null)
-				results.add( resultTransformer.transformTuple(entry, aliases));
-			else
-				results.add(entry);
-//			}
+			if (resultTransformer != null) {
+				results.add( resultTransformer.transformTuple( entry, aliases ) );
+			}
+			else {
+				results.add( entry );
+			}
 		}
 
 		return results;
 	}
-	
+
 	/**
 	 * Extracted as separate class for the sole purpose of capturing the type parameter {@code T} without exposing it to
 	 * the callers which don't actually need it.
@@ -194,12 +202,13 @@ public class OgmCriteriaLoader extends CustomLoader {
 		}
 
 		public ClosableIterator<Tuple> executeQuery() {
-			if (isEntityQuery(criteriaQuery.getCustomQueryReturns()))
+			if (isEntityQuery( criteriaQuery.getCustomQueryReturns() )) {
 				return gridDialect.executeCriteriaQuery( criteriaQuery, keyMetadata );
-			else
-				return gridDialect.executeCriteriaQueryWithProjection(criteriaQuery, keyMetadata);
+			}
+			else {
+				return gridDialect.executeCriteriaQueryWithProjection( criteriaQuery, keyMetadata );
+			}
 		}
-		
 	}
 
 }

@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.query.impl;
 
 import java.io.Serializable;
@@ -41,21 +47,21 @@ import antlr.collections.AST;
 
 /**
  * Parser for Ignite Hql queries
- * 
+ *
  * @author Dmitriy Kozlov
  *
  */
 public class IgniteHqlQueryParser {
 
 	private static final Log log = LoggerFactory.getLogger();
-	
+
 	private final SessionFactoryImplementor factory;
 	private final HqlSqlWalker walker;
 	private final SelectClause selectClause;
 	private final String query;
 	private final Set<String> querySpaces;
 	private final List<String> columnNames;
-	
+
 	public IgniteHqlQueryParser(String query, SessionFactoryImplementor factory) {
 		this.query = query;
 		this.factory = factory;
@@ -63,26 +69,26 @@ public class IgniteHqlQueryParser {
 		this.selectClause = walker.getSelectClause();
 		Set<String> querySpaces = new HashSet<String>();
 		for (Serializable querySpace : walker.getQuerySpaces()) {
-			querySpaces.add((String)querySpace);
+			querySpaces.add( (String) querySpace );
 		}
-		this.querySpaces = Collections.unmodifiableSet(querySpaces);
+		this.querySpaces = Collections.unmodifiableSet( querySpaces );
 		List<String> columns = new ArrayList<String>();
 		if (selectClause.getColumnNames() != null && selectClause.getColumnNames().length > 0) {
 			for (int i = 0; i < selectClause.getColumnNames().length; i++) {
-				columns.addAll(Arrays.asList(selectClause.getColumnNames()[i]));
+				columns.addAll( Arrays.asList( selectClause.getColumnNames()[i] ) );
 			}
 		}
 		this.columnNames = columns;
 	}
-	
+
 	private HqlSqlWalker parseHqlSqlWalker() {
 		// took this code from QueryTranslatorImpl
 		try {
 			// PHASE 1 : Parse the HQL into an AST.
-			final HqlParser parser = parse(query, factory);
+			final HqlParser parser = parse( query, factory );
 			// PHASE 2 : Analyze the HQL AST, and produce an SQL AST.
 			final QueryTranslatorImpl translator = new QueryTranslatorImpl(query, query, Collections.EMPTY_MAP, factory);
-			return analyze(translator, parser, factory);
+			return analyze( translator, parser, factory );
 		}
 		catch ( QueryException qe ) {
 			if ( qe.getQueryString() == null ) {
@@ -99,25 +105,26 @@ public class IgniteHqlQueryParser {
 			throw new QueryException( e.getMessage(), query );
 		}
 	}
-	
+
 	private void validate() {
 		if (selectClause.isScalarSelect()) {
-			for (Type type : selectClause.getQueryReturnTypes()){
-				if (type.isEntityType() || type.isAssociationType() || type.isCollectionType() || type.isComponentType())
+			for (Type type : selectClause.getQueryReturnTypes()) {
+				if (type.isEntityType() || type.isAssociationType() || type.isCollectionType() || type.isComponentType()) {
 					throw new IgniteHibernateException("Query with entity in projections are not supported");
+				}
 			}
 		}
 	}
-	
+
 	public IgniteQueryDescriptor buildQueryDescriptor() {
-		
+
 		validate();
-		
+
 		// took this code from QueryTranslatorImpl
 		try {
 			// PHASE 3 : Generate the SQL.
-			final SqlGenerator gen = new SqlGenerator(factory);
-			gen.statement(walker.getAST());
+			final SqlGenerator gen = new SqlGenerator( factory );
+			gen.statement( walker.getAST() );
 			String sql = gen.getSQL();
 //			final SqlGenerator genFrom = new SqlGenerator(factory);
 //			genFrom.from(((QueryNode)walker.getAST()).getFromClause());
@@ -125,23 +132,22 @@ public class IgniteHqlQueryParser {
 //			if (whereClause.getNumberOfChildren() > 0)
 //				genFrom.whereClause(whereClause);
 //			String fromSql = genFrom.getSQL();
-//			final SqlGenerator orderGen = new SqlGenerator(factory); 
-			
+//			final SqlGenerator orderGen = new SqlGenerator(factory);
+
 			String resultSql = sql;
-			
+
 			if (!selectClause.isScalarSelect()) {
 				// Create query with fields _KEY and _VAL
 //				String alias = ((QueryNode)walker.getAST()).getFromClause().getFromElement().getTableAlias();
-				FromReferenceNode dotNode = (FromReferenceNode)((QueryNode)walker.getAST()).getSelectClause().getFirstChild();
-				String alias = dotNode.getFromElement().getTableAlias(); 
+				FromReferenceNode dotNode = (FromReferenceNode) ((QueryNode) walker.getAST()).getSelectClause().getFirstChild();
+				String alias = dotNode.getFromElement().getTableAlias();
 				StringBuffer buf = new StringBuffer("select ");
-				buf.append(alias).append("._KEY").append(" , ");
-				buf.append(alias).append("._VAL ");
-				String fromSql = sql.substring(sql.indexOf(" from ") + 1);
-				buf.append(fromSql);
+				buf.append( alias ).append( "._KEY" ).append( " , " );
+				buf.append( alias ).append( "._VAL " );
+				String fromSql = sql.substring( sql.indexOf( " from " ) + 1 );
+				buf.append( fromSql );
 				resultSql = buf.toString();
 			}
-			
 			return new IgniteQueryDescriptor(query, resultSql, selectClause, querySpaces);
 		}
 		catch ( RecognitionException e ) {
@@ -150,41 +156,42 @@ public class IgniteHqlQueryParser {
 			log.error( "Converted antlr.RecognitionException", e );
 			throw QuerySyntaxException.convert( e, query );
 		}
-		catch (Exception e){
-			log.error("Error while parsing HQL query. ", e);
-			throw new IgniteHibernateException(e);
+		catch (Exception e) {
+			log.error( "Error while parsing HQL query. ", e );
+			throw new IgniteHibernateException( e );
 		}
 	}
-	
+
 	public static List<Object> createParameterList(String originSql, Map<String, TypedGridValue> parameterMap) {
 		List<Object> result = new ArrayList<>();
 		int pos = 0;
 		String subStr = originSql;
-		Pattern pattern = Pattern.compile(".*?(:\\w+).*");
-		Matcher matcher = pattern.matcher(subStr);
-		while (matcher.matches()){
-			String param = matcher.group(1);
-			String paramName = param.substring(1);
-			GridType type = parameterMap.get(paramName).getType();
-			Object value = parameterMap.get(paramName).getValue();
-			// костыль для EnumType, потому что ОООООЧЕНЬ умные ребята, которые писали hibernate-ogm, слишком хорошо все улучшили!!!  
-			if (type instanceof EnumType){
-				if (((EnumType)type).isOrdinal())
-					value = ((Enum)parameterMap.get(paramName).getValue()).ordinal();
+		Pattern pattern = Pattern.compile( ".*?(:\\w+).*" );
+		Matcher matcher = pattern.matcher( subStr );
+		while (matcher.matches()) {
+			String param = matcher.group( 1 );
+			String paramName = param.substring( 1 );
+			GridType type = parameterMap.get( paramName ).getType();
+			Object value = parameterMap.get( paramName ).getValue();
+			// because that is how it should work for EnumType
+			if (type instanceof EnumType) {
+				if (((EnumType) type).isOrdinal()) {
+					value = ((Enum) parameterMap.get( paramName ).getValue()).ordinal();
+				}
 			}
-			result.add(value);
-			pos = subStr.indexOf(param) + param.length();
-			subStr = subStr.substring(pos);
-			matcher = pattern.matcher(subStr);
+			result.add( value );
+			pos = subStr.indexOf( param ) + param.length();
+			subStr = subStr.substring( pos );
+			matcher = pattern.matcher( subStr );
 		}
-				
+
 		return result;
 	}
-	
+
 	private HqlParser parse(String hql, SessionFactoryImplementor sessionFactory) throws TokenStreamException, RecognitionException {
 		// Parse the query string into an HQL AST.
 		final HqlParser parser = HqlParser.getInstance( hql );
-		parser.setFilter(true);
+		parser.setFilter( true );
 
 		parser.statement();
 
@@ -194,22 +201,21 @@ public class IgniteHqlQueryParser {
 		walker.traverseDepthFirst( hqlAst );
 
 		ASTPrinter HQL_TOKEN_PRINTER = new ASTPrinter( HqlTokenTypes.class );
-		log.debug(HQL_TOKEN_PRINTER.showAsString(hqlAst, "--- HQL AST ---"));
+		log.debug( HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ) );
 
 		parser.getParseErrorHandler().throwQueryException();
 		return parser;
 	}
-	
+
 	private HqlSqlWalker analyze(QueryTranslatorImpl translator, HqlParser parser, SessionFactoryImplementor sessionFactory) throws QueryException, RecognitionException {
 		final HqlSqlWalker w = new HqlSqlWalker(translator, sessionFactory, parser, sessionFactory.getSessionFactoryOptions().getQuerySubstitutions(), null );
 		final AST hqlAst = parser.getAST();
 
 		// Transform the tree.
 		w.statement( hqlAst );
-		
+
 		ASTPrinter SQL_TOKEN_PRINTER = new ASTPrinter( SqlTokenTypes.class );
 		log.debug( SQL_TOKEN_PRINTER.showAsString( w.getAST(), "--- SQL AST ---" ) );
-		
 
 		w.getParseErrorHandler().throwQueryException();
 
@@ -219,5 +225,5 @@ public class IgniteHqlQueryParser {
 	public List<String> getColumnNames() {
 		return columnNames;
 	}
-	
+
 }

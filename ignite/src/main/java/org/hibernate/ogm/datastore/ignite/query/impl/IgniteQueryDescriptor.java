@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.query.impl;
 
 import java.io.Serializable;
@@ -15,14 +21,14 @@ import org.hibernate.type.Type;
 public class IgniteQueryDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 8197979441369153954L;
-	
+
 	private final String originalSql;
 	private final String sql;
 	private final boolean hasScalar;
 	private final List<Return> customQueryReturns;
 	private final Set<String> querySpaces;
-	
-	public IgniteQueryDescriptor(String originalSql, String resultSql, SelectClause selectClause, Set<String> querySpaces){
+
+	public IgniteQueryDescriptor(String originalSql, String resultSql, SelectClause selectClause, Set<String> querySpaces) {
 		this.originalSql = originalSql;
 		this.sql = resultSql;
 		this.hasScalar = selectClause.isScalarSelect();
@@ -30,19 +36,19 @@ public class IgniteQueryDescriptor implements Serializable {
 		List<String> columns = new ArrayList<String>();
 		if (selectClause.getColumnNames() != null && selectClause.getColumnNames().length > 0) {
 			for (int i = 0; i < selectClause.getColumnNames().length; i++) {
-				columns.addAll(Arrays.asList(selectClause.getColumnNames()[i]));
+				columns.addAll( Arrays.asList( selectClause.getColumnNames()[i] ) );
 			}
 		}
-		String[] aliases = columns.toArray(new String[columns.size()]);
+		String[] aliases = columns.toArray( new String[columns.size()] );
 		Type[] types = selectClause.getQueryReturnTypes();
-		for (int i = 0; i < selectClause.getQueryReturnTypes().length; i++){
-			returnList.add(new ScalarReturn(types[i], aliases != null ? aliases[i] : null));
+		for (int i = 0; i < selectClause.getQueryReturnTypes().length; i++) {
+			returnList.add( new ScalarReturn(types[i], aliases != null ? aliases[i] : null) );
 		}
-		this.customQueryReturns = Collections.unmodifiableList(returnList);
+		this.customQueryReturns = Collections.unmodifiableList( returnList );
 		this.querySpaces = querySpaces;
 	}
-	
-	public IgniteQueryDescriptor(String originalSql, String sql){
+
+	public IgniteQueryDescriptor(String originalSql, String sql) {
 		this.originalSql = originalSql;
 		this.sql = sql;
 		// SQL queries working only for scalars queries
@@ -50,7 +56,7 @@ public class IgniteQueryDescriptor implements Serializable {
 		this.customQueryReturns = null;
 		this.querySpaces = Collections.emptySet();
 	}
-	
+
 	public String getOriginalSql() {
 		return originalSql;
 	}

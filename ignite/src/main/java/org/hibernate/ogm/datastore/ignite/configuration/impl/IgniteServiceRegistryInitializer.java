@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.configuration.impl;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -13,22 +19,18 @@ import org.hibernate.service.spi.ServiceContributor;
  * <li>Registers Ignite's service initiators</li>
  * <li>Configures Hibernate Search so it works for Ignite</li>
  * </ul>
- * 
  * @author Dmitriy Kozlov
  * @author Victor Kadachigov
  *
  */
-public class IgniteServiceRegistryInitializer implements ServiceContributor
-{
-
+public class IgniteServiceRegistryInitializer implements ServiceContributor {
 	@Override
-	public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder)
-	{
+	public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
 //		serviceRegistryBuilder.addInitiator(IgnitePersisterClassResolverInitiator.INSTANCE);
-		serviceRegistryBuilder.addService(PersisterClassResolver.class, new IgniteOgmPersisterClassResolver());
+		serviceRegistryBuilder.addService( PersisterClassResolver.class, new IgniteOgmPersisterClassResolver() );
 //		serviceRegistryBuilder.addInitiator(CriteriaGridDialectInitiator.INSTANCE);
 //		serviceRegistryBuilder.addInitiator(IgniteQueryTranslatorFactoryInitiator.INSTANCE);
-		serviceRegistryBuilder.addService(QueryTranslatorFactory.class, new IgniteQueryTranslatorFactory());
+		serviceRegistryBuilder.addService( QueryTranslatorFactory.class, new IgniteQueryTranslatorFactory() );
 	}
 
 }
