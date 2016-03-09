@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    Copyright (C) GridGain Systems. All Rights Reserved.
-    _________        _____ __________________        _____
-    __  ____/___________(_)______  /__  ____/______ ____(_)_______
-    _  / __  __  ___/__  / _  __  / _  / __  _  __ `/__  / __  __ \
-    / /_/ /  _  /    _  /  / /_/ /  / /_/ /  / /_/ / _  /  _  / / /
-    \____/   /_/     /_/   \_,__/   \____/   \__,_/  /_/   /_/ /_/
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 -->
 
-<!--
-    GridGain Spring configuration file to startup node with cache that will be used as
-    a client to put and get data.
-
-    When starting a standalone node, you need to execute the following command:
-    {IGNITE_HOME}/bin/ignite.{bat|sh} {GRIDGAIN_HOME}/examples/config/example-client.xml
-
-    When starting Ignite from Java IDE, set IGNITE_HOME variable referring to GridGain module location and
-    pass the path to this file to Ignition:
-    Ignition.start("examples/config/example-client.xml");
--->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
@@ -440,6 +437,38 @@
 										<entry key="suitableForKids" value="java.lang.String" />
 										<entry key="releaseDate" value="java.util.Date" />
 										<entry key="viewerRating" value="java.lang.Byte" />
+									</map>
+								</property>
+								<property name="ascendingFields">
+									<map>
+										<entry key="id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
+				</bean>
+<!-- For test BuiltInTypeTest -->
+				<bean id="Bookmark" parent="cache-template">
+					<property name="name" value="Bookmark" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Bookmark" />
+								<property name="queryFields">
+									<map>
+										<entry key="isPrivate"				value="java.lang.String" />
+										<entry key="isRead"					value="java.lang.String" />
+										<entry key="isShared"				value="java.lang.Integer" />
+										<entry key="classifier"				value="java.lang.String" />
+										<entry key="classifierAsOrdinal"	value="java.lang.Byte" />
+										<entry key="creationDate"			value="java.util.Date" />
+										<entry key="updateTime"				value="java.util.Date" />
+										<entry key="destructionDate"		value="java.util.Date" />
+										<entry key="creationCalendar"		value="java.util.Date" />
+										<entry key="destructionCalendar"	value="java.util.Date" />
+										<entry key="siteWeight"				value="java.math.BigDecimal" />
+										<entry key="visitCount"				value="java.math.BigInteger" />
 									</map>
 								</property>
 								<property name="ascendingFields">

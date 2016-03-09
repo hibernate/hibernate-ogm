@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.utils;
 
 import java.util.Collections;
@@ -40,13 +46,13 @@ public class IgniteTestHelper implements TestableGridDialect {
 		for ( EntityPersister entityPersister : ( (SessionFactoryImplementor) sessionFactory ).getEntityPersisters().values() ) {
 			IgniteCache<?, ?> entityCache = getEntityCache( sessionFactory, ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
 			if ( !processedCaches.contains( entityCache ) ) {
-				entityCount += entityCache.size(CachePeekMode.ALL);
+				entityCount += entityCache.size( CachePeekMode.ALL );
 				processedCaches.add( entityCache );
 			}
 		}
 		return entityCount;
 	}
-	
+
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		int associationCount = 0;
@@ -54,7 +60,7 @@ public class IgniteTestHelper implements TestableGridDialect {
 		for ( CollectionPersister colleactionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
 			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
 			if ( !processedCaches.contains( associationCache ) ) {
-				associationCount += associationCache.size(CachePeekMode.ALL);
+				associationCount += associationCache.size( CachePeekMode.ALL );
 				processedCaches.add( associationCache );
 			}
 		}
@@ -69,17 +75,17 @@ public class IgniteTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		IgniteCache<String, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
-		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getEntityKeyString(key);
+		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getEntityKeyString( key );
 
 		Map<String, Object> result = new HashMap<>();
-		Object po = cache.get(cacheKey);
-		
-		IgniteDialect igniteDialect = (IgniteDialect) ((SessionFactoryImplementor)sessionFactory).getServiceRegistry().getService(GridDialect.class);
-		TupleSnapshot snapshot = igniteDialect.createTupleSnapshot(po);
+		Object po = cache.get( cacheKey );
+
+		IgniteDialect igniteDialect = (IgniteDialect) ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService( GridDialect.class );
+		TupleSnapshot snapshot = igniteDialect.createTupleSnapshot( po );
 		for (String fieldName : snapshot.getColumnNames()) {
-			result.put(fieldName, snapshot.get(fieldName));
+			result.put( fieldName, snapshot.get( fieldName ) );
 		}
-		
+
 		return result;
 	}
 
@@ -90,30 +96,30 @@ public class IgniteTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		// TODO че тут делать???
+		// TODO what to do here???
 	}
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
-		// TODO а тут?
+		// TODO and here?
 		return null;
 	}
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new IgniteDialect((IgniteDatastoreProvider)datastoreProvider);
+		return new IgniteDialect((IgniteDatastoreProvider) datastoreProvider);
 	}
-	
+
 	public static IgniteCache<String, BinaryObject> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
 		IgniteDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getEntityCache( entityKeyMetadata );
 	}
-	
+
 	public static IgniteCache<String, BinaryObject> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
 		IgniteDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getAssociationCache(associationKeyMetadata);
+		return castProvider.getAssociationCache( associationKeyMetadata );
 	}
-	
+
 	private static IgniteDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry()
 				.getService( DatastoreProvider.class );

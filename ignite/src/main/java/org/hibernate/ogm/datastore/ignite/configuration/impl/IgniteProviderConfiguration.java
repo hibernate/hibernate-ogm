@@ -1,19 +1,22 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite.configuration.impl;
 
 import java.net.URL;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.ignite.IgniteProperties;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Configuration for {@link IgniteDatastoreProvider}.
- * 
  * @author Dmitriy Kozlov
  */
 public class IgniteProviderConfiguration {
@@ -44,18 +47,15 @@ public class IgniteProviderConfiguration {
 //								throw log.missingConfigurationProperty( IgniteProperties.CONFIGURATION_RESOURCE_NAME );
 //							}
 //						}
-//						
 //					}
 //			)
 			.getValue();
 	}
-	
 	/**
 	 * @see IgniteProperties#CONFIGURATION_RESOURCE_NAME
-	 * @return An URL to an XML file 
+	 * @return An URL to an XML file
 	 */
 	public URL getUrl() {
 		return url;
 	}
-	
 }

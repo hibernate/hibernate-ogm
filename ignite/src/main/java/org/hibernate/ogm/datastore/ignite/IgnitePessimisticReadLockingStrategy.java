@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.datastore.ignite;
 
 import java.io.Serializable;
@@ -25,39 +31,40 @@ import org.hibernate.persister.entity.Lockable;
 
 public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 
-	private static final Log log = LoggerFactory.getLogger(); 
-	
+	private static final Log log = LoggerFactory.getLogger();
+
 	private final Lockable lockable;
 	private final LockMode lockMode;
-	
+
 	private IgniteDatastoreProvider provider;
-	
-	public IgnitePessimisticReadLockingStrategy(Lockable lockable, LockMode lockMode, IgniteDatastoreProvider provider){
+
+	public IgnitePessimisticReadLockingStrategy(Lockable lockable, LockMode lockMode, IgniteDatastoreProvider provider) {
 		this.lockable = lockable;
 		this.lockMode = lockMode;
 		this.provider = provider;
 		//this.provider = getProvider(lockable.getFactory());
 	}
-	
+
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, LockingStrategyException {
-		
+
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
-		GridType idGridType = typeTranslator.getType(lockable.getIdentifierType());
-		EntityKey key = EntityKeyBuilder.fromData(((OgmEntityPersister)lockable).getRootEntityKeyMetadata(), 
-													idGridType, 
-													id, 
-													session);
-		
-		IgniteCache<String, BinaryObject> cache = provider.getEntityCache(key.getMetadata());
-		if (cache == null)
-			throw new IgniteHibernateException("Не найден кэш " + key.getMetadata().getTable());
-		Lock lock = cache.lock(provider.getKeyProvider().getEntityKeyString(key));
-		try {
-			lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+		GridType idGridType = typeTranslator.getType( lockable.getIdentifierType() );
+		EntityKey key = EntityKeyBuilder.fromData( ((OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
+													idGridType,
+													id,
+													session );
+
+		IgniteCache<String, BinaryObject> cache = provider.getEntityCache( key.getMetadata() );
+		if (cache == null) {
+			throw new IgniteHibernateException("Cache " + key.getMetadata().getTable() + " is not found");
 		}
-		catch (InterruptedException e){
+		Lock lock = cache.lock( provider.getKeyProvider().getEntityKeyString( key ) );
+		try {
+			lock.tryLock( timeout, TimeUnit.MILLISECONDS );
+		}
+		catch (InterruptedException e) {
 			throw new IgniteLockingStrategyException(object, e.getMessage(), e);
 		}
 	}
@@ -72,5 +79,5 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 //			throw log.unexpectedDatastoreProvider( service.getClass(), IgniteDatastoreProvider.class );
 //		}
 //	}
-	
+
 }
