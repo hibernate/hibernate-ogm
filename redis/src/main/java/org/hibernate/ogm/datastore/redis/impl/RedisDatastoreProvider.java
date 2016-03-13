@@ -69,10 +69,6 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 		try {
 			this.config = new RedisConfiguration( propertyReader );
-
-			if ( config.isSsl() && config.isSsl() ) {
-				throw new IllegalStateException( "Cannot use Redis Cluster with SSL" );
-			}
 		}
 		catch (Exception e) {
 			// Wrap Exception in a ServiceException to make the stack trace more friendly
@@ -168,5 +164,12 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 		throw new IllegalStateException( "Connection type " + connection + " not supported" );
 
+	}
+
+	/**
+	 * @return returns {@link true} if {@link RedisDatastoreProvider} is configured for cluster mode.
+	 */
+	public boolean isCluster() {
+		return config.isCluster();
 	}
 }

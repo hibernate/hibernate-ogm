@@ -60,7 +60,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
 
 	public RedisJsonDialect(RedisDatastoreProvider provider) {
-		super( provider.getConnection() );
+		super( provider.getConnection(), provider.isCluster() );
 		this.entityStorageStrategy = new JsonEntityStorageStrategy( strategy, connection );
 	}
 

@@ -28,6 +28,7 @@ Should you find any bugs or have feature requests for this dialect,
 then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM issue tracker].
 ====
 
+[[ogm-redis-configuration]]
 === Configuring Redis
 
 Hibernate OGM uses the https://github.com/mp911de/lettuce[lettuce] library to talk to Redis,
@@ -69,6 +70,11 @@ Defines the timeout used by the driver
 when the connection to the Redis instance is initiated.
 This configuration is expressed in milliseconds.
 The default value is `5000`.
+hibernate.ogm.redis.cluster::
+Boolean flag to enable Redis Cluster mode.
+It's strongly recommended to use simple primary and association keys
+as composite keys are serialized as JSON which may interfere the slot distribution.
+Curly braces within keys are used to denote http://redis.io/topics/cluster-spec#keys-hash-tags[hash tags] to group keys within one slot.
 hibernate.ogm.redis.ttl::
 Defines the TTL for entities and associations.
 TTL can be configured on entity and association level (see <<ogm-redis-annotation-configuration>>
@@ -2301,3 +2307,10 @@ Hibernate OGM is a work in progress
 and we are actively working on JP-QL query support.
 
 In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM.
+
+=== Redis Cluster
+
+Using Hibernate OGM with Redis Cluster is a matter of enabling Redis Cluster mode (see <<ogm-redis-configuration>>).
+Data stored with Hibernate OGM Redis is distributed across Redis Cluster nodes
+according to the http://redis.io/topics/cluster-spec#keys-distribution-model[Redis key distribution model]
+based on the hash slot of the key of each entity.

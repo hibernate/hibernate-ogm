@@ -49,7 +49,7 @@ import com.lambdaworks.redis.ScanArgs;
 public class RedisHashDialect extends AbstractRedisDialect {
 
 	public RedisHashDialect(RedisDatastoreProvider provider) {
-		super( provider.getConnection() );
+		super( provider.getConnection(), provider.isCluster() );
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public final class RedisProperties implements KeyValueStoreProperties, DocumentS
 	public static final String SSL = "hibernate.ogm.redis.ssl";
 
 	/**
-	 * boolean flag, whether to use Redis Cluster. Defaults to false. Cannot be used together with {@link #SSL}.
+	 * boolean flag, whether to use Redis Cluster. Defaults to false.
 	 */
 	public static final String CLUSTER = "hibernate.ogm.redis.cluster";
 

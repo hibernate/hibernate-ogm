@@ -64,8 +64,9 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	 * Creates a new {@link AbstractRedisDialect}.
 	 *
 	 * @param connection a Redis connection (A regular Redis connection implements also {@link RedisClusterCommands})
+	 * @param configuredForCluster {@literal true} if the connection is configured for cluster operations.
 	 */
-	public AbstractRedisDialect(RedisClusterCommands<String, String> connection) {
+	public AbstractRedisDialect(RedisClusterCommands<String, String> connection, boolean configuredForCluster) {
 
 		this.connection = connection;
 
@@ -76,6 +77,13 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		}
 		else {
 			clusterMode = false;
+		}
+
+		if ( configuredForCluster && !clusterMode ) {
+			log.redisModeMismatchClusterModeConfigured( redisMode );
+		}
+		else if ( !configuredForCluster && clusterMode ) {
+			log.redisModeMismatchStandaloneModeConfigured( redisMode );
 		}
 	}
 
@@ -410,10 +418,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 			currentNodeId = nodeIds.get( 0 );
 		}
 		else {
-			if ( !( cursor instanceof ClusterwideKeyScanCursor ) ) {
-				throw new IllegalArgumentException(
-						"A scan in Redis Cluster mode requires to reuse the resulting cursor from the previous scan invocation" );
-			}
 
 			ClusterwideKeyScanCursor<String> clusterKeyScanCursor = (ClusterwideKeyScanCursor<String>) cursor;
 			nodeIds = clusterKeyScanCursor.nodeIds;
@@ -435,9 +439,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 			List<String> nodeIds,
 			ClusterwideKeyScanCursor<String> clusterKeyScanCursor) {
 		if ( clusterKeyScanCursor.isScanOnCurrentNodeFinished() ) {
-			if ( clusterKeyScanCursor.isFinished() ) {
-				throw new IllegalStateException( "Cluster scan is finished" );
-			}
 
 			int nodeIndex = nodeIds.indexOf( clusterKeyScanCursor.currentNodeId );
 			return nodeIds.get( nodeIndex + 1 );
