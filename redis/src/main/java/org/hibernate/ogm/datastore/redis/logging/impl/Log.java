@@ -40,14 +40,20 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	HibernateException illegalDatabaseValue(int value);
 
 	@LogMessage(level = WARN)
-	@Message(id = 1605, value = "Cannot determine redis_mode from INFO output. Found '%s'.")
+	@Message(id = 1705, value = "Cannot determine redis_mode from INFO output. Found '%s'.")
 	void cannotDetermineRedisMode(String value);
 
 	@LogMessage(level = DEBUG)
-	@Message(id = 1606, value = "Connected Redis node runs in mode '%s'.")
+	@Message(id = 1706, value = "Connected Redis node runs in mode '%s'.")
 	void connectedRedisNodeRunsIn(String redisMode);
 
 	@LogMessage(level = INFO)
-	@Message(id = 1607, value = "Connecting to Redis Cluster at %1$s with a timeout set at %2$d millisecond(s)")
+	@Message(id = 1707, value = "Connecting to Redis Cluster at %1$s with a timeout set at %2$d millisecond(s)")
 	void connectingToRedisCluster(String hosts, long timeout);
+
+	@Message(id = 1708, value = "The connection is configured for cluster mode but Redis runs in '%s' mode")
+	HibernateException redisModeMismatchClusterModeConfigured(String redisMode);
+
+	@Message(id = 1709, value = "The connection is configured for standalone mode but Redis runs in '%s' mode")
+	HibernateException redisModeMismatchStandaloneModeConfigured(String redisMode);
 }
