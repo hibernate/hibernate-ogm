@@ -624,6 +624,12 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters) {
+		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
+		throw new UnsupportedOperationException("Not yet implemented.");
+	}
+
+	@Override
 	public String parseNativeQuery(String nativeQuery) {
 		// We return given Cypher queries as they are; Currently there is no API for validating Cypher queries without
 		// actually executing them (see https://github.com/neo4j/neo4j/issues/2766)

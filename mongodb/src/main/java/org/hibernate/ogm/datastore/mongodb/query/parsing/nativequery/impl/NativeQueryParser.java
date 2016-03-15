@@ -20,12 +20,21 @@ import com.mongodb.util.JSON;
  * <ul>
  * <li>Criteria-only find query, e.g. <code>{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }</code>. It is
  * left to MongoDB's own {@link JSON} parser to interpret such queries.
- * <li>As "invocation" of the MongoDB shell API, e.g.
+ * <li>As "invocation" of the MongoDB shell API (CLI), e.g.
  * <code>db.WILDE_POEM.find({ '$query' : { 'name' : 'Athanasia' }, '$orderby' : { 'name' : 1 } })</code>. Currently the
  * following API methods are supported:
  * <ul>
  * <li>find(criteria)</li>
  * <li>find(criteria, projection)</li>
+ * <li>findOne(criteria)</li>
+ * <li>findOne(criteria, projection)</li>
+ * <li>findAndModify(document)</li>
+ * <li>insert(document or array)</li>
+ * <li>insert(document or array, options)</li>
+ * <li>remove(criteria)</li>
+ * <li>remove(criteria, options)</li>
+ * <li>update(criteria, update)</li>
+ * <li>update(criteria, update, options)</li>
  * <li>count()</li>
  * <li>count(criteria)</li>
  * </ul>
@@ -36,6 +45,7 @@ import com.mongodb.util.JSON;
  * </ul>
  *
  * @author Gunnar Morling
+ * @author Thorsten Möller
  */
 @BuildParseTree
 public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder> {
@@ -81,13 +91,18 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), Count() );
-		//TODO there is many more than `find` an `count` but as this time we only support `find` and `count`
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count() );
+		//TODO There are many more query types than what we support.
 	}
 
 	public Rule Operation() {
 		return FirstOf(
 				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
+				Sequence( FindOne(), builder.setOperation( Operation.FINDONE ) ),
+				Sequence( FindAndModify(), builder.setOperation( Operation.FINDANDMODIFY ) ),
+				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
+				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
+				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) )
 		);
 	}
@@ -97,8 +112,68 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Separator(),
 				"find ",
 				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule FindOne() {
+		return Sequence(
+				Separator(),
+				"findOne ",
+				"( ",
+				Optional( JsonObject(), builder.setCriteria( match() ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule FindAndModify() {
+		return Sequence(
+				Separator(),
+				"findAndModify ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				") "
+		);
+	}
+
+	public Rule Insert() {
+		return Sequence(
+				Separator(),
+				"insert ",
+				"( ",
 				Json(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", Json(), builder.setProjection( match() ) ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOrderBy( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule Remove() {
+		return Sequence(
+				Separator(),
+				"remove ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				Optional( Sequence( ", ",
+					FirstOf(
+						Sequence( BooleanValue(), builder.setOrderBy( "{ 'justOne': " + match() + " }" ) ),
+						Sequence( JsonObject(), builder.setOrderBy( match() ) )
+					)
+				) ),
+				") "
+		);
+	}
+
+	public Rule Update() {
+		return Sequence(
+				Separator(),
+				"update ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setProjection( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOrderBy( match() ) ) ),
 				") "
 		);
 	}
@@ -137,6 +212,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return FirstOf( JsonString(), JsonNumber(), JsonObject(), JsonArray(), "true ", "false ", "null " );
 	}
 
+	public Rule BooleanValue() {
+		return FirstOf( "true", "false" );
+	}
+
 	@SuppressNode
 	public Rule JsonNumber() {
 		return Sequence( Integer(), Optional( Sequence( Frac(), Optional( Exp() ) ) ), ZeroOrMore( WhiteSpace() ) );
@@ -156,17 +235,17 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	@SuppressSubnodes
 	public Rule JsonString() {
 		return FirstOf( JsonDoubleQuotedString(), JsonSingleQuotedString() );
-	};
+	}
 
 	@SuppressSubnodes
 	public Rule JsonDoubleQuotedString() {
 		return Sequence( "\"", ZeroOrMore( Character() ), "\" " );
-	};
+	}
 
 	@SuppressSubnodes
 	public Rule JsonSingleQuotedString() {
 		return Sequence( "'", ZeroOrMore( SingleQuotedStringCharacter() ), "' " );
-	};
+	}
 
 	public Rule Character() {
 		return FirstOf( EscapedChar(), NormalChar() );
@@ -213,7 +292,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule HexDigit() {
-		return FirstOf( CharRange( '0', '9' ), CharRange( 'a', 'f' ), CharRange( 'A', 'Z' ) );
+		return FirstOf( CharRange( '0', '9' ), CharRange( 'a', 'f' ), CharRange( 'A', 'F' ) );
 	}
 
 	public Rule Frac() {
@@ -231,7 +310,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	@Override
 	@SuppressNode
-	protected Rule fromStringLiteral(java.lang.String string) {
+	protected Rule fromStringLiteral(final String string) {
 		if ( string.endsWith( " " ) ) {
 			return Sequence( string.trim(), Optional( WhiteSpace() ) );
 		}
