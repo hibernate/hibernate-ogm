@@ -40,7 +40,7 @@ import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
-import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
+import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -80,7 +80,7 @@ import com.google.common.cache.LoadingCache;
  *
  * @author Jonathan Halliday
  */
-public class CassandraDialect implements GridDialect, QueryableGridDialect<String> {
+public class CassandraDialect extends BaseGridDialect implements GridDialect, QueryableGridDialect<String> {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -489,16 +489,6 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		return provider.getSequenceHandler().nextValue( request );
-	}
-
-	@Override
-	public boolean supportsSequences() {
-		return false;
-	}
-
-	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
-		return null;
 	}
 
 	@Override
