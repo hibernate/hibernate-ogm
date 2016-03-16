@@ -48,7 +48,7 @@ public class MongoDBQueryDescriptorBuilder {
 		this.projection = projection;
 		return true;
 	}
-	
+
 	public boolean setOrderBy(String orderBy) {
 		this.orderBy = orderBy;
 		return true;
@@ -60,7 +60,7 @@ public class MongoDBQueryDescriptorBuilder {
 				operation,
 				criteria == null ? null : (DBObject) JSON.parse( criteria ),
 				projection == null ? null : (DBObject) JSON.parse( projection ),
-				orderBy == null ? null: (DBObject) JSON.parse( orderBy ),
+				orderBy == null ? null : (DBObject) JSON.parse( orderBy ),
 				null );
 	}
 }

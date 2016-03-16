@@ -799,13 +799,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 
-		// Recap, Section 3.8.15 of the JPA specification states: "The use of named parameters is not defined for
-		// native queries. Only positional parameter binding for SQL queries may be used by portable applications."
-		// This should apply analogously to MongoDB native queries.
-//		if ( !queryParameters.getNamedParameters().isEmpty() )
-//			throw new IllegalArgumentException( "The use of named parameters is not defined for native queries; c.f. JPA spec, Section 3.8.15." );
-		if ( !queryParameters.getPositionalParameters().isEmpty() ) // TODO Implement binding positional parameters.
+		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
 			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
+		}
 
 		switch( queryDescriptor.getOperation() ) {
 			case FIND:
@@ -821,28 +817,23 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case INSERT:
 			case REMOVE:
 			case UPDATE:
-				throw new IllegalArgumentException( "Query must be executed using 'executeUpdate' method: " + queryDescriptor );
+				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
 		}
 	}
 
 	@Override
-	public int executeBackendUpdateQuery(final BackendQuery<MongoDBQueryDescriptor> backendQuery, final QueryParameters queryParameters)
-	{
+	public int executeBackendUpdateQuery(final BackendQuery<MongoDBQueryDescriptor> backendQuery, final QueryParameters queryParameters) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
 		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 
-		// Recap, Section 3.8.15 of the JPA specification states: "The use of named parameters is not defined for
-		// native queries. Only positional parameter binding for SQL queries may be used by portable applications."
-		// This should apply analogously to MongoDB native queries.
-		if ( !queryParameters.getNamedParameters().isEmpty() )
-			throw new IllegalArgumentException("The use of named parameters is not defined for native queries; c.f. JPA spec, Section 3.8.15.");
-		if ( !queryParameters.getPositionalParameters().isEmpty() ) // TODO Implement binding positional parameters.
+		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
 			throw new UnsupportedOperationException("Positional parameters are not yet supported for MongoDB native queries.");
+		}
 
 		switch( queryDescriptor.getOperation() ) {
 			case INSERT:
@@ -856,7 +847,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case FINDANDMODIFY:
 			case AGGREGATE:
 			case COUNT:
-				throw new IllegalArgumentException( "Query must be executed using 'getResultList' or 'getSingleResult' method: " + queryDescriptor );
+				throw log.readQueryMustBeExecutedViaGetResultList( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
 		}
@@ -943,44 +934,48 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static ClosableIterator<Tuple> doFindAndModify(final MongoDBQueryDescriptor queryDesc, final DBCollection collection,
 			final EntityKeyMetadata entityKeyMetadata) {
 
-		DBObject query  = (DBObject) queryDesc.getCriteria().get("query");
-		DBObject fields = (DBObject) queryDesc.getCriteria().get("fields");
-		DBObject sort   = (DBObject) queryDesc.getCriteria().get("sort");
-		Boolean remove  = (Boolean) queryDesc.getCriteria().get("remove");
-		DBObject update = (DBObject) queryDesc.getCriteria().get("update");
-		Boolean nevv    = (Boolean) queryDesc.getCriteria().get("new");
-		Boolean upsert  = (Boolean) queryDesc.getCriteria().get("upsert");
-		// IMPROVE bypassDocumentValidation: <boolean> and writeConcern: <document> can be supported only after upgrading to MongoDB Java driver 3.2.x
-		final DBObject theOne = collection.findAndModify(query, fields, sort, (remove != null ? remove : false),
-				update, (nevv != null ? nevv : false), (upsert != null ? upsert : false));
-		return new SingleTupleIterator(theOne, collection, entityKeyMetadata);
+		DBObject query = (DBObject) queryDesc.getCriteria().get( "query" );
+		DBObject fields = (DBObject) queryDesc.getCriteria().get( "fields" );
+		DBObject sort = (DBObject) queryDesc.getCriteria().get( "sort" );
+		Boolean remove = (Boolean) queryDesc.getCriteria().get( "remove" );
+		DBObject update = (DBObject) queryDesc.getCriteria().get( "update" );
+		Boolean nevv = (Boolean) queryDesc.getCriteria().get( "new" );
+		Boolean upsert = (Boolean) queryDesc.getCriteria().get( "upsert" );
+		// IMPROVE bypassDocumentValidation: <boolean> and writeConcern: <document> can be supported only after
+		// upgrading to MongoDB Java driver 3.2.x
+		final DBObject theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ), update, ( nevv != null ? nevv : false ),
+				( upsert != null ? upsert : false ) );
+		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 
 	@SuppressWarnings("unchecked")
 	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
 
-		DBObject insert  = queryDesc.getCriteria();
+		DBObject insert = queryDesc.getCriteria();
 		DBObject options = queryDesc.getOrderBy();
-		Boolean ordered   = FALSE;
-		WriteConcern wc  = null;
+		Boolean ordered = FALSE;
+		WriteConcern wc = null;
 		if ( options != null ) {
-			ordered = (Boolean) options.get("ordered");
-			ordered = (ordered != null) ? ordered : FALSE;
-			DBObject o = (DBObject) options.get("writeConcern");
+			ordered = (Boolean) options.get( "ordered" );
+			ordered = ( ordered != null ) ? ordered : FALSE;
+			DBObject o = (DBObject) options.get( "writeConcern" );
 			wc = getWriteConcern( o );
 		}
 
 		// Need to use BulkWriteOperation here rather than collection.insert(..) because the WriteResult returned
-		// by the latter returns 0 for getN() even if the insert was successful (which is bizarre, but that's the way it is defined...)
-		BulkWriteOperation bo = (ordered) ? collection.initializeOrderedBulkOperation() : collection.initializeUnorderedBulkOperation();
-		if ( insert instanceof List<?> )
+		// by the latter returns 0 for getN() even if the insert was successful (which is bizarre, but that's the way it
+		// is defined...)
+		BulkWriteOperation bo = ( ordered ) ? collection.initializeOrderedBulkOperation() : collection.initializeUnorderedBulkOperation();
+		if ( insert instanceof List<?> ) {
 			for ( DBObject i : (List<DBObject>) insert ) {
 				bo.insert( i );
 			}
-		else
+		}
+		else {
 			bo.insert( insert );
+		}
 
-		final BulkWriteResult result = bo.execute( (wc != null ? wc : collection.getWriteConcern()) );
+		final BulkWriteResult result = bo.execute( ( wc != null ? wc : collection.getWriteConcern() ) );
 
 		if ( result.isAcknowledged() ) {
 			return result.getInsertedCount();
@@ -989,21 +984,21 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
-
-		DBObject query   = queryDesc.getCriteria();
+		DBObject query = queryDesc.getCriteria();
 		DBObject options = queryDesc.getOrderBy();
-		Boolean justOne  = FALSE;
-		WriteConcern wc  = null;
+		Boolean justOne = FALSE;
+		WriteConcern wc = null;
 		if ( options != null ) {
-			justOne  = (Boolean) options.get("justOne");
-			justOne  = (justOne != null) ? justOne : FALSE;
-			if ( justOne ) // IMPROVE Can be supported by upgrading to MongoDB Java driver 3.2.x
-				throw new UnsupportedOperationException("Using 'justOne' in a remove query is not yet supported.");
-			DBObject o = (DBObject) options.get("writeConcern");
+			justOne = (Boolean) options.get( "justOne" );
+			justOne = ( justOne != null ) ? justOne : FALSE;
+			if ( justOne ) { // IMPROVE Can be supported by upgrading to MongoDB Java driver 3.2.x
+				throw new UnsupportedOperationException( "Using 'justOne' in a remove query is not yet supported." );
+			}
+			DBObject o = (DBObject) options.get( "writeConcern" );
 			wc = getWriteConcern( o );
 		}
 
-		final WriteResult result = collection.remove( query, (wc != null ? wc : collection.getWriteConcern()) );
+		final WriteResult result = collection.remove( query, ( wc != null ? wc : collection.getWriteConcern() ) );
 		if ( result.wasAcknowledged() ) {
 			return result.getN();
 		}
@@ -1011,27 +1006,26 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
-
-		DBObject query   = queryDesc.getCriteria();
-		DBObject update  = queryDesc.getProjection();
+		DBObject query = queryDesc.getCriteria();
+		DBObject update = queryDesc.getProjection();
 		DBObject options = queryDesc.getOrderBy();
-		Boolean upsert   = FALSE;
-		Boolean multi    = FALSE;
-		WriteConcern wc  = null;
+		Boolean upsert = FALSE;
+		Boolean multi = FALSE;
+		WriteConcern wc = null;
 		if ( options != null ) {
-			upsert = (Boolean) options.get("upsert");
-			upsert = (upsert != null) ? upsert : FALSE;
-			multi  = (Boolean) options.get("multi");
-			multi  = (multi != null) ? multi : FALSE;
-			DBObject o = (DBObject) options.get("writeConcern");
+			upsert = (Boolean) options.get( "upsert" );
+			upsert = ( upsert != null ) ? upsert : FALSE;
+			multi = (Boolean) options.get( "multi" );
+			multi = ( multi != null ) ? multi : FALSE;
+			DBObject o = (DBObject) options.get( "writeConcern" );
 			wc = getWriteConcern( o );
 		}
 
-		final WriteResult result = collection.update( query, update, upsert, multi, (wc != null ? wc : collection.getWriteConcern()) );
+		final WriteResult result = collection.update( query, update, upsert, multi, ( wc != null ? wc : collection.getWriteConcern() ) );
 		if ( result.wasAcknowledged() ) {
 			// IMPROVE How could we return result.getUpsertedId() if it was an upsert, or isUpdateOfExisting()?
-			//         I see only a possibility by using javax.persistence.StoredProcedureQuery in the application
-			//         and then using getOutputParameterValue(String) to get additional result values.
+			// I see only a possibility by using javax.persistence.StoredProcedureQuery in the application
+			// and then using getOutputParameterValue(String) to get additional result values.
 			return result.getN();
 		}
 		return -1; // Not sure if we should throw an exception instead?
@@ -1050,13 +1044,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static WriteConcern getWriteConcern(DBObject obj) {
 		WriteConcern wc = null;
 		if ( obj != null ) {
-			Object w  = obj.get("w");
-			Boolean j = (Boolean) obj.get("j");
-			Integer t = (Integer) obj.get("wtimeout");
-			if ( w instanceof String )
-				wc = new WriteConcern((String) w, (t != null ? t : 0), false, (j != null ? j : false));
-			if ( w instanceof Number )
-				wc = new WriteConcern(((Number) w).intValue(), (t != null ? t : 0), false, (j != null ? j : false));
+			Object w = obj.get( "w" );
+			Boolean j = (Boolean) obj.get( "j" );
+			Integer t = (Integer) obj.get( "wtimeout" );
+			if ( w instanceof String ) {
+				wc = new WriteConcern( (String) w, ( t != null ? t : 0 ), false, ( j != null ? j : false ) );
+			}
+			if ( w instanceof Number ) {
+				wc = new WriteConcern( ( (Number) w ).intValue(), ( t != null ? t : 0 ), false, ( j != null ? j : false ) );
+			}
 		}
 		return wc;
 	}
@@ -1372,8 +1368,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		@Override
 		public Tuple next() {
-			if (theOne == null)
+			if ( theOne == null ) {
 				throw new NoSuchElementException(); // Seemingly a programming error if this line is ever reached.
+			}
 
 			Tuple t = new Tuple( new MongoDBTupleSnapshot( theOne, metadata, UPDATE ) );
 			theOne = null;
@@ -1382,10 +1379,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		@Override
 		public void remove() {
-			if (theOne == null)
+			if ( theOne == null ) {
 				throw new IllegalStateException(); // Seemingly a programming error if this line is ever reached.
+			}
 
-			collection.remove(theOne);
+			collection.remove( theOne );
 			theOne = null;
 		}
 

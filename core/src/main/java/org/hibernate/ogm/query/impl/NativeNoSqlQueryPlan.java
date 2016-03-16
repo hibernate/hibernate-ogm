@@ -35,7 +35,7 @@ class NativeNoSqlQueryPlan extends NativeSQLQueryPlan {
 	public int performExecuteUpdate(org.hibernate.engine.spi.QueryParameters queryParameters, SessionImplementor session) throws HibernateException {
 		QueryableGridDialect<?> gridDialect = session.getFactory().getServiceRegistry().getService( QueryableGridDialect.class );
 		TypeTranslator typeTranslator = session.getFactory().getServiceRegistry().getService( TypeTranslator.class );
-		return performExecuteUpdateQuery(gridDialect, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ));
+		return performExecuteUpdateQuery( gridDialect, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
 	}
 
 	@SuppressWarnings("unchecked")

@@ -120,8 +120,8 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		@SuppressWarnings("unchecked")
 		List<Object[]> results = em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getResultList();
 		assertThat( results ).isNotNull();
-		assertThat( results.size() ).isEqualTo(1);
-		assertThat( Arrays.asList( results.get(0) ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
+		assertThat( results.size() ).isEqualTo( 1 );
+		assertThat( Arrays.asList( results.get( 0 ) ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
 
 		commit();
 	}

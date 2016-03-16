@@ -102,7 +102,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("MongoDBQueryDescriptor [collectionName=%s, %s=%s, %s=%s, %s%s]",
+		return String.format( "MongoDBQueryDescriptor [collectionName=%s, %s=%s, %s=%s, %s%s]",
 			collectionName,
 			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
 			operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : "projection", projection,
