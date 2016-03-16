@@ -1007,7 +1007,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
 		DBObject query = queryDesc.getCriteria();
-		DBObject update = queryDesc.getProjection();
+		DBObject update = queryDesc.getUpdate();
 		DBObject options = queryDesc.getOptions();
 		Boolean upsert = FALSE;
 		Boolean multi = FALSE;

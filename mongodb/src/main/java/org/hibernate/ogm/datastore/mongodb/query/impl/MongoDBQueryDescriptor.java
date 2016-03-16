@@ -40,8 +40,12 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final Operation operation;
 	private final DBObject criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	                                   //                      document or array of documents to insert for an INSERT query.
-	private final DBObject projection; // Overloaded to be the 'update' for an UPDATE query.
+	private final DBObject projection;
 
+	/**
+	 * The "update" (new values to apply) in case this is an UPDATE query.
+	 */
+	private final DBObject update;
 	private final DBObject orderBy;
 
 	/**
@@ -55,13 +59,14 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final DBObject options;
 	private final List<String> unwinds;
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, List<String> unwinds) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject update, List<String> unwinds) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
 		this.projection = projection;
 		this.orderBy = orderBy;
 		this.options = options;
+		this.update = update;
 		this.unwinds = unwinds;
 	}
 
@@ -111,6 +116,13 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 */
 	public DBObject getOptions() {
 		return options;
+	}
+
+	/**
+	 * Returns the update (new values to apply) in case this is an UPDATE query.
+	 */
+	public DBObject getUpdate() {
+		return update;
 	}
 
 	public List<String> getUnwinds() {

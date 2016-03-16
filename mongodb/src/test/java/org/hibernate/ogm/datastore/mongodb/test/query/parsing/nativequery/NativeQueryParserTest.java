@@ -184,7 +184,7 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATE );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'name': 'Andy' }" ) );
-		assertThat( queryDescriptor.getProjection() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
+		assertThat( queryDescriptor.getUpdate() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
@@ -198,7 +198,7 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATE );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'name': 'Andy' }" ) );
-		assertThat( queryDescriptor.getProjection() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
+		assertThat( queryDescriptor.getUpdate() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ 'upsert': true }" ) );
 	}
 

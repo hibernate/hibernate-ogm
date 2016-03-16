@@ -172,7 +172,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"update ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setProjection( match() ),
+				JsonObject(), builder.setUpdate( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);

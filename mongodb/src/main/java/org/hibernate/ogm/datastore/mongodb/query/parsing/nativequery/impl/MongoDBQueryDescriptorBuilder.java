@@ -24,8 +24,9 @@ public class MongoDBQueryDescriptorBuilder {
 	private Operation operation;
 	private String criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	                           //                      document or array of documents to insert for an INSERT query.
-	private String projection; // Overloaded to be the 'update' for Operation.UPDATE.
+	private String projection;
 	private String orderBy;
+	private String update;
 	private String options;
 
 	public boolean setCollection(String collection) {
@@ -58,6 +59,11 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
+	public boolean setUpdate(String update) {
+		this.update = update;
+		return true;
+	}
+
 	public MongoDBQueryDescriptor build() {
 		return new MongoDBQueryDescriptor(
 				collection,
@@ -66,6 +72,7 @@ public class MongoDBQueryDescriptorBuilder {
 				projection == null ? null : (DBObject) JSON.parse( projection ),
 				orderBy == null ? null : (DBObject) JSON.parse( orderBy ),
 				options == null ? null : (DBObject) JSON.parse( options ),
+				update == null ? null : (DBObject) JSON.parse( update ),
 				null );
 	}
 }
