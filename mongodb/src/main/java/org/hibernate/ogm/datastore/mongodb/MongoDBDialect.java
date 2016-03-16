@@ -952,7 +952,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
 
 		DBObject insert = queryDesc.getCriteria();
-		DBObject options = queryDesc.getOrderBy();
+		DBObject options = queryDesc.getOptions();
 		Boolean ordered = FALSE;
 		WriteConcern wc = null;
 		if ( options != null ) {
@@ -985,7 +985,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
 		DBObject query = queryDesc.getCriteria();
-		DBObject options = queryDesc.getOrderBy();
+		DBObject options = queryDesc.getOptions();
 		Boolean justOne = FALSE;
 		WriteConcern wc = null;
 		if ( options != null ) {
@@ -1008,7 +1008,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
 		DBObject query = queryDesc.getCriteria();
 		DBObject update = queryDesc.getProjection();
-		DBObject options = queryDesc.getOrderBy();
+		DBObject options = queryDesc.getOptions();
 		Boolean upsert = FALSE;
 		Boolean multi = FALSE;
 		WriteConcern wc = null;

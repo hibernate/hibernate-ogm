@@ -145,7 +145,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"insert ",
 				"( ",
 				Json(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOrderBy( match() ) ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
 	}
@@ -158,8 +158,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ",
 					FirstOf(
-						Sequence( BooleanValue(), builder.setOrderBy( "{ 'justOne': " + match() + " }" ) ),
-						Sequence( JsonObject(), builder.setOrderBy( match() ) )
+						Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
+						Sequence( JsonObject(), builder.setOptions( match() ) )
 					)
 				) ),
 				") "
@@ -173,7 +173,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setProjection( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOrderBy( match() ) ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
 	}

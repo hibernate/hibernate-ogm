@@ -41,17 +41,27 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final DBObject criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	                                   //                      document or array of documents to insert for an INSERT query.
 	private final DBObject projection; // Overloaded to be the 'update' for an UPDATE query.
-	private final DBObject orderBy;    // Overloaded to be the optional { upsert: <boolean>, multi: <boolean>, writeConcern: <document> } argument object for an UPDATE query,
-	                                   //                      optional { ordered: <boolean>, writeConcern: <document> } argument for an INSERT query,
-	                                   //                      optional { justOne: <boolean>, writeConcern: <document> } argument for a REMOVE query.
+
+	private final DBObject orderBy;
+
+	/**
+	 * Optional query options in case this is an UPDATE, INSERT or REMOVE. Will have the following structure:
+	 * <ul>
+	 * <li>{ upsert: <boolean>, multi: <boolean>, writeConcern: <document> } for an UPDATE query</li>
+	 * <li>{ ordered: <boolean>, writeConcern: <document> } argument for an INSERT query</li>
+	 * <li>{ justOne: <boolean>, writeConcern: <document> } argument for a REMOVE query</li>
+	 * </ul>
+	 */
+	private final DBObject options;
 	private final List<String> unwinds;
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, List<String> unwinds) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, List<String> unwinds) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
 		this.projection = projection;
 		this.orderBy = orderBy;
+		this.options = options;
 		this.unwinds = unwinds;
 	}
 
@@ -96,6 +106,13 @@ public class MongoDBQueryDescriptor implements Serializable {
 		return orderBy;
 	}
 
+	/**
+	 * Returns (optional) query options if this is a INSERT, UPDATE or REMOVE query.
+	 */
+	public DBObject getOptions() {
+		return options;
+	}
+
 	public List<String> getUnwinds() {
 		return unwinds;
 	}
@@ -106,6 +123,6 @@ public class MongoDBQueryDescriptor implements Serializable {
 			collectionName,
 			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
 			operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : "projection", projection,
-			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "orderBy=", orderBy);
+			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options);
 	}
 }

@@ -25,9 +25,8 @@ public class MongoDBQueryDescriptorBuilder {
 	private String criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	                           //                      document or array of documents to insert for an INSERT query.
 	private String projection; // Overloaded to be the 'update' for Operation.UPDATE.
-	private String orderBy;    // Overloaded to be the optional { upsert: <boolean>, multi: <boolean>, writeConcern: <document> } argument object for Operation.UPDATE,
-	                           //                      optional { ordered: <boolean>, writeConcern: <document> } argument object for an INSERT query,
-	                           //                      optional { justOne: <boolean>, writeConcern: <document> } argument object for a REMOVE query.
+	private String orderBy;
+	private String options;
 
 	public boolean setCollection(String collection) {
 		this.collection = collection.trim();
@@ -54,6 +53,11 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
+	public boolean setOptions(String options) {
+		this.options = options;
+		return true;
+	}
+
 	public MongoDBQueryDescriptor build() {
 		return new MongoDBQueryDescriptor(
 				collection,
@@ -61,6 +65,7 @@ public class MongoDBQueryDescriptorBuilder {
 				criteria == null ? null : (DBObject) JSON.parse( criteria ),
 				projection == null ? null : (DBObject) JSON.parse( projection ),
 				orderBy == null ? null : (DBObject) JSON.parse( orderBy ),
+				options == null ? null : (DBObject) JSON.parse( options ),
 				null );
 	}
 }
