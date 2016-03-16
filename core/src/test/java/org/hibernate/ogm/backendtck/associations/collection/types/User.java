@@ -70,6 +70,7 @@ public class User {
 	@OneToMany
 	@MapStorage(MapStorageType.AS_LIST)
 	@MapKeyColumn(name = "phoneType")
+	@JoinTable(name = "AlTERNATIVE_PHONE_NUMBER")
 	public Map<String, PhoneNumber> getAlternativePhoneNumbers() {
 		return alternativePhoneNumbers;
 	}
@@ -80,6 +81,7 @@ public class User {
 
 	@OneToMany
 	@MapKeyColumn(name = "priority")
+	@JoinTable(name = "AlTERNATIVE_PRIORITY")
 	public Map<Integer, PhoneNumber> getPhoneNumbersByPriority() {
 		return phoneNumbersByPriority;
 	}
