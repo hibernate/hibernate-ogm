@@ -39,13 +39,12 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final String collectionName;
 	private final Operation operation;
 	private final DBObject criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
-	                                   //                      document or array of documents to insert for an INSERT query.
 	private final DBObject projection;
 
 	/**
-	 * The "update" (new values to apply) in case this is an UPDATE query.
+	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT query.
 	 */
-	private final DBObject update;
+	private final DBObject updateOrInsert;
 	private final DBObject orderBy;
 
 	/**
@@ -59,14 +58,14 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final DBObject options;
 	private final List<String> unwinds;
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject update, List<String> unwinds) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject updateOrInsert, List<String> unwinds) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
 		this.projection = projection;
 		this.orderBy = orderBy;
 		this.options = options;
-		this.update = update;
+		this.updateOrInsert = updateOrInsert;
 		this.unwinds = unwinds;
 	}
 
@@ -119,10 +118,11 @@ public class MongoDBQueryDescriptor implements Serializable {
 	}
 
 	/**
-	 * Returns the update (new values to apply) in case this is an UPDATE query.
+	 * Returns the update (new values to apply) in case this is an UPDATE query or values to insert in case this is an
+	 * INSERT query.
 	 */
-	public DBObject getUpdate() {
-		return update;
+	public DBObject getUpdateOrInsert() {
+		return updateOrInsert;
 	}
 
 	public List<String> getUnwinds() {

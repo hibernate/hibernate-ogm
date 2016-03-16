@@ -93,7 +93,7 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'item': 'card', 'qty': 15 }" ) );
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'item': 'card', 'qty': 15 }" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ ordered: true })" ) );
 	}
 
@@ -118,7 +118,7 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse(
+		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse(
 				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
 	}
 
@@ -131,7 +131,7 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse(
+		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse(
 				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ ordered: true })" ) );
 	}
@@ -184,7 +184,7 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATE );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'name': 'Andy' }" ) );
-		assertThat( queryDescriptor.getUpdate() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
@@ -198,7 +198,7 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATE );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'name': 'Andy' }" ) );
-		assertThat( queryDescriptor.getUpdate() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ 'upsert': true }" ) );
 	}
 

@@ -26,7 +26,7 @@ public class MongoDBQueryDescriptorBuilder {
 	                           //                      document or array of documents to insert for an INSERT query.
 	private String projection;
 	private String orderBy;
-	private String update;
+	private String updateOrInsert;
 	private String options;
 
 	public boolean setCollection(String collection) {
@@ -59,8 +59,8 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
-	public boolean setUpdate(String update) {
-		this.update = update;
+	public boolean setUpdateOrInsert(String updateOrInsert) {
+		this.updateOrInsert = updateOrInsert;
 		return true;
 	}
 
@@ -72,7 +72,7 @@ public class MongoDBQueryDescriptorBuilder {
 				projection == null ? null : (DBObject) JSON.parse( projection ),
 				orderBy == null ? null : (DBObject) JSON.parse( orderBy ),
 				options == null ? null : (DBObject) JSON.parse( options ),
-				update == null ? null : (DBObject) JSON.parse( update ),
+				updateOrInsert == null ? null : (DBObject) JSON.parse( updateOrInsert ),
 				null );
 	}
 }

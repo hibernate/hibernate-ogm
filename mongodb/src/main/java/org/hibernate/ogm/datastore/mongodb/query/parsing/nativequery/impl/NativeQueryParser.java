@@ -144,7 +144,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Separator(),
 				"insert ",
 				"( ",
-				Json(), builder.setCriteria( match() ),
+				Json(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
@@ -172,7 +172,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"update ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdate( match() ),
+				JsonObject(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
