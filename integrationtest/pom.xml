@@ -177,6 +177,14 @@
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
                                         </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.infinispan</groupId>
+                                            <artifactId>infinispan-as-embedded-modules</artifactId>
+                                            <version>${infinispanVersion}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                        </artifactItem>
                                         <!-- The following modules are disabled as *with this specific version* we can
                                           use the main modules as bundled with WildFly
                                         <artifactItem>
