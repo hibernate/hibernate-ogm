@@ -373,7 +373,7 @@ Add a `WEB-INF/jboss-deployment-structure.xml` in your archive with the followin
 ----
 
 More information about the descriptor can be found in the
-https://docs.jboss.org/author/display/WFLY9/Class+Loading+in+WildFly[WildFly documentation].
+https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly documentation].
 
 ==== Enabling both the Hibernate Search and Hibernate OGM modules
 
@@ -403,3 +403,22 @@ The Hibernate Search documentation explains the details of downloading and deplo
 
 This approach might require you to make changes to the XML definitions of the Hibernate OGM modules to change the references to the Hibernate Search slot
 to the slot version that you plan to use.
+
+==== Using the Hibernate OGM modules with Infinispan
+
+The Infinispan project also provides custom modules for WildFly 10.
+Hibernate OGM modules require these modules if you're planning to use the Hibernate OGM / Infinispan combination on WildFly.
+
+This release of Hibernate OGM was tested exclusively with Infinispan version {infinispan-version};
+the Infinispan project generally attempts to maintain the same API and integration points within the same major.minor version,
+so a micro version update should be safe but is untested.
+
+In case you want to experiment with a more significant version upgrade, you will need to edit the modules of Hibernate OGM:
+the module identifiers are hardcoded in the XML files representing the module.
+
+Download the Infinispan modules pack for WildFly 10 from here:
+
+ * https://repo1.maven.org/maven2/org/infinispan/infinispan-as-embedded-modules/{infinispan-version}/infinispan-as-embedded-modules-{infinispan-version}.zip[Infinispan WildFly modules version {infinispan-version} from the Maven repository]
+
+Then similarly to what you did with the Hibernate OGM modules zip, unpack this one too in your `modules` directory within the application server.
+
