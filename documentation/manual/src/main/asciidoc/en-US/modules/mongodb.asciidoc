@@ -3239,9 +3239,16 @@ documents and not managed entities.
 Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
 ====
 
-Hibernate OGM can execute native queries expressed using the MongoDB CLI syntax with some limitation
-Currently only `find()` and `count()` queries are supported via the CLI syntax.
-Further query types (including updating queries) may be supported in future revisions.
+Hibernate OGM can execute native queries expressed using the MongoDB CLI syntax with some limitations.
+Currently `find()`, `findOne()`, `findAndUpdate()`, and `count()` queries are supported. Furthermore, three
+types of write queries are supported via the CLI syntax: `insert()`, `remove()`, and `update()`. Other query
+types may be supported in future versions.
+
+As one would expect, `find()`, `findOne()`, `findAndUpdate()`, and `count()` can be executed using
+`javax.persistence.Query.getSingleResult()` or `javax.persistence.Query.getResultList()`, while `insert()`,
+`remove()`, and `update()` require using `javax.persistence.Query.executeUpdate()`. Also note that,
+`javax.persistence.Query.executeUpdate()` may return `-1` in case execution of a query was not acknowledged
+relative to the write concern used.
 
 No cursor operations such as `sort()` are supported.
 Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]

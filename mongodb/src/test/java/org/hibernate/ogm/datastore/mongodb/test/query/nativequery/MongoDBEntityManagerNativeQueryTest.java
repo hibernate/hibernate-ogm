@@ -87,6 +87,15 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 		assertThat( result ).isEqualTo( "Portia" );
 
+
+		nativeQuery = "db.WILDE_POEM.findOne( "
+				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
+				+ "{ 'name' : 1 }"
+				+ " )";
+		result = (String) em.createNativeQuery( nativeQuery, "poemNameMapping" ).getSingleResult();
+
+		assertThat( result ).isEqualTo( "Portia" );
+
 		commit();
 	}
 
@@ -99,8 +108,20 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 				+ "{ 'name' : 1, 'author' : 1 }"
 				+ " )";
 		Object[] result = (Object[]) em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getSingleResult();
-
 		assertThat( Arrays.asList( result ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
+
+		nativeQuery = "db.WILDE_POEM.findOne( "
+				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
+				+ "{ 'name' : 1, 'author' : 1 }"
+				+ " )";
+		result = (Object[]) em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getSingleResult();
+		assertThat( Arrays.asList( result ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
+
+		@SuppressWarnings("unchecked")
+		List<Object[]> results = em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getResultList();
+		assertThat( results ).isNotNull();
+		assertThat( results.size() ).isEqualTo(1);
+		assertThat( Arrays.asList( results.get(0) ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
 
 		commit();
 	}

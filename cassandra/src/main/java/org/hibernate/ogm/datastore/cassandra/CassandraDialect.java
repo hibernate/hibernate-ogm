@@ -534,6 +534,12 @@ public class CassandraDialect implements GridDialect, QueryableGridDialect<Strin
 	}
 
 	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters) {
+		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
+		throw new UnsupportedOperationException("Not yet implemented.");
+	}
+
+	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return new CassandraParameterMetadataBuilder( session, provider.getMetaDataCache() );
 	}
