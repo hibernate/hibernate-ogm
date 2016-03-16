@@ -50,9 +50,9 @@ public class MongoDBQueryDescriptor implements Serializable {
 	/**
 	 * Optional query options in case this is an UPDATE, INSERT or REMOVE. Will have the following structure:
 	 * <ul>
-	 * <li>{ upsert: <boolean>, multi: <boolean>, writeConcern: <document> } for an UPDATE query</li>
-	 * <li>{ ordered: <boolean>, writeConcern: <document> } argument for an INSERT query</li>
-	 * <li>{ justOne: <boolean>, writeConcern: <document> } argument for a REMOVE query</li>
+	 * <li>{ upsert: boolean, multi: boolean, writeConcern: document } for an UPDATE query</li>
+	 * <li>{ ordered: boolean, writeConcern: document } argument for an INSERT query</li>
+	 * <li>{ justOne: boolean, writeConcern: document } argument for a REMOVE query</li>
 	 * </ul>
 	 */
 	private final DBObject options;
