@@ -18,6 +18,7 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.QueryContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -139,8 +140,8 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, QueryContext queryContext) {
 		log.tracef( "Executing backend query: %1$s", query.getQuery() );
-		return super.executeBackendQuery( query, queryParameters );
+		return super.executeBackendQuery( query, queryParameters, queryContext );
 	}
 }
