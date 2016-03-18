@@ -10,6 +10,7 @@ import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Contracts;
@@ -25,21 +26,26 @@ public class AssociationContextImpl implements AssociationContext {
 	private final AssociationTypeContext associationTypeContext;
 	private final OperationsQueue operationsQueue;
 	private final Tuple entityTuple;
+	private final TransactionContext transactionContext;
 
-	public AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple) {
-		this( associationTypeContext, entityTuple, null );
+	public AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple, TransactionContext transactionContext) {
+		this( associationTypeContext, entityTuple, null, transactionContext );
 	}
 
 	public AssociationContextImpl(AssociationContextImpl original, OperationsQueue operationsQueue) {
-		this( original.associationTypeContext, original.entityTuple, operationsQueue );
+		this( original.associationTypeContext, original.entityTuple, operationsQueue, original.transactionContext );
 	}
 
-	private AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple, OperationsQueue operationsQueue) {
+	private AssociationContextImpl(AssociationTypeContext associationTypeContext,
+			Tuple entityTuple,
+			OperationsQueue operationsQueue,
+			TransactionContext transactionContext) {
 		Contracts.assertParameterNotNull( associationTypeContext, "associationTypeContext" );
 
 		this.associationTypeContext = associationTypeContext;
 		this.entityTuple = entityTuple;
 		this.operationsQueue = operationsQueue;
+		this.transactionContext = transactionContext;
 	}
 
 	@Override
@@ -50,6 +56,11 @@ public class AssociationContextImpl implements AssociationContext {
 	@Override
 	public OperationsQueue getOperationsQueue() {
 		return operationsQueue;
+	}
+
+	@Override
+	public TransactionContext getTransactionContext() {
+		return transactionContext;
 	}
 
 	@Override

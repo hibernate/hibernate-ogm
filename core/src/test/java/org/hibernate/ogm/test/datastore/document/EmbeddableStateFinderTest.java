@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -92,6 +93,11 @@ public class EmbeddableStateFinderTest {
 
 			@Override
 			public OperationsQueue getOperationsQueue() {
+				return null;
+			}
+
+			@Override
+			public TransactionContext getTransactionContext() {
 				return null;
 			}
 		};

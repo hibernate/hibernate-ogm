@@ -42,8 +42,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.persist( emmanuel );
 		session.persist( jerome );
 		session.flush();
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
+		assertThat( getNumberOfEntities( session ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( session ) ).isEqualTo( expectedAssociations() );
 		transaction.commit();
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
 		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );

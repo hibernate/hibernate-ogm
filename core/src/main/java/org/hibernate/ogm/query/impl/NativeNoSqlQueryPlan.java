@@ -6,15 +6,19 @@
  */
 package org.hibernate.ogm.query.impl;
 
+import static org.hibernate.ogm.util.impl.TransactionContextHelper.transactionContext;
+
 import java.io.Serializable;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.dialect.impl.QueryContextImpl;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.spi.QueryContext;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 
@@ -35,14 +39,15 @@ class NativeNoSqlQueryPlan extends NativeSQLQueryPlan {
 	public int performExecuteUpdate(org.hibernate.engine.spi.QueryParameters queryParameters, SessionImplementor session) throws HibernateException {
 		QueryableGridDialect<?> gridDialect = session.getFactory().getServiceRegistry().getService( QueryableGridDialect.class );
 		TypeTranslator typeTranslator = session.getFactory().getServiceRegistry().getService( TypeTranslator.class );
-		return performExecuteUpdateQuery( gridDialect, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
+		QueryContext queryContext = new QueryContextImpl( transactionContext( session ) );
+		return performExecuteUpdateQuery( gridDialect, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ), queryContext );
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends Serializable> int performExecuteUpdateQuery( QueryableGridDialect<T> gridDialect, QueryParameters queryParameters ) {
+	private <T extends Serializable> int performExecuteUpdateQuery(QueryableGridDialect<T> gridDialect, QueryParameters queryParameters, QueryContext queryContext) {
 		// Safe cast, see org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter.createQueryPlan(NativeSQLQuerySpecification, SessionFactoryImplementor)
 		BackendCustomQuery<T> customQuery = (BackendCustomQuery<T>) getCustomQuery();
 		BackendQuery<T> backendQuery = new BackendQuery<T>( customQuery.getQueryObject(), customQuery.getSingleEntityKeyMetadataOrNull() );
-		return gridDialect.executeBackendUpdateQuery( backendQuery, queryParameters );
+		return gridDialect.executeBackendUpdateQuery( backendQuery, queryParameters, queryContext );
 	}
 }

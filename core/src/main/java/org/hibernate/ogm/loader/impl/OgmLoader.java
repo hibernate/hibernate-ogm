@@ -568,7 +568,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 					keys[index] = EntityKeyBuilder.fromPersister( persister, (Serializable) qp.getPositionalParameterValues()[index], session );
 				}
 				if ( multigetGridDialect != null ) {
-					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext() ) ) {
+					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext( session ) ) ) {
 						if ( tuple != null ) {
 							resultset.addTuple( tuple );
 						}
@@ -576,7 +576,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				}
 				else {
 					for ( EntityKey entityKey : keys ) {
-						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext( session ) );
 						if ( entry != null ) {
 							resultset.addTuple( entry );
 						}
@@ -585,7 +585,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			}
 			else {
 				final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
-				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
+				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext( session ) );
 				if ( entry != null ) {
 					resultset.addTuple( entry );
 				}

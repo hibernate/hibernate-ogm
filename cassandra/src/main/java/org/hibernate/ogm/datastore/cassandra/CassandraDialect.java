@@ -44,6 +44,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.QueryContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -493,7 +494,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(
-			BackendQuery<String> query, QueryParameters queryParameters) {
+			BackendQuery<String> query, QueryParameters queryParameters, QueryContext queryContext) {
 
 		Object[] parameters = new Object[queryParameters.getPositionalParameters().size()];
 		int i = 0;
@@ -524,7 +525,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters) {
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, QueryContext queryContext) {
 		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
 		throw new UnsupportedOperationException("Not yet implemented.");
 	}

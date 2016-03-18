@@ -29,6 +29,7 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.QueryContext;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -181,13 +182,13 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	 */
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
-		return queryableGridDialect.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters, QueryContext queryContext) {
+		return queryableGridDialect.executeBackendQuery( query, queryParameters, queryContext );
 	}
 
 	@Override
-	public int executeBackendUpdateQuery(BackendQuery<T> query, QueryParameters queryParameters) {
-		return queryableGridDialect.executeBackendUpdateQuery( query, queryParameters );
+	public int executeBackendUpdateQuery(BackendQuery<T> query, QueryParameters queryParameters, QueryContext queryContext) {
+		return queryableGridDialect.executeBackendUpdateQuery( query, queryParameters, queryContext );
 	}
 
 	@Override
