@@ -7,21 +7,20 @@
 package org.hibernate.ogm.dialect.impl;
 
 import org.hibernate.ogm.dialect.spi.TransactionContext;
-import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
 
 /**
  * @author Davide D'Alto
  */
 public class TransactionContextImpl implements TransactionContext {
 
-	private final TransactionDriver driver;
+	private final IdentifiableDriver driver;
 
-	public TransactionContextImpl(TransactionDriver driver) {
+	public TransactionContextImpl(IdentifiableDriver driver) {
 		this.driver = driver;
 	}
 
 	@Override
-	public TransactionDriver getTransactionDriver() {
-		return driver;
+	public Long getTransactionId() {
+		return driver.getTransactionId();
 	}
 }

@@ -8,9 +8,11 @@ package org.hibernate.ogm.util.impl;
 
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.ogm.dialect.impl.TransactionContextImpl;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
 
 /**
  * @author Davide D'Alto
@@ -27,7 +29,10 @@ public final class TransactionContextHelper {
 	public static TransactionContext transactionContext(SessionImplementor session) {
 		TransactionCoordinator transactionCoordinator = session.getTransactionCoordinator();
 		if ( transactionCoordinator != null && transactionCoordinator.getTransactionDriverControl() != null ) {
-			return new TransactionContextImpl( transactionCoordinator.getTransactionDriverControl() );
+			TransactionDriver driver = transactionCoordinator.getTransactionDriverControl();
+			if ( driver instanceof IdentifiableDriver ) {
+				return new TransactionContextImpl( (IdentifiableDriver) driver );
+			}
 		}
 		return null;
 	}
