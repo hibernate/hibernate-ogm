@@ -1390,7 +1390,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					}
 					else {
 						try {
-							invocationCollectingGridDialect.onInsertOrUpdateTupleFailure( key, resultset, new TupleAlreadyExistsException( entityKeyMetadata, resultset, null ) );
+							invocationCollectingGridDialect.onInsertOrUpdateTupleFailure( key, resultset, new TupleAlreadyExistsException( entityKeyMetadata, resultset ) );
 						}
 						catch ( TupleAlreadyExistsException taee ) {
 							throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), taee );
