@@ -26,6 +26,33 @@ public class TupleAlreadyExistsException extends HibernateException {
 	 *
 	 * @param entityKeyMetadata Key metadata for the affected entity
 	 * @param id A {@link Tuple} containing the id column(s) of the affected entity
+	 */
+	public TupleAlreadyExistsException(EntityKeyMetadata entityKeyMetadata, Tuple id) {
+		super( (Throwable) null );
+
+		this.entityKeyMetadata = entityKeyMetadata;
+		this.id = id;
+	}
+
+	/**
+	 * Creates a new {@code TupleAlreadyExistsException}.
+	 *
+	 * @param entityKeyMetadata Key metadata for the affected entity
+	 * @param id A {@link Tuple} containing the id column(s) of the affected entity
+	 * @param message a message explaining the cause of the error
+	 */
+	public TupleAlreadyExistsException(EntityKeyMetadata entityKeyMetadata, Tuple id, String message) {
+		super( message );
+
+		this.entityKeyMetadata = entityKeyMetadata;
+		this.id = id;
+	}
+
+	/**
+	 * Creates a new {@code TupleAlreadyExistsException}.
+	 *
+	 * @param entityKeyMetadata Key metadata for the affected entity
+	 * @param id A {@link Tuple} containing the id column(s) of the affected entity
 	 * @param cause An exception raised by the underlying datastore indicating the insertion of a duplicate primary key
 	 */
 	public TupleAlreadyExistsException(EntityKeyMetadata entityKeyMetadata, Tuple id, Throwable cause) {
