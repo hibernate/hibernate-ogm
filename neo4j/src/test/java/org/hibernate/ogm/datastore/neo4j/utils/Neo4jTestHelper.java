@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -18,51 +19,91 @@ import org.fest.util.Files;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
+import org.hibernate.service.spi.Stoppable;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.ResourceIterator;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jTestHelper implements TestableGridDialect {
 
-	private static final Map<String, String> hibProperties = readProperties();
+	private static final Map<String, String> hibernateProperties = readProperties();
+
+	private static final String ROOT_FOLDER = hibernateProperties.get( Neo4jProperties.DATABASE_PATH ) + File.separator + "NEO4J";
+
 	/**
 	 * Query for counting all entities. This takes embedded entities and temporary nodes (which never should show up
 	 * actually) into account.
 	 */
-	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " RETURN COUNT(n) as count";
+	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name()
+			+ " RETURN COUNT(n) as count";
 
 	private static final String ASSOCIATION_COUNT_QUERY = "MATCH (n) -[r]-> () RETURN COUNT(DISTINCT type(r)) as count";
 
-	private static final String ROOT_FOLDER = hibProperties.get( Neo4jProperties.DATABASE_PATH ) + File.separator + "NEO4J";
+	private static final String DELETE_ALL = "MATCH (n) OPTIONAL MATCH (n) -[r]-> () DELETE n,r";
 
-	@Override
-	public long getNumberOfEntities(Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
+	static {
+		// Read host, username and password from environment variable
+		// Maven's surefire plugin set it to the string 'null'
+		String neo4jHost = System.getenv( "NEO4J_HOST" );
+		if ( isNotNull( neo4jHost ) ) {
+			System.getProperties().setProperty( OgmProperties.HOST, neo4jHost );
+		}
+		String neo4jUsername = System.getenv( "NEO4J_USERNAME" );
+		if ( isNotNull( neo4jUsername ) ) {
+			System.getProperties().setProperty( OgmProperties.USERNAME, neo4jUsername );
+		}
+		String neo4jPassword = System.getenv( "NEO4J_PASSWORD" );
+		if ( isNotNull( neo4jPassword ) ) {
+			System.getProperties().setProperty( OgmProperties.PASSWORD, neo4jPassword );
+		}
+	}
+
+	private static boolean isNotNull(String neo4jHostName) {
+		return neo4jHostName != null && neo4jHostName.length() > 0 && !"null".equals( neo4jHostName );
 	}
 
 	@Override
-	public long getNumberOfAssociations(Session session) {
-		return getNumberOfAssociations( session.getSessionFactory() );
+	public long getNumberOfEntities(Session session) {
+		DatastoreProvider provider = getProvider( session.getSessionFactory() );
+		return getNumberOfEntities( session, provider );
 	}
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDatabase();
+		DatastoreProvider provider = getProvider( sessionFactory );
+		return getNumberOfEntities( null, provider );
+	}
+
+	private long getNumberOfEntities(Session session, DatastoreProvider provider) {
+		GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDatabase();
 		ResourceIterator<Long> result = graphDb.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
 		Long count = result.next();
 		result.close();
@@ -70,23 +111,68 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfAssociations(Session session) {
+		BaseDatastoreProvider provider = getProvider( session.getSessionFactory() );
+		return getNumberOfAssociations( session, provider );
+	}
+
+	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDatabase();
+		BaseDatastoreProvider provider = getProvider( sessionFactory );
+		return getNumberOfAssociations( null, provider );
+	}
+
+	private long getNumberOfAssociations(Session session, BaseDatastoreProvider provider) {
+		GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDatabase();
 		ResourceIterator<Long> result = graphDb.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
 		Long count = result.next();
 		result.close();
 		return count.longValue();
 	}
 
+	private long readCountFromResponse(Session session, Neo4jClient remoteNeo4j, Statement statement) {
+		Statements statements = new Statements();
+		statements.addStatement( statement );
+		StatementsResponse response = null;
+		if ( session != null ) {
+			Long transactionId = transactionId( session );
+			if ( transactionId != null ) {
+				response = remoteNeo4j.executeQueriesInOpenTransaction( transactionId, statements );
+			}
+			else {
+				// Transaction rollbacked or committed
+				response = remoteNeo4j.executeQueriesInNewTransaction( statements );
+			}
+		}
+		else {
+			response = remoteNeo4j.executeQueriesInNewTransaction( statements );
+		}
+		return ( (Integer) response.getResults().get( 0 ).getData().get( 0 ).getRow().get( 0 ) ).longValue();
+	}
+
+	private Long transactionId(Session session) {
+		IdentifiableDriver driver = (IdentifiableDriver) ( ( (SessionImplementor) session ).getTransactionCoordinator().getTransactionDriverControl() );
+		if ( session.getTransaction().getStatus() != TransactionStatus.ACTIVE ) {
+			return null;
+		}
+		Long transactionId = (Long) driver.getTransactionId();
+		return transactionId;
+	}
+
 	@Override
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		Map<String, Object> tuple = new HashMap<String, Object>();
 		GridDialect dialect = getDialect( session.getSessionFactory() );
-		TupleSnapshot snapshot = dialect.getTuple( key, GridDialectOperationContexts.emptyTupleContext() ).getSnapshot();
+		TupleContext context = tupleContext( session );
+		TupleSnapshot snapshot = dialect.getTuple( key, context ).getSnapshot();
 		for ( String column : snapshot.getColumnNames() ) {
 			tuple.put( column, snapshot.get( column ) );
 		}
 		return tuple;
+	}
+
+	private TupleContext tupleContext(Session session) {
+		return new GridDialectOperationContexts.TupleContextBuilder().transactionContext( session ).buildTupleContext();
 	}
 
 	@Override
@@ -96,15 +182,34 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		getProvider( sessionFactory ).stop();
+		DatastoreProvider provider = getProvider( sessionFactory );
+		( (Stoppable) getProvider( sessionFactory ) ).stop();
 		Files.delete( new File( ROOT_FOLDER ) );
+	}
+
+	public static void deleteAllElements(DatastoreProvider provider) {
+		GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDataBase();
+		graphDb.execute( DELETE_ALL ).close();
 	}
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
-		Map<String, String> properties = new HashMap<String, String>( hibProperties );
-		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation() );
-		return properties;
+		Map<String, String> envProps = new HashMap<String, String>( 2 );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PASSWORD, envProps );
+
+		// The configuration file overrides the environment properties
+		envProps.putAll( hibernateProperties );
+		envProps.put( Neo4jProperties.DATABASE_PATH, dbLocation() );
+		return envProps;
+	}
+
+	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
+		String value = System.getProperties().getProperty( environmentVariableName );
+		if ( value != null && value.length() > 0 ) {
+			envProps.put( environmentVariableName, value );
+		}
 	}
 
 	/**
@@ -131,12 +236,12 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		}
 	}
 
-	private static Neo4jDatastoreProvider getProvider(SessionFactory sessionFactory) {
+	private static BaseDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
-		if ( !( Neo4jDatastoreProvider.class.isInstance( provider ) ) ) {
-			throw new RuntimeException( "Not testing with Neo4jDB, cannot extract underlying provider" );
+		if ( Neo4jDatastoreProvider.class.isInstance( provider ) ) {
+			return Neo4jDatastoreProvider.class.cast( provider );
 		}
-		return Neo4jDatastoreProvider.class.cast( provider );
+		throw new RuntimeException( "Not testing with Neo4jDB, cannot extract underlying provider" );
 	}
 
 	private static GridDialect getDialect(SessionFactory sessionFactory) {
@@ -156,6 +261,71 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new Neo4jDialect( (Neo4jDatastoreProvider) datastoreProvider );
+		if ( Neo4jDatastoreProvider.class.isInstance( datastoreProvider ) ) {
+			return new Neo4jDialect( (Neo4jDatastoreProvider) datastoreProvider );
+		}
+		throw new RuntimeException( "Not testing with Neo4jDB, cannot extract underlying dialect" );
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class RowStatementsResponse {
+
+		private List<RowStatementsResult> results;
+
+		private List<ErrorResponse> errors;
+
+		public List<RowStatementsResult> getResults() {
+			return results;
+		}
+
+		public void setResults(List<RowStatementsResult> results) {
+			this.results = results;
+		}
+
+		public List<ErrorResponse> getErrors() {
+			return errors;
+		}
+
+		public void setErrors(List<ErrorResponse> errors) {
+			this.errors = errors;
+		}
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class RowStatementsResult {
+
+		private List<String> columns;
+
+		private List<RowArray> data;
+
+		public List<String> getColumns() {
+			return columns;
+		}
+
+		public void setColumns(List<String> columns) {
+			this.columns = columns;
+		}
+
+		public List<RowArray> getData() {
+			return data;
+		}
+
+		public void setData(List<RowArray> data) {
+			this.data = data;
+		}
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class RowArray {
+
+		private List<Object> row;
+
+		public List<Object> getRow() {
+			return row;
+		}
+
+		public void setRow(List<Object> row) {
+			this.row = row;
+		}
 	}
 }

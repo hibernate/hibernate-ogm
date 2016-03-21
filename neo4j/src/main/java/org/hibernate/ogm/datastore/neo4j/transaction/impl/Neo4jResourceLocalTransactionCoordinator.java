@@ -287,7 +287,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 					rollback();
 				}
 				catch (RuntimeException e2) {
-					log.debug( "Encountered failure rolling back failed commit", e2 );
+					log.unableToRollbackTransaction( e2 );
 				}
 				throw e;
 			}

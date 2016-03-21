@@ -6,9 +6,6 @@
  */
 package org.hibernate.ogm.datastore.neo4j;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.limit;
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
-import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
@@ -20,7 +17,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.AssertionFailure;
@@ -38,21 +34,12 @@ import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
-import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
-import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
-import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
-import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -68,11 +55,8 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.type.Type;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -95,24 +79,22 @@ import org.neo4j.kernel.api.exceptions.schema.UniquePropertyConstraintViolationK
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect, QueryableGridDialect<String>, SessionFactoryLifecycleAwareDialect {
-
-	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintViolation";
+public class Neo4jDialect extends BaseNeo4jDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private final Neo4jSequenceGenerator neo4jSequenceGenerator;
-
 	private final GraphDatabaseService dataBase;
+
+	private final Neo4jSequenceGenerator sequenceGenerator;
 
 	private Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries;
 
 	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries;
 
-
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
-		dataBase = provider.getDatabase();
-		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
+		super( Neo4jTypeConverter.FOR_EMBEDDED );
+		this.dataBase = provider.getDatabase();
+		this.sequenceGenerator = provider.getSequenceGenerator();
 	}
 
 	@Override
@@ -366,22 +348,6 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 	}
 
-	private RowKey convert(AssociationKey associationKey, Neo4jTupleAssociationSnapshot snapshot) {
-		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
-		Object[] values = new Object[columnNames.length];
-
-		for ( int i = 0; i < columnNames.length; i++ ) {
-			values[i] = snapshot.get( columnNames[i] );
-		}
-
-		return new RowKey( columnNames, values );
-	}
-
-	@Override
-	public Association createAssociation(AssociationKey associationKey, AssociationContext associationContext) {
-		return new Association();
-	}
-
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		// If this is the inverse side of a bi-directional association, we don't create a relationship for this; this
@@ -393,26 +359,6 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		for ( AssociationOperation action : association.getOperations() ) {
 			applyAssociationOperation( association, key, action, associationContext );
 		}
-	}
-
-	@Override
-	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationTypeContext associationTypeContext) {
-		return false;
-	}
-
-	@Override
-	public Number nextValue(NextValueRequest request) {
-		return neo4jSequenceGenerator.nextValue( request.getKey(), request.getIncrement(), request.getInitialValue() );
-	}
-
-	@Override
-	public boolean supportsSequences() {
-		return true;
-	}
-
-	@Override
-	public GridType overrideType(Type type) {
-		return Neo4jTypeConverter.INSTANCE.convert( type );
 	}
 
 	@Override
@@ -571,23 +517,18 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 	}
 
-	/**
-	 * A regular embedded is an element that it is embedded but it is not a key or a collection.
-	 *
-	 * @param keyColumnNames the column names representing the identifier of the entity
-	 * @param column the column we want to check
-	 * @return {@code true} if the column represent an attribute of a regular embedded element, {@code false} otherwise
-	 */
-	public static boolean isPartOfRegularEmbedded(String[] keyColumnNames, String column) {
-		return isPartOfEmbedded( column ) && !ArrayHelper.contains( keyColumnNames, column );
-	}
-
 	private void putProperty(EntityKey entityKey, Node node, TupleOperation operation) {
 		try {
 			node.setProperty( operation.getColumn(), operation.getValue() );
 		}
 		catch (ConstraintViolationException e) {
-			throw log.constraintViolation( entityKey, operation, e );
+			String message = e.getMessage();
+			if ( message.contains( "already exists" ) ) {
+				throw log.mustNotInsertSameEntityTwice( String.valueOf( operation ), e );
+			}
+			else {
+				throw log.constraintViolation( entityKey, String.valueOf( operation ), e );
+			}
 		}
 	}
 
@@ -630,6 +571,11 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
+	public Number nextValue(NextValueRequest request) {
+		return sequenceGenerator.nextValue( request );
+	}
+
+	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		Map<String, Object> parameters = getParameters( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
@@ -642,78 +588,10 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		return new MapsTupleIterator( result );
 	}
 
-	private Map<String, Object> getParameters(QueryParameters queryParameters) {
-		Map<String, Object> parameters = new HashMap<>( queryParameters.getNamedParameters().size() );
-		for ( Entry<String, TypedGridValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
-			parameters.put( parameter.getKey(), parameter.getValue().getValue() );
-		}
-		return parameters;
-	}
-
-	@Override
-	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
-		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
-		throw new UnsupportedOperationException("Not yet implemented.");
-	}
-
 	@Override
 	public String parseNativeQuery(String nativeQuery) {
 		// We return given Cypher queries as they are; Currently there is no API for validating Cypher queries without
 		// actually executing them (see https://github.com/neo4j/neo4j/issues/2766)
 		return nativeQuery;
-	}
-
-	private String buildNativeQuery(BackendQuery<String> customQuery, QueryParameters queryParameters) {
-		StringBuilder nativeQuery = new StringBuilder( customQuery.getQuery() );
-		applyFirstRow( queryParameters, nativeQuery );
-		applyMaxRows( queryParameters, nativeQuery );
-		return nativeQuery.toString();
-	}
-
-	private void applyFirstRow(QueryParameters queryParameters, StringBuilder nativeQuery) {
-		Integer firstRow = queryParameters.getRowSelection().getFirstRow();
-		if ( firstRow != null ) {
-			skip( nativeQuery, firstRow );
-		}
-	}
-
-	private void applyMaxRows(QueryParameters queryParameters, StringBuilder nativeQuery) {
-		Integer maxRows = queryParameters.getRowSelection().getMaxRows();
-		if ( maxRows != null ) {
-			limit( nativeQuery, maxRows );
-		}
-	}
-
-
-	@Override
-	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return new Neo4jParameterMetadataBuilder();
-	}
-
-	/**
-	 * Returns the key of the entity targeted by the represented association, retrieved from the given tuple.
-	 *
-	 * @param tuple the tuple from which to retrieve the referenced entity key
-	 * @return the key of the entity targeted by the represented association
-	 */
-	private EntityKey getEntityKey(Tuple tuple, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Object[] columnValues = new Object[ associatedEntityKeyMetadata.getAssociationKeyColumns().length];
-		int i = 0;
-
-		for ( String associationKeyColumn : associatedEntityKeyMetadata.getAssociationKeyColumns() ) {
-			columnValues[i] = tuple.get( associationKeyColumn );
-			i++;
-		}
-
-		return new EntityKey( associatedEntityKeyMetadata.getEntityKeyMetadata(), columnValues );
-	}
-
-	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
-		// Only for non-composite keys (= one column) Neo4j supports unique key constraints; Hence an explicit look-up
-		// is required to detect duplicate insertions when using composite keys
-		return entityKeyMetadata.getColumnNames().length == 1 ?
-				DuplicateInsertPreventionStrategy.NATIVE :
-				DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 }
