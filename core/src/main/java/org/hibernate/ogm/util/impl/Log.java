@@ -292,4 +292,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 86, value = "Transaction identifier not available")
 	HibernateException transactionIdIsNotAvailable();
+
+	@Message(id = 87, value = "The tuple context is not available, probably because we are dealing with more than a single entity type")
+	HibernateException tupleContextNotAvailable();
 }
