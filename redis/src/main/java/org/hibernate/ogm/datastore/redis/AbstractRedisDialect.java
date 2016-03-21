@@ -64,7 +64,7 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	 * Creates a new {@link AbstractRedisDialect}.
 	 *
 	 * @param connection a Redis connection (A regular Redis connection implements also {@link RedisClusterCommands})
-	 * @param configuredForCluster {@literal true} if the connection is configured for cluster operations.
+	 * @param configuredForCluster {@code true} if the connection is configured for cluster operations.
 	 */
 	public AbstractRedisDialect(RedisClusterCommands<String, String> connection, boolean configuredForCluster) {
 
@@ -368,7 +368,7 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	}
 
 	/**
-	 * Scan over keys. This method is aware whether the the client is connected to a Redis Cluster.
+	 * Scan over keys. This method is aware whether the client is connected to a Redis Cluster.
 	 * If so, then a Redis Cluster scan requires to iterate over master nodes and keep the
 	 * state within a custom {@link KeyScanCursor} instance.
 	 *
@@ -408,6 +408,10 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 			nodeIds = new ArrayList<>();
 
 			for ( RedisClusterNode masterNode : masterNodes ) {
+
+				if ( masterNode.getSlots().isEmpty() ) {
+					continue;
+				}
 				nodeIds.add( masterNode.getNodeId() );
 			}
 
@@ -448,7 +452,7 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	}
 
 	/**
-	 * @return {@literal true} if the connected Redis node (default connection) is running in Redis Cluster mode.
+	 * @return {@code true} if the connected Redis node (default connection) is running in Redis Cluster mode.
 	 */
 	public boolean isClusterMode() {
 		return clusterMode;

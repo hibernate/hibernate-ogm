@@ -94,5 +94,5 @@ test-standalone:
 test-cluster:
 	$(MAKE) cluster-init
 	sleep 1
-	REDIS_HOSTNAME=localhost:7379 REDIS_CLUSTER=true mvn clean install
+	REDIS_HOSTNAME="localhost:7379,localhost:7380,localhost:7381,localhost:7382" REDIS_CLUSTER=true mvn clean install
 	$(MAKE) cluster-stop
