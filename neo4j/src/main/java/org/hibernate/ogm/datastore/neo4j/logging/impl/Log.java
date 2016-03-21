@@ -14,7 +14,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 import org.hibernate.HibernateException;
 import org.hibernate.hql.ast.common.JoinType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.spi.TupleOperation;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -34,7 +33,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void errorGeneratingSequence(String sequenceName, @Cause Exception e);
 
 	@Message(id = 1403, value = "Constraint violation for entity %s: %s")
-	HibernateException constraintViolation(EntityKey entityKey, TupleOperation operation, @Cause Exception cause);
+	HibernateException constraintViolation(EntityKey entityKey, String message, @Cause Exception cause);
 
 	@LogMessage(level = WARN)
 	@Message(id = 1404, value = "Neo4j does not support constraints spanning multiple columns. Unique key %1$s for %2$s on columns %3$s cannot be created")
@@ -72,4 +71,16 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = WARN)
 	@Message(id = 1413, value = "Unable to rollback transaction")
 	void unableToRollbackTransaction(@Cause Exception e);
+
+	@Message(id = 1414, value = "Neo4j does not support multiple hosts configuration: %s")
+	HibernateException doesNotSupportMultipleHosts(String hosts);
+
+	@Message(id = 1415, value = "An error occurred, malformed database URL. Database host: %s, database port: %03d, database name: %s")
+	HibernateException malformedDataBaseUrl(@Cause Exception e, String databaseHost, int databasePort, String databaseName);
+
+	@Message(id = 1416, value = "%s: %s")
+	HibernateException nativeQueryException( String code, String message, @Cause Exception cause);
+
+	@Message(id = 1417, value = "%s: %s")
+	HibernateException constraintCreationException(String code, String message);
 }
