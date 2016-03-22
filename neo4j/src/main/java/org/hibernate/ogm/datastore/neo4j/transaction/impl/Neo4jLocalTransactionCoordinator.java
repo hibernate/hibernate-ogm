@@ -20,7 +20,7 @@ import org.neo4j.graphdb.Transaction;
  *
  * Note that during a JTA transaction Neo4j {@link Transaction} are
  * synchronized using the {@link Synchronization} interface. A commit to the Neo4j transaction will happen before the
- * end of the JTA transaction, meaning that it won't be possible to rollback if an error happen after succesful commit
+ * end of the JTA transaction, meaning that it won't be possible to roll-back if an error happen after successful commit
  * to the db.
  *
  * @author Davide D'Alto
