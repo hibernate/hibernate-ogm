@@ -40,4 +40,11 @@ public interface AssociationContext {
 	 * @return A tuple representing the entity on the current side of the association
 	 */
 	Tuple getEntityTuple();
+
+	/**
+	 * Provides the information related to the transactional boundaries the query can be executed
+	 *
+	 * @return a transaction context containing information about the current running transaction, or null
+	 */
+	TransactionContext getTransactionContext();
 }

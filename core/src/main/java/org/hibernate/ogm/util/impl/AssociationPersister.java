@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import static org.hibernate.ogm.util.impl.TransactionContextHelper.transactionContext;
+
 import java.io.Serializable;
 
 import org.hibernate.SessionFactory;
@@ -226,7 +228,8 @@ public class AssociationPersister {
 		if ( associationContext == null ) {
 			associationContext = new AssociationContextImpl(
 					associationTypeContext,
-					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null
+					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null,
+					transactionContext( session )
 			);
 		}
 

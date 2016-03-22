@@ -52,6 +52,7 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.QueryContext;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -612,7 +613,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, QueryContext queryContext) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		Result result = dataBase.execute( nativeQuery, parameters );
@@ -624,7 +625,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters) {
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, QueryContext queryContex) {
 		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
 		throw new UnsupportedOperationException("Not yet implemented.");
 	}
