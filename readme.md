@@ -124,6 +124,24 @@ setting the environment variable `REDIS_HOSTNAME` prior to running the test suit
 If this variable is not set, the _redis_ module still will be compiled and packaged but the tests will be skipped.
 If needed, the port to connect to can be configured through the environment variable `REDIS_PORT`.
 
+### Neo4j
+
+For running the tests in the _neo4j_ and _integrationtest/neo4j_ modules, by default the
+embedded Neo4j configuration is used.
+
+If you want to run the tests on a remote server, you need to specify the profile `neo4j-remote`
+
+    mvn clean install -s settings-example.xml -Pneo4j-remote
+
+This assumes Neo4j to be installed on `localhost`, using the default port and no authentication.
+If you work with different settings, configure the required properties in hibernate.properties
+and/or the environment variables `NEO4J_HOST` `NEO4J_USERNAME` `NEO4J_PASSWORD`
+prior to running the tests:
+
+    export NEO4J_HOST=neo4j-machine:1234
+    export NEO4J_USERNAME=someUsername
+    export NEO4J_PASSWORD=someP@ssw0rd
+
 ## Contact
 
 Latest Documentation:
