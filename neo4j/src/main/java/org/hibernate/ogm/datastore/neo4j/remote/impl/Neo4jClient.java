@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.remote.impl;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
@@ -40,17 +41,33 @@ public class Neo4jClient implements AutoCloseable {
 
 	private final Neo4jTransactionFacade neo4jFacade;
 
-	public Neo4jClient(DatabaseIdentifier database) {
-		this.client = createRestClient( database );
+	public Neo4jClient(DatabaseIdentifier database, Neo4jConfiguration configuration) {
+		this.client = createRestClient( database, configuration );
 		this.authenticationClient = client.target( database.getServerUri() ).proxy( Neo4jAuthenticationFacade.class );
 		this.neo4jFacade = client.target( database.getDatabaseUri() ).proxy( Neo4jTransactionFacade.class );
 	}
 
-	private static ResteasyClient createRestClient(DatabaseIdentifier database) {
+	private static ResteasyClient createRestClient(DatabaseIdentifier database, Neo4jConfiguration configuration) {
 		ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder();
 
 		if ( database.getUserName() != null ) {
 			clientBuilder.register( new BasicAuthentication( database.getUserName(), database.getPassword() ) );
+		}
+
+		if ( configuration.getConnectionCheckoutTimeout() != null ) {
+			clientBuilder.connectionCheckoutTimeout( configuration.getConnectionCheckoutTimeout(), TimeUnit.MILLISECONDS );
+		}
+
+		if ( configuration.getEstablishConnectionTimeout() != null ) {
+			clientBuilder.establishConnectionTimeout( configuration.getEstablishConnectionTimeout(), TimeUnit.MILLISECONDS );
+		}
+
+		if ( configuration.getConnectionTTL() != null ) {
+			clientBuilder.connectionTTL( configuration.getConnectionTTL(), TimeUnit.MILLISECONDS );
+		}
+
+		if ( configuration.getSocketTimeout() != null ) {
+			clientBuilder.socketTimeout( configuration.getSocketTimeout(), TimeUnit.MILLISECONDS );
 		}
 
 		clientBuilder.register( XStreamRequestHeaderFilter.INSTANCE );
