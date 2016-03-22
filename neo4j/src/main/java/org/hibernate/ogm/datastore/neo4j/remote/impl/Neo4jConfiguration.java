@@ -10,6 +10,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HostParser;
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.cfg.spi.Hosts;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
@@ -33,6 +34,10 @@ public class Neo4jConfiguration {
 	private final String username;
 	private final String password;
 	private final boolean createDatabase;
+	private final Long socketTimeout;
+	private final Long establishConnectionTimeout;
+	private final Long connectionCheckoutTimeout;
+	private final Long connectionTTL;
 
 	public Neo4jConfiguration(ConfigurationPropertyReader propertyReader) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
@@ -52,6 +57,10 @@ public class Neo4jConfiguration {
 
 		this.username = propertyReader.property( OgmProperties.USERNAME, String.class ).getValue();
 		this.password = propertyReader.property( OgmProperties.PASSWORD, String.class ).getValue();
+		this.socketTimeout = propertyReader.property( Neo4jProperties.SOCKET_TIMEOUT, Long.class ).getValue();
+		this.establishConnectionTimeout = propertyReader.property( Neo4jProperties.ESTABLISH_CONNECTION_TIMEOUT, Long.class ).getValue();
+		this.connectionCheckoutTimeout = propertyReader.property( Neo4jProperties.CONNECTION_CHECKOUT_TIMEOUT, Long.class ).getValue();
+		this.connectionTTL = propertyReader.property( Neo4jProperties.CONNECTION_TTL, Long.class ).getValue();
 
 		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
 				.withDefault( false )
@@ -97,5 +106,37 @@ public class Neo4jConfiguration {
 	 */
 	public boolean isCreateDatabase() {
 		return createDatabase;
+	}
+
+	/**
+	 * @see Neo4jProperties#SOCKET_TIMEOUT
+	 * return Socket inactivity timeout in milliseconds
+	 */
+	public Long getSocketTimeout() {
+		return socketTimeout;
+	}
+
+	/**
+	 * @see Neo4jProperties#CONNECTION_CHECKOUT_TIMEOUT
+	 * return Socket inactivity timeout in milliseconds
+	 */
+	public Long getConnectionCheckoutTimeout() {
+		return connectionCheckoutTimeout;
+	}
+
+	/**
+	 * @see Neo4jProperties#CONNECTION_TTL
+	 * return the time to live of the connection in the pool.
+	 */
+	public Long getConnectionTTL() {
+		return connectionTTL;
+	}
+
+	/**
+	 * @see Neo4jProperties#ESTABLISH_CONNECTION_TIMEOUT
+	 * @return the timeout in millisecond to make an initial socket connection
+	 */
+	public Long getEstablishConnectionTimeout() {
+		return establishConnectionTimeout;
 	}
 }
