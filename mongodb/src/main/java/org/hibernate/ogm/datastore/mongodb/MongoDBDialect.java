@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
@@ -941,10 +942,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		DBObject update = (DBObject) queryDesc.getCriteria().get( "update" );
 		Boolean nevv = (Boolean) queryDesc.getCriteria().get( "new" );
 		Boolean upsert = (Boolean) queryDesc.getCriteria().get( "upsert" );
-		// IMPROVE bypassDocumentValidation: <boolean> and writeConcern: <document> can be supported only after
-		// upgrading to MongoDB Java driver 3.2.x
-		final DBObject theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ), update, ( nevv != null ? nevv : false ),
-				( upsert != null ? upsert : false ) );
+		Boolean bypass = (Boolean) queryDesc.getCriteria().get( "bypassDocumentValidation" );
+		DBObject o = (DBObject) queryDesc.getCriteria().get( "writeConcern" );
+		WriteConcern wc = getWriteConcern( o );
+		final DBObject theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ),
+				update, (nevv != null ? nevv : false), (upsert != null ? upsert : false), (bypass != null ? bypass : false),
+				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern()));
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 
@@ -990,7 +993,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( options != null ) {
 			justOne = (Boolean) options.get( "justOne" );
 			justOne = ( justOne != null ) ? justOne : FALSE;
-			if ( justOne ) { // IMPROVE Can be supported by upgrading to MongoDB Java driver 3.2.x
+			if ( justOne ) { // IMPROVE See https://jira.mongodb.org/browse/JAVA-759
 				throw new UnsupportedOperationException( "Using 'justOne' in a remove query is not yet supported." );
 			}
 			DBObject o = (DBObject) options.get( "writeConcern" );
