@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.datastore.document.association.spi;
 
+import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
-import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.util.impl.Contracts;
 
