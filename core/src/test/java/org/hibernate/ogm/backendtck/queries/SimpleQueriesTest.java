@@ -313,6 +313,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterList() throws Exception {
+		List<String> paramList = Arrays.asList( "Lama", "Puma" );
+		List<?> result = session.createQuery( "from Helicopter h where h.name IN (:names)" ).setParameterList( "names", paramList ).list();
+		assertThat( result ).onProperty( "name" ).containsOnly( "Lama" );
+	}
+
+	@Test
 	public void testLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "15" );
