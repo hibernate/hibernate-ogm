@@ -1,0 +1,98 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
+package org.hibernate.ogm.datastore.neo4j.remote.transaction.impl;
+
+import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
+import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
+import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
+import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
+import org.hibernate.resource.transaction.TransactionCoordinator;
+
+/**
+ * @author Davide D'Alto
+ */
+public class RemoteLocalTransactionCoordinator extends ForwardingTransactionCoordinator {
+
+	private final Neo4jClient remoteNeo4j;
+	private Transaction tx;
+
+	public RemoteLocalTransactionCoordinator(TransactionCoordinator delegate, RemoteNeo4jDatastoreProvider provider) {
+		super( delegate );
+		this.remoteNeo4j = provider.getDataStore();
+	}
+
+	@Override
+	public TransactionDriver getTransactionDriverControl() {
+		TransactionDriver driver = super.getTransactionDriverControl();
+		return new RemoteTransactionDriver( driver );
+	}
+
+	private void success() {
+		if ( tx != null ) {
+			tx.commit();
+			tx = null;
+		}
+	}
+
+	private void failure() {
+		if ( tx != null ) {
+			tx.rollback();
+			tx = null;
+		}
+	}
+
+	private class RemoteTransactionDriver extends ForwardingTransactionDriver implements IdentifiableDriver {
+
+		public RemoteTransactionDriver(TransactionDriver delegate) {
+			// Delegating to make sure that all the appropriate events are triggered
+			super( delegate );
+		}
+
+		@Override
+		public Long getTransactionId() {
+			if ( tx == null ) {
+				return null;
+			}
+			return tx.getId();
+		}
+
+		@Override
+		public void begin() {
+			super.begin();
+			if ( tx == null ) {
+				tx = remoteNeo4j.beginTx();
+			}
+		}
+
+		@Override
+		public void commit() {
+			try {
+				super.commit();
+				success();
+			}
+			catch (Exception e) {
+				try {
+					rollback();
+				}
+				catch ( Exception re ) {
+				}
+				throw e;
+			}
+		}
+
+		@Override
+		public void rollback() {
+			try {
+				super.rollback();
+			}
+			finally {
+				failure();
+			}
+		}
+	}
+}

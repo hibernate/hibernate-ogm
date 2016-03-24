@@ -6,10 +6,17 @@
  */
 package org.hibernate.ogm.utils.test;
 
+import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
+import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
+import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
+import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
+import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 import static org.junit.Assert.fail;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.Test;
@@ -22,9 +29,7 @@ import org.junit.Test;
 public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
 
 	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB, GridDialectType.REDIS_JSON
-	})
+	@SkipByGridDialect({ HASHMAP, INFINISPAN, MONGODB, EHCACHE, NEO4J, NEO4J_REMOTE, COUCHDB, REDIS_JSON })
 	public void testWhichAlwaysFails() {
 		fail( "This should never be executed" );
 	}

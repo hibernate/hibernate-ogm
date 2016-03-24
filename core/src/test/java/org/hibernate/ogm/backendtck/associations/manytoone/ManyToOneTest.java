@@ -42,8 +42,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.persist( emmanuel );
 		session.persist( jerome );
 		session.flush();
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
+		assertThat( getNumberOfEntities( session ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( session ) ).isEqualTo( expectedAssociations() );
 		transaction.commit();
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
 		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
@@ -117,7 +117,7 @@ public class ManyToOneTest extends OgmTestCase {
 	}
 
 	private Long expectedAssociations() {
-		if ( TestHelper.getCurrentDialectType() == GridDialectType.NEO4J ) {
+		if ( TestHelper.getCurrentDialectType() == GridDialectType.NEO4J || TestHelper.getCurrentDialectType() == GridDialectType.NEO4J_REMOTE ) {
 			// A relationship is created in Neo4j that will result in the count
 			return 1L;
 		}
