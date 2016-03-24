@@ -167,7 +167,7 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 	}
 
 	/**
-	 * @return returns {@link true} if {@link RedisDatastoreProvider} is configured for cluster mode.
+	 * @return {@code true} if {@link RedisDatastoreProvider} is configured for cluster mode.
 	 */
 	public boolean isCluster() {
 		return config.isCluster();
