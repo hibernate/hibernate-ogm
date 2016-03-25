@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteIllegalStateException;
+import org.apache.ignite.IgniteState;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
@@ -27,6 +28,7 @@ import org.hibernate.ogm.datastore.ignite.configuration.impl.IgniteProviderConfi
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.query.parsing.impl.IgniteQueryParserService;
+import org.hibernate.ogm.datastore.ignite.transaction.impl.IgniteTransactionManagerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -61,49 +63,38 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	/** true - if we run inside the server node (for distributed tasks) */
 	private boolean localNode = false;
 
-	public IgniteCache<String, BinaryObject> getEntityCache(String entityCacheName) {
-		IgniteCache<String, BinaryObject> cache = cacheManager.cache( entityCacheName );
-		if (cache == null) {
-			CacheConfiguration<String, BinaryObject> config = new CacheConfiguration<>();
-			config.setName( entityCacheName );
-			cache = cacheManager.getOrCreateCache( config );
-		}
-		// ignite.1.5.1-b1
-//		cache = ((IgniteCacheProxy<String, BinaryObject>)cache).keepPortable();
-		// ignite.1.5.1.final
-		cache = ((IgniteCacheProxy<String, BinaryObject>) cache).keepBinary();
-		return cache;
+	public IgniteCache<String, BinaryObject> getEntityCache(String entityName) {
+		String entityCacheName = getKeyProvider().getEntityCache( entityName );
+		return getCache( entityCacheName, true );
 	}
 
 	public IgniteCache<String, BinaryObject> getEntityCache(EntityKeyMetadata keyMetaData) {
 		String entityCacheName = getKeyProvider().getEntityCache( keyMetaData );
-		return getEntityCache( entityCacheName );
+		return getCache( entityCacheName, true );
+	}
+
+	private <T> IgniteCache<String, T> getCache(String entityCacheName, boolean keepBinary) {
+		IgniteCache<String, T> cache = cacheManager.cache( entityCacheName );
+		if (cache == null) {
+			log.warn("Unknown cache '" + entityCacheName + "'. Creating new with default settings.");
+			CacheConfiguration<String, T> config = new CacheConfiguration<>();
+			config.setName( entityCacheName );
+			cache = cacheManager.getOrCreateCache( config );
+		}
+		if (keepBinary) {
+			cache = ((IgniteCacheProxy<String, T>) cache).keepBinary();
+		}
+		return cache;
 	}
 
 	public IgniteCache<String, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetaData) {
 		String entityCacheName = getKeyProvider().getAssociationCache( keyMetaData );
-		IgniteCache<String, BinaryObject> cache = cacheManager.cache( entityCacheName );
-		if (cache == null) {
-			CacheConfiguration<String, BinaryObject> config = new CacheConfiguration<>();
-			config.setName( entityCacheName );
-			cache = cacheManager.getOrCreateCache( config );
-		}
-		// ignite.1.5.1-b1
-//		cache = ((IgniteCacheProxy<String, BinaryObject>)cache).keepPortable();
-		// ignite.1.5.1.final
-		cache = ((IgniteCacheProxy<String, BinaryObject>) cache).keepBinary();
-		return cache;
+		return getCache(entityCacheName, true);
 	}
 
 	public IgniteCache<String, Object> getIdSourceCache(IdSourceKeyMetadata keyMetaData) {
 		String idSourceCacheName = getKeyProvider().getIdSourceCache( keyMetaData );
-		IgniteCache<String, Object> cache = cacheManager.cache( idSourceCacheName );
-		if (cache == null) {
-			CacheConfiguration<String, Object> config = new CacheConfiguration<>();
-			config.setName( idSourceCacheName );
-			cache = cacheManager.getOrCreateCache( config );
-		}
-		return cache;
+		return getCache(idSourceCacheName, false);
 	}
 
 	public BinaryObjectBuilder getBinaryObjectBuilder(String type) {
@@ -119,7 +110,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	@Override
 	public void stop() {
 		if (cacheManager != null && !localNode) {
-			cacheManager.close();
 			Ignition.stop( cacheManager.name(), true );
 		}
 	}

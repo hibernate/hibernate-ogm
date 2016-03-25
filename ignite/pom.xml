@@ -145,7 +145,7 @@
             		<artifactId>commons-logging</artifactId>	
             	</exclusion>
             </exclusions>
-		</dependency>        
+		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
@@ -241,7 +241,7 @@
 					<argLine> -Dtest=IgniteBackendTckHelper</argLine>
 				</configuration>
 			</plugin>
-<!--			
+<!--  
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>

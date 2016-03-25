@@ -96,20 +96,10 @@ public class IgniteKeyProvider {
 		if (keyMetadata == null) {
 			throw new IgniteHibernateException("EntityKeyMetadata is null");
 		}
-		String entity = keyMetadata.getTable();
-		if (entity.indexOf( "." ) >= 0) {
-			String[] arr = entity.split( "\\." );
-			if (arr.length != 2) {
-				throw new IgniteHibernateException("Invalid entity name " + entity);
-			}
-			return arr[0];
-		}
-		else {
-			return keyMetadata.getTable();
-		}
+		return getEntityCache(keyMetadata.getTable());
 	}
 
-	public String getCacheName(String entity) {
+	public String getEntityCache(String entity) {
 		if (entity.indexOf( "." ) >= 0) {
 			String[] arr = entity.split( "\\." );
 			if (arr.length != 2) {
@@ -129,16 +119,7 @@ public class IgniteKeyProvider {
 		if (keyMetadata == null) {
 			throw new IgniteHibernateException("AssociationKeyMetadata is null");
 		}
-		String entity = keyMetadata.getTable();
-		if (entity.indexOf( "." ) >= 0) {
-			String[] arr = entity.split( "\\." );
-//			if (arr.length != 2)
-//				throw new IgniteHibernateException("Invalid entity name " + entity);
-			return arr[0];
-		}
-		else {
-			return keyMetadata.getTable();
-		}
+		return getEntityCache( keyMetadata.getTable() );
 	}
 
 	/**
@@ -150,15 +131,7 @@ public class IgniteKeyProvider {
 		if (keyMetadata == null) {
 			throw new IgniteHibernateException("AssociationKeyMetadata is null");
 		}
-//		String entity = keyMetadata.getTable();
-//		if (entity.indexOf(".") >= 0){
-//			String[] arr = entity.split("\\.");
-////			if (arr.length != 2)
-////				throw new IgniteHibernateException("Invalid entity name " + entity);
-//			return arr[arr.length - 1];
-//		}
-//		else
-			return keyMetadata.getTable();
+		return keyMetadata.getTable();
 	}
 
 	/**
@@ -171,16 +144,6 @@ public class IgniteKeyProvider {
 		if (keyMetadata == null) {
 			throw new IgniteHibernateException("AssociationKeyMetadata is null");
 		}
-		String entity = keyMetadata.getName();
-		if (entity.indexOf( "." ) >= 0) {
-			String[] arr = entity.split( "\\." );
-			if (arr.length != 2) {
-				throw new IgniteHibernateException("Invalid entity name " + entity);
-			}
-			return arr[0];
-		}
-		else {
-			return keyMetadata.getName();
-		}
+		return getEntityCache( keyMetadata.getName() );
 	}
 }
