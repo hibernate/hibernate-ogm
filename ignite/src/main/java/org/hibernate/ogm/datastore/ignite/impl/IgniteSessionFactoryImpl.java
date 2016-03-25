@@ -28,6 +28,8 @@ public class IgniteSessionFactoryImpl extends OgmSessionFactoryImpl {
 
 	private static final long serialVersionUID = -438306758993171394L;
 	private static final Log log = LoggerFactory.getLogger();
+	
+	private volatile boolean initialized = false; 
 
 	public IgniteSessionFactoryImpl(SessionFactoryImplementor delegate) {
 		super( delegate );
@@ -35,22 +37,25 @@ public class IgniteSessionFactoryImpl extends OgmSessionFactoryImpl {
 
 	@Override
 	public OgmSession openSession() throws HibernateException {
-		final Session session = super.openSession();
+		final OgmSession session = super.openSession();
 		return createIgniteSession( session );
 	}
 
 	@Override
 	public OgmSession getCurrentSession() throws HibernateException {
-		final Session session = super.getCurrentSession();
+		final OgmSession session = super.getCurrentSession();
 		return createIgniteSession( session );
 	}
 
-	private IgniteSessionImpl createIgniteSession(Session session) {
+	private OgmSession createIgniteSession(OgmSession session) {
 		initCaches();
-		return new IgniteSessionImpl(this, ((OgmSessionImpl)session).getDelegate());
+		return session;
 	}
 
 	public void initCaches() {
+		if (initialized) {
+			return;
+		}
 		Set<EntityKeyMetadata> cachesInfo = new HashSet<>();
 		for (ClassMetadata classMetadata : getAllClassMetadata().values()) {
 			cachesInfo.add( ((OgmEntityPersister) classMetadata).getEntityKeyMetadata() );
@@ -63,6 +68,7 @@ public class IgniteSessionFactoryImpl extends OgmSessionFactoryImpl {
 		else {
 			log.warn( "GridDialect is not instance of IgniteDialect: " + ((OgmDialect) getDialect()).getGridDialect() );
 		}
+		initialized = true;
 	}
 
 }
