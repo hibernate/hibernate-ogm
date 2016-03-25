@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.ignite;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
 import org.apache.ignite.cache.query.Query;
+import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.cache.query.SqlQuery;
 import org.hibernate.LockMode;
@@ -35,11 +37,9 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.ScalarReturn;
-import org.hibernate.ogm.datastore.ignite.dialect.criteria.spi.CriteriaGridDialect;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationSnapshot;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
-import org.hibernate.ogm.datastore.ignite.loader.criteria.impl.CriteriaCustomQuery;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
@@ -53,9 +53,11 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.query.spi.RowSelection;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
@@ -67,45 +69,26 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
-import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
-public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialect, QueryableGridDialect<IgniteQueryDescriptor> /*, OptimisticLockingAwareGridDialect*/ {
+public class IgniteDialect extends BaseGridDialect implements GridDialect, QueryableGridDialect<IgniteQueryDescriptor> /*, OptimisticLockingAwareGridDialect*/ {
 
 	public static final String LOCAL_QUERY_PROPERTY = "local";
 
 	private static final long serialVersionUID = -4347702430400562694L;
-
 	private static final Log log = LoggerFactory.getLogger();
 
-	protected IgniteDatastoreProvider provider;
+	private IgniteDatastoreProvider provider;
 
 	public IgniteDialect(IgniteDatastoreProvider provider) {
 		this.provider = provider;
 	}
 
-	public TupleSnapshot createTupleSnapshot(Object BinaryObject) {
-		return new IgnitePortableTupleSnapshot(BinaryObject);
-	}
-
-	public AssociationSnapshot createAssociationSnapshot(BinaryObject binaryObject, AssociationKey key) {
-		return new IgnitePortableAssociationSnapshot(binaryObject, key);
-	}
-
-	protected ClosableIterator<Tuple> createPortableResultCursor(List<Entry<String, BinaryObject>> resultCursor)
-	{
-		return new IgnitePortableResultCursor(resultCursor);
-	}
-
-	protected ClosableIterator<Tuple> createPortableFromProjectionResultCursor(List<List<?>> resultCursor)
-	{
-		return new IgnitePortableFromProjectionResultCursor(resultCursor);
-	}
-
+	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
 		if ( lockMode == LockMode.PESSIMISTIC_FORCE_INCREMENT ) {
 			return new PessimisticForceIncrementLockingStrategy( lockable, lockMode );
@@ -136,7 +119,7 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 		else {
 			Object po = entityCache.get( provider.getKeyProvider().getEntityKeyString( key ) );
 			if (po != null) {
-				return new Tuple(createTupleSnapshot( po ));
+				return new Tuple(new IgnitePortableTupleSnapshot( po ));
 			}
 			else {
 				return null;
@@ -146,7 +129,7 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple(createTupleSnapshot( null ));
+		return new Tuple();
 	}
 
 	@Override
@@ -156,11 +139,10 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata() ) );
 		for (String columnName : tuple.getColumnNames()) {
 			Object value = tuple.get( columnName );
-			if (value != null) {
-				builder.setField( columnName, value );
-			}
+			builder.setField( columnName, value );
 		}
-		entityCache.put( provider.getKeyProvider().getEntityKeyString( key ), builder.build() );
+		String keyStr = provider.getKeyProvider().getEntityKeyString( key );
+		entityCache.put( keyStr , builder.build() );
 	}
 
 	@Override
@@ -178,7 +160,7 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 		else {
 			BinaryObject po = entityCache.get( provider.getKeyProvider().getAssociationKeyString( key ) );
 			if (po != null) {
-				return new Association(createAssociationSnapshot( po, key ));
+				return new Association( new IgnitePortableAssociationSnapshot( po, key ) );
 			}
 			else {
 				return null;
@@ -188,7 +170,7 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		return new Association(createAssociationSnapshot( null, key ));
+		return new Association( new IgnitePortableAssociationSnapshot( null, key ) );
 	}
 
 	@Override
@@ -235,9 +217,7 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 			// put only the key field from the child table in association
 //			for (String columnName : key.getMetadata().getRowKeyIndexColumnNames()) {
 				Object value = tuple.get( columnName );
-				if (value != null) {
-					builder.setField( columnName, value );
-				}
+				builder.setField( columnName, value );
 			}
 			associationMap.put( key, builder.build() );
 		}
@@ -295,33 +275,6 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeCriteriaQuery(CriteriaCustomQuery query, EntityKeyMetadata keyMetadata) {
-		IgniteCache<String, BinaryObject> cache = provider.getEntityCache( keyMetadata );
-		StringBuilder buf = new StringBuilder( query.getFromString() );
-		if (StringUtils.isNotBlank( query.getWhereCondition() )) {
-			buf.append( " WHERE " ).append( query.getWhereCondition() ).append( " " );
-		}
-		if (StringUtils.isNotBlank( query.getOrderBy() )) {
-			buf.append( "ORDER BY " ).append( query.getOrderBy() );
-		}
-		SqlQuery<String, BinaryObject> sqlQuery = new SqlQuery<>( provider.getKeyProvider().getEntityType( keyMetadata ), buf.toString() );
-		sqlQuery.setArgs( query.getPositionedQueryParameters() );
-		setLocalQuery( sqlQuery, query.getCriteria().getQueryHints() );
-		List<Entry<String, BinaryObject>> resultCursor = cache.query( sqlQuery ).getAll();
-		return createPortableResultCursor( resultCursor );
-	}
-
-	@Override
-	public ClosableIterator<Tuple> executeCriteriaQueryWithProjection(CriteriaCustomQuery query, EntityKeyMetadata keyMetadata) {
-		IgniteCache<String, BinaryObject> cache = provider.getEntityCache( keyMetadata );
-		SqlFieldsQuery sqlQuery = new SqlFieldsQuery(query.getSQL());
-		sqlQuery.setArgs( query.getPositionedQueryParameters() );
-		setLocalQuery( sqlQuery, query.getCriteria().getQueryHints() );
-		List<List<?>> resultCursor = cache.query( sqlQuery ).getAll();
-		return new IgniteProjectionResultCursor(resultCursor, query.getCustomQueryReturns());
-	}
-
-	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<IgniteQueryDescriptor> backendQuery, QueryParameters queryParameters) {
 		IgniteCache<String, BinaryObject> cache;
 		if (backendQuery.getSingleEntityKeyMetadataOrNull() != null) {
@@ -338,17 +291,16 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 
 		setLocalQuery( sqlQuery, queryParameters.getQueryHints() );
 
+		QueryCursor<List<?>> resultCursor = cache.query( sqlQuery );
 		if (backendQuery.getQuery().isHasScalar()) {
-			List<List<?>> resultCursor = cache.query( sqlQuery ).getAll();
-			return new IgniteProjectionResultCursor( resultCursor, backendQuery.getQuery().getCustomQueryReturns() );
+			return new IgniteProjectionResultCursor( resultCursor, backendQuery.getQuery().getCustomQueryReturns(), queryParameters.getRowSelection() );
 		}
 		else {
-			List<List<?>> resultCursor = cache.query( sqlQuery ).getAll();
-			return createPortableFromProjectionResultCursor( resultCursor );
+			return new IgnitePortableFromProjectionResultCursor( resultCursor, queryParameters.getRowSelection() );
 		}
 	}
 
-	private void setLocalQuery(Query query, List<String> queryHints) {
+	private void setLocalQuery(Query<?> query, List<String> queryHints) {
 		if (!provider.isClientMode()) {
 			query.setLocal( isLocal( queryHints ) );
 		}
@@ -414,118 +366,109 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 //		return false;
 //	}
 
-	protected static class IgniteProjectionResultCursor implements ClosableIterator<Tuple> {
+	private abstract class BaseResultCursor<T> implements ClosableIterator<Tuple> {
+		private final QueryCursor<T> resultCursor;
+		private final Iterator<T> resultIterator;
+		private final Integer maxRows;
+		private int rowNum = 0;
 
-		private Iterator<List<?>> resultIterator;
-		private List<Return> queryReturns;
-
-		public IgniteProjectionResultCursor(List<List<?>> resultCursor, List<Return> queryReturns) {
+		public BaseResultCursor(QueryCursor<T> resultCursor, RowSelection rowSelection) {
+			this.resultCursor = resultCursor;
 			this.resultIterator = resultCursor.iterator();
+			this.maxRows = rowSelection.getMaxRows();
+			int firstRow = rowSelection.getFirstRow() != null ? rowSelection.getFirstRow() : 0;
+			for (int i = 0; i < firstRow && resultIterator.hasNext(); i++)
+				resultIterator.next();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return (maxRows == null || rowNum < maxRows) && resultIterator.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			T value = resultIterator.next();
+			rowNum++;
+			return new Tuple(createTupleSnapshot( value ));
+		}
+		
+		abstract TupleSnapshot createTupleSnapshot(T value);
+
+		@Override
+		public void remove() {
+			resultIterator.remove();
+		}
+
+		@Override
+		public void close() {
+			resultCursor.close();
+		}
+		
+	}
+	
+	private class IgniteProjectionResultCursor extends BaseResultCursor<List<?>> {
+
+		private final List<Return> queryReturns;
+
+		public IgniteProjectionResultCursor(QueryCursor<List<?>> resultCursor, List<Return> queryReturns, RowSelection rowSelection) {
+			super( resultCursor, rowSelection );
 			this.queryReturns = queryReturns;
 		}
-
+		
 		@Override
-		public boolean hasNext() {
-			return resultIterator.hasNext();
-		}
-
-		@Override
-		public Tuple next() {
-			List<?> entry = resultIterator.next();
+		TupleSnapshot createTupleSnapshot(List<?> value) {
 			Map<String, Object> map = new HashMap<>();
-			for (int i = 0; i < entry.size(); i++) {
+			for (int i = 0; i < value.size(); i++) {
 				ScalarReturn ret = (ScalarReturn) queryReturns.get( i );
-				map.put( ret.getColumnAlias(), entry.get( i ) );
+				map.put( ret.getColumnAlias(), value.get( i ) );
 			}
-			return new Tuple(new MapTupleSnapshot(map));
-		}
-
-		@Override
-		public void remove() {
-			resultIterator.remove();
-		}
-
-		@Override
-		public void close() {
-
+			return new MapTupleSnapshot(map);
 		}
 	}
+	
+	private class IgnitePortableResultCursor extends BaseResultCursor<Entry<String, BinaryObject>> {
 
-	protected class IgnitePortableResultCursor implements ClosableIterator<Tuple> {
-
-		private Iterator<Entry<String, BinaryObject>> resultIterator;
-
-		public IgnitePortableResultCursor(List<Entry<String, BinaryObject>> resultCursor) {
-			this.resultIterator = resultCursor.iterator();
+		public IgnitePortableResultCursor(QueryCursor<Entry<String, BinaryObject>> resultCursor, RowSelection rowSelection) {
+			super( resultCursor, rowSelection );
 		}
-
+		
 		@Override
-		public boolean hasNext() {
-			return resultIterator.hasNext();
-		}
-
-		@Override
-		public Tuple next() {
-			Entry<String, BinaryObject> entry = resultIterator.next();
-			return new Tuple( createTupleSnapshot( entry.getValue() ) );
-		}
-
-		@Override
-		public void remove() {
-			resultIterator.remove();
-		}
-
-		@Override
-		public void close() {
-
+		TupleSnapshot createTupleSnapshot(Entry<String, BinaryObject> value) {
+			return new IgnitePortableTupleSnapshot( value.getValue() );
 		}
 	}
+	
+	private class IgnitePortableFromProjectionResultCursor extends BaseResultCursor<List<?>> {
 
-	private class IgnitePortableFromProjectionResultCursor implements ClosableIterator<Tuple> {
-
-		private Iterator<List<?>> resultIterator;
-
-		public IgnitePortableFromProjectionResultCursor(List<List<?>> resultCursor) {
-			this.resultIterator = resultCursor.iterator();
+		public IgnitePortableFromProjectionResultCursor( QueryCursor<List<?>> resultCursor, RowSelection rowSelection ) {
+			super( resultCursor, rowSelection );
 		}
 
 		@Override
-		public boolean hasNext() {
-			return resultIterator.hasNext();
-		}
-
-		@Override
-		public Tuple next() {
-			List<?> entry = resultIterator.next();
-			return new Tuple(createTupleSnapshot( entry.get( 1 ) ));
-		}
-
-		@Override
-		public void remove() {
-			resultIterator.remove();
-		}
-
-		@Override
-		public void close() {
+		TupleSnapshot createTupleSnapshot( List<?> value ) {
+			return new IgnitePortableTupleSnapshot( value.get( 1 ) );
 		}
 	}
-
-	private class IgnitePortableTupleSnapshot implements TupleSnapshot {
+	
+	public static class IgnitePortableTupleSnapshot implements TupleSnapshot {
 
 		private final BinaryObject binaryObject;
+		private final Set<String> columnNames;
 
 		public IgnitePortableTupleSnapshot(Object binaryObject) {
 			this.binaryObject = (BinaryObject) binaryObject;
+			if (binaryObject != null) {
+				this.columnNames = new HashSet<String>( this.binaryObject.type().fieldNames() );
+			}
+			else {
+				this.columnNames = Collections.emptySet();
+			}
 		}
 
 		@Override
 		public Object get(String column) {
-			if (!isEmpty()) {
-				return binaryObject.field( column );
-			}
-			else {
-				return null;
-			}
+			return !isEmpty() ? binaryObject.field( column ) : null;
 		}
 
 		@Override
@@ -535,18 +478,14 @@ public class IgniteDialect extends BaseGridDialect implements CriteriaGridDialec
 
 		@Override
 		public Set<String> getColumnNames() {
-			if (!isEmpty()) {
-				return new HashSet<String>(binaryObject.type().fieldNames());
-			}
-			else {
-				return new HashSet<>();
-			}
+			return columnNames;
 		}
 	}
 
 	private class IgnitePortableAssociationSnapshot implements IgniteAssociationSnapshot<BinaryObject> {
 
 		private Map<RowKey, BinaryObject> portableMap = new HashMap<>();
+		
 		public IgnitePortableAssociationSnapshot(BinaryObject binaryObject, AssociationKey key) {
 			if (binaryObject != null) {
 				Map<BinaryObject, BinaryObject> associationMap = binaryObject.field( "ASSOCIATION" );

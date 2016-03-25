@@ -81,7 +81,7 @@ public class IgniteTestHelper implements TestableGridDialect {
 		Object po = cache.get( cacheKey );
 
 		IgniteDialect igniteDialect = (IgniteDialect) ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService( GridDialect.class );
-		TupleSnapshot snapshot = igniteDialect.createTupleSnapshot( po );
+		TupleSnapshot snapshot = new IgniteDialect.IgnitePortableTupleSnapshot( po );
 		for (String fieldName : snapshot.getColumnNames()) {
 			result.put( fieldName, snapshot.get( fieldName ) );
 		}

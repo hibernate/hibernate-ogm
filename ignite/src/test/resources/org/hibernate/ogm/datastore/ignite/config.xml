@@ -19,26 +19,23 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     <bean class="org.apache.ignite.configuration.IgniteConfiguration">
-        <!-- Set to true to enable grid-aware class loading for examples, default is false. -->
+    	<property name="connectorConfiguration"><null/></property>
+		<property name="localHost" value="127.0.0.1"/>
         <property name="peerClassLoadingEnabled" value="true"/>
-
-        <!-- Set to true so that cache data will not be stored on this node. -->
 		<property name="clientMode" value="false"/>
-        
-        <!-- Portable marshaller configuration -->
         <property name="marshaller">
             <bean class="org.apache.ignite.internal.binary.BinaryMarshaller" />
-<!--              
-			<bean class="org.gridgain.grid.marshaller.portable.PortableMarshaller" />	!!!!  for GG 7.4.1
-            <bean class="org.apache.ignite.internal.binary.BinaryMarshaller" />   		!!!!  for GG 7.5.1-final
-            <bean class="org.apache.ignite.internal.portable.BinaryMarshaller" /> 		!!!!  for GG 7.5.1-b1
--->
         </property>
         
+        <property name="includeEventTypes">
+            <util:constant static-field="org.apache.ignite.events.EventType.EVTS_CACHE"/>
+        </property>
+
         <!-- Explicitly configure TCP discovery SPI to provide list of initial nodes. -->
         <property name="discoverySpi">
             <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
@@ -48,14 +45,15 @@
                     <!--<bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder">-->
                         <property name="addresses">
                             <list>
-                                <!-- In distributed environment, replace with actual host IP address. -->
-                                <value>127.0.0.1:47500..47509</value>
+                                <value>127.0.0.1:47500</value>
                             </list>
                         </property>
                     </bean>
                 </property>
             </bean>
         </property>
+        
+        <property name="publicThreadPoolSize" value="2"/>
         
 		<property name="cacheConfiguration">
 			<list>
@@ -514,6 +512,7 @@
 		<property name="atomicityMode"	value="TRANSACTIONAL"/>
 		<property name="cacheMode"		value="PARTITIONED" />
 		<property name="startSize"		value="10" />
+		<property name="backups" value="1"/>
 <!-- 
 		<property name="memoryMode"		value="OFFHEAP_TIERED" />
 		<property name="offHeapMaxMemory"		value="1000000" /> 
