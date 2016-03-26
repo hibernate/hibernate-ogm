@@ -264,11 +264,11 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule NormalChar() {
-		return Sequence( TestNot( AnyOf( "\"\\") ), ANY );
+		return Sequence( TestNot( AnyOf( "\"\\" ) ), ANY );
 	}
 
 	public Rule SingleQuotedStringNormalChar() {
-		return Sequence( TestNot( AnyOf( "'\\") ), ANY );
+		return Sequence( TestNot( AnyOf( "'\\" ) ), ANY );
 	}
 
 	public Rule Unicode() {

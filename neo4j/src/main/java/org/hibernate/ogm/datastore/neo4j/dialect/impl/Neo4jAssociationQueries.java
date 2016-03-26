@@ -130,7 +130,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 			queryBuilder.append( EMBEDDED );
 			queryBuilder.append( ")" );
 			queryBuilder.append( " WITH a,e" );
-			queryBuilder.append( "  MATCH path=(e) -[*0..]-> (:EMBEDDED) ");
+			queryBuilder.append( "  MATCH path=(e) -[*0..]-> (:EMBEDDED) " );
 			queryBuilder.append( "  FOREACH ( r IN relationships(path) | DELETE r )" );
 			queryBuilder.append( "  FOREACH ( e IN nodes(path) | DELETE e )" );
 			queryBuilder.append( "  DELETE a" );
@@ -344,11 +344,11 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		EmbeddedNodesTree tree = createEmbeddedTree( collectionRole, embeddedColumnNames, embeddedColumnValues, offset );
 		if ( isPartOfEmbedded( collectionRole ) ) {
 			String[] pathToEmbedded = appendEmbeddedNodes( collectionRole, queryBuilder );
-			queryBuilder.append( " CREATE (e) -[r:");
+			queryBuilder.append( " CREATE (e) -[r:" );
 			appendRelationshipType( queryBuilder, pathToEmbedded[ pathToEmbedded.length - 1] );
 		}
 		else {
-			queryBuilder.append( " CREATE (owner) -[r:");
+			queryBuilder.append( " CREATE (owner) -[r:" );
 			appendRelationshipType( queryBuilder, collectionRole );
 		}
 		queryBuilder.append( "]-> " );

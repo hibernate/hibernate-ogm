@@ -287,7 +287,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 		StoryGame story3 = new StoryGame( 300L, new StoryBranch( "[DUNGEON] You go to the dungeon", null ) );
 		story3.setEvilBranch( new StoryBranch( "[DUNGEON] You become the dungeon keeper", null ) );
 
-		persist( sessions, story1, story2, story3);
+		persist( sessions, story1, story2, story3 );
 	}
 
 

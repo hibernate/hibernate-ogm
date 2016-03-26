@@ -379,7 +379,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 						id,
 						hydratedObjects,
 						keys,
-						returnProxies);
+						returnProxies );
 				results.add( result );
 			}
 			//TODO collect subselect result key
@@ -488,7 +488,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		Tuple tuple = resultset.unwrap( TupleAsMapResultSet.class ).getTuple();
 		extractKeysFromResultSet( session, optionalId, tuple, keys );
 
-		registerNonExists( keys, persisters, session);
+		registerNonExists( keys, persisters, session );
 
 		//it's a non existing object: cut short
 		if (resultset == null) {

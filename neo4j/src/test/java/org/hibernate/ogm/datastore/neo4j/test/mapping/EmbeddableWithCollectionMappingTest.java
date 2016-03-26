@@ -48,21 +48,21 @@ public class EmbeddableWithCollectionMappingTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		NodeForGraphAssertions orderNode = node( "order", Order.class.getSimpleName(), ENTITY.name())
-				.property( "id", "order-1")
+		NodeForGraphAssertions orderNode = node( "order", Order.class.getSimpleName(), ENTITY.name() )
+				.property( "id", "order-1" )
 				.property( "item", "Telescope" );
 
-		NodeForGraphAssertions shippingAddressNode = node( "adress", EMBEDDED.name())
-				.property( "addressLine", "Planet road 68");
+		NodeForGraphAssertions shippingAddressNode = node( "adress", EMBEDDED.name() )
+				.property( "addressLine", "Planet road 68" );
 
-		NodeForGraphAssertions phoneNode = node( "phone", EMBEDDED.name())
-				.property( "main", "+1-222-555-0111");
+		NodeForGraphAssertions phoneNode = node( "phone", EMBEDDED.name() )
+				.property( "main", "+1-222-555-0111" );
 
-		NodeForGraphAssertions altenative1 = node( "alt1", EMBEDDED.name())
-				.property( "alternatives", "+1-222-555-0222");
+		NodeForGraphAssertions altenative1 = node( "alt1", EMBEDDED.name() )
+				.property( "alternatives", "+1-222-555-0222" );
 
-		NodeForGraphAssertions altenative2 = node( "alt2", EMBEDDED.name())
-				.property( "alternatives", "+1-202-555-0333");
+		NodeForGraphAssertions altenative2 = node( "alt2", EMBEDDED.name() )
+				.property( "alternatives", "+1-202-555-0333" );
 
 		RelationshipsChainForGraphAssertions rel1 = orderNode.relationshipTo( shippingAddressNode, "shippingAddress" ).relationshipTo( phoneNode, "phone" ).relationshipTo( altenative1, "alternatives" );
 		RelationshipsChainForGraphAssertions rel2 = phoneNode.relationshipTo( altenative2, "alternatives" );

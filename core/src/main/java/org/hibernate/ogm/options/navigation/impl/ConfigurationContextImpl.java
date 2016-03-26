@@ -111,7 +111,7 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
 		catch (Exception e) {
-			throw log.cannotCreateGlobalContextProxy( globalContextImplType, e);
+			throw log.cannotCreateGlobalContextProxy( globalContextImplType, e );
 		}
 	}
 
@@ -130,7 +130,7 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
 		catch (Exception e) {
-			throw log.cannotCreateEntityContextProxy( entityContextImplType, e);
+			throw log.cannotCreateEntityContextProxy( entityContextImplType, e );
 		}
 	}
 
@@ -149,7 +149,7 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
 		catch (Exception e) {
-			throw log.cannotCreateEntityContextProxy( propertyContextImplType, e);
+			throw log.cannotCreateEntityContextProxy( propertyContextImplType, e );
 		}
 	}
 

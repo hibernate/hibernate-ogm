@@ -46,7 +46,7 @@ public class CRUDTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		loadedHyp.setDescription( "P != NP");
+		loadedHyp.setDescription( "P != NP" );
 		session.merge( loadedHyp );
 		transaction.commit();
 

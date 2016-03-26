@@ -80,7 +80,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 			throws HibernateException {
 		final boolean[] trueSettable = new boolean[names.length];
-		Arrays.fill( trueSettable, true);
+		Arrays.fill( trueSettable, true );
 		nullSafeSet( resultset, value, names, trueSettable, session );
 	}
 

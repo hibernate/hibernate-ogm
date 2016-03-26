@@ -130,7 +130,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 						"{ \"position\" : { \"$lt\" : 1}} , " +
 						"{ \"position\" : { \"$gt\" : 3}}" +
 					"]}" +
-				"]}");
+				"]}" );
 	}
 
 	@Test
@@ -158,7 +158,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 				"{ \"$and\" : [ " +
 					"{ \"position\" : { \"$gte\" : 10}} , " +
 					"{ \"position\" : { \"$lte\" : 20}}" +
-				"]}");
+				"]}" );
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 					"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
 					"\"$options\" : \"s\"" +
 					"}" +
-				"}");
+				"}" );
 	}
 
 	@Test
@@ -200,7 +200,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 						"\"$options\" : \"s\"" +
 						"}" +
 					"}" +
-				"}");
+				"}" );
 	}
 
 	@Test

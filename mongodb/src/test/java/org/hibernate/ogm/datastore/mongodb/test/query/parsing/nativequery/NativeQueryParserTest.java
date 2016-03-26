@@ -33,7 +33,7 @@ public class NativeQueryParserTest {
 	public void shouldParseSimplifiedFindQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "{ \"foo\" : true }");
+				.run( "{ \"foo\" : true }" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -48,7 +48,7 @@ public class NativeQueryParserTest {
 	public void shouldParseSimpleQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find({\"foo\":true})");
+				.run( "db.Order.find({\"foo\":true})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -63,7 +63,7 @@ public class NativeQueryParserTest {
 	public void shouldParseSimpleQueryUsingSingleQuotes() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find( { 'foo' : true } )");
+				.run( "db.Order.find( { 'foo' : true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -78,7 +78,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryWithEmptyFind() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find({})");
+				.run( "db.Order.find({})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new BasicDBObject() );
@@ -206,7 +206,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryFindAndModify() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.findAndModify( { 'query': { 'name': 'Andy' }, 'sort': { 'rating': 1 }, 'update': { '$inc': { 'score': 1 } }, 'upsert': true } )");
+				.run( "db.Order.findAndModify( { 'query': { 'name': 'Andy' }, 'sort': { 'rating': 1 }, 'update': { '$inc': { 'score': 1 } }, 'upsert': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -222,7 +222,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryFindOneWithoutCriteriaNorProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.findOne(  )");
+				.run( "db.Order.findOne(  )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -237,7 +237,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryFindOneWithoutProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.findOne( { \"foo\" : true } )");
+				.run( "db.Order.findOne( { \"foo\" : true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -252,7 +252,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryFindOneWithCriteriaAndProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.findOne( { \"foo\" : true }, { \"foo\" : 1 } )");
+				.run( "db.Order.findOne( { \"foo\" : true }, { \"foo\" : 1 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -267,7 +267,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryWithProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find( { \"foo\" : true }, { \"foo\" : 1 } )");
+				.run( "db.Order.find( { \"foo\" : true }, { \"foo\" : 1 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -282,7 +282,7 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryWithWhitespace() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "  db  .  Order  .  find  (  {  \"  foo  \"  :  true  }  ,  {  \"foo\"  :  1  }  )  ");
+				.run( "  db  .  Order  .  find  (  {  \"  foo  \"  :  true  }  ,  {  \"foo\"  :  1  }  )  " );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( run.hasErrors() ).isFalse();
@@ -298,7 +298,7 @@ public class NativeQueryParserTest {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ReportingParseRunner<MongoDBQueryDescriptorBuilder> runner = new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  runner
-				.run( "db.Order.find( { \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" } )");
+				.run( "db.Order.find( { \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" } )" );
 
 		assertThat( run.hasErrors() ).isFalse();
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
@@ -314,7 +314,7 @@ public class NativeQueryParserTest {
 	public void shouldParseCountQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.count()");
+				.run( "db.Order.count()" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -329,7 +329,7 @@ public class NativeQueryParserTest {
 	public void shouldParseCountQueryWithCriteria() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.count( { 'foo' : true } )");
+				.run( "db.Order.count( { 'foo' : true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -344,7 +344,7 @@ public class NativeQueryParserTest {
 	public void shouldParseCountQueryWithLogicalOperatorOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.count( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+				.run( "db.Order.count( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -359,7 +359,7 @@ public class NativeQueryParserTest {
 	public void shouldParseCountQueryWithLogicalOperatorAND() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.count( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+				.run( "db.Order.count( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -374,7 +374,7 @@ public class NativeQueryParserTest {
 	public void shouldParseCountQueryWithLogicalOperatorNOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.count( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+				.run( "db.Order.count( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -389,7 +389,7 @@ public class NativeQueryParserTest {
 	public void shouldParseCountQueryWithLogicalOperatorNOT() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.count( { '$not': { 'foo' : false } } )");
+				.run( "db.Order.count( { '$not': { 'foo' : false } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -404,7 +404,7 @@ public class NativeQueryParserTest {
 	public void shouldParseFindQueryWithLogicalOperatorOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+				.run( "db.Order.find( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -419,7 +419,7 @@ public class NativeQueryParserTest {
 	public void shouldParseFindQueryWithLogicalOperatorAND() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+				.run( "db.Order.find( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -434,7 +434,7 @@ public class NativeQueryParserTest {
 	public void shouldFindCountQueryWithLogicalOperatorNOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )");
+				.run( "db.Order.find( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -449,7 +449,7 @@ public class NativeQueryParserTest {
 	public void shouldFindeCountQueryWithLogicalOperatorNOT() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.find( { '$not': { 'foo' : false } } )");
+				.run( "db.Order.find( { '$not': { 'foo' : false } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -465,7 +465,7 @@ public class NativeQueryParserTest {
 	public void shouldSupportDotInCollectionName() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.POEM.COM.count()");
+				.run( "db.POEM.COM.count()" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 

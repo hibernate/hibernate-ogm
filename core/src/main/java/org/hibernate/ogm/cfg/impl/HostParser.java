@@ -37,13 +37,13 @@ public class HostParser {
 	 * )* //end of second group, optional
 	 * $ // end marker
 	 */
-	private static Pattern HOST_AND_PORT_PATTERN = Pattern.compile( "^([^\\[\\]:\\s]+|\\[[\\da-fA-F:\\.]+\\]|[\\da-fA-F:\\.]+)(:(\\d+))*$");
+	private static final Pattern HOST_AND_PORT_PATTERN = Pattern.compile( "^([^\\[\\]:\\s]+|\\[[\\da-fA-F:\\.]+\\]|[\\da-fA-F:\\.]+)(:(\\d+))*$" );
 
 	// remove surrounding square brackets
 	// regex: ^\[(.+)\]$
-	private static Pattern NAKED_IPV6_PATTERN = Pattern.compile( "^\\[(.+)\\]$");
+	private static final Pattern NAKED_IPV6_PATTERN = Pattern.compile( "^\\[(.+)\\]$" );
 
-	private static Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make();
 
 	/**
 	 * Accepts a comma separated list of host / ports.

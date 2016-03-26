@@ -65,7 +65,7 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 		List<String> primaryKeys = new ArrayList<String>();
 		if ( table.hasPrimaryKey() ) {
 			for ( Object pkColumn : table.getPrimaryKey().getColumns() ) {
-				primaryKeys.add( ((Column) pkColumn).getName() );
+				primaryKeys.add( ( (Column) pkColumn ).getName() );
 			}
 		}
 		List<String> columnNames = new ArrayList<String>();
@@ -82,12 +82,12 @@ public class CassandraSchemaDefiner extends BaseSchemaDefiner {
 				type = type.getSemiResolvedType( sessionFactoryImplementor );
 				if ( type.isComponentType() ) {
 					int index = column.getTypeIndex();
-					type = ((org.hibernate.type.ComponentType) type).getSubtypes()[index];
+					type = ( (org.hibernate.type.ComponentType) type ).getSubtypes()[index];
 				}
 			}
 			else if ( type.isComponentType() ) {
 				int index = column.getTypeIndex();
-				type = ((org.hibernate.type.ComponentType) column.getValue().getType()).getSubtypes()[index];
+				type = ( (org.hibernate.type.ComponentType) column.getValue().getType() ).getSubtypes()[index];
 			}
 
 			GridType gridType = typeTranslator.getType( type );

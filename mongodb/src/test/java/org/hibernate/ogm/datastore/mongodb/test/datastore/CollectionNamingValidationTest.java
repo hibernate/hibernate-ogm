@@ -58,7 +58,7 @@ public class CollectionNamingValidationTest {
 	@TestForIssue(jiraKey = "OGM-900")
 	public void shouldSupportDotInCollectionName() {
 		OgmSessionFactory ogmSessionFactory = TestHelper.getDefaultTestSessionFactory( DottedNamedTable.class );
-		assertThat( ogmSessionFactory.getAllClassMetadata().containsKey( DottedNamedTable.class.getName() ));
+		assertThat( ogmSessionFactory.getAllClassMetadata().containsKey( DottedNamedTable.class.getName() ) );
 	}
 
 

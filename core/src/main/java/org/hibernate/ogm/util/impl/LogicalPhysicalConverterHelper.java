@@ -29,7 +29,7 @@ public class LogicalPhysicalConverterHelper {
 
 	public static Object[] getColumnsValuesFromObjectValue(Object uniqueKey, GridType gridUniqueKeyType, String[] propertyColumnNames, SessionImplementor session) {
 		Tuple tempResultset = new Tuple();
-		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, propertyColumnNames, session) ;
+		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, propertyColumnNames, session ) ;
 		Object[] columnValuesFromResultset = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tempResultset, propertyColumnNames );
 		return columnValuesFromResultset;
 	}

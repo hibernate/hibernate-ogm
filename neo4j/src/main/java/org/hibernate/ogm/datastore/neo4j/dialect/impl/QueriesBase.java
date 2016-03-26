@@ -75,7 +75,7 @@ class QueriesBase {
 	 * (owner:ENTITY:table {id: {0}})
 	 */
 	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
-		queryBuilder.append( "(");
+		queryBuilder.append( "(" );
 		queryBuilder.append( alias );
 		queryBuilder.append( ":" );
 		queryBuilder.append( ENTITY );

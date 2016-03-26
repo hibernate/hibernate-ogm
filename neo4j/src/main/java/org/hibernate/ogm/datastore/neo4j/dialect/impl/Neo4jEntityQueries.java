@@ -109,7 +109,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 				}
 				queryBuilder.append( ":" );
 				appendRelationshipType( queryBuilder, embeddedRelationshipType );
-				queryBuilder.append( "]-> (:");
+				queryBuilder.append( "]-> (:" );
 				queryBuilder.append( EMBEDDED );
 				queryBuilder.append( ")" );
 				index++;
@@ -206,7 +206,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ") ");
+		queryBuilder.append( ") " );
 		queryBuilder.append( " WHERE " );
 		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
 			queryBuilder.append( "n." );
@@ -244,7 +244,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 		appendEntityNode( "n", entityKeyMetadata, queryBuilder );
 		queryBuilder.append( " --> (e:EMBEDDED)" );
 		queryBuilder.append( " WITH e " );
-		queryBuilder.append( " MATCH path=(e) -[*0..]-> (:EMBEDDED) ");
+		queryBuilder.append( " MATCH path=(e) -[*0..]-> (:EMBEDDED) " );
 		queryBuilder.append( " FOREACH ( r IN relationships(path) | DELETE r )" );
 		queryBuilder.append( " FOREACH ( e IN nodes(path) | DELETE e )" );
 		return queryBuilder.toString();

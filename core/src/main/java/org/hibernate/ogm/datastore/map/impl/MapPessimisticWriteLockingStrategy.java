@@ -48,7 +48,7 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
 		MapDatastoreProvider dataStore = getProvider( session );
 		EntityKey key = EntityKeyBuilder.fromData(
-				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
+				( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
 				identifierGridType,
 				id,
 				session );

@@ -804,7 +804,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
 		}
 
-		switch( queryDescriptor.getOperation() ) {
+		switch ( queryDescriptor.getOperation() ) {
 			case FIND:
 				return doFind( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case FINDONE:
@@ -836,7 +836,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			throw new UnsupportedOperationException("Positional parameters are not yet supported for MongoDB native queries.");
 		}
 
-		switch( queryDescriptor.getOperation() ) {
+		switch ( queryDescriptor.getOperation() ) {
 			case INSERT:
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
@@ -947,7 +947,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern wc = getWriteConcern( o );
 		final DBObject theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ),
 				update, (nevv != null ? nevv : false), (upsert != null ? upsert : false), (bypass != null ? bypass : false),
-				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern()));
+				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern() ) );
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 
