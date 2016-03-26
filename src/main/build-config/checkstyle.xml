@@ -57,10 +57,19 @@
 
         <module name="LeftCurly">
             <property name="option" value="eol" />
+            <!-- not doing this for methods so we can allow single line getters/setters -->
+            <property name="tokens" value="INTERFACE_DEF, CLASS_DEF, ANNOTATION_DEF, ENUM_DEF, CTOR_DEF,
+                        ENUM_CONSTANT_DEF, LITERAL_WHILE, LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
+                        LITERAL_SYNCHRONIZED, LITERAL_SWITCH, LITERAL_DO, LITERAL_IF, LITERAL_ELSE, LITERAL_FOR,
+                        STATIC_INIT" />
         </module>
 
         <module name="RightCurly">
             <property name="option" value="alone" />
+            <!-- not doing this for methods so we can allow single line getters/setters -->
+            <property name="tokens" value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF,
+                        LITERAL_ELSE, CLASS_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO,
+                        STATIC_INIT, INSTANCE_INIT" />
         </module>
 
         <module name="ParenPad">
