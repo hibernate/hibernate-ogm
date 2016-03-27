@@ -30,7 +30,7 @@ public class HibernateOgmAssociationFindBenchmark {
 
 	private static final int NUMBER_OF_TEST_ENTITIES = 10000;
 
-	private final static int NUMBER_OF_REFERENCABLE_ENTITIES = 100;
+	private static final int NUMBER_OF_REFERENCABLE_ENTITIES = 100;
 
 	/**
 	 * The number of operations to be performed with one entity manager. Using an EM only for one op is an anti-pattern,

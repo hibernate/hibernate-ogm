@@ -22,7 +22,7 @@ import com.mongodb.DBObject;
 
 public class NativeApiAssociationInsertBenchmark extends NativeApiBenchmarkBase {
 
-	private final static int NUMBER_OF_REFERENCABLE_ENTITIES = 100;
+	private static final int NUMBER_OF_REFERENCABLE_ENTITIES = 100;
 
 	/**
 	 * The number of operations to be performed with one entity manager. Using an EM only for one op is an anti-pattern,
@@ -47,8 +47,8 @@ public class NativeApiAssociationInsertBenchmark extends NativeApiBenchmarkBase 
 				DBObject fieldOfScience = new BasicDBObject( 3 );
 
 				fieldOfScience.put( "_id", i + 1 );
-				fieldOfScience.put("complexity", clientHolder.rand.nextDouble() );
-				fieldOfScience.put("name", "The dark sciences of " + clientHolder.rand.nextInt( 26 ) );
+				fieldOfScience.put( "complexity", clientHolder.rand.nextDouble() );
+				fieldOfScience.put( "name", "The dark sciences of " + clientHolder.rand.nextInt( 26 ) );
 
 				fieldsOfScience.add( fieldOfScience );
 			}
