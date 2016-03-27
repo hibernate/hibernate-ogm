@@ -33,11 +33,11 @@ public class RegistrationExecutor {
 	}
 
 	public static Member findWithNativeQuery(EntityManager em, String nativeQuery) {
-		return (Member) em.createNativeQuery( nativeQuery, Member.class).getSingleResult();
+		return (Member) em.createNativeQuery( nativeQuery, Member.class ).getSingleResult();
 	}
 
 	public static Member findWithQuery(EntityManager em, Long id) {
-		return em.createQuery( "FROM Member WHERE id = :id", Member.class)
+		return em.createQuery( "FROM Member WHERE id = :id", Member.class )
 				.setParameter( "id", id )
 				.getSingleResult();
 	}
