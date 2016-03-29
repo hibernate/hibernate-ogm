@@ -97,6 +97,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 					.createProperty().name( OgmProperties.CREATE_DATABASE ).value( "true" ).up()
 					.createProperty().name( OgmProperties.ERROR_HANDLER ).value( TestErrorHandler.class.getName() ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 				.up().up();
 	}
 

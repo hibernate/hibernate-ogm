@@ -69,7 +69,8 @@ public class ModulesMagicDeckITCassandra {
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
-					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "cassandra_experimental" ).up();
+					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "cassandra_experimental" ).up()
+					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up();
 
 		setCassandraHostName( properties );
 		setCassandraPort( properties );

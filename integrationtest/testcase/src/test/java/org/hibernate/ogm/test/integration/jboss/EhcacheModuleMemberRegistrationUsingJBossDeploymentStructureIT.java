@@ -44,6 +44,7 @@ public class EhcacheModuleMemberRegistrationUsingJBossDeploymentStructureIT exte
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "ehcache" ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 				.up().up();
 	}
 

@@ -77,6 +77,7 @@ public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 							.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
 							.createProperty().name( "hibernate.ogm.datastore.create_database" ).value( "true" ).up()
 							.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+							.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 					.up().up();
 	}
 
