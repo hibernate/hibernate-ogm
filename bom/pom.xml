@@ -32,6 +32,9 @@
         <cassandraVersion>2.2.0-rc3</cassandraVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
         <lettuceVersion>4.1.Final</lettuceVersion>
+        <rxjavaVersion>1.1.0</rxjavaVersion>
+        <hdrHistogramVersion>2.1.8</hdrHistogramVersion>
+        <latencyUtilsVersion>2.0.3</latencyUtilsVersion>
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler19Version>2.0.5</neo4jCypherCompiler19Version>
         <neo4jCypherCompiler22Version>2.2.6</neo4jCypherCompiler22Version>
