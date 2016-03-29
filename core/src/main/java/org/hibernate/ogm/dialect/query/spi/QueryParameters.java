@@ -29,11 +29,7 @@ public class QueryParameters {
 	private final List<TypedGridValue> positionalParameters;
 	private final List<String> queryHints;
 
-	public QueryParameters(
-				RowSelection rowSelection, 
-				Map<String, TypedGridValue> namedParameters, 
-				List<TypedGridValue> positionalParameters,
-				List<String> queryHints) {
+	public QueryParameters(RowSelection rowSelection, Map<String, TypedGridValue> namedParameters, List<TypedGridValue> positionalParameters, List<String> queryHints) {
 		this.rowSelection = rowSelection;
 		this.namedParameters = namedParameters;
 		this.positionalParameters = positionalParameters;
