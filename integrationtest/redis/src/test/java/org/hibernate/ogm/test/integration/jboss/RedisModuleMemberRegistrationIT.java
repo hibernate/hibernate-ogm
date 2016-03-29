@@ -67,6 +67,7 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( Redis.DATASTORE_PROVIDER_NAME ).up()
 				.createProperty().name( OgmProperties.DATABASE ).value( "0" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 				.up().up();
 	}
 
