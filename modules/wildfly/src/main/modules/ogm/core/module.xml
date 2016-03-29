@@ -21,8 +21,5 @@
 
         <!-- Needed for Iso8601StringDateType -->
         <module name="javax.xml.bind.api"/>
-
-        <!-- Allow Hibernate ORM to load com.arjuna.ats.jta.TransactionManager -->
-        <module name="org.jboss.jts" export="true" />
     </dependencies>
 </module>

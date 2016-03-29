@@ -43,6 +43,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 				.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
 				.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 			.up().up();
 	}
 
