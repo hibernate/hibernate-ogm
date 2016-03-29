@@ -76,7 +76,7 @@
         </file>
         <file>
             <source>${module.xml.basedir}/org/parboiled/module.xml</source>
-            <outputDirectory>/org/parboiled/${org.parboiled.module.slot}</outputDirectory>
+            <outputDirectory>/org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
     </files>
@@ -229,7 +229,7 @@
        </dependencySet>
        <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/parboiled/${org.parboiled.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>

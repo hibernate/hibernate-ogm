@@ -34,7 +34,8 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.parboiled"/>
+
+        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}"/>
 
         <!-- neo4j-lucene-index requires the API in the Kernel -->
         <module name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.neo4j.module.slot}"/>
