@@ -62,6 +62,7 @@ public class Neo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistration
 				.value( neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}
