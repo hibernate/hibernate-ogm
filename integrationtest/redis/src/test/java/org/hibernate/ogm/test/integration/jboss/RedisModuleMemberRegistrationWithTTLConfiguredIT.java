@@ -55,7 +55,7 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 				.addClasses( PhoneNumber.class, PhoneNumberService.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies(
-						"org.hibernate.ogm services, org.hibernate.ogm.redis services,  org.hibernate.ogm.redis.driver services, org.hibernate.search.orm:${hibernate-search.module.slot} services"
+						"org.hibernate.ogm services, org.hibernate.ogm.redis services,  org.hibernate.ogm.redis.driver services"
 				)
 				.createDeployment();
 	}

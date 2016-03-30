@@ -13,7 +13,6 @@
         <dependencies>
             <module name="org.hibernate.ogm" services="import" />
             <module name="org.hibernate.ogm.ehcache" services="import" />
-            <module name="org.hibernate.search.orm" slot="${hibernate-search.module.slot}" services="import" />
         </dependencies>
     </deployment>
 </jboss-deployment-structure>

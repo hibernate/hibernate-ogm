@@ -28,7 +28,7 @@ public class EhcacheModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 		return new ModuleMemberRegistrationDeployment
 				.Builder( EhcacheModuleMemberRegistrationIT.class)
 				.persistenceXml( persistenceXml() )
-				.manifestDependencies( "org.hibernate.ogm services, org.hibernate.ogm.ehcache services, org.hibernate.search.orm:${hibernate-search.module.slot} services" )
+				.manifestDependencies( "org.hibernate.ogm services, org.hibernate.ogm.ehcache services" )
 				.createDeployment();
 	}
 
