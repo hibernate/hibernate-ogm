@@ -171,7 +171,7 @@ public class CouchDBDialectTest {
 	private void createDataStoreProvider() throws Exception {
 		Properties properties = new Properties();
 		properties.putAll( environmentProperties() );
-		properties.load( CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) );
+		CouchDBTestHelper.loadHibernatePropertiesInto( properties );
 		datastoreProvider.configure( properties );
 		datastoreProvider.start();
 	}

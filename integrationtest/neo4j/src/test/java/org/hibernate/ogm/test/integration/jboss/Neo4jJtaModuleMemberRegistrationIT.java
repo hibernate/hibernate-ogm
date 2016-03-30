@@ -67,10 +67,11 @@ public class Neo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistration
 		return persistenceDescriptor;
 	}
 
-	private static String neo4jFolder() throws Exception {
-		InputStream propertiesStrem = Thread.currentThread().getContextClassLoader().getResourceAsStream( "neo4j-test.properties" );
+	static String neo4jFolder() throws Exception {
 		java.util.Properties properties = new java.util.Properties();
-		properties.load( propertiesStrem );
+		try ( InputStream propertiesStrem = Thread.currentThread().getContextClassLoader().getResourceAsStream( "neo4j-test.properties" ) ) {
+			properties.load( propertiesStrem );
+		}
 		String buildDirectory = properties.getProperty( "build.directory" );
 		return buildDirectory + File.separator + "NEO4J-DB" + File.separator + System.currentTimeMillis();
 	}

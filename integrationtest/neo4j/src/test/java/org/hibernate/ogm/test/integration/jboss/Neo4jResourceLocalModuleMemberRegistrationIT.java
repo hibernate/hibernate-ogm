@@ -9,9 +9,6 @@ package org.hibernate.ogm.test.integration.jboss;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
-import java.io.InputStream;
-
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
@@ -59,19 +56,11 @@ public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRe
 				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.DATASTORE_PROVIDER_NAME ).up()
 				.createProperty()
 				.name( Neo4jProperties.DATABASE_PATH )
-				.value( neo4jFolder() )
+				.value( Neo4jJtaModuleMemberRegistrationIT.neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
 		return persistenceDescriptor;
-	}
-
-	private static String neo4jFolder() throws Exception {
-		InputStream propertiesStrem = Thread.currentThread().getContextClassLoader().getResourceAsStream( "neo4j-test.properties" );
-		java.util.Properties properties = new java.util.Properties();
-		properties.load( propertiesStrem );
-		String buildDirectory = properties.getProperty( "build.directory" );
-		return buildDirectory + File.separator + "NEO4J-DB" + File.separator + System.currentTimeMillis();
 	}
 
 	@Override

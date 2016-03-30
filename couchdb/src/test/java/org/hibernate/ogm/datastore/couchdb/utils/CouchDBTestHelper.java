@@ -6,8 +6,11 @@
  */
 package org.hibernate.ogm.datastore.couchdb.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.ws.rs.client.Client;
@@ -28,6 +31,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapsh
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.couchdb.test.dialect.CouchDBDialectTest;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.facade.DatabaseTestClient;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.AssociationCountResponse;
@@ -273,6 +277,19 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		}
 		catch (JSONException e) {
 			Exceptions.<RuntimeException>sneakyThrow( e );
+		}
+	}
+
+	/**
+	 * Loads the `hibernate.properties` file into an existing Properties instance.
+	 * @param properties the modified properties
+	 */
+	public static void loadHibernatePropertiesInto(Properties properties) {
+		try ( InputStream resourceAsStream = CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) ) {
+			properties.load( resourceAsStream );
+		}
+		catch (IOException e) {
+			throw new RuntimeException( e );
 		}
 	}
 }

@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -105,7 +106,9 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	private static Map<String, String> readProperties() {
 		try {
 			Properties hibProperties = new Properties();
-			hibProperties.load( Thread.currentThread().getContextClassLoader().getResourceAsStream( "hibernate.properties" ) );
+			try ( InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream( "hibernate.properties" ) ) {
+				hibProperties.load( resourceAsStream );
+			}
 			Map<String, String> props = new HashMap<>();
 			for ( Map.Entry<Object, Object> entry : hibProperties.entrySet() ) {
 				props.put( String.valueOf( entry.getKey() ), String.valueOf( entry.getValue() ) );
