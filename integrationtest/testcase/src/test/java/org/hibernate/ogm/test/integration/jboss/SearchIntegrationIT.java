@@ -6,9 +6,6 @@
  */
 package org.hibernate.ogm.test.integration.jboss;
 
-import static org.hibernate.ogm.test.integration.jboss.util.CassandraConfigurationHelper.setCassandraHostName;
-import static org.hibernate.ogm.test.integration.jboss.util.CassandraConfigurationHelper.setCassandraPort;
-
 import org.hibernate.ogm.test.integration.jboss.controller.MagicCardsCollectionBean;
 import org.hibernate.ogm.test.integration.jboss.model.MagicCard;
 import org.hibernate.ogm.test.integration.jboss.util.ModulesHelper;
@@ -25,25 +22,21 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
 import org.junit.runner.RunWith;
 
 /**
- * Test for the Hibernate OGM module in WildFly using Cassandra.
- * The class name has to finish with "ITCassandra" for the test to be enabled in the right profile.
- * <p>
- * At time of writing, the Cassandra GridDialect implementation is not ready to handle associations
- * so we'll use an over simplified model.
+ * Test for the combination of Hibernate OGM and Hibernate Search modules on WildFly.
  *
  * @author Sanne Grinovero
  */
 @RunWith(Arquillian.class)
-public class ModulesMagicDeckITCassandra extends MagiccardsDatabaseScenario {
+public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 
 	@Deployment
 	public static Archive<?> createTestArchive() {
 		WebArchive webArchive = ShrinkWrap
-				.create( WebArchive.class, "modules-magic-cassandra.war" )
-				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, ModulesMagicDeckITCassandra.class, MagiccardsDatabaseScenario.class );
+				.create( WebArchive.class, "modules-magic-searchit.war" )
+				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, SearchIntegrationIT.class, MagiccardsDatabaseScenario.class );
 		String persistenceXml = persistenceXml().exportAsString();
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
-		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm services, org.hibernate.ogm.cassandra services" );
+		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm services, org.hibernate.ogm.infinispan services" );
 		return webArchive;
 	}
 
@@ -57,13 +50,9 @@ public class ModulesMagicDeckITCassandra extends MagiccardsDatabaseScenario {
 				.clazz( MagicCard.class.getName() )
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
-					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "cassandra_experimental" ).up()
+					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
+					.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
 					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up();
-
-		setCassandraHostName( properties );
-		setCassandraPort( properties );
-
 		return descriptor;
 	}
 
