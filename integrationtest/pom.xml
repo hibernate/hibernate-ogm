@@ -7,11 +7,15 @@
     </parent>
 
     <artifactId>hibernate-ogm-integrationtest</artifactId>
-    <packaging>pom</packaging>
     <name>Hibernate OGM Integration and performance Tests</name>
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
+        <version.wildfly>10.0.0.Final</version.wildfly>
+        <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
+        <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
             convergence issues -->
         <enforcer.skip>true</enforcer.skip>
@@ -31,10 +35,51 @@
     </dependencyManagement>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>run-embedded-wildfly-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <includes>
+                                <include>**/ehcache/*IT.java</include>
+                                <include>**/infinispan/*IT.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>
-                     <artifactId>maven-checkstyle-plugin</artifactId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
                 </plugin>
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
@@ -65,12 +110,67 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>unpack</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.wildfly</groupId>
+                                        <artifactId>wildfly-dist</artifactId>
+                                        <version>${version.wildfly}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${project.build.directory}</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>hibernate-ogm-modules-wildfly10</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>org.infinispan</groupId>
+                                        <artifactId>infinispan-as-embedded-modules</artifactId>
+                                        <version>${infinispanVersion}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <dependencies>
-       <dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+            <version>${version.org.wildfly.arquillian}</version>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Pulled in transitively; Neither available on 
+                    Windows nor on JDK 9 -->
+                <exclusion>
+                    <groupId>sun.jdk</groupId>
+                    <artifactId>jconsole</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -114,98 +214,53 @@
         </dependency>
     </dependencies>
 
-    <modules>
-        <module>testcase</module>
-        <module>mongodb</module>
-        <module>couchdb</module>
-        <module>neo4j</module>
-        <module>redis</module>
-    </modules>
-
     <profiles>
         <profile>
-            <id>wildfly</id>
+
+
+        <profile>
+            <id>run-cassandra-wildfly-tests</id>
+            <!-- To run the tests you need to define the
+                environment property: CASSANDRA_HOSTNAME -->
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env.CASSANDRA_HOSTNAME</name>
+                </property>
             </activation>
-            <properties>
-                <version.wildfly>10.0.0.Final</version.wildfly>
-                <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
-                <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
-            </properties>
-            <dependencies>
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- Pulled in transitively; Neither available on Windows nor on JDK 9 -->
-                    <exclusion>
-                        <groupId>sun.jdk</groupId>
-                        <artifactId>jconsole</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>unpack</id>
-                                <phase>pre-integration-test</phase>
+                                <id>cassandra-integration-tests</id>
                                 <goals>
-                                    <goal>unpack</goal>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
                                 </goals>
                                 <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.wildfly</groupId>
-                                            <artifactId>wildfly-dist</artifactId>
-                                            <version>${version.wildfly}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-wildfly10</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.infinispan</groupId>
-                                            <artifactId>infinispan-as-embedded-modules</artifactId>
-                                            <version>${infinispanVersion}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                        <!-- The following modules are disabled as *with this specific version* we can
-                                          use the main modules as bundled with WildFly
-                                        <artifactItem>
-                                            <groupId>org.hibernate</groupId>
-                                            <artifactId>hibernate-search-modules</artifactId>
-                                            <version>${hibernateSearchVersion}</version>
-                                            <classifier>wildfly-8-dist</classifier>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.infinispan</groupId>
-                                            <artifactId>infinispan-as-embedded-modules</artifactId>
-                                            <version>${infinispanVersion}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                         -->
-                                    </artifactItems>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/cassandra/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                </goals>
+                                <configuration>
                                 </configuration>
                             </execution>
                         </executions>
