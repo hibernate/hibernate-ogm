@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.test.integration.jboss;
+package org.hibernate.ogm.test.integration.redis;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,10 +18,11 @@ import org.hibernate.ogm.datastore.redis.RedisProperties;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.test.integration.jboss.model.Member;
-import org.hibernate.ogm.test.integration.jboss.model.PhoneNumber;
-import org.hibernate.ogm.test.integration.jboss.service.PhoneNumberService;
-import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
+import org.hibernate.ogm.test.integration.redis.model.PhoneNumber;
+import org.hibernate.ogm.test.integration.redis.service.PhoneNumberService;
+import org.hibernate.ogm.test.integration.testcase.ModuleMemberRegistrationScenario;
+import org.hibernate.ogm.test.integration.testcase.model.Member;
+import org.hibernate.ogm.test.integration.testcase.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
