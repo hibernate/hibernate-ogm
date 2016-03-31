@@ -379,8 +379,9 @@ https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly do
 
 A compatible Hibernate Search module is included in WildFly 10, and Hibernate Search is activated automatically if you're indexing any entity.
 
-When using WildFly several of the technologies it includes are automatically enabled, for example Hibernate ORM is made avaialble to your applications if and when you
-have a `persistence.xml` defining a persistence unit which is using the Hibernate persistence provider, or not specifying any provider as Hibernate is the default one.
+When using WildFly several of the technologies it includes are automatically enabled.
+For example Hibernate ORM is made available to your applications if your `persistence.xml` defines a persistence unit using Hibernate as persistence provider
+(or is not specifying any provider, as Hibernate is the default one).
 
 Similarly, Hibernate Search is automatically activated and made available on the user's application classpath if and when the application server detects the need for it.
 This is the default behaviour, but you are in control and can override this all; see the https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide]
