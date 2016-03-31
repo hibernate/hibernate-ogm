@@ -68,6 +68,7 @@
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <includes>
                                 <include>**/neo4j/*IT.java</include>
+                                <include>**/mongodb/*IT.java</include>
                                 <include>**/ehcache/*IT.java</include>
                                 <include>**/infinispan/*IT.java</include>
                             </includes>
@@ -162,6 +163,13 @@
             <artifactId>hibernate-ogm-neo4j</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-mongodb</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <version>${version.org.wildfly.arquillian}</version>
@@ -257,17 +265,86 @@
             </build>
         </profile>
 
+        <profile>
+            <id>embedded-mongodb</id>
+            <activation>
+                <property>
+                    <name>!useExternalMongoDb</name>
+                </property>
             </activation>
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.codehaus.gmaven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
                         <executions>
                             <execution>
+                                <id>prepare-mongodb-directories</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
+                                    <goal>execute</goal>
                                 </goals>
                                 <configuration>
+                                    <source>
+                                    println "[INFO] ------------------------------------------------------------------------"
+                                    println "[INFO] MONGO DB BUILD INFO                                                     "
+                                    println "[INFO] ------------------------------------------------------------------------"
+                                    println "[INFO] Extracting MongoDB distribution to " + project.properties['embeddedMongoDbTempDir'] + " and        "
+                                    println "[INFO] launching MongoDB process on port " + project.properties['embeddedMongoDbPort'] + ". The properties"
+                                    println "[INFO] 'embeddedMongoDbTempDir' and 'embeddedMongoDbPort' can be used to       "
+                                    println "[INFO] specify another directory and/or port like this:                        "
+                                    println "[INFO]                                                                         "
+                                    println "[INFO]     mvn test -DembeddedMongoDbTempDir=%dir% -DembeddedMongoDbPort=%port%"
+                                    println "[INFO]                                                                         "
+                                    println "[INFO] To use an external Mongo DB instance instead, specify the               "
+                                    println "[INFO] 'useExternalMongoDb' property:                                          "
+                                    println "[INFO]                                                                         "
+                                    println "[INFO]     mvn test -DuseExternalMongoDb                                       "
+                                    println "[INFO]                                                                         "
+                                    println "[INFO] In this case, host and port are retrieved from the environment          "
+                                    println "[INFO] variables MONGODB_HOSTNAME and MONGODB_PORT, respectively.              "
+                                    println "[INFO] ------------------------------------------------------------------------"
+
+                                    def tempDir = new File(project.properties['embeddedMongoDbTempDir'])
+                                    ant.delete(dir : tempDir)
+                                    ant.mkdir(dir : tempDir)
+
+                                    def logDir = new File(project.properties['embeddedMongoDbLogDir'])
+                                    ant.delete(dir : logDir)
+                                    ant.mkdir(dir : logDir)
+
+                                    System.setProperty( "de.flapdoodle.embed.io.tmpdir", project.properties['embeddedMongoDbTempDir'] )
+                                    </source>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <MONGODB_PORT>${embeddedMongoDbPort}</MONGODB_PORT>
+                                <MONGODB_HOSTNAME>${embeddedMongoDbBindIp}</MONGODB_HOSTNAME>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                        <artifactId>embedmongo-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>start-embedded-mongodb</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop-embedded-mongodb</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>

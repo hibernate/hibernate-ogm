@@ -4,29 +4,27 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.test.integration.jboss.model;
+package org.hibernate.ogm.test.integration.mongodb.model;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import org.hibernate.annotations.Type;
-
+/**
+ * @author Gunnar Morling
+ */
 @Entity
-public class PhoneNumber {
+public class EmailAddress {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Type(type = "objectid")
 	private String id;
 	private String name;
 	private String value;
 
-	public PhoneNumber() {
+	EmailAddress() {
 	}
 
-	public PhoneNumber(String name, String value) {
+	public EmailAddress(String id, String name, String value) {
+		this.id = id;
 		this.name = name;
 		this.value = value;
 	}
