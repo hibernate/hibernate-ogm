@@ -165,6 +165,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-couchdb</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>hibernate-ogm-mongodb</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -230,6 +235,37 @@
 
     <profiles>
         <profile>
+            <id>run-couchdb-wildfly-tests</id>
+            <!-- To run the tests you need to define the 
+                environment property: COUCHDB_HOSTNAME -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                   <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>couchdb-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/couchdb/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
 
         <profile>
