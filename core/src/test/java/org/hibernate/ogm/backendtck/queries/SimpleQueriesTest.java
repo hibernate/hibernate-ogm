@@ -322,7 +322,16 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-581")
-	public void testParameterListWithCalendar() throws Exception {
+	public void testParameterListWithLong() throws Exception {
+		//List<Long> paramList = Arrays.asList( 2L );
+		Long[] paramList = new Long[] { 2L };
+		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramList ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 2L );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithDate() throws Exception {
 		List<Date> paramList = new ArrayList();
 
 		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( "GMT" ) );
