@@ -322,11 +322,18 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-581")
-	public void testParameterListWithLong() throws Exception {
-		//List<Long> paramList = Arrays.asList( 2L );
-		Long[] paramList = new Long[] { 2L };
+	public void testParameterListWithLongList() throws Exception {
+		List<Long> paramList = Arrays.asList( 1L, 2L, 4L );
 		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramList ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( 2L );
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L, 2L );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithLongArray() throws Exception {
+		Long[] paramArray = new Long[] { 1L, 2L, 4L };
+		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramArray ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L, 2L );
 	}
 
 	@Test
@@ -339,8 +346,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 		calendar.set( 2011, 8, 25 );
 		paramList.add( calendar.getTime() );
 
+		calendar.set( Calendar.YEAR, 2012 );
+		paramList.add( calendar.getTime() );
+
+		calendar.set( Calendar.DAY_OF_MONTH, 1 );
+		paramList.add( calendar.getTime() );
+
 		List<?> result = session.createQuery( "from Hypothesis h where h.date IN (:dates)" ).setParameterList( "dates", paramList ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
 	}
 
 	@Test
