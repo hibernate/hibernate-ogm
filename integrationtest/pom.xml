@@ -67,6 +67,7 @@
                         <configuration>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <includes>
+                                <include>**/neo4j/*IT.java</include>
                                 <include>**/ehcache/*IT.java</include>
                                 <include>**/infinispan/*IT.java</include>
                             </includes>
@@ -155,7 +156,12 @@
     </build>
 
     <dependencies>
+        <!-- Backends -->
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-neo4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <version>${version.org.wildfly.arquillian}</version>
