@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.persistencestrategy.IgniteSerializableEntityKey;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
