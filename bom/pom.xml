@@ -19,10 +19,26 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- These dependencies should be aligned with the ones from the 
-            WildFly version we support See the version.wildfly property in the hibernate-ogm-parent 
-            pom See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent" -->
-        <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
+        <!-- compile/runtime dependency versions, managed in the BOM -->
+        <classmateVersion>1.0.0</classmateVersion>
+        <ehcacheVersion>2.6.9</ehcacheVersion>
+        <infinispanVersion>8.0.2.Final</infinispanVersion>
+        <mongodbVersion>3.0.3</mongodbVersion>
+        <fongodbVersion>2.0.2</fongodbVersion>
+        <neo4jVersion>2.3.2</neo4jVersion>
+        <igniteVersion>1.5.0.final</igniteVersion>
+        <!-- Update dependency versions accordingly when updating C*  -->
+        <cassandraVersion>2.2.0-rc3</cassandraVersion>
+        <!-- Update dependency versions accordingly when updating lettuce  -->
+        <lettuceVersion>4.0.2.Final</lettuceVersion>
+        <!-- Neo4j supports different versions of Cypher -->
+        <neo4jCypherCompiler19Version>2.0.5</neo4jCypherCompiler19Version>
+        <neo4jCypherCompiler22Version>2.2.6</neo4jCypherCompiler22Version>
+        <!-- Neo4j does not support Lucene 4 currently-->
+        <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
+        <hibernateVersion>5.0.5.Final</hibernateVersion>
+        <hibernateSearchVersion>5.5.1.Final</hibernateSearchVersion>
+        <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
@@ -578,6 +594,40 @@
                 <artifactId>lettuce</artifactId>
                 <version>${lettuceVersion}</version>
             </dependency>
+            
+            <!-- Ignite -->
+        <dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-core</artifactId>
+			<version>${igniteVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-jta</artifactId>
+			<version>${igniteVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-indexing</artifactId>
+			<version>${igniteVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.lucene</groupId>
+					<artifactId>lucene-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-spring</artifactId>
+            <version>${igniteVersion}</version>
+            <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commonsLang3Version}</version>
+		</dependency>
 
             <!-- Ignite -->
             <dependency>

@@ -20,8 +20,7 @@ import java.util.Set;
 
 import javax.cache.Cache.Entry;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
@@ -270,8 +269,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		// TODO Auto-generated method stub
-		throw new NotImplementedException("forEachTuple()");
+		throw new UnsupportedOperationException("forEachTuple() is not implemented yet");
 	}
 
 	@Override
