@@ -28,6 +28,7 @@
         <mongodbVersion>3.0.3</mongodbVersion>
         <fongodbVersion>2.0.2</fongodbVersion>
         <neo4jVersion>2.3.2</neo4jVersion>
+        <igniteVersion>1.5.0.final</igniteVersion>
         <!-- Update dependency versions accordingly when updating C*  -->
         <cassandraVersion>2.2.0-rc3</cassandraVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
@@ -328,6 +329,11 @@
                 <artifactId>hibernate-ogm-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-ignite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -463,6 +469,40 @@
                 <artifactId>lettuce</artifactId>
                 <version>${lettuceVersion}</version>
             </dependency>
+            
+            <!-- Ignite -->
+        <dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-core</artifactId>
+			<version>${igniteVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-jta</artifactId>
+			<version>${igniteVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-indexing</artifactId>
+			<version>${igniteVersion}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.lucene</groupId>
+					<artifactId>lucene-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-spring</artifactId>
+            <version>${igniteVersion}</version>
+            <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commonsLang3Version}</version>
+		</dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>

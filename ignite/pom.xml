@@ -19,12 +19,6 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>xml-apis</artifactId>
-					<groupId>xml-apis</groupId>
-				</exclusion>
-			</exclusions>
         </dependency>
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
@@ -65,11 +59,6 @@
             <artifactId>shrinkwrap-impl-base</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
-		</dependency>
         <!-- Ehcache uses slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -87,121 +76,30 @@
             <scope>test</scope>
         </dependency>
         
-        <!-- Ignite 1.4.0 -->
-<!--  		
-        <dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-core</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-spring</artifactId>
-            <version>1.4.0</version>
-            <exclusions>
-            	<exclusion>
-            		<groupId>commons-logging</groupId>
-            		<artifactId>commons-logging</artifactId>	
-            	</exclusion>
-            </exclusions>
-		</dependency>        
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.3</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-jta</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-indexing</artifactId>
-			<version>1.4.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
--->		
+
         <!-- Ignite 1.5.0 -->
 <!--  		
 -->		
         <dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-core</artifactId>
-			<version>1.5.0.final</version>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-spring</artifactId>
-            <version>1.5.0.final</version>
-            <exclusions>
-            	<exclusion>
-            		<groupId>commons-logging</groupId>
-            		<artifactId>commons-logging</artifactId>	
-            	</exclusion>
-            </exclusions>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-jta</artifactId>
-			<version>1.5.0.final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-indexing</artifactId>
-			<version>1.5.0.final</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
-<!-- GridGain 7.5.x -->
-<!--  
         <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-spring</artifactId>
-            <version>1.5.1-b1</version>
-            <exclusions>
-            	<exclusion>
-            		<groupId>commons-logging</groupId>
-            		<artifactId>commons-logging</artifactId>	
-            	</exclusion>
-            </exclusions>
-		</dependency>    
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.3</version>
-		</dependency>    
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-jta</artifactId>
-			<version>1.5.1-b1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-indexing</artifactId>
-			<version>1.5.1-b1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
--->
     </dependencies>
 
 	<build>
@@ -224,29 +122,25 @@
 						<include>org/hibernate/ogm/backendtck/id/IdentityIdGeneratorTest.java</include>
 						<include>org/hibernate/ogm/backendtck/id/SequenceIdGeneratorTest.java</include>
 					</includes>
--->					
 					<excludes>
 						<exclude>org/hibernate/ogm/backendtck/massindex/*</exclude>
 						<exclude>org/hibernate/ogm/backendtck/optimisticlocking/*</exclude>
 						<exclude>org/hibernate/ogm/backendtck/perf/*</exclude>
-<!--
 						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedCollectionTest.java</exclude>
 						<exclude>org/hibernate/ogm/backendtck/queries/CompositeIdQueriesTest.java</exclude>
 						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedTest.java</exclude>
 						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedTest.java</exclude>
 						<exclude>org/hibernate/ogm/backendtck/queries/SimpleQueriesTest.java</exclude>
 						<exclude>org/hibernate/ogm/backendtck/queries/JpaQueriesTest.java</exclude> 
--->
 					</excludes>
+-->
 					<argLine> -Dtest=IgniteBackendTckHelper</argLine>
 				</configuration>
 			</plugin>
-<!--  
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
--->			
 		</plugins>
 	</build>
     
