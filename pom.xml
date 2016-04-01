@@ -69,8 +69,6 @@
         <hibernate-search.module.slot>main</hibernate-search.module.slot>
         <!-- Following might not match the slot, for example when 'main' is being used. Needed in docs URL rendering. -->
         <hibernate-search-major-minor-version>5.5</hibernate-search-major-minor-version>
-        <!-- For documentation, to omit the slot when not needed: -->
-        <hibernate-search-full-module-id>org.hibernate.search.orm</hibernate-search-full-module-id>
     </properties>
 
     <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are
@@ -307,7 +305,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.12.1</version>
+                    <version>2.17</version>
                     <dependencies>
                         <!-- force SLF4J dependency to align
                              Maven internals and CheckStyle's
@@ -333,6 +331,10 @@
                         <includeResources>true</includeResources>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <includeTestResources>false</includeTestResources>
+                        <!-- generated code -->
+                        <excludes>
+                            **/Log_$logger.java
+                        </excludes>
                     </configuration>
                     <executions>
                         <execution>

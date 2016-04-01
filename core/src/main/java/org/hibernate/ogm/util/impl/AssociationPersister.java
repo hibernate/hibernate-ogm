@@ -116,7 +116,7 @@ public class AssociationPersister {
 			}
 			else {
 				ownerEntityKey  = new EntityKey(
-						((OgmEntityPersister) getHostingEntityPersister()).getEntityKeyMetadata(),
+						( (OgmEntityPersister) getHostingEntityPersister() ).getEntityKeyMetadata(),
 						columnValues
 				);
 			}

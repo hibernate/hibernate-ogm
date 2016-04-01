@@ -174,11 +174,11 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 
 	private void createUniqueConstraintIfMissing(GraphDatabaseService neo4jDb, Label label, String property) {
 		if ( isMissingUniqueConstraint( neo4jDb, label, property ) ) {
-			log.tracef( "Creating unique constraint for nodes labeled as %1$s on property %2$s", label, property);
+			log.tracef( "Creating unique constraint for nodes labeled as %1$s on property %2$s", label, property );
 			neo4jDb.schema().constraintFor( label ).assertPropertyIsUnique( property ).create();
 		}
 		else {
-			log.tracef( "Unique constraint already exists for nodes labeled as %1$s on property %2$s", label, property);
+			log.tracef( "Unique constraint already exists for nodes labeled as %1$s on property %2$s", label, property );
 		}
 	}
 

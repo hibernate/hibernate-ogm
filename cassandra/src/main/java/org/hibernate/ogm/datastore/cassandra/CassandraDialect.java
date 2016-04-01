@@ -298,8 +298,8 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		List<String> combinedKeys = new LinkedList<String>();
 		combinedKeys.addAll( Arrays.asList( key.getColumnNames() ) );
 		for ( Object column : tableMetadata.getPrimaryKey().getColumns() ) {
-			String name = ((Column) column).getName();
-			if ( !combinedKeys.contains( name ) ) {
+			String name = ( (Column) column ).getName();
+			if ( ! combinedKeys.contains( name ) ) {
 				combinedKeys.add( name );
 			}
 		}

@@ -366,7 +366,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			String[] propertyColumnNames = getPropertyColumnNames( getPropertyIndex( property ) );
 			String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
 
-			OgmEntityPersister otherSidePersister = (OgmEntityPersister) ( (EntityType) propertyType).getAssociatedJoinable( getFactory() );
+			OgmEntityPersister otherSidePersister = (OgmEntityPersister) ( (EntityType) propertyType ).getAssociatedJoinable( getFactory() );
 			String inverseOneToOneProperty = getInverseOneToOneProperty( property, otherSidePersister );
 
 			if ( inverseOneToOneProperty != null ) {
@@ -674,7 +674,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			return null;
 		}
 		else {
-			return gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null);
+			return gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
 		}
 	}
 
@@ -733,7 +733,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
 		}
 
-		OgmEntityPersister inversePersister = (OgmEntityPersister) ((EntityType) getPropertyTypes()[propertyIndex]).getAssociatedJoinable( session.getFactory() );
+		OgmEntityPersister inversePersister = (OgmEntityPersister) ( (EntityType) getPropertyTypes()[propertyIndex] ).getAssociatedJoinable( session.getFactory() );
 
 		OptionsServiceContext serviceContext = session.getFactory()
 				.getServiceRegistry()
@@ -840,7 +840,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						readLoader :
 						createEntityLoader( LockMode.PESSIMISTIC_FORCE_INCREMENT )
 			);
-		loaders.put( LockMode.OPTIMISTIC, createEntityLoader( LockMode.OPTIMISTIC) );
+		loaders.put( LockMode.OPTIMISTIC, createEntityLoader( LockMode.OPTIMISTIC ) );
 		loaders.put( LockMode.OPTIMISTIC_FORCE_INCREMENT, createEntityLoader( LockMode.OPTIMISTIC_FORCE_INCREMENT ) );
 
 		//FIXME handle cascading merge and refresh
@@ -976,7 +976,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					rootPersister,
 					propNames,
 					propSubclassNames,
-					sequentialSelectEmpty);
+					sequentialSelectEmpty );
 		}
 		return values;
 	}
@@ -1035,7 +1035,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	@Override
-	protected boolean useInsertSelectIdentity() { return false; }
+	protected boolean useInsertSelectIdentity() {
+		return false;
+	}
 
 	@Override
 	protected Serializable insert(

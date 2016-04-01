@@ -76,7 +76,7 @@
         </file>
         <file>
             <source>${module.xml.basedir}/org/parboiled/module.xml</source>
-            <outputDirectory>/org/parboiled/${org.parboiled.module.slot}</outputDirectory>
+            <outputDirectory>/org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
     </files>
@@ -158,6 +158,9 @@
              <includes>
                  <include>biz.paluch.redis:lettuce</include>
                  <include>org.apache.commons:commons-pool2</include>
+                 <include>io.reactivex:rxjava</include>
+                 <include>org.latencyutils:LatencyUtils</include>
+                 <include>org.hdrhistogram:HdrHistogram</include>
               </includes>
        </dependencySet>
        <dependencySet>
@@ -226,7 +229,7 @@
        </dependencySet>
        <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/parboiled/${org.parboiled.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>

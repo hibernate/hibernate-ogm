@@ -29,7 +29,7 @@ public class AuthorWithSequence {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "auth_seq")
-	@SequenceGenerator(name = "auth_seq", allocationSize=100)
+	@SequenceGenerator(name = "auth_seq", allocationSize = 100)
 	long a_id;
 
 	public String getFname() {

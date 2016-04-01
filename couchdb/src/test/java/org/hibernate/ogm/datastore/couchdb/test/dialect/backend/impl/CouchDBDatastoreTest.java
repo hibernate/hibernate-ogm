@@ -22,8 +22,8 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
-import org.hibernate.ogm.datastore.couchdb.test.dialect.CouchDBDialectTest;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
+import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.junit.After;
@@ -140,7 +140,7 @@ public class CouchDBDatastoreTest {
 	private void loadProperties() throws IOException {
 		properties = new Properties();
 		properties.putAll( environmentProperties() );
-		properties.load( CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) );
+		CouchDBTestHelper.loadHibernatePropertiesInto( properties );
 	}
 
 	private String getPassword() {

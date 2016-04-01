@@ -135,6 +135,6 @@ public class MongoDBQueryDescriptor implements Serializable {
 			collectionName,
 			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
 			operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : "projection", projection,
-			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options);
+			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options );
 	}
 }

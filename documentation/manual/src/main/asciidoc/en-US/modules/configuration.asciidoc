@@ -377,24 +377,18 @@ https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly do
 
 ==== Enabling both the Hibernate Search and Hibernate OGM modules
 
-A compatible Hibernate Search module is included in WildFly 10: all you have to do is activate the dependency.
+A compatible Hibernate Search module is included in WildFly 10, and Hibernate Search is activated automatically if you're indexing any entity.
 
-When using WildFly, no library is available to your deployments unless you explicitly request it, or unless it is the implementation for a JavaEE service which your application is using.
-For example, Hibernate ORM will be available by default to your application if you are including the definition of a persistence unit,
-although there are options to prevent that, for example to use a different JPA implementor or to use a different version of Hibernate ORM.
+When using WildFly several of the technologies it includes are automatically enabled.
+For example Hibernate ORM is made available to your applications if your `persistence.xml` defines a persistence unit using Hibernate as persistence provider
+(or is not specifying any provider, as Hibernate is the default one).
 
-Hibernate Search is not automatically provided, so you have to make it available explicitly either via the `MANIFEST.MF` or via a custom `jboss-deployment-structure.xml`.
+Similarly, Hibernate Search is automatically activated and made available on the user's application classpath if and when the application server detects the need for it.
+This is the default behaviour, but you are in control and can override this all; see the https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide]
+for a full list of properties you can explicitly set.
+Among these you fill find properties to control and override which modules are activated.
 
-To do that, the `MANIFEST.MF` of your deployment will look like:
-
-.Example MANIFEST.MF for an application using Hibernate OGM for CouchDB and also Hibernate Search
-====
-[source]
-[subs="verbatim,attributes"]
-----
-org.hibernate.ogm services, org.hibernate.ogm.couchdb services, {hibernate-search-full-module-id} services
-----
-====
+Hibernate OGM however is currently not included in WildFly, so you have to enable it explicitly.
 
 Optionally you could download a different version of the Hibernate Search modules, provided it is compatible with the Hibernate OGM version you plan to use.
 For example you might want to download a more recent micro version of what is included in WildFly 10 at the time of publishing this documentation.

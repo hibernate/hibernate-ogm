@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
-import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
@@ -51,7 +51,6 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
-import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
@@ -90,6 +89,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
@@ -804,7 +804,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
 		}
 
-		switch( queryDescriptor.getOperation() ) {
+		switch ( queryDescriptor.getOperation() ) {
 			case FIND:
 				return doFind( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case FINDONE:
@@ -836,7 +836,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			throw new UnsupportedOperationException("Positional parameters are not yet supported for MongoDB native queries.");
 		}
 
-		switch( queryDescriptor.getOperation() ) {
+		switch ( queryDescriptor.getOperation() ) {
 			case INSERT:
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
@@ -947,7 +947,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern wc = getWriteConcern( o );
 		final DBObject theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ),
 				update, (nevv != null ? nevv : false), (upsert != null ? upsert : false), (bypass != null ? bypass : false),
-				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern()));
+				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern() ) );
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 

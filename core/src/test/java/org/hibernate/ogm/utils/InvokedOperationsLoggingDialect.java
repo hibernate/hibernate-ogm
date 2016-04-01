@@ -284,7 +284,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 			if ( !Files.exists( file ) ) {
 				file = Files.createFile( file );
 			}
-			Files.write( file, ("#\top\tparameters\tresult" + System.lineSeparator() ).getBytes(), StandardOpenOption.TRUNCATE_EXISTING );
+			Files.write( file, ( "#\top\tparameters\tresult" + System.lineSeparator() ).getBytes(), StandardOpenOption.TRUNCATE_EXISTING );
 		}
 		catch (IOException e) {
 			throw new RuntimeException( e );

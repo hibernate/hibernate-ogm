@@ -79,7 +79,7 @@ public class CassandraSequenceHandler {
 
 	private Long nextValueInsert(IdSourceKeyMetadata metadata, String sequenceName, Long value) {
 
-		Insert insert = provider.getQueryBuilder().insertInto( quote( metadata.getName() ))
+		Insert insert = provider.getQueryBuilder().insertInto( quote( metadata.getName() ) )
 				.value( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) )
 				.value( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value" ) )
 				.ifNotExists();

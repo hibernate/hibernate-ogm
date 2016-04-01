@@ -115,7 +115,7 @@ public class EmbeddableStateFinder {
 		boolean hasOnlyNullColumns = true;
 
 		for ( String selectableColumn : columns ) {
-			if ( !isColumnPartOfEmbeddable( embeddable, selectableColumn) ) {
+			if ( !isColumnPartOfEmbeddable( embeddable, selectableColumn ) ) {
 				continue;
 			}
 
