@@ -120,9 +120,19 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 	}
 
+	/**
+	 * Create a MongoClient configured as requested.
+	 * <p>
+	 * This methods invokes {@link retrieveClientOptions} and {@link retrieveCredentials}
+	 * to retrieve respectively the client options and credentials. A subclass can
+	 * override any of these two methods to modify how the configuration is treated.
+	 * @param config The required configuration
+	 * @return A MongoClient configured as requested.
+	 */
 	protected MongoClient createMongoClient(MongoDBConfiguration config) {
-		MongoClientOptions clientOptions = config.buildOptions();
-		List<MongoCredential> credentials = config.buildCredentials();
+		MongoClientOptions clientOptions = retrieveClientOptions( config );
+		List<MongoCredential> credentials = retrieveCredentials( config );
+
 		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
 		try {
 			List<ServerAddress> serverAddresses = new ArrayList<>( config.getHosts().size() );
@@ -136,6 +146,32 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
 		}
+	}
+
+	/**
+	 * Retrieve the MongoClientOptions from the provided MongoDBConfiguration object.
+	 * This method is invoked by {@link createMongoClient}. It returns an unmodified
+	 * version of the client options. It is possible to override this method to
+	 * provide createMongoClient with a tailored version of the options.
+	 *
+	 * @param config The existing configuration
+	 * @return The options for the MongoClient.
+	 */
+	protected MongoClientOptions retrieveClientOptions(MongoDBConfiguration config) {
+		return config.buildOptions();
+	}
+
+	/**
+	 * Retrieve the list of MongoCredential from the provided MongoDBConfiguration object.
+	 * This method is invoked by {@link createMongoClient}. It returns an unmodified
+	 * version of the credentials. It is possible to override this method to
+	 * provide createMongoClient with a tailored version of the credentials.
+	 *
+	 * @param config The existing configuration
+	 * @return The options for the MongoClient.
+	 */
+	protected List<MongoCredential> retrieveCredentials(MongoDBConfiguration config) {
+		return config.buildCredentials();
 	}
 
 	@Override
