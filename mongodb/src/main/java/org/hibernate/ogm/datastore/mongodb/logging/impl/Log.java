@@ -105,6 +105,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1229, value = "Unknown user class: %s")
 	HibernateException unknownUserClass(String className);
 
-	@Message(id = 1230, value = "The property %s expectes a String value but received %s")
+	@Message(id = 1230, value = "The property %s expects a String value but received %s")
 	HibernateException unexpectedTypeInProperty(String property, String className);
 }

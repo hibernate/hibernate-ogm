@@ -93,7 +93,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				propType = paramType;
 			}
 			else {
-				// Any other type is received as a String mentioning the builder's class
+				// Any other type is received as a String mentioning the retriever's class
 				// name or a real String value.
 				propType = String.class;
 			}
@@ -103,24 +103,24 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				continue;
 			}
 
-			// If the parameter type and the provided type do not match, it means that
-			// the user passed a builder class. We must consider the value as the
-			// builder's class name and call the corresponding method to retrieve the
-			// actual object.
+			// If the parameter type and the provided type do not match, let's assume
+			// that the user passed a retriever class. We must consider the value as
+			// the retriever's class name and call the corresponding method to retrieve
+			// the actual object.
 			if ( paramType != propType ) {
 				if ( !( property instanceof String ) ) {
 					throw log.unexpectedTypeInProperty( setting, property.getClass().getName() );
 				}
 
-				Class<?> builderClass;
+				Class<?> retrieverClass;
 				try {
-					builderClass = Class.forName( (String) property );
+					retrieverClass = Class.forName( (String) property );
 				}
 				catch ( ClassNotFoundException e ) {
 					throw log.unknownUserClass( (String) property );
 				}
 				try {
-					property = builderClass.getMethod( entry.getKey() ).invoke( null );
+					property = retrieverClass.getMethod( entry.getKey() ).invoke( null );
 				}
 				catch ( NoSuchMethodException | InvocationTargetException | IllegalAccessException e ) {
 					throw log.unableToInvokeMethodViaReflection( (String) property, entry.getKey() );
