@@ -80,19 +80,51 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		for ( Map.Entry<String, Method> entry : settingsMap.entrySet() ) {
 			String setting = MongoDBProperties.MONGO_DRIVER_SETTINGS_PREFIX + "." + entry.getKey();
 			// we know that there is exactly one parameter
-			Class<?> type = entry.getValue().getParameterTypes()[0];
+			Class<?> paramType = entry.getValue().getParameterTypes()[0];
+			Class<?> propType;
 
 			// for reflection purposes we need to deal with wrapper classes
-			if ( int.class.equals( type ) ) {
-				type = Integer.class;
+			if ( int.class.equals( paramType ) ) {
+				paramType = Integer.class;
+				propType = paramType;
 			}
-			if ( boolean.class.equals( type ) ) {
-				type = Boolean.class;
+			else if ( boolean.class.equals( paramType ) ) {
+				paramType = Boolean.class;
+				propType = paramType;
+			}
+			else {
+				// Any other type is received as a String mentioning the builder's class
+				// name or a real String value.
+				propType = String.class;
 			}
 
-			Object property = propertyReader.property( setting, type ).withDefault( null ).getValue();
+			Object property = propertyReader.property( setting, propType ).withDefault( null ).getValue();
 			if ( property == null ) {
 				continue;
+			}
+
+			// If the parameter type and the provided type do not match, it means that
+			// the user passed a builder class. We must consider the value as the
+			// builder's class name and call the corresponding method to retrieve the
+			// actual object.
+			if ( paramType != propType ) {
+				if ( !( property instanceof String ) ) {
+					throw log.unexpectedTypeInProperty( setting, property.getClass().getName() );
+				}
+
+				Class<?> builderClass;
+				try {
+					builderClass = Class.forName( (String) property );
+				}
+				catch ( ClassNotFoundException e ) {
+					throw log.unknownUserClass( (String) property );
+				}
+				try {
+					property = builderClass.getMethod( entry.getKey() ).invoke( null );
+				}
+				catch ( NoSuchMethodException | InvocationTargetException | IllegalAccessException e ) {
+					throw log.unableToInvokeMethodViaReflection( (String) property, entry.getKey() );
+				}
 			}
 
 			Method settingMethod = entry.getValue();
@@ -115,14 +147,9 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 		Method[] methods = MongoClientOptions.Builder.class.getDeclaredMethods();
 		for ( Method method : methods ) {
-			if ( method.getParameterTypes().length == 1 ) {
-				Class<?> parameterType = method.getParameterTypes()[0];
-				// we just care of string, int and boolean setters
-				if ( String.class.equals( parameterType )
-						|| int.class.equals( parameterType )
-						|| boolean.class.equals( parameterType ) ) {
+			if ( method.getParameterTypes().length == 1
+					&& MongoClientOptions.Builder.class.equals( method.getReturnType() ) ) {
 					settingsMap.put( method.getName(), method );
-				}
 			}
 		}
 
