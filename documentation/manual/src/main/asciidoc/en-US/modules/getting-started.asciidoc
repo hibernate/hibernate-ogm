@@ -240,7 +240,7 @@ http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in parti
 if you experience trouble starting the Infinispan cluster,
 pass the following property: `-Djava.net.preferIPv4Stack=true`
 to your JVM or upgrade to a recent JDK version.
-jdk7u6 (b22) is known to work on Max OS X.
+jdk7u6 (b22) is known to work on Mac OS X.
 ====
 
 [NOTE]
