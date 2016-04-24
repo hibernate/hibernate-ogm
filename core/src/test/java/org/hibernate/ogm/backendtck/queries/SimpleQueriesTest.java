@@ -313,6 +313,50 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterList() throws Exception {
+		List<String> paramList = Arrays.asList( "Lama", "Puma" );
+		List<?> result = session.createQuery( "from Helicopter h where h.name IN (:names)" ).setParameterList( "names", paramList ).list();
+		assertThat( result ).onProperty( "name" ).containsOnly( "Lama" );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithLongList() throws Exception {
+		List<Long> paramList = Arrays.asList( 1L, 2L, 4L );
+		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramList ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L, 2L );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithLongArray() throws Exception {
+		Long[] paramArray = new Long[] { 1L, 2L, 4L };
+		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramArray ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L, 2L );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithDate() throws Exception {
+		List<Date> paramList = new ArrayList();
+
+		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( "GMT" ) );
+		calendar.clear();
+		calendar.set( 2011, 8, 25 );
+		paramList.add( calendar.getTime() );
+
+		calendar.set( Calendar.YEAR, 2012 );
+		paramList.add( calendar.getTime() );
+
+		calendar.set( Calendar.DAY_OF_MONTH, 1 );
+		paramList.add( calendar.getTime() );
+
+		List<?> result = session.createQuery( "from Hypothesis h where h.date IN (:dates)" ).setParameterList( "dates", paramList ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
+	}
+
+	@Test
 	public void testLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "15" );
