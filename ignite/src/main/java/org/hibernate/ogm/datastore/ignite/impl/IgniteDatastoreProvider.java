@@ -28,7 +28,6 @@ import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.thread.IgniteThread;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
-import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
 import org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
@@ -40,7 +39,6 @@ import org.hibernate.ogm.datastore.ignite.transaction.impl.IgniteTransactionMana
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -50,7 +48,6 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Provides access to a Ignite instance
@@ -89,23 +86,23 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			cache = cacheManager.cache( entityCacheName );
 		}
 		catch (IllegalStateException ex) {
-			if (Ignition.state(gridName) == IgniteState.STOPPED) {
-				log.info("Cache stopped.Trying to restart");
+			if ( Ignition.state( gridName ) == IgniteState.STOPPED ) {
+				log.info( "Cache stopped.Trying to restart" );
 				restart();
 				cache = cacheManager.cache( entityCacheName );
 			}
 			else {
 				throw ex;
 			}
-			
+
 		}
-		if (cache == null) {
-			log.warn("Unknown cache '" + entityCacheName + "'. Creating new with default settings.");
+		if ( cache == null ) {
+			log.warn( "Unknown cache '" + entityCacheName + "'. Creating new with default settings." );
 			CacheConfiguration<String, T> config = new CacheConfiguration<>();
 			config.setName( entityCacheName );
 			cache = cacheManager.getOrCreateCache( config );
 		}
-		if (keepBinary) {
+		if ( keepBinary ) {
 			cache = ((IgniteCacheProxy<String, T>) cache).keepBinary();
 		}
 		return cache;
@@ -114,7 +111,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	private void restart() {
 		if ( cacheManager.isRestartEnabled() ) {
 			Ignition.restart( false );
-		} 
+		}
 		else {
 			start();
 		}
@@ -122,12 +119,12 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	public IgniteCache<String, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetadata) {
 		String entityCacheName = getKeyProvider().getEntityCache( keyMetadata.getTable() );
-		return getCache(entityCacheName, true);
+		return getCache( entityCacheName, true );
 	}
 
 	public IgniteCache<String, Object> getIdSourceCache(IdSourceKeyMetadata keyMetaData) {
 		String idSourceCacheName = getKeyProvider().getIdSourceCache( keyMetaData );
-		return getCache(idSourceCacheName, false);
+		return getCache( idSourceCacheName, false );
 	}
 
 	public BinaryObjectBuilder getBinaryObjectBuilder(String type) {
@@ -230,14 +227,14 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return IgniteDialect.class;
 	}
-	
+
 	public <T> List<T> affinityCall( String cacheName, Object affinityKey, SqlFieldsQuery query ) {
 		ComputeForLocalQueries<T> call = new ComputeForLocalQueries<>( cacheName, query );
-		return cacheManager.compute().affinityCall(cacheName, affinityKey, call );
+		return cacheManager.compute().affinityCall( cacheName, affinityKey, call );
 	}
 
 	private static class ComputeForLocalQueries<T> implements IgniteCallable<List<T>> {
-		
+
 		private final String cacheName;
 		private final SqlFieldsQuery query;
 		@IgniteInstanceResource
@@ -252,22 +249,23 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		@Override
 		public List<T> call() throws Exception {
 			IgniteCache<String, BinaryObject> cache = ignite.cache( cacheName );
-			if ( cache == null )
+			if ( cache == null ) {
 				throw new IgniteException( "Cache '" + cacheName + "' not found" );
+			}
 			cache = ((IgniteCacheProxy<String, BinaryObject>) cache ).keepBinary();
-			return (List<T>)cache.query( query ).getAll();
+			return (List<T>) cache.query( query ).getAll();
 		}
 	}
 
 	public SqlFieldsQuery createSqlFieldsQueryWithLog(String sql, Object... args) {
-		
+
 		jdbcServices.getSqlStatementLogger().logStatement( sql );
-		
-		SqlFieldsQuery query = new SqlFieldsQuery(sql);
+
+		SqlFieldsQuery query = new SqlFieldsQuery( sql );
 		if ( args != null ) {
-			query.setArgs(args);
+			query.setArgs( args );
 		}
-		
+
 		return query;
 	}
 

@@ -64,12 +64,11 @@ public class IgniteSingleTableEntityPersister extends SingleTableOgmEntityPersis
 	}
 
 	@Override
-	public String selectFragment(String alias, String suffix)
-	{
+	public String selectFragment(String alias, String suffix) {
 		StringBuilder sb = new StringBuilder()
-									.append(alias).append("._KEY, ")
-									.append(alias).append("._VAL");
-		
+									.append( alias ).append( "._KEY, " )
+									.append( alias ).append( "._VAL" );
+
 		return sb.toString();
 	}
 }

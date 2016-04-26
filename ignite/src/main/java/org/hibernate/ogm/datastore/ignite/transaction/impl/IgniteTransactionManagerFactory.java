@@ -27,7 +27,8 @@ public class IgniteTransactionManagerFactory implements Factory<TransactionManag
 		ApplicationServer as = ApplicationServer.currentApplicationServer();
 		if (as == ApplicationServer.WEBSPHERE) {
 			transactionManager = DelegatingTransactionManager.transactionManager();
-		} else {
+		}
+		else {
 			transactionManager = platform.retrieveTransactionManager();
 		}
 		return transactionManager;
