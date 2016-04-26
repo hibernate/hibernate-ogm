@@ -7,27 +7,26 @@
 package org.hibernate.ogm.datastore.ignite.transaction.impl;
 
 public enum ApplicationServer {
-    WEBSPHERE, 
-    JBOSS,
-    DEFAULT;
+	WEBSPHERE, JBOSS, DEFAULT;
 
-    private static final String IBM_CLASSLOADER_PACKAGE_PART = "ibm";
-    private static final String JBOSS_CLASSLOADER_PACKAGE_PART = "jboss";
+	private static final String IBM_CLASSLOADER_PACKAGE_PART = "ibm";
+	private static final String JBOSS_CLASSLOADER_PACKAGE_PART = "jboss";
 
-    private static boolean isWebSphere() {
-        return ApplicationServer.class.getClassLoader().getClass().getName().contains(IBM_CLASSLOADER_PACKAGE_PART);
-    }
+	private static boolean isWebSphere() {
+		return ApplicationServer.class.getClassLoader().getClass().getName().contains( IBM_CLASSLOADER_PACKAGE_PART );
+	}
 
-    private static boolean isJBoss() {
-        return ApplicationServer.class.getClassLoader().getClass().getName().contains(JBOSS_CLASSLOADER_PACKAGE_PART);
-    }
+	private static boolean isJBoss() {
+		return ApplicationServer.class.getClassLoader().getClass().getName().contains( JBOSS_CLASSLOADER_PACKAGE_PART );
+	}
 
-    public static ApplicationServer currentApplicationServer() {
-        if (isWebSphere()) {
-            return WEBSPHERE;
-        } else if (isJBoss()) {
-            return JBOSS;
-        }
-        return DEFAULT;
-    }
+	public static ApplicationServer currentApplicationServer() {
+		if ( isWebSphere() ) {
+			return WEBSPHERE;
+		}
+		else if ( isJBoss() ) {
+			return JBOSS;
+		}
+		return DEFAULT;
+	}
 }

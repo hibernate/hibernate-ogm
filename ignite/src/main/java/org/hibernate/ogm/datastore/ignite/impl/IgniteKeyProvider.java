@@ -9,13 +9,10 @@ package org.hibernate.ogm.datastore.ignite.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.persistencestrategy.IgniteSerializableEntityKey;
-import org.hibernate.ogm.model.key.spi.AssociationKey;
-import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
 
 public class IgniteKeyProvider {
 
@@ -56,7 +53,7 @@ public class IgniteKeyProvider {
 		if (entity.indexOf( "." ) >= 0) {
 			String[] arr = entity.split( "\\." );
 			if (arr.length != 2) {
-				throw new IgniteHibernateException("Invalid entity name " + entity);
+				throw new IgniteHibernateException( "Invalid entity name " + entity );
 			}
 			return arr[1];
 		}
@@ -69,17 +66,17 @@ public class IgniteKeyProvider {
 	 * @return
 	 */
 	public String getEntityCache(EntityKeyMetadata keyMetadata) {
-		if (keyMetadata == null) {
-			throw new IgniteHibernateException("EntityKeyMetadata is null");
+		if ( keyMetadata == null ) {
+			throw new IgniteHibernateException( "EntityKeyMetadata is null" );
 		}
-		return getEntityCache(keyMetadata.getTable());
+		return getEntityCache( keyMetadata.getTable() );
 	}
 
 	public String getEntityCache(String entity) {
-		if (entity.indexOf( "." ) >= 0) {
+		if ( entity.indexOf( "." ) >= 0 ) {
 			String[] arr = entity.split( "\\." );
-			if (arr.length != 2) {
-				throw new IgniteHibernateException("Invalid entity name " + entity);
+			if ( arr.length != 2 ) {
+				throw new IgniteHibernateException( "Invalid entity name " + entity );
 			}
 			return arr[0];
 		}
@@ -87,14 +84,13 @@ public class IgniteKeyProvider {
 	}
 
 	/**
-	 * 
 	 * Get the cache name from the metadata
 	 * @param keyMetadata metadata
 	 * @return
 	 */
 	public String getIdSourceCache(IdSourceKeyMetadata keyMetadata) {
-		if (keyMetadata == null) {
-			throw new IgniteHibernateException("AssociationKeyMetadata is null");
+		if ( keyMetadata == null ) {
+			throw new IgniteHibernateException( "AssociationKeyMetadata is null" );
 		}
 		return getEntityCache( keyMetadata.getName() );
 	}

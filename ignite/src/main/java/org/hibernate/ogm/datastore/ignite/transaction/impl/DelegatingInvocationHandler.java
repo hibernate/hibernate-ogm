@@ -10,14 +10,14 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 public class DelegatingInvocationHandler implements InvocationHandler {
-    private final Object delegate;
+	private final Object delegate;
 
-    public DelegatingInvocationHandler(final Object delegate) {
-        this.delegate = delegate;
-    }
+	public DelegatingInvocationHandler( final Object delegate ) {
+		this.delegate = delegate;
+	}
 
-    @Override
-    public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-        return method.invoke(delegate, args);
-    }
+	@Override
+	public Object invoke( final Object proxy, final Method method, final Object[] args ) throws Throwable {
+		return method.invoke( delegate, args );
+	}
 }
