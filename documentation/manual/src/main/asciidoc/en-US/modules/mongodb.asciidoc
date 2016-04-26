@@ -90,7 +90,8 @@ The fully-qualified class name, class object or an instance of `ErrorHandler` to
 hibernate.ogm.mongodb.driver.*::
 Defines a prefix for all options which should be passed through to the MongoDB driver.
 For available options refer to the JavaDocs of link:http://api.mongodb.org/java/3.0/com/mongodb/MongoClientOptions.Builder.html[MongoClientOptions.Builder]. All `String`, `int` and `boolean` properties
-can be set, eg `hibernate.ogm.mongodb.driver.serverSelectionTimeout`.
+can be set directly, eg `hibernate.ogm.mongodb.driver.serverSelectionTimeout`.
+For properties taking an objet as value, eg `hibernate.ogm.mongodb.driver.socketFactory`, the provided value must be the name of a class implementing a static method with the same name as the property, taking no argument, and returning the object to be assigned, for instance `public static SocketFactory ConfigRetriever.socketFacfory()`.
 hibernate.ogm.mongodb.authentication_mechanism::
 Define the authentication mechanism to use. Possible values are:
 
