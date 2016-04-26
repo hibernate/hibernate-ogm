@@ -8,6 +8,7 @@ package org.hibernate.ogm.util.impl;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -22,7 +23,13 @@ public class ArrayHelper {
 	}
 
 	public static String[][] to2DStringArray(Collection coll) {
-		return (String[][]) coll.toArray( new String[ coll.size() ][] );
+                String[][] arr2D = new String[coll.size()][];
+                Iterator it = coll.iterator();
+                int i = 0;
+                for (;it.hasNext();i++) {
+                    arr2D[i] = new String[]{ (String) it.next()};
+                }                
+		return arr2D;
 	}
 
 	/**
