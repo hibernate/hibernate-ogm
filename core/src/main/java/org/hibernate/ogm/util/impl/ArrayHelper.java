@@ -14,6 +14,7 @@ import java.util.Iterator;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ArrayHelper {
+
 	public static final int[] EMPTY_INT_ARRAY = {};
 	public static final String[] EMPTY_STRING_ARRAY = {};
 	public static final Object[] EMPTY_OBJECT_ARRAY = {};
@@ -23,12 +24,13 @@ public class ArrayHelper {
 	}
 
 	public static String[][] to2DStringArray(Collection coll) {
-                String[][] arr2D = new String[coll.size()][];
-                Iterator it = coll.iterator();
-                int i = 0;
-                for (;it.hasNext();i++) {
-                    arr2D[i] = new String[]{ (String) it.next()};
-                }                
+		// return (String[][]) coll.toArray( new String[ coll.size() ][] );
+		String[][] arr2D = new String[coll.size()][];
+		Iterator it = coll.iterator();
+		int i = 0;
+		for ( ; it.hasNext(); i++ ) {
+			arr2D[i] = new String[]{ (String) it.next() };
+		}
 		return arr2D;
 	}
 
@@ -56,7 +58,7 @@ public class ArrayHelper {
 	 */
 	public static <T> int indexOf(T[] array, T element) {
 		for ( int i = 0; i < array.length; i++ ) {
-			if (array[i].equals( element )) {
+			if ( array[i].equals( element ) ) {
 				return i;
 			}
 		}

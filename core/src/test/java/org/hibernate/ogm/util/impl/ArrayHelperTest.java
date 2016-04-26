@@ -6,9 +6,12 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
+
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * @author Sergey Chernolyas <sergey.chernolyas@gmail.com>
@@ -20,7 +23,6 @@ public class ArrayHelperTest {
 	 */
 	@Test
 	public void testToStringArray() {
-		System.out.println( "toStringArray" );
 		assertArrayEquals( new String[]{ "1", "2" }, ArrayHelper.toStringArray( Arrays.asList( new String[]{ "1", "2" } ) ) );
 	}
 
@@ -47,7 +49,6 @@ public class ArrayHelperTest {
 	 */
 	@Test
 	public void testSlice() {
-		System.out.println( "slice" );
 		String[] strings = new String[]{ "1", "2", "3" };
 		int begin = 0;
 		int length = 2;
@@ -61,7 +62,6 @@ public class ArrayHelperTest {
 	 */
 	@Test
 	public void testIndexOf() {
-		System.out.println( "indexOf" );
 		Object[] array = new Integer[]{ 1, 2, 3 };
 		Object element = 3;
 		int expResult = 2;
@@ -74,7 +74,6 @@ public class ArrayHelperTest {
 	 */
 	@Test
 	public void testContains() {
-		System.out.println( "contains" );
 		Object[] array = new Integer[]{ 1, 2, 3 };
 		Object element = 3;
 		boolean expResult = true;
@@ -87,7 +86,6 @@ public class ArrayHelperTest {
 	 */
 	@Test
 	public void testConcat() {
-		System.out.println( "concat" );
 		Object[] first = new String[]{ "1", "2" };
 		Object[] second = new String[]{ "3" };
 		Object[] expResult = new String[]{ "1", "2", "3" };
