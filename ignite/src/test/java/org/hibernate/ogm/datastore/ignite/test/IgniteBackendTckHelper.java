@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest",    			// passed -testDefaultBiDirManyToOneCompositeKeyTest
 	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest", 			// passed
 	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",					// passed
-//	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorTest",
+	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorTest",
 //	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorWithSessionTest",
 //	"org.hibernate.ogm.backendtck.id.CompositeIdTest", //vk: ManyToOne
 //	"org.hibernate.ogm.backendtck.id.DuplicateIdDetectionTest",
@@ -33,8 +33,8 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.id.SequenceIdGeneratorTest",
 //	"org.hibernate.ogm.backendtck.id.TableIdGeneratorTest",
 //	"org.hibernate.ogm.datastore.ignite.test.IgniteTest",
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",
+	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
+	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.HibernateCoreAPIWrappingTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.JNDIReferenceTest",
