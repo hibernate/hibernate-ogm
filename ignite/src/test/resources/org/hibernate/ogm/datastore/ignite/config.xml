@@ -24,7 +24,7 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
     <bean class="org.apache.ignite.configuration.IgniteConfiguration">
-    	<property name="connectorConfiguration"><null/></property>
+
 		<property name="localHost" value="127.0.0.1"/>
         <property name="peerClassLoadingEnabled" value="true"/>
 		<property name="clientMode" value="false"/>
@@ -90,21 +90,69 @@
 <!-- For test ListTest -->
 				<bean id="Child" parent="cache-template">
 					<property name="name" value="Child" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Child" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Father_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="Father" parent="cache-template">
 					<property name="name" value="Father" />
 				</bean>
 				<bean id="Father_child" parent="cache-template">
 					<property name="name" value="Father_child" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Father_child" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Father_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="GrandChild" parent="cache-template">
 					<property name="name" value="GrandChild" />
 				</bean>
 				<bean id="GrandMother" parent="cache-template">
 					<property name="name" value="GrandMother" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="GrandMother" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="GrandMother_grandChildren" parent="cache-template">
 					<property name="name" value="GrandMother_grandChildren" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="GrandMother_grandChildren" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="GrandMother_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="Race" parent="cache-template">
 					<property name="name" value="Race" />
@@ -126,6 +174,45 @@
 					<property name="name" value="ClassRoom_Student" />
 				</bean>
 <!-- For test MapTest -->
+				<bean id="PhoneNumber" parent="cache-template">
+					<property name="name" value="PhoneNumber" />
+				</bean>
+				<bean id="Enterprise" parent="cache-template">
+					<property name="name" value="Enterprise" />
+				</bean>
+				<bean id="Enterprise_revenueByDepartment" parent="cache-template">
+					<property name="name" value="Enterprise_revenueByDepartment" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Enterprise_revenueByDepartment" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Enterprise_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
+				</bean>
+				<bean id="Enterprise_departments" parent="cache-template">
+					<property name="name" value="Enterprise_departments" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Enterprise_departments" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Enterprise_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
+				</bean>
+				<bean id="Department" parent="cache-template">
+					<property name="name" value="Department" />
+				</bean>
 				<bean id="User" parent="cache-template">
 					<property name="name" value="User" />
 				</bean>
@@ -152,9 +239,48 @@
 				</bean>
 				<bean id="User_Address" parent="cache-template">
 					<property name="name" value="User_Address" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="User_Address" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="User_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
+				</bean>
+				<bean id="User_PhoneNumber" parent="cache-template">
+					<property name="name" value="User_PhoneNumber" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="User_PhoneNumber" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="User_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="Nicks" parent="cache-template">
 					<property name="name" value="Nicks" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Nicks" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="user_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 <!-- For test CollectionUnidirectionalTest -->
 				<bean id="Cloud" parent="cache-template">
@@ -165,6 +291,18 @@
 				</bean>
 				<bean id="joinProducedSnowflakes" parent="cache-template">
 					<property name="name" value="joinProducedSnowflakes" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="joinProducedSnowflakes" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Cloud_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="joinBackupSnowflakes" parent="cache-template">
 					<property name="name" value="joinBackupSnowflakes" />
@@ -188,6 +326,18 @@
 				</bean>
 				<bean id="Basket_Product" parent="cache-template">
 					<property name="name" value="Basket_Product" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Basket_Product" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Basket_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 <!-- For test ManyToOneTest -->
 				<bean id="JUG" parent="cache-template">
@@ -201,9 +351,33 @@
 				</bean>
 				<bean id="SalesGuy" parent="cache-template">
 					<property name="name" value="SalesGuy" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="SalesGuy" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="salesForce_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="Beer" parent="cache-template">
 					<property name="name" value="Beer" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Beer" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="brewery_id" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="Brewery" parent="cache-template">
 					<property name="name" value="Brewery" />
@@ -229,6 +403,18 @@
 				</bean>
 				<bean id="Husband" parent="cache-template">
 					<property name="name" value="Husband" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Husband" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="wife" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 				<bean id="Wife" parent="cache-template">
 					<property name="name" value="Wife" />
@@ -326,6 +512,18 @@
 				</bean>
 				<bean id="Employee" parent="cache-template">
 					<property name="name" value="Employee" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Employee" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="EmployerID" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 <!-- For test InnerClassFindTest -->
 				<bean id="employee" parent="cache-template">
@@ -492,6 +690,7 @@
 									<map>
 										<entry key="NAME_" value="java.lang.String" />
 										<entry key="INFO" value="java.lang.String" />
+										<entry key="ID_MEGA" value="java.lang.Integer" />
 									</map>
 								</property>
 								<property name="ascendingFields">

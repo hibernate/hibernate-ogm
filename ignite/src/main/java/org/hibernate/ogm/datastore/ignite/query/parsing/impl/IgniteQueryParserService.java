@@ -37,10 +37,6 @@ public class IgniteQueryParserService extends BaseQueryParserService {
 	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
 		IgniteHqlQueryParser parser = new IgniteHqlQueryParser(queryString, sessionFactory);
 		IgniteQueryParsingResult result = new IgniteQueryParsingResult(parser.buildQueryDescriptor(), parser.getColumnNames());
-
-		SqlStatementLogger statementLogger = sessionFactory.getServiceRegistry().getService( JdbcServices.class ).getSqlStatementLogger();
-		statementLogger.logStatement( result.getQueryObject().getSql() );
-
 		return result;
 	}
 
