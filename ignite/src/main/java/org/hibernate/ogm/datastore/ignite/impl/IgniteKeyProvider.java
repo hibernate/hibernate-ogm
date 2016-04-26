@@ -35,30 +35,12 @@ public class IgniteKeyProvider {
 	}
 
 	/**
-	 * Converting association key to string key
-	 * @param key association key
-	 * @return string key
-	 */
-	public String getAssociationKeyString(AssociationKey key) {
-		return getKeyStringByColumnValues( key.getColumnValues() );
-	}
-
-	/**
 	 * Converting id source key to string key
 	 * @param key id source key
 	 * @return string key
 	 */
 	public String getIdSourceKeyString(IdSourceKey key) {
 		return getKeyStringByColumnValues( key.getColumnValues() );
-	}
-
-	/**
-	 * Converting row key to string key
-	 * @param key row key
-	 * @return string key
-	 */
-	public String getRowKeyString(RowKey rowKey) {
-		return getKeyStringByColumnValues( rowKey.getColumnValues() );
 	}
 
 	private String getKeyStringByColumnValues(Object[] columnValues) {
@@ -70,11 +52,7 @@ public class IgniteKeyProvider {
 	 * @param keyMetadata metadata
 	 * @return type
 	 */
-	public String getEntityType(EntityKeyMetadata keyMetadata) {
-		if (keyMetadata == null) {
-			throw new IgniteHibernateException("EntityKeyMetadata is null");
-		}
-		String entity = keyMetadata.getTable();
+	public String getEntityType(String entity) {
 		if (entity.indexOf( "." ) >= 0) {
 			String[] arr = entity.split( "\\." );
 			if (arr.length != 2) {
@@ -82,9 +60,7 @@ public class IgniteKeyProvider {
 			}
 			return arr[1];
 		}
-		else {
-			return keyMetadata.getTable();
-		}
+		return entity;
 	}
 
 	/**
@@ -108,30 +84,6 @@ public class IgniteKeyProvider {
 			return arr[0];
 		}
 		return entity;
-	}
-
-	/**
-	 * Get the cache name from the metadata
-	 * @param keyMetadata metadata
-	 * @return
-	 */
-	public String getAssociationCache(AssociationKeyMetadata keyMetadata) {
-		if (keyMetadata == null) {
-			throw new IgniteHibernateException("AssociationKeyMetadata is null");
-		}
-		return getEntityCache( keyMetadata.getTable() );
-	}
-
-	/**
-	 * Get the type of object from the metadata
-	 * @param keyMetadata metadata
-	 * @return
-	 */
-	public String getAssociationType(AssociationKeyMetadata keyMetadata) {
-		if (keyMetadata == null) {
-			throw new IgniteHibernateException("AssociationKeyMetadata is null");
-		}
-		return keyMetadata.getTable();
 	}
 
 	/**

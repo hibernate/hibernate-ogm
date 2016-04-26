@@ -6,29 +6,19 @@
  */
 package org.hibernate.ogm.datastore.ignite;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.cache.Cache.Entry;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
-import org.apache.ignite.cache.query.Query;
-import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
-import org.apache.ignite.cache.query.SqlQuery;
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
@@ -37,14 +27,16 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.ScalarReturn;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
-import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationSnapshot;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
+import org.hibernate.ogm.datastore.ignite.impl.IgnitePortableAssociationSnapshot;
+import org.hibernate.ogm.datastore.ignite.impl.IgnitePortableTupleSnapshot;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteQueryDescriptor;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteSqlQueryParser;
+import org.hibernate.ogm.datastore.ignite.query.impl.QueryHints;
 import org.hibernate.ogm.datastore.ignite.type.impl.IgniteGridTypeMapper;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -63,11 +55,13 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
+import org.hibernate.ogm.model.spi.AssociationOperationType;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.type.spi.GridType;
@@ -75,8 +69,6 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 public class IgniteDialect extends BaseGridDialect implements GridDialect, QueryableGridDialect<IgniteQueryDescriptor> /*, OptimisticLockingAwareGridDialect*/ {
-
-	public static final String LOCAL_QUERY_PROPERTY = "local";
 
 	private static final long serialVersionUID = -4347702430400562694L;
 	private static final Log log = LoggerFactory.getLogger();
@@ -135,10 +127,11 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException {
 		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 
-		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata() ) );
+		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
 		for (String columnName : tuple.getColumnNames()) {
 			Object value = tuple.get( columnName );
-			builder.setField( columnName, value );
+			if (value != null)
+				builder.setField( columnName, value );
 		}
 		String keyStr = provider.getKeyProvider().getEntityKeyString( key );
 		entityCache.put( keyStr , builder.build() );
@@ -146,85 +139,197 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		provider.getEntityCache( key.getMetadata() ).remove( provider.getKeyProvider().getEntityKeyString( key ) );
+		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() ); 
+		entityCache.remove( provider.getKeyProvider().getEntityKeyString( key ) );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		IgniteCache<String, BinaryObject> entityCache = provider.getAssociationCache( key.getMetadata() );
+	public Association getAssociation( AssociationKey key, AssociationContext associationContext ) {
 
-		if (entityCache == null) {
-			throw new IgniteHibernateException("Cache " + key.getMetadata().getTable() + " is not found");
-		}
-		else {
-			BinaryObject po = entityCache.get( provider.getKeyProvider().getAssociationKeyString( key ) );
-			if (po != null) {
-				return new Association( new IgnitePortableAssociationSnapshot( po, key ) );
+		Association result = null;
+		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache(key.getMetadata());
+
+		if ( associationCache == null ) {
+			throw new IgniteHibernateException( "Cache " + key.getMetadata().getTable() + " is not found" );
+		} else {
+			
+			if ( key.getColumnNames().length > 1 ) {
+				throw new IgniteHibernateException( "Composite keys are not supported yet." );
 			}
-			else {
-				return null;
+			
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, true ), key.getColumnValues() );
+			
+			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, new QueryHints() );
+			Iterator<List<?>> iterator = list.iterator();
+			if ( iterator.hasNext() ) {
+				Map<RowKey, BinaryObject> associationMap = new HashMap<>();
+				while ( iterator.hasNext() ) {
+					List<?> item = iterator.next();
+					BinaryObject bo = (BinaryObject) item.get( 1 );
+					String rowKeyColumnNames[] = key.getMetadata().getRowKeyColumnNames();
+					Object rowKeyColumnValues[] = new Object[ rowKeyColumnNames.length ];
+					for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
+						String columnName = rowKeyColumnNames[i];
+						rowKeyColumnValues[i] = bo.field( columnName );
+//						if ( !key.getMetadata().isKeyColumn( columnName ) ) {
+//							rowKeyColumnValues[i] = item.get( 0 ); // _KEY  - primary ID in association cache
+//						} else {
+//							rowKeyColumnValues[i] = bo.field( columnName );
+//						}
+					}
+					RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
+					associationMap.put( rowKey, bo );
+				}
+				result = new Association( new IgnitePortableAssociationSnapshot( associationMap, key.getMetadata().getRowKeyIndexColumnNames() ) );
 			}
 		}
+		
+		return result;
+	}
+	
+	private String createAssociationQuery(AssociationKey key, boolean selectObjects) {
+		StringBuilder sb = (new StringBuilder());
+		if ( selectObjects )
+			sb.append("SELECT _KEY, _VAL FROM ");
+		else
+			sb.append("SELECT _KEY FROM ");
+		sb.append( key.getMetadata().getTable() ).append(" WHERE ");
+		boolean first = true;
+		for (String columnName : key.getColumnNames()) {
+			if (!first) {
+				sb.append(" AND ");
+			} else {
+				first = false;
+			}
+			sb.append(columnName).append("=?");
+		}
+		return sb.toString();
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		return new Association( new IgnitePortableAssociationSnapshot( null, key ) );
+	public Association createAssociation( AssociationKey key, AssociationContext associationContext ) {
+		return new Association( new IgnitePortableAssociationSnapshot( key.getMetadata().getRowKeyIndexColumnNames() ) );
 	}
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+		
+		if ( key.getMetadata().isInverse() ) {
+			return;
+		}
+
 		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
-		Map<RowKey, BinaryObject> associationMap = ((IgniteAssociationSnapshot) association.getSnapshot()).getPortableMap();
-		for (AssociationOperation action : association.getOperations()) {
-			switch (action.getType()) {
-			case CLEAR:
-				association.clear();
-				break;
-			case PUT:
-				putAssociationRow( associationMap, action.getKey(), action.getValue(), key );
-				break;
-			case REMOVE:
-				associationMap.remove( action.getKey() );
-				break;
+		Map<String, BinaryObject> changedObjects = new HashMap<>();
+		Set<String> removedObjects = new HashSet<>();
+
+		String associationKeyColumns[] = key.getMetadata().getAssociatedEntityKeyMetadata().getAssociationKeyColumns();
+		if ( associationKeyColumns.length > 1 ) {
+			throw new IgniteHibernateException( "Composite keys are not supported yet." );
+		}
+		String idColumnName = associationKeyColumns[0];
+		boolean clearInsteadOfRemove = clearAssociation(key); 
+			
+		for ( AssociationOperation op : association.getOperations() ) {
+			Tuple currentStateTuple = op.getValue(); 
+			String id = currentStateTuple.get( idColumnName ).toString();
+			if ( op.getType() == AssociationOperationType.CLEAR
+					|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
+				BinaryObject clearBo = associationCache.get( id );
+				if (clearBo != null) {
+					BinaryObjectBuilder clearBoBuilder = provider.getBinaryObjectBuilder( clearBo );
+					//vk: I'm not sure
+					for ( String columnName : key.getColumnNames() ) {
+						clearBoBuilder.removeField( columnName );
+					}
+					for ( String columnName : key.getMetadata().getRowKeyIndexColumnNames() ) {
+						clearBoBuilder.removeField( columnName );
+					}
+					changedObjects.put( id, clearBoBuilder.build() );
+				}
+			} else if ( op.getType() == AssociationOperationType.PUT ) {
+				BinaryObject putBo = associationCache.get( id );
+				BinaryObjectBuilder putBoBuilder = null;
+				if (putBo != null) {
+					putBoBuilder = provider.getBinaryObjectBuilder( putBo );
+				} else {
+					putBoBuilder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
+				}
+				for ( String columnName : currentStateTuple.getColumnNames() ) {
+					Object value = currentStateTuple.get( columnName );
+					if ( value != null ) {
+						putBoBuilder.setField( columnName, value );
+					} else {
+						putBoBuilder.removeField( columnName );
+					}
+				}
+				changedObjects.put( id, putBoBuilder.build() );
+			} else if ( op.getType() == AssociationOperationType.REMOVE ) {
+				removedObjects.add( id );
+			} else {
+				throw new HibernateException( "AssociationOperation not supported: " + op.getType() );
 			}
 		}
 
-//		for (RowKey rowKey : association.getKeys()){
-//			Tuple tuple = association.get(rowKey);
-//			if (tuple != null){
-//				PortableBuilderDelegate builder = provider.getPortableBuilder(provider.getKeyProvider().getAssociationType(key.getMetadata()));
-//				for (String columnName : tuple.getColumnNames()){
-//				// put only the key field from the child table in association
-////				for (String columnName : key.getMetadata().getRowKeyIndexColumnNames()) {
-//					Object value = tuple.get(columnName);
-//					if (value != null)
-//						builder.setField(columnName, value);
-//				}
-//				associationMap.put(rowKey, builder.build().getInternalInstance());
-//			}
-//		}
-		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( "ASSOCIATION" );
-		builder.setField( "ASSOCIATION", associationMap );
-		associationCache.put( provider.getKeyProvider().getAssociationKeyString( key ), builder.build() );
-	}
-
-	private void putAssociationRow(Map<RowKey, BinaryObject> associationMap, RowKey key, Tuple tuple, AssociationKey associationKey) {
-		if (tuple != null) {
-			BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getAssociationType( associationKey.getMetadata() ) );
-			for (String columnName : tuple.getColumnNames()) {
-			// put only the key field from the child table in association
-//			for (String columnName : key.getMetadata().getRowKeyIndexColumnNames()) {
-				Object value = tuple.get( columnName );
-				builder.setField( columnName, value );
-			}
-			associationMap.put( key, builder.build() );
+		if ( !changedObjects.isEmpty() ) {
+			associationCache.putAll( changedObjects );
+		}
+		if ( !removedObjects.isEmpty() ) {
+			associationCache.removeAll( removedObjects );
 		}
 	}
-
+	
+	private boolean clearAssociation( AssociationKey key ) {
+		return key.getMetadata().getTable().equals(key.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable())
+					&& key.getMetadata().getAssociationKind() != AssociationKind.EMBEDDED_COLLECTION;
+	}
+	
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		provider.getAssociationCache( key.getMetadata() ).remove( provider.getKeyProvider().getAssociationKeyString( key ) );
+		if ( key.getMetadata().isInverse() ) {
+			return;
+		}
+
+		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache(key.getMetadata());
+		
+		if (clearAssociation(key)) {
+			// clear reference
+			Map<String, BinaryObject> changedObjects = new HashMap<>();
+			
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, true ), key.getColumnValues() );
+			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, new QueryHints() );
+			for (List<?> item : list) {
+				String id = item.get( 0 ).toString();
+				BinaryObject clearBo = (BinaryObject) item.get( 1 );
+				if (clearBo != null) {
+					BinaryObjectBuilder clearBoBuilder = provider.getBinaryObjectBuilder( clearBo );
+					//vk: I'm not sure
+					for ( String columnName : key.getColumnNames() ) {
+						clearBoBuilder.removeField( columnName );
+					}
+					for ( String columnName : key.getMetadata().getRowKeyIndexColumnNames() ) {
+						clearBoBuilder.removeField( columnName );
+					}
+					changedObjects.put( id, clearBoBuilder.build() );
+				}
+			}
+			
+			if ( !changedObjects.isEmpty() ) {
+				associationCache.putAll( changedObjects );
+			}
+		} else {
+			// remove objects
+			Set<String> removedObjects = new HashSet<>();
+			
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, false ), key.getColumnValues() );
+			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, new QueryHints() );
+			for (List<?> item : list) {
+				removedObjects.add( item.get( 0 ).toString() );
+			}
+
+			if ( !removedObjects.isEmpty() ) {
+				associationCache.removeAll( removedObjects );
+			}
+		}
 	}
 
 	@Override
@@ -269,7 +374,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		throw new UnsupportedOperationException("forEachTuple() is not implemented yet");
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("forEachTuple() is not implemented");
 	}
 
 	@Override
@@ -284,24 +390,40 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		else {
 			throw new IgniteHibernateException( "Can't find cache name" );
 		}
-		SqlFieldsQuery sqlQuery = new SqlFieldsQuery( backendQuery.getQuery().getSql() );
-		sqlQuery.setArgs( IgniteHqlQueryParser.createParameterList( backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters() ).toArray() );
+		SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( 
+										backendQuery.getQuery().getSql(),
+										IgniteHqlQueryParser.createParameterList( backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters() ).toArray() 
+								);
+		QueryHints hints = new QueryHints( queryParameters.getQueryHints() );
+		Iterable<List<?>> result = executeWithHints( cache, sqlQuery, hints );
 
-		setLocalQuery( sqlQuery, queryParameters.getQueryHints() );
-
-		QueryCursor<List<?>> resultCursor = cache.query( sqlQuery );
 		if (backendQuery.getQuery().isHasScalar()) {
-			return new IgniteProjectionResultCursor( resultCursor, backendQuery.getQuery().getCustomQueryReturns(), queryParameters.getRowSelection() );
+			return new IgniteProjectionResultCursor( result, backendQuery.getQuery().getCustomQueryReturns(), queryParameters.getRowSelection() );
 		}
 		else {
-			return new IgnitePortableFromProjectionResultCursor( resultCursor, queryParameters.getRowSelection() );
+			return new IgnitePortableFromProjectionResultCursor( result, queryParameters.getRowSelection() );
 		}
 	}
-
-	private void setLocalQuery(Query<?> query, List<String> queryHints) {
-		if (!provider.isClientMode()) {
-			query.setLocal( isLocal( queryHints ) );
+	
+	private Iterable<List<?>> executeWithHints( IgniteCache<String, BinaryObject> cache, SqlFieldsQuery sqlQuery, QueryHints hints ) {
+		Iterable<List<?>> result;
+		
+		if (hints.isCollocated()) {
+			sqlQuery.setCollocated(true);
 		}
+		if (hints.isLocal()) {
+			if (!provider.isClientMode()) {
+				sqlQuery.setLocal( true );
+			}
+		}
+		if ( hints.isAffinityRun() ) {
+			result = provider.affinityCall( cache.getName(), hints.getAffinityKey(), sqlQuery );
+		} 
+		else {
+			result = cache.query( sqlQuery );
+		}
+
+		return result;
 	}
 
 	@Override
@@ -320,68 +442,33 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		return IgniteGridTypeMapper.INSTANCE.overrideType( type );
 	}
 
-	/**
-	 * @param queryHints
-	 * @return true, if need to execute query only on local node, false otherwise
-	 */
-	private boolean isLocal(List<String> queryHints) {
-		for (String hint : queryHints) {
-			if (StringUtils.isNotBlank( hint )) {
-				try {
-					Properties properties = new Properties();
-					properties.load( new StringReader( hint ) );
-					if (properties.getProperty( LOCAL_QUERY_PROPERTY ) != null) {
-						return Boolean.parseBoolean( properties.getProperty( LOCAL_QUERY_PROPERTY ) );
-					}
-				}
-				catch (IOException e) {
-					log.error( e );
-				}
-			}
-		}
-		return false;
-	}
-
 	public void loadCache(Set<EntityKeyMetadata> cachesInfo) {
 		for (EntityKeyMetadata ci : cachesInfo) {
 			provider.getEntityCache( ci );
 		}
 	}
 
-//	@Override
-//	public boolean updateTupleWithOptimisticLock(EntityKey entityKey,
-//			Tuple oldLockState, Tuple tuple, TupleContext tupleContext) {
-//		// TODO Auto-generated method stub
-//		log.info("method updateTupleWithOptimisticLock not implement!");
-//		return false;
-//	}
-//
-//	@Override
-//	public boolean removeTupleWithOptimisticLock(EntityKey entityKey,
-//			Tuple oldLockState, TupleContext tupleContext) {
-//		// TODO Auto-generated method stub
-//		log.info("method removeTupleWithOptimisticLock not implement!");
-//		return false;
-//	}
-
 	private abstract class BaseResultCursor<T> implements ClosableIterator<Tuple> {
-		private final QueryCursor<T> resultCursor;
 		private final Iterator<T> resultIterator;
 		private final Integer maxRows;
 		private int rowNum = 0;
 
-		public BaseResultCursor(QueryCursor<T> resultCursor, RowSelection rowSelection) {
-			this.resultCursor = resultCursor;
+		public BaseResultCursor( Iterable<T> resultCursor, RowSelection rowSelection ) {
 			this.resultIterator = resultCursor.iterator();
 			this.maxRows = rowSelection.getMaxRows();
+			iterateToFirst( rowSelection );
+		}
+		
+		private void iterateToFirst( RowSelection rowSelection ) {
 			int firstRow = rowSelection.getFirstRow() != null ? rowSelection.getFirstRow() : 0;
-			for (int i = 0; i < firstRow && resultIterator.hasNext(); i++)
+			for ( int i = 0; i < firstRow && resultIterator.hasNext(); i++ ) {
 				resultIterator.next();
+			}
 		}
 
 		@Override
 		public boolean hasNext() {
-			return (maxRows == null || rowNum < maxRows) && resultIterator.hasNext();
+			return ( maxRows == null || rowNum < maxRows ) && resultIterator.hasNext();
 		}
 
 		@Override
@@ -391,7 +478,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			return new Tuple(createTupleSnapshot( value ));
 		}
 		
-		abstract TupleSnapshot createTupleSnapshot(T value);
+		abstract TupleSnapshot createTupleSnapshot( T value );
 
 		@Override
 		public void remove() {
@@ -400,132 +487,38 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 		@Override
 		public void close() {
-			resultCursor.close();
 		}
-		
 	}
 	
 	private class IgniteProjectionResultCursor extends BaseResultCursor<List<?>> {
 
 		private final List<Return> queryReturns;
 
-		public IgniteProjectionResultCursor(QueryCursor<List<?>> resultCursor, List<Return> queryReturns, RowSelection rowSelection) {
+		public IgniteProjectionResultCursor( Iterable<List<?>> resultCursor, List<Return> queryReturns, RowSelection rowSelection ) {
 			super( resultCursor, rowSelection );
 			this.queryReturns = queryReturns;
 		}
 		
 		@Override
-		TupleSnapshot createTupleSnapshot(List<?> value) {
+		TupleSnapshot createTupleSnapshot( List<?> value ) {
 			Map<String, Object> map = new HashMap<>();
-			for (int i = 0; i < value.size(); i++) {
+			for ( int i = 0; i < value.size(); i++ ) {
 				ScalarReturn ret = (ScalarReturn) queryReturns.get( i );
 				map.put( ret.getColumnAlias(), value.get( i ) );
 			}
-			return new MapTupleSnapshot(map);
-		}
-	}
-	
-	private class IgnitePortableResultCursor extends BaseResultCursor<Entry<String, BinaryObject>> {
-
-		public IgnitePortableResultCursor(QueryCursor<Entry<String, BinaryObject>> resultCursor, RowSelection rowSelection) {
-			super( resultCursor, rowSelection );
-		}
-		
-		@Override
-		TupleSnapshot createTupleSnapshot(Entry<String, BinaryObject> value) {
-			return new IgnitePortableTupleSnapshot( value.getValue() );
+			return new MapTupleSnapshot( map );
 		}
 	}
 	
 	private class IgnitePortableFromProjectionResultCursor extends BaseResultCursor<List<?>> {
 
-		public IgnitePortableFromProjectionResultCursor( QueryCursor<List<?>> resultCursor, RowSelection rowSelection ) {
+		public IgnitePortableFromProjectionResultCursor( Iterable<List<?>> resultCursor, RowSelection rowSelection ) {
 			super( resultCursor, rowSelection );
 		}
 
 		@Override
 		TupleSnapshot createTupleSnapshot( List<?> value ) {
 			return new IgnitePortableTupleSnapshot( value.get( 1 ) );
-		}
-	}
-	
-	public static class IgnitePortableTupleSnapshot implements TupleSnapshot {
-
-		private final BinaryObject binaryObject;
-		private final Set<String> columnNames;
-
-		public IgnitePortableTupleSnapshot(Object binaryObject) {
-			this.binaryObject = (BinaryObject) binaryObject;
-			if (binaryObject != null) {
-				this.columnNames = new HashSet<String>( this.binaryObject.type().fieldNames() );
-			}
-			else {
-				this.columnNames = Collections.emptySet();
-			}
-		}
-
-		@Override
-		public Object get(String column) {
-			return !isEmpty() ? binaryObject.field( column ) : null;
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return binaryObject == null;
-		}
-
-		@Override
-		public Set<String> getColumnNames() {
-			return columnNames;
-		}
-	}
-
-	private class IgnitePortableAssociationSnapshot implements IgniteAssociationSnapshot<BinaryObject> {
-
-		private Map<RowKey, BinaryObject> portableMap = new HashMap<>();
-		
-		public IgnitePortableAssociationSnapshot(BinaryObject binaryObject, AssociationKey key) {
-			if (binaryObject != null) {
-				Map<BinaryObject, BinaryObject> associationMap = binaryObject.field( "ASSOCIATION" );
-				if (associationMap != null) {
-					for (BinaryObject portableKey : associationMap.keySet()) {
-						BinaryObject portableValue = associationMap.get( portableKey );
-						RowKey rowKey_tmp = portableKey.<RowKey>deserialize();
-						// sort arrays in RowKey for correct comparing of keys
-						String[] columnNames = rowKey_tmp.getColumnNames();
-						Object[] columnValues = rowKey_tmp.getColumnValues();
-						Arrays.sort( rowKey_tmp.getColumnNames() );
-						Arrays.sort( rowKey_tmp.getColumnValues() );
-						RowKey rowKey = new RowKey(columnNames, columnValues);
-						portableMap.put( rowKey, portableValue );
-					}
-				}
-			}
-		}
-
-		@Override
-		public Tuple get(RowKey rowKey) {
-			return new Tuple(new IgnitePortableTupleSnapshot(portableMap.get( rowKey )));
-		}
-
-		@Override
-		public boolean containsKey(RowKey rowKey) {
-			return portableMap.containsKey( rowKey );
-		}
-
-		@Override
-		public int size() {
-			return portableMap.size();
-		}
-
-		@Override
-		public Iterable<RowKey> getRowKeys() {
-			return portableMap.keySet();
-		}
-
-		@Override
-		public Map<RowKey, BinaryObject> getPortableMap() {
-			return portableMap;
 		}
 	}
 }
