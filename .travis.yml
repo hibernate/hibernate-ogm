@@ -1,8 +1,5 @@
-language: java
-jdk:
-    - oraclejdk8
+language:java
 branches:
   only:
     - all_last_changes5
-    
 script: mvn clean install
