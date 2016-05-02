@@ -4,4 +4,5 @@ jdk:
 branches:
   only:
     - all_last_changes5
+    
 script: mvn clean install
