@@ -286,4 +286,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 84, value = "Unable to find basic type support for [%2$s] when using JPA AttributeConverter [%1$s]." +
 			"Is the datastore type of the converter a supported type for your datastore?")
 	PersistenceException cannotFindTypeForAttributeConverter(@FormatWith(ClassObjectFormatter.class) Class<?> converted, @FormatWith(ClassObjectFormatter.class) Class<?> databaseColumnJavaType);
+
+	@Message(id = 85, value = "Unable to find an entity entry for the entity '%1$s'")
+	PersistenceException cannotFindEntityEntryForEntity(Object entity);
 }
