@@ -44,7 +44,7 @@ public class ModulesMagicDeckIT extends MagiccardsDatabaseScenario {
 				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, ModulesMagicDeckIT.class, MagiccardsDatabaseScenario.class );
 		String persistenceXml = persistenceXml().exportAsString();
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
-		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm services, org.hibernate.ogm.cassandra services" );
+		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.cassandra:${hibernate-ogm.module.slot} services" );
 		return webArchive;
 	}
 

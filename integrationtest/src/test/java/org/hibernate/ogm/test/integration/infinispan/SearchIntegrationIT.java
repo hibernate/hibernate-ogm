@@ -37,7 +37,7 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, SearchIntegrationIT.class, MagiccardsDatabaseScenario.class );
 		String persistenceXml = persistenceXml().exportAsString();
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
-		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm services, org.hibernate.ogm.infinispan services" );
+		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.infinispan:${hibernate-ogm.module.slot} services" );
 		return webArchive;
 	}
 
