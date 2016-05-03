@@ -22,15 +22,15 @@
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
         <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
-        <hibernate.ogm.module.slot>main</hibernate.ogm.module.slot>
-        <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
-        <hibernate.ogm.infinispan.module.slot>main</hibernate.ogm.infinispan.module.slot>
-        <hibernate.ogm.cassandra.module.slot>main</hibernate.ogm.cassandra.module.slot>
-        <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
-        <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
-        <hibernate.ogm.neo4j-internal.module.slot>main</hibernate.ogm.neo4j-internal.module.slot>
-        <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
-        <hibernate.ogm.redis.module.slot>main</hibernate.ogm.redis.module.slot>
+        <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
+        <hibernate.ogm.ehcache.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.ehcache.module.slot>
+        <hibernate.ogm.infinispan.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan.module.slot>
+        <hibernate.ogm.cassandra.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.cassandra.module.slot>
+        <hibernate.ogm.mongodb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.mongodb.module.slot>
+        <hibernate.ogm.neo4j.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.neo4j.module.slot>
+        <hibernate.ogm.neo4j-internal.module.slot>${project.version}</hibernate.ogm.neo4j-internal.module.slot>
+        <hibernate.ogm.couchdb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.couchdb.module.slot>
+        <hibernate.ogm.redis.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.redis.module.slot>
     </properties>
 
     <modules>
