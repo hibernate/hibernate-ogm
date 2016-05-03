@@ -25,6 +25,27 @@ import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
  */
 public class ModulesHelper {
 
+	private static String hibernateOgmVersion = null;
+	private static String hibernateOgmModuleSlot = null;
+
+	private static synchronized String getModuleSlotString() {
+		if ( hibernateOgmModuleSlot == null ) {
+			//This variable is computed from the project version, as the Maven build plugin helper
+			//is otherwise not available for when running integration tests from the IDE
+			String versionHibernateSearch = getDependencyVersionHibernateOGM();
+			String[] split = versionHibernateSearch.split( "\\." );
+			hibernateOgmModuleSlot = split[0] + '.' + split[1];
+		}
+		return hibernateOgmModuleSlot;
+	}
+
+	private static synchronized String getDependencyVersionHibernateOGM() {
+		if ( hibernateOgmVersion == null ) {
+			hibernateOgmVersion = injectVariablesFromProperties( "${dependency.version.HibernateOgm}" );
+		}
+		return hibernateOgmVersion;
+	}
+
 	public static void addModulesDependencyDeclaration(Archive<?> archive, String dependencies) {
 		archive.add( manifest( injectVariables( dependencies ) ), "META-INF/MANIFEST.MF" );
 	}
@@ -37,6 +58,12 @@ public class ModulesHelper {
 	}
 
 	private static String injectVariables(String dependencies) {
+		String variablesFromProperties = injectVariablesFromProperties( dependencies );
+		//The OGM module slot is "hardcoded" as a special case:
+		return applyPropertyReplacement( variablesFromProperties, "hibernate-ogm.module.slot", getModuleSlotString() );
+	}
+
+	private static String injectVariablesFromProperties(String dependencies) {
 		Properties projectCompilationProperties = new Properties();
 		final InputStream resourceAsStream = ModulesHelper.class.getClassLoader().getResourceAsStream( "module-versions.properties" );
 		try {
@@ -58,12 +85,21 @@ public class ModulesHelper {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
 			String original = dependencies;
-			dependencies = dependencies.replace( "${" + key + "}", value );
-			if ( ! original.equals( dependencies ) ) {
-				System.out.println( "\n\n\t***\tDependency version injected: " + key + " = " + value + "\n" );
-			}
+			dependencies = applyPropertyReplacement( dependencies, key, value );
 		}
 		return dependencies;
+	}
+
+	private static String applyPropertyReplacement(String template, String key, String value) {
+		String replaced = template.replace( "${" + key + "}", value );
+		reportVariableInjectionIfDifferent( template, replaced, key, value );
+		return replaced;
+	}
+
+	private static void reportVariableInjectionIfDifferent(String originalString, String updatedString, String propertyKey, String propertyValue) {
+		if ( ! originalString.equals( updatedString ) ) {
+			System.out.println( "\n\t***\tDependency version injected: " + propertyKey + " = " + propertyValue );
+		}
 	}
 
 }
