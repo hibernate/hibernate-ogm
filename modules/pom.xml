@@ -31,7 +31,6 @@
         <hibernate.ogm.neo4j-internal.module.slot>main</hibernate.ogm.neo4j-internal.module.slot>
         <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
         <hibernate.ogm.redis.module.slot>main</hibernate.ogm.redis.module.slot>
-        <org.parboiled.module.slot>main</org.parboiled.module.slot>
     </properties>
 
     <modules>
