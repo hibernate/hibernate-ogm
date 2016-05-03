@@ -21,17 +21,17 @@
         </file>
         <file>
              <source>${module.xml.basedir}/ogm/ehcache/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/ehcache/main</outputDirectory>
+             <outputDirectory>/org/hibernate/ogm/ehcache/${hibernate.ogm.ehcache.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
              <source>${module.xml.basedir}/ogm/infinispan/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan/main</outputDirectory>
+             <outputDirectory>/org/hibernate/ogm/infinispan/${hibernate.ogm.infinispan.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
              <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
+             <outputDirectory>/org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -46,7 +46,7 @@
         </file>
         <file>
              <source>${module.xml.basedir}/ogm/couchdb/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
+             <outputDirectory>/org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
