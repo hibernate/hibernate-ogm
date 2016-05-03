@@ -50,6 +50,7 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 				.clazz( MagicCard.class.getName() )
 				.getOrCreateProperties()
+					.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
 					.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()

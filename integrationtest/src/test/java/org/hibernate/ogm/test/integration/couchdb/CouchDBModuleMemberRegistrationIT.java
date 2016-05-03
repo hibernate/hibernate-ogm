@@ -72,6 +72,7 @@ public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 						.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 						.clazz( Member.class.getName() )
 						.getOrCreateProperties()
+							.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 							.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "COUCHDB_EXPERIMENTAL" ).up()
 							.createProperty().name( "hibernate.ogm.datastore.host" ).value( couchDBHostName ).up()
 							.createProperty().name( "hibernate.ogm.datastore.port" ).value( couchDBPortNumber ).up()
