@@ -104,7 +104,8 @@ The type and field names can be overridden by annotations, but concatenation tok
 
 http://docs.datastax.com/en/cql/3.1/cql/cql_reference/cql_data_types_c.html[CQL3 types]
 
-CQL3 supports a smaller selection of numeric data types than Hibernate, so the missing types are autotmatically converted. byte and short values are promoted to integer.
+CQL3 supports a smaller selection of numeric data types than Hibernate, so the missing types are automatically converted. byte and short values are promoted to integer.
+`java.math.BigDecimal` is converted to `decimal`.
 
 CQL3 has no character type, so character is promoted to varchar i.e. String. Strings are UTF-8, not ascii.
 
