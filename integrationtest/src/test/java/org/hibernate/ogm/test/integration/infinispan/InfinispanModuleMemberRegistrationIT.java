@@ -29,7 +29,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 		return new ModuleMemberRegistrationDeployment
 			.Builder( InfinispanModuleMemberRegistrationIT.class )
 			.persistenceXml( persistenceXml() )
-			.manifestDependencies( "org.hibernate.ogm services, org.hibernate.ogm.infinispan services" )
+			.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.infinispan:${hibernate-ogm.module.slot} services" )
 			.createDeployment()
 			.addAsResource( "infinispan.xml", "infinispan.xml" );
 	}

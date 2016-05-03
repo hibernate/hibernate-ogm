@@ -15,6 +15,7 @@
         <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
         <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
 
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
             convergence issues -->

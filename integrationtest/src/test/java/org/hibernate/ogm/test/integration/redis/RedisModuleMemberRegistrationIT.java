@@ -45,7 +45,7 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.addClasses( PhoneNumber.class, PhoneNumberService.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies(
-						"org.hibernate.ogm services, org.hibernate.ogm.redis services"
+						"org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.redis:${hibernate-ogm.module.slot} services"
 				)
 				.createDeployment();
 	}

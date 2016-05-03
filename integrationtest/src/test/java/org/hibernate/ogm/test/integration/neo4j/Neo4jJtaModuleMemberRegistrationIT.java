@@ -43,7 +43,7 @@ public class Neo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistration
 		return new ModuleMemberRegistrationDeployment
 				.Builder( Neo4jJtaModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
-				.manifestDependencies( "org.hibernate.ogm services, org.hibernate.ogm.neo4j services" )
+				.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.neo4j:${hibernate-ogm.module.slot} services" )
 				.createDeployment();
 	}
 
