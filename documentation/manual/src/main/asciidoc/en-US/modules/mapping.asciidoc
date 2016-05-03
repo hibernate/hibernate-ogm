@@ -5,7 +5,8 @@
 == Map your entities
 
 This section mainly describes the specificities of Hibernate OGM mappings.
-It is not be a comprehensive guide to entity mappings,
+It's not meant to be a comprehensive guide to entity mappings,
+the complete guide is
 http://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/Hibernate_User_Guide.html#domain-model[Hibernate ORM's documentation]:
 after all Hibernate OGM _is_ Hibernate ORM.
 
