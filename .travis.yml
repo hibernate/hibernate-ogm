@@ -1,2 +1,11 @@
+sudo: false
 language: java
-script: mvn clean install -pl orientdb -am
+cache:
+  directories:
+  - $HOME/.m2
+install: mvn clean install -pl orientdb -am
+branches:
+  only:
+  - all_last_changes5
+jdk:
+  - oraclejdk8
