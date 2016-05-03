@@ -60,6 +60,7 @@ public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRe
 				.value( Neo4jJtaModuleMemberRegistrationIT.neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+				.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}

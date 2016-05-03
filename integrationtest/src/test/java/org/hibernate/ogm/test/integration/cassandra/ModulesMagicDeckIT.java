@@ -57,6 +57,7 @@ public class ModulesMagicDeckIT extends MagiccardsDatabaseScenario {
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 				.clazz( MagicCard.class.getName() )
 				.getOrCreateProperties()
+					.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "cassandra_experimental" ).up()
