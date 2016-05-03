@@ -11,8 +11,8 @@
 
     <deployment>
         <dependencies>
-            <module name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}" services="import" />
-            <module name="org.hibernate.ogm.couchdb" slot="${hibernate.ogm.module.slot}" services="import" />
+            <module name="org.hibernate.ogm" slot="${hibernate-ogm.module.slot}" services="import" />
+            <module name="org.hibernate.ogm.couchdb" slot="${hibernate-ogm.module.slot}" services="import" />
             <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
         </dependencies>
         <exclusions>

@@ -66,7 +66,8 @@ public class ModuleMemberRegistrationDeployment {
 		}
 
 		public Builder addAsWebInfResource(String resourceName, String targetResourceName) {
-			archive.addAsWebInfResource( resourceName, targetResourceName );
+			final String content = ModulesHelper.loadResourceInjectingVariables( resourceName );
+			archive.addAsWebInfResource( new StringAsset( content ), targetResourceName );
 			return this;
 		}
 

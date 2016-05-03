@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -84,7 +85,6 @@ public class ModulesHelper {
 		for ( Entry<Object,Object> entry : entrySet ) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
-			String original = dependencies;
 			dependencies = applyPropertyReplacement( dependencies, key, value );
 		}
 		return dependencies;
@@ -100,6 +100,29 @@ public class ModulesHelper {
 		if ( ! originalString.equals( updatedString ) ) {
 			System.out.println( "\n\t***\tDependency version injected: " + propertyKey + " = " + propertyValue );
 		}
+	}
+
+	/**
+	 * Loads a resource from classpath, interpret it as a String and replace all properties.
+	 */
+	public static String loadResourceInjectingVariables(String resourceName) {
+		final InputStream resourceAsStream = ModulesHelper.class.getClassLoader().getResourceAsStream( resourceName );
+		final String readString;
+		try {
+			readString = IOUtils.toString( resourceAsStream );
+		}
+		catch (IOException e) {
+			throw new RuntimeException( e );
+		}
+		finally {
+			try {
+				resourceAsStream.close();
+			}
+			catch (IOException e) {
+				throw new RuntimeException( e );
+			}
+		}
+		return injectVariables( readString );
 	}
 
 }
