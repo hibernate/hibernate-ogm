@@ -19,7 +19,7 @@
     <artifactId>hibernate-ogm-performancetest</artifactId>
     <packaging>jar</packaging>
 
-    <name>Hibernate Object Grid Mapper Performance tests</name>
+    <name>Hibernate OGM Performance tests</name>
     <description>Performance tests for Hibernate OGM based on JMH</description>
 
     <properties>

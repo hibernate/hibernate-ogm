@@ -3,7 +3,7 @@
 [preface]
 == Preface
 
-Hibernate Object/Grid Mapper (OGM) is a persistence engine
+Hibernate OGM is a persistence engine
 providing Java Persistence (JPA) support for NoSQL datastores.
 It reuses Hibernate ORM's object life cycle management and (de)hydration engine
 but persists entities into a NoSQL store (key/value, document, column-oriented, etc)

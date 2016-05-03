@@ -19,7 +19,7 @@
     <artifactId>hibernate-ogm-core</artifactId>
     <packaging>jar</packaging>
 
-    <name>Hibernate Object Grid Mapper Core</name>
+    <name>Hibernate OGM Core</name>
     <description>Persist data in a grid rather than a relational database</description>
 
     <dependencies>
