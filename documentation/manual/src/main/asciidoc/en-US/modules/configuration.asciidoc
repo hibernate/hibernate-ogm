@@ -145,7 +145,7 @@ Set the JTA platform to the right Java EE container.
 The property is `hibernate.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
-http://docs.jboss.org/hibernate/orm/5.0/userGuide/en-US/html_single/#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
+http://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
 For example, in WildFly, use `JBossAS`.
 
 In your [filename]`persistence.xml`, you also need to define an existing datasource.
