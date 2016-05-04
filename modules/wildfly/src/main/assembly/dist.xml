@@ -20,8 +20,18 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>${module.xml.aliases.basedir}/ogm/core/module.xml</source>
+            <outputDirectory>/org/hibernate/ogm/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.basedir}/ogm/ehcache/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/ehcache/${hibernate.ogm.ehcache.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.aliases.basedir}/ogm/ehcache/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/ehcache/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -30,13 +40,28 @@
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.aliases.basedir}/ogm/infinispan/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.aliases.basedir}/ogm/mongodb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.basedir}/ogm/neo4j/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.aliases.basedir}/ogm/neo4j/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/neo4j/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -50,8 +75,18 @@
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.aliases.basedir}/ogm/couchdb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.basedir}/ogm/cassandra/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/cassandra/${hibernate.ogm.cassandra.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.aliases.basedir}/ogm/cassandra/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/cassandra/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -62,6 +97,11 @@
         <file>
              <source>${module.xml.basedir}/ogm/redis/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/redis/${hibernate.ogm.redis.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.aliases.basedir}/ogm/redis/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/redis/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>

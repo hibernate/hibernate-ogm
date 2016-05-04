@@ -21,6 +21,7 @@
 
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
+        <module.xml.aliases.basedir>${basedir}/src/main/aliases</module.xml.aliases.basedir>
         <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
         <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.ehcache.module.slot>
