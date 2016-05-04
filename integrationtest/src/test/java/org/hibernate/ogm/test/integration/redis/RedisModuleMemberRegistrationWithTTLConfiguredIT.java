@@ -55,8 +55,9 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 				.Builder( RedisModuleMemberRegistrationWithTTLConfiguredIT.class )
 				.addClasses( PhoneNumber.class, PhoneNumberService.class )
 				.persistenceXml( persistenceXml() )
+				//We add the private module 'org.hibernate.ogm.redis.driver' as well as the test needs to verify properties on the connection:
 				.manifestDependencies(
-						"org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.redis:${hibernate-ogm.module.slot} services,  org.hibernate.ogm.redis.driver:${hibernate-ogm.module.slot} services"
+						"org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.redis:${hibernate-ogm.module.slot} services, org.hibernate.ogm.redis.driver:${hibernate-ogm.module.slot} services"
 				)
 				.createDeployment();
 	}
