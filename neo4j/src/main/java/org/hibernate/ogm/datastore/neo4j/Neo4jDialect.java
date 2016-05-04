@@ -444,14 +444,31 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		if (relationship != null) {
 			for ( String relationshipProperty : associationKey.getMetadata().getRowKeyIndexColumnNames() ) {
 				relationship.setProperty( relationshipProperty, action.getValue().get( relationshipProperty ) );
-
 			}
+
+			for ( String column : associationKey.getMetadata().getColumnsWithoutKeyColumns( action.getValue().getColumnNames() ) ) {
+				if ( !isRowKeyColumn( associationKey.getMetadata(), column ) ) {
+					relationship.getEndNode().setProperty( column, action.getValue().get( column ) );
+				}
+			}
+
 			GraphLogger.log( "Updated relationship: %1$s", relationship );
 		}
 		else {
 			relationship = createRelationship( associationKey, action.getValue(), associatedEntityKeyMetadata );
 			GraphLogger.log( "Created relationship: %1$s", relationship );
 		}
+	}
+
+	// TODO replace with method provided by OGM-1035
+	private boolean isRowKeyColumn(AssociationKeyMetadata metadata, String column) {
+		for ( String rowKeyColumn : metadata.getRowKeyColumnNames() ) {
+			if ( rowKeyColumn.equals( column ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void removeAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
