@@ -2,20 +2,19 @@
 
 == Getting started with Hibernate OGM
 
-If you are familiar with JPA, you are almost good to go :-)
+If you are familiar with JPA, you are almost good to go.
 We will nevertheless walk you through the first few steps of persisting
 and retrieving an entity using Hibernate OGM.
 
 Before we can start, make sure you have the following tools configured:
 
-* Java JDK 7 or above
+* Java JDK 8
 * Maven 3.2.3 or above
 
-Hibernate OGM is published in the JBoss hosted Maven repository.
-Adjust your [filename]`$$~/.m2/settings.xml$$` file
-according to the guidelines found
-http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage].
-In this example we will use Infinispan as the targeted datastore.
+Hibernate OGM can be used with JDK 7 too, but in this example we'll
+be using Infinispan 8, which requires JDK 8.
+
+Hibernate OGM is published in the Maven central repository.
 
 Add `org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}` to your dependency management block
 and `org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}`
@@ -51,9 +50,9 @@ you will rather get the versions from the BOM automatically.
 
 [NOTE]
 ====
-If you're deploying your application onto JBoss WildFly,
+If you're deploying your application onto WildFly 10,
 you don't need to add the Hibernate OGM modules to your deployment unit
-but you can rather add them as modules to the application server itself.
+but you can rather add them as modules to the application server.
 Refer to <<ogm-configuration-jbossmodule>> to learn more.
 ====
 
@@ -116,6 +115,7 @@ public class Breed {
 ----
 
 I lied to you, we have already mapped two entities!
+
 If you are familiar with JPA,
 you can see that there is nothing specific to Hibernate OGM in our mapping.
 
@@ -143,11 +143,16 @@ The final list of dependencies should look like this:
         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
     </dependency>
 
-    <!-- JBoss Transactions dependency - this (or another implementation) is
-         provided in a Java EE container -->
+    <!-- Add the Narayana Transactions Manager
+         an implementation would be provided in a Java EE container,
+         but this works nicely embedded in JavaSE as well -->
     <dependency>
-        <groupId>org.jboss.jbossts</groupId>
-        <artifactId>jbossjta</artifactId>
+        <groupId>org.jboss.narayana.jta</groupId>
+        <artifactId>narayana-jta</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-transaction-spi</artifactId>
     </dependency>
 </dependencies>
 ----
@@ -164,15 +169,12 @@ Create a [filename]`META-INF/persistence.xml` file.
              version="2.0">
 
     <persistence-unit name="ogm-jpa-tutorial" transaction-type="JTA">
-        <!-- Use Hibernate OGM provider: configuration will be transparent -->
+        <!-- Use the Hibernate OGM provider: configuration will be transparent -->
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
-            <!-- property is optional if you want to use Infinispan, otherwise adjust to your favorite
-                NoSQL Datastore provider.
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
             <property name="hibernate.ogm.datastore.provider" value="infinispan"/>
-            -->
-            <!-- defines which JTA Transaction platform we plan to use -->
-            <property name="hibernate.transaction.jta.platform" value="JBossTS"/>
         </properties>
     </persistence-unit>
 </persistence>
@@ -183,7 +185,7 @@ Let's now persist a set of entities and retrieve them.
 [source, JAVA]
 ----
 //accessing JBoss's Transaction can be done differently but this one works nicely
-TransactionManager tm = getTransactionManager();
+TransactionManager tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
 
 //build the EntityManagerFactory as you would build in in Hibernate ORM
 EntityManagerFactory emf = Persistence.createEntityManagerFactory(
@@ -225,29 +227,7 @@ tm.commit();
 
 emf.close();
 
-private static final String JBOSS_TM_CLASS_NAME = "com.arjuna.ats.jta.TransactionManager";
-
-public static TransactionManager getTransactionManager() throws Exception {
-    Class<?> tmClass = Main.class.getClassLoader().loadClass(JBOSS_TM_CLASS_NAME);
-    return (TransactionManager) tmClass.getMethod("transactionManager").invoke(null);
-}
 ----
-
-[NOTE]
-====
-Some JVM do not handle mixed IPv4/IPv6 stacks properly (older
-http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in particular]),
-if you experience trouble starting the Infinispan cluster,
-pass the following property: `-Djava.net.preferIPv4Stack=true`
-to your JVM or upgrade to a recent JDK version.
-jdk7u6 (b22) is known to work on Mac OS X.
-====
-
-[NOTE]
-====
-There are some additional constraints related to transactions when working with Neo4j.
-You will find more details in the Neo4j transactions section: <<ogm-neo4j-transactions>>
-====
 
 A working example can be found in Hibernate OGM's distribution under
 [filename]`hibernate-ogm-documentation/examples/gettingstarted`.
@@ -257,6 +237,6 @@ What have we seen?
 * Hibernate OGM is a JPA implementation
   and is used as such both for mapping and in API usage
 * It is configured as a specific JPA provider:
-  [classname]`org.hibernate.ogm.jpa.HibernateOgmPersistence`
+  `org.hibernate.ogm.jpa.HibernateOgmPersistence`
 
 Let's explore more in the next chapters.
