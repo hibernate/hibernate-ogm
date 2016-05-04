@@ -86,6 +86,7 @@
                         <docinfo>true</docinfo>
                         <experimental>true</experimental>
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
+                        <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>

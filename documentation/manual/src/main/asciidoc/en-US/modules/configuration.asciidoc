@@ -330,7 +330,11 @@ making deployments smaller and quicker, and also making it possible to deploy mu
 More details about modules are described in
 https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[Class Loading in WildFly].
 
-If you apply the following instructions you can create super small deployments which do not include any dependency.
+When deploying a JPA application on WildFly, you should be aware that there are some additional useful configuration properties defined by the WildFly JPA subsystem.
+These are documented in https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide].
+
+If you apply the following instructions you can create small and efficient deployments which do not include any dependency,
+as you can include your favourite version of Hibernate OGM directly to the collection of container provided libraries.
 
 ==== Packaging Hibernate OGM applications for WildFly 10
 
@@ -342,9 +346,11 @@ You can download the pre-packaged module ZIP for this version of Hibernate OGM f
 Unpack the archive into the `modules` folder of your WildFly 10 installation.
 The modules included are:
 
-* _org.hibernate.ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
-* _org.hibernate.ogm.<%DATASTORE%>_, one module for each datastore, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
+* _org.hibernate.ogm_, the core Hibernate OGM library.
+* _org.hibernate.ogm.<%DATASTORE%>_, one module for each datastore, with _<%DATASTORE%>_ being one of _infinispan_, _mongodb_ etc.
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
+
+The module slot to use for Hibernate OGM {hibernate-ogm-version} is `{hibernate-ogm-module-slot}` as the format of the slot name does not include the "micro" part of the project version.
 
 There are two ways to include the dependencies in your project:
 
@@ -352,8 +358,9 @@ Using the manifest::
 Add this entry to the MANIFEST.MF in your archive (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source]
+[subs="verbatim,attributes"]
 ----
-Dependencies: org.hibernate.ogm services, org.hibernate.ogm.<%DATASTORE%>:main services
+Dependencies: org.hibernate.ogm:{hibernate-ogm-module-slot} services, org.hibernate.ogm.<%DATASTORE%>:{hibernate-ogm-module-slot} services
 ----
 
 Using jboss-deployment-structure.xml::
@@ -361,12 +368,13 @@ This is a JBoss-specific descriptor.
 Add a `WEB-INF/jboss-deployment-structure.xml` in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source, XML]
+[subs="verbatim,attributes"]
 ----
 <jboss-deployment-structure>
     <deployment>
         <dependencies>
-            <module name="org.hibernate.ogm" slot="main" services="export" />
-            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="main" services="export" />
+            <module name="org.hibernate.ogm" slot="{hibernate-ogm-module-slot}" services="export" />
+            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="{hibernate-ogm-module-slot}" services="export" />
         </dependencies>
     </deployment>
 </jboss-deployment-structure>
@@ -374,6 +382,21 @@ Add a `WEB-INF/jboss-deployment-structure.xml` in your archive with the followin
 
 More information about the descriptor can be found in the
 https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly documentation].
+
+==== Configure your persistence.xml to use your choice of persistence provider
+
+WildFly will by default attempt to guess which Persistence Provider you need by having a look at the `provider` section of the `persistence.xml`.
+
+While this works fine in most cases, unfortunately WildFly 10 in the case of Hibernate OGM will attempt to inject an outdated module identifier so you have to disable this.
+
+Set the following property in your `persistence.xml` to make sure you will be using the Persistence Provider which you already provided as a module,
+as described in the previous section.
+
+[source]
+----
+<property name="jboss.as.jpa.providerModule" value="application" />
+----
+
 
 ==== Enabling both the Hibernate Search and Hibernate OGM modules
 
