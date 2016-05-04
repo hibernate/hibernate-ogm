@@ -3129,7 +3129,7 @@ Hibernate OGM also supports certain forms of native queries for MongoDB.
 Currently two forms of native queries are available via the MongoDB backend:
 
 * find queries specifying the search criteria only
-* queries specified using the MongoDB CLI syntax
+* queries specified using the MongoDB CLI syntax (<<ogm-mongodb-cli-syntax>>)
 
 The former always maps results to entity types.
 The latter either maps results to entity types or to certain supported forms of projection.
@@ -3232,6 +3232,8 @@ Hibernate OGM stores data in a natural way so you can still execute queries usin
 MongoDB driver, the main drawback is that the results are going to be raw MongoDB
 documents and not managed entities.
 
+[[ogm-mongodb-cli-syntax]]
+
 ===== CLI Syntax
 
 [WARNING]
@@ -3254,11 +3256,16 @@ No cursor operations such as `sort()` are supported.
 Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
 such as `$orderby` within the criteria parameter.
 
+You can limit the results of a query using the `setMaxResults(...)` method.
+
 JSON parameters passed via the CLI syntax must be specified using the
 http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode].
 Specifically, keys need to be given within quotes; the only relaxation of this is that single quotes
 may be used when specifying attribute names/values to facilitate embedding queries within
 Java strings.
+
+Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
+are not (yet) converted using suitable Hibernate OGM type implementations.
 
 .CLI syntax examples
 ====
@@ -3266,20 +3273,51 @@ Java strings.
 ----
 
 // Valid syntax
-String valid = "db.OscarWild.find({ \"name\" : \"Athanasia\" })";
+String valid = "db.Poem.find({ \"name\" : \"Athanasia\" })";
 
-String alsoValid = "db.OscarWild.find({ '$or' : [{'name': 'Athanasia' }. {'name': 'Portia' }]})";
+String alsoValid = "db.Poem.find({ '$or' : [{'name': 'Athanasia' }, {'name': 'Portia' }]})";
 
 // NOT Valid syntax, it will throw an exception: com.mongodb.util.JSONParseException
-String notValid =  "db.WILDE_POEM.find({ name : \"Athanasia\" })".
+String notValid =  "db.Poem.find({ name : \"Athanasia\" })";
 
-String alsoNotValid = "db.OscarWild.find({ $or : [{name: 'Athanasia' }. {name: 'Portia' }]})";
+String alsoNotValid = "db.Poem.find({ $or : [{name: 'Athanasia' }, {name: 'Portia' }]})";
 
 ----
 ====
 
-Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
-are not (yet) converted using suitable Hibernate OGM type implementations.
+.CLI syntax sort and limit results alternatives
+====
+[source, JAVA]
+----
+String nativeQuery = "db.Poem.find({ '$query': { 'author': 'Oscar Wilde' }, '$orderby' : { 'name' : 1 } })";
+
+// Using hibernate session
+List<Poem> result = session.createNativeQuery( nativeQuery )
+	.addEntity( Poem.class )
+	.setMaxResults( 2 )
+	.list();
+
+// Using JPA entity manager
+List<Poem> results = em.createNativeQuery( nativeQuery, Poem.class )
+	.setMaxResults( 2 )
+	.getResultList();
+----
+====
+
+.CLI syntax update examples
+====
+[source, JAVA]
+----
+String updateQuery = "db.Poem.findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'author': 'Oscar Wilde' } }, 'new': true })";
+List<Poem> updated = session.createNativeQuery( updateQuery ).addEntity( Poem.class ).list();
+
+String insertQuery = "db.Poem.insert({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+int inserted = session.createNativeQuery( insertQuery ).executeUpdate();
+
+String removeQuery = "db.Poem.remove({ '_id': { '$numberLong': '11' } })";
+int removed = session.createNativeQuery( removeQuery ).executeUpdate();
+----
+====
 
 ==== Hibernate Search
 
