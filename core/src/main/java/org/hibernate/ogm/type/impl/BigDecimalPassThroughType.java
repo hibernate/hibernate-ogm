@@ -15,7 +15,7 @@ import org.hibernate.ogm.type.descriptor.impl.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
 
 /**
- * Type descriptor that will pass the {@link BigDecimal} to the dialect wihtout conversion.
+ * Type descriptor that will pass the {@link BigDecimal} to the dialect without conversion.
  *
  * @see java.math.BigDecimal
  * @see BigDecimalType
