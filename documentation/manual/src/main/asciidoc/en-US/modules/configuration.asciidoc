@@ -341,7 +341,7 @@ as you can include your favourite version of Hibernate OGM directly to the colle
 You can download the pre-packaged module ZIP for this version of Hibernate OGM from:
 
 * https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly10-{hibernate-ogm-version}.zip[Sourceforge]
-* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly10&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
+* https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules-wildfly10/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly10-{hibernate-ogm-version}.zip[The Maven Central repository]
 
 Unpack the archive into the `modules` folder of your WildFly 10 installation.
 The modules included are:
