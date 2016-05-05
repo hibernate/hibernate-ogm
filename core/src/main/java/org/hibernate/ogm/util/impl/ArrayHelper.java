@@ -13,6 +13,7 @@ import java.util.Collection;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ArrayHelper {
+
 	public static final int[] EMPTY_INT_ARRAY = {};
 	public static final String[] EMPTY_STRING_ARRAY = {};
 	public static final Object[] EMPTY_OBJECT_ARRAY = {};
@@ -22,7 +23,7 @@ public class ArrayHelper {
 	}
 
 	public static String[][] to2DStringArray(Collection coll) {
-		return (String[][]) coll.toArray( new String[ coll.size() ][] );
+		return (String[][]) coll.toArray( new String[coll.size()][] );
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class ArrayHelper {
 	 */
 	public static <T> int indexOf(T[] array, T element) {
 		for ( int i = 0; i < array.length; i++ ) {
-			if (array[i].equals( element )) {
+			if ( array[i].equals( element ) ) {
 				return i;
 			}
 		}
