@@ -17,11 +17,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * A {@link TransactionCoordinator} for Neo4j.
+ * A {@link TransactionCoordinator} for Neo4j to join a JTA transaction.
  *
  * Note that during a JTA transaction Neo4j {@link Transaction} are
  * synchronized using the {@link Synchronization} interface. A commit to the Neo4j transaction will happen before the
- * end of the JTA transaction, meaning that it won't be possible to rollback if an error happen after succesful commit
+ * end of the JTA transaction, meaning that it won't be possible to rollback if an error happens after a successful commit
  * to the db.
  *
  * @author Davide D'Alto
