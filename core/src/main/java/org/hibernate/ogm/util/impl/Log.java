@@ -289,4 +289,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 85, value = "Unable to find an entity entry for the entity '%1$s'")
 	PersistenceException cannotFindEntityEntryForEntity(Object entity);
+
+	@Message(id = 86, value = "Transaction identifier not available")
+	HibernateException transactionIdIsNotAvailable();
 }
