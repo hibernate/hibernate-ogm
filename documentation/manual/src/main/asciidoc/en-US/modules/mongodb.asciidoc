@@ -3252,6 +3252,10 @@ As one would expect, `find()`, `findOne()`, `findAndModify()`, and `count()` can
 `javax.persistence.Query.executeUpdate()` may return `-1` in case execution of a query was not acknowledged
 relative to the write concern used.
 
+The following functions can be used:
+`BinData`, `Date`, `HexData`, `ISODate`, `NumberInt`, `NumberLong`, `ObjectId`, `Timestamp`,
+`RegExp`, `DBPointer`, `UUID`, `GUID`, `CSUUID`, `CSGUID`, `JUUID`, `JGUID`, `PYUUID`, `PYGUID`.
+
 No cursor operations such as `sort()` are supported.
 Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
 such as `$orderby` within the criteria parameter.
