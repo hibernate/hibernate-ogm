@@ -38,7 +38,7 @@ import org.junit.Test;
  *
  * @author Davide D'Alto
  */
-@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.INFINISPAN, GridDialectType.EHCACHE, GridDialectType.REDIS_HASH })
+@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.INFINISPAN, GridDialectType.IGNITE, GridDialectType.EHCACHE, GridDialectType.REDIS_HASH })
 public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "id" } );

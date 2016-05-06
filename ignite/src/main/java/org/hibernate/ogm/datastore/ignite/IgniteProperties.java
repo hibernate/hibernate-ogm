@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
 public final class IgniteProperties implements KeyValueStoreProperties {
 
 	/**
-	 * Configuration property for specifying the name of the Ehcache configuration file
+	 * Configuration property for specifying the name of the Ignite configuration file
 	 */
 	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.ignite.configuration_resource_name";
 

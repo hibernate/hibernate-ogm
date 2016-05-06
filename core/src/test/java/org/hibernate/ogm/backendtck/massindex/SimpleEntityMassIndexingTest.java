@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.massindex;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
@@ -30,6 +31,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
+@SkipByGridDialect(IGNITE)
 public class SimpleEntityMassIndexingTest extends OgmTestCase {
 
 	@Test
@@ -117,7 +119,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Insurance.class, IndexedNews.class, IndexedLabel.class };
+		return new Class<?>[]{ Insurance.class, IndexedNews.class, IndexedLabel.class };
 	}
 
 	@Override

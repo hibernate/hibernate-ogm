@@ -12,16 +12,13 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.ignite.IgniteProperties;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Configuration for {@link IgniteDatastoreProvider}.
+ *
  * @author Dmitriy Kozlov
  */
 public class IgniteProviderConfiguration {
-
-	private static final Log log = LoggerFactory.make();
 
 	/**
 	 * Name of the default Ignite configuration file
@@ -39,18 +36,9 @@ public class IgniteProviderConfiguration {
 		this.url = new ConfigurationPropertyReader( configurationMap )
 			.property( IgniteProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
 			.withDefault( IgniteProviderConfiguration.class.getClassLoader().getResource( DEFAULT_CONFIG ) )
-//			.withValidator(
-//					new PropertyValidator<URL>() {
-//						@Override
-//						public void validate( URL value ) throws HibernateException {
-//							if ( value == null ) {
-//								throw log.missingConfigurationProperty( IgniteProperties.CONFIGURATION_RESOURCE_NAME );
-//							}
-//						}
-//					}
-//			)
 			.getValue();
 	}
+
 	/**
 	 * @see IgniteProperties#CONFIGURATION_RESOURCE_NAME
 	 * @return An URL to an XML file

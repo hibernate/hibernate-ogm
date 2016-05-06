@@ -15,6 +15,7 @@ import java.util.Set;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CachePeekMode;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -31,14 +32,14 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
  * @author Dmitriy Kozlov
  */
-public class IgniteTestHelper implements TestableGridDialect {
+public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -59,7 +60,8 @@ public class IgniteTestHelper implements TestableGridDialect {
 		int associationCount = 0;
 		Set<IgniteCache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<?, ?>, Boolean>() );
 		for ( CollectionPersister colleactionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
-			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
+			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory,
+					( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
 			if ( !processedCaches.contains( associationCache ) ) {
 				associationCount += associationCache.size( CachePeekMode.ALL );
 				processedCaches.add( associationCache );
@@ -74,16 +76,15 @@ public class IgniteTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		IgniteCache<String, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
-		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getEntityKeyString( key );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		IgniteCache<String, BinaryObject> cache = getEntityCache( session.getSessionFactory(), key.getMetadata() );
+		String cacheKey = getProvider( session.getSessionFactory() ).getKeyProvider().getEntityKeyString( key );
 
 		Map<String, Object> result = new HashMap<>();
 		Object po = cache.get( cacheKey );
 
-		IgniteDialect igniteDialect = (IgniteDialect) ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService( GridDialect.class );
 		TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( po );
-		for (String fieldName : snapshot.getColumnNames()) {
+		for ( String fieldName : snapshot.getColumnNames() ) {
 			result.put( fieldName, snapshot.get( fieldName ) );
 		}
 
@@ -97,18 +98,16 @@ public class IgniteTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		// TODO what to do here???
 	}
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
-		// TODO and here?
 		return null;
 	}
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new IgniteDialect((IgniteDatastoreProvider) datastoreProvider);
+		return new IgniteDialect( (IgniteDatastoreProvider) datastoreProvider );
 	}
 
 	public static IgniteCache<String, BinaryObject> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
@@ -135,4 +134,13 @@ public class IgniteTestHelper implements TestableGridDialect {
 		return Ignite.class;
 	}
 
+	@Override
+	public long getNumberOfEntities(Session session) {
+		return 0;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return 0;
+	}
 }

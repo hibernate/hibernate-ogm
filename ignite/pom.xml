@@ -1,31 +1,36 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
-  
-  <parent>
-    <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hibernate-ogm-parent</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
-     <relativePath>../pom.xml</relativePath>
-  </parent>
-  
-  <artifactId>hibernate-ogm-ignite</artifactId>
-  <packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-parent</artifactId>
+        <version>5.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>hibernate-ogm-ignite</artifactId>
 
     <name>Hibernate OGM for Ignite</name>
     <description>Persist objects in Ignite</description>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
         </dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging-processor</artifactId>
-			<!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+             <groupId>org.hibernate.hql</groupId>
+             <artifactId>hibernate-hql-lucene</artifactId>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- "provided" is used as "compile-only" here; It's NOT needed 
+                at runtime -->
+            <scope>provided</scope>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>
@@ -37,11 +42,6 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -59,15 +59,28 @@
             <artifactId>shrinkwrap-impl-base</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Ehcache uses slf4j -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -75,81 +88,49 @@
             <artifactId>guava</artifactId>
             <scope>test</scope>
         </dependency>
-        
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Ignite 1.5.0 -->
-<!--  		
--->		
-        <dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-jta</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-indexing</artifactId>
-		</dependency>
         <dependency>
             <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.3</version>
-		</dependency>    
-
+            <artifactId>ignite-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-jta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-indexing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
     </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkMode>once</forkMode>
-					<skipExec>${skipUnitTests}</skipExec>
-					<enableAssertions>false</enableAssertions>
-					<dependenciesToScan>
-						<dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
-					</dependenciesToScan>
-<!--  					
-					<includes>
-						<include>org/hibernate/ogm/backendtck/id/AutoIdGeneratorTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/AutoIdGeneratorWithSessionTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/DuplicateIdDetectionTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/IdentityIdGeneratorTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/SequenceIdGeneratorTest.java</include>
-					</includes>
-					<excludes>
-						<exclude>org/hibernate/ogm/backendtck/massindex/*</exclude>
-						<exclude>org/hibernate/ogm/backendtck/optimisticlocking/*</exclude>
-						<exclude>org/hibernate/ogm/backendtck/perf/*</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedCollectionTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/CompositeIdQueriesTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/SimpleQueriesTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/JpaQueriesTest.java</exclude> 
-					</excludes>
--->
-					<argLine> -Dtest=IgniteBackendTckHelper</argLine>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-    
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>once</forkMode>
+                    <skipExec>${skipUnitTests}</skipExec>
+                    <dependenciesToScan>
+                        <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
+                    </dependenciesToScan>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>test</id>

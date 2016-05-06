@@ -12,7 +12,6 @@ import java.util.Map;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteIllegalStateException;
 import org.apache.ignite.IgniteState;
 import org.apache.ignite.Ignition;
@@ -34,15 +33,12 @@ import org.hibernate.ogm.datastore.ignite.IgniteDialect;
 import org.hibernate.ogm.datastore.ignite.configuration.impl.IgniteProviderConfiguration;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.ignite.query.parsing.impl.IgniteQueryParserService;
 import org.hibernate.ogm.datastore.ignite.transaction.impl.IgniteTransactionManagerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -56,8 +52,6 @@ import org.hibernate.service.spi.Stoppable;
  */
 public class IgniteDatastoreProvider extends BaseDatastoreProvider
 							implements Startable, Stoppable, ServiceRegistryAwareService, Configurable {
-
-	private static final long serialVersionUID = 2278253954737494852L;
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -103,7 +97,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			cache = cacheManager.getOrCreateCache( config );
 		}
 		if ( keepBinary ) {
-			cache = ((IgniteCacheProxy<String, T>) cache).keepBinary();
+			cache = ( (IgniteCacheProxy<String, T>) cache ).keepBinary();
 		}
 		return cache;
 	}
@@ -197,11 +191,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		this.jdbcServices = serviceRegistryImplementor.getService( JdbcServices.class );
 	}
 
-	@Override
-	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return IgniteCacheInitializer.class;
-	}
-
 	public IgniteKeyProvider getKeyProvider() {
 		return IgniteKeyProvider.INSTANCE;
 	}
@@ -212,11 +201,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	public boolean isClientMode() {
 		return cacheManager.configuration().isClientMode();
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return IgniteQueryParserService.class;
 	}
 
 	public String getGridName() {
@@ -235,6 +219,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	private static class ComputeForLocalQueries<T> implements IgniteCallable<List<T>> {
 
+		private static final Log LOG = LoggerFactory.getLogger();
 		private final String cacheName;
 		private final SqlFieldsQuery query;
 		@IgniteInstanceResource
@@ -250,9 +235,9 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		public List<T> call() throws Exception {
 			IgniteCache<String, BinaryObject> cache = ignite.cache( cacheName );
 			if ( cache == null ) {
-				throw new IgniteException( "Cache '" + cacheName + "' not found" );
+				throw LOG.cacheNotFound( cacheName );
 			}
-			cache = ((IgniteCacheProxy<String, BinaryObject>) cache ).keepBinary();
+			cache = ( (IgniteCacheProxy<String, BinaryObject>) cache ).keepBinary();
 			return (List<T>) cache.query( query ).getAll();
 		}
 	}

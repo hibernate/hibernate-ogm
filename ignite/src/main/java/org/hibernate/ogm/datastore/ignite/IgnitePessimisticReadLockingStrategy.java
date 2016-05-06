@@ -17,8 +17,6 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteLockingStrategyException;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
@@ -34,15 +32,12 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 	private static final Log log = LoggerFactory.getLogger();
 
 	private final Lockable lockable;
-	private final LockMode lockMode;
 
 	private IgniteDatastoreProvider provider;
 
 	public IgnitePessimisticReadLockingStrategy(Lockable lockable, LockMode lockMode, IgniteDatastoreProvider provider) {
 		this.lockable = lockable;
-		this.lockMode = lockMode;
 		this.provider = provider;
-		//this.provider = getProvider(lockable.getFactory());
 	}
 
 	@Override
@@ -51,33 +46,21 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
 		GridType idGridType = typeTranslator.getType( lockable.getIdentifierType() );
-		EntityKey key = EntityKeyBuilder.fromData( ((OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
-													idGridType,
-													id,
-													session );
+		EntityKey key = EntityKeyBuilder.fromData( ( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
+				idGridType,
+				id,
+				session );
 
 		IgniteCache<String, BinaryObject> cache = provider.getEntityCache( key.getMetadata() );
-		if (cache == null) {
-			throw new IgniteHibernateException("Cache " + key.getMetadata().getTable() + " is not found");
+		if ( cache == null ) {
+			throw log.cacheNotFound( key.getMetadata().getTable() );
 		}
 		Lock lock = cache.lock( provider.getKeyProvider().getEntityKeyString( key ) );
 		try {
 			lock.tryLock( timeout, TimeUnit.MILLISECONDS );
 		}
 		catch (InterruptedException e) {
-			throw new IgniteLockingStrategyException(object, e.getMessage(), e);
+			throw log.exceptionAcquiringLock( String.valueOf( object ), e );
 		}
 	}
-
-//	private static IgniteDatastoreProvider getProvider(SessionFactoryImplementor factory) {
-//		DatastoreProvider service = factory.getServiceRegistry().getService( DatastoreProvider.class );
-//
-//		if ( service instanceof IgniteDatastoreProvider ) {
-//			return IgniteDatastoreProvider.class.cast( service );
-//		}
-//		else {
-//			throw log.unexpectedDatastoreProvider( service.getClass(), IgniteDatastoreProvider.class );
-//		}
-//	}
-
 }
