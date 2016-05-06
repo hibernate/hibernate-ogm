@@ -22,7 +22,7 @@ public class ArrayHelper {
 	}
 
 	public static String[][] to2DStringArray(Collection coll) {
-		return (String[][]) coll.toArray( new String[ coll.size() ][] );
+		return (String[][]) coll.toArray( new String[coll.size()][] );
 	}
 
 	/**
@@ -49,7 +49,7 @@ public class ArrayHelper {
 	 */
 	public static <T> int indexOf(T[] array, T element) {
 		for ( int i = 0; i < array.length; i++ ) {
-			if (array[i].equals( element )) {
+			if ( array[i].equals( element ) ) {
 				return i;
 			}
 		}
