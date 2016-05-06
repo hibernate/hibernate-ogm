@@ -16,6 +16,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -371,6 +372,87 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			session.clear();
 			session.close();
 		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1027")
+	public void testNumberLongSupport() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".update({ '_id': 1}, { '$inc': { 'counter' : NumberLong(5) } })";
+		Object result = session.createNativeQuery( nativeQuery ).executeUpdate();
+
+		assertThat( result ).isEqualTo( 1 );
+
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".update({ '_id': 1}, { '$inc': { 'counter' : new NumberLong(5) } })";
+		result = session.createNativeQuery( nativeQuery ).executeUpdate();
+
+		assertThat( result ).isEqualTo( 1 );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	@TestForIssue(jiraKey = "OGM-1027")
+	public void testInsertMultipleWithNumberLongThenRemove() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+				+ ".insert( [ { '_id': NumberLong(11), 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': NumberLong(12), 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
+		Query query = session.createNativeQuery( nativeQuery );
+		int n = query.executeUpdate();
+		assertThat( n ).isEqualTo( 2 );
+
+		// Check that all were inserted.
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+		List<OscarWildePoem> result = query.list();
+		assertThat( result.size() ).isEqualTo( 1 );
+		assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+		assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
+		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+		result = query.list();
+		assertThat( result.size() ).isEqualTo( 1 );
+		assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
+		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
+		assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
+
+		// Need to remove here because subsequent tests assume the initial dataset.
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': NumberLong(11) })";
+		query = session.createNativeQuery( nativeQuery );
+		n = query.executeUpdate();
+		assertThat( n ).isEqualTo( 1 );
+
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': NumberLong(12) })";
+		query = session.createNativeQuery( nativeQuery );
+		n = query.executeUpdate();
+		assertThat( n ).isEqualTo( 1 );
+
+		// And check that they are gone.
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': NumberLong(11) })";
+		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+		result = query.list();
+		assertThat( result.size() ).isEqualTo( 0 );
+
+		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': NumberLong(12) })";
+		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+		result = query.list();
+		assertThat( result.size() ).isEqualTo( 0 );
+
+		transaction.commit();
+
+		session.clear();
+		session.close();
 	}
 
 	@Override

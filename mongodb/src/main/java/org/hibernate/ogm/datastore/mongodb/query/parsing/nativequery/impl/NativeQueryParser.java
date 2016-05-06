@@ -46,6 +46,7 @@ import com.mongodb.util.JSON;
  *
  * @author Gunnar Morling
  * @author Thorsten Möller
+ * @author Guillaume Smet
  */
 @BuildParseTree
 public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder> {
@@ -57,10 +58,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Query() {
-		return Sequence( FirstOf( FindQuery(), CriteriaOnlyFindQuery() ), EOI, push( builder ) );
+		return Sequence( FirstOf( ParsedQuery(), CriteriaOnlyFindQuery() ), EOI, push( builder ) );
 	}
 
-	public Rule FindQuery() {
+	public Rule ParsedQuery() {
 		return Sequence( Db(),  Collection(),  Operation() );
 	}
 
@@ -144,7 +145,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Separator(),
 				"insert ",
 				"( ",
-				Json(), builder.setUpdateOrInsert( match() ),
+				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
@@ -183,12 +184,12 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Separator(),
 				"count ",
 				"( ",
-				Optional( Sequence( Json(), builder.setCriteria( match() ) ) ),
+				Optional( Sequence( JsonComposite(), builder.setCriteria( match() ) ) ),
 				") "
 		);
 	}
 
-	public Rule Json() {
+	public Rule JsonComposite() {
 		return FirstOf( JsonObject(), JsonArray() );
 	}
 
@@ -209,7 +210,12 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Value() {
-		return FirstOf( JsonString(), JsonNumber(), JsonObject(), JsonArray(), "true ", "false ", "null " );
+		return FirstOf( PrimitiveValue(), JsonComposite(), BsonFunctionCall() );
+	}
+
+	public Rule PrimitiveValue() {
+		return FirstOf( JsonString(), JsonNumber(), "true ", "false ", "null ",
+				"Infinity ", "NaN ", "undefined " );
 	}
 
 	public Rule BooleanValue() {
@@ -245,6 +251,21 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	@SuppressSubnodes
 	public Rule JsonSingleQuotedString() {
 		return Sequence( "'", ZeroOrMore( SingleQuotedStringCharacter() ), "' " );
+	}
+
+	@SuppressSubnodes
+	public Rule BsonFunctionCall() {
+		return Sequence( Optional( "new " ), SupportedBsonFunction(), ZeroOrMore( WhiteSpace() ), "( ",
+				FirstOf(
+						Sequence( PrimitiveValue(), ZeroOrMore( Sequence( ", ", PrimitiveValue() ) ) ),
+						Optional( PrimitiveValue() )
+				)
+				, ") " );
+	}
+
+	public Rule SupportedBsonFunction() {
+		return FirstOf( "BinData", "Date", "HexData", "ISODate", "NumberInt", "NumberLong", "ObjectId", "Timestamp", "RegExp", "DBPointer",
+				"UUID", "GUID", "CSUUID", "CSGUID", "JUUID", "JGUID", "PYUUID", "PYGUID" );
 	}
 
 	public Rule Character() {
