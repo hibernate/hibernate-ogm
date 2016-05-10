@@ -64,54 +64,76 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 	@Test
 	public void testGetTuplesWithoutNulls() throws Exception {
 		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
+			Transaction tx = session.beginTransaction();
+			try {
+				MultigetGridDialect dialect = multiGetGridDialect();
 
-			EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[]{ key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
+				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
 
-			assertThat( tuples.get( 0 ).get( "publisher" ) ).isEqualTo( SPLENDOR.getPublisher() );
-			assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
+				assertThat( tuples.get( 0 ).get( "publisher" ) ).isEqualTo( SPLENDOR.getPublisher() );
+				assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
 
-			assertThat( tuples.get( 1 ).get( "publisher" ) ).isEqualTo( DOMINION.getPublisher() );
-			assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( DOMINION.getName() );
+				assertThat( tuples.get( 1 ).get( "publisher" ) ).isEqualTo( DOMINION.getPublisher() );
+				assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( DOMINION.getName() );
 
-			assertThat( tuples.get( 2 ).get( "publisher" ) ).isEqualTo( KING_OF_TOKYO.getPublisher() );
-			assertThat( tuples.get( 2 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
+				assertThat( tuples.get( 2 ).get( "publisher" ) ).isEqualTo( KING_OF_TOKYO.getPublisher() );
+				assertThat( tuples.get( 2 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
 
-			session.getTransaction().commit();
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
 	@Test
 	public void testGetTuplesWithNulls() throws Exception {
 		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
+			Transaction tx = session.beginTransaction();
+			try {
+				MultigetGridDialect dialect = multiGetGridDialect();
 
-			EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[]{ NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
 
-			assertThat( tuples.get( 0 ) ).isNull();
+				assertThat( tuples.get( 0 ) ).isNull();
 
-			assertThat( tuples.get( 1 ).get( "publisher" ) ).isEqualTo( KING_OF_TOKYO.getPublisher() );
-			assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
+				assertThat( tuples.get( 1 ).get( "publisher" ) ).isEqualTo( KING_OF_TOKYO.getPublisher() );
+				assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
 
-			assertThat( tuples.get( 2 ) ).isNull();
-			assertThat( tuples.get( 3 ) ).isNull();
+				assertThat( tuples.get( 2 ) ).isNull();
+				assertThat( tuples.get( 3 ) ).isNull();
+
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
 	@Test
 	public void testGetTuplesWithAllNulls() throws Exception {
 		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
+			Transaction tx = session.beginTransaction();
+			try {
+				MultigetGridDialect dialect = multiGetGridDialect();
 
-			EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[]{ NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
 
-			assertThat( tuples ).containsExactly( null, null, null, null );
+				assertThat( tuples ).containsExactly( null, null, null, null );
+
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
@@ -124,10 +146,16 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 	public void prepareDataset() {
 		try (OgmSession session = openSession()) {
 			Transaction tx = session.beginTransaction();
-			session.persist( DOMINION );
-			session.persist( KING_OF_TOKYO );
-			session.persist( SPLENDOR );
-			tx.commit();
+			try {
+				session.persist( DOMINION );
+				session.persist( KING_OF_TOKYO );
+				session.persist( SPLENDOR );
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
@@ -135,10 +163,16 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 	public void deleteDataset() {
 		try (OgmSession session = openSession()) {
 			Transaction tx = session.beginTransaction();
-			delete( session, DOMINION );
-			delete( session, SPLENDOR );
-			delete( session, KING_OF_TOKYO );
-			tx.commit();
+			try {
+				delete( session, DOMINION );
+				delete( session, SPLENDOR );
+				delete( session, KING_OF_TOKYO );
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
@@ -149,6 +183,12 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 	private MultigetGridDialect multiGetGridDialect() {
 		MultigetGridDialect gridDialect = sfi().getServiceRegistry().getService( MultigetGridDialect.class );
 		return gridDialect;
+	}
+
+	private void rollback(Transaction tx) {
+		if ( tx != null ) {
+			tx.rollback();
+		}
 	}
 
 	@Override
