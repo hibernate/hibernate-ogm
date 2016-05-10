@@ -52,16 +52,16 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "id.name", "id.publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES,
 			EmptyOptionsContext.INSTANCE );
 
-	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "id.name", "id.publisher" } );
+	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[]{ "id.name", "id.publisher" } );
 
-	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[] { "none", "none" } );
+	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ "none", "none" } );
 	private static final BoardGame DOMINION = new BoardGame( "Rio Grande Games", "Dominion" );
 	private static final BoardGame KING_OF_TOKYO = new BoardGame( "Fantasmagoria", "King of Tokyo" );
 	private static final BoardGame SPLENDOR = new BoardGame( "Space Cowboys", "Splendor" );
 
 	@Test
 	public void testGetTuplesWithoutNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -94,7 +94,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -120,7 +120,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithAllNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -140,7 +140,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 
 	@Before
 	public void prepareDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				session.persist( DOMINION );
@@ -157,7 +157,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 
 	@After
 	public void deleteDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				delete( session, DOMINION );
@@ -189,7 +189,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BoardGame.class };
+		return new Class<?>[]{ BoardGame.class };
 	}
 
 	@Entity

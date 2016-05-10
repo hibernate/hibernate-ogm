@@ -22,7 +22,6 @@ import javax.persistence.Table;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.backendtck.batchfetching.MultiGetEmbeddedIdTest.BoardGame;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -54,16 +53,16 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "name", "publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES,
 			EmptyOptionsContext.INSTANCE );
 
-	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "name", "publisher" } );
+	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[]{ "name", "publisher" } );
 
-	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[] { "none", "none" } );
+	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ "none", "none" } );
 	private static final BoardGame DOMINION = new BoardGame( "Rio Grande Games", "Dominion" );
 	private static final BoardGame KING_OF_TOKYO = new BoardGame( "Fantasmagoria", "King of Tokyo" );
 	private static final BoardGame SPLENDOR = new BoardGame( "Space Cowboys", "Splendor" );
 
 	@Test
 	public void testGetTuplesWithoutNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -91,7 +90,7 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -118,7 +117,7 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithAllNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -144,7 +143,7 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 
 	@Before
 	public void prepareDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				session.persist( DOMINION );
@@ -161,7 +160,7 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 
 	@After
 	public void deleteDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				delete( session, DOMINION );
@@ -193,7 +192,7 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BoardGame.class };
+		return new Class<?>[]{ BoardGame.class };
 	}
 
 	@Entity

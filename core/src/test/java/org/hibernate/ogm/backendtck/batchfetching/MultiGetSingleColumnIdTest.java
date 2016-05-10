@@ -48,11 +48,10 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 	private static final Map<String, AssociatedEntityKeyMetadata> EMPTY_ASSOCIATION_METADATA = Collections.emptyMap();
 	private static final Map<String, String> EMPTY_ROLES = Collections.emptyMap();
 
-	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "name", "publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES,
-			EmptyOptionsContext.INSTANCE );
-	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "id" } );
+	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "name", "publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES, EmptyOptionsContext.INSTANCE );
+	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[]{ "id" } );
 
-	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[] { -666 } );
+	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ -666 } );
 
 	private static final BoardGame DOMINION = new BoardGame( 1, "Dominion" );
 	private static final BoardGame KING_OF_TOKYO = new BoardGame( 2, "King of Tokyo" );
@@ -60,7 +59,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithoutNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -88,7 +87,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -115,7 +114,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithAllNulls() throws Exception {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
@@ -141,7 +140,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Before
 	public void prepareDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			try {
 				session.persist( DOMINION );
@@ -158,7 +157,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@After
 	public void deleteDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			delete( session, DOMINION );
 			delete( session, SPLENDOR );
@@ -184,7 +183,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BoardGame.class };
+		return new Class<?>[]{ BoardGame.class };
 	}
 
 	@Entity
