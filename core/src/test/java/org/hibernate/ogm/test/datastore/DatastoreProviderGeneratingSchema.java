@@ -123,7 +123,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 		}
 	}
 }

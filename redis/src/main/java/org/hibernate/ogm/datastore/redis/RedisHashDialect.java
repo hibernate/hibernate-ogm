@@ -264,8 +264,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	}
 
 	@Override
-	public void forEachTuple(
-			ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			KeyScanCursor<String> cursor = null;

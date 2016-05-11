@@ -140,7 +140,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... metadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... metadatas) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
 		for ( EntityKey key : entityMap.keySet() ) {
 			for ( EntityKeyMetadata metadata : metadatas ) {

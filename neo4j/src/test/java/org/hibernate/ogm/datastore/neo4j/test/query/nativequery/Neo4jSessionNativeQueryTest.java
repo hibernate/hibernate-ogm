@@ -225,7 +225,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { OscarWildePoem.class };
+		return new Class<?>[] { OscarWildePoem.class, Critic.class };
 	}
 
 }

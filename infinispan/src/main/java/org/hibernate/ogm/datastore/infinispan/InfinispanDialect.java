@@ -209,7 +209,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor(
 				entityKeyMetadatas
 		);

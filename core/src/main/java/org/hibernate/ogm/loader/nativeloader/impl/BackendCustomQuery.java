@@ -41,7 +41,8 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 	private final Set<String> querySpaces;
 	private final List<Return> customQueryReturns;
 
-	private final EntityKeyMetadata singleEntityKeyMetadata;
+	private EntityKeyMetadata singleEntityKeyMetadata;
+	private String singleEntityTypeName;
 
 	public BackendCustomQuery(String queryString, T query, NativeSQLQueryReturn[] queryReturns, Set<String> querySpaces, SessionFactoryImplementor factory) throws HibernateException {
 		LOG.tracev( "Starting processing of NoSQL query [{0}]", queryString );
@@ -60,24 +61,29 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 			this.querySpaces = Collections.emptySet();
 		}
 
-		this.singleEntityKeyMetadata = determineSingleEntityKeyMetadata( factory, customQueryReturns );
+		determineSingleEntityInformation( factory, customQueryReturns );
 	}
 
-	private static EntityKeyMetadata determineSingleEntityKeyMetadata(SessionFactoryImplementor sessionFactory, List<Return> customQueryReturns) {
+	private void determineSingleEntityInformation(SessionFactoryImplementor sessionFactory, List<Return> customQueryReturns) {
 		EntityKeyMetadata metadata = null;
+		String typeName = null;
 
 		for ( Return queryReturn : customQueryReturns ) {
 			if ( queryReturn instanceof RootReturn ) {
 				if ( metadata != null ) {
-					return null;
+					singleEntityKeyMetadata = null;
+					singleEntityTypeName = null;
+					return;
 				}
 				RootReturn rootReturn = (RootReturn) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getEntityName() );
 				metadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+				typeName = ( (RootReturn) queryReturn ).getEntityName();
 			}
 		}
 
-		return metadata;
+		singleEntityKeyMetadata = metadata;
+		singleEntityTypeName = typeName;
 	}
 
 	/**
@@ -126,6 +132,16 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 	 */
 	public EntityKeyMetadata getSingleEntityKeyMetadataOrNull() {
 		return singleEntityKeyMetadata;
+	}
+
+	/**
+	 * Returns the name of the entity type selected by this query.
+	 *
+	 * @return the name of the entity type selected by this query or {@code null} in case this
+	 * query does not select exactly one entity type (e.g. in case of scalar values or joins (if supported in future revisions)).
+	 */
+	public String getSingleEntityTypeNameOrNull() {
+		return singleEntityTypeName;
 	}
 
 	@Override

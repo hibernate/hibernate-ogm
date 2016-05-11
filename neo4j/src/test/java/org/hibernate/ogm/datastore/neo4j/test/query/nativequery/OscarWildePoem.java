@@ -8,8 +8,10 @@ package org.hibernate.ogm.datastore.neo4j.test.query.nativequery;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.Table;
 
@@ -28,14 +30,21 @@ class OscarWildePoem {
 
 	private Date dateOfCreation;
 
+	private Critic critic;
+
 	public OscarWildePoem() {
 	}
 
 	public OscarWildePoem(Long id, String name, String author, Date dateOfCreation) {
+		this( id, name, author, dateOfCreation, null );
+	}
+
+	public OscarWildePoem(Long id, String name, String author, Date dateOfCreation, Critic critic) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
 		this.dateOfCreation = dateOfCreation;
+		this.critic = critic;
 	}
 
 	@Id
@@ -71,6 +80,15 @@ class OscarWildePoem {
 		this.dateOfCreation = dateOfCreation;
 	}
 
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+	public Critic getCritic() {
+		return critic;
+	}
+
+	public void setCritic(Critic critic) {
+		this.critic = critic;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -78,6 +96,7 @@ class OscarWildePoem {
 		result = prime * result + ( ( author == null ) ? 0 : author.hashCode() );
 		result = prime * result + ( ( dateOfCreation == null ) ? 0 : dateOfCreation.hashCode() );
 		result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
+		result = prime * result + ( ( critic == null ) ? 0 : critic.hashCode() );
 		return result;
 	}
 
@@ -122,7 +141,7 @@ class OscarWildePoem {
 
 	@Override
 	public String toString() {
-		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + "]";
+		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", critic=" + critic + "]";
 	}
 
 }

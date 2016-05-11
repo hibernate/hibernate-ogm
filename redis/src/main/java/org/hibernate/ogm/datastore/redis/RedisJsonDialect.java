@@ -271,7 +271,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(final ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			KeyScanCursor<String> cursor = null;
 			String prefix = entityKeyMetadata.getTable() + ":";

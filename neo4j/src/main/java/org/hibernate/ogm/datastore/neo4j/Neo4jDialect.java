@@ -104,6 +104,8 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	private final GraphDatabaseService dataBase;
 
+	private SessionFactoryImplementor sessionFactory;
+
 	private Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries;
 
 	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries;
@@ -116,6 +118,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
+		this.sessionFactory = sessionFactoryImplementor;
 		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
 		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
 	}
@@ -167,7 +170,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 
 		return new Tuple(
-				new Neo4jTupleSnapshot(
+				Neo4jTupleSnapshot.fromNode(
 						entityNode,
 						context.getAllAssociatedEntityKeyMetadata(),
 						context.getAllRoles(),
@@ -205,7 +208,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
-					tuples[i] = new Tuple( new Neo4jTupleSnapshot( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+					tuples[i] = new Tuple( Neo4jTupleSnapshot.fromNode( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
 							keys[i].getMetadata() ) );
 					// We assume there are no duplicated keys
 					break;
@@ -229,7 +232,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( new Neo4jTupleSnapshot( key.getMetadata() ) );
+		return new Tuple( Neo4jTupleSnapshot.emptySnapshot( key.getMetadata() ) );
 	}
 
 	@Override
@@ -612,13 +615,15 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
 			try {
 				while ( queryNodes.hasNext() ) {
 					Node next = queryNodes.next();
-					Tuple tuple = new Tuple( new Neo4jTupleSnapshot( next, entityKeyMetadata ) );
+					Tuple tuple = new Tuple( Neo4jTupleSnapshot.fromNode( next,
+							tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+							entityKeyMetadata ) );
 					consumer.consume( tuple );
 				}
 			}
@@ -634,8 +639,9 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		Result result = dataBase.execute( nativeQuery, parameters );
 
-		if ( backendQuery.getSingleEntityKeyMetadataOrNull() != null ) {
-			return new NodesTupleIterator( result, backendQuery.getSingleEntityKeyMetadataOrNull() );
+		if ( backendQuery.isSingleEntity() ) {
+			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( backendQuery.getSingleEntityTypeNameOrNull() );
+			return new NodesTupleIterator( result, backendQuery.getSingleEntityKeyMetadataOrNull(), persister.getTupleContext() );
 		}
 		return new MapsTupleIterator( result );
 	}

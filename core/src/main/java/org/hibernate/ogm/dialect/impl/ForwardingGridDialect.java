@@ -158,8 +158,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
+		gridDialect.forEachTuple( consumer, tupleContext, entityKeyMetadatas );
 	}
 
 	@Override

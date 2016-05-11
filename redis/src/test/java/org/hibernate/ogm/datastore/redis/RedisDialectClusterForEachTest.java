@@ -72,7 +72,7 @@ public class RedisDialectClusterForEachTest extends RedisOgmTestCase {
 			public void consume(Tuple tuple) {
 				counter.incrementAndGet();
 			}
-		}, new DefaultEntityKeyMetadata( "Band", new String[] {"id"} ) );
+		}, null, new DefaultEntityKeyMetadata( "Band", new String[] {"id"} ) );
 
 		assertEquals( availableKeys, counter.get() );
 	}

@@ -34,16 +34,16 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
 	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime(), critic );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime(), null );
 
 	private EntityManager em;
 
 	@Before
 	public void init() throws Exception {
 		em = createEntityManager();
-		persist( portia, athanasia, critic );
+		persist( critic, portia, athanasia );
 	}
 
 	@After
@@ -129,6 +129,20 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		List<Critic> critics = em.createNativeQuery( "MATCH ( n:Critic ) RETURN n", Critic.class ).getResultList();
 
 		assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
+
+		em.getTransaction().commit();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-854")
+	public void testToOneInitializedByQuery() throws Exception {
+		em.getTransaction().begin();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
+		OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
+
+		assertThat( poem.getCritic() ).isNotNull();
+		assertThat( poem.getCritic().getName() ).as( "Wrong critic name" ).isEqualTo( "Roger" );
 
 		em.getTransaction().commit();
 	}

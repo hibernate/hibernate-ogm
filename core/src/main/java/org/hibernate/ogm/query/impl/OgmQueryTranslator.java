@@ -80,7 +80,15 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 	 */
 	private SelectClause selectClause;
 
+	/**
+	 * When the query is only targeting one type, we register the EntityKeyMetadata for this type.
+	 */
 	private EntityKeyMetadata singleEntityKeyMetadata;
+
+	/**
+	 * When the query is only targeting one type, we register the name of the entity type.
+	 */
+	private String singleEntityTypeName;
 
 	/**
 	 * Not all stores support parameterized queries. As a temporary measure, we therefore cache created queries per set
@@ -110,7 +118,7 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 			// Unfortunately, we cannot obtain the select clause from the delegate, so we need to parse it again
 			selectClause = getSelectClause( replacements, null );
 			Type[] queryReturnTypes = selectClause.getQueryReturnTypes();
-			this.singleEntityKeyMetadata = getSingleEntityKeyMetadataOrNull( queryReturnTypes );
+			determineSingleEntityInformation( queryReturnTypes );
 		}
 		catch ( Exception qse ) {
 			throw log.querySyntaxException( qse, query );
@@ -132,33 +140,37 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 				? getQuery( queryParameters )
 				: queryParser.parseQuery( sessionFactory, query );
 
-		BackendQuery<T> query = new BackendQuery<T>( (T) queryParsingResult.getQueryObject(), singleEntityKeyMetadata );
+		BackendQuery<T> query = new BackendQuery<T>( (T) queryParsingResult.getQueryObject(), singleEntityKeyMetadata,
+				singleEntityTypeName );
 
 		return new OgmQueryLoader( delegate, sessionFactory, selectClause, query, queryParsingResult.getColumnNames() );
 	}
 
 	/**
-	 * Returns the {@link EntityKeyMetadata} of the entity type selected by this query.
-	 * @param queryReturnTypes
-	 *
-	 * @return the {@link EntityKeyMetadata} of the entity type selected by this query or {@code null} in case this
+	 * Determine the relevant information for the entity type selected by this query or {@code null} in case this
 	 * query does not select exactly one entity type (e.g. in case of scalar values or joins (if supported in future revisions)).
+	 * @param queryReturnTypes
 	 */
-	private EntityKeyMetadata getSingleEntityKeyMetadataOrNull(Type[] queryReturnTypes) {
+	private void determineSingleEntityInformation(Type[] queryReturnTypes) {
 		EntityKeyMetadata metadata = null;
+		String typeName = null;
 
 		for ( Type queryReturn : queryReturnTypes ) {
 			if ( queryReturn instanceof EntityType ) {
 				if ( metadata != null ) {
-					return null;
+					singleEntityKeyMetadata = null;
+					singleEntityTypeName = null;
+					return;
 				}
 				EntityType rootReturn = (EntityType) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getName() );
 				metadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+				typeName = rootReturn.getReturnedClass().getName();
 			}
 		}
 
-		return metadata;
+		singleEntityKeyMetadata = metadata;
+		singleEntityTypeName = typeName;
 	}
 
 	private QueryParsingResult getQuery(QueryParameters queryParameters) {

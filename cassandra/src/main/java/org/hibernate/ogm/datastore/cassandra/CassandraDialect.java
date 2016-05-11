@@ -446,7 +446,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 
 			Select select = queryBuilder.select().all().from( quote( entityKeyMetadata.getTable() ) );

@@ -37,21 +37,19 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
 	private final Map<String, String> rolesByColumn;
 
-	public Neo4jTupleSnapshot(EntityKeyMetadata entityKeyMetadata) {
-		this.entityKeyMetadata = entityKeyMetadata;
-		associatedEntityKeyMetadata = Collections.emptyMap();
-		rolesByColumn = Collections.emptyMap();
-	}
-
-	public Neo4jTupleSnapshot(Node node, EntityKeyMetadata entityKeyMetadata) {
-		this( node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata );
-	}
-
-	public Neo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
+	private Neo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
 		this.node = node;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.rolesByColumn = rolesByColumn;
 		this.entityKeyMetadata = entityKeyMetadata;
+	}
+
+	public static Neo4jTupleSnapshot emptySnapshot(EntityKeyMetadata entityKeyMetadata) {
+		return new Neo4jTupleSnapshot(null, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata);
+	}
+
+	public static Neo4jTupleSnapshot fromNode(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
+		return new Neo4jTupleSnapshot( node, associatedEntityKeyMetadata, rolesByColumn, entityKeyMetadata );
 	}
 
 	@Override

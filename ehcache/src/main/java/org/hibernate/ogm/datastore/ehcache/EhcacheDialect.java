@@ -205,7 +205,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
 		getCacheManager().forEachTuple( new EntityKeyProcessor( consumer ), entityKeyMetadatas );
 	}
 

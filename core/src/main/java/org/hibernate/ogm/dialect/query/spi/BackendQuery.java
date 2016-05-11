@@ -23,10 +23,12 @@ public class BackendQuery<T> {
 
 	private final T query;
 	private final EntityKeyMetadata singleEntityKeyMetadata;
+	private final String singleEntityTypeName;
 
-	public BackendQuery(T query, EntityKeyMetadata singleEntityKeyMetadata) {
+	public BackendQuery(T query, EntityKeyMetadata singleEntityKeyMetadata, String singleEntityTypeName) {
 		this.query = query;
 		this.singleEntityKeyMetadata = singleEntityKeyMetadata;
+		this.singleEntityTypeName = singleEntityTypeName;
 	}
 
 	public T getQuery() {
@@ -35,5 +37,13 @@ public class BackendQuery<T> {
 
 	public EntityKeyMetadata getSingleEntityKeyMetadataOrNull() {
 		return singleEntityKeyMetadata;
+	}
+
+	public String getSingleEntityTypeNameOrNull() {
+		return singleEntityTypeName;
+	}
+
+	public boolean isSingleEntity() {
+		return singleEntityKeyMetadata != null;
 	}
 }
