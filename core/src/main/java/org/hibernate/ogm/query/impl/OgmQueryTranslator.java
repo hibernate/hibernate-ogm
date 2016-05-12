@@ -32,7 +32,6 @@ import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
-import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.spi.QueryParserService;
@@ -155,10 +154,7 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 				}
 				EntityType rootReturn = (EntityType) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getName() );
-				metadataInformation = new EntityMetadataInformation(
-						new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() ),
-						rootReturn.getReturnedClass().getName()
-				);
+				metadataInformation = new EntityMetadataInformation(persister.getEntityKeyMetadata(), rootReturn.getReturnedClass().getName() );
 			}
 		}
 
