@@ -42,8 +42,7 @@ class NativeNoSqlQueryPlan extends NativeSQLQueryPlan {
 	private <T extends Serializable> int performExecuteUpdateQuery( QueryableGridDialect<T> gridDialect, QueryParameters queryParameters ) {
 		// Safe cast, see org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter.createQueryPlan(NativeSQLQuerySpecification, SessionFactoryImplementor)
 		BackendCustomQuery<T> customQuery = (BackendCustomQuery<T>) getCustomQuery();
-		BackendQuery<T> backendQuery = new BackendQuery<T>( customQuery.getQueryObject(), customQuery.getSingleEntityKeyMetadataOrNull(),
-				customQuery.getSingleEntityTypeNameOrNull() );
+		BackendQuery<T> backendQuery = new BackendQuery<T>( customQuery.getQueryObject(), customQuery.getSingleEntityMetadataInformationOrNull() );
 		return gridDialect.executeBackendUpdateQuery( backendQuery, queryParameters );
 	}
 }

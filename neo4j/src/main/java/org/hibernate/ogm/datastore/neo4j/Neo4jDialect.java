@@ -63,6 +63,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
+import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
@@ -637,9 +638,11 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		Result result = dataBase.execute( nativeQuery, parameters );
 
-		if ( backendQuery.isSingleEntity() ) {
-			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( backendQuery.getSingleEntityTypeNameOrNull() );
-			return new NodesTupleIterator( result, backendQuery.getSingleEntityKeyMetadataOrNull(), persister.getTupleContext() );
+		EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
+
+		if ( entityMetadataInformation != null ) {
+			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( entityMetadataInformation.getTypeName() );
+			return new NodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), persister.getTupleContext() );
 		}
 		return new MapsTupleIterator( result );
 	}

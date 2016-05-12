@@ -20,7 +20,7 @@ import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.sql.SQLQueryReturnProcessor;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -41,8 +41,7 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 	private final Set<String> querySpaces;
 	private final List<Return> customQueryReturns;
 
-	private EntityKeyMetadata singleEntityKeyMetadata;
-	private String singleEntityTypeName;
+	private final EntityMetadataInformation singleEntityMetadataInformation;
 
 	public BackendCustomQuery(String queryString, T query, NativeSQLQueryReturn[] queryReturns, Set<String> querySpaces, SessionFactoryImplementor factory) throws HibernateException {
 		LOG.tracev( "Starting processing of NoSQL query [{0}]", queryString );
@@ -61,29 +60,27 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 			this.querySpaces = Collections.emptySet();
 		}
 
-		determineSingleEntityInformation( factory, customQueryReturns );
+		this.singleEntityMetadataInformation = determineSingleEntityMetadataInformation( factory, customQueryReturns );
 	}
 
-	private void determineSingleEntityInformation(SessionFactoryImplementor sessionFactory, List<Return> customQueryReturns) {
-		EntityKeyMetadata metadata = null;
-		String typeName = null;
+	private EntityMetadataInformation determineSingleEntityMetadataInformation(SessionFactoryImplementor sessionFactory, List<Return> customQueryReturns) {
+		EntityMetadataInformation metadataInformation = null;
 
 		for ( Return queryReturn : customQueryReturns ) {
 			if ( queryReturn instanceof RootReturn ) {
-				if ( metadata != null ) {
-					singleEntityKeyMetadata = null;
-					singleEntityTypeName = null;
-					return;
+				if ( metadataInformation != null ) {
+					return null;
 				}
 				RootReturn rootReturn = (RootReturn) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getEntityName() );
-				metadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
-				typeName = ( (RootReturn) queryReturn ).getEntityName();
+				metadataInformation = new EntityMetadataInformation(
+						new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() ),
+						rootReturn.getEntityName()
+				);
 			}
 		}
 
-		singleEntityKeyMetadata = metadata;
-		singleEntityTypeName = typeName;
+		return metadataInformation;
 	}
 
 	/**
@@ -125,23 +122,13 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 	}
 
 	/**
-	 * Returns the {@link EntityKeyMetadata} of the entity type selected by this query.
+	 * Returns the {@link EntityMetadataInformation} of the entity type selected by this query.
 	 *
-	 * @return the {@link EntityKeyMetadata} of the entity type selected by this query or {@code null} in case this
+	 * @return the {@link EntityMetadataInformation} of the entity type selected by this query or {@code null} in case this
 	 * query does not select exactly one entity type (e.g. in case of scalar values or joins (if supported in future revisions)).
 	 */
-	public EntityKeyMetadata getSingleEntityKeyMetadataOrNull() {
-		return singleEntityKeyMetadata;
-	}
-
-	/**
-	 * Returns the name of the entity type selected by this query.
-	 *
-	 * @return the name of the entity type selected by this query or {@code null} in case this
-	 * query does not select exactly one entity type (e.g. in case of scalar values or joins (if supported in future revisions)).
-	 */
-	public String getSingleEntityTypeNameOrNull() {
-		return singleEntityTypeName;
+	public EntityMetadataInformation getSingleEntityMetadataInformationOrNull() {
+		return singleEntityMetadataInformation;
 	}
 
 	@Override

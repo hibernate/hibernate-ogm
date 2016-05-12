@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 
 /**
  * Represents a NoSQL query as to be executed via
@@ -22,28 +22,19 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 public class BackendQuery<T> {
 
 	private final T query;
-	private final EntityKeyMetadata singleEntityKeyMetadata;
-	private final String singleEntityTypeName;
+	private final EntityMetadataInformation singleEntityMetadataInformation;
 
-	public BackendQuery(T query, EntityKeyMetadata singleEntityKeyMetadata, String singleEntityTypeName) {
+	public BackendQuery(T query, EntityMetadataInformation singleEntityMetadataInformation) {
 		this.query = query;
-		this.singleEntityKeyMetadata = singleEntityKeyMetadata;
-		this.singleEntityTypeName = singleEntityTypeName;
+		this.singleEntityMetadataInformation = singleEntityMetadataInformation;
 	}
 
 	public T getQuery() {
 		return query;
 	}
 
-	public EntityKeyMetadata getSingleEntityKeyMetadataOrNull() {
-		return singleEntityKeyMetadata;
+	public EntityMetadataInformation getSingleEntityMetadataInformationOrNull() {
+		return singleEntityMetadataInformation;
 	}
 
-	public String getSingleEntityTypeNameOrNull() {
-		return singleEntityTypeName;
-	}
-
-	public boolean isSingleEntity() {
-		return singleEntityKeyMetadata != null;
-	}
 }

@@ -794,7 +794,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
-		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
+		EntityKeyMetadata entityKeyMetadata =
+				backendQuery.getSingleEntityMetadataInformationOrNull() == null ? null :
+					backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 
@@ -826,7 +829,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public int executeBackendUpdateQuery(final BackendQuery<MongoDBQueryDescriptor> backendQuery, final QueryParameters queryParameters) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
-		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
+		EntityKeyMetadata entityKeyMetadata =
+				backendQuery.getSingleEntityMetadataInformationOrNull() == null ? null :
+					backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 

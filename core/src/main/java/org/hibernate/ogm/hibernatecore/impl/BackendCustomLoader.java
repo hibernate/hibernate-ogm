@@ -178,8 +178,7 @@ public class BackendCustomLoader extends CustomLoader {
 			this.gridDialect = gridDialect;
 			this.query = new BackendQuery<T>(
 					customQuery.getQueryObject(),
-					customQuery.getSingleEntityKeyMetadataOrNull(),
-					customQuery.getSingleEntityTypeNameOrNull()
+					customQuery.getSingleEntityMetadataInformationOrNull()
 			);
 		}
 
