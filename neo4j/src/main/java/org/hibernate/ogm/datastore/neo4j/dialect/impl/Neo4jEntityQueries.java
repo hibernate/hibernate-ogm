@@ -271,7 +271,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * @param executionEngine the queries executor
 	 * @param columnValues the values for the entity key column names of the owner node
 	 * @param role the relationship type mapping the role of the association
-	 * @return an iterator on the the results
+	 * @return an iterator on the results
 	 */
 	// We should move this in Neo4jAssociationQueries but, at the moment, having a query that only requires an EntityKeyMetadata make it easier
 	// to deal with the *ToOne scenario

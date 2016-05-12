@@ -1166,7 +1166,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			);
 
 		if ( persister.hasRowId() ) {
-			throw new HibernateException( "Hibernate OGM does nto support row id");
+			throw new HibernateException( "Hibernate OGM does not support row id");
 		}
 		final Object rowId = null;
 
@@ -1218,7 +1218,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 	/**
 	 * For missing objects associated by one-to-one with another object in the
-	 * result set, register the fact that the the object is missing with the
+	 * result set, register the fact that the  object is missing with the
 	 * session.
 	 *
 	 * copied form Loader#registerNonExists

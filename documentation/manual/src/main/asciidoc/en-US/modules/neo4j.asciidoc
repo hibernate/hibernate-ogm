@@ -222,7 +222,7 @@ image::neo4j-@EmbeddedId-example.png[align="center", depth="", scalefit="1"]
 
 Embedded elements are stored as separate nodes labeled with `EMBEDDED`.
 
-The the type of the relationship that connects the entity node to the embedded node is
+The type of the relationship that connects the entity node to the embedded node is
 the attribute name representing the embedded in the java class.
 
 .Embedded object
