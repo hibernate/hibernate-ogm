@@ -7,6 +7,7 @@
 package org.hibernate.ogm.dialect.query.spi;
 
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
+import org.hibernate.ogm.util.Experimental;
 
 /**
  * Represents a NoSQL query as to be executed via
@@ -19,6 +20,7 @@ import org.hibernate.ogm.model.spi.EntityMetadataInformation;
  * @author Gunnar Morling
  * @param <T> The type of query as understood by the underlying dialect implementation
  */
+@Experimental("This contract is under active development, incompatible changes may occur in future versions.")
 public class BackendQuery<T> {
 
 	private final T query;
