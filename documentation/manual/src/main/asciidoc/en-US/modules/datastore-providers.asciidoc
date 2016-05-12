@@ -33,7 +33,7 @@ Hibernate OGM interacts with NoSQL datastores via two contracts:
 
 Only a few steps are necessary:
 
-* add the datastore provider module in your classpath
+* add the datastore provider module to your classpath
 * ask Hibernate OGM to use that datastore provider
 * configure the URL or configuration to reach the datastore
 
@@ -50,7 +50,7 @@ Adding the relevant Hibernate OGM module in your classpath looks like this in Ma
 ----
 
 The module names are
-`hibernate-ogm-infinispan`, `hibernate-ogm-ehcache`, `hibernate-ogm-mongodb`, `hibernate-ogm-neo4j`, `hibernate-ogm-couchdb` and `hibernate-ogm-redis`.
+`hibernate-ogm-infinispan`, `hibernate-ogm-ehcache`, `hibernate-ogm-mongodb`, `hibernate-ogm-neo4j`, `hibernate-ogm-couchdb`, `hibernate-ogm-redis` and `hibernate-ogm-cassandra`.
 The map datastore is included in the Hibernate OGM engine module.
 
 Next, configure which datastore provider you want to use.
@@ -64,7 +64,7 @@ Possible values are:
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants declared on `OgmProperties` to specify configuration properties
+you should use the constants declared on `org.hibernate.ogm.cfg.OgmProperties` to specify configuration properties
 such as `hibernate.ogm.datastore.provider`.
 
 In this case you also can specify the provider in form of a class object of a datastore provider type
@@ -83,11 +83,10 @@ EntityManagerFactory emf = Persistence.createEntityManagerFactory( "my-pu", prop
 ====
 
 
-By default, a datastore provider chooses the best grid dialect transparently
-but you can manually override that setting
-with the `hibernate.ogm.datastore.grid_dialect` option.
+By default, a datastore provider chooses the grid dialect transparently
+but you can override this setting with the `hibernate.ogm.datastore.grid_dialect` option.
 Use the fully qualified class name of the [classname]`GridDialect` implementation.
-Most users should ignore this setting entirely and live a happier life instead.
+Most users should ignore this setting entirely.
 
 Let's now look at the specifics of each datastore provider.
 How to configure it further, what mapping structure is used and more.

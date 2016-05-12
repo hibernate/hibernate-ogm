@@ -32,7 +32,7 @@ You configure Hibernate OGM and Infinispan in two steps basically:
 
 ** Use the default Infinispan configuration (no action needed)
 ** Point to your own configuration resource file
-** Point to a [acronym]`JNDI` name of an existing Infinispan instance
+** Point to a [acronym]`JNDI` name of an existing instance of an Infinispan `CacheManager`
 
 
 [[ogm-infinispan-adddepencies]]
@@ -99,7 +99,7 @@ Defaults to `CACHE_PER_TABLE`. It is the recommended strategy as it makes it eas
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via `InfinispanProperties`
+you should use the constants accessible via `org.hibernate.ogm.datastore.infinispan.InfinispanProperties`
 when specifying the configuration properties listed above.
 
 Common properties shared between stores are declared on `OgmProperties`
@@ -183,13 +183,12 @@ and stopping/killing/crashing your application will get all data lost
 with no way to recover it.
 
 To store data permanently (out of the JVM memory) a `CacheStore` should be enabled.
-The `infinispan-core.jar` includes a simple implementation
-able to store data in simple binary files, on any read/write mounted filesystem;
-this is an easy starting point, but the real stuff is to be found
-in the additional modules found in the Infinispan distribution.
-Here you can find many more implementations to store your data in anything
-from JDBC connected relational databases, other NoSQL engines,
-to cloud storage services or other Infinispan clusters.
+The Infinispan project provides many `CacheStore` implementations;
+a simple one is the http://infinispan.org/docs/8.2.x/user_guide/user_guide.html#_filesystem_based_cache_stores["single file store"]
+which is able to store data in simple binary files, on any read/write mounted filesystem;
+You can find many more implementations to store your data in anything
+from JDBC connected relational databases, other NoSQL engines such as MongoDB and Cassandra,
+or even delegate to other Infinispan clusters.
 Finally, implementing a custom `CacheStore` is quite easy.
 
 To limit the memory consumption of the precious heap space,
@@ -293,8 +292,9 @@ Nowadays, the [acronym]`JVM` defaults to use [acronym]`IPv6` network stack;
 this will work fine with JGroups, but only if you configured [acronym]`IPv6` correctly.
 It is often useful to force the [acronym]`JVM` to use [acronym]`IPv4`.
 
-It is also useful to let JGroups know which networking interface you want to use;
-especially if you have multiple interfaces it might not guess correctly.
+It is also important to let JGroups know which networking interface you want to use;
+it will bind to one interface by default, but if you have multiple network interfaces
+that might not be the one you expect.
 
 .JVM properties to set for clustering
 ====
@@ -1873,16 +1873,13 @@ by using a CacheStore (see <<ogm-infinispan-storage>>)
 you can use this adaptor to store the Lucene indexes
 in any NoSQL store supported by Infinispan:
 
+* JDBC databases
 * Cassandra
 * Filesystem (but locked correctly at the Infinispan level)
 * MongoDB
 * HBase
-* JDBC databases
-* JDBM
-* BDBJE
+* LevelDB
 * A secondary (independent) Infinispan grid
-* Any Cloud storage service
-  http://www.jclouds.org/documentation/reference/supported-providers/[supported by JClouds]
 
 
 How to configure it? Here is a simple cheat sheet to get you started with this type of setup:
@@ -1894,6 +1891,10 @@ How to configure it? Here is a simple cheat sheet to get you started with this t
 ** `hibernate.search.default.exclusive_index_use = false`
 ** `hibernate.search.infinispan.configuration_resourcename =` [infinispan configuration filename]
 
+This configuration is simple and will work fine in most scenarios, but keep in mind that using
+'exclusive_index_use' will be neither fast nor scalable.
+For high performance, high concurrency or production use please refer to the
+http://infinispan.org/documentation/[Infinispan documentation] for more advanced configuration options and tuning.
 
 The referenced Infinispan configuration should define a [classname]`CacheStore`
 to load/store the index in the NoSQL engine of choice.

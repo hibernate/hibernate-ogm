@@ -24,7 +24,7 @@ Let's start with the general architecture.
 
 === General architecture
 
-Hibernate OGM is really made possible by the reuse of a few key components:
+Hibernate OGM is made possible by the reuse of a few key components:
 
 * Hibernate ORM for JPA support
 * the NoSQL drivers to interact with the underlying datastore
@@ -39,7 +39,7 @@ Hibernate OGM is really made possible by the reuse of a few key components:
 image::ogm-architecture.png[align="center", depth="", scalefit="1", width="15cm"]
 
 Hibernate OGM reuses as much as possible from the Hibernate ORM infrastructure.
-There is no need to rewrite an entirely new JPA engine.
+There is no need to rewrite a new JPA engine.
 The [classname]``Persister``s and the [classname]``Loader``s
 (two interfaces used by Hibernate ORM)
 have been rewritten to persist data in the NoSQL store.
@@ -63,9 +63,9 @@ are implemented by the Hibernate ORM engine
 
 As of today, we have implemented the following datastore providers:
 
-* a Map based datastore provider (for testing)
+* a HashMap based datastore provider (for testing)
 * an Infinispan based datastore provider to persist your entities in Infinispan
-* a Ehcache based datastore provider to persist your entities in Ehcache
+* an Ehcache based datastore provider to persist your entities in Ehcache
 * a MongoDB based datastore provider to persist data in a MongoDB database
 * a Neo4j based datastore provider to persist data in the Neo4j graph database
 * a CouchDB based datastore provider to persist data in the CouchDB document store (experimental)
@@ -134,12 +134,12 @@ directly in the datastore - key/value in particular - can lead to problems:
 ====
 
 Entities are stored as tuples of values by Hibernate OGM.
-More specifically, each entity is conceptually represented by a [classname]`Map<String,Object>`
+More specifically, each entity is conceptually represented by a `Map<String,Object>`
 where the key represents the column name (often the property name but not always)
 and the value represents the column value as a basic type.
 We favor basic types over complex ones to increase portability
 (across platforms and across type / class schema evolution over time).
-For example a URL object is stored as its String representation.
+For example a `URL` object is stored as its String representation.
 
 The key identifying a given entity instance is composed of:
 
@@ -151,7 +151,7 @@ The key identifying a given entity instance is composed of:
 .Storing entities
 image::data-entity.png[align="center"]
 
-The [classname]`GridDialect` specific to the NoSQL datastore you target
+The `GridDialect` specific to the NoSQL datastore you target
 is then responsible to convert this map into the most natural model:
 
 * for a key/value store or a data grid,
@@ -162,8 +162,7 @@ is then responsible to convert this map into the most natural model:
   and each entry in the map corresponds to a property in a document.
 
 
-Associations are also stored as tuple as well
-or more specifically as a set of tuples.
+Associations are also stored as tuples.
 Hibernate OGM stores the information necessary
 to navigate from an entity to its associations.
 This is a departure from the pure relational model
@@ -259,7 +258,7 @@ Some NoSQL stores have poor query support, or none at all.
 In this case Hibernate OGM can use Hibernate Search as its indexing and query engine.
 Hibernate Search is able to index and query objects - entities -
 and run full-text queries.
-It uses the well known Apache Lucene to do that
+It uses the well known Apache Lucene to do this
 but adds a few interesting characteristics like clustering support
 and an object oriented abstraction including an object oriented query DSL.
 Let's have a look at the architecture of Hibernate OGM
@@ -279,7 +278,7 @@ Indexes can be stored in various fashions:
 * on a file system (the default in Lucene)
 * in Infinispan via the Infinispan Lucene directory implementation:
   the index is then distributed across several servers transparently
-* in NoSQL stores like Voldemort that can natively store Lucene indexes
+* in NoSQL stores that can natively store Lucene indexes
 * in NoSQL stores that can be used as overflow to Infinispan:
   in this case Infinispan is used as an intermediary layer
   to serve the index efficiently but persists the index in another NoSQL store.

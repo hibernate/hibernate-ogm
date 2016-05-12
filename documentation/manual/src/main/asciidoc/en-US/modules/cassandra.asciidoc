@@ -11,7 +11,7 @@ The currently supported version is Cassandra 2.1.
 
 [NOTE]
 ====
-Support for Cassandra is considered an EXPERIMENTAL feature as of this release.
+Support for Cassandra is considered an EXPERIMENTAL feature of this release.
 
 Should you find any bugs or have feature requests for this dialect,
 then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM issue tracker].
@@ -49,14 +49,11 @@ copy all the dependencies from the distribution in the directories:
 
 ==== Cassandra specific configuration properties
 
-To get started quickly, pay attention to the following options:
+To get started you will need to configure the following properties:
 
 * `hibernate.ogm.datastore.provider`
 * `hibernate.ogm.datastore.host`
 * `hibernate.ogm.datastore.database`
-
-And we should have you running.
-The following properties are available to configure Cassandra support:
 
 .Cassandra datastore configuration properties
 hibernate.ogm.datastore.provider::
@@ -120,10 +117,10 @@ You can assign id values yourself or let Hibernate OGM generate the value using 
 
 The preferred identifier approach in Cassandra is to use UUIDs.
 
-Cassandra does not natively support sequence (auto increment identifiers) at present. This approach is supported though use of an additional table to store sequence state, but incurs additional access overheads that make it undesirable for tables with frequent inserts.
+Cassandra does not natively support sequences (auto increment identifiers) at present. This approach is supported though use of an additional table to store sequence state, but incurs additional access overheads that make it undesirable for tables with frequent inserts.
 
 === Transactions and Concurrency
 
-Cassandra does not support transactions.  Changes to a single Entity are atomic. Changes to more than one are neither atomic nor isolated.
+Cassandra does not support transactions. Changes to a single Entity are atomic. Changes to more than one entity are neither atomic nor isolated.
 
 Cassandra does not distinguish between update and insert operations and will not prevent creation of an Entity with duplicate Id, instead treating it as modification of the existing Entity.

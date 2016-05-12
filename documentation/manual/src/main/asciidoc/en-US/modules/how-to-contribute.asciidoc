@@ -73,6 +73,8 @@ Make sure to either use the [code]`-s settings-example.xml` option
 or adjust your [filename]`$$~/.m2/settings.xml$$`
 according to the descriptions available
 http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
+
+These settings are required for development of Hibernate OGM but should not be needed to use it.
 ====
 
 To skip building the documentation, set the `skipDocs` property to true:
@@ -146,13 +148,13 @@ Supporting a data store usually begins with a `DatastoreProvider`. Providers can
 implement a lifecycle (`start`, `stop`) to initialize, configure and shutdown
 resources. Taking a look at existing data store support such as MongoDB
 (see `org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider`)
-is a good idea to get an impression how to boot the data store support.
+is a good idea to get an impression of how to boot the data store support.
 Providers are seen as services, they can implement various service interfaces
 to activate certain features (see the `org.hibernate.service.spi` package for details).
 
-An issue facing data stores is transactionality. Some data stores provide
-transactional support that can be used in the context of Hibernate OGM
-wrapped by JTA. If your data store does not support transactions, you
+A common issue to face then implementing new data stores is transactionality.
+Some data stores provide transactional support that can be used in the context of Hibernate OGM wrapped by JTA.
+If your data store does not support transactions, you
 can enable transaction emulation within the `DatastoreProvider`.
 
 Features of a `DatastoreProvider`:
@@ -221,13 +223,16 @@ Features of a `MultigetGridDialect`
 
 [TIP]
 ====
-Have an idea how you would map entities in the data store you want to
-support. It helps to have a clear picture about that.
+Before starting make a clear plan of how you think entities, relations and nested structures
+are best represented in the NoSQL store you plan to implement.
+It helps to have a clear picture about that, and this will require some experience with the
+NoSQL database you plan to support.
 ====
 
 [TIP]
 ====
-Start with a small feature set to get a feeling for Hibernate OGM.
+Start with a small feature set to get a feeling for Hibernate OGM,
+for example aim at implementing CRUD operations only and ignore relations and queries.
 You can always extend the features as you proceed.
 
 Starting from or studying existing dialects is also an interesting strategy.
@@ -268,11 +273,12 @@ entity itself or externally (as own documents or relation items).
 
 ==== Configuration
 
-Hibernate OGM uses a sophisticated configuration mechanism that obtains
-its values from various sources. Most common configuration sources are:
+Hibernate OGM can read its configuration properties from various sources.
+Most common configuration sources are:
 
 * `hibernate.properties` file
 * `persistence.xml` file
+* environment variables override or integrate properties set in the above configuration files
 * annotation configuration (entity classes)
 * programmatic configuration
 
@@ -350,7 +356,7 @@ dialect to the `@SkipByGridDialect` annotation of some tests.
 
 [TIP]
 ====
-Running even 20% of the tests green is a great achievement. Proceed step-by-step.
+Running even 20% of the tests successfully is a great achievement. Proceed step-by-step.
 Large numbers of tests can fail just because of one thing that is handled differently.
-Don't hesitate to ask for support.
+Don't hesitate to ask for help.
 ====

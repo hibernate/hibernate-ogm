@@ -5,12 +5,16 @@
 When combined with Hibernate ORM, Ehcache is commonly used as a 2nd level cache
 to cache data whose primary storage is a relational database.
 When used with Hibernate OGM it is not "just a cache"
-but is the main storage engine for your data.
+but is used as the main (and exclusive) storage engine for your data.
 
 This is not the reference manual for Ehcache itself:
 we're going to list only how Hibernate OGM should be configured to use Ehcache;
 for all the tuning and advanced options please refer to the
 http://www.ehcache.org/documentation[Ehcache Documentation].
+
+This version of Hibernate OGM is compatible with Ehcache version {ehcache-version}.
+Other versions might work, but this is the only version which has been regularly tested
+with this version of Hibernate OGM.
 
 [[ogm-ehcache-configuration]]
 
