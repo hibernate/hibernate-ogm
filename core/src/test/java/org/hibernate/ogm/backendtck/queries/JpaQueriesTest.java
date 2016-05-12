@@ -122,7 +122,7 @@ public class JpaQueriesTest extends JpaTestCase {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreateNamedQueryTypeQueryWithWronReturnedClass() throws Exception {
+	public void testCreateNamedQueryTypeQueryWithWrongReturnedClass() throws Exception {
 		em.createNamedQuery( Helicopter.BY_NAME, Hypothesis.class )
 			.setParameter( "name", POLICE_HELICOPTER )
 			.getSingleResult();
@@ -152,7 +152,7 @@ public class JpaQueriesTest extends JpaTestCase {
 
 	@After
 	public void closeEmAndRemoveEntities() throws Exception {
-		//Do not hide the real cause with an NPE if there are initialisation issues:
+		//Do not hide the real cause with an NPE if there are initialization issues:
 		if ( em != null ) {
 			em.getTransaction().commit();
 			removeEntities();

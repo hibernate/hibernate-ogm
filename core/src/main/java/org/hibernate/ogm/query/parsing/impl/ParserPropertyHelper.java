@@ -77,7 +77,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 			return propertyType;
 		}
 		else if ( propertyType.isComponentType() ) {
-			// Embeddded property
+			// Embedded property
 			return getComponentPropertyType( propertyType, pathIterator );
 		}
 		else if ( propertyType.isAssociationType() ) {
@@ -129,7 +129,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 	 * Checks if the path leads to an embedded property or association.
 	 *
 	 * @param targetTypeName the entity with the property
-	 * @param namesWithoutAlias the path to the the property with all the aliases resolved
+	 * @param namesWithoutAlias the path to the property with all the aliases resolved
 	 * @return {@code true} if the property is an embedded, {@code false} otherwise.
 	 */
 	public boolean isEmbeddedProperty(String targetTypeName, List<String> namesWithoutAlias) {
@@ -216,7 +216,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 			return persister.getPropertyColumnNames( propertyName )[0];
 		}
 		else if ( propertyType.isComponentType() ) {
-			// Embeddded property
+			// Embedded property
 			String componentPropertyName = StringHelper.join( propertyPath, "." );
 			return persister.getPropertyColumnNames( componentPropertyName )[0];
 		}
@@ -227,7 +227,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 				if ( collectionPersister.getType().isComponentType() ) {
 					StringBuilder columnNameBuilder = new StringBuilder( );
 					// Collection of embeddables
-					appendComponenCollectionPath( columnNameBuilder, collectionPersister, pathIterator );
+					appendComponentCollectionPath( columnNameBuilder, collectionPersister, pathIterator );
 					return columnNameBuilder.toString();
 				}
 			}
@@ -235,7 +235,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 		throw new UnsupportedOperationException( "Unrecognized property type: " + propertyType );
 	}
 
-	private void appendComponenCollectionPath(StringBuilder columnNameBuilder, OgmCollectionPersister persister, Iterator<String> pathIterator) {
+	private void appendComponentCollectionPath(StringBuilder columnNameBuilder, OgmCollectionPersister persister, Iterator<String> pathIterator) {
 		if ( pathIterator.hasNext() ) {
 			String property = pathIterator.next();
 			Type subType = componentPropertyType( (ComponentType) persister.getType(), property );

@@ -91,7 +91,7 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 	 * Check if the property is part of the identifier of the entity.
 	 *
 	 * @param persister the {@link OgmEntityPersister} of the entity with the property
-	 * @param namesWithoutAlias the path to the the property with all the aliases resolved
+	 * @param namesWithoutAlias the path to the property with all the aliases resolved
 	 * @return {@code true} if the property is part of the id, {@code false} otherwise.
 	 */
 	public boolean isIdProperty(OgmEntityPersister persister, List<String> namesWithoutAlias) {
