@@ -152,7 +152,7 @@ http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official docum
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via `MongoDBProperties`
+you should use the constants accessible via `org.hibernate.ogm.datastore.mongodb.MongoDBProperties`
 when specifying the configuration properties listed above.
 
 Common properties shared between stores are declared on `OgmProperties`
@@ -3333,7 +3333,7 @@ int removed = session.createNativeQuery( removeQuery ).executeUpdate();
 
 You can index your entities using Hibernate Search.
 That way, a set of secondary indexes independent of MongoDB is maintained by Hibernate Search
-and you can write queries on top of them.
+and you can run Lucene queries on top of them.
 The benefit of this approach is a nice integration at the JPA / Hibernate API level
 (managed entities are returned by the queries).
 The drawback is that you need to store the Lucene indexes somewhere

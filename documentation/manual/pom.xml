@@ -93,6 +93,7 @@
                         <hibernate-search-major-minor-version>${hibernate-search-major-minor-version}</hibernate-search-major-minor-version>
                         <infinispan-version>${infinispanVersion}</infinispan-version>
                         <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
+                        <ehcache-version>${ehcacheVersion}</ehcache-version>
                         <mongodb-version>${mongodbVersion}</mongodb-version>
                     </attributes>
                 </configuration>

@@ -13,8 +13,7 @@ Depending of your choice, the bootstrapping strategy is slightly different.
 
 ==== Using JPA
 
-The good news is that if you use JPA as your primary API,
-the configuration is extremely simple.
+If you use JPA as your primary API, the configuration is extremely simple.
 Hibernate OGM is seen as a persistence provider
 which you need to configure in your [filename]`persistence.xml`.
 That's it!
@@ -49,15 +48,19 @@ There are a couple of things to notice:
 * there is no JDBC dialect setting
 * there is no JDBC setting except sometimes a `jta-data-source`
   (check <<ogm-configuration-environments-javaee>> for more info)
-* there is no DDL scheme generation options (`hbm2ddl`)
-  as NoSQL generally do not require schemas
+* most NoSQL databases do not require a schema, in which case schema generation options (`hbm2ddl`)
+  do not apply
 * if you use JTA (which we recommend), you will need to set the JTA platform
 
 
 You also need to configure which NoSQL datastore you want to use
 and how to connect to it.
 We will detail how to do that later in <<ogm-datastore-providers>>.
-In this case, we have used the defaults settings for Infinispan.
+
+In this case, we have used the defaults settings for Infinispan:
+this will start a local, in-memory Infinispan instance which is useful for testing
+but the stored data will be lost on shutdown.
+You might think of this configuration as similar to storing your data in an hashmap.
 
 From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 
@@ -65,12 +68,22 @@ From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 * by injecting the [classname]`EntityManager` / [classname]`EntityManagerFactory` in a Java EE container
 * by using your favorite injection framework (CDI - Weld, Spring, Guice)
 
+[NOTE]
+====
+Note that what you're starting is not an exotic new JPA implementation but is in all effects
+an instance of Hibernate ORM, although using some alternative internal components to deal
+with the NoSQL stores.
+This means that any framework and tool integrating with Hibernate ORM can integrate with
+Hibernate OGM - of course as long as it's not making assumptions such as that a JDBC
+datasource will be used.
+====
+
 
 ==== Using Hibernate ORM native APIs
 
 If you want to bootstrap Hibernate OGM using the native Hibernate APIs,
 use the new bootstrap API from Hibernate ORM 5.
-By setting `OgmProperties.ENABLED` to true, Hibernate OGM instead of ORM will be bootstrapped.
+By setting `OgmProperties.ENABLED` to true, the Hibernate OGM components will be activated.
 Note that unwrapping into `OgmSessionFactoryBuilder` is not strictly needed,
 but it will allow you to set Hibernate OGM specific options in the future and also gives you a reference
 to `OgmSessionFactory` instead of `SessionFactory`.
@@ -119,10 +132,11 @@ In this case, we have used the defaults settings for Infinispan.
 
 === Environments
 
-Hibernate OGM runs in various environments,
-pretty much what you are used to with Hibernate ORM.
-There are however environments where it works better
-and has been more thoroughly tested.
+Hibernate OGM runs in various environments: it should work pretty much in all environments in which Hibernate ORM runs.
+There are however some selected environments in which it was tested more thoroughly than others.
+The current version is being tested regularly in Java SE (without a container) and within the WildFly 10 application server;
+at time of writing this there's no known reason for it to not work in different containers as long as you remember that it requires a
+specific version of Hibernate ORM: some containers might package a conflicting version.
 
 [[ogm-configuration-environments-javaee]]
 
@@ -146,11 +160,10 @@ The property is `hibernate.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
 http://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
-For example, in WildFly, use `JBossAS`.
+For example in WildFly 10 use `JBossAS`.
 
-In your [filename]`persistence.xml`, you also need to define an existing datasource.
-It is not needed by Hibernate OGM
-and won't be used but the JPA specification mandates this setting.
+In your [filename]`persistence.xml` you usually need to define an existing datasource.
+This is not needed by Hibernate OGM: it will ignore the datasource, but JPA specification mandates the setting.
 
 .persistence.xml file
 ====
@@ -188,10 +201,7 @@ There is a set of common misconceptions in the Java community about JTA:
 * JTA works in Java EE only
 * JTA is slower than "simple" transactions
 
-
-None of that is true of course,
-let me show you how to use JBoss Transaction
-in a standalone environment with Hibernate OGM.
+None of these are true: let me show you how to use the Narayana Transactions Manager in a standalone environment with Hibernate OGM.
 
 In Hibernate OGM, make sure to set the following properties:
 
@@ -201,10 +211,10 @@ In Hibernate OGM, make sure to set the following properties:
 * `hibernate.transaction.jta.platform` to `JBossTS` in both cases.
 
 
-On the JBoss Transaction side, add JBoss Transaction in your classpath.
+Add the Narayana Transactions Manager to your classpath.
 If you use maven, it should look like this:
 
-.JBoss Transaction dependency declaration
+.Narayana Transactions Manager dependency declaration
 ====
 [source, XML]
 [subs="verbatim,attributes"]
@@ -260,14 +270,13 @@ em.close();
 ====
 
 That was not too hard, was it?
-Note that application frameworks like Seam
-or Spring Framework should be able to initialize the transaction manager
+Note that application frameworks like the Spring Framework should be able to initialize the transaction manager
 and call it to demarcate transactions for you.
 Check their respective documentation.
 
 ==== Without JTA
 
-While this approach works today, it does not ensure that works are done transactionally
+While this approach works today, it does not ensure that operations are done transactionally
 and hence won't be able to rollback your work.
 This will change in the future but in the mean time,
 such an environment is not recommended.

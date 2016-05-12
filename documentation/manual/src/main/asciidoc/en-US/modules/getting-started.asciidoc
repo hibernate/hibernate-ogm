@@ -158,7 +158,7 @@ The final list of dependencies should look like this:
 ----
 
 Next we need to define the persistence unit.
-Create a [filename]`META-INF/persistence.xml` file.
+Create a `META-INF/persistence.xml` file.
 
 [source, XML]
 ----
@@ -230,7 +230,7 @@ emf.close();
 ----
 
 A working example can be found in Hibernate OGM's distribution under
-[filename]`hibernate-ogm-documentation/examples/gettingstarted`.
+`hibernate-ogm-documentation/examples/gettingstarted`.
 
 What have we seen?
 

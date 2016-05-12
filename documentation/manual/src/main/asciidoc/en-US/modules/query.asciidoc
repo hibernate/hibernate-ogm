@@ -406,4 +406,4 @@ go check the http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_
 
 === Using the Criteria API
 
-At this time, we have not implemented support for the Criteria APIs (neither Hibernate native and JPA).
+At this time, we have not implemented support for the Criteria APIs (neither Hibernate native nor JPA).

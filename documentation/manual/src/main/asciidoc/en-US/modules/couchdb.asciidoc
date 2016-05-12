@@ -11,9 +11,9 @@ It is thus very easy to access from a wide range of languages and applications.
 Support for CouchDB is considered an EXPERIMENTAL feature as of this release.
 In particular you should be prepared for possible changes to the persistent representation of mapped objects in future releases.
 
-Also be aware of the fact that partial updates are unsupported at the moment
+Also be aware that partial updates are unsupported at the moment
 (https://hibernate.atlassian.net/browse/OGM-388[OGM-388]).
-Instead always the entire document will be replaced during updates.
+The entire document will be replaced during any updates.
 This means that fields possibly written by other applications but not mapped to properties in your domain model will get lost.
 
 The `ASSOCIATION_DOCUMENT` mode for storing associations should be used with care
@@ -2244,7 +2244,7 @@ So the window of time used to write to CouchDB is smaller than what you would ha
 
 We recommend that you still use transaction demarcations with Hibernate OGM
 to trigger the flush operation transparently (on commit).
-But do not consider rollback as a possibility, this won't work.
+But consider that rolling back the transaction isn't an option: operations already flushed will not be undone.
 
 === Queries
 
@@ -2265,8 +2265,8 @@ The drawback is that raw CouchDB documents will be returned and not managed enti
 The alternative approach is to index your entities with Hibernate Search.
 That way, a set of secondary indexes independent of CouchDB is maintained by Hibernate Search
 and you can write queries on top of them.
-The benefit of this approach is an nice integration at the JPA / Hibernate API level
+The benefit of this approach is a nice integration at the JPA / Hibernate API level
 (managed entities are returned by the queries).
 The drawback is that you need to store the Lucene indexes somewhere
-(file system, infinispan grid etc).
+(file system, Infinispan grid etc).
 Have a look at the Infinispan section for more info on how to use Hibernate Search.
