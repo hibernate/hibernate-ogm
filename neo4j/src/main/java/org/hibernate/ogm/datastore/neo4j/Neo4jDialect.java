@@ -615,21 +615,19 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
-			try {
-				while ( queryNodes.hasNext() ) {
-					Node next = queryNodes.next();
-					Tuple tuple = new Tuple( Neo4jTupleSnapshot.fromNode( next,
-							tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
-							entityKeyMetadata ) );
-					consumer.consume( tuple );
-				}
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
+		try {
+			while ( queryNodes.hasNext() ) {
+				Node next = queryNodes.next();
+				Tuple tuple = new Tuple( Neo4jTupleSnapshot.fromNode( next,
+						tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+						entityKeyMetadata ) );
+				consumer.consume( tuple );
 			}
-			finally {
-				queryNodes.close();
-			}
+		}
+		finally {
+			queryNodes.close();
 		}
 	}
 

@@ -271,25 +271,23 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public void forEachTuple(final ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			KeyScanCursor<String> cursor = null;
-			String prefix = entityKeyMetadata.getTable() + ":";
+	public void forEachTuple(final ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		KeyScanCursor<String> cursor = null;
+		String prefix = entityKeyMetadata.getTable() + ":";
 
-			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
-			do {
-				cursor = scan( cursor, scanArgs );
+		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
+		do {
+			cursor = scan( cursor, scanArgs );
 
-				for ( String key : cursor.getKeys() ) {
-					Entity document = entityStorageStrategy.getEntity( key );
+			for ( String key : cursor.getKeys() ) {
+				Entity document = entityStorageStrategy.getEntity( key );
 
-					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
+				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
 
-					consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
-				}
+				consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
+			}
 
-			} while ( !cursor.isFinished() );
-		}
+		} while ( !cursor.isFinished() );
 	}
 
 	private void storeEntity(

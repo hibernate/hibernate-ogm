@@ -782,13 +782,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
 		DB db = provider.getDatabase();
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
-			for ( DBObject dbObject : collection.find() ) {
-				consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata, UPDATE ) ) );
-			}
+		DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
+		for ( DBObject dbObject : collection.find() ) {
+			consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata, UPDATE ) ) );
 		}
 	}
 

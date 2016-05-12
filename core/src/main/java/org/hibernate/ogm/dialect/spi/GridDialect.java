@@ -172,10 +172,10 @@ public interface GridDialect extends Service {
 	 *            the instance that is going to be called for every {@link Tuple}
 	 * @param tupleContext
 	 *            contains additional information that might be used to build the tuple
-	 * @param entityKeyMetadatas
-	 *            the key metadata of the tables for which we want to apply the consumer
+	 * @param entityKeyMetadata
+	 *            the key metadata of the table for which we want to apply the consumer
 	 */
-	void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas);
+	void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata);
 
 	/**
 	 * Returns this dialect's strategy for detecting the insertion of several entity tuples of the given type with the

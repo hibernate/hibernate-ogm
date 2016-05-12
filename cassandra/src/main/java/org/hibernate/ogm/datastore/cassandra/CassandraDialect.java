@@ -446,23 +446,20 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		Select select = queryBuilder.select().all().from( quote( entityKeyMetadata.getTable() ) );
 
-			Select select = queryBuilder.select().all().from( quote( entityKeyMetadata.getTable() ) );
-
-			ResultSet resultSet;
-			try {
-				resultSet = session.execute( select );
-			}
-			catch (DriverException e) {
-				throw e;
-			}
-			Iterator<Row> iter = resultSet.iterator();
-			while ( iter.hasNext() ) {
-				Row row = iter.next();
-				consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) ) );
-			}
+		ResultSet resultSet;
+		try {
+			resultSet = session.execute( select );
+		}
+		catch (DriverException e) {
+			throw e;
+		}
+		Iterator<Row> iter = resultSet.iterator();
+		while ( iter.hasNext() ) {
+			Row row = iter.next();
+			consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) ) );
 		}
 	}
 

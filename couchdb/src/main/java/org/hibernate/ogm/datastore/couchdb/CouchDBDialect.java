@@ -311,10 +311,8 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			forTuple( consumer, entityKeyMetadata );
-		}
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		forTuple( consumer, entityKeyMetadata );
 	}
 
 	@Override

@@ -146,7 +146,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata... entityKeyMetadatas) {
+		public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
 		}
 
 		@Override
