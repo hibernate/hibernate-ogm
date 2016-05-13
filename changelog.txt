@@ -1,49 +1,6 @@
 Hibernate OGM Changelog
 =======================
 
-5.0.0.Final (13-05-2016)
--------------------------
-
-** Bug
-    * OGM-973 - build                - Do not ship an 'org.parboiled' WildFly module
-    * OGM-1039 - documentaion, neo4j  - Fix javadoc for embedded Neo4j transaction coordinators
-    * OGM-854 - neo4j                - Neo4j - *ToOne association not populated for entity returned from JP-QL or native NoSQL query
-
-** Improvement
-    * OGM-1018 - core, documentation  - hibernate-search-orm is not optional if you have Hibernate Search on the class path
-    * OGM-1017 - cassandra            - Cassandra should store java.math.BigDecimal as decimal
-    * OGM-899 - documentation        - Wrong OS Name
-    * OGM-860 -                      - Move DocumentHelpers to more sensible place
-    * OGM-1015 - build                - Publish WildFly modules using a slot reflecting the version of OGM
-
-** New Feature
-    * OGM-1046 - build, tests         - Tests in the package 'org.hibernate.ogm.backendtck.batchfetching' aren't committing the transaction
-    * OGM-1034 - neo4j                - Propagate changed property values to embedded nodes when updating an association
-    * OGM-1027 - mongodb              - Support BSON function calls in the MongoDB native parser
-    * OGM-1030 - build                - Upgrade to ORM 5.0.9
-    * OGM-1028 - core                 - Add more verbosity to exception thrown by OgmEntityEntryState#getStateFor()
-    * OGM-581 - query                - Support Query#setParameterList()
-
-** Sub-task
-    * OGM-991 - documentation        - Add a unit test to make sure the Getting Started Guide is having the right configuration
-    * OGM-921 - documentation        - Remove hint for adding JBoss repo
-
-** Task
-    * OGM-1013 - tests                - Add unit tests for ArrayHelper utility class
-    * OGM-1002 - build, tests         - Move integration tests in the same module
-    * OGM-1022 - documentation        - Improve documentation around MongoDB CLI syntax
-    * OGM-1048 -                      - Travis - Cassandra download URL is not stable
-    * OGM-1010 - documentation, tests - No longer require users to import the Hibernate Search modules
-    * OGM-1036 - build                - Upgrade to Hibernate Search 5.5.3.Final
-    * OGM-1037 - infinispan           - Upgrade to Infinispan 8.2.1.Final
-    * OGM-1009 - tests                - Minor resource leaks in integration tests
-    * OGM-713 - build, documentation - Remove mention of the full Object/Grid Mapper name in the documentation
-    * OGM-1050 -                      - Fix several typos in method names and comments
-    * OGM-1011 - core, mongodb        - Move ByteStringType to core and update name and javadoc
-    * OGM-888 - documentation        - Update reference documentation after migration to ORM 5
-    * OGM-990 - documentation        - The Getting Started Guide needs to be updated
-    * OGM-1021 - tests                - Add Travis support
-
 5.0.0.CR1 (29-03-2016)
 -------------------------
 
