@@ -36,6 +36,7 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 				.create( WebArchive.class, "modules-magic-searchit.war" )
 				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, SearchIntegrationIT.class, MagiccardsDatabaseScenario.class );
 		String persistenceXml = persistenceXml().exportAsString();
+		persistenceXml = ModulesHelper.injectVariables( persistenceXml );
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
 		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.infinispan:${hibernate-ogm.module.slot} services" );
 		return webArchive;
@@ -54,7 +55,8 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
 					.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
-					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up();
+					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
+					.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up();
 		return descriptor;
 	}
 

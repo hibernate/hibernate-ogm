@@ -70,6 +70,7 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 				.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
+				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
 				.up().up();
 	}
 

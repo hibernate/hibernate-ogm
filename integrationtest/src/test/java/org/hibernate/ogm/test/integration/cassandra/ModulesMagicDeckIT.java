@@ -43,6 +43,7 @@ public class ModulesMagicDeckIT extends MagiccardsDatabaseScenario {
 				.create( WebArchive.class, "modules-magic-cassandra.war" )
 				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, ModulesMagicDeckIT.class, MagiccardsDatabaseScenario.class );
 		String persistenceXml = persistenceXml().exportAsString();
+		persistenceXml = ModulesHelper.injectVariables( persistenceXml );
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
 		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.cassandra:${hibernate-ogm.module.slot} services" );
 		return webArchive;
@@ -61,7 +62,8 @@ public class ModulesMagicDeckIT extends MagiccardsDatabaseScenario {
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "cassandra_experimental" ).up()
-					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up();
+					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
+					.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up();
 
 		setCassandraHostName( properties );
 		setCassandraPort( properties );
