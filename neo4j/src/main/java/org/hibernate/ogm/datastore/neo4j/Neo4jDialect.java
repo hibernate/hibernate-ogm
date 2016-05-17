@@ -105,8 +105,6 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	private final GraphDatabaseService dataBase;
 
-	private SessionFactoryImplementor sessionFactory;
-
 	private Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries;
 
 	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries;
@@ -119,7 +117,6 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 	@Override
 	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
-		this.sessionFactory = sessionFactoryImplementor;
 		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
 		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
 	}
@@ -633,22 +630,28 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters) {
-		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
+		Map<String, Object> parameters = getParameters( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		Result result = dataBase.execute( nativeQuery, parameters );
 
 		EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
-
 		if ( entityMetadataInformation != null ) {
-			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( entityMetadataInformation.getTypeName() );
-			return new NodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), persister.getTupleContext() );
+			return new NodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
 		}
 		return new MapsTupleIterator( result );
 	}
 
+	private Map<String, Object> getParameters(QueryParameters queryParameters) {
+		Map<String, Object> parameters = new HashMap<>( queryParameters.getNamedParameters().size() );
+		for ( Entry<String, TypedGridValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
+			parameters.put( parameter.getKey(), parameter.getValue().getValue() );
+		}
+		return parameters;
+	}
+
 	@Override
-	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters) {
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
 		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
 		throw new UnsupportedOperationException("Not yet implemented.");
 	}
@@ -681,20 +684,6 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 		}
 	}
 
-	/**
-	 * Returns a map with the named parameter values from the given parameters object, converted by the {@link GridType}
-	 * corresponding to each parameter type.
-	 */
-	private Map<String, Object> getNamedParameterValuesConvertedByGridType(QueryParameters queryParameters) {
-		Map<String, Object> parameterValues = new HashMap<String, Object>( queryParameters.getNamedParameters().size() );
-
-		for ( Entry<String, TypedGridValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
-			GridType gridType = parameter.getValue().getType();
-			parameterValues.put( parameter.getKey(), gridType.convertToBackendType( parameter.getValue().getValue(), sessionFactory ) );
-		}
-
-		return parameterValues;
-	}
 
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {

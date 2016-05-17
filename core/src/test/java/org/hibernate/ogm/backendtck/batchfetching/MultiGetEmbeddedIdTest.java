@@ -9,27 +9,23 @@ package org.hibernate.ogm.backendtck.batchfetching;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.utils.EmptyOptionsContext;
+import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
@@ -46,12 +42,6 @@ import org.junit.Test;
 @SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.INFINISPAN, GridDialectType.EHCACHE, GridDialectType.REDIS_HASH })
 public class MultiGetEmbeddedIdTest extends OgmTestCase {
 
-	private static final Map<String, AssociatedEntityKeyMetadata> EMPTY_ASSOCIATION_METADATA = Collections.emptyMap();
-	private static final Map<String, String> EMPTY_ROLES = Collections.emptyMap();
-
-	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "id.name", "id.publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES,
-			EmptyOptionsContext.INSTANCE );
-
 	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[]{ "id.name", "id.publisher" } );
 
 	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ "none", "none" } );
@@ -66,8 +56,8 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
 
-				EntityKey[] keys = new EntityKey[]{ key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
-				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
 				assertThat( tuples.get( 0 ).get( "id.publisher" ) ).isEqualTo( SPLENDOR.getId().getPublisher() );
 				assertThat( tuples.get( 0 ).get( "id.name" ) ).isEqualTo( SPLENDOR.getId().getName() );
@@ -99,8 +89,8 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
 
-				EntityKey[] keys = new EntityKey[]{ NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
-				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
 				assertThat( tuples.get( 0 ) ).isNull();
 
@@ -125,8 +115,8 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
 
-				EntityKey[] keys = new EntityKey[]{ NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
-				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
 				assertThat( tuples ).containsExactly( null, null, null, null );
 				tx.commit();
@@ -170,6 +160,13 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 				throw e;
 			}
 		}
+	}
+
+	private TupleContext tupleContext(Session session) {
+		return new GridDialectOperationContexts.TupleContextBuilder()
+				.selectableColumns( METADATA.getColumnNames() )
+				.transactionContext( session )
+				.buildTupleContext();
 	}
 
 	private void delete(OgmSession session, BoardGame boardGame) {

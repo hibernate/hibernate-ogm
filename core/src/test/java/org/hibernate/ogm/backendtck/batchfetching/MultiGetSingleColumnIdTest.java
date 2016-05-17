@@ -9,26 +9,22 @@ package org.hibernate.ogm.backendtck.batchfetching;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.utils.EmptyOptionsContext;
+import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
@@ -45,11 +41,7 @@ import org.junit.Test;
 @SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.INFINISPAN, GridDialectType.EHCACHE, GridDialectType.REDIS_HASH })
 public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
-	private static final Map<String, AssociatedEntityKeyMetadata> EMPTY_ASSOCIATION_METADATA = Collections.emptyMap();
-	private static final Map<String, String> EMPTY_ROLES = Collections.emptyMap();
-
-	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "name", "publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES, EmptyOptionsContext.INSTANCE );
-	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[]{ "id" } );
+	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "id" } );
 
 	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ -666 } );
 
@@ -64,8 +56,8 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
 
-				EntityKey[] keys = new EntityKey[]{ key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
-				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
 				assertThat( tuples.get( 0 ).get( "id" ) ).isEqualTo( SPLENDOR.getId() );
 				assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
@@ -92,8 +84,8 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
 
-				EntityKey[] keys = new EntityKey[]{ NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
-				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
 				assertThat( tuples.get( 0 ) ).isNull();
 
@@ -119,8 +111,8 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 			try {
 				MultigetGridDialect dialect = multiGetGridDialect();
 
-				EntityKey[] keys = new EntityKey[]{ NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
-				List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
 				assertThat( tuples ).containsExactly( null, null, null, null );
 
@@ -131,6 +123,13 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 				throw e;
 			}
 		}
+	}
+
+	private TupleContext tupleContext(Session session) {
+		return new GridDialectOperationContexts.TupleContextBuilder()
+				.selectableColumns( "name", "publisher" )
+				.transactionContext( session )
+				.buildTupleContext();
 	}
 
 	private EntityKey key(BoardGame boardGame) {
