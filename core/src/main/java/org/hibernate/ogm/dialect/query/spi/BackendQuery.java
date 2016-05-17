@@ -11,7 +11,7 @@ import org.hibernate.ogm.util.Experimental;
 
 /**
  * Represents a NoSQL query as to be executed via
- * {@link QueryableGridDialect#executeBackendQuery(BackendQuery, QueryParameters)}.
+ * {@link QueryableGridDialect#executeBackendQuery(BackendQuery, QueryParameters, TupleContext)}
  * <p>
  * The wrapped query object generally represents the query in the native form supported by a given datastore, e.g. a
  * String in a native query syntax or an object-based query representation such as the {@code DBObject}-based query

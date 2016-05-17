@@ -139,8 +139,8 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TupleContext tupleContext) {
 		log.tracef( "Executing backend query: %1$s", query.getQuery() );
-		return super.executeBackendQuery( query, queryParameters );
+		return super.executeBackendQuery( query, queryParameters, tupleContext );
 	}
 }

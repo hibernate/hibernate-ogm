@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.hibernatecore.impl;
 
+import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,6 +27,7 @@ import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
@@ -83,7 +86,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator, session.getFactory() ) );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -171,6 +174,7 @@ public class BackendCustomLoader extends CustomLoader {
 	 * @author Gunnar Morling
 	 */
 	private static class BackendCustomLoaderContext<T extends Serializable> {
+
 		private final QueryableGridDialect<T> gridDialect;
 		private final BackendQuery<T> query;
 
@@ -178,12 +182,12 @@ public class BackendCustomLoader extends CustomLoader {
 			this.gridDialect = gridDialect;
 			this.query = new BackendQuery<T>(
 					customQuery.getQueryObject(),
-					customQuery.getSingleEntityMetadataInformationOrNull()
-			);
+					customQuery.getSingleEntityMetadataInformationOrNull() );
 		}
 
-		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
-			return gridDialect.executeBackendQuery( query, queryParameters );
+		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters) {
+			TupleContext tupleContext = tupleContext( session, query.getSingleEntityMetadataInformationOrNull() );
+			return gridDialect.executeBackendQuery( query, queryParameters, tupleContext );
 		}
 	}
 }

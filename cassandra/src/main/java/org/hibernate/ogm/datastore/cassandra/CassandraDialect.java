@@ -490,7 +490,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(
-			BackendQuery<String> query, QueryParameters queryParameters) {
+			BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
 
 		Object[] parameters = new Object[queryParameters.getPositionalParameters().size()];
 		int i = 0;
@@ -521,7 +521,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters) {
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
 		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
 		throw new UnsupportedOperationException("Not yet implemented.");
 	}

@@ -29,6 +29,13 @@ public interface TupleContext {
 	OptionsContext getOptionsContext();
 
 	/**
+	 * Provides the information related to the transactional boundaries the query can be executed
+	 *
+	 * @return a transaction context containing information about the current running transaction, or null
+	 */
+	TransactionContext getTransactionContext();
+
+	/**
 	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of
 	 * the complete document/record. If the dialect supports the embedded storage of element collections and
 	 * associations, the respective columns will be part of the returned list as well.

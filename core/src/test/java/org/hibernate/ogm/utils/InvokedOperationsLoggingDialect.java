@@ -166,8 +166,8 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
-		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters, tupleContext );
 		log( "executeBackendQuery", query.toString() + ", " + queryParameters.toString(), "tbd." );
 		return result;
 	}
