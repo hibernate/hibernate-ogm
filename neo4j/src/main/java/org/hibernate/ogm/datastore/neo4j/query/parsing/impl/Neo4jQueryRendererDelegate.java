@@ -212,7 +212,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		}
 		else {
 			final List<String> associationPath = propertyHelper.findAssociationPath( targetTypeName, pathWithoutAlias );
-			// Currently, it is possible to nest only one association inside an emebedded
+			// Currently, it is possible to nest only one association inside an embedded
 			if ( associationPath != null ) {
 				List<String> nextPath = new ArrayList<String>( associationPath.size() + 1 );
 				int next = associationPath.size();
@@ -270,7 +270,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	}
 
 
-	// TODO Methods below were not required here if fromNamedQuery() could be overidden from super
+	// TODO Methods below were not required here if fromNamedQuery() could be overridden from super
 
 	@Override
 	public void predicateLess(String comparativePredicate) {

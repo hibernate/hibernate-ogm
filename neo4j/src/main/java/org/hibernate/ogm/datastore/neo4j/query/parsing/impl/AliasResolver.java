@@ -49,7 +49,7 @@ public class AliasResolver {
 	 *
 	 * @param entityAlias the alias of the entity that contains the embedded
 	 * @param propertyPathWithoutAlias the path to the property without the alias
-	 * @param optionalMatch if true, the alias does not represetn a required match in the query (It will appear in the OPTIONAL MATCH clause)
+	 * @param optionalMatch if true, the alias does not represent a required match in the query (It will appear in the OPTIONAL MATCH clause)
 	 * @return the alias of the embedded containing the property
 	 */
 	public String createAliasForEmbedded(String entityAlias, List<String> propertyPathWithoutAlias, boolean optionalMatch) {
@@ -130,7 +130,7 @@ public class AliasResolver {
 	/**
 	 * Tells if the alias has to be used in the OPTIONAL MATCH part of the query.
 	 *
-	 * @param alias the alis to check
+	 * @param alias the alias to check
 	 * @return {@code true} if the alias should be used in OPTIONAL MATCH part of the query, {@code false} otherwise
 	 */
 	public boolean isOptionalMatch(String alias) {

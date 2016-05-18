@@ -153,7 +153,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 	 * Check if the path to the property correspond to an association.
 	 *
 	 * @param targetTypeName the name of the entity containing the property
-	 * @param pathWithoutAlias the path to the property WIHTOUT aliases
+	 * @param pathWithoutAlias the path to the property WITHOUT aliases
 	 * @return {@code true} if the property is an association or {@code false} otherwise
 	 */
 	public boolean isAssociation(String targetTypeName, List<String> pathWithoutAlias) {
