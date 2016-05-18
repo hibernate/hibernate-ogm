@@ -277,11 +277,11 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>1.8</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9</version>
+                    <version>2.10.3</version>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -291,31 +291,31 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>2.5</version>
+                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>2.5.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.6</version>
+                    <version>2.7</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.3.1</version>
+                    <version>1.4.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-checkstyle-plugin</artifactId>
@@ -362,7 +362,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-archetype-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>2.4</version>
                     <executions>
                         <execution>
                             <id>generate-archetype-install</id>
@@ -391,7 +391,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>animal-sniffer-maven-plugin</artifactId>
-                    <version>1.11</version>
+                    <version>1.15</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.ow2.asm</groupId>
@@ -409,7 +409,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.18.1</version>
+                    <version>2.19.1</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <systemPropertyVariables>
@@ -422,7 +422,7 @@
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>1.5.2</version>
+                    <version>1.5.3</version>
                 </plugin>
                 <!-- Process the docbook xml -->
                 <plugin>
@@ -446,7 +446,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>2.6</version>
                     <configuration>
                         <descriptors>
                             <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
@@ -465,7 +465,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.1</version>
+                    <version>2.5.3</version>
                     <configuration>
                         <goals>deploy</goals>
                         <preparationGoals>clean install</preparationGoals>
@@ -485,7 +485,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>2.2.1</version>
+                    <version>3.0.0</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -506,7 +506,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.18.1</version>
+                    <version>2.19.1</version>
                 </plugin>
                 <!-- Unpack test from hibernate-ogm-core to re-run them on each other module database integration -->
                 <plugin>
@@ -517,7 +517,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.9.1</version>
+                    <version>1.10</version>
                 </plugin>
                 <plugin>
                     <!-- This plugin's configuration is used in m2e only. -->
@@ -600,7 +600,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
-                    <version>1.3</version>
+                    <version>1.4</version>
                     <executions>
                         <execution>
                             <phase>validate</phase>
@@ -618,7 +618,7 @@
                 <plugin>
                     <groupId>com.github.joelittlejohn.embedmongo</groupId>
                     <artifactId>embedmongo-maven-plugin</artifactId>
-                    <version>0.1.13</version>
+                    <version>0.3.4</version>
                     <configuration>
                         <port>${embeddedMongoDbPort}</port>
                         <logging>file</logging>
@@ -626,14 +626,6 @@
                         <bindIp>${embeddedMongoDbBindIp}</bindIp>
                         <version>${embeddedMongoDbVersion}</version>
                     </configuration>
-                    <dependencies>
-                        <!-- Using the latest version so the plug-in can run with JDK 9 -->
-                        <dependency>
-                            <groupId>de.flapdoodle.embed</groupId>
-                            <artifactId>de.flapdoodle.embed.mongo</artifactId>
-                            <version>1.48.0</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmaven</groupId>
@@ -649,7 +641,7 @@
                     <!-- Creates a report by running "mvn clirr:clirr" -->
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>clirr-maven-plugin</artifactId>
-                    <version>2.6.1</version>
+                    <version>2.7</version>
                     <configuration>
                         <comparisonVersion>4.2.0.Final</comparisonVersion>
                         <excludes>
