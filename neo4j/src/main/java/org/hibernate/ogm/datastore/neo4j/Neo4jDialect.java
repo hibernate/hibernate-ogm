@@ -687,11 +687,10 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 	 */
 	private Map<String, Object> getNamedParameterValuesConvertedByGridType(QueryParameters queryParameters) {
 		Map<String, Object> parameterValues = new HashMap<String, Object>( queryParameters.getNamedParameters().size() );
-		Tuple dummy = new Tuple();
 
 		for ( Entry<String, TypedGridValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
-			parameter.getValue().getType().nullSafeSet( dummy, parameter.getValue().getValue(), new String[]{ parameter.getKey() }, null );
-			parameterValues.put( parameter.getKey(), dummy.get( parameter.getKey() ) );
+			GridType gridType = parameter.getValue().getType();
+			parameterValues.put( parameter.getKey(), gridType.convertToBackendType( parameter.getValue().getValue(), sessionFactory ) );
 		}
 
 		return parameterValues;
