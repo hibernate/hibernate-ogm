@@ -8,6 +8,7 @@ package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -186,4 +187,13 @@ public interface GridDialect extends Service {
 	 * same primary key
 	 */
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
+
+	/**
+	 * If IndexSpec are to be found in the {@link org.hibernate.ogm.datastore.spi.SchemaDefiner.SchemaDefinitionContext}
+	 * once validated, the {@link org.hibernate.ogm.datastore.spi.BaseSchemaDefiner} will trigger this to create the
+	 * associated Index in the datastore.
+	 *
+	 * @param indexSpec the datastore index specifications
+	 */
+	void createIndex(OgmIndexSpec indexSpec);
 }

@@ -6,10 +6,16 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.mapping.Index;
+import org.hibernate.mapping.Table;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -17,15 +23,21 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.EntityPersister;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Performs sanity checks of the mapped objects.
  *
  * @author Gunnar Morling
  * @author Sanne Grinovero
+ * @author Francois Le Droff
  */
 public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
+	private List<IndexSpec> indexSpecs;
 
 	@Override
 	public void validateMapping(SchemaDefinitionContext context) {
@@ -33,6 +45,49 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 		validateEntityCollectionNames( context.getAllEntityKeyMetadata() );
 		validateAssociationNames( context.getAllAssociationKeyMetadata() );
 		validateAllPersisters( context.getSessionFactory().getEntityPersisters().values() );
+		validateIndexSpecs( context );
+	}
+
+	@Override
+	public void initializeSchema( SchemaDefinitionContext context) {
+		for ( IndexSpec indexSpec : indexSpecs ) {
+			OgmDialect ogmDialect = (OgmDialect) context.getSessionFactory()
+					.getDialect();
+			ogmDialect.getGridDialect().createIndex( indexSpec );
+		}
+	}
+
+	private void validateIndexSpecs( SchemaDefinitionContext context ) {
+		indexSpecs = new ArrayList<>();
+		Database database = context.getDatabase();
+		for ( Table table : database.getDefaultNamespace().getTables() ) {
+			Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
+			while ( keys.hasNext() ) {
+				IndexSpec indexSpec = new IndexSpec( keys.next() );
+				if ( validateIndexSpec( indexSpec ) ) {
+					indexSpecs.add( indexSpec );
+				}
+			}
+			Iterator<Index> indexes = table.getIndexIterator();
+			while ( indexes.hasNext() ) {
+				IndexSpec indexSpec = new IndexSpec( indexes.next() );
+				validateIndexSpec( indexSpec );
+				if ( validateIndexSpec( indexSpec ) ) {
+					indexSpecs.add( indexSpec );
+				}
+			}
+		}
+	}
+
+	private boolean validateIndexSpec(IndexSpec indexSpec) {
+		if ( indexSpec.getIndexKeys().keySet().isEmpty() ) { //XXX more validation
+			log.error( "No valid IndexKeys found in indexSpec on collection " + indexSpec.getCollection() );
+			//XXX this is happening in org.hibernate.ogm.datastore.mongodb.test.associations.AssociationCompositeKeyMongoDBFormatTest.testOrderedListAndCompositeId()
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {

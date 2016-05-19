@@ -42,6 +42,7 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.index.IndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
@@ -78,6 +79,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -110,6 +112,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
@@ -1233,6 +1236,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
+
+	@Override
+	public void createIndex(OgmIndexSpec ogmIndexSpec) {
+		try {
+			IndexSpec indexSpec = (IndexSpec) ogmIndexSpec;
+			getCollection( indexSpec.getCollection()).createIndex( indexSpec.getIndexKeys(), indexSpec.getIndexOptions() );
+		}
+		catch (MongoException e) {
+			// XXX process mongo error code e.getCode()
+			throw new RuntimeException( e );
+		}
+	}
+
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
 		DBCollection collection = getCollection( entityKey );
