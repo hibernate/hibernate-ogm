@@ -18,10 +18,10 @@ import org.neo4j.graphdb.Transaction;
 
 /**
  * A {@link TransactionCoordinator} for Neo4j to join a JTA transaction.
- *
- * Note that during a JTA transaction Neo4j {@link Transaction} are
- * synchronized using the {@link Synchronization} interface. A commit to the Neo4j transaction will happen before the
- * end of the JTA transaction, meaning that it won't be possible to rollback if an error happens after a successful commit
+ * <p>
+ * Note that Neo4j {@link Transaction}s are synchronized using the {@link Synchronization} interface.
+ * A commit to the Neo4j transaction will happen before the end of the JTA transaction,
+ * meaning that it won't be possible to rollback if an error happens after a successful commit
  * to the db.
  *
  * @author Davide D'Alto
@@ -29,10 +29,10 @@ import org.neo4j.graphdb.Transaction;
 public class Neo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
 
 	private final GraphDatabaseService graphDB;
-	private Transaction tx = null;
+	private Transaction tx;
 
-	public Neo4jJtaTransactionCoordinator(TransactionCoordinator delegate, Neo4jDatastoreProvider graphDb) {
-		super( delegate );
+	public Neo4jJtaTransactionCoordinator(TransactionCoordinator jtaDelegate, Neo4jDatastoreProvider graphDb) {
+		super( jtaDelegate );
 		this.graphDB = graphDb.getDataBase();
 	}
 
@@ -49,32 +49,9 @@ public class Neo4jJtaTransactionCoordinator extends ForwardingTransactionCoordin
 	}
 
 	private void join() {
-		if ( tx == null && delegate.isActive() ) {
+		if ( tx == null && isActive() ) {
 			tx = graphDB.beginTx();
-			delegate.getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization() );
-		}
-	}
-
-	private void success() {
-		if ( tx != null ) {
-			tx.success();
-			close();
-		}
-	}
-
-	private void failure() {
-		if ( tx != null ) {
-			tx.failure();
-			close();
-		}
-	}
-
-	private void close() {
-		try {
-			tx.close();
-		}
-		finally {
-			tx = null;
+			getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization() );
 		}
 	}
 
@@ -100,6 +77,29 @@ public class Neo4jJtaTransactionCoordinator extends ForwardingTransactionCoordin
 				else {
 					success();
 				}
+			}
+		}
+
+		private void success() {
+			if ( tx != null ) {
+				tx.success();
+				close();
+			}
+		}
+
+		private void failure() {
+			if ( tx != null ) {
+				tx.failure();
+				close();
+			}
+		}
+
+		private void close() {
+			try {
+				tx.close();
+			}
+			finally {
+				tx = null;
 			}
 		}
 	}
