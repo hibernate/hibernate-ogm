@@ -261,10 +261,10 @@
         <profile>
             <id>fongo</id>
             <activation>
-                 <property>
-                     <name>mongodbProvider</name>
-                     <value>fongo</value>
-                 </property>
+                <property>
+                    <name>mongodbProvider</name>
+                    <value>fongo</value>
+                </property>
             </activation>
             <properties>
                 <datastoreProvider>fongo</datastoreProvider>
@@ -282,10 +282,10 @@
         <profile>
             <id>external-mongodb</id>
             <activation>
-                 <property>
-                     <name>mongodbProvider</name>
-                     <value>external</value>
-                 </property>
+                <property>
+                    <name>mongodbProvider</name>
+                    <value>external</value>
+                </property>
             </activation>
             <properties>
                 <datastoreProvider>mongodb</datastoreProvider>
