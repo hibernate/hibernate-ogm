@@ -415,6 +415,7 @@
                         <systemPropertyVariables>
                            <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
                            <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                           <user.timezone>UTC</user.timezone>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
