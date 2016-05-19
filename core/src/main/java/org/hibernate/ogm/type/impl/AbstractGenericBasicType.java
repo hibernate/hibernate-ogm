@@ -250,6 +250,13 @@ public abstract class AbstractGenericBasicType<T>
 		}
 	}
 
+	@Override
+	public Object convertToBackendType(Object value, SessionFactoryImplementor sessionFactory) {
+		Tuple tuple = new Tuple();
+		nullSafeSet( tuple, value, new String[] { "dummy" }, (SessionImplementor) null );
+		return tuple.get( "dummy" );
+	}
+
 //	public void set(PreparedStatement st, T value, int index, SessionImplementor session) throws HibernateException, SQLException {
 //		nullSafeSet( st, value, index, session );
 //	}
