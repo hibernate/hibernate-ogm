@@ -27,9 +27,9 @@ public class Neo4jProcessingChain implements AstProcessingChain<Neo4jQueryParsin
 	private final Neo4jQueryRendererDelegate rendererDelegate;
 
 	public Neo4jProcessingChain(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNamesResolver, Map<String, Object> namedParameters) {
-		AliasResolver aliasResolver = new AliasResolver();
+		Neo4jAliasResolver aliasResolver = new Neo4jAliasResolver();
 		Neo4jQueryResolverDelegate resolverDelegate = new Neo4jQueryResolverDelegate( aliasResolver );
-		Neo4jPropertyHelper propertyHelper = new Neo4jPropertyHelper( sessionFactory, entityNamesResolver );
+		Neo4jPropertyHelper propertyHelper = new Neo4jPropertyHelper( sessionFactory, entityNamesResolver, aliasResolver );
 		this.rendererDelegate = new Neo4jQueryRendererDelegate( sessionFactory, aliasResolver, entityNamesResolver, propertyHelper, namedParameters );
 		this.rendererProcessor = new QueryRendererProcessor( rendererDelegate );
 		this.resolverProcessor = new QueryResolverProcessor( resolverDelegate );

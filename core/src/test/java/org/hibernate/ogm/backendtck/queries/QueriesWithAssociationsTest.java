@@ -12,9 +12,9 @@ import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
 import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
+import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author Guillaume Smet
  */
 @SkipByGridDialect(
-		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, NEO4J },
+		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH },
 		comment = "We need a QueryParserService to be able to perform these queries.")
 public class QueriesWithAssociationsTest extends JpaTestCase {
 
@@ -84,6 +84,51 @@ public class QueriesWithAssociationsTest extends JpaTestCase {
 		assertThat( hypothesis ).onProperty( "author" ).containsOnly( alma, alfred );
 
 
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	@SkipByGridDialect(
+			value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, MONGODB },
+			comment = "We need to be able to join on associations. Currently, only the Neo4j dialect supports it.")
+	public void testGetWithJoinOnAssociations() throws Exception {
+		Author alma = (Author) em.createQuery( "FROM Author WHERE name = :name" )
+				.setParameter( "name", "alma" )
+				.getSingleResult();
+
+		Author alfred = (Author) em.createQuery( "FROM Author WHERE name = :name" )
+				.setParameter( "name", "alfred" )
+				.getSingleResult();
+
+		Address garibaldiStreet = em.find( Address.class, 2L );
+
+		List<Hypothesis> hypothesis;
+
+		hypothesis = em.createQuery( "FROM Hypothesis WHERE author.name = :authorName" )
+				.setParameter( "authorName", alma.getName() )
+				.getResultList();
+
+		assertThat( hypothesis.size() ).isEqualTo( 1 );
+		assertThat( hypothesis ).onProperty( "author" ).containsOnly( alma );
+
+		hypothesis = em.createQuery( "FROM Hypothesis WHERE author.address = :address" )
+				.setParameter( "address", garibaldiStreet )
+				.getResultList();
+
+		assertThat( hypothesis.size() ).isEqualTo( 1 );
+		assertThat( hypothesis ).onProperty( "author" ).containsOnly( alma );
+
+		hypothesis = em.createQuery( "FROM Hypothesis WHERE author.address.city = :city ORDER BY author.address.city" )
+				.setParameter( "city", "London" )
+				.getResultList();
+
+		assertThat( hypothesis.size() ).isEqualTo( 1 );
+		assertThat( hypothesis ).onProperty( "author" ).containsOnly( alfred );
+
+		hypothesis = em.createQuery( "FROM Hypothesis ORDER BY author.name DESC, id ASC" )
+				.getResultList();
+
+		assertThat( hypothesis ).onProperty( "id" ).containsExactly( "13", "15", "14", "16" );
 	}
 
 	@Before

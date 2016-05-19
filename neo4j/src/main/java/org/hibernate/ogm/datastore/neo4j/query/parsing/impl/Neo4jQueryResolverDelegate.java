@@ -31,11 +31,11 @@ public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 	private final Map<String, String> entityNameByAlias = new HashMap<String, String>();
 	private final Map<String, PropertyPath> propertyPathByAlias = new HashMap<String, PropertyPath>();
 
-	private final AliasResolver aliasResolver;
+	private final Neo4jAliasResolver aliasResolver;
 
 	private String currentAlias;
 
-	public Neo4jQueryResolverDelegate(AliasResolver aliasResolver) {
+	public Neo4jQueryResolverDelegate(Neo4jAliasResolver aliasResolver) {
 		this.aliasResolver = aliasResolver;
 	}
 
