@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate;
-import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
 import org.hibernate.hql.ast.spi.predicate.ConjunctionPredicate;
 import org.hibernate.hql.ast.spi.predicate.DisjunctionPredicate;
 import org.hibernate.hql.ast.spi.predicate.InPredicate;
@@ -20,22 +19,22 @@ import org.hibernate.hql.ast.spi.predicate.NegationPredicate;
 import org.hibernate.hql.ast.spi.predicate.PredicateFactory;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.AliasResolver;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jAliasResolver;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jPropertyHelper;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryParameter;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.PropertyIdentifier;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ * @author Guillaume Smet
  */
 public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	private final Neo4jPropertyHelper propertyHelper;
-	private final AliasResolver aliasResolver;
 	private final StringBuilder builder;
 
-	public Neo4jPredicateFactory(Neo4jPropertyHelper propertyHelper, AliasResolver embeddedAliasResolver) {
+	public Neo4jPredicateFactory(Neo4jPropertyHelper propertyHelper) {
 		this.propertyHelper = propertyHelper;
-		this.aliasResolver = embeddedAliasResolver;
 		this.builder = new StringBuilder();
 	}
 
@@ -45,11 +44,13 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	}
 
 	@Override
-	public ComparisonPredicate<StringBuilder> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
-		Object neo4jValue = value instanceof Neo4jQueryParameter ? value : propertyHelper.convertToLiteral( entityType, propertyPath, value );
-		String columnName = columnName( entityType, propertyPath );
-		String alias = alias( entityType, propertyPath );
-		return new Neo4jComparisonPredicate( builder, alias, columnName, comparisonType, neo4jValue );
+	public ComparisonPredicate<StringBuilder> getComparisonPredicate(String entityType, ComparisonPredicate.Type comparisonType,
+			List<String> propertyPath, Object value) {
+		Object neo4jValue = value instanceof Neo4jQueryParameter ? value : propertyHelper.convertToBackendType( entityType, propertyPath, value );
+
+		PropertyIdentifier columnIdentifier = getPropertyIdentifier( entityType, propertyPath );
+
+		return new Neo4jComparisonPredicate( builder, columnIdentifier.getAlias(), columnIdentifier.getPropertyName(), comparisonType, neo4jValue );
 	}
 
 	@Override
@@ -64,22 +65,20 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	@Override
 	public InPredicate<StringBuilder> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
-		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType, propertyPath );
+		PropertyIdentifier columnIdentifier = getPropertyIdentifier( entityType, propertyPath );
 		List<Object> gridTypedElements = new ArrayList<Object>( typedElements.size() );
 		for ( Object typedElement : typedElements ) {
-			gridTypedElements.add( propertyHelper.convertToLiteral( entityType, propertyPath, typedElement ) );
+			gridTypedElements.add( propertyHelper.convertToBackendType( entityType, propertyPath, typedElement ) );
 		}
-		return new Neo4jInPredicate( builder, alias, propertyName, gridTypedElements );
+		return new Neo4jInPredicate( builder, columnIdentifier.getAlias(), columnIdentifier.getPropertyName(), gridTypedElements );
 	}
 
 	@Override
 	public RangePredicate<StringBuilder> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
-		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType, propertyPath );
-		Object neo4jLowerValue = lowerValue instanceof Neo4jQueryParameter ? lowerValue : propertyHelper.convertToLiteral( entityType, propertyPath, lowerValue );
-		Object neo4jUpperValue = upperValue instanceof Neo4jQueryParameter ? upperValue : propertyHelper.convertToLiteral( entityType, propertyPath, upperValue );
-		return new Neo4jRangePredicate( builder, alias, propertyName, neo4jLowerValue, neo4jUpperValue );
+		PropertyIdentifier columnIdentifier = getPropertyIdentifier( entityType, propertyPath );
+		Object neo4jLowerValue = lowerValue instanceof Neo4jQueryParameter ? lowerValue : propertyHelper.convertToBackendType( entityType, propertyPath, lowerValue );
+		Object neo4jUpperValue = upperValue instanceof Neo4jQueryParameter ? upperValue : propertyHelper.convertToBackendType( entityType, propertyPath, upperValue );
+		return new Neo4jRangePredicate( builder, columnIdentifier.getAlias(), columnIdentifier.getPropertyName(), neo4jLowerValue, neo4jUpperValue );
 	}
 
 	@Override
@@ -89,27 +88,30 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	@Override
 	public LikePredicate<StringBuilder> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
-		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType, propertyPath );
-		return new Neo4jLikePredicate( builder, alias, propertyName, patternValue, escapeCharacter );
+		PropertyIdentifier columnIdentifier = getPropertyIdentifier( entityType, propertyPath );
+		return new Neo4jLikePredicate( builder, columnIdentifier.getAlias(), columnIdentifier.getPropertyName(), patternValue, escapeCharacter );
 	}
 
 	@Override
 	public IsNullPredicate<StringBuilder> getIsNullPredicate(String entityType, List<String> propertyPath) {
-		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType, propertyPath );
-		return new Neo4jIsNullPredicate( builder, alias, propertyName );
+		PropertyIdentifier columnIdentifier = getPropertyIdentifier( entityType, propertyPath );
+		return new Neo4jIsNullPredicate( builder, columnIdentifier.getAlias(), columnIdentifier.getPropertyName() );
 	}
 
-	private String columnName(String entityType, List<String> propertyPath) {
-		return propertyHelper.getColumnName( entityType, propertyPath );
+	/**
+	 * Returns the {@link PropertyIdentifier} corresponding to this property based on information provided by the {@link Neo4jAliasResolver}.
+	 *
+	 * Note that all the path is required as in the current implementation, the WHERE clause is appended before the OPTIONAL MATCH clauses
+	 * so we need all the aliases referenced in the predicates in the MATCH clause. While it's definitely a limitation of the current implementation
+	 * it's not really easy to do differently because the OPTIONAL MATCH clauses have to be executed on the filtered nodes and relationships
+	 * and we don't have an easy way to know which predicates we should include in the MATCH clause.
+	 *
+	 * @param entityType the type of the entity
+	 * @param propertyPath the path to the property without aliases
+	 * @return the corresponding {@link PropertyIdentifier}
+	 */
+	private PropertyIdentifier getPropertyIdentifier(String entityType, List<String> propertyPath) {
+		return propertyHelper.getPropertyIdentifier( entityType, propertyPath, propertyPath.size() );
 	}
 
-	private String alias(String entityType, List<String> propertyPath) {
-		String targetEntityAlias = aliasResolver.findAliasForType( entityType );
-		if ( propertyHelper.isEmbeddedProperty( entityType, propertyPath ) && !propertyHelper.isIdProperty( entityType, propertyPath ) ) {
-			return aliasResolver.createAliasForEmbedded( targetEntityAlias, propertyPath, false );
-		}
-		return targetEntityAlias;
-	}
 }
