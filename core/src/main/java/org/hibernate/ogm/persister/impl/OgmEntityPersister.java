@@ -23,7 +23,7 @@ import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.bytecode.instrumentation.spi.LazyPropertyInitializer;
+import org.hibernate.bytecode.enhance.spi.LazyPropertyInitializer;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.cache.spi.entry.CacheEntry;
@@ -607,6 +607,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	public Object initializeLazyProperty(String fieldName, Object entity, SessionImplementor session)
 			throws HibernateException {
 
+		if ( true ) {
+			throw new RuntimeException( "BOOM" );
+		}
+
 		final Serializable id = session.getContextEntityIdentifier( entity );
 
 		final EntityEntry entry = session.getPersistenceContext().getEntry( entity );
@@ -627,10 +631,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Object ce = getCacheAccessStrategy().get( session, cacheKey, session.getTimestamp() );
 			if ( ce != null ) {
 				CacheEntry cacheEntry = (CacheEntry) getCacheEntryStructure().destructure( ce, getFactory() );
-				if ( !cacheEntry.areLazyPropertiesUnfetched() ) {
-					// note early exit here:
-					return initializeLazyPropertiesFromCache( fieldName, entity, session, entry, cacheEntry );
-				}
+				final Object initializedValue = initializeLazyPropertiesFromCache( fieldName, entity, session, entry, cacheEntry );
+
+				// NOTE EARLY EXIT!!!
+				return initializedValue;
 			}
 		}
 

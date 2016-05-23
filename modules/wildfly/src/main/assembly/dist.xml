@@ -119,6 +119,30 @@
             <outputDirectory>/org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
+
+        <!-- ORM 5.1 -->
+        <file>
+            <source>${module.xml.basedir}/org/hibernate/module.xml</source>
+            <outputDirectory>/org/hibernate/${hibernate-orm.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${module.xml.basedir}/org/hibernate/infinispan/module.xml</source>
+            <outputDirectory>/org/hibernate/infinispan/${hibernate-orm.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+
+        <!-- HSEARCH 5.5 using ORM 5.1 -->
+        <file>
+            <source>${module.xml.basedir}/org/hibernate/search/orm/module.xml</source>
+            <outputDirectory>/org/hibernate/search/orm/${hibernate-search.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${module.xml.aliases.basedir}/org/hibernate/search/engine/module.xml</source>
+            <outputDirectory>/org/hibernate/search/engine/${hibernate-search.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
     </files>
 
     <dependencySets>

@@ -1135,7 +1135,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 		//FIXME figure out what that means and what value should be set
 		//boolean eagerPropertyFetch = isEagerPropertyFetchEnabled(i);
-		boolean eagerPropertyFetch = true;
+		boolean fetchAllPropertiesRequested = true;
 
 		// add temp entry so that the next step is circular-reference
 		// safe - only needed because some types don't take proper
@@ -1145,7 +1145,6 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				object,
 				persister,
 				lockMode,
-				!eagerPropertyFetch,
 				session
 		);
 
@@ -1161,7 +1160,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				object,
 				rootPersister,
 				//cols,
-				eagerPropertyFetch,
+				fetchAllPropertiesRequested,
 				session
 			);
 
@@ -1201,7 +1200,6 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				rowId,
 				object,
 				lockMode,
-				!eagerPropertyFetch,
 				session
 			);
 

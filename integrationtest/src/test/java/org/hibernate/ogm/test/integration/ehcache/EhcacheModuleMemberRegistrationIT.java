@@ -45,6 +45,7 @@ public class EhcacheModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "ehcache" ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
+					.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
 				.up().up();
 	}
 

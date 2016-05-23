@@ -82,6 +82,11 @@
             <artifactId>hibernate-envers</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-java8</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- This is to satisfy Neo4J's custom Lucene,
           not to be confused with the one used by Hibernate Search -->
         <dependency>
