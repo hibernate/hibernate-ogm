@@ -15,7 +15,6 @@ import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.test.integration.redis.model.PhoneNumber;
 import org.hibernate.ogm.test.integration.redis.service.PhoneNumberService;
 import org.hibernate.ogm.test.integration.testcase.ModuleMemberRegistrationScenario;
-import org.hibernate.ogm.test.integration.testcase.model.Member;
 import org.hibernate.ogm.test.integration.testcase.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -56,8 +55,6 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.createPersistenceUnit()
 				.name( "primary" )
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
-				.clazz( Member.class.getName() )
-				.clazz( PhoneNumber.class.getName() )
 				.getOrCreateProperties();
 
 		if ( RedisTestProperties.getPassword() != null ) {
@@ -68,8 +65,6 @@ public class RedisModuleMemberRegistrationIT extends ModuleMemberRegistrationSce
 				.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( Redis.DATASTORE_PROVIDER_NAME ).up()
 				.createProperty().name( OgmProperties.DATABASE ).value( "0" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
-				.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 				.up().up();
 	}
 

@@ -76,9 +76,6 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.createPersistenceUnit()
 				.name( "primary" )
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
-				.clazz( Member.class.getName() )
-				.clazz( PhoneNumber.class.getName() )
-				.clazz( EmailAddress.class.getName() )
 				.getOrCreateProperties();
 		if ( isNotNull( host ) ) {
 			propertiesContext.createProperty().name( OgmProperties.HOST ).value( host );
@@ -98,8 +95,6 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 					.createProperty().name( OgmProperties.CREATE_DATABASE ).value( "true" ).up()
 					.createProperty().name( OgmProperties.ERROR_HANDLER ).value( TestErrorHandler.class.getName() ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-					.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
-					.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 				.up().up();
 	}
 

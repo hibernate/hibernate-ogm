@@ -11,17 +11,16 @@ import static org.junit.Assert.assertTrue;
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
 import org.hibernate.ogm.datastore.redis.RedisProperties;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.test.integration.redis.model.PhoneNumber;
 import org.hibernate.ogm.test.integration.redis.service.PhoneNumberService;
 import org.hibernate.ogm.test.integration.testcase.ModuleMemberRegistrationScenario;
-import org.hibernate.ogm.test.integration.testcase.model.Member;
 import org.hibernate.ogm.test.integration.testcase.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -68,8 +67,6 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 				.createPersistenceUnit()
 				.name( "primary" )
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
-				.clazz( Member.class.getName() )
-				.clazz( PhoneNumber.class.getName() )
 				.getOrCreateProperties();
 
 		if ( RedisTestProperties.getPassword() != null ) {
@@ -81,8 +78,6 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 				.createProperty().name( OgmProperties.DATABASE ).value( "0" ).up()
 				.createProperty().name( RedisProperties.TTL ).value( "3600" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
-				.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 				.up().up();
 	}
 
@@ -109,9 +104,9 @@ public class RedisModuleMemberRegistrationWithTTLConfiguredIT extends ModuleMemb
 
 	private RedisDatastoreProvider getProvider() {
 
-		OgmEntityManagerFactory ogmEntityManagerFactory = (OgmEntityManagerFactory) entityManagerFactory;
+		SessionFactoryImplementor sessionFactory = entityManagerFactory.unwrap( SessionFactoryImplementor.class );
 
-		DatastoreProvider provider = ogmEntityManagerFactory.getSessionFactory().getServiceRegistry().getService(
+		DatastoreProvider provider = sessionFactory.getServiceRegistry().getService(
 				DatastoreProvider.class
 		);
 		if ( !( RedisDatastoreProvider.class.isInstance( provider ) ) ) {

@@ -54,7 +54,6 @@ public class Neo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistration
 				.name( "primary" )
 				.transactionType( PersistenceUnitTransactionType._JTA )
 				.provider( HibernateOgmPersistence.class.getName() )
-				.clazz( Member.class.getName() )
 				.getOrCreateProperties();
 		PersistenceDescriptor persistenceDescriptor = propertiesContext
 				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.DATASTORE_PROVIDER_NAME ).up()
@@ -63,8 +62,6 @@ public class Neo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistration
 				.value( neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
-				.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}

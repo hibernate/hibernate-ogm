@@ -7,7 +7,6 @@
 package org.hibernate.ogm.test.integration.infinispan;
 
 import org.hibernate.ogm.test.integration.testcase.ModuleMemberRegistrationScenario;
-import org.hibernate.ogm.test.integration.testcase.model.Member;
 import org.hibernate.ogm.test.integration.testcase.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -40,12 +39,10 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 			.createPersistenceUnit()
 				.name( "primary" )
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
-				.clazz( Member.class.getName() ).getOrCreateProperties()
-				.createProperty().name( "jboss.as.jpa.providerModule" ).value( "application" ).up()
+				.getOrCreateProperties()
 				.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
 				.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-				.createProperty().name( "hibernate.transaction.jta.platform" ).value( "JBossAS" ).up()
 			.up().up();
 	}
 
