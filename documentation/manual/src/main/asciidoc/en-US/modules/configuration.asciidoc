@@ -160,7 +160,7 @@ The property is `hibernate.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
 http://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
-For example in WildFly 10 use `JBossAS`.
+For example in WildFly 10 you would pick `JBossAS`, although in WildFly these settings are automatically injected so you could skip this.
 
 In your [filename]`persistence.xml` you usually need to define an existing datasource.
 This is not needed by Hibernate OGM: it will ignore the datasource, but JPA specification mandates the setting.
@@ -395,16 +395,6 @@ https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly do
 ==== Configure your persistence.xml to use your choice of persistence provider
 
 WildFly will by default attempt to guess which Persistence Provider you need by having a look at the `provider` section of the `persistence.xml`.
-
-While this works fine in most cases, unfortunately WildFly 10 in the case of Hibernate OGM will attempt to inject an outdated module identifier so you have to disable this.
-
-Set the following property in your `persistence.xml` to make sure you will be using the Persistence Provider which you already provided as a module,
-as described in the previous section.
-
-[source]
-----
-<property name="jboss.as.jpa.providerModule" value="application" />
-----
 
 
 ==== Enabling both the Hibernate Search and Hibernate OGM modules
