@@ -31,6 +31,7 @@
         <module>couchdb</module>
         <module>cassandra</module>
         <module>redis</module>
+        <module>jipijapa</module>
         <module>modules</module>
         <module>performance</module>
     </modules>
@@ -69,6 +70,9 @@
         <hibernate-search.module.slot>main</hibernate-search.module.slot>
         <!-- Following might not match the slot, for example when 'main' is being used. Needed in docs URL rendering. -->
         <hibernate-search-major-minor-version>5.5</hibernate-search-major-minor-version>
+
+        <!-- Target version of WildFly (for testing and JipiJapa integration) -->
+        <version.wildfly>10.0.0.Final</version.wildfly>
     </properties>
 
     <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are

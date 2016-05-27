@@ -25,6 +25,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>${module.xml.basedir}/ogm/jipijapa/module.xml</source>
+            <outputDirectory>/org/hibernate/ogm/jipijapa/${hibernate.ogm.jipijapa.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.basedir}/ogm/ehcache/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/ehcache/${hibernate.ogm.ehcache.module.slot}</outputDirectory>
              <filtered>true</filtered>
@@ -130,6 +135,15 @@
             <unpack>false</unpack>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-core</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/hibernate/ogm/jipijapa/${hibernate.ogm.jipijapa.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-jipijapa</include>
             </includes>
         </dependencySet>
         <dependencySet>

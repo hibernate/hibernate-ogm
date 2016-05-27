@@ -19,6 +19,8 @@
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
 
+        <module name="org.hibernate.ogm.jipijapa" slot="${hibernate.ogm.jipijapa.module.slot}" services="import" />
+
         <!-- Needed for Iso8601StringDateType -->
         <module name="javax.xml.bind.api"/>
     </dependencies>

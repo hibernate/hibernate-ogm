@@ -24,6 +24,7 @@
         <module.xml.aliases.basedir>${basedir}/src/main/aliases</module.xml.aliases.basedir>
         <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
         <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
+        <hibernate.ogm.jipijapa.module.slot>${project.version}</hibernate.ogm.jipijapa.module.slot>
         <hibernate.ogm.ehcache.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.infinispan.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan.module.slot>
         <hibernate.ogm.cassandra.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.cassandra.module.slot>
