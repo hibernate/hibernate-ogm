@@ -68,9 +68,7 @@ public class OperationsQueue {
 
 	public Operation poll() {
 		validate();
-		Operation operation = operations.poll();
-		entityKeys.remove( operation );
-		return operation;
+		return operations.poll();
 	}
 
 	public void clear() {
