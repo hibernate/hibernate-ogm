@@ -70,12 +70,12 @@ class EventStateLifecycles {
 		}
 
 		@Override
-		public void onFinish(OperationsQueue state, SessionImplementor session) {
+		public void onFinish(OperationsQueue operationsQueue, SessionImplementor session) {
 			GridDialect gridDialect = session.getFactory()
 					.getServiceRegistry()
 					.getService( GridDialect.class );
 
-			GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class ).executeBatch();
+			GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class ).executeBatch( operationsQueue );
 		}
 	}
 }

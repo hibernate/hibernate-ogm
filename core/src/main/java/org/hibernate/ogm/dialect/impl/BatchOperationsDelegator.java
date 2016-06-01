@@ -65,11 +65,12 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		}
 	}
 
-	public void executeBatch() {
+	@Override
+	public void executeBatch(OperationsQueue operationsQueue) {
 		log.tracef( "Executing batch" );
 
 		try {
-			super.executeBatch( getOperationQueue() );
+			super.executeBatch( operationsQueue );
 		}
 		catch ( TupleAlreadyExistsException taee ) {
 			// TODO: Ideally, we should log the entity name + id here; For now we trust the datastore to provide this
