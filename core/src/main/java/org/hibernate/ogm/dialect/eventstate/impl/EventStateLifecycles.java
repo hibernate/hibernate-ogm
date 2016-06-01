@@ -76,6 +76,7 @@ class EventStateLifecycles {
 					.getService( GridDialect.class );
 
 			GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class ).executeBatch( operationsQueue );
+			operationsQueue.close();
 		}
 	}
 }

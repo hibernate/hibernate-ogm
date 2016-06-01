@@ -121,8 +121,6 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"getAssociation",
 				"getTuple",
 				"getAssociation",
-				"removeAssociation",
-				"removeTuple",
 				"executeBatch"
 				);
 	}

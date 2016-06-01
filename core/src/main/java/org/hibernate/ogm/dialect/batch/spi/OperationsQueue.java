@@ -73,9 +73,13 @@ public class OperationsQueue {
 		return operation;
 	}
 
-	public void close() {
+	public void clear() {
 		entityKeys.clear();
 		operations.clear();
+	}
+
+	public void close() {
+		clear();
 		closed = true;
 	}
 

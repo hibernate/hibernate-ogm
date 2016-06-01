@@ -1173,7 +1173,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			for ( MongoDBTupleSnapshot insertSnapshot : insertSnapshots ) {
 				insertSnapshot.setSnapshotType( UPDATE );
 			}
-			queue.close();
+			queue.clear();
 		}
 	}
 
