@@ -58,4 +58,18 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = WARN)
 	@Message(id = 1409, value = "Join type %1$s is not fully supported with Neo4j")
 	void joinTypeNotFullySupported(JoinType joinType);
+
+	@Message(id = 1410, value = "Error performing isolated work")
+	HibernateException unableToPerformIsolatedWork(@Cause Exception e);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1411, value = "Cannot join transaction using a non-JTA entity manager.")
+	void callingJoinTransactionOnNonJtaEntityManager();
+
+	@Message(id = 1412, value = "Neo4j cannot execute work outside an isolated transaction.")
+	HibernateException cannotExecuteWorkOutsideIsolatedTransaction();
+
+	@LogMessage(level = WARN)
+	@Message(id = 1413, value = "Unable to rollback transaction")
+	void unableToRollbackConnection(@Cause Exception e);
 }
