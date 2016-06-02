@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
@@ -26,9 +27,10 @@ public class TypedGridValue {
 		this.value = value;
 	}
 
-	public static TypedGridValue fromOrmTypedValue(TypedValue typedValue, TypeTranslator typeTranslator) {
+	public static TypedGridValue fromOrmTypedValue(TypedValue typedValue, TypeTranslator typeTranslator, SessionFactoryImplementor factory) {
 		GridType gridType = typeTranslator.getType( typedValue.getType() );
-		return new TypedGridValue( gridType, typedValue.getValue() );
+		Object backendValue = gridType.convertToBackendType( typedValue.getValue(), factory );
+		return new TypedGridValue( gridType, backendValue );
 	}
 
 	public GridType getType() {

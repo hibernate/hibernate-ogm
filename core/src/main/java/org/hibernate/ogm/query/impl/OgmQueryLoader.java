@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.query.impl;
 
+import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -67,7 +69,7 @@ public class OgmQueryLoader extends QueryLoader {
 	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
 			throws HibernateException {
 
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator ) );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator, session.getFactory() ) );
 		try {
 			if ( hasScalars ) {
 				return listOfArrays( session, tuples );
@@ -143,8 +145,8 @@ public class OgmQueryLoader extends QueryLoader {
 			this.query = query;
 		}
 
-		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
-			return gridDialect.executeBackendQuery( query, queryParameters );
+		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters) {
+			return gridDialect.executeBackendQuery( query, queryParameters, tupleContext( session, query.getSingleEntityMetadataInformationOrNull() ) );
 		}
 	}
 }
