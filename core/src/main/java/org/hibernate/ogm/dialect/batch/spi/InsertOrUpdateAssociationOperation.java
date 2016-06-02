@@ -8,6 +8,7 @@ package org.hibernate.ogm.dialect.batch.spi;
 
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
 
 /**
@@ -15,7 +16,7 @@ import org.hibernate.ogm.model.spi.Association;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class InsertOrUpdateAssociationOperation implements Operation {
+public class InsertOrUpdateAssociationOperation implements GroupableEntityOperation {
 
 	private final Association association;
 	private final AssociationKey associationKey;
@@ -37,6 +38,23 @@ public class InsertOrUpdateAssociationOperation implements Operation {
 
 	public AssociationContext getContext() {
 		return context;
+	}
+
+	@Override
+	public EntityKey getEntityKey() {
+		return getAssociationKey().getEntityKey();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append( getClass().getSimpleName() );
+		sb.append( "[" );
+		sb.append( getEntityKey() );
+		sb.append( ", collectionRole=" );
+		sb.append( getAssociationKey().getMetadata().getCollectionRole() );
+		sb.append( "]" );
+		return sb.toString();
 	}
 
 }

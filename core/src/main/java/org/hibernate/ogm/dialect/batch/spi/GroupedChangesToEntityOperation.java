@@ -6,38 +6,40 @@
  */
 package org.hibernate.ogm.dialect.batch.spi;
 
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import java.util.LinkedList;
+import java.util.Queue;
+
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.spi.Tuple;
 
 /**
- * Contains the data required to update a tuple
+ * Wrapper grouping all the update operations for a given entity.
  *
- * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ * @author Guillaume Smet
  */
-public class InsertOrUpdateTupleOperation implements GroupableEntityOperation {
+public class GroupedChangesToEntityOperation implements Operation {
 
-	private final Tuple tuple;
 	private final EntityKey entityKey;
-	private final TupleContext tupleContext;
 
-	public InsertOrUpdateTupleOperation(Tuple tuple, EntityKey entityKey, TupleContext tupleContext) {
-		this.tuple = tuple;
+	private final Queue<Operation> operations = new LinkedList<>();
+
+	public GroupedChangesToEntityOperation(EntityKey entityKey) {
 		this.entityKey = entityKey;
-		this.tupleContext = tupleContext;
 	}
 
-	public Tuple getTuple() {
-		return tuple;
-	}
-
-	@Override
 	public EntityKey getEntityKey() {
 		return entityKey;
 	}
 
-	public TupleContext getTupleContext() {
-		return tupleContext;
+	public void addOperation(Operation operation) {
+		operations.add( operation );
+	}
+
+	public Queue<Operation> getOperations() {
+		return operations;
+	}
+
+	public void clear() {
+		operations.clear();
 	}
 
 	@Override
