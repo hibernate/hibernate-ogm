@@ -83,4 +83,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1417, value = "%s: %s")
 	HibernateException constraintCreationException(String code, String message);
+
+	@Message(id = 1418, value = "Missing sequence: %s")
+	HibernateException sequenceNotFound(String sequenceName);
 }
