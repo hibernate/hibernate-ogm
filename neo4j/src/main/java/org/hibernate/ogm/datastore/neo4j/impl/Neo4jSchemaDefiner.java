@@ -68,7 +68,7 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
 
 		createSequences( context.getDatabase(), context.getAllIdSourceKeyMetadata(), provider );
-		createEntityConstraints( provider.getDataBase(), context.getDatabase(), sessionFactoryImplementor.getProperties() );
+		createEntityConstraints( provider.getDatabase(), context.getDatabase(), sessionFactoryImplementor.getProperties() );
 	}
 
 	private void createSequences(Database database, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata, Neo4jDatastoreProvider provider) {
