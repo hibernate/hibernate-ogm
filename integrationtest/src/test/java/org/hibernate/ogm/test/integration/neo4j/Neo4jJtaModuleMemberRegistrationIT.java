@@ -72,7 +72,7 @@ public class Neo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistration
 			properties.load( propertiesStrem );
 		}
 		String buildDirectory = properties.getProperty( "build.directory" );
-		return buildDirectory + File.separator + "NEO4J-DB" + File.separator + System.currentTimeMillis();
+		return buildDirectory + File.separator + "NEO4J_DB" + File.separator + System.currentTimeMillis();
 	}
 
 	@Override

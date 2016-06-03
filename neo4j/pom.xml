@@ -156,4 +156,25 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- Executes the tests against an embedded Neo4j -->
+        <profile>
+            <id>neo4j-embedded</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <datastoreProvider>neo4j_embedded</datastoreProvider>
+            </properties>
+        </profile>
+    
+        <!-- Executes the tests against a separately started Neo4j server -->
+        <profile>
+            <id>neo4j-remote</id>
+            <properties>
+                <datastoreProvider>neo4j_remote</datastoreProvider>
+            </properties>
+        </profile>
+    </profiles>
 </project>
