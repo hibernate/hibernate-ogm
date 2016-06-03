@@ -111,7 +111,7 @@ public class Neo4jDialect extends BaseGridDialect implements MultigetGridDialect
 
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
-		dataBase = provider.getDataBase();
+		dataBase = provider.getDatabase();
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
 	}
 
