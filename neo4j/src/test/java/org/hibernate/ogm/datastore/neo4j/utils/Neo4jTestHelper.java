@@ -62,7 +62,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
+		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDatabase();
 		ResourceIterator<Long> result = graphDb.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
 		Long count = result.next();
 		result.close();
@@ -71,7 +71,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDataBase();
+		GraphDatabaseService graphDb = getProvider( sessionFactory ).getDatabase();
 		ResourceIterator<Long> result = graphDb.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
 		Long count = result.next();
 		result.close();

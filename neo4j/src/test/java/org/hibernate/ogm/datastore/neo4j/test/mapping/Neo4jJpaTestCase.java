@@ -61,7 +61,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 	protected GraphDatabaseService createExecutionEngine() {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) getFactory() ).getSessionFactory();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
-		return provider.getDataBase();
+		return provider.getDatabase();
 	}
 
 	private Long executeCount(String queryString) throws Exception {
