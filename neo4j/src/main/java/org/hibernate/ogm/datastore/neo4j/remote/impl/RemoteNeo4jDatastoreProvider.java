@@ -8,6 +8,8 @@ package org.hibernate.ogm.datastore.neo4j.remote.impl;
 
 import java.util.Map;
 
+import javax.ws.rs.core.Response;
+
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -33,6 +35,8 @@ import org.hibernate.service.spi.Stoppable;
  * @author Davide D'Alto
  */
 public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
+
+	private static final int OK = 200;
 
 	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
 
@@ -82,6 +86,7 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 		if ( remoteNeo4j == null ) {
 			try {
 				remoteNeo4j = createNeo4jClient( getDatabaseIdentifier(), configuration );
+				validateCredentials( remoteNeo4j, configuration );
 				sequenceGenerator = new RemoteNeo4jSequenceGenerator( remoteNeo4j, sequenceCacheMaxSize );
 			}
 			catch (HibernateException e) {
@@ -89,6 +94,13 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 				// Otherwise a generic unable to request service is thrown
 				throw logger.unableToStartDatastoreProvider( e );
 			}
+		}
+	}
+
+	private void validateCredentials(Neo4jClient client, Neo4jConfiguration configuration) {
+		Response response = client.authenticate( configuration.getUsername() );
+		if ( response.getStatus() != OK ) {
+			throw logger.authenticationFailed( String.valueOf( configuration.getHosts() ), response.getStatus(), response.getStatusInfo().getReasonPhrase() );
 		}
 	}
 
