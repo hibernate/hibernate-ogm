@@ -54,8 +54,10 @@ public class Hosts implements Iterable<Hosts.HostAndPort> {
 
 	@Override
 	public String toString() {
+		final String COMMA = ", ";
 		StringBuilder toString = new StringBuilder();
-		for (HostAndPort hostAndPort : hostsAndPorts) {
+		for ( HostAndPort hostAndPort : hostsAndPorts ) {
+			toString.append( COMMA );
 			String host = hostAndPort.getHost();
 			// add square brackets for IPv6
 			boolean matches = LIKELY_IPV6.matcher( host ).matches();
@@ -66,9 +68,13 @@ public class Hosts implements Iterable<Hosts.HostAndPort> {
 			if ( matches ) {
 				toString.append( "]" );
 			}
-			toString.append( ":" ).append( hostAndPort.getPort() ).append( ", " );
+			toString.append( ":" ).append( hostAndPort.getPort() );
 		}
-		return toString.toString();
+		String string = toString.toString();
+		if ( string.startsWith( COMMA ) ) {
+			return string.substring( COMMA.length() );
+		}
+		return string;
 	}
 
 	@Override
