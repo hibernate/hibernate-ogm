@@ -304,18 +304,13 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
 
-		storeEntity( key, entityDocument, optionsContext, operations );
+		storeEntity( key, entityDocument, optionsContext );
 	}
 
-	private void storeEntity(
-			EntityKey key,
-			Entity document,
-			OptionsContext optionsContext,
-			Set<TupleOperation> operations) {
-
+	private void storeEntity(EntityKey key, Entity entity, OptionsContext optionsContext) {
 		Long currentTtl = connection.pttl( entityId( key ) );
 
-		entityStorageStrategy.storeEntity( entityId( key ), document, operations );
+		entityStorageStrategy.storeEntity( entityId( key ), entity );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
 	}
@@ -323,11 +318,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
 		Long currentTtl = connection.pttl( entityId( key ) );
 
-		entityStorageStrategy.storeEntity(
-				entityId( key ),
-				entity,
-				null
-		);
+		entityStorageStrategy.storeEntity( entityId( key ), entity );
 
 		setEntityTTL( key, currentTtl, getTTL( associationContext ) );
 		return entity;
