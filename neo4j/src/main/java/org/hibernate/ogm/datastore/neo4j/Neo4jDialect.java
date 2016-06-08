@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.EmbeddedNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
@@ -28,7 +29,6 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
@@ -92,7 +92,7 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries;
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
-		super( Neo4jTypeConverter.FOR_EMBEDDED );
+		super( EmbeddedNeo4jTypeConverter.INSTANCE );
 		this.dataBase = provider.getDatabase();
 		this.sequenceGenerator = provider.getSequenceGenerator();
 	}
