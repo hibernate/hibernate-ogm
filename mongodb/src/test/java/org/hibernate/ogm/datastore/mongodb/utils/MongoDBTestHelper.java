@@ -276,7 +276,22 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		assertJsonEquals( expectedDbObject, actual.toString() );
 	}
 
-	private static void assertJsonEquals(String expectedJson, String actualJson) {
+	public static Map<String, DBObject> getIndexes(OgmSessionFactory sessionFactory, String collection) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		List<DBObject> indexes = provider.getDatabase().getCollection( collection ).getIndexInfo();
+		Map<String, DBObject> indexMap = new HashMap<>();
+		for (DBObject index : indexes) {
+			indexMap.put( index.get( "name" ).toString(), index );
+		}
+		return indexMap;
+	}
+
+	public static void dropIndexes(OgmSessionFactory sessionFactory, String collection) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		provider.getDatabase().getCollection( collection ).dropIndexes();
+	}
+
+	public static void assertJsonEquals(String expectedJson, String actualJson) {
 		try {
 			JSONCompareResult result = JSONCompare.compareJSON( expectedJson, actualJson, JSONCompareMode.NON_EXTENSIBLE );
 

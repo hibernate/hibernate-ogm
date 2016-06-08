@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.mongodb.logging.impl;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.ERROR;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -101,4 +102,28 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1228, value = "Query must be executed using 'getResultList()' or 'getSingleResult()' method: %s")
 	HibernateException readQueryMustBeExecutedViaGetResultList(MongoDBQueryDescriptor queryDescriptor);
+
+	@Message(id = 1229, value = "Unable to create index %2$s on collection %1$s")
+	HibernateException unableToCreateIndex(String collection, String indexName, @Cause Exception e);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1230, value = "Unable to create text index %2$s on collection %1$s. A text index named %3$s already exists and MongoDB only supports one text index per collection.")
+	void unableToCreateTextIndex(String collection, String newIndexName, String existingIndexName);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1231, value = "Cannot create an index with an empty name for collection %1$s. Please provide a name for all the indexes.")
+	void indexNameIsEmpty(String collection);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1232, value = "No valid keys found for the index %2$s in collection %1$s.")
+	void noValidKeysForIndex(String collection, String indexName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1233, value = "Index options for index %2$s in collection %1$s are referencing a non existing index.")
+	void indexOptionsReferencingNonExistingIndex(String collection, String forIndex);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1234, value = "%3$s is not a valid MongoDB document for index %2$s of collection %1$s")
+	void invalidMongoDBDocumentForOptionKey(String collection, String indexName, String optionKey);
+
 }
