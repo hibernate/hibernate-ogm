@@ -29,7 +29,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
@@ -107,7 +107,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	private long getNumberOfEntities(Session session, DatastoreProvider provider) {
 		if ( isRemote( provider ) ) {
-			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDatabase();
+			RemoteNeo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDatabase();
 			Statement statement = new Statement( ENTITY_COUNT_QUERY );
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			return readCountFromResponse( session, remoteNeo4j, statement );
@@ -135,7 +135,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	private long getNumberOfAssociations(Session session, BaseDatastoreProvider provider) {
 		if ( isRemote( provider ) ) {
-			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDatabase();
+			RemoteNeo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDatabase();
 			Statement statement = new Statement( ASSOCIATION_COUNT_QUERY );
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			return readCountFromResponse( session, remoteNeo4j, statement );
@@ -149,7 +149,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		}
 	}
 
-	private long readCountFromResponse(Session session, Neo4jClient remoteNeo4j, Statement statement) {
+	private long readCountFromResponse(Session session, RemoteNeo4jClient remoteNeo4j, Statement statement) {
 		Statements statements = new Statements();
 		statements.addStatement( statement );
 		StatementsResponse response = null;
@@ -216,7 +216,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	public static void deleteAllElements(DatastoreProvider provider) {
 		if ( isRemote( provider ) ) {
-			Neo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDatabase();
+			RemoteNeo4jClient remoteNeo4j = ( (RemoteNeo4jDatastoreProvider) provider ).getDatabase();
 			Statement statement = new Statement( DELETE_ALL );
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			Statements statements = new Statements();

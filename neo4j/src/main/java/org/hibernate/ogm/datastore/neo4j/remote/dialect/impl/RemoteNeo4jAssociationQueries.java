@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.AssociationQueries;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Relationship;
@@ -36,11 +36,11 @@ public class RemoteNeo4jAssociationQueries extends AssociationQueries {
 		super( ownerEntityKeyMetadata, associationKeyMetadata );
 	}
 
-	public void removeAssociation(Neo4jClient dataBase, Long txId, AssociationKey associationKey) {
+	public void removeAssociation(RemoteNeo4jClient dataBase, Long txId, AssociationKey associationKey) {
 		executeQuery( dataBase, txId, removeAssociationQuery, params( associationKey.getEntityKey().getColumnValues() ) );
 	}
 
-	public Relationship findRelationship(Neo4jClient dataBase, Long txId, AssociationKey associationKey, RowKey rowKey) {
+	public Relationship findRelationship(RemoteNeo4jClient dataBase, Long txId, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues = relationshipValues( associationKey, rowKey );
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
 		Graph result = executeQuery( dataBase, txId, findRelationshipQuery, params( queryValues ) );
@@ -52,7 +52,7 @@ public class RemoteNeo4jAssociationQueries extends AssociationQueries {
 		return null;
 	}
 
-	public Relationship createRelationshipForEmbeddedAssociation(Neo4jClient executionEngine, Long txId, AssociationKey associationKey, EntityKey embeddedKey,
+	public Relationship createRelationshipForEmbeddedAssociation(RemoteNeo4jClient executionEngine, Long txId, AssociationKey associationKey, EntityKey embeddedKey,
 			Object[] relationshipProperties) {
 		String query = initCreateEmbeddedAssociationQuery( associationKey, embeddedKey );
 		Object[] queryValues = createRelationshipForEmbeddedQueryValues( associationKey, embeddedKey, relationshipProperties );
@@ -61,20 +61,20 @@ public class RemoteNeo4jAssociationQueries extends AssociationQueries {
 		return result.getRelationships().get( 0 );
 	}
 
-	public Relationship createRelationship(Neo4jClient dataBase, Long txId, Object[] ownerKeyValues, Object[] targetKeyValues, Object[] relationshipProperties) {
+	public Relationship createRelationship(RemoteNeo4jClient dataBase, Long txId, Object[] ownerKeyValues, Object[] targetKeyValues, Object[] relationshipProperties) {
 		Object[] concat = ArrayHelper.concat( Arrays.asList( ownerKeyValues, targetKeyValues, relationshipProperties ) );
 		Map<String, Object> params = params( concat );
 		Graph result = executeQuery( dataBase, txId, createRelationshipQuery, params );
 		return result.getRelationships().get( 0 );
 	}
 
-	public void removeAssociationRow(Neo4jClient database, Long txId, AssociationKey associationKey, RowKey rowKey) {
+	public void removeAssociationRow(RemoteNeo4jClient database, Long txId, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues = relationshipValues( associationKey, rowKey );
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
 		executeQuery( database, txId, removeAssociationRowQuery, params( queryValues ) );
 	}
 
-	private static Graph executeQuery(Neo4jClient executionEngine, Long txId, String query, Map<String, Object> properties) {
+	private static Graph executeQuery(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties) {
 		Statements statements = new Statements();
 		statements.addStatement( query, properties );
 		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( txId, statements );

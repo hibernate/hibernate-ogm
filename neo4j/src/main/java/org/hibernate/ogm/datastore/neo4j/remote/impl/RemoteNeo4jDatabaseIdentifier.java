@@ -17,7 +17,7 @@ import java.net.URL;
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class DatabaseIdentifier {
+public class RemoteNeo4jDatabaseIdentifier {
 
 	private static final String PROTOCOL = "http";
 	private static final String SLASH = "/";
@@ -31,7 +31,7 @@ public class DatabaseIdentifier {
 	private final URI serverUri;
 	private final URI databaseUri;
 
-	public DatabaseIdentifier(String host, int port, String databaseName, String userName, String password) throws MalformedURLException, URISyntaxException {
+	public RemoteNeo4jDatabaseIdentifier(String host, int port, String databaseName, String userName, String password) throws MalformedURLException, URISyntaxException {
 		this.host = host;
 		this.port = port;
 		this.databaseName = databaseName;
@@ -87,7 +87,7 @@ public class DatabaseIdentifier {
 
 	@Override
 	public String toString() {
-		return "DatabaseIdentifier [host=" + host + ", port=" + port + ", databaseName=" + databaseName + ", userName=" + userName + ", password=***"
+		return "RemoteNeo4jDatabaseIdentifier [host=" + host + ", port=" + port + ", databaseName=" + databaseName + ", userName=" + userName + ", password=***"
 				+ ", serverUri=" + serverUri + ", databaseUri=" + databaseUri + "]";
 	}
 }

@@ -15,7 +15,7 @@ import java.util.Set;
 
 import org.fest.assertions.Fail;
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
@@ -37,7 +37,7 @@ public class GraphAssertions {
 		return new NodeForGraphAssertions( alias, labels);
 	}
 
-	public static void assertThatExists(Neo4jClient engine, NodeForGraphAssertions node) throws Exception {
+	public static void assertThatExists(RemoteNeo4jClient engine, NodeForGraphAssertions node) throws Exception {
 		String nodeAsCypher = node.toCypher();
 		String query = "MATCH " + nodeAsCypher + " RETURN " + node.getAlias();
 		Statements statements = new Statements();
@@ -119,7 +119,7 @@ public class GraphAssertions {
 		}
 	}
 
-	public static void assertThatExists(Neo4jClient engine, RelationshipsChainForGraphAssertions relationship) throws Exception {
+	public static void assertThatExists(RemoteNeo4jClient engine, RelationshipsChainForGraphAssertions relationship) throws Exception {
 		String relationshipAsCypher = relationship.toCypher();
 		NodeForGraphAssertions node = relationship.getStart();
 		String query = "MATCH " + relationshipAsCypher + " RETURN " + node.getAlias();

@@ -44,9 +44,9 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 
 	private Integer sequenceCacheMaxSize;
 
-	private Neo4jConfiguration configuration;
+	private RemoteNeo4jConfiguration configuration;
 
-	private Neo4jClient remoteNeo4j;
+	private RemoteNeo4jClient remoteNeo4j;
 
 	private RemoteNeo4jSequenceGenerator sequenceGenerator;
 
@@ -66,7 +66,7 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 
 	@Override
 	public void configure(Map configurationValues) {
-		configuration = new Neo4jConfiguration( new ConfigurationPropertyReader( configurationValues ) );
+		configuration = new RemoteNeo4jConfiguration( new ConfigurationPropertyReader( configurationValues ) );
 		sequenceCacheMaxSize = new ConfigurationPropertyReader( configurationValues )
 				.property( Neo4jProperties.SEQUENCE_QUERY_CACHE_MAX_SIZE, int.class )
 				.withDefault( DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE )
@@ -97,7 +97,7 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 		}
 	}
 
-	private void validateCredentials(Neo4jClient client, Neo4jConfiguration configuration) {
+	private void validateCredentials(RemoteNeo4jClient client, RemoteNeo4jConfiguration configuration) {
 		Response response = client.authenticate( configuration.getUsername() );
 		if ( response.getStatus() != OK ) {
 			throw logger.authenticationFailed( String.valueOf( configuration.getHosts() ), response.getStatus(), response.getStatusInfo().getReasonPhrase() );
@@ -105,14 +105,14 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 	}
 
 	/**
-	 * Creates the {@link Neo4jClient} that it is going to be used to connect to a remote Neo4j server.
+	 * Creates the {@link RemoteNeo4jClient} that it is going to be used to connect to a remote Neo4j server.
 	 *
 	 * @param database the connection properties to identify a database
 	 * @param configuration all the configuration properties
 	 * @return a client that can access a Neo4j server
 	 */
-	public Neo4jClient createNeo4jClient(DatabaseIdentifier database, Neo4jConfiguration configuration) {
-		return new Neo4jClient( getDatabaseIdentifier(), configuration );
+	public RemoteNeo4jClient createNeo4jClient(RemoteNeo4jDatabaseIdentifier database, RemoteNeo4jConfiguration configuration) {
+		return new RemoteNeo4jClient( getDatabaseIdentifier(), configuration );
 	}
 
 	@Override
@@ -122,17 +122,17 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 	}
 
 	// Note that it's called getDatabase() for consistency with the other Neo4j provider
-	public Neo4jClient getDatabase() {
+	public RemoteNeo4jClient getDatabase() {
 		return remoteNeo4j;
 	}
 
-	private DatabaseIdentifier getDatabaseIdentifier() {
+	private RemoteNeo4jDatabaseIdentifier getDatabaseIdentifier() {
 		if ( !configuration.getHosts().isSingleHost() ) {
 			logger.doesNotSupportMultipleHosts( configuration.getHosts().toString() );
 		}
 		Hosts.HostAndPort hostAndPort = configuration.getHosts().getFirst();
 		try {
-			return new DatabaseIdentifier( hostAndPort.getHost(), hostAndPort.getPort(), configuration.getDatabaseName(), configuration.getUsername(),
+			return new RemoteNeo4jDatabaseIdentifier( hostAndPort.getHost(), hostAndPort.getPort(), configuration.getDatabaseName(), configuration.getUsername(),
 					configuration.getPassword() );
 		}
 		catch (Exception e) {

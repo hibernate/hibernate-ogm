@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public interface Neo4jAuthenticationFacade {
+public interface RemoteNeo4jAuthenticationFacade {
 
 	@GET
 	@Path("/user/{username}")

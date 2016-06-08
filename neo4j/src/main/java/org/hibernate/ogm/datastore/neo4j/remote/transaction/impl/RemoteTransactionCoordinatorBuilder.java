@@ -30,10 +30,10 @@ public class RemoteTransactionCoordinatorBuilder extends ForwardingTransactionCo
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, TransactionCoordinatorOptions options) {
 		if ( isJta() ) {
 			TransactionCoordinator coordinator = super.buildTransactionCoordinator( owner, options );
-			return new RemoteJtaTransactionCoordinator( coordinator, datastoreProvider );
+			return new RemoteNeo4jJtaTransactionCoordinator( coordinator, datastoreProvider );
 		}
 		else {
-			return new RemoteResourceLocalTransactionCoordinator( this, owner, datastoreProvider );
+			return new RemoteNeo4jResourceLocalTransactionCoordinator( this, owner, datastoreProvider );
 		}
 	}
 }

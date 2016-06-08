@@ -20,7 +20,7 @@ import org.hibernate.jdbc.WorkExecutor;
 import org.hibernate.jdbc.WorkExecutorVisitable;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
@@ -37,7 +37,7 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
  *
  * @author Davide D'Alto
  */
-public class RemoteResourceLocalTransactionCoordinator implements TransactionCoordinator {
+public class RemoteNeo4jResourceLocalTransactionCoordinator implements TransactionCoordinator {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -54,12 +54,12 @@ public class RemoteResourceLocalTransactionCoordinator implements TransactionCoo
 	private RemoteNeo4jDatastoreProvider provider;
 
 	/**
-	 * Construct a {@link RemoteResourceLocalTransactionCoordinator} instance. package-protected to ensure access goes through
+	 * Construct a {@link RemoteNeo4jResourceLocalTransactionCoordinator} instance. package-protected to ensure access goes through
 	 * builder.
 	 *
 	 * @param owner The transactionCoordinatorOwner
 	 */
-	RemoteResourceLocalTransactionCoordinator(
+	RemoteNeo4jResourceLocalTransactionCoordinator(
 			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
 			TransactionCoordinatorOwner owner,
 			RemoteNeo4jDatastoreProvider provider) {
@@ -121,12 +121,12 @@ public class RemoteResourceLocalTransactionCoordinator implements TransactionCoo
 
 		@Override
 		public <T> T delegateWork(WorkExecutorVisitable<T> work, boolean transacted) throws HibernateException {
-			Transaction tx = null;
+			RemoteNeo4jTransaction tx = null;
 			try {
 				if ( !transacted ) {
 					log.cannotExecuteWorkOutsideIsolatedTransaction();
 				}
-				Neo4jClient dataBase = provider.getDatabase();
+				RemoteNeo4jClient dataBase = provider.getDatabase();
 				tx = dataBase.beginTx();
 				// Neo4j does not have a connection object, I'm not sure what it is best to do in this case.
 				// In this scenario I expect the visitable object to already have a way to connect to the db.
@@ -240,9 +240,9 @@ public class RemoteResourceLocalTransactionCoordinator implements TransactionCoo
 	 */
 	public class Neo4jTransactionDriver implements IdentifiableDriver {
 
-		private final Neo4jClient client;
+		private final RemoteNeo4jClient client;
 		private TransactionStatus status;
-		private Transaction tx;
+		private RemoteNeo4jTransaction tx;
 
 		private boolean invalid;
 		private boolean rollbackOnly = false;
@@ -260,7 +260,7 @@ public class RemoteResourceLocalTransactionCoordinator implements TransactionCoo
 			errorIfInvalid();
 			tx = client.beginTx();
 			status = TransactionStatus.ACTIVE;
-			RemoteResourceLocalTransactionCoordinator.this.afterBeginCallback();
+			RemoteNeo4jResourceLocalTransactionCoordinator.this.afterBeginCallback();
 		}
 
 		protected void errorIfInvalid() {
@@ -276,11 +276,11 @@ public class RemoteResourceLocalTransactionCoordinator implements TransactionCoo
 					throw new TransactionException( "Transaction was marked for rollback only; cannot commit" );
 				}
 
-				RemoteResourceLocalTransactionCoordinator.this.beforeCompletionCallback();
+				RemoteNeo4jResourceLocalTransactionCoordinator.this.beforeCompletionCallback();
 				tx.commit();
 				close();
 				status = TransactionStatus.NOT_ACTIVE;
-				RemoteResourceLocalTransactionCoordinator.this.afterCompletionCallback( true );
+				RemoteNeo4jResourceLocalTransactionCoordinator.this.afterCompletionCallback( true );
 			}
 			catch (RuntimeException e) {
 				try {
@@ -309,7 +309,7 @@ public class RemoteResourceLocalTransactionCoordinator implements TransactionCoo
 				tx.rollback();
 				status = TransactionStatus.NOT_ACTIVE;
 				close();
-				RemoteResourceLocalTransactionCoordinator.this.afterCompletionCallback( false );
+				RemoteNeo4jResourceLocalTransactionCoordinator.this.afterCompletionCallback( false );
 			}
 
 			// no-op otherwise.
