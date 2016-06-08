@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
@@ -65,5 +66,6 @@ public interface SchemaDefiner extends Service {
 		Set<AssociationKeyMetadata> getAllAssociationKeyMetadata();
 		Set<IdSourceKeyMetadata> getAllIdSourceKeyMetadata();
 		SessionFactoryImplementor getSessionFactory();
+		Map<String, Class<?>> getTableEntityTypeMapping();
 	}
 }
