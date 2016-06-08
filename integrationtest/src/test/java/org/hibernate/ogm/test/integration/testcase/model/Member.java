@@ -20,13 +20,12 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
 
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+@Table
 @Indexed
 public class Member implements Serializable {
 
