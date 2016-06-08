@@ -312,14 +312,10 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		storeEntity( key, entityDocument, optionsContext );
 	}
 
-	private void storeEntity(
-			EntityKey key,
-			Entity document,
-			OptionsContext optionsContext) {
-
+	private void storeEntity(EntityKey key, Entity entity, OptionsContext optionsContext) {
 		Long currentTtl = getCurrentTtl( entityId( key ) );
 
-		entityStorageStrategy.storeEntity( entityId( key ), document );
+		entityStorageStrategy.storeEntity( entityId( key ), entity );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
 	}
