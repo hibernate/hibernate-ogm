@@ -20,7 +20,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
@@ -32,6 +31,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jNodesTup
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTupleSnapshot;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
@@ -89,7 +89,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	private Map<AssociationKeyMetadata, RemoteNeo4jAssociationQueries> associationQueries;
 
 	public RemoteNeo4jDialect(RemoteNeo4jDatastoreProvider provider) {
-		super( Neo4jTypeConverter.FOR_REMOTE );
+		super( RemoteNeo4jTypeConverter.INSTANCE );
 		this.dataBase = provider.getDatabase();
 		this.sequenceGenerator = provider.getSequenceGenerator();
 	}
