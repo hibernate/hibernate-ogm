@@ -18,6 +18,8 @@ public class RedisTupleSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> map;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public RedisTupleSnapshot(Map<String, Object> map) {
 		this.map = map;
 	}
@@ -35,6 +37,16 @@ public class RedisTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return map.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 	public Map<String, Object> getMap() {

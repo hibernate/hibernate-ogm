@@ -8,9 +8,9 @@ package org.hibernate.ogm.datastore.mongodb;
 
 import static java.lang.Boolean.FALSE;
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
+import static org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType.INSERT;
+import static org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType.UPDATE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +40,6 @@ import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -91,6 +90,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;

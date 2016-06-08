@@ -32,6 +32,8 @@ public class EmbeddedNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> properties;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public EmbeddedNeo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		properties = collectProperties( relationship, associationKey, associatedEntityKeyMetadata );
 	}
@@ -172,6 +174,16 @@ public class EmbeddedNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return properties.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 }

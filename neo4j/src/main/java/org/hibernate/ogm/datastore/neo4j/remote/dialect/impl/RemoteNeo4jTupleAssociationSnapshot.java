@@ -24,6 +24,8 @@ public class RemoteNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> properties;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public RemoteNeo4jTupleAssociationSnapshot(RemoteNeo4jClient neo4jClient, RemoteNeo4jAssociationQueries queries, RemoteNeo4jAssociationPropertiesRow row, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		this.properties = collectProperties( neo4jClient, queries, row, associationKey, associatedEntityKeyMetadata );
 	}
@@ -99,6 +101,16 @@ public class RemoteNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return properties.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 }

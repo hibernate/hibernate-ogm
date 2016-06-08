@@ -51,6 +51,8 @@ public class AssociationRow<R> implements TupleSnapshot {
 	private final Set<String> columnNames;
 	private final RowKey rowKey;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public AssociationRow(AssociationKey associationKey, AssociationRowAccessor<R> accessor, R row) {
 		this.associationKey = associationKey;
 		this.accessor = accessor;
@@ -96,6 +98,16 @@ public class AssociationRow<R> implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return columnNames;
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 	/**

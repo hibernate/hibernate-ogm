@@ -28,6 +28,8 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 	private final Map<String, Object> properties;
 	private final boolean createdOnInsert;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public CouchDBTupleSnapshot(EntityKey key) {
 		createdOnInsert = true;
 
@@ -55,6 +57,16 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return properties.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 	/**

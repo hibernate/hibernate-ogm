@@ -17,6 +17,8 @@ import org.infinispan.atomic.FineGrainedAtomicMap;
 public final class InfinispanTupleSnapshot implements TupleSnapshot {
 	private final FineGrainedAtomicMap<String, Object> atomicMap;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public InfinispanTupleSnapshot(FineGrainedAtomicMap<String,Object> atomicMap) {
 		this.atomicMap = atomicMap;
 	}
@@ -33,6 +35,16 @@ public final class InfinispanTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return atomicMap.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 	public FineGrainedAtomicMap<String, Object> getAtomicMap() {

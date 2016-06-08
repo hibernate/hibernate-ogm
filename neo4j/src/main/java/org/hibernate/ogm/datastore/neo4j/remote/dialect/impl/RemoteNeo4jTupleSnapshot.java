@@ -40,6 +40,8 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 	private final Long txId;
 	private final Map<String, Collection<Node>> embeddedNodes;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	public RemoteNeo4jTupleSnapshot(RemoteNeo4jClient neo4jClient, Long txId, RemoteNeo4jEntityQueries queries, NodeWithEmbeddedNodes node, EntityKeyMetadata entityKeyMetadata) {
 		this( neo4jClient, txId, queries, node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(),
 				entityKeyMetadata );
@@ -140,4 +142,15 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 	public Node getNode() {
 		return node;
 	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
+	}
+
 }

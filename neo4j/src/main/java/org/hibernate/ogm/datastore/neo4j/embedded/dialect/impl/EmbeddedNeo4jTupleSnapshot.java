@@ -37,6 +37,8 @@ public final class EmbeddedNeo4jTupleSnapshot implements TupleSnapshot {
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
 	private final Map<String, String> rolesByColumn;
 
+	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+
 	private EmbeddedNeo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
 		this.node = node;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
@@ -121,6 +123,16 @@ public final class EmbeddedNeo4jTupleSnapshot implements TupleSnapshot {
 		}
 
 		return names;
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	@Override
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 	public Node getNode() {
