@@ -8,17 +8,17 @@ package org.hibernate.ogm.datastore.neo4j.remote.transaction.impl;
 
 import java.io.Closeable;
 
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 
 /**
  * @author Davide D'Alto
  */
-public class Transaction implements Closeable {
+public class RemoteNeo4jTransaction implements Closeable {
 
 	private final Long txId;
-	private final Neo4jClient remote;
+	private final RemoteNeo4jClient remote;
 
-	public Transaction(Neo4jClient remote, Long txId) {
+	public RemoteNeo4jTransaction(RemoteNeo4jClient remote, Long txId) {
 		this.txId = txId;
 		this.remote = remote;
 	}

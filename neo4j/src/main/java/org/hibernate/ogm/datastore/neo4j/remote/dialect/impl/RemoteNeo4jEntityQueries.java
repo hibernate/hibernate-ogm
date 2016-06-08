@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.EntityQueries;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
@@ -35,8 +35,8 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
  */
 public class RemoteNeo4jEntityQueries extends EntityQueries {
 
-	private static final ClosableIteratorAdapter<AssociationPropertiesRow> EMPTY_RELATIONSHIPS = new ClosableIteratorAdapter<>(
-			Collections.<AssociationPropertiesRow>emptyList().iterator() );
+	private static final ClosableIteratorAdapter<RemoteNeo4jAssociationPropertiesRow> EMPTY_RELATIONSHIPS = new ClosableIteratorAdapter<>(
+			Collections.<RemoteNeo4jAssociationPropertiesRow>emptyList().iterator() );
 
 	private static final ClosableIteratorAdapter<Node> EMPTY_NODES = new ClosableIteratorAdapter<>( Collections.<Node>emptyList().iterator() );
 
@@ -48,7 +48,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		super( entityKeyMetadata, tupleContext );
 	}
 
-	public Node findEntity(Neo4jClient executionEngine, Long transactionId, Object[] columnValues) {
+	public Node findEntity(RemoteNeo4jClient executionEngine, Long transactionId, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
 		String query = getFindEntityQuery();
 		Graph result = executeQueryAndReturnGraph( executionEngine, transactionId, query, params );
@@ -60,7 +60,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return null;
 	}
 
-	public Node findAssociatedEntity(Neo4jClient neo4jClient, Long txId, Object[] keyValues, String associationrole) {
+	public Node findAssociatedEntity(RemoteNeo4jClient neo4jClient, Long txId, Object[] keyValues, String associationrole) {
 		Map<String, Object> params = params( keyValues );
 		String query = getFindAssociatedEntityQuery( associationrole );
 		if ( query != null ) {
@@ -97,11 +97,11 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return new Statement( query, params( paramsValues ) );
 	}
 
-	public void removeEntity(Neo4jClient executionEngine, Long txId, Object[] columnValues) {
+	public void removeEntity(RemoteNeo4jClient executionEngine, Long txId, Object[] columnValues) {
 		executeQueryAndReturnGraph( executionEngine, txId, getRemoveEntityQuery(), params( columnValues ) );
 	}
 
-	public ClosableIterator<Node> findEntities(Neo4jClient executionEngine, Long txId) {
+	public ClosableIterator<Node> findEntities(RemoteNeo4jClient executionEngine, Long txId) {
 		String query = getFindEntitiesQuery();
 		Graph result = executeQueryAndReturnGraph( executionEngine, txId, query, null );
 		if ( result != null ) {
@@ -116,11 +116,11 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 	/**
 	 * Find the nodes corresponding to an array of entity keys.
 	 *
-	 * @param executionEngine the {@link Neo4jClient} used to run the query
+	 * @param executionEngine the {@link RemoteNeo4jClient} used to run the query
 	 * @param keys an array of keys identifying the nodes to return
 	 * @return the list of nodes representing the entities
 	 */
-	public ClosableIterator<Node> findEntities(Neo4jClient executionEngine, EntityKey[] keys, Long txId) {
+	public ClosableIterator<Node> findEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
 		if ( singlePropertyKey ) {
 			return singlePropertyIdFindEntities( executionEngine, keys, txId );
 		}
@@ -132,7 +132,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 	/*
 	 * When the id is mapped on several properties
 	 */
-	private ClosableIterator<Node> multiPropertiesIdFindEntities(Neo4jClient executionEngine, EntityKey[] keys, Long txId) {
+	private ClosableIterator<Node> multiPropertiesIdFindEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
 		String query = getMultiGetQueryCacheQuery( keys );
 		Map<String, Object> params = multiGetParams( keys );
 		List<StatementResult> results = executeQuery( executionEngine, txId, query, params );
@@ -142,7 +142,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 	/*
 	 * When the id is mapped with a single property
 	 */
-	private ClosableIterator<Node> singlePropertyIdFindEntities(Neo4jClient executionEngine, EntityKey[] keys, Long txId) {
+	private ClosableIterator<Node> singlePropertyIdFindEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
 		Object[] paramsValues = new Object[keys.length];
 		for ( int i = 0; i < keys.length; i++ ) {
 			paramsValues[i] = keys[i].getColumnValues()[0];
@@ -174,7 +174,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return new Statement( query, params );
 	}
 
-	private Graph executeQueryAndReturnGraph(Neo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
+	private Graph executeQueryAndReturnGraph(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
 		List<StatementResult> results = executeQuery( executionEngine, txId, query, properties, dataContents );
 		if ( results == null ) {
 			return null;
@@ -182,13 +182,13 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return row( results ).getGraph();
 	}
 
-	private List<StatementResult> executeQuery(Neo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
+	private List<StatementResult> executeQuery(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
 		Statements statements = new Statements();
 		statements.addStatement( query, properties, dataContents );
 		return executeQuery( executionEngine, txId, statements );
 	}
 
-	private List<StatementResult> executeQuery(Neo4jClient executionEngine, Long txId, Statements statements) {
+	private List<StatementResult> executeQuery(RemoteNeo4jClient executionEngine, Long txId, Statements statements) {
 		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( txId, statements );
 		validate( statementsResponse );
 		List<StatementResult> results = statementsResponse.getResults();
@@ -238,7 +238,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ClosableIterator<AssociationPropertiesRow> findAssociation(Neo4jClient executionEngine, Long txId, Object[] columnValues, String role) {
+	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(RemoteNeo4jClient executionEngine, Long txId, Object[] columnValues, String role) {
 		// Find the target node
 		String queryForAssociation = getFindAssociationQuery( role );
 
@@ -256,7 +256,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 			List<Row> data = response.get( 0 ).getData();
 			List<Row> embeddedNodes = response.get( 1 ).getData();
 			int embeddedNodesIndex = 0;
-			List<AssociationPropertiesRow> responseRows = new ArrayList<>( data.size() );
+			List<RemoteNeo4jAssociationPropertiesRow> responseRows = new ArrayList<>( data.size() );
 			for ( int i = 0; i < data.size(); i++ ) {
 				String idTarget = String.valueOf( data.get( i ).getRow().get( 0 ) );
 
@@ -277,7 +277,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 						break;
 					}
 				}
-				AssociationPropertiesRow associationPropertiesRow = new AssociationPropertiesRow( rel, ownerNode, targetNode );
+				RemoteNeo4jAssociationPropertiesRow associationPropertiesRow = new RemoteNeo4jAssociationPropertiesRow( rel, ownerNode, targetNode );
 				responseRows.add( associationPropertiesRow );
 			}
 			if ( responseRows.isEmpty() ) {
@@ -309,7 +309,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return path.substring( 1 );
 	}
 
-	public Node findEmbeddedNode(Neo4jClient neo4jClient, Long txId, Object[] keyValues, String embeddedPath) {
+	public Node findEmbeddedNode(RemoteNeo4jClient neo4jClient, Long txId, Object[] keyValues, String embeddedPath) {
 		Graph result = executeQueryAndReturnGraph( neo4jClient, txId, getFindEmbeddedNodeQueries().get( embeddedPath ), params( keyValues ) );
 		if ( result == null ) {
 			return null;
@@ -317,7 +317,7 @@ public class RemoteNeo4jEntityQueries extends EntityQueries {
 		return result.getNodes().get( 0 );
 	}
 
-	public void removeToOneAssociation(Neo4jClient executionEngine, Long txId, Object[] columnValues, String associationRole) {
+	public void removeToOneAssociation(RemoteNeo4jClient executionEngine, Long txId, Object[] columnValues, String associationRole) {
 		Map<String, Object> params = params( ArrayHelper.concat( columnValues, associationRole ) );
 		executeQueryAndReturnGraph( executionEngine, txId, getRemoveToOneAssociation(), params );
 	}

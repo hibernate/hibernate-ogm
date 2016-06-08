@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public interface Neo4jTransactionFacade {
+public interface RemoteNeo4jTransactionFacade {
 
 	@POST
 	@Path("/transaction")

@@ -14,13 +14,13 @@ import java.util.Map;
  *
  * @author Davide D'Alto
  */
-public class AssociationPropertiesRow {
+public class RemoteNeo4jAssociationPropertiesRow {
 
 	private final Map<String, Object> relationship;
 	private final Map<String, Object> ownerNode;
 	private final Map<String, Object> targetNode;
 
-	public AssociationPropertiesRow(Map<String, Object> rel, Map<String, Object> ownerNode, Map<String, Object> targetNode) {
+	public RemoteNeo4jAssociationPropertiesRow(Map<String, Object> rel, Map<String, Object> ownerNode, Map<String, Object> targetNode) {
 		this.relationship = Collections.unmodifiableMap( rel );
 		this.ownerNode = Collections.unmodifiableMap( ownerNode );
 		this.targetNode = Collections.unmodifiableMap( targetNode );

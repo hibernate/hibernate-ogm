@@ -18,7 +18,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
  * @see DocumentStoreConfiguration
  * @author Davide D'Alto
  */
-public class Neo4jConfiguration {
+public class RemoteNeo4jConfiguration {
 
 	public static final int DEFAULT_PORT = 7474;
 
@@ -39,7 +39,7 @@ public class Neo4jConfiguration {
 	private final Long connectionCheckoutTimeout;
 	private final Long connectionTTL;
 
-	public Neo4jConfiguration(ConfigurationPropertyReader propertyReader) {
+	public RemoteNeo4jConfiguration(ConfigurationPropertyReader propertyReader) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
 				.withDefault( DEFAULT_HOST )
 				.getValue();

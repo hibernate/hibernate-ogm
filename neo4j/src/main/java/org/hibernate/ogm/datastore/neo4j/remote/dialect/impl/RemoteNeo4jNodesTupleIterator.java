@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.dialect.impl;
 
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Row;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
@@ -20,15 +20,15 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Davide D'Alto
  */
-public class RemoteNodesTupleIterator extends RemoteMapsTupleIterator {
+public class RemoteNeo4jNodesTupleIterator extends RemoteNeo4jMapsTupleIterator {
 
 	private final EntityKeyMetadata entityKeyMetadata;
-	private final Neo4jClient dataBase;
+	private final RemoteNeo4jClient dataBase;
 	private final RemoteNeo4jEntityQueries entityQueries;
 	private final Long txId;
 	private final TupleContext tupleContext;
 
-	public RemoteNodesTupleIterator(Neo4jClient dataBase,
+	public RemoteNeo4jNodesTupleIterator(RemoteNeo4jClient dataBase,
 			Long txId,
 			RemoteNeo4jEntityQueries entityQueries,
 			StatementsResponse result,
