@@ -19,7 +19,6 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSchemaDefiner;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
-import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementResult;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -69,16 +68,14 @@ public class RemoteNeo4jSchemaDefiner extends Neo4jSchemaDefiner<Statements> {
 		provider.getSequenceGenerator().createUniqueConstraintsForTableSequences( constraintStatements, idSourceKeyMetadata );
 
 		StatementsResponse response = provider.getDatabase().executeQueriesInNewTransaction( constraintStatements );
-		List<StatementResult> results = response.getResults();
-		// TODO: Check response for errors
+		validateSequencesCreation( response );
 
 		// We create the sequences in a separate transaction because
 		// Neo4j does not allow the creation of constraints and graph elements in the same transaction
 		Statements sequenceStatements = new Statements();
 		provider.getSequenceGenerator().createSequences( sequenceStatements, sequences );
 		response = provider.getDatabase().executeQueriesInNewTransaction( sequenceStatements );
-		results = response.getResults();
-		// TODO: Check response for errors
+		validateConstraintsCreation( response );
 	}
 
 	private void createEntityConstraints(RemoteNeo4jClient remoteNeo4j, Database database, Properties properties) {
@@ -95,14 +92,21 @@ public class RemoteNeo4jSchemaDefiner extends Neo4jSchemaDefiner<Statements> {
 			addUniqueConstraints( statements, database );
 			log.debug( "Creating missing constraints" );
 			StatementsResponse response = remoteNeo4j.executeQueriesInNewTransaction( statements );
-			validate( response );
+			validateConstraintsCreation( response );
 		}
 	}
 
-	private void validate(StatementsResponse response) {
+	private void validateSequencesCreation(StatementsResponse response) {
 		if ( !response.getErrors().isEmpty() ) {
 			ErrorResponse errorResponse = response.getErrors().get( 0 );
-			throw log.constraintCreationException( errorResponse.getCode(), errorResponse.getMessage() );
+			throw log.sequencesCreationException( errorResponse.getCode(), errorResponse.getMessage() );
+		}
+	}
+
+	private void validateConstraintsCreation(StatementsResponse response) {
+		if ( !response.getErrors().isEmpty() ) {
+			ErrorResponse errorResponse = response.getErrors().get( 0 );
+			throw log.constraintsCreationException( errorResponse.getCode(), errorResponse.getMessage() );
 		}
 	}
 

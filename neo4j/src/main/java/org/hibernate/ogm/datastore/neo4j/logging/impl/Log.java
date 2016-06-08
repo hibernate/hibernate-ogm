@@ -81,12 +81,15 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1416, value = "%s: %s")
 	HibernateException nativeQueryException( String code, String message, @Cause Exception cause);
 
-	@Message(id = 1417, value = "%s: %s")
-	HibernateException constraintCreationException(String code, String message);
+	@Message(id = 1417, value = "Constraints creation failed: %s, %s")
+	HibernateException constraintsCreationException(String code, String message);
 
 	@Message(id = 1418, value = "Missing sequence: %s")
 	HibernateException sequenceNotFound(String sequenceName);
 
 	@Message(id = 1419, value = "Authentication failed on %s, error code %s %s")
 	HibernateException authenticationFailed(String host, int status, String reasonPhrase);
+
+	@Message(id = 1420, value = "Sequences creation failed: %s, %s")
+	HibernateException sequencesCreationException(String code, String message);
 }
