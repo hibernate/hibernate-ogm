@@ -75,13 +75,17 @@ class QueriesBase {
 	 * (owner:ENTITY:table {id: {0}})
 	 */
 	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
+		appendEntityNode( alias, entityKeyMetadata, queryBuilder, 0 );
+	}
+
+	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder, int offset) {
 		queryBuilder.append( "(" );
 		queryBuilder.append( alias );
 		queryBuilder.append( ":" );
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
+		appendProperties( queryBuilder, entityKeyMetadata.getColumnNames(), offset );
 		queryBuilder.append( ")" );
 	}
 

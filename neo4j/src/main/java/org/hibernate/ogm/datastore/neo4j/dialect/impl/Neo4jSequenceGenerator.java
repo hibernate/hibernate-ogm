@@ -8,12 +8,11 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
 import static java.util.Collections.singletonMap;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.hibernate.HibernateException;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
@@ -55,23 +54,9 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class Neo4jSequenceGenerator {
+public class Neo4jSequenceGenerator extends BaseSequenceGenerator {
 
-	private static final String INITIAL_VALUE_QUERY_PARAM = "initialValue";
-	private static final String SEQUENCE_NAME_QUERY_PARAM = "sequenceName";
-
-	/**
-	 * Name of the property of SEQUENCE nodes which holds the sequence name. ORM's default for emulated sequences,
-	 * "sequence_name", is used.
-	 */
-	private static final String SEQUENCE_NAME_PROPERTY = "sequence_name";
-
-	/**
-	 * Name of the property of SEQUENCE nodes which holds the next value. ORM's default for emulated sequences,
-	 * "next_val", is used.
-	 */
-	private static final String SEQUENCE_VALUE_PROPERTY = "next_val";
-
+	private static final Log logger = LoggerFactory.getLogger();
 	/**
 	 * Query for creating SEQUENCE nodes.
 	 */
@@ -186,11 +171,11 @@ public class Neo4jSequenceGenerator {
 	 * MERGE (n:hibernate_sequences:TABLE_BASED_SEQUENCE {sequence_name: {sequenceName}}) ON CREATE SET n.current_value = {initialValue} RETURN n
 	 * </pre>
 	 */
-	private void addTableSequence(IdSourceKeyMetadata idSourceKeyMetadata, String sequenceName, int initialValue) {
-		Label generatorKeyLabel = DynamicLabel.label( idSourceKeyMetadata.getName() );
-		String query = "MERGE (n" + labels( generatorKeyLabel.name(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + " { " + idSourceKeyMetadata.getKeyColumnName() + ": {"
+	private void addTableSequence(NextValueRequest request) {
+		IdSourceKeyMetadata idSourceKeyMetadata = request.getKey().getMetadata();
+		String query = "MERGE (n" + labels( idSourceKeyMetadata.getName(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + " { " + idSourceKeyMetadata.getKeyColumnName() + ": {"
 				+ SEQUENCE_NAME_QUERY_PARAM + "}} ) ON CREATE SET n." + idSourceKeyMetadata.getValueColumnName() + " = {" + INITIAL_VALUE_QUERY_PARAM + "} RETURN n";
-		neo4jDb.execute( query, params( sequenceName, initialValue ) );
+		neo4jDb.execute( query, params( request ) );
 	}
 
 	/**
@@ -200,44 +185,36 @@ public class Neo4jSequenceGenerator {
 	 * </pre>
 	 */
 	private void addSequence(Sequence sequence) {
-		neo4jDb.execute( SEQUENCE_CREATION_QUERY, params( sequence.getName().render(), sequence.getInitialValue() ) );
-	}
-
-	private Map<String, Object> params(String sequenceName, int initialValue) {
-		Map<String, Object> params = new HashMap<String, Object>( 2 );
-		params.put( INITIAL_VALUE_QUERY_PARAM, initialValue );
-		params.put( SEQUENCE_NAME_QUERY_PARAM, sequenceName );
-		return params;
+		neo4jDb.execute( SEQUENCE_CREATION_QUERY, params( sequence ) );
 	}
 
 	/**
 	 * Generate the next value in a sequence for a given {@link IdSourceKey}.
 	 *
-	 * @param idSourceKey identifies the generator
-	 * @param increment the difference between to consecutive values in the sequence
-	 * @param initialValue the initial value of the given generator
+	 * @param request the details about how to obtain the next value
 	 * @return the next value in a sequence
 	 */
-	public long nextValue(IdSourceKey idSourceKey, int increment, int initialValue) {
+	@Override
+	public Long nextValue(NextValueRequest request) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
-			Node sequence = getSequence( idSourceKey );
+			Node sequence = getSequence( request.getKey() );
 
 			if ( sequence == null ) {
 				// sequence nodes are expected to have been created up-front
-				if ( idSourceKey.getMetadata().getType() == IdSourceType.SEQUENCE ) {
-					throw new HibernateException( "Sequence missing: " + idSourceKey.getMetadata().getName() );
+				if ( request.getKey().getMetadata().getType() == IdSourceType.SEQUENCE ) {
+					throw logger.sequenceNotFound( sequenceName( request.getKey() ) );
 				}
 				// table sequence nodes (think of them as rows in a generator table) are created upon first usage
 				else {
-					addTableSequence( idSourceKey.getMetadata(), (String) idSourceKey.getColumnValues()[0], initialValue );
-					sequence = getSequence( idSourceKey );
+					addTableSequence( request );
+					sequence = getSequence( request.getKey() );
 				}
 			}
 
 			lock = tx.acquireWriteLock( sequence );
-			long nextValue = updateSequenceValue( idSourceKey, sequence, increment );
+			long nextValue = updateSequenceValue( request.getKey(), sequence, request.getIncrement() );
 			tx.success();
 			lock.release();
 			return nextValue;
@@ -288,21 +265,7 @@ public class Neo4jSequenceGenerator {
 		return query;
 	}
 
-	private String labels(String... labels) {
-		StringBuilder builder = new StringBuilder();
-		for ( String label : labels ) {
-			builder.append( ":`" );
-			builder.append( label );
-			builder.append( "`" );
-		}
-		return builder.toString();
-	}
-
-	private String sequenceName(IdSourceKey key) {
-		return key.getMetadata().getType() == IdSourceType.SEQUENCE ? key.getMetadata().getName() : (String) key.getColumnValues()[0];
-	}
-
-	private long updateSequenceValue(IdSourceKey idSourceKey, Node sequence, int increment) {
+	private Long updateSequenceValue(IdSourceKey idSourceKey, Node sequence, int increment) {
 		String valueProperty = idSourceKey.getMetadata().getType() == IdSourceType.TABLE ? idSourceKey.getMetadata().getValueColumnName() : SEQUENCE_VALUE_PROPERTY;
 		Number currentValue = (Number) sequence.getProperty( valueProperty );
 		long updatedValue = currentValue.longValue() + increment;

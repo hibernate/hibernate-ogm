@@ -18,6 +18,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -85,6 +86,11 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		return getNumberOfEntities( getDataStore( sessionFactory ) );
 	}
@@ -119,6 +125,11 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		DatabaseTestClient databaseTestClient = getDatabaseTestClient( getDataStore( sessionFactory ) );
 		Long count = getNumberOfAssociations( databaseTestClient ).get( type );
 		return count != null ? count : 0;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -171,9 +182,9 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
-		CouchDBDatastore dataStore = getDataStore( sessionFactory );
+		CouchDBDatastore dataStore = getDataStore( session.getSessionFactory() );
 		EntityDocument entity = dataStore.getEntity( Identifier.createEntityId( key ) );
 		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
 		Set<String> columnNames = snapshot.getColumnNames();

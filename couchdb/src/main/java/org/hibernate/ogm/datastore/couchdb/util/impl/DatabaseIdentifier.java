@@ -60,7 +60,7 @@ public class DatabaseIdentifier {
 	}
 
 	/**
-	 * Returns the URI of the CouchDB server, e.g. "http:://localhost:5984".
+	 * Returns the URI of the CouchDB server, e.g. "http://localhost:5984".
 	 *
 	 * @return the URI of the CouchDB server
 	 */
@@ -69,7 +69,7 @@ public class DatabaseIdentifier {
 	}
 
 	/**
-	 * Returns the URI of the database, e.g. "http:://localhost:5984/mydb".
+	 * Returns the URI of the database, e.g. "http://localhost:5984/mydb".
 	 *
 	 * @return the URI of the database
 	 */
