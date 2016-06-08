@@ -123,6 +123,11 @@ public final class EmbeddedNeo4jTupleSnapshot implements TupleSnapshot {
 		return names;
 	}
 
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
+	}
+
 	public Node getNode() {
 		return node;
 	}

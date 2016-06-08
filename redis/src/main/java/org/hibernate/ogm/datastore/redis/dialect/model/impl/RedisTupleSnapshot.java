@@ -37,6 +37,11 @@ public class RedisTupleSnapshot implements TupleSnapshot {
 		return map.keySet();
 	}
 
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
+	}
+
 	public Map<String, Object> getMap() {
 		return map;
 	}

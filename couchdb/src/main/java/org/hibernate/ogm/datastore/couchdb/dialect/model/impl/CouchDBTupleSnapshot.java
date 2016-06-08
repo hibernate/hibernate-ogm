@@ -14,6 +14,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocum
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 
 /**
  * A {@link TupleSnapshot} based on the properties of a CouchDB {@link EntityDocument}.
@@ -55,6 +56,11 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return properties.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
 	}
 
 	/**

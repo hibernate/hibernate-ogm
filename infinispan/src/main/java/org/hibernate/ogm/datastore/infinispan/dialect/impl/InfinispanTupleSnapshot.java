@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.infinispan.dialect.impl;
 import java.util.Set;
 
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 
 /**
@@ -33,6 +34,11 @@ public final class InfinispanTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return atomicMap.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
 	}
 
 	public FineGrainedAtomicMap<String, Object> getAtomicMap() {

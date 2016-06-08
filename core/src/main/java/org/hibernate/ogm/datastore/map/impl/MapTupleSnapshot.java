@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -37,5 +38,10 @@ public final class MapTupleSnapshot implements TupleSnapshot {
 
 	public Map<String, Object> getMap() {
 		return map;
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
 	}
 }
