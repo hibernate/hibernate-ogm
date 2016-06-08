@@ -712,6 +712,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		checkVersionAndRaiseSOSE( id, currentVersion, session, resultset );
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
 		gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext( session ) );
+
+		OgmEntityEntryState.getStateFor( session, nextVersion ).setTuple( resultset );
+
 		return nextVersion;
 	}
 
@@ -1227,6 +1230,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				if ( mightRequireInverseAssociationManagement ) {
 					addToInverseAssociations( resultset, j, id, session );
 				}
+
+				OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
 			}
 		}
 	}
@@ -1809,6 +1814,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				setPropertyValue( entity, propertyIndex, state[propertyIndex] );
 			}
 		}
+
+		OgmEntityEntryState.getStateFor( session, entity ).setTuple( tuple );
 	}
 
 	/**
