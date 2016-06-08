@@ -231,11 +231,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private static boolean isInTheInsertionQueue(EntityKey key, TupleContext tupleContext) {
-		OperationsQueue queue = tupleContext.getOperationsQueue();
-		return queue != null && queue.isInTheInsertionQueue( key );
-	}
-
 	@Override
 	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
 		return new Tuple( new MongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata, SnapshotType.INSERT ) );
