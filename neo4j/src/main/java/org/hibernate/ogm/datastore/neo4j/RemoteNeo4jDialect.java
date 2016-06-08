@@ -23,16 +23,16 @@ import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.AssociationPropertiesRow;
-import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteMapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jMapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jNodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jTupleSnapshot;
-import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNodesTupleIterator;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
@@ -80,7 +80,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private final Neo4jClient dataBase;
+	private final RemoteNeo4jClient dataBase;
 
 	private final RemoteNeo4jSequenceGenerator sequenceGenerator;
 
@@ -372,10 +372,10 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
 		Long txId = transactionId( transactionContext );
-		ClosableIterator<AssociationPropertiesRow> relationships = entityQueries.get( entityKey.getMetadata() )
+		ClosableIterator<RemoteNeo4jAssociationPropertiesRow> relationships = entityQueries.get( entityKey.getMetadata() )
 				.findAssociation( dataBase, txId, entityKey.getColumnValues(), relationshipType );
 		while ( relationships.hasNext() ) {
-			AssociationPropertiesRow row = relationships.next();
+			RemoteNeo4jAssociationPropertiesRow row = relationships.next();
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
 			RemoteNeo4jTupleAssociationSnapshot snapshot = new RemoteNeo4jTupleAssociationSnapshot( dataBase,
 					associationQueries.get( associationKey.getMetadata() ), row, associationKey, associatedEntityKeyMetadata );
@@ -545,12 +545,12 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 			response = dataBase.executeQueriesInOpenTransaction( txId, statements );
 			EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
 			RemoteNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
-			return new RemoteNodesTupleIterator( dataBase, txId, queries, response, entityKeyMetadata, tupleContext );
+			return new RemoteNeo4jNodesTupleIterator( dataBase, txId, queries, response, entityKeyMetadata, tupleContext );
 		}
 		else {
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			response = dataBase.executeQueriesInOpenTransaction( txId, statements );
-			return new RemoteMapsTupleIterator( response );
+			return new RemoteNeo4jMapsTupleIterator( response );
 		}
 	}
 

@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
-import org.hibernate.ogm.datastore.neo4j.remote.facade.impl.Neo4jAuthenticationFacade;
-import org.hibernate.ogm.datastore.neo4j.remote.facade.impl.Neo4jTransactionFacade;
+import org.hibernate.ogm.datastore.neo4j.remote.facade.impl.RemoteNeo4jAuthenticationFacade;
+import org.hibernate.ogm.datastore.neo4j.remote.facade.impl.RemoteNeo4jTransactionFacade;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
-import org.hibernate.ogm.datastore.neo4j.remote.transaction.impl.Transaction;
+import org.hibernate.ogm.datastore.neo4j.remote.transaction.impl.RemoteNeo4jTransaction;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
@@ -25,7 +25,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
  *
  * @author Davide D'Alto
  */
-public class Neo4jClient implements AutoCloseable {
+public class RemoteNeo4jClient implements AutoCloseable {
 
 	/**
 	 * Size of the client connection pool used by the RestEasy HTTP client
@@ -37,17 +37,17 @@ public class Neo4jClient implements AutoCloseable {
 	 */
 	private final ResteasyClient client;
 
-	private final Neo4jAuthenticationFacade authenticationClient;
+	private final RemoteNeo4jAuthenticationFacade authenticationClient;
 
-	private final Neo4jTransactionFacade neo4jFacade;
+	private final RemoteNeo4jTransactionFacade neo4jFacade;
 
-	public Neo4jClient(DatabaseIdentifier database, Neo4jConfiguration configuration) {
+	public RemoteNeo4jClient(RemoteNeo4jDatabaseIdentifier database, RemoteNeo4jConfiguration configuration) {
 		this.client = createRestClient( database, configuration );
-		this.authenticationClient = client.target( database.getServerUri() ).proxy( Neo4jAuthenticationFacade.class );
-		this.neo4jFacade = client.target( database.getDatabaseUri() ).proxy( Neo4jTransactionFacade.class );
+		this.authenticationClient = client.target( database.getServerUri() ).proxy( RemoteNeo4jAuthenticationFacade.class );
+		this.neo4jFacade = client.target( database.getDatabaseUri() ).proxy( RemoteNeo4jTransactionFacade.class );
 	}
 
-	private static ResteasyClient createRestClient(DatabaseIdentifier database, Neo4jConfiguration configuration) {
+	private static ResteasyClient createRestClient(RemoteNeo4jDatabaseIdentifier database, RemoteNeo4jConfiguration configuration) {
 		ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder();
 
 		if ( database.getUserName() != null ) {
@@ -108,11 +108,11 @@ public class Neo4jClient implements AutoCloseable {
 		}
 	}
 
-	public Transaction beginTx() {
+	public RemoteNeo4jTransaction beginTx() {
 		Response response = neo4jFacade.beginTransaction();
 		try {
 			Long txId = transactionId( response.getLocation() );
-			Transaction transaction = new Transaction( this, txId );
+			RemoteNeo4jTransaction transaction = new RemoteNeo4jTransaction( this, txId );
 			return transaction;
 		}
 		finally {

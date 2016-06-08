@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementResult;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
@@ -85,9 +85,9 @@ public class RemoteNeo4jSequenceGenerator extends BaseSequenceGenerator {
 
 	private final BoundedConcurrentHashMap<String, Statements> queryCache;
 
-	private final Neo4jClient neo4jDb;
+	private final RemoteNeo4jClient neo4jDb;
 
-	public RemoteNeo4jSequenceGenerator(Neo4jClient neo4jDb, int sequenceCacheMaxSize) {
+	public RemoteNeo4jSequenceGenerator(RemoteNeo4jClient neo4jDb, int sequenceCacheMaxSize) {
 		this.neo4jDb = neo4jDb;
 		this.queryCache = new BoundedConcurrentHashMap<String, Statements>( sequenceCacheMaxSize, 20, BoundedConcurrentHashMap.Eviction.LIRS );
 	}

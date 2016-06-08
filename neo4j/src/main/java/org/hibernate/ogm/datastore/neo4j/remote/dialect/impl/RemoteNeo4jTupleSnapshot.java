@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -32,18 +32,18 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
 	private final Map<String, String> rolesByColumn;
 	private final EntityKeyMetadata entityKeyMetadata;
-	private final Neo4jClient neo4jClient;
+	private final RemoteNeo4jClient neo4jClient;
 
 	private final Map<String, Node> toOneEntities;
 	private final RemoteNeo4jEntityQueries queries;
 	private final Long txId;
 
-	public RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient, Long txId, RemoteNeo4jEntityQueries queries, Node node, EntityKeyMetadata entityKeyMetadata) {
+	public RemoteNeo4jTupleSnapshot(RemoteNeo4jClient neo4jClient, Long txId, RemoteNeo4jEntityQueries queries, Node node, EntityKeyMetadata entityKeyMetadata) {
 		this( neo4jClient, txId, queries, node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(),
 				entityKeyMetadata );
 	}
 
-	public RemoteNeo4jTupleSnapshot(Neo4jClient neo4jClient,
+	public RemoteNeo4jTupleSnapshot(RemoteNeo4jClient neo4jClient,
 			Long txId,
 			RemoteNeo4jEntityQueries queries,
 			Node node,

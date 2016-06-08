@@ -81,7 +81,7 @@ public class RemoteNeo4jSchemaDefiner extends Neo4jSchemaDefiner<Statements> {
 		// TODO: Check response for errors
 	}
 
-	private void createEntityConstraints(Neo4jClient remoteNeo4j, Database database, Properties properties) {
+	private void createEntityConstraints(RemoteNeo4jClient remoteNeo4j, Database database, Properties properties) {
 		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret( properties.get(
 				Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY )
 		);

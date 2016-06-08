@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
@@ -119,7 +119,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		return provider.getDatabase();
 	}
 
-	protected Neo4jClient createRemoteExecutionEngine() {
+	protected RemoteNeo4jClient createRemoteExecutionEngine() {
 		DatastoreProvider datastoreProvider = datastoreProvider();
 		RemoteNeo4jDatastoreProvider provider = (RemoteNeo4jDatastoreProvider) datastoreProvider;
 		return provider.getDatabase();

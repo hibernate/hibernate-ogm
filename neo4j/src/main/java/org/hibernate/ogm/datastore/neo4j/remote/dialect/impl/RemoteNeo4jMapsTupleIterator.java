@@ -23,12 +23,12 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Davide D'Alto
  */
-public class RemoteMapsTupleIterator implements ClosableIterator<Tuple> {
+public class RemoteNeo4jMapsTupleIterator implements ClosableIterator<Tuple> {
 
 	private final Iterator<Row> iterator;
 	private final List<String> columns;
 
-	public RemoteMapsTupleIterator(StatementsResponse response) {
+	public RemoteNeo4jMapsTupleIterator(StatementsResponse response) {
 		StatementResult result = response.getResults().get( 0 );
 		List<Row> rows = result.getData();
 		this.columns = result.getColumns();

@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.remote.transaction.impl;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
-import org.hibernate.ogm.datastore.neo4j.remote.impl.Neo4jClient;
+import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
@@ -20,19 +20,19 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
 /**
  * A {@link TransactionCoordinator} for a remote Neo4j.
  *
- * Note that during a JTA transaction Neo4j {@link Transaction} are
+ * Note that during a JTA transaction Neo4j {@link RemoteNeo4jTransaction} are
  * synchronized using the {@link Synchronization} interface. A commit to the Neo4j transaction will happen before the
  * end of the JTA transaction, meaning that it won't be possible to roll-back if an error happen after successful commit
  * to the db.
  *
  * @author Davide D'Alto
  */
-public class RemoteJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
+public class RemoteNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
 
-	private final Neo4jClient remoteNeo4j;
-	private Transaction tx;
+	private final RemoteNeo4jClient remoteNeo4j;
+	private RemoteNeo4jTransaction tx;
 
-	public RemoteJtaTransactionCoordinator(TransactionCoordinator delegate, RemoteNeo4jDatastoreProvider provider) {
+	public RemoteNeo4jJtaTransactionCoordinator(TransactionCoordinator delegate, RemoteNeo4jDatastoreProvider provider) {
 		super( delegate );
 		this.remoteNeo4j = provider.getDatabase();
 	}
