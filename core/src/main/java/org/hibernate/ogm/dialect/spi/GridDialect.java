@@ -186,4 +186,5 @@ public interface GridDialect extends Service {
 	 * same primary key
 	 */
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
+
 }

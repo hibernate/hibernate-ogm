@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
@@ -151,6 +152,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static final Log log = LoggerFactory.getLogger();
 
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
+
+	private static final Pattern PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE = Pattern.compile( ".*\\.\\$_id_ .*" );
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -381,7 +384,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			getCollection( key ).update( idObject, updater, true, false, writeConcern );
 		}
 		catch ( DuplicateKeyException dke ) {
-			throw new TupleAlreadyExistsException( key.getMetadata(), tuple, dke );
+			// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
+			// so we determine if it concerns the primary key by matching on the message
+			if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, dke );
+			}
+			else {
+				throw log.constraintViolationForEntity( key, dke.getMessage(), dke );
+			}
 		}
 	}
 
@@ -1270,7 +1280,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				collection.insert( entry.getValue().getAll(), entry.getValue().getWriteConcern() );
 			}
 			catch ( DuplicateKeyException dke ) {
-				throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+				// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
+				// so we determine if it concerns the primary key by matching on the message
+				if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
+					throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+				}
+				else {
+					throw log.constraintViolationOnFlush( dke.getMessage(), dke );
+				}
 			}
 		}
 		inserts.clear();
