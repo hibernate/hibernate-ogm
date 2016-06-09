@@ -125,7 +125,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 				if ( !transacted ) {
 					log.cannotExecuteWorkOutsideIsolatedTransaction();
 				}
-				GraphDatabaseService dataBase = provider.getDataBase();
+				GraphDatabaseService dataBase = provider.getDatabase();
 				tx = dataBase.beginTx();
 				// Neo4j does not have a connection object, I'm not sure what it is best to do in this case.
 				// In this scenario I expect the visitable object to already have a way to connect to the db.
@@ -248,7 +248,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 		private boolean rollbackOnly = false;
 
 		public Neo4jTransactionDriver(Neo4jDatastoreProvider provider) {
-			this.graphDB = provider.getDataBase();
+			this.graphDB = provider.getDatabase();
 		}
 
 		protected void invalidate() {
@@ -287,7 +287,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 					rollback();
 				}
 				catch (RuntimeException e2) {
-					log.debug( "Encountered failure rolling back failed commit", e2 );
+					log.unableToRollbackTransaction( e2 );
 				}
 				throw e;
 			}

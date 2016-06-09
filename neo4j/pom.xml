@@ -72,6 +72,32 @@
             <artifactId>neo4j</artifactId>
         </dependency>
 
+        <!-- RESTEasy and Jackson -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>jaxrs-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.parboiled</groupId>
             <artifactId>parboiled-java</artifactId>
@@ -130,4 +156,25 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- Executes the tests against an embedded Neo4j -->
+        <profile>
+            <id>neo4j-embedded</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <datastoreProvider>neo4j_embedded</datastoreProvider>
+            </properties>
+        </profile>
+    
+        <!-- Executes the tests against a separately started Neo4j server -->
+        <profile>
+            <id>neo4j-remote</id>
+            <properties>
+                <datastoreProvider>neo4j_remote</datastoreProvider>
+            </properties>
+        </profile>
+    </profiles>
 </project>

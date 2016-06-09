@@ -7,15 +7,18 @@
 package org.hibernate.ogm.backendtck.associations.manytoone;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.TestHelper.get;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.EnumSet;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
@@ -42,8 +45,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.persist( emmanuel );
 		session.persist( jerome );
 		session.flush();
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
+		assertThat( getNumberOfEntities( session ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( session ) ).isEqualTo( expectedAssociations() );
 		transaction.commit();
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
 		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
@@ -117,7 +120,7 @@ public class ManyToOneTest extends OgmTestCase {
 	}
 
 	private Long expectedAssociations() {
-		if ( TestHelper.getCurrentDialectType() == GridDialectType.NEO4J ) {
+		if ( EnumSet.of( NEO4J, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
 			// A relationship is created in Neo4j that will result in the count
 			return 1L;
 		}

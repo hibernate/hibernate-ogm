@@ -92,7 +92,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 		return Neo4jDialect.class;
 	}
 
-	public GraphDatabaseService getDataBase() {
+	public GraphDatabaseService getDatabase() {
 		return neo4jDb;
 	}
 
@@ -102,7 +102,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	@Override
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return Neo4jSchemaDefiner.class;
+		return EmbeddedNeo4jSchemaDefiner.class;
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -37,6 +38,11 @@ import org.hibernate.persister.entity.EntityPersister;
 public class EhcacheTestHelper implements TestableGridDialect {
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		int entityCount = 0;
 		Set<Cache<?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<Cache<?>, Boolean>() );
@@ -55,6 +61,11 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	public static Cache<?> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
 		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getEntityCache( entityKeyMetadata );
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -84,7 +95,8 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String,Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String,Object> extractEntityTuple(Session session, EntityKey key) {
+		SessionFactory sessionFactory = session.getSessionFactory();
 		Cache cache = getEntityCache( sessionFactory, key.getMetadata() );
 		Object cacheKey = getProvider( sessionFactory ).getKeyProvider().getEntityCacheKey( key );
 

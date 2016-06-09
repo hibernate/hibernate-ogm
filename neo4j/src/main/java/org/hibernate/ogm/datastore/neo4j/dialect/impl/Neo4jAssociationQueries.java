@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
@@ -20,7 +19,6 @@ import java.util.Map.Entry;
 
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -36,157 +34,10 @@ import org.neo4j.graphdb.Result;
  *
  * @author Davide D'Alto
  */
-public class Neo4jAssociationQueries extends QueriesBase {
-
-	private final String matchOwnerEntityNode;
-	private final String findRelationshipQuery;
-	private final String removeAssociationQuery;
-	private final String removeAssociationRowQuery;
+public class Neo4jAssociationQueries extends AssociationQueries {
 
 	public Neo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		this.removeAssociationQuery = initRemoveAssociationQuery( ownerEntityKeyMetadata, associationKeyMetadata );
-		this.removeAssociationRowQuery = initRemoveAssociationRowQuery( ownerEntityKeyMetadata, associationKeyMetadata );
-		this.findRelationshipQuery = initFindRelationshipQuery( ownerEntityKeyMetadata, associationKeyMetadata );
-		this.matchOwnerEntityNode = initMatchOwnerEntityNode( ownerEntityKeyMetadata );
-	}
-
-	/*
-	 * Example:
-	 *
-	 * MATCH (owner:ENTITY:table {id: {0}})
-	 */
-	private static String initMatchOwnerEntityNode(EntityKeyMetadata ownerEntityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder();
-		appendMatchOwnerEntityNode( queryBuilder, ownerEntityKeyMetadata );
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example with target node:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] -  (t {id: {1}})
-	 * RETURN r
-	 *
-	 * Example with relationship indexes:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role {index: {1}}] -  (t)
-	 * RETURN r
-	 */
-	private static String initFindRelationshipQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		int offset = 0;
-		StringBuilder queryBuilder = new StringBuilder("MATCH ");
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( ownerEntityKeyMetadata, queryBuilder );
-		appendProperties( ownerEntityKeyMetadata, queryBuilder );
-		queryBuilder.append( ") - " );
-		queryBuilder.append( "[r" );
-		queryBuilder.append( ":" );
-		appendRelationshipType( queryBuilder, associationKeyMetadata );
-		offset = ownerEntityKeyMetadata.getColumnNames().length;
-		if ( associationKeyMetadata.getRowKeyIndexColumnNames().length > 0 ) {
-			appendProperties( queryBuilder, associationKeyMetadata.getRowKeyIndexColumnNames(), offset );
-			queryBuilder.append( "] - (t" );
-		}
-		else {
-			queryBuilder.append( "] - (t" );
-			appendProperties( queryBuilder, associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getColumnNames(), offset );
-		}
-		queryBuilder.append( ")" );
-		queryBuilder.append( " RETURN r" );
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example with association:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] - ()
-	 * DELETE r
-	 *
-	 * Example with an embedded association:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[a:role] - (e:EMBEDDED)
-	 * WITH a, e
-	 * MATCH path=(e) -[*0..]-> (:EMBEDDED)
-	 * FOREACH (r IN relationships(path) | DELETE r)
-	 * FOREACH (e IN nodes(path) | DELETE e)
-	 * DELETE a
-	 */
-	private static String initRemoveAssociationQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder("MATCH ");
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( ownerEntityKeyMetadata, queryBuilder );
-		appendProperties( ownerEntityKeyMetadata, queryBuilder );
-		queryBuilder.append( ") - " );
-		queryBuilder.append( "[a" );
-		queryBuilder.append( ":" );
-		appendRelationshipType( queryBuilder, associationKeyMetadata );
-		queryBuilder.append( "]" );
-		if ( associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			queryBuilder.append( " - (e:" );
-			queryBuilder.append( EMBEDDED );
-			queryBuilder.append( ")" );
-			queryBuilder.append( " WITH a,e" );
-			queryBuilder.append( "  MATCH path=(e) -[*0..]-> (:EMBEDDED) " );
-			queryBuilder.append( "  FOREACH ( r IN relationships(path) | DELETE r )" );
-			queryBuilder.append( "  FOREACH ( e IN nodes(path) | DELETE e )" );
-			queryBuilder.append( "  DELETE a" );
-		}
-		else {
-			queryBuilder.append( " - () DELETE a" );
-		}
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example with association:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] - (e)
-	 * DELETE r
-	 *
-	 * Example with embedded collection:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] - (e:EMBEDDED)
-	 * DELETE r, e
-	 *
-	 * Example with indexes:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role {index: {1}}] - (e)
-	 * DELETE r
-	 */
-	private static String initRemoveAssociationRowQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder("MATCH ");
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( ownerEntityKeyMetadata, queryBuilder );
-		appendProperties( ownerEntityKeyMetadata, queryBuilder );
-		queryBuilder.append( ") - " );
-		queryBuilder.append( "[r" );
-		queryBuilder.append( ":" );
-		appendRelationshipType( queryBuilder, associationKeyMetadata );
-		int offset = ownerEntityKeyMetadata.getColumnNames().length;
-		boolean hasIndexColumns = associationKeyMetadata.getRowKeyIndexColumnNames().length > 0;
-		if ( hasIndexColumns ) {
-			appendProperties( queryBuilder, associationKeyMetadata.getRowKeyIndexColumnNames(), offset );
-		}
-		queryBuilder.append( "] - (e" );
-		if ( associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			queryBuilder.append( ":" );
-			queryBuilder.append( EMBEDDED );
-		}
-		if ( !hasIndexColumns ) {
-			appendProperties( queryBuilder, associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getColumnNames(), offset );
-		}
-		queryBuilder.append( ")" );
-		queryBuilder.append( " DELETE r" );
-		if ( associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			queryBuilder.append( ", e" );
-		}
-		return queryBuilder.toString();
+		super( ownerEntityKeyMetadata, associationKeyMetadata );
 	}
 
 	/**
@@ -209,6 +60,12 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * @return the corresponding relationship
 	 */
 	public Relationship findRelationship(GraphDatabaseService executionEngine, AssociationKey associationKey, RowKey rowKey) {
+		Object[] queryValues = relationshipValues( associationKey, rowKey );
+		Result result = executionEngine.execute( findRelationshipQuery, params( queryValues ) );
+		return singleResult( result );
+	}
+
+	protected Object[] relationshipValues(AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues;
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0 ) {
 			int length = associationKey.getMetadata().getRowKeyIndexColumnNames().length;
@@ -226,8 +83,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 			relationshipValues = getEntityKey( associationKey, rowKey ).getColumnValues();
 		}
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
-		Result result = executionEngine.execute( findRelationshipQuery, params( queryValues ) );
-		return singleResult( result );
+		return queryValues;
 	}
 
 	/**
@@ -238,23 +94,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 	 * @param rowKey represents a row in an association
 	 */
 	public void removeAssociationRow(GraphDatabaseService executionEngine, AssociationKey associationKey, RowKey rowKey) {
-		Object[] relationshipValues;
-		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0 ) {
-			int length = associationKey.getMetadata().getRowKeyIndexColumnNames().length;
-			relationshipValues = new Object[length];
-			String[] indexColumnNames = associationKey.getMetadata().getRowKeyIndexColumnNames();
-			for ( int i = 0; i < indexColumnNames.length; i++ ) {
-				for ( int j = 0; j < rowKey.getColumnNames().length; j++ ) {
-					if ( indexColumnNames[i].equals( rowKey.getColumnNames()[j] ) ) {
-						relationshipValues[i] = rowKey.getColumnValues()[j];
-					}
-				}
-			}
-		}
-		else {
-			relationshipValues = getEntityKey( associationKey, rowKey ).getColumnValues();
-		}
-		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
+		Object[] queryValues = relationshipValues( associationKey, rowKey );
 		executionEngine.execute( removeAssociationRowQuery, params( queryValues ) );
 	}
 
@@ -279,10 +119,6 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		return new EntityKey( entityKeyMetadata, columnValues );
 	}
 
-	private static void appendRelationshipType(StringBuilder queryBuilder, AssociationKeyMetadata associationKeyMetadata) {
-		escapeIdentifier( queryBuilder, associationKeyMetadata.getCollectionRole() );
-	}
-
 	/**
 	 * Give an embedded association, creates all the nodes and relationships required to represent it.
 	 * It assumes that the entity node containing the association already exists in the db.
@@ -298,7 +134,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		return executeQuery( executionEngine, query, queryValues );
 	}
 
-	private String initCreateEmbeddedAssociationQuery(AssociationKey associationKey, EntityKey embeddedKey) {
+	protected String initCreateEmbeddedAssociationQuery(AssociationKey associationKey, EntityKey embeddedKey) {
 		String collectionRole = associationKey.getMetadata().getCollectionRole();
 		String[] embeddedColumnNames = embeddedKey.getColumnNames();
 		Object[] embeddedColumnValues = embeddedKey.getColumnValues();
@@ -314,7 +150,7 @@ public class Neo4jAssociationQueries extends QueriesBase {
 		return queryBuilder.toString();
 	}
 
-	private Object[] createRelationshipForEmbeddedQueryValues(AssociationKey associationKey, EntityKey embeddedKey) {
+	protected Object[] createRelationshipForEmbeddedQueryValues(AssociationKey associationKey, EntityKey embeddedKey) {
 		String collectionRole = associationKey.getMetadata().getCollectionRole();
 		Object[] columnValues = associationKey.getEntityKey().getColumnValues();
 		if ( isCollectionOfPrimitives( collectionRole, embeddedKey.getColumnNames() ) ) {

@@ -20,13 +20,11 @@ import org.hibernate.type.Type;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jTypeConverter {
-
-	public static final Neo4jTypeConverter INSTANCE = new Neo4jTypeConverter();
+public abstract class Neo4jTypeConverter {
 
 	private static final Map<Type, GridType> conversionMap = createGridTypeConversionMap();
 
-	private static Map<Type, GridType> createGridTypeConversionMap() {
+	protected static Map<Type, GridType> createGridTypeConversionMap() {
 		Map<Type, GridType> conversion = new HashMap<Type, GridType>();
 		conversion.put( StandardBasicTypes.CALENDAR, StringCalendarDateType.INSTANCE );
 		conversion.put( StandardBasicTypes.CALENDAR_DATE, StringCalendarDateType.INSTANCE );
@@ -45,5 +43,4 @@ public class Neo4jTypeConverter {
 	public GridType convert(Type type) {
 		return conversionMap.get( type );
 	}
-
 }

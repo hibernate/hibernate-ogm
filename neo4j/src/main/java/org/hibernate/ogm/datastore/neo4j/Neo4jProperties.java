@@ -34,6 +34,26 @@ public final class Neo4jProperties implements OgmProperties {
 	 */
 	public static final String SEQUENCE_QUERY_CACHE_MAX_SIZE = "hibernate.ogm.neo4j.sequence_query_cache_max_size";
 
+	/**
+	 * Socket inactivity timeout in milliseconds.
+	 */
+	public static String SOCKET_TIMEOUT = "hibernate.ogm.neo4j.client.socket_timeout";
+
+	/**
+	 * How long will we wait (in milliseconds) to get a connection?
+	 */
+	public static final String CONNECTION_CHECKOUT_TIMEOUT = "hibernate.ogm.neo4j.client.connection_checkout_timeout";
+
+	/**
+	 * Time to live of the connection in the pool.
+	 */
+	public static final String CONNECTION_TTL = "hibernate.ogm.neo4j.client.connection_ttl";
+
+	/**
+	 * the timeout in millisecond to make an initial socket connection.
+	 */
+	public static final String ESTABLISH_CONNECTION_TIMEOUT = "hibernate.ogm.neo4j.client.establish_connection_timeout";
+
 	private Neo4jProperties() {
 	}
 }

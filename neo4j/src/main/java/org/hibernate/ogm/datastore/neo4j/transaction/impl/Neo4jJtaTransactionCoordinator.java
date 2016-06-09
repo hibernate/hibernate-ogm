@@ -33,7 +33,7 @@ public class Neo4jJtaTransactionCoordinator extends ForwardingTransactionCoordin
 
 	public Neo4jJtaTransactionCoordinator(TransactionCoordinator jtaDelegate, Neo4jDatastoreProvider graphDb) {
 		super( jtaDelegate );
-		this.graphDB = graphDb.getDataBase();
+		this.graphDB = graphDb.getDatabase();
 	}
 
 	@Override
