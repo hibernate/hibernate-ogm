@@ -22,7 +22,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory {
+public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFactory {
 
 	private String dbLocation;
 

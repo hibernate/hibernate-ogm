@@ -20,7 +20,7 @@ public enum AvailableDatastoreProvider {
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
 	FONGO( "org.hibernate.ogm.datastore.mongodb.impl.FongoDBDatastoreProvider" ),
 	NEO4J_REMOTE( "org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider" ),
-	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider" ),
+	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider" ),
 	COUCHDB_EXPERIMENTAL( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" ),
 	CASSANDRA_EXPERIMENTAL( "org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider" ),
 	REDIS_EXPERIMENTAL( "org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider" );

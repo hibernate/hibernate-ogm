@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.remote.dialect.impl;
 
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jTypeConverter;
 import org.hibernate.ogm.type.impl.ByteMappedType;
 import org.hibernate.ogm.type.impl.LongMappedType;
 import org.hibernate.ogm.type.impl.PrimitiveByteArrayStringType;
@@ -20,11 +20,11 @@ import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 /**
- * A type {@link Neo4jTypeConverter} for remote Neo4j.
+ * A type {@link BaseNeo4jTypeConverter} for remote Neo4j.
  *
  * @author Davide D'Alto
  */
-public class RemoteNeo4jTypeConverter extends Neo4jTypeConverter {
+public class RemoteNeo4jTypeConverter extends BaseNeo4jTypeConverter {
 
 	public static final RemoteNeo4jTypeConverter INSTANCE = new RemoteNeo4jTypeConverter();
 
@@ -34,7 +34,7 @@ public class RemoteNeo4jTypeConverter extends Neo4jTypeConverter {
 	}
 
 	private static Map<Type, GridType> createRemoteGridTypeConversionMap() {
-		Map<Type, GridType> conversion = Neo4jTypeConverter.createGridTypeConversionMap();
+		Map<Type, GridType> conversion = BaseNeo4jTypeConverter.createGridTypeConversionMap();
 		conversion.put( StandardBasicTypes.LONG, LongMappedType.INSTANCE );
 		conversion.put( StandardBasicTypes.BYTE, ByteMappedType.INSTANCE );
 		conversion.put( StandardBasicTypes.BINARY, PrimitiveByteArrayStringType.INSTANCE );

@@ -28,11 +28,11 @@ import org.neo4j.graphdb.Relationship;
 /**
  * @author Davide D'Alto
  */
-public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
+public class EmbeddedNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> properties;
 
-	public Neo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+	public EmbeddedNeo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		properties = collectProperties( relationship, associationKey, associatedEntityKeyMetadata );
 	}
 

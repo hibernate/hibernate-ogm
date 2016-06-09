@@ -10,7 +10,7 @@ import static java.util.Collections.singletonMap;
 
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -56,7 +56,7 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class Neo4jSequenceGenerator extends BaseSequenceGenerator {
+public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 
 	private static final Log logger = LoggerFactory.getLogger();
 	/**
@@ -73,7 +73,7 @@ public class Neo4jSequenceGenerator extends BaseSequenceGenerator {
 
 	private final GraphDatabaseService neo4jDb;
 
-	public Neo4jSequenceGenerator(GraphDatabaseService neo4jDb, int sequenceCacheMaxSize) {
+	public EmbeddedNeo4jSequenceGenerator(GraphDatabaseService neo4jDb, int sequenceCacheMaxSize) {
 		this.neo4jDb = neo4jDb;
 		this.queryCache = new BoundedConcurrentHashMap<String, String>( sequenceCacheMaxSize, 20, BoundedConcurrentHashMap.Eviction.LIRS );
 	}

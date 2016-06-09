@@ -11,7 +11,7 @@ package org.hibernate.ogm.datastore.neo4j.embedded.impl;
  *
  * @author Gunnar Morling
  */
-public class InternalProperties {
+public class EmbeddedNeo4jInternalProperties {
 
 	/**
 	 * Qualified class name for the creation of a new {@link org.neo4j.graphdb.GraphDatabaseService}.
@@ -21,6 +21,6 @@ public class InternalProperties {
 	 */
 	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb_factoryclass";
 
-	private InternalProperties() {
+	private EmbeddedNeo4jInternalProperties() {
 	}
 }

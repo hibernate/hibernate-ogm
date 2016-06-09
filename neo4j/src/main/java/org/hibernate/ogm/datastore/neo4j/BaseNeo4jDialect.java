@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -52,9 +52,9 @@ public abstract class BaseNeo4jDialect extends BaseGridDialect implements Querya
 
 	private ServiceRegistryImplementor serviceRegistry;
 
-	private final Neo4jTypeConverter typeConverter;
+	private final BaseNeo4jTypeConverter typeConverter;
 
-	public BaseNeo4jDialect(Neo4jTypeConverter converter) {
+	public BaseNeo4jDialect(BaseNeo4jTypeConverter converter) {
 		this.typeConverter = converter;
 	}
 

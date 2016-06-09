@@ -22,15 +22,15 @@ import java.util.Set;
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTypeConverter;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.MapsTupleIterator;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jAssociationQueries;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jAssociationSnapshot;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jEntityQueries;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jTupleAssociationSnapshot;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jTupleSnapshot;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.NodesTupleIterator;
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jMapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleSnapshot;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jNodesTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -85,13 +85,13 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 
 	private final GraphDatabaseService dataBase;
 
-	private final Neo4jSequenceGenerator sequenceGenerator;
+	private final EmbeddedNeo4jSequenceGenerator sequenceGenerator;
 
-	private Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries;
+	private Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> entityQueries;
 
-	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries;
+	private Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> associationQueries;
 
-	public Neo4jDialect(Neo4jDatastoreProvider provider) {
+	public Neo4jDialect(EmbeddedNeo4jDatastoreProvider provider) {
 		super( EmbeddedNeo4jTypeConverter.INSTANCE );
 		this.dataBase = provider.getDatabase();
 		this.sequenceGenerator = provider.getSequenceGenerator();
@@ -103,40 +103,40 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
 	}
 
-	private Map<EntityKeyMetadata, Neo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
-			Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries) {
-		Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
+	private Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
+			Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> associationQueries) {
+		Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
 		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
 			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
 			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
 				// Embeddables metadata
-				entityQueries.put( entityKeyMetadata, new Neo4jEntityQueries( entityKeyMetadata ) );
+				entityQueries.put( entityKeyMetadata, new EmbeddedNeo4jEntityQueries( entityKeyMetadata ) );
 			}
 		}
 		return entityQueries;
 	}
 
-	private Map<EntityKeyMetadata, Neo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<EntityKeyMetadata, Neo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, Neo4jEntityQueries>();
+	private Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, EmbeddedNeo4jEntityQueries>();
 		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
 		for ( EntityPersister entityPersister : entityPersisters ) {
 			if (entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
-				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new Neo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
+				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new EmbeddedNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
 			}
 		}
 		return queryMap;
 	}
 
-	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<AssociationKeyMetadata, Neo4jAssociationQueries> queryMap = new HashMap<AssociationKeyMetadata, Neo4jAssociationQueries>();
+	private Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> queryMap = new HashMap<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries>();
 		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
 		for ( CollectionPersister collectionPersister : collectionPersisters ) {
 			if ( collectionPersister instanceof OgmCollectionPersister ) {
 				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
 				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
 				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
-				queryMap.put( associationKeyMetadata, new Neo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
+				queryMap.put( associationKeyMetadata, new EmbeddedNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
 			}
 		}
 		return queryMap;
@@ -150,7 +150,7 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 		}
 
 		return new Tuple(
-				Neo4jTupleSnapshot.fromNode(
+				EmbeddedNeo4jTupleSnapshot.fromNode(
 						entityNode,
 						context.getAllAssociatedEntityKeyMetadata(),
 						context.getAllRoles(),
@@ -188,7 +188,7 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
-					tuples[i] = new Tuple( Neo4jTupleSnapshot.fromNode( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
 							keys[i].getMetadata() ) );
 					// We assume there are no duplicated keys
 					break;
@@ -212,12 +212,12 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( Neo4jTupleSnapshot.emptySnapshot( key.getMetadata() ) );
+		return new Tuple( EmbeddedNeo4jTupleSnapshot.emptySnapshot( key.getMetadata() ) );
 	}
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
+		EmbeddedNeo4jTupleSnapshot snapshot = (EmbeddedNeo4jTupleSnapshot) tuple.getSnapshot();
 
 		// insert
 		if ( snapshot.isNew() ) {
@@ -324,7 +324,7 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 		}
 
 		Map<RowKey, Tuple> tuples = createAssociationMap( associationKey, associationContext, entityKey );
-		return new Association( new Neo4jAssociationSnapshot( tuples ) );
+		return new Association( new EmbeddedNeo4jAssociationSnapshot( tuples ) );
 	}
 
 	private Map<RowKey, Tuple> createAssociationMap(AssociationKey associationKey, AssociationContext associationContext, EntityKey entityKey) {
@@ -337,7 +337,7 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 			while ( relationships.hasNext() ) {
 				Relationship relationship = relationships.next();
 				AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
-				Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
+				EmbeddedNeo4jTupleAssociationSnapshot snapshot = new EmbeddedNeo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
 				RowKey rowKey = convert( associationKey, snapshot );
 				tuples.put( rowKey, new Tuple( snapshot ) );
 			}
@@ -559,7 +559,7 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 		try {
 			while ( queryNodes.hasNext() ) {
 				Node next = queryNodes.next();
-				Tuple tuple = new Tuple( Neo4jTupleSnapshot.fromNode( next,
+				Tuple tuple = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( next,
 						tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
 						entityKeyMetadata ) );
 				consumer.consume( tuple );
@@ -583,9 +583,9 @@ public class Neo4jDialect extends BaseNeo4jDialect {
 
 		EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
 		if ( entityMetadataInformation != null ) {
-			return new NodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
+			return new EmbeddedNeo4jNodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
 		}
-		return new MapsTupleIterator( result );
+		return new EmbeddedNeo4jMapsTupleIterator( result );
 	}
 
 	@Override

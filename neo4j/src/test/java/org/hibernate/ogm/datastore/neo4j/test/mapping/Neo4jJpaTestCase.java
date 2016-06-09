@@ -14,7 +14,7 @@ import java.util.Map;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
@@ -87,8 +87,8 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 
 	protected void executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
 		DatastoreProvider datastoreProvider = datastoreProvider();
-		if ( datastoreProvider instanceof Neo4jDatastoreProvider ) {
-			Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) datastoreProvider;
+		if ( datastoreProvider instanceof EmbeddedNeo4jDatastoreProvider ) {
+			EmbeddedNeo4jDatastoreProvider provider = (EmbeddedNeo4jDatastoreProvider) datastoreProvider;
 			GraphDatabaseService engine = provider.getDatabase();
 			try {
 				engine.execute( query, parameters );
@@ -115,7 +115,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 
 	protected GraphDatabaseService createExecutionEngine() {
 		DatastoreProvider datastoreProvider = datastoreProvider();
-		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) datastoreProvider;
+		EmbeddedNeo4jDatastoreProvider provider = (EmbeddedNeo4jDatastoreProvider) datastoreProvider;
 		return provider.getDatabase();
 	}
 

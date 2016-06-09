@@ -19,11 +19,11 @@ import org.neo4j.graphdb.Result;
  *
  * @author Davide D'Alto
  */
-public class MapsTupleIterator implements ClosableIterator<Tuple> {
+public class EmbeddedNeo4jMapsTupleIterator implements ClosableIterator<Tuple> {
 
 	private final ResourceIterator<Map<String, Object>> iterator;
 
-	public MapsTupleIterator(Result result) {
+	public EmbeddedNeo4jMapsTupleIterator(Result result) {
 		this.iterator = result;
 	}
 

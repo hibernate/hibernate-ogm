@@ -8,22 +8,22 @@ package org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl;
 
 import org.hibernate.ConnectionAcquisitionMode;
 import org.hibernate.ConnectionReleaseMode;
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
- * Builder for {@link Neo4jJtaTransactionCoordinator}.
+ * Builder for {@link EmbeddedNeo4jJtaTransactionCoordinator}.
  *
  * @author Davide D'Alto
  */
-public class Neo4jTransactionCoordinatorBuilder implements TransactionCoordinatorBuilder {
+public class EmbeddedNeo4jTransactionCoordinatorBuilder implements TransactionCoordinatorBuilder {
 
-	private final Neo4jDatastoreProvider datastoreProvider;
+	private final EmbeddedNeo4jDatastoreProvider datastoreProvider;
 	private final TransactionCoordinatorBuilder delegate;
 
-	public Neo4jTransactionCoordinatorBuilder(TransactionCoordinatorBuilder delegate, Neo4jDatastoreProvider datastoreProvider) {
+	public EmbeddedNeo4jTransactionCoordinatorBuilder(TransactionCoordinatorBuilder delegate, EmbeddedNeo4jDatastoreProvider datastoreProvider) {
 		this.delegate = delegate;
 		this.datastoreProvider = datastoreProvider;
 	}
@@ -32,10 +32,10 @@ public class Neo4jTransactionCoordinatorBuilder implements TransactionCoordinato
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, TransactionCoordinatorOptions options) {
 		if ( delegate.isJta() ) {
 			TransactionCoordinator coordinator = delegate.buildTransactionCoordinator( owner, options );
-			return new Neo4jJtaTransactionCoordinator( coordinator, datastoreProvider );
+			return new EmbeddedNeo4jJtaTransactionCoordinator( coordinator, datastoreProvider );
 		}
 		else {
-			return new Neo4jResourceLocalTransactionCoordinator( this, owner, datastoreProvider );
+			return new EmbeddedNeo4jResourceLocalTransactionCoordinator( this, owner, datastoreProvider );
 		}
 	}
 

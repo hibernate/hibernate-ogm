@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -56,7 +56,7 @@ import org.neo4j.graphdb.Label;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class RemoteNeo4jSequenceGenerator extends BaseSequenceGenerator {
+public class RemoteNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 
 	/**
 	 * Query for creating SEQUENCE nodes.

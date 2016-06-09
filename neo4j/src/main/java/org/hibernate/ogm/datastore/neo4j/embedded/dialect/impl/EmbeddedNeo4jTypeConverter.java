@@ -6,14 +6,14 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jTypeConverter;
 
 /**
- * A type {@link Neo4jTypeConverter} for embedded Neo4j.
+ * A type {@link BaseNeo4jTypeConverter} for embedded Neo4j.
  *
  * @author Davide D'Alto
  */
-public class EmbeddedNeo4jTypeConverter extends Neo4jTypeConverter {
+public class EmbeddedNeo4jTypeConverter extends BaseNeo4jTypeConverter {
 
 	public static final EmbeddedNeo4jTypeConverter INSTANCE = new EmbeddedNeo4jTypeConverter();
 

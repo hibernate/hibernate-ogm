@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
@@ -26,12 +26,12 @@ import org.neo4j.graphdb.Transaction;
  *
  * @author Davide D'Alto
  */
-public class Neo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
+public class EmbeddedNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
 
 	private final GraphDatabaseService graphDB;
 	private Transaction tx;
 
-	public Neo4jJtaTransactionCoordinator(TransactionCoordinator jtaDelegate, Neo4jDatastoreProvider graphDb) {
+	public EmbeddedNeo4jJtaTransactionCoordinator(TransactionCoordinator jtaDelegate, EmbeddedNeo4jDatastoreProvider graphDb) {
 		super( jtaDelegate );
 		this.graphDB = graphDb.getDatabase();
 	}

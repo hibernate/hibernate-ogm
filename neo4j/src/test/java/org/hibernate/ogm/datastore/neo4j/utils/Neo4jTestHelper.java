@@ -28,7 +28,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
@@ -113,7 +113,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 			return readCountFromResponse( session, remoteNeo4j, statement );
 		}
 		else {
-			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDatabase();
+			GraphDatabaseService graphDb = ( (EmbeddedNeo4jDatastoreProvider) provider ).getDatabase();
 			ResourceIterator<Long> result = graphDb.execute( ENTITY_COUNT_QUERY ).columnAs( "count" );
 			Long count = result.next();
 			result.close();
@@ -141,7 +141,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 			return readCountFromResponse( session, remoteNeo4j, statement );
 		}
 		else {
-			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDatabase();
+			GraphDatabaseService graphDb = ( (EmbeddedNeo4jDatastoreProvider) provider ).getDatabase();
 			ResourceIterator<Long> result = graphDb.execute( ASSOCIATION_COUNT_QUERY ).columnAs( "count" );
 			Long count = result.next();
 			result.close();
@@ -224,7 +224,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 			remoteNeo4j.executeQueriesInNewTransaction( statements );
 		}
 		else {
-			GraphDatabaseService graphDb = ( (Neo4jDatastoreProvider) provider ).getDatabase();
+			GraphDatabaseService graphDb = ( (EmbeddedNeo4jDatastoreProvider) provider ).getDatabase();
 			graphDb.execute( DELETE_ALL ).close();
 		}
 	}
@@ -275,8 +275,8 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	private static BaseDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
-		if ( Neo4jDatastoreProvider.class.isInstance( provider ) ) {
-			return Neo4jDatastoreProvider.class.cast( provider );
+		if ( EmbeddedNeo4jDatastoreProvider.class.isInstance( provider ) ) {
+			return EmbeddedNeo4jDatastoreProvider.class.cast( provider );
 		}
 		if ( RemoteNeo4jDatastoreProvider.class.isInstance( provider ) ) {
 			return RemoteNeo4jDatastoreProvider.class.cast( provider );
@@ -301,8 +301,8 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		if ( Neo4jDatastoreProvider.class.isInstance( datastoreProvider ) ) {
-			return new Neo4jDialect( (Neo4jDatastoreProvider) datastoreProvider );
+		if ( EmbeddedNeo4jDatastoreProvider.class.isInstance( datastoreProvider ) ) {
+			return new Neo4jDialect( (EmbeddedNeo4jDatastoreProvider) datastoreProvider );
 		}
 		if ( RemoteNeo4jDatastoreProvider.class.isInstance( datastoreProvider ) ) {
 			return new RemoteNeo4jDialect( (RemoteNeo4jDatastoreProvider) datastoreProvider );

@@ -15,19 +15,19 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 /**
  * Creates an instance of {@link GraphDatabaseServiceFactory} using the implementation selected in the properties.
  * <p>
- * If an implementation is not selected the default one is {@link EmbeddedGraphDatabaseFactory}.
+ * If an implementation is not selected the default one is {@link EmbeddedNeo4jGraphDatabaseFactory}.
  *
  * @see GraphDatabaseServiceFactory
- * @see InternalProperties#NEO4J_GRAPHDB_FACTORYCLASS
+ * @see EmbeddedNeo4jInternalProperties#NEO4J_GRAPHDB_FACTORYCLASS
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jGraphDatabaseServiceFactoryProvider {
+public class EmbeddedNeo4jGraphDatabaseServiceFactoryProvider {
 
 	public GraphDatabaseServiceFactory load(Map<?, ?> properties, ClassLoaderService classLoaderService) {
 		GraphDatabaseServiceFactory factory = new ConfigurationPropertyReader(properties, classLoaderService )
-			.property( InternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
+			.property( EmbeddedNeo4jInternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
 			.instantiate()
-			.withDefaultImplementation( EmbeddedGraphDatabaseFactory.class )
+			.withDefaultImplementation( EmbeddedNeo4jGraphDatabaseFactory.class )
 			.getValue();
 
 		factory.initialize( properties );

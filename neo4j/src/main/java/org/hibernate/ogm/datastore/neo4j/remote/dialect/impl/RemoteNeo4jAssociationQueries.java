@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.AssociationQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph;
@@ -30,7 +30,7 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
 /**
  * @author Davide D'Alto
  */
-public class RemoteNeo4jAssociationQueries extends AssociationQueries {
+public class RemoteNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 
 	public RemoteNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		super( ownerEntityKeyMetadata, associationKeyMetadata );

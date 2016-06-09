@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.EntityQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph;
@@ -33,7 +33,7 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
 /**
  * @author Davide D'Alto
  */
-public class RemoteNeo4jEntityQueries extends EntityQueries {
+public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 	private static final ClosableIteratorAdapter<RemoteNeo4jAssociationPropertiesRow> EMPTY_RELATIONSHIPS = new ClosableIteratorAdapter<>(
 			Collections.<RemoteNeo4jAssociationPropertiesRow>emptyList().iterator() );

@@ -19,7 +19,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
 /**
  * @author Davide D'Alto
  */
-public abstract class BaseSequenceGenerator {
+public abstract class BaseNeo4jSequenceGenerator {
 
 	protected static final String INITIAL_VALUE_QUERY_PARAM = "initialValue";
 	protected static final String SEQUENCE_NAME_QUERY_PARAM = "sequenceName";

@@ -15,7 +15,7 @@ import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.neo4j.impl.Neo4jSchemaDefiner;
+import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
@@ -46,7 +46,7 @@ import org.neo4j.graphdb.Label;
  * @author Davide D'Alto
  * @author Gunnar Morling
  */
-public class RemoteNeo4jSchemaDefiner extends Neo4jSchemaDefiner<Statements> {
+public class RemoteNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner<Statements> {
 
 	private static final Log log = LoggerFactory.getLogger();
 

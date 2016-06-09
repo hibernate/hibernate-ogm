@@ -20,7 +20,7 @@ import org.hibernate.type.Type;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public abstract class Neo4jTypeConverter {
+public abstract class BaseNeo4jTypeConverter {
 
 	private static final Map<Type, GridType> conversionMap = createGridTypeConversionMap();
 

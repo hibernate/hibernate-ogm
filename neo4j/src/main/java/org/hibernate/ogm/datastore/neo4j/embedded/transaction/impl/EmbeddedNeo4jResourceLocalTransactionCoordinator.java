@@ -18,7 +18,7 @@ import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.jdbc.WorkExecutor;
 import org.hibernate.jdbc.WorkExecutorVisitable;
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
@@ -36,7 +36,7 @@ import org.neo4j.graphdb.Transaction;
  *
  * @author Davide D'Alto
  */
-public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoordinator {
+public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements TransactionCoordinator {
 
 	private static final Log log = org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory.getLogger();
 
@@ -50,7 +50,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 
 	private final transient List<TransactionObserver> observers;
 
-	private Neo4jDatastoreProvider provider;
+	private EmbeddedNeo4jDatastoreProvider provider;
 
 	/**
 	 * Construct a ResourceLocalTransactionCoordinatorImpl instance. Package-protected to ensure access goes through
@@ -58,10 +58,10 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 	 *
 	 * @param owner The transactionCoordinatorOwner
 	 */
-	Neo4jResourceLocalTransactionCoordinator(
+	EmbeddedNeo4jResourceLocalTransactionCoordinator(
 			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
 			TransactionCoordinatorOwner owner,
-			Neo4jDatastoreProvider provider) {
+			EmbeddedNeo4jDatastoreProvider provider) {
 		this.provider = provider;
 		this.observers = new ArrayList<TransactionObserver>();
 		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
@@ -112,9 +112,9 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 
 	private class Neo4jIsolationDelegate implements IsolationDelegate {
 
-		private final Neo4jDatastoreProvider provider;
+		private final EmbeddedNeo4jDatastoreProvider provider;
 
-		public Neo4jIsolationDelegate(Neo4jDatastoreProvider provider) {
+		public Neo4jIsolationDelegate(EmbeddedNeo4jDatastoreProvider provider) {
 			this.provider = provider;
 		}
 
@@ -247,7 +247,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 		private boolean invalid;
 		private boolean rollbackOnly = false;
 
-		public Neo4jTransactionDriver(Neo4jDatastoreProvider provider) {
+		public Neo4jTransactionDriver(EmbeddedNeo4jDatastoreProvider provider) {
 			this.graphDB = provider.getDatabase();
 		}
 
@@ -260,7 +260,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 			errorIfInvalid();
 			tx = graphDB.beginTx();
 			status = TransactionStatus.ACTIVE;
-			Neo4jResourceLocalTransactionCoordinator.this.afterBeginCallback();
+			EmbeddedNeo4jResourceLocalTransactionCoordinator.this.afterBeginCallback();
 		}
 
 		protected void errorIfInvalid() {
@@ -276,11 +276,11 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 					throw new TransactionException( "Transaction was marked for rollback only; cannot commit" );
 				}
 
-				Neo4jResourceLocalTransactionCoordinator.this.beforeCompletionCallback();
+				EmbeddedNeo4jResourceLocalTransactionCoordinator.this.beforeCompletionCallback();
 				tx.success();
 				close();
 				status = TransactionStatus.NOT_ACTIVE;
-				Neo4jResourceLocalTransactionCoordinator.this.afterCompletionCallback( true );
+				EmbeddedNeo4jResourceLocalTransactionCoordinator.this.afterCompletionCallback( true );
 			}
 			catch (RuntimeException e) {
 				try {
@@ -309,7 +309,7 @@ public class Neo4jResourceLocalTransactionCoordinator implements TransactionCoor
 				tx.failure();
 				status = TransactionStatus.NOT_ACTIVE;
 				close();
-				Neo4jResourceLocalTransactionCoordinator.this.afterCompletionCallback( false );
+				EmbeddedNeo4jResourceLocalTransactionCoordinator.this.afterCompletionCallback( false );
 			}
 
 			// no-op otherwise.

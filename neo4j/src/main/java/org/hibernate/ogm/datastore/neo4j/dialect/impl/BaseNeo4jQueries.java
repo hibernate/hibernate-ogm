@@ -21,7 +21,7 @@ import org.neo4j.graphdb.Result;
  * @author Davide D'Alto
  * @author Gunnar Morling
  */
-class QueriesBase {
+class BaseNeo4jQueries {
 
 	protected static void appendLabel(EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
 		escapeIdentifier( queryBuilder, entityKeyMetadata.getTable() );

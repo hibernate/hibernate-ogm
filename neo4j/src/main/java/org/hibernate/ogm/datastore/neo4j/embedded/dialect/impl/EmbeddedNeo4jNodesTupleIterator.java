@@ -20,12 +20,12 @@ import org.neo4j.graphdb.Result;
  *
  * @author Davide D'Alto
  */
-public class NodesTupleIterator extends MapsTupleIterator {
+public class EmbeddedNeo4jNodesTupleIterator extends EmbeddedNeo4jMapsTupleIterator {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final TupleContext tupleContext;
 
-	public NodesTupleIterator(Result result, EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public EmbeddedNeo4jNodesTupleIterator(Result result, EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
 		super( result );
 		this.entityKeyMetadata = entityKeyMetadata;
 		this.tupleContext = tupleContext;
@@ -37,7 +37,7 @@ public class NodesTupleIterator extends MapsTupleIterator {
 	}
 
 	private Tuple createTuple(Node node) {
-		return new Tuple( Neo4jTupleSnapshot.fromNode( node,
+		return new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
 				tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
 				entityKeyMetadata ) );
 	}

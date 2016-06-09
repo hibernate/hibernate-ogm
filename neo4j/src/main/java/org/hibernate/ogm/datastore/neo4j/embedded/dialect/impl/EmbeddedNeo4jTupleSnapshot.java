@@ -30,26 +30,26 @@ import org.neo4j.graphdb.Relationship;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public final class Neo4jTupleSnapshot implements TupleSnapshot {
+public final class EmbeddedNeo4jTupleSnapshot implements TupleSnapshot {
 
 	private Node node;
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
 	private final Map<String, String> rolesByColumn;
 
-	private Neo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
+	private EmbeddedNeo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
 		this.node = node;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.rolesByColumn = rolesByColumn;
 		this.entityKeyMetadata = entityKeyMetadata;
 	}
 
-	public static Neo4jTupleSnapshot emptySnapshot(EntityKeyMetadata entityKeyMetadata) {
-		return new Neo4jTupleSnapshot(null, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata);
+	public static EmbeddedNeo4jTupleSnapshot emptySnapshot(EntityKeyMetadata entityKeyMetadata) {
+		return new EmbeddedNeo4jTupleSnapshot(null, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata);
 	}
 
-	public static Neo4jTupleSnapshot fromNode(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
-		return new Neo4jTupleSnapshot( node, associatedEntityKeyMetadata, rolesByColumn, entityKeyMetadata );
+	public static EmbeddedNeo4jTupleSnapshot fromNode(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
+		return new EmbeddedNeo4jTupleSnapshot( node, associatedEntityKeyMetadata, rolesByColumn, entityKeyMetadata );
 	}
 
 	@Override

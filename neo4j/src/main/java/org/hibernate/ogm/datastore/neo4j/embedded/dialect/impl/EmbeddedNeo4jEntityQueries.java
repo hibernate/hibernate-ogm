@@ -11,7 +11,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.Collections;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.EntityQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -29,13 +29,13 @@ import org.neo4j.graphdb.Result;
  *
  * @author Davide D'Alto
  */
-public class Neo4jEntityQueries extends EntityQueries {
+public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
-	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
+	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		super( entityKeyMetadata, null );
 	}
 
-	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
 		super( entityKeyMetadata, tupleContext );
 	}
 
@@ -47,7 +47,7 @@ public class Neo4jEntityQueries extends EntityQueries {
 	 * @param role the relationship type mapping the role of the association
 	 * @return an iterator on the results
 	 */
-	// We should move this in Neo4jAssociationQueries but, at the moment, having a query that only requires an
+	// We should move this in EmbeddedNeo4jAssociationQueries but, at the moment, having a query that only requires an
 	// EntityKeyMetadata make it easier
 	// to deal with the *ToOne scenario
 	public ResourceIterator<Relationship> findAssociation(GraphDatabaseService executionEngine, Object[] columnValues, String role) {

@@ -18,11 +18,11 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
+public final class EmbeddedNeo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, Tuple> tuples;
 
-	public Neo4jAssociationSnapshot(Map<RowKey, Tuple> tuples) {
+	public EmbeddedNeo4jAssociationSnapshot(Map<RowKey, Tuple> tuples) {
 		this.tuples = tuples;
 	}
 

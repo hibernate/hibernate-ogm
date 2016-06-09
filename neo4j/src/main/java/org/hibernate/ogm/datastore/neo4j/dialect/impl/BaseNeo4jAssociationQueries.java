@@ -37,7 +37,7 @@ import org.neo4j.graphdb.Result;
  *
  * @author Davide D'Alto
  */
-public abstract class AssociationQueries extends QueriesBase {
+public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 
 	protected final EntityKeyMetadata ownerEntityKeyMetadata;
 
@@ -47,7 +47,7 @@ public abstract class AssociationQueries extends QueriesBase {
 	protected final String removeAssociationQuery;
 	protected final String removeAssociationRowQuery;
 
-	public AssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	public BaseNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		this.ownerEntityKeyMetadata = ownerEntityKeyMetadata;
 		this.removeAssociationQuery = initRemoveAssociationQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.removeAssociationRowQuery = initRemoveAssociationRowQuery( ownerEntityKeyMetadata, associationKeyMetadata );

@@ -29,7 +29,7 @@ import org.neo4j.graphdb.Label;
 /**
  * @author Davide D'Alto
  */
-public abstract class Neo4jSchemaDefiner<T> extends BaseSchemaDefiner {
+public abstract class BaseNeo4jSchemaDefiner<T> extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
 

@@ -28,7 +28,7 @@ import org.hibernate.ogm.util.impl.EmbeddedHelper;
 /**
  * @author Davide D'Alto
  */
-public abstract class EntityQueries extends QueriesBase {
+public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 
 	private static final int CACHE_CAPACITY = 1000;
 	private static final int CACHE_CONCURRENCY_LEVEL = 20;
@@ -63,7 +63,7 @@ public abstract class EntityQueries extends QueriesBase {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 
-	public EntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public BaseNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
 		this.entityKeyMetadata = entityKeyMetadata;
 		this.updateEmbeddedPropertyQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
 		this.findAssociationQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );

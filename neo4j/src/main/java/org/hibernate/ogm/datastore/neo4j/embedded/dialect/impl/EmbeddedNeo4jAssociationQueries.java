@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.AssociationQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -35,9 +35,9 @@ import org.neo4j.graphdb.Result;
  *
  * @author Davide D'Alto
  */
-public class Neo4jAssociationQueries extends AssociationQueries {
+public class EmbeddedNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 
-	public Neo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	public EmbeddedNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		super( ownerEntityKeyMetadata, associationKeyMetadata );
 	}
 

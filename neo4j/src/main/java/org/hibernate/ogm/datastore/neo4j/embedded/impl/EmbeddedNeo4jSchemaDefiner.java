@@ -13,7 +13,7 @@ import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.neo4j.impl.Neo4jSchemaDefiner;
+import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -45,7 +45,7 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * @author Davide D'Alto
  * @author Gunnar Morling
  */
-public class EmbeddedNeo4jSchemaDefiner extends Neo4jSchemaDefiner<GraphDatabaseService> {
+public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner<GraphDatabaseService> {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -53,13 +53,13 @@ public class EmbeddedNeo4jSchemaDefiner extends Neo4jSchemaDefiner<GraphDatabase
 	public void initializeSchema(SchemaDefinitionContext context) {
 		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
-		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
+		EmbeddedNeo4jDatastoreProvider provider = (EmbeddedNeo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
 
 		createSequences( context.getDatabase(), context.getAllIdSourceKeyMetadata(), provider );
 		createEntityConstraints( provider.getDatabase(), context.getDatabase(), sessionFactoryImplementor.getProperties() );
 	}
 
-	private void createSequences(Database database, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata, Neo4jDatastoreProvider provider) {
+	private void createSequences(Database database, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata, EmbeddedNeo4jDatastoreProvider provider) {
 		List<Sequence> sequences = sequences( database );
 		provider.getSequenceGenerator().createSequences( sequences );
 		provider.getSequenceGenerator().createUniqueConstraintsForTableSequences( idSourceKeyMetadata );

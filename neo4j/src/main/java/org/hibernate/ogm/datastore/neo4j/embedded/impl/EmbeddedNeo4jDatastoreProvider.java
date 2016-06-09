@@ -11,8 +11,8 @@ import java.util.Map;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl.Neo4jTransactionCoordinatorBuilder;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl.EmbeddedNeo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
@@ -35,7 +35,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  *
  * @author Davide D'Alto
  */
-public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
+public class EmbeddedNeo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
 	private static Log LOG = LoggerFactory.getLogger();
@@ -46,7 +46,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	private ServiceRegistryImplementor registry;
 
-	private Neo4jSequenceGenerator sequenceGenerator;
+	private EmbeddedNeo4jSequenceGenerator sequenceGenerator;
 
 	private Integer sequenceCacheMaxSize;
 
@@ -62,7 +62,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	@Override
 	public void configure(Map cfg) {
-		graphDbFactory = new Neo4jGraphDatabaseServiceFactoryProvider().load( cfg, registry.getService( ClassLoaderService.class ) );
+		graphDbFactory = new EmbeddedNeo4jGraphDatabaseServiceFactoryProvider().load( cfg, registry.getService( ClassLoaderService.class ) );
 		sequenceCacheMaxSize = new ConfigurationPropertyReader( cfg )
 			.property( Neo4jProperties.SEQUENCE_QUERY_CACHE_MAX_SIZE, int.class )
 			.withDefault( DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE )
@@ -78,7 +78,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 	public void start() {
 		try {
 			this.neo4jDb = graphDbFactory.create();
-			this.sequenceGenerator = new Neo4jSequenceGenerator( neo4jDb, sequenceCacheMaxSize );
+			this.sequenceGenerator = new EmbeddedNeo4jSequenceGenerator( neo4jDb, sequenceCacheMaxSize );
 			this.graphDbFactory = null;
 			this.sequenceCacheMaxSize = null;
 		}
@@ -96,7 +96,7 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 		return neo4jDb;
 	}
 
-	public Neo4jSequenceGenerator getSequenceGenerator() {
+	public EmbeddedNeo4jSequenceGenerator getSequenceGenerator() {
 		return this.sequenceGenerator;
 	}
 
@@ -107,6 +107,6 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	@Override
 	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder) {
-		return new Neo4jTransactionCoordinatorBuilder( coordinatorBuilder, this );
+		return new EmbeddedNeo4jTransactionCoordinatorBuilder( coordinatorBuilder, this );
 	}
 }
