@@ -59,6 +59,20 @@ public class MongoDBIndexSpec {
 	 */
 	private MongoDBIndexOptions options;
 
+	/**
+	 * Constructor used for columns marked as unique.
+	 */
+	public MongoDBIndexSpec(String collection, String columnName, String indexName, MongoDBIndexOptions options) {
+		this.options = options;
+		this.collection = collection;
+		this.indexName = indexName;
+		this.unique = true;
+		indexKeys.put( columnName, 1 );
+	}
+
+	/**
+	 * Constructor used for {@link UniqueKey}s.
+	 */
 	public MongoDBIndexSpec(UniqueKey uniqueKey, MongoDBIndexOptions options) {
 		this.options = options;
 		this.collection = uniqueKey.getTable().getName();
@@ -67,6 +81,9 @@ public class MongoDBIndexSpec {
 		this.addIndexKeys( uniqueKey.getColumnIterator(), uniqueKey.getColumnOrderMap() );
 	}
 
+	/**
+	 * Constructor used for {@link Index}es.
+	 */
 	public MongoDBIndexSpec(Index index, MongoDBIndexOptions options) {
 		this.options = options;
 		this.collection = index.getTable().getName();

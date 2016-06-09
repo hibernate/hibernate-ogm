@@ -15,9 +15,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hibernate.boot.model.naming.Identifier;
+import org.hibernate.boot.model.naming.NamingHelper;
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
@@ -39,6 +43,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -87,39 +92,85 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		Map<String, Class<?>> tableEntityTypeMapping = context.getTableEntityTypeMapping();
 
 		Database database = context.getDatabase();
+		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret(
+				context.getSessionFactory().getProperties().get( Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
+		if ( constraintMethod == UniqueConstraintSchemaUpdateStrategy.SKIP ) {
+			log.tracef( "Skipping generation of unique constraints" );
+		}
+
 		for ( Namespace namespace : database.getNamespaces() ) {
 			for ( Table table : namespace.getTables() ) {
-				Class<?> entityType = tableEntityTypeMapping.get( table.getName() );
-				if ( entityType == null ) {
-					continue;
+				if ( table.isPhysicalTable() ) {
+					Class<?> entityType = tableEntityTypeMapping.get( table.getName() );
+					if ( entityType == null ) {
+						continue;
+					}
+
+					MongoDBCollection mongoDBOptions = getMongoDBOptions( optionsService, entityType );
+					Set<String> forIndexNotReferenced = new HashSet<>( mongoDBOptions.getReferencedIndexes() );
+
+					validateIndexSpecsForUniqueColumns( table, mongoDBOptions, forIndexNotReferenced, constraintMethod );
+
+					validateIndexSpecsForUniqueKeys( table, mongoDBOptions, forIndexNotReferenced, constraintMethod );
+
+					validateIndexSpecsForIndexes( table, mongoDBOptions, forIndexNotReferenced );
+
+					for (String forIndex : forIndexNotReferenced) {
+						log.indexOptionsReferencingNonExistingIndex( table.getName(), forIndex );
+					}
 				}
+			}
+		}
+	}
 
-				MongoDBCollection mongoDBOptions = getMongoDBOptions( optionsService, entityType );
-				Set<String> forIndexNotReferenced = new HashSet<>( mongoDBOptions.getReferencedIndexes() );
+	@SuppressWarnings("unchecked")
+	private void validateIndexSpecsForUniqueColumns(Table table, MongoDBCollection mongoDBOptions, Set<String> forIndexNotReferenced,
+			UniqueConstraintSchemaUpdateStrategy constraintMethod) {
+		Iterator<Column> columnIterator = table.getColumnIterator();
+		while ( columnIterator.hasNext() ) {
+			Column column = columnIterator.next();
+			if ( column.isUnique() ) {
+				String indexName = NamingHelper.INSTANCE.generateHashedConstraintName(
+						"UK_",
+						table.getNameIdentifier(),
+						Identifier.toIdentifier( column.getName() ) );
+				forIndexNotReferenced.remove( indexName );
 
-				Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
-				while ( keys.hasNext() ) {
-					UniqueKey uniqueKey = keys.next();
-					forIndexNotReferenced.remove( uniqueKey.getName() );
-					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( uniqueKey, getMongoDBIndexOption( mongoDBOptions, uniqueKey.getName() ) );
+				if ( constraintMethod != UniqueConstraintSchemaUpdateStrategy.SKIP ) {
+					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( table.getName(), column.getName(), indexName,
+							getMongoDBIndexOption( mongoDBOptions, indexName ) );
 					if ( validateIndexSpec( indexSpec ) ) {
 						indexSpecs.add( indexSpec );
 					}
 				}
+			}
+		}
+	}
 
-				Iterator<Index> indexes = table.getIndexIterator();
-				while ( indexes.hasNext() ) {
-					Index index = indexes.next();
-					forIndexNotReferenced.remove( index.getName() );
-					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index, getMongoDBIndexOption( mongoDBOptions, index.getName() ) );
-					if ( validateIndexSpec( indexSpec ) ) {
-						indexSpecs.add( indexSpec );
-					}
-				}
+	private void validateIndexSpecsForUniqueKeys(Table table, MongoDBCollection mongoDBOptions, Set<String> forIndexNotReferenced,
+			UniqueConstraintSchemaUpdateStrategy constraintMethod) {
+		Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
+		while ( keys.hasNext() ) {
+			UniqueKey uniqueKey = keys.next();
+			forIndexNotReferenced.remove( uniqueKey.getName() );
 
-				for (String forIndex : forIndexNotReferenced) {
-					log.indexOptionsReferencingNonExistingIndex( table.getName(), forIndex );
+			if ( constraintMethod != UniqueConstraintSchemaUpdateStrategy.SKIP ) {
+				MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( uniqueKey, getMongoDBIndexOption( mongoDBOptions, uniqueKey.getName() ) );
+				if ( validateIndexSpec( indexSpec ) ) {
+					indexSpecs.add( indexSpec );
 				}
+			}
+		}
+	}
+
+	private void validateIndexSpecsForIndexes(Table table, MongoDBCollection mongoDBOptions, Set<String> forIndexNotReferenced) {
+		Iterator<Index> indexes = table.getIndexIterator();
+		while ( indexes.hasNext() ) {
+			Index index = indexes.next();
+			forIndexNotReferenced.remove( index.getName() );
+			MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index, getMongoDBIndexOption( mongoDBOptions, index.getName() ) );
+			if ( validateIndexSpec( indexSpec ) ) {
+				indexSpecs.add( indexSpec );
 			}
 		}
 	}
