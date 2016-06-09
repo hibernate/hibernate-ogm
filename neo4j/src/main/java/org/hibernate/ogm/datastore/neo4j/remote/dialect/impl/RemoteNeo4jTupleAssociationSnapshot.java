@@ -103,4 +103,9 @@ public class RemoteNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 		return properties.keySet();
 	}
 
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
+	}
+
 }

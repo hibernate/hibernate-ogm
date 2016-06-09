@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.redis;
 
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,7 +20,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
@@ -42,8 +42,6 @@ import com.lambdaworks.redis.ScanArgs;
 import com.lambdaworks.redis.cluster.api.sync.RedisAdvancedClusterCommands;
 import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 import com.lambdaworks.redis.cluster.models.partitions.RedisClusterNode;
-
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
 /**
  * @author Mark Paluch
@@ -96,11 +94,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 		log.cannotDetermineRedisMode( info );
 		return null;
-	}
-
-	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( new RedisTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
 	@Override

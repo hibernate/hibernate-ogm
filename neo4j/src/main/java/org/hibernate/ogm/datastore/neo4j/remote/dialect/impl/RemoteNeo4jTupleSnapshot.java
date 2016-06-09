@@ -145,4 +145,9 @@ public final class RemoteNeo4jTupleSnapshot implements TupleSnapshot {
 		return node;
 	}
 
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
+	}
+
 }
