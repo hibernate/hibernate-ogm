@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.logging.impl;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -14,6 +15,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -101,4 +103,11 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1228, value = "Query must be executed using 'getResultList()' or 'getSingleResult()' method: %s")
 	HibernateException readQueryMustBeExecutedViaGetResultList(MongoDBQueryDescriptor queryDescriptor);
+
+	@Message(id = 1229, value = "Constraint violation for entity %s (%s)")
+	HibernateException constraintViolationForEntity(EntityKey entityKey, String message, @Cause Exception cause);
+
+	@Message(id = 1230, value = "Constraint violation while flushing several entities (%s)")
+	HibernateException constraintViolationOnFlush(String message, @Cause Exception cause);
+
 }
