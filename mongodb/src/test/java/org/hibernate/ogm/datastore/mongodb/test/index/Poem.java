@@ -27,7 +27,6 @@ import org.hibernate.ogm.datastore.mongodb.options.MongoDBCollection;
 		@Index(columnList = "author, name", name = "author_name_text_idx"),
 		@Index(columnList = "", name = "index_with_no_keys_idx"),
 		@Index(columnList = "name, author"), // index with no name
-		@Index(columnList = "name", name = "second_text_idx"),
 		@Index(columnList = "name", name = "invalid_partialFilterExpression_idx")
 } )
 @MongoDBCollection(indexOptions = {
@@ -35,7 +34,6 @@ import org.hibernate.ogm.datastore.mongodb.options.MongoDBCollection;
 		@MongoDBIndexOptions(forIndex = "name_idx", expireAfterSeconds = 10),
 		@MongoDBIndexOptions(forIndex = "author_name_text_idx", text = @MongoDBTextIndexOptions(defaultLanguage = "fr", weights = "{ 'author': 2, 'name': 5 }")),
 		@MongoDBIndexOptions(forIndex = "non_existing_idx"),
-		@MongoDBIndexOptions(forIndex = "second_text_idx", text = @MongoDBTextIndexOptions()),
 		@MongoDBIndexOptions(forIndex = "invalid_partialFilterExpression_idx", partialFilterExpression = "invalid { filter")
 })
 public class Poem {

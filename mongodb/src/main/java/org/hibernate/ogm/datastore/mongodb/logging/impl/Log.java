@@ -106,9 +106,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1229, value = "Unable to create index %2$s on collection %1$s")
 	HibernateException unableToCreateIndex(String collection, String indexName, @Cause Exception e);
 
-	@LogMessage(level = ERROR)
 	@Message(id = 1230, value = "Unable to create text index %2$s on collection %1$s. A text index named %3$s already exists and MongoDB only supports one text index per collection.")
-	void unableToCreateTextIndex(String collection, String newIndexName, String existingIndexName);
+	HibernateException unableToCreateTextIndex(String collection, String newIndexName, String existingIndexName);
 
 	@LogMessage(level = ERROR)
 	@Message(id = 1231, value = "Cannot create an index with an empty name for collection %1$s. Please provide a name for all the indexes.")

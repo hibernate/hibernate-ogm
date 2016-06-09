@@ -163,8 +163,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		// if a text index already exists in the collection, MongoDB silently ignores the creation of the new text index
 		// so we might as well log a warning about it
 		if ( indexSpec.isTextIndex() && preexistingTextIndex != null && !preexistingTextIndex.equalsIgnoreCase( indexSpec.getIndexName() ) ) {
-			log.unableToCreateTextIndex( collection.getName(), indexSpec.getIndexName(), preexistingTextIndex );
-			return;
+			throw log.unableToCreateTextIndex( collection.getName(), indexSpec.getIndexName(), preexistingTextIndex );
 		}
 
 		try {
