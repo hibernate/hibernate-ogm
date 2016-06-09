@@ -6,15 +6,16 @@
  */
 package org.hibernate.ogm.datastore.mongodb.logging.impl;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
-import static org.jboss.logging.Logger.Level.ERROR;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -124,5 +125,11 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = ERROR)
 	@Message(id = 1234, value = "%3$s is not a valid MongoDB document for index %2$s of collection %1$s")
 	void invalidMongoDBDocumentForOptionKey(String collection, String indexName, String optionKey);
+
+	@Message(id = 1235, value = "Constraint violation for entity %s (%s)")
+	HibernateException constraintViolationForEntity(EntityKey entityKey, String message, @Cause Exception cause);
+
+	@Message(id = 1236, value = "Constraint violation while flushing several entities (%s)")
+	HibernateException constraintViolationOnFlush(String message, @Cause Exception cause);
 
 }
