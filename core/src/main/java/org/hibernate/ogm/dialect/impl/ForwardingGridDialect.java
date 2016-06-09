@@ -31,7 +31,6 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -166,11 +165,6 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return gridDialect.getDuplicateInsertPreventionStrategy( entityKeyMetadata );
-	}
-
-	@Override
-	public void createIndex(OgmIndexSpec indexSpec) {
-		gridDialect.createIndex( indexSpec );
 	}
 
 	/*

@@ -7,13 +7,17 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
@@ -25,7 +29,7 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.MongoDBCollection;
 import org.hibernate.ogm.datastore.mongodb.options.impl.MongoDBCollectionOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.MongoDBIndexOptions;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.dialect.impl.OgmDialect;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -34,8 +38,13 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
 
 /**
  * Performs sanity checks of the mapped objects and creates objects.
@@ -48,6 +57,8 @@ import com.mongodb.BasicDBObject;
 public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
+
+	private static final int INDEX_CREATION_ERROR_CODE = 85;
 
 	private List<MongoDBIndexSpec> indexSpecs = new ArrayList<>();
 
@@ -62,9 +73,12 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema( SchemaDefinitionContext context) {
+		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
+		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
+
 		for ( MongoDBIndexSpec indexSpec : indexSpecs ) {
-			OgmDialect ogmDialect = (OgmDialect) context.getSessionFactory().getDialect();
-			ogmDialect.getGridDialect().createIndex( indexSpec );
+			createIndex( provider.getDatabase(), indexSpec );
 		}
 	}
 
@@ -73,37 +87,39 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		Map<String, Class<?>> tableEntityTypeMapping = context.getTableEntityTypeMapping();
 
 		Database database = context.getDatabase();
-		for ( Table table : database.getDefaultNamespace().getTables() ) {
-			Class<?> entityType = tableEntityTypeMapping.get( table.getName() );
-			if ( entityType == null ) {
-				continue;
-			}
-
-			MongoDBCollection mongoDBOptions = getMongoDBOptions( optionsService, entityType );
-			Set<String> forIndexNotReferenced = new HashSet<>( mongoDBOptions.getReferencedIndexes() );
-
-			Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
-			while ( keys.hasNext() ) {
-				UniqueKey uniqueKey = keys.next();
-				forIndexNotReferenced.remove( uniqueKey.getName() );
-				MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( uniqueKey, getMongoDBIndexOption( mongoDBOptions, uniqueKey.getName() ) );
-				if ( validateIndexSpec( indexSpec ) ) {
-					indexSpecs.add( indexSpec );
+		for ( Namespace namespace : database.getNamespaces() ) {
+			for ( Table table : namespace.getTables() ) {
+				Class<?> entityType = tableEntityTypeMapping.get( table.getName() );
+				if ( entityType == null ) {
+					continue;
 				}
-			}
 
-			Iterator<Index> indexes = table.getIndexIterator();
-			while ( indexes.hasNext() ) {
-				Index index = indexes.next();
-				forIndexNotReferenced.remove( index.getName() );
-				MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index, getMongoDBIndexOption( mongoDBOptions, index.getName() ) );
-				if ( validateIndexSpec( indexSpec ) ) {
-					indexSpecs.add( indexSpec );
+				MongoDBCollection mongoDBOptions = getMongoDBOptions( optionsService, entityType );
+				Set<String> forIndexNotReferenced = new HashSet<>( mongoDBOptions.getReferencedIndexes() );
+
+				Iterator<UniqueKey> keys = table.getUniqueKeyIterator();
+				while ( keys.hasNext() ) {
+					UniqueKey uniqueKey = keys.next();
+					forIndexNotReferenced.remove( uniqueKey.getName() );
+					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( uniqueKey, getMongoDBIndexOption( mongoDBOptions, uniqueKey.getName() ) );
+					if ( validateIndexSpec( indexSpec ) ) {
+						indexSpecs.add( indexSpec );
+					}
 				}
-			}
 
-			for (String forIndex : forIndexNotReferenced) {
-				log.indexOptionsReferencingNonExistingIndex( table.getName(), forIndex );
+				Iterator<Index> indexes = table.getIndexIterator();
+				while ( indexes.hasNext() ) {
+					Index index = indexes.next();
+					forIndexNotReferenced.remove( index.getName() );
+					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index, getMongoDBIndexOption( mongoDBOptions, index.getName() ) );
+					if ( validateIndexSpec( indexSpec ) ) {
+						indexSpecs.add( indexSpec );
+					}
+				}
+
+				for (String forIndex : forIndexNotReferenced) {
+					log.indexOptionsReferencingNonExistingIndex( table.getName(), forIndex );
+				}
 			}
 		}
 	}
@@ -139,18 +155,56 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		return valid;
 	}
 
-	private boolean parseDBObject(String collection, String indexName, String optionKey, String jsonString) {
-		if ( StringHelper.isNullOrEmptyString( jsonString ) ) {
-			return true;
+	public void createIndex(DB database, MongoDBIndexSpec indexSpec) {
+		DBCollection collection = database.getCollection( indexSpec.getCollection() );
+		Map<String, DBObject> preexistingIndexes = getIndexes( collection );
+		String preexistingTextIndex = getPreexistingTextIndex( preexistingIndexes );
+
+		// if a text index already exists in the collection, MongoDB silently ignores the creation of the new text index
+		// so we might as well log a warning about it
+		if ( indexSpec.isTextIndex() && preexistingTextIndex != null && !preexistingTextIndex.equalsIgnoreCase( indexSpec.getIndexName() ) ) {
+			log.unableToCreateTextIndex( collection.getName(), indexSpec.getIndexName(), preexistingTextIndex );
+			return;
 		}
+
 		try {
-			BasicDBObject.parse( jsonString );
-			return true;
+			// if the index is already present and with the same definition, MongoDB simply ignores the call
+			// if the definition is not the same, MongoDB throws an error, except in the case of a text index
+			// where it silently ignores the creation
+			collection.createIndex( indexSpec.getIndexKeysDBObject(), indexSpec.getIndexOptionsDBObject() );
 		}
-		catch (Exception e) {
-			log.invalidMongoDBDocumentForOptionKey( collection, indexName, optionKey );
-			return false;
+		catch (MongoException e) {
+			String indexName = indexSpec.getIndexName();
+			if ( e.getCode() == INDEX_CREATION_ERROR_CODE
+					&& !StringHelper.isNullOrEmptyString( indexName )
+					&& preexistingIndexes.containsKey( indexName ) ) {
+				// The index already exists with a different definition and has a name: we drop it and we recreate it
+				collection.dropIndex( indexName );
+				collection.createIndex( indexSpec.getIndexKeysDBObject(), indexSpec.getIndexOptionsDBObject() );
+			}
+			else {
+				throw log.unableToCreateIndex( collection.getName(), indexName, e );
+			}
 		}
+	}
+
+	private Map<String, DBObject> getIndexes(DBCollection collection) {
+		List<DBObject> indexes = collection.getIndexInfo();
+		Map<String, DBObject> indexMap = new HashMap<>();
+		for (DBObject index : indexes) {
+			indexMap.put( index.get( "name" ).toString(), index );
+		}
+		return indexMap;
+	}
+
+	private String getPreexistingTextIndex(Map<String, DBObject> preexistingIndexes) {
+		for ( Entry<String, DBObject> indexEntry : preexistingIndexes.entrySet() ) {
+			DBObject keys = (DBObject) indexEntry.getValue().get( "key" );
+			if ( keys != null && keys.containsField( "_fts" ) ) {
+				return indexEntry.getKey();
+			}
+		}
+		return null;
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {
@@ -226,6 +280,20 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		}
 		else if ( fieldName.contains( "\u0000" ) ) {
 			throw log.fieldNameContainsNULCharacter( fieldName );
+		}
+	}
+
+	private boolean parseDBObject(String collection, String indexName, String optionKey, String jsonString) {
+		if ( StringHelper.isNullOrEmptyString( jsonString ) ) {
+			return true;
+		}
+		try {
+			BasicDBObject.parse( jsonString );
+			return true;
+		}
+		catch (Exception e) {
+			log.invalidMongoDBDocumentForOptionKey( collection, indexName, optionKey );
+			return false;
 		}
 	}
 

@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +42,6 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.mongodb.index.MongoDBIndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
@@ -80,7 +78,6 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -97,7 +94,6 @@ import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
-import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -114,7 +110,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
-import com.mongodb.MongoException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
@@ -1237,60 +1232,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return NoOpParameterMetadataBuilder.INSTANCE;
-	}
-
-	@Override
-	public void createIndex(OgmIndexSpec ogmIndexSpec) {
-		MongoDBIndexSpec indexSpec = (MongoDBIndexSpec) ogmIndexSpec;
-		DBCollection collection = getCollection( indexSpec.getCollection() );
-		Map<String, DBObject> preexistingIndexes = getIndexes( collection );
-		String preexistingTextIndex = getPreexistingTextIndex( preexistingIndexes );
-
-		// if a text index already exists in the collection, MongoDB silently ignores the creation of the new text index
-		// so we might as well log a warning about it
-		if ( indexSpec.isTextIndex() && preexistingTextIndex != null && !preexistingTextIndex.equalsIgnoreCase( indexSpec.getIndexName() ) ) {
-			log.unableToCreateTextIndex( collection.getName(), indexSpec.getIndexName(), preexistingTextIndex );
-			return;
-		}
-
-		try {
-			// if the index is already present and with the same definition, MongoDB simply ignores the call
-			// if the definition is not the same, MongoDB throws an error, except in the case of a text index
-			// where it silently ignores the creation
-			collection.createIndex( indexSpec.getIndexKeysDBObject(), indexSpec.getIndexOptionsDBObject() );
-		}
-		catch (MongoException e) {
-			String indexName = indexSpec.getIndexName();
-			if ( e.getCode() == 85
-					&& !StringHelper.isNullOrEmptyString( indexName )
-					&& preexistingIndexes.containsKey( indexName ) ) {
-				// The index already exists with a different definition and has a name: we drop it and we recreate it
-				collection.dropIndex( indexName );
-				collection.createIndex( indexSpec.getIndexKeysDBObject(), indexSpec.getIndexOptionsDBObject() );
-			}
-			else {
-				throw log.unableToCreateIndex( collection.getName(), indexName, e );
-			}
-		}
-	}
-
-	private Map<String, DBObject> getIndexes(DBCollection collection) {
-		List<DBObject> indexes = collection.getIndexInfo();
-		Map<String, DBObject> indexMap = new HashMap<>();
-		for (DBObject index : indexes) {
-			indexMap.put( index.get( "name" ).toString(), index );
-		}
-		return indexMap;
-	}
-
-	private String getPreexistingTextIndex(Map<String, DBObject> preexistingIndexes) {
-		for ( Entry<String, DBObject> indexEntry : preexistingIndexes.entrySet() ) {
-			DBObject keys = (DBObject) indexEntry.getValue().get( "key" );
-			if ( keys != null && keys.containsField( "_fts" ) ) {
-				return indexEntry.getKey();
-			}
-		}
-		return null;
 	}
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {

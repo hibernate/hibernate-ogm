@@ -15,7 +15,6 @@ import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.options.impl.MongoDBIndexOptions;
 import org.hibernate.ogm.datastore.mongodb.options.impl.MongoDBTextIndexOptions;
-import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 import com.mongodb.BasicDBObject;
@@ -27,7 +26,7 @@ import com.mongodb.DBObject;
  * @author Francois Le Droff
  * @author Guillaume Smet
  */
-public class MongoDBIndexSpec implements OgmIndexSpec {
+public class MongoDBIndexSpec {
 
 	/**
 	 * The MongoDB collection/table for which the index will be set

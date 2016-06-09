@@ -9,7 +9,6 @@ package org.hibernate.ogm.dialect.spi;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
-import org.hibernate.ogm.index.OgmIndexSpec;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -44,9 +43,5 @@ public abstract class BaseGridDialect implements GridDialect {
 	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
-	}
-
-	@Override
-	public void createIndex(OgmIndexSpec indexSpec) {
 	}
 }
