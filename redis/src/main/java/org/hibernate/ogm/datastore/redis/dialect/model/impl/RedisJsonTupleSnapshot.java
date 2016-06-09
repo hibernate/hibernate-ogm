@@ -6,37 +6,38 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
  * @author Seiya Kawashima &lt;skawashima@uchicago.edu&gt;
  */
-public class RedisTupleSnapshot implements TupleSnapshot {
+public class RedisJsonTupleSnapshot implements TupleSnapshot {
 
-	private final Map<String, Object> map;
+	private final Entity entity;
 
-	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+	private SnapshotType snapshotType;
 
-	public RedisTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
+	public RedisJsonTupleSnapshot(Entity entity, SnapshotType snapshotType) {
+		this.entity = entity;
+		this.snapshotType = snapshotType;
 	}
 
 	@Override
 	public Object get(String column) {
-		return map.get( column );
+		return entity.getProperty( column );
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return map.isEmpty();
+		return entity.isEmpty();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
-		return map.keySet();
+		return entity.getKeys();
 	}
 
 	@Override
@@ -44,12 +45,12 @@ public class RedisTupleSnapshot implements TupleSnapshot {
 		return snapshotType;
 	}
 
-	@Override
+
 	public void setSnapshotType(SnapshotType snapshotType) {
 		this.snapshotType = snapshotType;
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	public Entity getEntity() {
+		return entity;
 	}
 }

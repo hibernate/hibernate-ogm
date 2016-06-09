@@ -14,7 +14,7 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
-import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
+import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisHashTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.redis.impl.hash.RedisHashTypeConverter;
@@ -75,7 +75,12 @@ public class RedisHashDialect extends AbstractRedisDialect {
 			objects = toEntity( tupleContext, hmget );
 		}
 
-		return new Tuple( new RedisTupleSnapshot( objects ) );
+		return new Tuple( new RedisHashTupleSnapshot( objects ) );
+	}
+
+	@Override
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+		return new Tuple( new RedisHashTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
 	private Map<String, Object> toEntity(TupleContext tupleContext, List<String> hmget) {
@@ -99,7 +104,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	public void insertOrUpdateTuple(
 			EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException {
 
-		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
+		Map<String, Object> map = ( (RedisHashTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, map );
 
 		Map<String, String> entity = getEntityForUpdate( key, tuple );
@@ -278,7 +283,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 
 				entity.putAll( hgetall );
 				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, entity );
-				consumer.consume( new Tuple( new RedisTupleSnapshot( entity ) ) );
+				consumer.consume( new Tuple( new RedisHashTupleSnapshot( entity ) ) );
 			}
 
 		} while ( !cursor.isFinished() );

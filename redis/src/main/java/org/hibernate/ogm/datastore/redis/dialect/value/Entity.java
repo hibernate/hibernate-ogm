@@ -162,7 +162,7 @@ public class Entity extends StructuredValue {
 	}
 
 	@JsonIgnore
-	public void removeAssociation(String name) {
+	public void unset(String name) {
 		if ( properties.containsKey( name ) ) {
 			properties.remove( name );
 		}
@@ -170,11 +170,26 @@ public class Entity extends StructuredValue {
 			Set<String> keys = new HashSet<String>( properties.keySet() );
 			for ( String key : keys ) {
 				if ( key.startsWith( name + "." ) ) {
-					removeAssociation( key );
+					unset( key );
 				}
 			}
 
 			DotPatternMapHelpers.resetValue( properties, name );
 		}
+	}
+
+	@JsonIgnore
+	public boolean isEmpty() {
+		return properties.isEmpty();
+	}
+
+	@JsonIgnore
+	public Set<String> getKeys() {
+		return properties.keySet();
+	}
+
+	@JsonIgnore
+	public Object getProperty(String dotPath) {
+		return properties.get( dotPath );
 	}
 }

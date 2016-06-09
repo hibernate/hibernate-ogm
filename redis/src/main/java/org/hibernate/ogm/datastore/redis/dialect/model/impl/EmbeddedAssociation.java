@@ -54,11 +54,11 @@ class EmbeddedAssociation extends RedisAssociation {
 	@Override
 	public void setRows(Object rows) {
 		if ( isEmpty( rows ) ) {
-			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			entity.unset( associationKeyMetadata.getCollectionRole() );
 		}
 		else {
 
-			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			entity.unset( associationKeyMetadata.getCollectionRole() );
 			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
 				Object value = ( (Collection) rows ).iterator().next();
 				entity.set( associationKeyMetadata.getCollectionRole(), value );
