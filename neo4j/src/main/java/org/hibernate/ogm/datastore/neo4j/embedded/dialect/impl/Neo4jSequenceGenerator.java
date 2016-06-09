@@ -4,12 +4,14 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.neo4j.dialect.impl;
+package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
 import static java.util.Collections.singletonMap;
 
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;

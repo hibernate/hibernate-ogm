@@ -13,7 +13,7 @@ import java.util.Properties;
 import org.fest.util.Files;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.impl.EmbeddedGraphDatabaseFactory;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedGraphDatabaseFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.junit.After;
 import org.junit.Before;

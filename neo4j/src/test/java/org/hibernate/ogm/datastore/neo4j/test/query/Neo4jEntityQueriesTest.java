@@ -13,7 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.Neo4jEntityQueries;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.Test;
