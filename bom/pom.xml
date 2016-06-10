@@ -49,8 +49,8 @@
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
-        <resteasyVersion>3.0.9.Final</resteasyVersion>
-        <jacksonVersion>2.4.1</jacksonVersion>
+        <resteasyVersion>3.0.14.Final</resteasyVersion>
+        <jacksonVersion>2.5.4</jacksonVersion>
         <parboiledVersion>1.1.7</parboiledVersion>
         <scalaLibraryVersion>2.11.7</scalaLibraryVersion>
         <scalaParserCombinatorVersion>1.0.4</scalaParserCombinatorVersion>
@@ -489,22 +489,10 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${resteasyVersion}</version>
-                <exclusions>
-                    <!-- Actually RESTEasy shouldn't depend on a slf4j backend -->
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-simple</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${resteasyVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>jaxrs-api</artifactId>
                 <version>${resteasyVersion}</version>
             </dependency>
 
