@@ -18,7 +18,7 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.remote.transaction.impl.RemoteTransactionCoordinatorBuilder;
+import org.hibernate.ogm.datastore.neo4j.remote.transaction.impl.RemoteNeo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -151,6 +151,6 @@ public class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implemen
 
 	@Override
 	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder(TransactionCoordinatorBuilder coordinatorBuilder) {
-		return new RemoteTransactionCoordinatorBuilder( coordinatorBuilder, this );
+		return new RemoteNeo4jTransactionCoordinatorBuilder( coordinatorBuilder, this );
 	}
 }

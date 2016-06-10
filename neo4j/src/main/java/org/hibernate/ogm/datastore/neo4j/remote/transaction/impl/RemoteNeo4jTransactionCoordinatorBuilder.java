@@ -17,11 +17,11 @@ import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
  *
  * @author Davide D'Alto
  */
-public class RemoteTransactionCoordinatorBuilder extends ForwardingTransactionCoordinatorBuilder {
+public class RemoteNeo4jTransactionCoordinatorBuilder extends ForwardingTransactionCoordinatorBuilder {
 
 	private final RemoteNeo4jDatastoreProvider datastoreProvider;
 
-	public RemoteTransactionCoordinatorBuilder(TransactionCoordinatorBuilder delegate, RemoteNeo4jDatastoreProvider datastoreProvider) {
+	public RemoteNeo4jTransactionCoordinatorBuilder(TransactionCoordinatorBuilder delegate, RemoteNeo4jDatastoreProvider datastoreProvider) {
 		super( delegate );
 		this.datastoreProvider = datastoreProvider;
 	}
