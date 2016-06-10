@@ -110,4 +110,25 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1230, value = "Constraint violation while flushing several entities (%s)")
 	HibernateException constraintViolationOnFlush(String message, @Cause Exception cause);
 
+	@Message(id = 1231, value = "Unable to create index %2$s on collection %1$s")
+	HibernateException unableToCreateIndex(String collection, String indexName, @Cause Exception e);
+
+	@Message(id = 1232, value = "Unable to create text index %2$s on collection %1$s. A text index named %3$s already exists and MongoDB only supports one text index per collection.")
+	HibernateException unableToCreateTextIndex(String collection, String newIndexName, String existingIndexName);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1233, value = "Cannot create an index with an empty name for collection %1$s. Please provide a name for all the indexes.")
+	void indexNameIsEmpty(String collection);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1234, value = "No valid keys found for the index %2$s of collection %1$s.")
+	void noValidKeysForIndex(String collection, String indexName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1235, value = "Index option for index %2$s of collection %1$s are referencing a non existing index.")
+	void indexOptionReferencingNonExistingIndex(String collection, String forIndex);
+
+	@Message(id = 1236, value = "The options for index %2$s of collection %1$s are not a valid JSON object.")
+	HibernateException invalidOptionsFormatForIndex(String collection, String indexName, @Cause Exception e);
+
 }
