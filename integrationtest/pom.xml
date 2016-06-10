@@ -66,7 +66,7 @@
                         <configuration>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <includes>
-                                <include>**/neo4j/*IT.java</include>
+                                <include>**/neo4j/embedded/*IT.java</include>
                                 <include>**/mongodb/*IT.java</include>
                                 <include>**/ehcache/*IT.java</include>
                                 <include>**/infinispan/*IT.java</include>
