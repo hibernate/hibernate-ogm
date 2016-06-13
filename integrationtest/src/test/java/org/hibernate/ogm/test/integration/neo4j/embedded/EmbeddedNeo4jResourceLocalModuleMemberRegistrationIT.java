@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.test.integration.neo4j;
+package org.hibernate.ogm.test.integration.neo4j.embedded;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -33,12 +33,12 @@ import org.junit.runner.RunWith;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
-public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
+public class EmbeddedNeo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
 
 	@Deployment
 	public static Archive<?> createTestArchive() throws Exception {
 		return new ModuleMemberRegistrationDeployment
-				.Builder( Neo4jResourceLocalModuleMemberRegistrationIT.class )
+				.Builder( EmbeddedNeo4jResourceLocalModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.neo4j:${hibernate-ogm.module.slot} services" )
 				.createDeployment();
@@ -53,10 +53,10 @@ public class Neo4jResourceLocalModuleMemberRegistrationIT extends ModuleMemberRe
 				.provider( HibernateOgmPersistence.class.getName() )
 				.getOrCreateProperties();
 		PersistenceDescriptor persistenceDescriptor = propertiesContext
-				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.DATASTORE_PROVIDER_NAME ).up()
+				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.EMBEDDED_DATASTORE_PROVIDER_NAME ).up()
 				.createProperty()
 				.name( Neo4jProperties.DATABASE_PATH )
-				.value( Neo4jJtaModuleMemberRegistrationIT.neo4jFolder() )
+				.value( EmbeddedNeo4jJtaModuleMemberRegistrationIT.neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();

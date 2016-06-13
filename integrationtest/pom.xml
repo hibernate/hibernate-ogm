@@ -66,7 +66,7 @@
                         <configuration>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <includes>
-                                <include>**/neo4j/*IT.java</include>
+                                <include>**/neo4j/embedded/*IT.java</include>
                                 <include>**/mongodb/*IT.java</include>
                                 <include>**/ehcache/*IT.java</include>
                                 <include>**/infinispan/*IT.java</include>
@@ -328,6 +328,39 @@
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
                                         <include>**/cassandra/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>run-neo4j-wildfly-tests</id>
+            <!-- To run the tests you need to define the 
+                environment property: NEO4J_HOSTNAME -->
+            <activation>
+                <property>
+                    <name>env.NEO4J_HOSTNAME</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                   <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>neo4j-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/neo4j/remote/*IT.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
