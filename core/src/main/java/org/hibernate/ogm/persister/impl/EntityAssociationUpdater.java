@@ -184,8 +184,11 @@ class EntityAssociationUpdater {
 				.getService( OptionsService.class )
 				.context();
 
+		Class<?> entityType = persister.getPropertyTypes()[propertyIndex].getReturnedClass();
+
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
-				serviceContext.getPropertyOptions( persister.getPropertyTypes()[propertyIndex].getReturnedClass(), associationKeyMetadata.getCollectionRole() ),
+				serviceContext.getPropertyOptions( entityType, associationKeyMetadata.getCollectionRole() ),
+				serviceContext.getEntityOptions( entityType ),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				persister.getPropertyNames()[propertyIndex]
 		);

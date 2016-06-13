@@ -52,6 +52,7 @@ import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
@@ -153,6 +154,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 								Project.class,
 								"modules"
 						),
+						EmptyOptionsContext.INSTANCE,
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),

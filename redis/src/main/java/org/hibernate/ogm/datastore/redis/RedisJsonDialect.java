@@ -150,7 +150,8 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			Entity owningEntity = getEmbeddingEntity( key );
 
 			if ( owningEntity == null ) {
-				owningEntity = storeEntity( key.getEntityKey(), new Entity(), associationContext );
+				owningEntity = new Entity();
+				storeEntity( key.getEntityKey(), new Entity(), associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
 			}
 
 			redisAssociation = RedisAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
@@ -190,7 +191,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			storeEntity(
 					associationKey.getEntityKey(),
 					(Entity) redisAssociation.getOwningDocument(),
-					associationContext
+					associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext()
 			);
 		}
 		else {
@@ -262,7 +263,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
-				storeEntity( key.getEntityKey(), owningEntity, associationContext );
+				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
 			}
 		}
 		else {
@@ -304,33 +305,19 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
 
-		storeEntity( key, entityDocument, optionsContext, operations );
+		storeEntity( key, entityDocument, optionsContext );
 	}
 
 	private void storeEntity(
 			EntityKey key,
 			Entity document,
-			OptionsContext optionsContext,
-			Set<TupleOperation> operations) {
+			OptionsContext optionsContext) {
 
 		Long currentTtl = connection.pttl( entityId( key ) );
 
-		entityStorageStrategy.storeEntity( entityId( key ), document, operations );
+		entityStorageStrategy.storeEntity( entityId( key ), document );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
-	}
-
-	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
-		Long currentTtl = connection.pttl( entityId( key ) );
-
-		entityStorageStrategy.storeEntity(
-				entityId( key ),
-				entity,
-				null
-		);
-
-		setEntityTTL( key, currentTtl, getTTL( associationContext ) );
-		return entity;
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {

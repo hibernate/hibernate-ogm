@@ -141,6 +141,12 @@ public class Zoo {
 ----
 ====
 
+The annotation on the entity level expresses that all associations of the `Zoo`
+class should be stored in separate association documents.
+This setting applies to the `animals` and `employees` associations.
+Only the elements of the `visitors` association will be stored in the document of the corresponding `Zoo` entity
+as per the configuration of that specific property which takes precedence over the entity-level configuration.
+
 .Configuring the TTL/expiry using annotations
 ====
 [source, JAVA]
@@ -153,7 +159,12 @@ public class Zoo {
     private Set<Animal> animals;
 
     @OneToMany
+    @TTL(value = 3, unit = TimeUnit.DAYS)
     private Set<Person> employees;
+
+    @OneToMany
+    @AssociationStorage(AssociationStorageType.IN_ENTITY)
+    private Set<Person> visitors;
 
     //...
 }
@@ -165,11 +176,8 @@ Hibernate OGM allows to specify a TTL value on entities and associations. The TT
 the entity using the http://redis.io/commands/pexpire[PEXPIRE] command. Every write to Redis will
 set a new TTL.
 
-The annotation on the entity level expresses that all associations of the `Zoo`
-class should be stored in separate assocation documents.
-This setting applies to the `animals` and `employees` associations.
-Only the elements of the `visitors` association will be stored in the document of the corresponding `Zoo` entity
-as per the configuration of that specific property which takes precedence over the entity-level configuration.
+You can specify a different TTL on associations if they are stored as separate documents. In the case of `visitors`
+which is stored in the entity, the TTL of the association will be the one of the entity.
 
 [[ogm-redis-storage-principles]]
 === Storage principles

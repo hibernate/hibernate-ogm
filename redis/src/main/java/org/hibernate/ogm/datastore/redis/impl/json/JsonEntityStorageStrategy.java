@@ -7,10 +7,8 @@
 package org.hibernate.ogm.datastore.redis.impl.json;
 
 import java.util.Iterator;
-import java.util.Set;
 
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
-import org.hibernate.ogm.model.spi.TupleOperation;
 
 import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
@@ -37,7 +35,7 @@ public class JsonEntityStorageStrategy  {
 		return jsonSerializationStrategy.deserialize( value, Entity.class );
 	}
 
-	public void storeEntity(String key, Entity entity, Set<TupleOperation> operations) {
+	public void storeEntity(String key, Entity entity) {
 		String value = jsonSerializationStrategy.serialize( entity );
 
 		connection.set( key, value );
