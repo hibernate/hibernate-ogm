@@ -53,7 +53,7 @@ public class EmbeddedNeo4jResourceLocalModuleMemberRegistrationIT extends Module
 				.provider( HibernateOgmPersistence.class.getName() )
 				.getOrCreateProperties();
 		PersistenceDescriptor persistenceDescriptor = propertiesContext
-				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.DATASTORE_PROVIDER_NAME ).up()
+				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.EMBEDDED_DATASTORE_PROVIDER_NAME ).up()
 				.createProperty()
 				.name( Neo4jProperties.DATABASE_PATH )
 				.value( EmbeddedNeo4jJtaModuleMemberRegistrationIT.neo4jFolder() )
