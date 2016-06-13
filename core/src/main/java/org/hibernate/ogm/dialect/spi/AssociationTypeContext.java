@@ -20,11 +20,18 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 public interface AssociationTypeContext {
 
 	/**
-	 * Provide access to the options set for an entity or property.
+	 * Provide access to the options set for the association.
 	 *
-	 * @return a context object providing access to the options effectively applying for a given entity or property.
+	 * @return a context object providing access to the options effectively applying for the association.
 	 */
 	OptionsContext getOptionsContext();
+
+	/**
+	 * Provide access to the options set for the entity owner of the association.
+	 *
+	 * @return a context object providing access to the options effectively applying for the owner entity.
+	 */
+	OptionsContext getOwnerEntityOptionsContext();
 
 	/**
 	 * Provides meta-data about the entity key on the other side of this association.

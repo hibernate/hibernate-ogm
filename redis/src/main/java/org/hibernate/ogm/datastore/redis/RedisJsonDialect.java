@@ -188,7 +188,8 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			Entity owningEntity = getEmbeddingEntity( key, associationContext );
 
 			if ( owningEntity == null ) {
-				owningEntity = storeEntity( key.getEntityKey(), new Entity(), associationContext );
+				owningEntity = new Entity();
+				storeEntity( key.getEntityKey(), new Entity(), associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
 			}
 
 			redisAssociation = RedisAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
@@ -235,7 +236,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			storeEntity(
 					associationKey.getEntityKey(),
 					(Entity) redisAssociation.getOwningDocument(),
-					associationContext
+					associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext()
 			);
 		}
 		else {
@@ -307,7 +308,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 			if ( owningEntity != null ) {
 				owningEntity.unset( key.getMetadata().getCollectionRole() );
-				storeEntity( key.getEntityKey(), owningEntity, associationContext );
+				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
 			}
 		}
 		else {
@@ -341,15 +342,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		entityStorageStrategy.storeEntity( entityId( key ), entity );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
-	}
-
-	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
-		Long currentTtl = connection.pttl( entityId( key ) );
-
-		entityStorageStrategy.storeEntity( entityId( key ), entity );
-
-		setEntityTTL( key, currentTtl, getTTL( associationContext ) );
-		return entity;
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {
