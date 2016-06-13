@@ -29,5 +29,10 @@
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
+
+        <!-- RestEasy for Neo4j Remote -->
+        <module name="javax.ws.rs.api" />
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
+        <module name="org.jboss.resteasy.resteasy-jaxrs" />
     </dependencies>
 </module>
