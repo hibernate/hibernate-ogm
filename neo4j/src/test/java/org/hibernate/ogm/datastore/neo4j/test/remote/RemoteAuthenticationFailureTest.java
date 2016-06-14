@@ -32,6 +32,9 @@ public class RemoteAuthenticationFailureTest {
 	@Test
 	public void testAuthenticationFailureAtStartUp() throws Exception {
 		Properties properties = new Properties();
+		// Set by Neo4jTestHelper
+		properties.setProperty( OgmProperties.HOST, System.getProperties().getProperty( OgmProperties.HOST ) );
+		properties.setProperty( OgmProperties.PORT, System.getProperties().getProperty( OgmProperties.PORT ) );
 		properties.setProperty( OgmProperties.USERNAME, "completely wrong" );
 		properties.setProperty( OgmProperties.PASSWORD, "completely wrong" );
 		RemoteNeo4jDatastoreProvider remoteDatastoreProvider = new RemoteNeo4jDatastoreProvider();
