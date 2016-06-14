@@ -75,9 +75,13 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	static {
 		// Read host, username and password from environment variable
 		// Maven's surefire plugin set it to the string 'null'
-		String neo4jHost = System.getenv( "NEO4J_HOST" );
+		String neo4jHost = System.getenv( "NEO4J_HOSTNAME" );
 		if ( isNotNull( neo4jHost ) ) {
 			System.getProperties().setProperty( OgmProperties.HOST, neo4jHost );
+		}
+		String neo4jPort = System.getenv( "NEO4J_PORT" );
+		if ( isNotNull( neo4jPort ) ) {
+			System.getProperties().setProperty( OgmProperties.PORT, neo4jPort );
 		}
 		String neo4jUsername = System.getenv( "NEO4J_USERNAME" );
 		if ( isNotNull( neo4jUsername ) ) {

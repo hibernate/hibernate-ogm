@@ -147,10 +147,11 @@ If you want to run the tests on a remote server, you need to specify the profile
 
 This assumes Neo4j to be installed on `localhost`, using the default port and no authentication.
 If you work with different settings, configure the required properties in hibernate.properties
-and/or the environment variables `NEO4J_HOST` `NEO4J_USERNAME` `NEO4J_PASSWORD`
+and/or the environment variables `NEO4J_HOSTNAME`, `NEO4J_PORT`, `NEO4J_USERNAME` and `NEO4J_PASSWORD`
 prior to running the tests:
 
-    export NEO4J_HOST=neo4j-machine:1234
+    export NEO4J_HOSTNAME=neo4j-machine
+    export NEO4J_PORT=1234
     export NEO4J_USERNAME=someUsername
     export NEO4J_PASSWORD=someP@ssw0rd
 
