@@ -3329,6 +3329,12 @@ int removed = session.createNativeQuery( removeQuery ).executeUpdate();
 ----
 ====
 
+[WARNING]
+====
+Support for the `$regexp` operator is limited to the string syntax. We do not support the `/pattern/` syntax as it is not
+currently supported by the MongoDB Java driver.
+====
+
 ==== Hibernate Search
 
 You can index your entities using Hibernate Search.
