@@ -3333,6 +3333,13 @@ int removed = session.createNativeQuery( removeQuery ).executeUpdate();
 ====
 Support for the `$regexp` operator is limited to the string syntax. We do not support the `/pattern/` syntax as it is not
 currently supported by the MongoDB Java driver.
+
+[source, JAVA]
+----
+// Valid syntax
+String nativeQuery = "{ $query : { author : { $regex : '^Oscar' } }, $orderby : { name : 1 } }";
+List<Poem> result = session.createNativeQuery( nativeQuery ).addEntity( Poem.class ).list();
+----
 ====
 
 ==== Hibernate Search
