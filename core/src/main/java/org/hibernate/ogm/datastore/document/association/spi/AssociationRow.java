@@ -13,6 +13,7 @@ import java.util.Set;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 
 /**
  * A {@link TupleSnapshot} which represents one row of an association.
@@ -96,6 +97,11 @@ public class AssociationRow<R> implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return columnNames;
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
 	}
 
 	/**

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -34,5 +35,10 @@ public final class EmptyTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
 	}
 }

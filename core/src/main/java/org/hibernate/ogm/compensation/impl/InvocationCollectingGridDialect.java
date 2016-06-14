@@ -33,6 +33,7 @@ import org.hibernate.ogm.compensation.operation.impl.RemoveAssociationImpl;
 import org.hibernate.ogm.compensation.operation.impl.RemoveTupleImpl;
 import org.hibernate.ogm.compensation.operation.impl.RemoveTupleWithOptimisticLockImpl;
 import org.hibernate.ogm.compensation.operation.impl.UpdateTupleWithOptimisticLockImpl;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
@@ -97,24 +98,14 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 			while ( operation != null ) {
 				newQueue.add( operation );
 
-				if ( operation instanceof InsertOrUpdateTupleOperation ) {
-					InsertOrUpdateTupleOperation insertOrUpdateTuple = (InsertOrUpdateTupleOperation) operation;
-					operations.add( new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuple() ) );
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					GroupedChangesToEntityOperation groupedChangesOnEntity = (GroupedChangesToEntityOperation) operation;
+					for (Operation groupedOperation : groupedChangesOnEntity.getOperations()) {
+						operations.add( getSimpleGridDialectOperations( groupedOperation ) );
+					}
 				}
-				else if ( operation instanceof RemoveTupleOperation ) {
-					RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
-					operations.add( new RemoveTupleImpl( removeTuple.getEntityKey() ) );
-				}
-				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
-					InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
-					operations.add( new InsertOrUpdateAssociationImpl(
-							insertOrUpdateAssociationOperation.getAssociationKey(),
-							insertOrUpdateAssociationOperation.getAssociation() )
-					);
-				}
-				else if ( operation instanceof RemoveAssociationOperation ) {
-					RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
-					operations.add( new RemoveAssociationImpl( removeAssociationOperation.getAssociationKey() ) );
+				else {
+					operations.add( getSimpleGridDialectOperations( operation ) );
 				}
 
 				operation = queue.poll();
@@ -130,6 +121,32 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 		}
 
 		handleAppliedOperation( executeBatch );
+	}
+
+	private GridDialectOperation getSimpleGridDialectOperations(Operation operation) {
+		GridDialectOperation gridDialectOperation;
+		if ( operation instanceof InsertOrUpdateTupleOperation ) {
+			InsertOrUpdateTupleOperation insertOrUpdateTuple = (InsertOrUpdateTupleOperation) operation;
+			gridDialectOperation = new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuple() );
+		}
+		else if ( operation instanceof RemoveTupleOperation ) {
+			RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
+			gridDialectOperation = new RemoveTupleImpl( removeTuple.getEntityKey() );
+		}
+		else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+			InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+			gridDialectOperation = new InsertOrUpdateAssociationImpl(
+					insertOrUpdateAssociationOperation.getAssociationKey(),
+					insertOrUpdateAssociationOperation.getAssociation() );
+		}
+		else if ( operation instanceof RemoveAssociationOperation ) {
+			RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+			gridDialectOperation = new RemoveAssociationImpl( removeAssociationOperation.getAssociationKey() );
+		}
+		else {
+			throw new IllegalStateException( "Unsupported operation " + operation );
+		}
+		return gridDialectOperation;
 	}
 
 	@Override

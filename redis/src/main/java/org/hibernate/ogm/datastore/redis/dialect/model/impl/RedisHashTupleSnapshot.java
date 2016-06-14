@@ -14,11 +14,11 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
 /**
  * @author Seiya Kawashima &lt;skawashima@uchicago.edu&gt;
  */
-public class RedisTupleSnapshot implements TupleSnapshot {
+public class RedisHashTupleSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> map;
 
-	public RedisTupleSnapshot(Map<String, Object> map) {
+	public RedisHashTupleSnapshot(Map<String, Object> map) {
 		this.map = map;
 	}
 
@@ -35,6 +35,11 @@ public class RedisTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return map.keySet();
+	}
+
+	@Override
+	public SnapshotType getSnapshotType() {
+		return SnapshotType.UNKNOWN;
 	}
 
 	public Map<String, Object> getMap() {

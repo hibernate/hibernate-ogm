@@ -67,13 +67,19 @@ public class GridDialectOperationContexts {
 	public static class AssociationContextBuilder {
 
 		private OptionsContext optionsContext = EmptyOptionsContext.INSTANCE;
+		private OptionsContext ownerEntityOptionsContext = EmptyOptionsContext.INSTANCE;
 		private AssociatedEntityKeyMetadata associatedEntityKeyMetadata = null;
 		private String roleOnMainSide = null;
 		private TransactionContext transactionContext = null;
 		private Tuple tuple = null;
 
-		public AssociationContextBuilder optionContext(OptionsContext optionsContext) {
+		public AssociationContextBuilder optionsContext(OptionsContext optionsContext) {
 			this.optionsContext = optionsContext;
+			return this;
+		}
+
+		public AssociationContextBuilder ownerEntityOptionsContext(OptionsContext ownerEntityOptionsContext) {
+			this.ownerEntityOptionsContext = ownerEntityOptionsContext;
 			return this;
 		}
 
@@ -83,7 +89,7 @@ public class GridDialectOperationContexts {
 		}
 
 		public AssociationContext buildAssociationContext() {
-			return new AssociationContextImpl( new AssociationTypeContextImpl( optionsContext, associatedEntityKeyMetadata, roleOnMainSide ), tuple,
+			return new AssociationContextImpl( new AssociationTypeContextImpl( optionsContext, ownerEntityOptionsContext, associatedEntityKeyMetadata, roleOnMainSide ), tuple,
 					transactionContext );
 		}
 	}

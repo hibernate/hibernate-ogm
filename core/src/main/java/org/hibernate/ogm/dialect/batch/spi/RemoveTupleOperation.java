@@ -31,4 +31,14 @@ public class RemoveTupleOperation implements Operation {
 	public TupleContext getTupleContext() {
 		return tupleContext;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append( getClass().getSimpleName() );
+		sb.append( "[" );
+		sb.append( entityKey );
+		sb.append( "]" );
+		return sb.toString();
+	}
 }

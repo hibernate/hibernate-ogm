@@ -11,7 +11,10 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
+import org.hibernate.ogm.datastore.redis.logging.impl.Log;
+import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * A {@link RedisAssociation} backed by a Redis Hash.
@@ -19,6 +22,8 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
  * @author Mark Paluch
  */
 class HashEmbeddedAssociation extends RedisAssociation {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final Map<String, String> entity;
 	private final HashEntity hashEntity;
@@ -37,13 +42,18 @@ class HashEmbeddedAssociation extends RedisAssociation {
 
 	@Override
 	public void setRows(Object rows) {
-
 		if ( isEmpty( rows ) ) {
 			entity.put( associationKeyMetadata.getCollectionRole(), null );
 		}
 		else {
-			Object value = ( (Collection) rows ).iterator().next();
-			entity.put( associationKeyMetadata.getCollectionRole(), (String) value );
+			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
+				Object value = ( (Collection<?>) rows ).iterator().next();
+				entity.put( associationKeyMetadata.getCollectionRole(), (String) value );
+			}
+			else {
+				throw log.embeddedToManyAssociationsNotSupportByRedisHash( associationKeyMetadata.getEntityKeyMetadata().getTable(),
+						associationKeyMetadata.getCollectionRole() );
+			}
 		}
 	}
 
