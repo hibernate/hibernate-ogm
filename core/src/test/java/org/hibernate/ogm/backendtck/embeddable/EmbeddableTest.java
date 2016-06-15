@@ -103,7 +103,7 @@ public class EmbeddableTest extends OgmTestCase {
 		// read back nested embeddable
 		transaction = session.beginTransaction();
 		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
-		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddables" ).isNotNull();
 		assertThat( loadedAccount.getHomeAddress() ).isNotNull();
 		assertThat( loadedAccount.getHomeAddress().getCity() ).isEqualTo( "Lima" );
 		assertThat( loadedAccount.getHomeAddress().getType() ).isNotNull();
@@ -148,7 +148,7 @@ public class EmbeddableTest extends OgmTestCase {
 		// read back nested embedded and set regular embedded to null
 		transaction = session.beginTransaction();
 		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
-		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddables" ).isNotNull();
 		assertThat( loadedAccount.getHomeAddress() ).isNotNull();
 		assertThat( loadedAccount.getHomeAddress().getType() ).isNull();
 		loadedAccount.setHomeAddress( null );
@@ -158,7 +158,7 @@ public class EmbeddableTest extends OgmTestCase {
 		// read back embedded
 		transaction = session.beginTransaction();
 		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
-		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddables" ).isNotNull();
 		assertThat( loadedAccount.getHomeAddress() ).isNull();
 		session.delete( loadedAccount );
 		transaction.commit();

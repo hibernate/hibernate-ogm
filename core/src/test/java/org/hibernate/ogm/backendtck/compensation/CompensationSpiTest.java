@@ -54,7 +54,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 @SkipByGridDialect(
 		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support uniq constraint even on primary key except by explicit/slow CAS use"
+		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
 )
 public class CompensationSpiTest extends OgmTestCase {
 
