@@ -13,9 +13,9 @@ import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.getInd
 import java.util.Map;
 
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
+import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.After;
+import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.junit.Test;
 
 import com.mongodb.DBObject;
@@ -44,17 +44,24 @@ public class MongoDBIndexTest extends OgmTestCase {
 				indexMap.get( "name_idx" ).toString() );
 		assertJsonEquals( "{ 'v' : 1 , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'sparse' : true}",
 				indexMap.get( "author_name_idx" ).toString() );
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 2}",
-				indexMap.get( "author_name_text_idx" ).toString() );
 		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'name' : 1 , 'author' : 1} , 'name' : 'IDXjo3qu8pkq9vsofgrq58pacxfq' , 'ns' : 'ogm_test_database.T_POEM' }",
 				indexMap.get( "IDXjo3qu8pkq9vsofgrq58pacxfq" ).toString() );
 
 		session.close();
 	}
 
-	@After
-	public void dropIndexes() {
-		MongoDBTestHelper.dropIndexes( sessions, COLLECTION_NAME );
+	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	public void testSuccessfulTextIndexCreation() throws Exception {
+		OgmSession session = openSession();
+
+		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
+		assertThat( indexMap.size() ).isEqualTo( 6 );
+
+		assertJsonEquals( "{ 'v' : 1 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 2}",
+				indexMap.get( "author_name_text_idx" ).toString() );
+
+		session.close();
 	}
 
 	@Override
