@@ -433,7 +433,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	/**
-	 * Creates a dbObject that can be pass to the mongoDB batch insert function
+	 * Creates a DBObject that can be passed to the MongoDB batch insert function
 	 */
 	private static DBObject objectForInsert(Tuple tuple, DBObject dbObject) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
@@ -489,11 +489,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			}
 		}
 		/*
-		* Needed because in case of object with only an ID field
+		* Needed because in case of an object with only an ID field
 		* the "_id" won't be persisted properly.
 		* With this adjustment, it will work like this:
-		*	if the object (from snapshot) doesn't exist so create the one represented by updater
-		*	so if at this moment the "_id" is not enforce properly an ObjectID will be created by the server instead
+		*	if the object (from snapshot) doesn't exist, create the one represented by updater
+		*	so if at this moment the "_id" is not enforced properly, an ObjectID will be created by the server instead
 		*	of the custom id
 		 */
 		if ( updater.size() == 0 ) {
