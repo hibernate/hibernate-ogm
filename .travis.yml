@@ -17,7 +17,11 @@ cache:
   directories:
     - $HOME/.m2
 env:
-  - REDIS_HOSTNAME=localhost COUCHDB_HOSTNAME=localhost CASSANDRA_VERSION=2.2.5 CASSANDRA_HOSTNAME=localhost NEO4J_HOSTNAME=localhost NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_VERSION=2.3.4
+  global:
+    - REDIS_HOSTNAME=localhost
+    - COUCHDB_HOSTNAME=localhost
+    - CASSANDRA_HOSTNAME=localhost CASSANDRA_VERSION=2.2.5 
+    - NEO4J_HOSTNAME=localhost NEO4J_PORT=7474 NEO4J_VERSION=2.3.4 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate 
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
 install:
