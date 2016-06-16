@@ -43,7 +43,7 @@ before_script:
   # When Neo4j is started the first time, it requires the change of the default password
   - curl -vX POST http://neo4j:neo4j@$NEO4J_HOSTNAME:$NEO4J_PORT/user/neo4j/password -d"password=$NEO4J_PASSWORD"
 script:
-  - ./mvnw -s settings-example.xml -Ptest clean install
+  - ./mvnw -s settings-example.xml clean install
   - ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-remote -am clean install
 after_script:
   - rm -rf $HOME/.m2/repository/org/hibernate/ogm/
