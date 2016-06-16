@@ -762,14 +762,14 @@ explicitly), the Neo4J transaction is also committed or rollbacked.
 This makes for a nice integration in a Java EE container.
 
 [CAUTION]
-----
+====
 This is NOT a true JTA/XA integration but more a lifecycle alignment:
 changes on more than one datasource won't be executed as a single atomic transaction.
 
 In particular, if the JTA transaction involves multiple resources, Neo4j might commit
 before a failure of another resource. In this case, Neo4j won't be able to rollback even
 if the JTA transaction will.
-----
+====
 
 [[ogm-neo4j-queries]]
 === Queries
