@@ -2989,6 +2989,108 @@ Associations collection
 ----
 ====
 
+[[ogm-mongodb-indexes-unique-constraints]]
+=== Indexes and unique constraints
+
+==== Standard indexes and unique constraints
+
+You can create your index and unique constraints in MongoDB using the standard JPA annotations.
+
+.Creating indexes and unique constraints using JPA annotations
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+    @Index(columnList = "author, name", name = "author_name_idx", unique = true),
+    @Index(columnList = "name DESC", name = "name_desc_idx")
+})
+public class Poem {
+
+    @Id
+    private String id;
+    private String name;
+    private String author;
+
+    @Column(unique = true)
+    private String url;
+
+   // getters, setters ...
+}
+----
+====
+
+[NOTE]
+====
+MongoDB supports unique constraints via unique indexes. It considers `null` as a value to be unique: you can only
+have one `null` value per unique index. This is not what is commonly accepted as the definition of a unique constraint in
+the JPA world. Thus, by default, we create the unique indexes as `sparse`: it only indexes defined values so that the
+unique constraints accept multiple `null` values.
+====
+
+==== Using MongoDB specific index options
+
+MongoDB supports https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/[a number of options for
+index creation].
+
+It is possible to define them using the `@IndexOption` annotation.
+
+.Creating indexes with MongoDB specific options
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+    @Index(columnList = "author", name = "author_idx")
+})
+@IndexOptions(
+    @IndexOption(forIndex = "author_idx", options = "{ background : true, sparse : true, partialFilterExpression : { author: 'Verlaine' } }")
+)
+public class Poem {
+
+    @Id
+    private String id;
+    private String name;
+    private String author;
+
+   // getters, setters ...
+}
+----
+====
+
+`@IndexOption` simply passes the options to MongoDB at index creation: you can use every option available in MongoDB.
+
+==== Full text indexes
+
+MongoDB supports the ability to create one (and only one) full text index per collection.
+
+As JPA does not support the ability to define `text` as an order in the `@Index` annotation (only `ASC` and `DESC`
+are supported), this ability has been included inside the `@IndexOption` mechanism. You simply need to add `text: true`
+to the options passed to MongoDB, Hibernate OGM interprets it and translates the index to a full text index.
+
+.Creating a full text index
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+    @Index(columnList = "author, name", name = "author_name_text_idx")
+})
+@IndexOptions(
+    @IndexOption(forIndex = "author_name_text_idx", options = "{ text: true, default_language : 'fr', weights : { author: 2, name: 5 } }")
+)
+public class Poem {
+
+    @Id
+    private String id;
+    private String name;
+    private String author;
+
+   // getters, setters ...
+}
+----
+====
+
 === Transactions
 
 MongoDB does not support transactions.
