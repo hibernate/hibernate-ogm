@@ -31,10 +31,6 @@ install:
   # The Maven install provided by Travis is outdated, use Maven wrapper to get the latest version
   - mvn -N io.takari:maven:wrapper
   - ./mvnw -v
-  # Use the Google mirror for central - we also declare explicitly central as the JBoss repository takes precedences over it
-  - sed -i settings-example.xml -e "s@</mirrors>@<mirror><id>google-maven-central</id><name>Google Maven Central</name><url>https://maven-central.storage.googleapis.com</url><mirrorOf>central</mirrorOf></mirror></mirrors>@"
-  - sed -i settings-example.xml -e "s@<repositories>@<repositories><repository><id>central</id><name>Central</name><url>https://maven-central.storage.googleapis.com/</url></repository>@"
-  - sed -i settings-example.xml -e "s@<pluginRepositories>@<pluginRepositories><pluginRepository><id>central</id><name>Central</name><url>https://maven-central.storage.googleapis.com/</url></pluginRepository>@"
   # first run to download all the Maven dependencies without logging
   - travis_wait ./mvnw -B -q -s settings-example.xml -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -DskipDistro=true install
   # we run checkstyle first to fail fast if there is a styling error
