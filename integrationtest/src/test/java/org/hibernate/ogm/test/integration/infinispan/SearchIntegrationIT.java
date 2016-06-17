@@ -18,8 +18,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
-import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
-import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
 import org.junit.runner.RunWith;
 
 /**
@@ -42,17 +40,16 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 	}
 
 	private static PersistenceDescriptor persistenceXml() {
-		PersistenceDescriptor descriptor = Descriptors.create( PersistenceDescriptor.class );
-		Properties<PersistenceUnit<PersistenceDescriptor>> properties = descriptor
-			.version( "2.0" )
-			.createPersistenceUnit()
-				.name( "primary" )
-				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
-				.getOrCreateProperties()
-					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
-					.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up();
-		return descriptor;
+		return Descriptors.create( PersistenceDescriptor.class )
+				.version( "2.0" )
+				.createPersistenceUnit()
+					.name( "primary" )
+					.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
+					.getOrCreateProperties()
+						.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+						.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
+						.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
+				.up().up();
 	}
 
 }
