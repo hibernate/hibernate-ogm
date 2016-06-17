@@ -77,7 +77,7 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 			// information via the original exception; It'd require a fair bit of changes to obtain the entity name here
 			// (we'd have to obtain the persister matching the given entity key metadata which in turn would require
 			// access to the session factory which is not easily available here)
-			throw log.mustNotInsertSameEntityTwice( null, taee );
+			throw log.mustNotInsertSameEntityTwice( taee.getMessage(), taee );
 		}
 	}
 
