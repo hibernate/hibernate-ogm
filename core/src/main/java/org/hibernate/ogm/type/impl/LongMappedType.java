@@ -23,6 +23,7 @@ public class LongMappedType extends AbstractGenericBasicType<Long> {
 		super( LongMappedGridTypeDescriptor.INSTANCE, LongTypeDescriptor.INSTANCE );
 	}
 
+	@Override
 	public String getName() {
 		return "long";
 	}

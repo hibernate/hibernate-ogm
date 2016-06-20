@@ -254,22 +254,27 @@ public class NoopConnection implements Connection {
 		return null;
 	}
 
+	@Override
 	public void setSchema(String schema) throws SQLException {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public String getSchema() throws SQLException {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public void abort(Executor executor) throws SQLException {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public int getNetworkTimeout() throws SQLException {
 		return 0;  //To change body of implemented methods use File | Settings | File Templates.
 	}

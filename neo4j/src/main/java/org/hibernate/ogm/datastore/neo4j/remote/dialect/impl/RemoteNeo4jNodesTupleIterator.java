@@ -42,6 +42,7 @@ public class RemoteNeo4jNodesTupleIterator extends RemoteNeo4jMapsTupleIterator 
 		this.tupleContext = tupleContext;
 	}
 
+	@Override
 	protected Tuple convert(Row next) {
 		Node node = next.getGraph().getNodes().get( 0 );
 		return createTuple( node );

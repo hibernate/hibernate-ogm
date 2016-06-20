@@ -48,6 +48,7 @@ public class EmbeddedNeo4jAssociationQueries extends BaseNeo4jAssociationQueries
 	 * @param executionEngine the {@link GraphDatabaseService} used to run the query
 	 * @param associationKey represents the association
 	 */
+	@Override
 	public void removeAssociation(GraphDatabaseService executionEngine, AssociationKey associationKey) {
 		executionEngine.execute( removeAssociationQuery, params( associationKey.getEntityKey().getColumnValues() ) );
 	}
@@ -60,12 +61,14 @@ public class EmbeddedNeo4jAssociationQueries extends BaseNeo4jAssociationQueries
 	 * @param rowKey represents a row in an association
 	 * @return the corresponding relationship
 	 */
+	@Override
 	public Relationship findRelationship(GraphDatabaseService executionEngine, AssociationKey associationKey, RowKey rowKey) {
 		Object[] queryValues = relationshipValues( associationKey, rowKey );
 		Result result = executionEngine.execute( findRelationshipQuery, params( queryValues ) );
 		return singleResult( result );
 	}
 
+	@Override
 	protected Object[] relationshipValues(AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues;
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0 ) {
@@ -94,6 +97,7 @@ public class EmbeddedNeo4jAssociationQueries extends BaseNeo4jAssociationQueries
 	 * @param associationKey represents the association
 	 * @param rowKey represents a row in an association
 	 */
+	@Override
 	public void removeAssociationRow(GraphDatabaseService executionEngine, AssociationKey associationKey, RowKey rowKey) {
 		Object[] queryValues = relationshipValues( associationKey, rowKey );
 		executionEngine.execute( removeAssociationRowQuery, params( queryValues ) );
@@ -135,6 +139,7 @@ public class EmbeddedNeo4jAssociationQueries extends BaseNeo4jAssociationQueries
 		return executeQuery( executionEngine, query, queryValues );
 	}
 
+	@Override
 	protected String initCreateEmbeddedAssociationQuery(AssociationKey associationKey, EntityKey embeddedKey) {
 		String collectionRole = associationKey.getMetadata().getCollectionRole();
 		String[] embeddedColumnNames = embeddedKey.getColumnNames();

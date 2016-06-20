@@ -35,6 +35,7 @@ public class RemoteNeo4jTransaction implements Closeable {
 		return txId;
 	}
 
+	@Override
 	public void close() {
 	}
 }

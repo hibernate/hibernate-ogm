@@ -225,6 +225,7 @@ public class RemoteNeo4jResourceLocalTransactionCoordinator implements Transacti
 		physicalTransactionDelegate = null;
 	}
 
+	@Override
 	public void addObserver(TransactionObserver observer) {
 		observers.add( observer );
 	}

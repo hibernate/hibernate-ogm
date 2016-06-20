@@ -83,6 +83,7 @@ public class RemoteNeo4jClient implements AutoCloseable {
 	/**
 	 * Release all the resources
 	 */
+	@Override
 	public void close() {
 		client.close();
 	}

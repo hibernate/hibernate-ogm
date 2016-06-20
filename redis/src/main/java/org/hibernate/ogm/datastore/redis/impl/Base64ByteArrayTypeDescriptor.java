@@ -63,6 +63,7 @@ public class Base64ByteArrayTypeDescriptor extends AbstractTypeDescriptor<byte[]
 		return Base64Variants.MIME_NO_LINEFEEDS.decode( string );
 	}
 
+	@Override
 	@SuppressWarnings( {"unchecked" } )
 	public <X> X unwrap(byte[] value, Class<X> type, WrapperOptions options) {
 		if ( value == null ) {
