@@ -55,6 +55,10 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
@@ -66,6 +70,8 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
+                    <!-- Annotation processor is run as an independent step -->
+                    <proc>none</proc>
                 </configuration>
             </plugin>
             <!-- Allow using Java8 code as Java8 is the requirement for WildFly 10 -->
