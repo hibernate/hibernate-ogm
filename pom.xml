@@ -493,11 +493,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.jboss.maven.plugins</groupId>
-                    <artifactId>maven-injection-plugin</artifactId>
-                    <version>1.0.2</version>
-                </plugin>
-                <plugin>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.0.0</version>
                     <executions>

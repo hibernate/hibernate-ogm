@@ -22,8 +22,7 @@ public class Version {
 	 * @return the current Hibernate OGM version
 	 */
 	public static String getVersionString() {
-		// The actual value will be injected into the class file during the build
-		return "[WORKING]";
+		return Version.class.getPackage().getImplementationVersion();
 	}
 
 	static {
