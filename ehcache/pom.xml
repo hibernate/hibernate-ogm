@@ -125,6 +125,7 @@
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
+                    <argLine>${additionalRuntimeArgLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>

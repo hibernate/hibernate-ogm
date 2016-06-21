@@ -24,10 +24,10 @@
     <modules>
         <module>bom</module>
         <module>core</module>
-        <module>ehcache</module>
-        <module>infinispan</module>
+        <!-- <module>ehcache</module> Is only enabled when not running in Java 9: see the profiles section-->
+        <!-- <module>infinispan</module> Is only enabled when not running in Java 9: see the profiles section-->
         <module>mongodb</module>
-        <module>neo4j</module>
+        <!-- <module>neo4j</module> Is only enabled when not running in Java 9: see the profiles section-->
         <module>couchdb</module>
         <module>cassandra</module>
         <module>redis</module>
@@ -425,6 +425,7 @@
                     <version>2.19.1</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <argLine>${additionalRuntimeArgLine}</argLine>
                         <systemPropertyVariables>
                            <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
                            <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
@@ -673,12 +674,36 @@
 
     <profiles>
         <profile>
+            <id>non-jigsaw</id>
+            <activation>
+                <!-- The versions we're using of Ehcache, Infinispan and Neo4J won't work on JDK9. Needs upgrading.  -->
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>ehcache</module>
+                <module>infinispan</module>
+                <module>neo4j</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>jigsaw</id>
+            <activation>
+                <!-- Java 9 doesn't identify itself as "1.9" but "9" -->
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <additionalRuntimeArgLine>-addmods java.xml.bind</additionalRuntimeArgLine>
+            </properties>
+        </profile>
+        <profile>
             <id>integrationtest</id>
             <activation>
                 <property>
                     <name>skipITs</name>
                     <value>!true</value>
                 </property>
+                <!-- Skip on Java 9, both because of some NoSQL stores aren't ready and because of WildFly -->
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>integrationtest</module>
@@ -691,6 +716,8 @@
                     <name>skipDocs</name>
                     <value>!true</value>
                 </property>
+                <!-- And skip on Java 9 -->
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>documentation</module>
@@ -703,6 +730,8 @@
                     <name>skipDistro</name>
                     <value>!true</value>
                 </property>
+                <!-- And skip on Java 9 -->
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>distribution</module>
