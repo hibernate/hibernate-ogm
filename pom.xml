@@ -367,34 +367,6 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-archetype-plugin</artifactId>
-                    <version>2.4</version>
-                    <executions>
-                        <execution>
-                            <id>generate-archetype-install</id>
-                            <phase>install</phase>
-                            <configuration>
-                                <archetypePostPhase>install</archetypePostPhase>
-                                <propertyFile>archetype.properties</propertyFile>
-                            </configuration>
-                            <goals>
-                                <goal>create-from-project</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>generate-archetype-deploy</id>
-                            <phase>deploy</phase>
-                            <configuration>
-                                <archetypePostPhase>deploy</archetypePostPhase>
-                                <propertyFile>archetype.properties</propertyFile>
-                            </configuration>
-                            <goals>
-                                <goal>create-from-project</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <groupId>org.bsc.maven</groupId>
                     <artifactId>maven-processor-plugin</artifactId>
                     <version>2.2.4</version>
