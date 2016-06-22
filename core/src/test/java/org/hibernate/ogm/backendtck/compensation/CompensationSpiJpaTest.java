@@ -29,7 +29,6 @@ import org.hibernate.ogm.compensation.operation.GridDialectOperation;
 import org.hibernate.ogm.compensation.operation.InsertOrUpdateTuple;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
-import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -223,7 +222,7 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 	private boolean currentDialectHasFacet(Class<? extends GridDialect> facet) {
 		SessionFactoryImplementor sfi = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) getFactory() ).getSessionFactory();
 		GridDialect gridDialect = sfi.getServiceRegistry().getService( GridDialect.class );
-		return GridDialects.hasFacet( gridDialect, OptimisticLockingAwareGridDialect.class );
+		return GridDialects.hasFacet( gridDialect, facet );
 	}
 
 	private boolean currentDialectUsesLookupDuplicatePreventionStrategy() {
