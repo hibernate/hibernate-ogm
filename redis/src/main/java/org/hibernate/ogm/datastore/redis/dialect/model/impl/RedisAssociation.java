@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
+import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 
@@ -79,7 +80,7 @@ public abstract class RedisAssociation {
 	public abstract void setRows(Object rows);
 
 	/**
-	 * Returns the Redis value which owns this association, either an {@link Association} or an
+	 * Returns the Redis value which owns this association, either an {@link Association}, an {@link HashEntity} or an
 	 * {@link Entity}.
 	 *
 	 * @return the {@link StructuredValue} representing the owner of the association
