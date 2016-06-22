@@ -7,9 +7,8 @@
 package org.hibernate.ogm.datastore.neo4j.remote.dialect.impl;
 
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
-import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
-import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Row;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -20,36 +19,53 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Davide D'Alto
  */
-public class RemoteNeo4jNodesTupleIterator extends RemoteNeo4jMapsTupleIterator {
+public class RemoteNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final RemoteNeo4jClient dataBase;
 	private final RemoteNeo4jEntityQueries entityQueries;
 	private final Long txId;
 	private final TupleContext tupleContext;
+	private final ClosableIterator<NodeWithEmbeddedNodes> entities;
 
 	public RemoteNeo4jNodesTupleIterator(RemoteNeo4jClient dataBase,
 			Long txId,
 			RemoteNeo4jEntityQueries entityQueries,
-			StatementsResponse result,
+			StatementsResponse response,
 			EntityKeyMetadata entityKeyMetadata,
-			TupleContext tupleContext) {
-		super( result );
+			TupleContext tupleContext,
+			ClosableIterator<NodeWithEmbeddedNodes> entities) {
 		this.dataBase = dataBase;
 		this.txId = txId;
 		this.entityQueries = entityQueries;
 		this.entityKeyMetadata = entityKeyMetadata;
 		this.tupleContext = tupleContext;
+		this.entities = entities;
+	}
+
+	private Tuple createTuple(NodeWithEmbeddedNodes node) {
+		return new Tuple(
+				new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleContext.getAllAssociatedEntityKeyMetadata(),
+						tupleContext.getAllRoles(), entityKeyMetadata ) );
 	}
 
 	@Override
-	protected Tuple convert(Row next) {
-		Node node = next.getGraph().getNodes().get( 0 );
-		return createTuple( node );
+	public boolean hasNext() {
+		return entities.hasNext();
 	}
 
-	private Tuple createTuple(Node node) {
-		return new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleContext.getAllAssociatedEntityKeyMetadata(),
-				tupleContext.getAllRoles(), entityKeyMetadata ) );
+	@Override
+	public Tuple next() {
+		return createTuple( entities.next() );
+	}
+
+	@Override
+	public void remove() {
+		entities.remove();
+	}
+
+	@Override
+	public void close() {
+		entities.close();
 	}
 }

@@ -22,6 +22,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.NodeWithEmbeddedNodes;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.RemoteNeo4jAssociationSnapshot;
@@ -37,9 +38,12 @@ import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvide
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Relationship;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Row;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementResult;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
+import org.hibernate.ogm.datastore.neo4j.remote.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
@@ -145,8 +149,8 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	public Tuple getTuple(EntityKey key, TupleContext context) {
 		RemoteNeo4jEntityQueries queries = entityQueries.get( key.getMetadata() );
 		Long txId = transactionId( context.getTransactionContext() );
-		Node entityNode = queries.findEntity( dataBase, txId, key.getColumnValues() );
-		if ( entityNode == null ) {
+		NodeWithEmbeddedNodes node = queries.findEntity( dataBase, txId, key.getColumnValues() );
+		if ( node == null ) {
 			return null;
 		}
 
@@ -155,7 +159,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 						dataBase,
 						txId,
 						queries,
-						entityNode,
+						node,
 						context.getAllAssociatedEntityKeyMetadata(),
 						context.getAllRoles(),
 						key.getMetadata()
@@ -173,7 +177,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		// We only supports one metadata for now
 		EntityKeyMetadata metadata = keys[0].getMetadata();
 		// The result returned by the query might not be in the same order as the keys.
-		ClosableIterator<Node> nodes = entityQueries.get( metadata ).findEntities( dataBase, keys, txId );
+		ClosableIterator<NodeWithEmbeddedNodes> nodes = entityQueries.get( metadata ).findEntities( dataBase, keys, txId );
 		try {
 			return tuplesResult( keys, tupleContext, nodes, txId );
 		}
@@ -186,13 +190,13 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	 * This method assumes that the nodes might not be in the same order as the keys and some keys might not have a
 	 * matching result in the db.
 	 */
-	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, ClosableIterator<Node> nodes, Long txId) {
+	private List<Tuple> tuplesResult(EntityKey[] keys, TupleContext tupleContext, ClosableIterator<NodeWithEmbeddedNodes> nodes, Long txId) {
 		// The list is initialized with null because some keys might not have a corresponding node
 		Tuple[] tuples = new Tuple[keys.length];
 		while ( nodes.hasNext() ) {
-			Node node = nodes.next();
+			NodeWithEmbeddedNodes node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
-				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
+				if ( RemoteNeo4jHelper.matches( node.getOwner(), keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
 					EntityKeyMetadata metadata = keys[i].getMetadata();
 					tuples[i] = new Tuple(
 							new RemoteNeo4jTupleSnapshot(
@@ -211,28 +215,6 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 			}
 		}
 		return Arrays.asList( tuples );
-	}
-
-	private boolean matches(Node node, String[] properties, Object[] values) {
-		for ( int i = 0; i < properties.length; i++ ) {
-			String property = properties[i];
-			Object expectedValue = values[i];
-			boolean containsProperty = node.getProperties().containsKey( property );
-			if ( containsProperty ) {
-				Object actualValue = node.getProperties().get( property );
-				if ( !actualValue.equals( expectedValue ) ) {
-					// Neo4j remote does not save the type of the original value, for example if the original value was
-					// a Long smaller than the max integer the query will return the value as integer.
-					if ( !actualValue.toString().equals( expectedValue.toString() ) ) {
-						return false;
-					}
-				}
-			}
-			else if ( expectedValue != null ) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	@Override
@@ -358,8 +340,8 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
 		EntityKey entityKey = associationKey.getEntityKey();
 		Long transactionId = transactionId( associationContext.getTransactionContext() );
-		Node entityNode = entityQueries.get( entityKey.getMetadata() ).findEntity( dataBase, transactionId, entityKey.getColumnValues() );
-		if ( entityNode == null ) {
+		NodeWithEmbeddedNodes node = entityQueries.get( entityKey.getMetadata() ).findEntity( dataBase, transactionId, entityKey.getColumnValues() );
+		if ( node == null ) {
 			return null;
 		}
 
@@ -524,9 +506,9 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
 		Long txId = transactionId( tupleContext.getTransactionContext() );
 		RemoteNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
-		ClosableIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase, txId );
+		ClosableIterator<NodeWithEmbeddedNodes> queryNodes = entityQueries.get( entityKeyMetadata ).findEntitiesWithEmbedded( dataBase, txId );
 		while ( queryNodes.hasNext() ) {
-			Node next = queryNodes.next();
+			NodeWithEmbeddedNodes next = queryNodes.next();
 			Tuple tuple = new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, txId, queries, next, entityKeyMetadata ) );
 			consumer.consume( tuple );
 		}
@@ -545,13 +527,30 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 			response = dataBase.executeQueriesInOpenTransaction( txId, statements );
 			EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
 			RemoteNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
-			return new RemoteNeo4jNodesTupleIterator( dataBase, txId, queries, response, entityKeyMetadata, tupleContext );
+			List<StatementResult> results = response.getResults();
+			List<Row> rows = results.get( 0 ).getData();
+			EntityKey[] keys = new EntityKey[ rows.size() ];
+			for ( int i = 0; i < rows.size(); i++ ) {
+				Node node = rows.get( i ).getGraph().getNodes().get( 0 );
+				Object[] values = columnValues( node, entityKeyMetadata );
+				keys[i] = new EntityKey( entityKeyMetadata, values );
+			}
+			ClosableIterator<NodeWithEmbeddedNodes> entities = entityQueries.get( entityKeyMetadata ).findEntities( dataBase, keys, txId );
+			return new RemoteNeo4jNodesTupleIterator( dataBase, txId, queries, response, entityKeyMetadata, tupleContext, entities );
 		}
 		else {
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			response = dataBase.executeQueriesInOpenTransaction( txId, statements );
 			return new RemoteNeo4jMapsTupleIterator( response );
 		}
+	}
+
+	private Object[] columnValues(Node node, EntityKeyMetadata metadata) {
+		Object[] values = new Object[metadata.getColumnNames().length];
+		for ( int i = 0; i < metadata.getColumnNames().length; i++ ) {
+			values[i] = node.getProperties().get( metadata.getColumnNames()[i] );
+		}
+		return values;
 	}
 
 	@Override

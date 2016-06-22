@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -32,11 +30,11 @@ import org.neo4j.graphdb.Result;
 public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
-		super( entityKeyMetadata, null );
+		this( entityKeyMetadata, null );
 	}
 
 	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		super( entityKeyMetadata, tupleContext );
+		super( entityKeyMetadata, tupleContext, false );
 	}
 
 	/**
@@ -106,7 +104,7 @@ public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		String query = getMultiGetQueryCacheQuery( keys );
 		Map<String, Object> params = multiGetParams( keys );
 		Result result = executionEngine.execute( query, params );
-		return result.columnAs( "n" );
+		return result.columnAs( ENTITY_ALIAS );
 	}
 
 	/*
@@ -119,38 +117,7 @@ public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		}
 		Map<String, Object> params = Collections.singletonMap( "0", (Object) paramsValues );
 		Result result = executionEngine.execute( multiGetQuery, params );
-		return result.columnAs( "n" );
-	}
-
-	/*
-	 * Example:
-	 *
-	 * MATCH (n:ENTITY:table)
-	 * WHERE (n.id.property1 = {0} AND n.id.property2 = {1} ) OR (n.id.property1 = {2} AND n.id.property2 = {3} )
-	 * RETURN n
-	 */
-	private String createMultiGetOnMultiplePropertiesId(int keysNumber) {
-		StringBuilder builder = new StringBuilder( multiGetQuery );
-		int counter = 0;
-		for ( int row = 0; row < keysNumber; row++ ) {
-			builder.append( "(" );
-			for ( int col = 0; col < keyColumns.length; col++ ) {
-				builder.append( "n." );
-				escapeIdentifier( builder, keyColumns[col] );
-				builder.append( " = {" );
-				builder.append( counter++ );
-				builder.append( "}" );
-				if ( col < keyColumns.length - 1 ) {
-					builder.append( " AND " );
-				}
-			}
-			builder.append( ")" );
-			if ( row < keysNumber - 1 ) {
-				builder.append( " OR " );
-			}
-		}
-		builder.append( " RETURN n" );
-		return builder.toString();
+		return result.columnAs( ENTITY_ALIAS );
 	}
 
 	/**

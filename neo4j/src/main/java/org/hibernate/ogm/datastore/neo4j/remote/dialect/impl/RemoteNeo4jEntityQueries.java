@@ -8,22 +8,29 @@ package org.hibernate.ogm.datastore.neo4j.remote.dialect.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Node;
+import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Graph.Relationship;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Row;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statement;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementResult;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
+import org.hibernate.ogm.datastore.neo4j.remote.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -38,23 +45,96 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	private static final ClosableIteratorAdapter<RemoteNeo4jAssociationPropertiesRow> EMPTY_RELATIONSHIPS = new ClosableIteratorAdapter<>(
 			Collections.<RemoteNeo4jAssociationPropertiesRow>emptyList().iterator() );
 
-	private static final ClosableIteratorAdapter<Node> EMPTY_NODES = new ClosableIteratorAdapter<>( Collections.<Node>emptyList().iterator() );
+	private static final ClosableIteratorAdapter<NodeWithEmbeddedNodes> EMPTY_NODES = new ClosableIteratorAdapter<>( Collections.<NodeWithEmbeddedNodes>emptyList().iterator() );
 
 	public RemoteNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		this( entityKeyMetadata, null );
 	}
 
 	public RemoteNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		super( entityKeyMetadata, tupleContext );
+		super( entityKeyMetadata, tupleContext, true );
 	}
 
-	public Node findEntity(RemoteNeo4jClient executionEngine, Long transactionId, Object[] columnValues) {
+	public NodeWithEmbeddedNodes findEntity(RemoteNeo4jClient executionEngine, Long transactionId, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
-		String query = getFindEntityQuery();
-		Graph result = executeQueryAndReturnGraph( executionEngine, transactionId, query, params );
-		if ( result != null ) {
-			if ( result.getNodes().size() > 0 ) {
-				return result.getNodes().get( 0 );
+		Statements statements = new Statements();
+		statements.addStatement( getFindEntityQuery(), params, Statement.AS_GRAPH );
+		List<StatementResult> queryResult = executeQuery( executionEngine, transactionId, statements );
+		if ( queryResult != null ) {
+			Node owner = findOwner( queryResult );
+			Map<String, Collection<Node>> embeddedNodesMap = new HashMap<>();
+			List<Row> rows = queryResult.get( 0 ).getData();
+			for ( Row row : rows ) {
+				Graph graph = row.getGraph();
+				if ( graph.getNodes().size() > 0 ) {
+					updateEmbeddedNodesMap( embeddedNodesMap, graph.getNodes(), graph.getRelationships(), owner );
+				}
+			}
+			return new NodeWithEmbeddedNodes( owner, embeddedNodesMap );
+		}
+		return null;
+	}
+
+	private Node findOwner(List<StatementResult> queryResult) {
+		Graph graph = queryResult.get( 0 ).getData().get( 0 ).getGraph();
+		Node owner = findEntity( graph.getNodes() );
+		return owner;
+	}
+
+	private Node findEntity(List<Node> nodes) {
+		for ( Node node : nodes ) {
+			if ( node.getLabels().contains( NodeLabel.ENTITY.name() ) ) {
+				return node;
+			}
+		}
+		return null;
+	}
+
+	private void updateEmbeddedNodesMap(Map<String, Collection<Node>> embeddedNodesMap, List<Node> allNodes, List<Relationship> embeddedRelationships, Node owner) {
+		if ( embeddedRelationships.size() > 0 ) {
+			Relationship currentRelationship = findRelationship( embeddedRelationships, owner.getId() );
+			if ( currentRelationship != null ) {
+				StringBuilder builder = new StringBuilder();
+				Node currentNode = null;
+				while ( currentRelationship != null ) {
+					builder.append( "." );
+					builder.append( currentRelationship.getType() );
+
+					currentNode = findEmbeddedNode( allNodes, currentRelationship.getEndNode() );
+					currentRelationship = findRelationship( embeddedRelationships, currentRelationship.getEndNode() );
+				}
+				String path = builder.substring( 1 );
+				saveEmbeddedNode( embeddedNodesMap, path, currentNode );
+			}
+		}
+	}
+
+	private Relationship findRelationship(List<Relationship> relationships, Long startNodeId) {
+		for ( Relationship relationship : relationships ) {
+			if ( relationship.getStartNode().equals( startNodeId ) ) {
+				return relationship;
+			}
+		}
+		return null;
+	}
+
+	private void saveEmbeddedNode(Map<String, Collection<Node>> embeddedNodesMap, String path, Node embeddedNode) {
+		if ( !embeddedNode.getProperties().isEmpty() ) {
+			if (embeddedNodesMap.containsKey( path ) ) {
+				embeddedNodesMap.get( path ).add( embeddedNode );
+			}
+			else {
+				Set<Node> embeddedNodes = new HashSet<>();
+				embeddedNodes.add( embeddedNode );
+				embeddedNodesMap.put( path, embeddedNodes );
+			}
+		}
+	}
+
+	private Node findEmbeddedNode(List<Node> allNodes, Long embeddedNodeId) {
+		for ( Node node : allNodes ) {
+			if ( node.getId().equals( embeddedNodeId ) ) {
+				return node;
 			}
 		}
 		return null;
@@ -101,16 +181,11 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		executeQueryAndReturnGraph( executionEngine, txId, getRemoveEntityQuery(), params( columnValues ) );
 	}
 
-	public ClosableIterator<Node> findEntities(RemoteNeo4jClient executionEngine, Long txId) {
-		String query = getFindEntitiesQuery();
-		Graph result = executeQueryAndReturnGraph( executionEngine, txId, query, null );
-		if ( result != null ) {
-			if ( result.getNodes().size() > 0 ) {
-				List<Node> nodes = result.getNodes();
-				return new ClosableIteratorAdapter<>( nodes.iterator() );
-			}
-		}
-		return null;
+	public ClosableIterator<NodeWithEmbeddedNodes> findEntitiesWithEmbedded(RemoteNeo4jClient executionEngine, Long txId) {
+		Statements statements = new Statements();
+		statements.addStatement( getFindEntitiesQuery() );
+		List<StatementResult> result = executeQuery( executionEngine, txId, statements );
+		return closableIterator( result );
 	}
 
 	/**
@@ -120,7 +195,7 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	 * @param keys an array of keys identifying the nodes to return
 	 * @return the list of nodes representing the entities
 	 */
-	public ClosableIterator<Node> findEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
+	public ClosableIterator<NodeWithEmbeddedNodes> findEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
 		if ( singlePropertyKey ) {
 			return singlePropertyIdFindEntities( executionEngine, keys, txId );
 		}
@@ -132,7 +207,7 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	/*
 	 * When the id is mapped on several properties
 	 */
-	private ClosableIterator<Node> multiPropertiesIdFindEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
+	private ClosableIterator<NodeWithEmbeddedNodes> multiPropertiesIdFindEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
 		String query = getMultiGetQueryCacheQuery( keys );
 		Map<String, Object> params = multiGetParams( keys );
 		List<StatementResult> results = executeQuery( executionEngine, txId, query, params );
@@ -142,29 +217,76 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	/*
 	 * When the id is mapped with a single property
 	 */
-	private ClosableIterator<Node> singlePropertyIdFindEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
+	private ClosableIterator<NodeWithEmbeddedNodes> singlePropertyIdFindEntities(RemoteNeo4jClient executionEngine, EntityKey[] keys, Long txId) {
 		Object[] paramsValues = new Object[keys.length];
 		for ( int i = 0; i < keys.length; i++ ) {
 			paramsValues[i] = keys[i].getColumnValues()[0];
 		}
 		Map<String, Object> params = Collections.singletonMap( "0", (Object) paramsValues );
-		List<StatementResult> results = executeQuery( executionEngine, txId, multiGetQuery, params );
-		return closableIterator( results );
+		Statements statements = new Statements();
+		statements.addStatement( multiGetQuery, params, Statement.AS_GRAPH );
+		List<StatementResult> results = executeQuery( executionEngine, txId, statements );
+		return closableIterator( results, keys );
 
 	}
 
-	private ClosableIterator<Node> closableIterator(List<StatementResult> results) {
+	private ClosableIterator<NodeWithEmbeddedNodes> closableIterator(List<StatementResult> results) {
+		return closableIterator( results, null );
+	}
+
+	private ClosableIterator<NodeWithEmbeddedNodes> closableIterator(List<StatementResult> results, EntityKey[] keys) {
 		if ( results != null ) {
 			List<Row> data = results.get( 0 ).getData();
 			if ( data.size() > 0 ) {
-				List<Node> nodes = new ArrayList<>( data.size() ) ;
+				List<Node> owners = new ArrayList<>();
+				Map<Long, Map<String, Collection<Node>>> nodes = new HashMap<>();
 				for ( Row row : data ) {
-					nodes.add( row.getGraph().getNodes().get( 0 ) );
+					if ( row.getGraph().getNodes().size() > 0 ) {
+						Node owner = findEntity( row.getGraph().getNodes() );
+						Map<String, Collection<Node>> embeddedNodesMap = nodes.get( owner.getId() );
+						if ( embeddedNodesMap == null ) {
+							embeddedNodesMap = new HashMap<>();
+							nodes.put( owner.getId(), embeddedNodesMap );
+							owners.add( owner );
+						}
+						updateEmbeddedNodesMap( embeddedNodesMap, row.getGraph().getNodes(), row.getGraph().getRelationships(), owner );
+					}
 				}
-				return new ClosableIteratorAdapter<>( nodes.iterator() );
+				if ( keys == null ) {
+					List<NodeWithEmbeddedNodes> nodeWithEmbeddeds = new ArrayList<>();
+					for ( Node owner : owners ) {
+						nodeWithEmbeddeds.add( new NodeWithEmbeddedNodes( owner, nodes.get( owner.getId() ) ) );
+					}
+					return new ClosableIteratorAdapter<>( nodeWithEmbeddeds.iterator() );
+				}
+				else {
+					NodeWithEmbeddedNodes[] array = new NodeWithEmbeddedNodes[keys.length];
+					for ( Node owner : owners ) {
+						int index = findKeyIndex( keys, owner );
+						if ( index > -1 ) {
+							array[index] = new NodeWithEmbeddedNodes( owner, nodes.get( owner.getId() ) );
+						}
+					}
+					List<NodeWithEmbeddedNodes> nullRemoved = new ArrayList<>();
+					for ( NodeWithEmbeddedNodes node : array ) {
+						if ( node != null ) {
+							nullRemoved.add( node );
+						}
+					}
+					return new ClosableIteratorAdapter<>( nullRemoved.iterator() );
+				}
 			}
 		}
 		return EMPTY_NODES;
+	}
+
+	private int findKeyIndex(EntityKey[] keys, Node owner) {
+		for ( int i = 0; i < keys.length; i++ ) {
+			if ( RemoteNeo4jHelper.matches( owner, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	public Statement getUpdateOneToOneAssociationStatement(String associationRole, Object[] ownerKeyValues, Object[] targetKeyValues) {
@@ -174,7 +296,8 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		return new Statement( query, params );
 	}
 
-	private Graph executeQueryAndReturnGraph(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
+	private Graph executeQueryAndReturnGraph(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties,
+			String... dataContents) {
 		List<StatementResult> results = executeQuery( executionEngine, txId, query, properties, dataContents );
 		if ( results == null ) {
 			return null;
@@ -182,7 +305,8 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		return row( results ).getGraph();
 	}
 
-	private List<StatementResult> executeQuery(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties, String... dataContents) {
+	private List<StatementResult> executeQuery(RemoteNeo4jClient executionEngine, Long txId, String query, Map<String, Object> properties,
+			String... dataContents) {
 		Statements statements = new Statements();
 		statements.addStatement( query, properties, dataContents );
 		return executeQuery( executionEngine, txId, statements );
@@ -238,7 +362,8 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(RemoteNeo4jClient executionEngine, Long txId, Object[] columnValues, String role) {
+	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(RemoteNeo4jClient executionEngine, Long txId, Object[] columnValues,
+			String role) {
 		// Find the target node
 		String queryForAssociation = getFindAssociationQuery( role );
 

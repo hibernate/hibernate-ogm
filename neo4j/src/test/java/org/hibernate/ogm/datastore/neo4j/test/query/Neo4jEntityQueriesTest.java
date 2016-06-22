@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.query;
 
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries.ENTITY_ALIAS;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -28,7 +29,7 @@ public class Neo4jEntityQueriesTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testCreationWithCompositeId() throws Exception {
-		String expected = "CREATE (n:ENTITY:Example {`id.name`: {0}, `id.surname`: {1}}) RETURN n";
+		String expected = "CREATE (" + ENTITY_ALIAS + ":ENTITY:Example {`id.name`: {0}, `id.surname`: {1}}) RETURN " + ENTITY_ALIAS;
 
 		EntityKeyMetadata metadata = metadata( "Example", "id.name", "id.surname" );
 		GraphDatabaseService executionEngine = createExecutionEngine();
