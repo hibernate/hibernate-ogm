@@ -240,14 +240,11 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			);
 		}
 		else {
-			Long currentTtl = getCurrentTtl( entityId( associationKey.getEntityKey() ) );
+			String associationId = associationId( associationKey );
+			Long ttl = getObjectTTL( associationId, associationContext.getAssociationTypeContext().getOptionsContext() );
 			storeAssociation( associationKey, (Association) redisAssociation.getOwningDocument() );
-			setAssociationTTL( associationKey, associationContext, currentTtl );
+			setObjectTTL( associationId, ttl );
 		}
-	}
-
-	private Long getCurrentTtl(String objectKey) {
-		return connection.pttl( objectKey );
 	}
 
 	/**
@@ -265,7 +262,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			AssociationKey key,
 			AssociationContext associationContext) {
 
-
 		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey(
 				association,
 				key,
@@ -277,7 +273,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 				key.getMetadata(),
 				associationContext.getAssociationTypeContext()
 		) && organizeByRowKey ) {
-			String rowKeyColumn = organizeByRowKey ? key.getMetadata().getRowKeyIndexColumnNames()[0] : null;
+			String rowKeyColumn = key.getMetadata().getRowKeyIndexColumnNames()[0];
 			Map<String, Object> rows = new HashMap<>();
 
 			for ( RowKey rowKey : association.getKeys() ) {
@@ -341,11 +337,12 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	private void storeEntity(EntityKey key, Entity entity, OptionsContext optionsContext) {
-		Long currentTtl = getCurrentTtl( entityId( key ) );
+		String entityId = entityId( key );
+		Long currentTtl = getObjectTTL( entityId, optionsContext );
 
-		entityStorageStrategy.storeEntity( entityId( key ), entity );
+		entityStorageStrategy.storeEntity( entityId, entity );
 
-		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
+		setObjectTTL( entityId, currentTtl );
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {

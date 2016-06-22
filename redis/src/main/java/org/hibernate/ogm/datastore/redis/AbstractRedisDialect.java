@@ -25,7 +25,6 @@ import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
-import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -175,51 +174,25 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		return rowObject.getPropertiesAsHierarchy();
 	}
 
-
-	protected Long getTTL(OptionsContext optionsContext) {
-		return optionsContext.getUnique( TTLOption.class );
+	protected Long getObjectTTL(String objectId, OptionsContext optionsContext) {
+		Long ttl = optionsContext.getUnique( TTLOption.class );
+		if ( ttl == null ) {
+			ttl = connection.pttl( objectId );
+			if ( ttl != null && ttl <= 0 ) {
+				ttl = null;
+			}
+		}
+		return ttl;
 	}
-
-	protected Long getTTL(AssociationContext associationContext) {
-		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( TTLOption.class );
-	}
-
 
 	protected String getKeyWithoutTablePrefix(String prefixBytes, String key) {
 		return key.substring( prefixBytes.length() );
 	}
 
-	protected void setAssociationTTL(
-			AssociationKey associationKey,
-			AssociationContext associationContext,
-			Long currentTtl) {
-		Long ttl = getTTL( associationContext );
+	protected void setObjectTTL(String objectId, Long ttl) {
 		if ( ttl != null ) {
-			expireAssociation( associationKey, ttl );
+			connection.pexpire( objectId, ttl );
 		}
-		else if ( currentTtl != null && currentTtl > 0 ) {
-			expireAssociation( associationKey, currentTtl );
-		}
-	}
-
-	protected void setEntityTTL(EntityKey key, Long currentTtl, Long configuredTTL) {
-		if ( configuredTTL != null ) {
-			expireEntity( key, configuredTTL );
-		}
-		else if ( currentTtl != null && currentTtl > 0 ) {
-			expireEntity( key, currentTtl );
-		}
-	}
-
-	protected void expireEntity(EntityKey key, Long ttl) {
-		String associationId = entityId( key );
-		connection.pexpire( associationId, ttl );
-	}
-
-
-	protected void expireAssociation(AssociationKey key, Long ttl) {
-		String associationId = associationId( key );
-		connection.pexpire( associationId, ttl );
 	}
 
 	protected void removeAssociation(AssociationKey key) {
@@ -348,15 +321,20 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 			AssociationKey key,
 			org.hibernate.ogm.datastore.redis.dialect.value.Association association) {
 		String associationId = associationId( key );
+
 		connection.del( associationId );
 
+		String[] serializedRows = new String[association.getRows().size()];
+		int i = 0;
 		for ( Object row : association.getRows() ) {
-			if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
-				connection.sadd( associationId, strategy.serialize( row ) );
-			}
-			else {
-				connection.rpush( associationId, strategy.serialize( row ) );
-			}
+			serializedRows[i] = strategy.serialize( row );
+			i++;
+		}
+		if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
+			connection.sadd( associationId, serializedRows );
+		}
+		else {
+			connection.rpush( associationId, serializedRows );
 		}
 	}
 

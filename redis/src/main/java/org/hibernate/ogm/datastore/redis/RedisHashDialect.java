@@ -111,7 +111,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 		List<String> toDelete = getKeysForRemoval( tuple );
 
 		String entityId = entityId( key );
-		Long currentTtl = connection.pttl( entityId( key ) );
+		Long ttl = getObjectTTL( entityId, tupleContext.getOptionsContext() );
 
 		if ( !toDelete.isEmpty() ) {
 			connection.hdel( entityId, toDelete.toArray( new String[toDelete.size()] ) );
@@ -121,7 +121,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 			connection.hmset( entityId, entity );
 		}
 
-		setEntityTTL( key, currentTtl, getTTL( tupleContext.getOptionsContext() ) );
+		setObjectTTL( entityId, ttl );
 	}
 
 	private Map<String, String> getEntityForUpdate(EntityKey key, Tuple tuple) {
@@ -162,11 +162,13 @@ public class RedisHashDialect extends AbstractRedisDialect {
 			AssociationKey key, AssociationContext associationContext) {
 		RedisAssociation redisAssociation;
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			if ( !connection.exists( entityId( key.getEntityKey() ) ) ) {
+			String entityId = entityId( key.getEntityKey() );
+
+			if ( !connection.exists( entityId ) ) {
 				return null;
 			}
 
-			Map<String, String> entity = connection.hgetall( entityId( key.getEntityKey() ) );
+			Map<String, String> entity = connection.hgetall( entityId );
 			redisAssociation = RedisAssociation.fromEmbeddedAssociation( entity, key.getMetadata() );
 		}
 		else {
@@ -227,12 +229,13 @@ public class RedisHashDialect extends AbstractRedisDialect {
 			connection.hmset( entityId( associationKey.getEntityKey() ), owningDocument.getEntity() );
 		}
 		else {
-			Long currentTtl = connection.pttl( associationId( associationKey ) );
+			String associationId = associationId( associationKey );
+			Long ttl = getObjectTTL( associationId, associationContext.getAssociationTypeContext().getOptionsContext() );
 			storeAssociation(
 					associationKey,
 					(org.hibernate.ogm.datastore.redis.dialect.value.Association) redisAssociation.getOwningDocument()
 			);
-			setAssociationTTL( associationKey, associationContext, currentTtl );
+			setObjectTTL( associationId, ttl );
 		}
 	}
 
