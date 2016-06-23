@@ -6,9 +6,13 @@
  */
 package org.hibernate.ogm.entityentry.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.EntityEntryExtraState;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -24,6 +28,7 @@ public class OgmEntityEntryState implements EntityEntryExtraState {
 
 	private EntityEntryExtraState next;
 	private Tuple tuple;
+	private Map<String, Association> associations;
 
 	/**
 	 * The {@link Tuple} representing the given entity, as loaded from the datastore. May be {@code null} in case the
@@ -37,6 +42,45 @@ public class OgmEntityEntryState implements EntityEntryExtraState {
 
 	public void setTuple(Tuple tuple) {
 		this.tuple = tuple;
+	}
+
+	/**
+	 * Return the association as cached in the entry state.
+	 *
+	 * @param collectionRole the role of the association
+	 * @return the cached association
+	 */
+	public Association getAssociation(String collectionRole) {
+		if ( associations == null ) {
+			return null;
+		}
+		return associations.get( collectionRole );
+	}
+
+	/**
+	 * Indicates if the entry state contains information about the given association.
+	 *
+	 * @param collectionRole the role of the association
+	 * @return true if the entry state contains information about the given association
+	 */
+	public boolean hasAssociation(String collectionRole) {
+		if ( associations == null ) {
+			return false;
+		}
+		return associations.containsKey( collectionRole );
+	}
+
+	/**
+	 * Set the association in the entry state.
+	 *
+	 * @param collectionRole the role of the association
+	 * @param association the association
+	 */
+	public void setAssociation(String collectionRole, Association association) {
+		if ( associations == null ) {
+			associations = new HashMap<>();
+		}
+		associations.put( collectionRole, association );
 	}
 
 	public static OgmEntityEntryState getStateFor(SessionImplementor session, Object object) {

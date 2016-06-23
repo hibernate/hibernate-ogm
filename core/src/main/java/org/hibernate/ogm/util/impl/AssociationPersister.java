@@ -37,8 +37,6 @@ import org.hibernate.persister.entity.EntityPersister;
  * @author Gunnar Morling
  */
 public class AssociationPersister {
-	private static final Log log = LoggerFactory.make();
-
 	private GridType keyGridType;
 	private Object key;
 	private SessionImplementor session;
@@ -139,25 +137,56 @@ public class AssociationPersister {
 	}
 
 	/*
-	 * Load a collection and create it if it is not found
+	 * Load an association and create it if it is not found
 	 */
 	public Association getAssociation() {
 		if ( association == null ) {
 			AssociationKey key = getAssociationKey();
-			association = gridDialect.getAssociation( key, getAssociationContext() );
-			if (association == null) {
+
+			if ( hostingEntity != null ) {
+				OgmEntityEntryState entryState = OgmEntityEntryState.getStateFor( session, hostingEntity );
+				if ( entryState.hasAssociation( associationKeyMetadata.getCollectionRole() ) ) {
+					association = entryState.getAssociation( associationKeyMetadata.getCollectionRole() );
+				}
+				else {
+					association = gridDialect.getAssociation( key, getAssociationContext() );
+				}
+			}
+			else {
+				association = gridDialect.getAssociation( key, getAssociationContext() );
+			}
+
+			if ( association == null ) {
 				association = gridDialect.createAssociation( key, getAssociationContext() );
+			}
+			if ( hostingEntity != null ) {
+				OgmEntityEntryState.getStateFor( session, hostingEntity )
+						.setAssociation( associationKeyMetadata.getCollectionRole(), association );
 			}
 		}
 		return association;
 	}
 
 	/*
-	 * Does not create a collection if it is not found
+	 * Does not create an association if it is not found
 	 */
 	public Association getAssociationOrNull() {
 		if ( association == null ) {
-			association = gridDialect.getAssociation( getAssociationKey(), getAssociationContext() );
+			if ( hostingEntity != null ) {
+				OgmEntityEntryState entryState = OgmEntityEntryState.getStateFor( session, hostingEntity );
+				if ( entryState.hasAssociation( associationKeyMetadata.getCollectionRole() ) ) {
+					association = entryState.getAssociation( associationKeyMetadata.getCollectionRole() );
+					return association;
+				}
+			}
+
+			if ( association == null ) {
+				association = gridDialect.getAssociation( getAssociationKey(), getAssociationContext() );
+				if ( hostingEntity != null ) {
+					OgmEntityEntryState.getStateFor( session, hostingEntity )
+							.setAssociation( associationKeyMetadata.getCollectionRole(), association );
+				}
+			}
 		}
 		return association;
 	}
@@ -169,6 +198,7 @@ public class AssociationPersister {
 		if ( getAssociation().isEmpty() ) {
 			gridDialect.removeAssociation( getAssociationKey(), getAssociationContext() );
 			association = null;
+			OgmEntityEntryState.getStateFor( session, hostingEntity ).setAssociation( associationKeyMetadata.getCollectionRole(), null );
 		}
 		else {
 			gridDialect.insertOrUpdateAssociation( getAssociationKey(), getAssociation(), getAssociationContext() );
