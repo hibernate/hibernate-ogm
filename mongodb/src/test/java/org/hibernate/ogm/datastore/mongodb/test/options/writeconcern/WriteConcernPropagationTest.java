@@ -218,7 +218,7 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect updates to the player document using the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ), times( 2 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ), times( 1 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
 	@Test

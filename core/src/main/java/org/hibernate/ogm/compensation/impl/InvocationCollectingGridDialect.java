@@ -123,6 +123,24 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 		handleAppliedOperation( executeBatch );
 	}
 
+	@Override
+	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation operation) {
+		List<GridDialectOperation> operations = new ArrayList<>();
+		for ( Operation groupedOperation : operation.getOperations() ) {
+			operations.add( getSimpleGridDialectOperations( groupedOperation ) );
+		}
+
+		ExecuteBatch executeBatch = new ExecuteBatchImpl( operations );
+		try {
+			super.executeGroupedChangesToEntity( operation );
+		}
+		catch (Exception e) {
+			handleException( executeBatch, e );
+		}
+
+		handleAppliedOperation( executeBatch );
+	}
+
 	private GridDialectOperation getSimpleGridDialectOperations(Operation operation) {
 		GridDialectOperation gridDialectOperation;
 		if ( operation instanceof InsertOrUpdateTupleOperation ) {

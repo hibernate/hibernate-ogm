@@ -15,6 +15,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.impl.InvocationCollectingGridDialect;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.configurationreader.impl.DefaultClassPropertyReaderContext;
@@ -96,9 +97,9 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 					gridDialect = new InvocationCollectingGridDialect( gridDialect, eventContext );
 				}
 
-				if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
-					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
-					gridDialect = new BatchOperationsDelegator( batchable, eventContext );
+				if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ||
+						GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) ) {
+					gridDialect = new BatchOperationsDelegator( gridDialect, eventContext );
 				}
 
 				log.useGridDialect( gridDialect.getClass() );

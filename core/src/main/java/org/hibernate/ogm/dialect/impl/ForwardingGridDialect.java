@@ -14,6 +14,8 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
@@ -56,7 +58,7 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect, GroupingByEntityDialect {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
@@ -284,5 +286,12 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		sb.append( "]" );
 
 		return sb.toString();
+	}
+
+	@Override
+	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation operation) {
+		if ( gridDialect instanceof GroupingByEntityDialect ) {
+			( (GroupingByEntityDialect) gridDialect ).executeGroupedChangesToEntity( operation );
+		}
 	}
 }

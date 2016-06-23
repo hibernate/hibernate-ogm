@@ -9,13 +9,17 @@ package org.hibernate.ogm.dialect.impl;
 import java.io.Serializable;
 
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -41,7 +45,7 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	private final EventContextManager eventContext;
 
-	public BatchOperationsDelegator(BatchableGridDialect dialect, EventContextManager eventContext) {
+	public BatchOperationsDelegator(GridDialect dialect, EventContextManager eventContext) {
 		super( dialect );
 		this.eventContext = eventContext;
 	}
@@ -70,7 +74,12 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		log.tracef( "Executing batch" );
 
 		try {
-			super.executeBatch( operationsQueue );
+			if ( GridDialects.hasFacet( getGridDialect(), BatchableGridDialect.class ) ) {
+				super.executeBatch( operationsQueue );
+			}
+			else if ( GridDialects.hasFacet( getGridDialect(), GroupingByEntityDialect.class ) ) {
+				executeOperations( operationsQueue );
+			}
 		}
 		catch ( TupleAlreadyExistsException taee ) {
 			// TODO: Ideally, we should log the entity name + id here; For now we trust the datastore to provide this
@@ -138,6 +147,29 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		}
 		else {
 			getOperationQueue().add( new RemoveAssociationOperation( key, withQueue( associationContext ) ) );
+		}
+	}
+
+	private void executeOperations(OperationsQueue queue) {
+		if ( !queue.isClosed() ) {
+			Operation operation = queue.poll();
+
+			while ( operation != null ) {
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					GroupedChangesToEntityOperation entityOperation = (GroupedChangesToEntityOperation) operation;
+					super.executeGroupedChangesToEntity( entityOperation );
+				}
+				else if ( operation instanceof RemoveTupleOperation ) {
+					RemoveTupleOperation removeTupleOperation = (RemoveTupleOperation) operation;
+					super.removeTuple( removeTupleOperation.getEntityKey(), removeTupleOperation.getTupleContext() );
+				}
+				else {
+					throw new UnsupportedOperationException( "Operation not supported: " + operation.getClass().getSimpleName() );
+				}
+				operation = queue.poll();
+			}
+
+			queue.clear();
 		}
 	}
 

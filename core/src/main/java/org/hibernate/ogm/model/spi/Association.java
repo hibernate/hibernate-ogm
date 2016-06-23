@@ -216,6 +216,14 @@ public class Association {
 		currentState.clear();
 	}
 
+	/**
+	 * Reset the association to the datastore state.
+	 */
+	public void reset() {
+		cleared = false;
+		currentState.clear();
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder( "Association[" ).append( StringHelper.lineSeparator() );

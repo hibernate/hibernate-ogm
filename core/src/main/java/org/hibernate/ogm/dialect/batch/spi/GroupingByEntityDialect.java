@@ -9,12 +9,17 @@ package org.hibernate.ogm.dialect.batch.spi;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 
 /**
- * @author Guillaume Smet
+ * A {@link GridDialect} that can group operations for a given entity.
  *
- * XXX GSM: to be removed
+ * @author Guillaume Smet
  */
-public interface GroupedChangesToEntityAwareDialect extends GridDialect {
+public interface GroupingByEntityDialect extends GridDialect {
 
+	/**
+	 * Execute all the changes collected for a given entity.
+	 *
+	 * @param groupedOperation the grouped operation
+	 */
 	void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation);
 
 }
