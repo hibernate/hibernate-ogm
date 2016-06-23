@@ -404,7 +404,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	@Override
@@ -682,12 +682,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	@Override
@@ -1190,11 +1190,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					executeBatchUpdate( inserts, insertSnapshots, entityOperation );
 				}
 				else if ( operation instanceof RemoveTupleOperation ) {
-					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
-					executeBatchRemove( inserts, tupleOp );
+					RemoveTupleOperation removeTupleOperation = (RemoveTupleOperation) operation;
+					executeBatchRemove( inserts, removeTupleOperation );
 				}
 				else {
-					throw new UnsupportedOperationException( "Operation not supported on MongoDB: " + operation.getClass().getName() );
+					throw new UnsupportedOperationException( "Operation not supported: " + operation.getClass().getSimpleName() );
 				}
 				operation = queue.poll();
 			}
@@ -1229,7 +1229,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		BasicDBObject updateStatement = new BasicDBObject();
 		WriteConcern writeConcern = null;
 
-		for (Operation operation : groupedOperation.getOperations()) {
+		for ( Operation operation : groupedOperation.getOperations() ) {
 			if ( operation instanceof InsertOrUpdateTupleOperation ) {
 				InsertOrUpdateTupleOperation tupleOperation = (InsertOrUpdateTupleOperation) operation;
 				Tuple tuple = tupleOperation.getTuple();
