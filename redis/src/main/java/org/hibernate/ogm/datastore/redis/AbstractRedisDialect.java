@@ -195,8 +195,17 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		}
 	}
 
-	protected void removeAssociation(AssociationKey key) {
-		connection.del( associationId( key ) );
+	protected void removeAssociations(List<AssociationKey> keys) {
+		if ( keys.isEmpty() ) {
+			return;
+		}
+		String[] ids = new String[keys.size()];
+		int i = 0;
+		for ( AssociationKey key : keys ) {
+			ids[i] = associationId( key );
+			i++;
+		}
+		connection.del( ids );
 	}
 
 	protected void remove(EntityKey key) {
@@ -324,9 +333,15 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 		connection.del( associationId );
 
-		String[] serializedRows = new String[association.getRows().size()];
+		List<Object> rows = association.getRows();
+
+		if ( rows.isEmpty() ) {
+			return;
+		}
+
+		String[] serializedRows = new String[rows.size()];
 		int i = 0;
-		for ( Object row : association.getRows() ) {
+		for ( Object row : rows ) {
 			serializedRows[i] = strategy.serialize( row );
 			i++;
 		}

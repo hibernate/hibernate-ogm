@@ -45,7 +45,6 @@ public class RedisJsonTupleSnapshot implements TupleSnapshot {
 		return snapshotType;
 	}
 
-
 	public void setSnapshotType(SnapshotType snapshotType) {
 		this.snapshotType = snapshotType;
 	}
