@@ -15,6 +15,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
@@ -26,6 +27,7 @@ import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
+import org.hibernate.ogm.dialect.spi.EventContextManagerAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -56,7 +58,9 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect,
+		IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService,
+		MultigetGridDialect, EventContextManagerAwareGridDialect {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
@@ -77,6 +81,13 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		this.identityColumnAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
 		this.optimisticLockingAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, OptimisticLockingAwareGridDialect.class );
 		this.multigetGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, MultigetGridDialect.class );
+	}
+
+	@Override
+	public void setEventContextManager(EventContextManager eventContextManager) {
+		if ( gridDialect instanceof EventContextManagerAwareGridDialect ) {
+			( (EventContextManagerAwareGridDialect) gridDialect ).setEventContextManager( eventContextManager );
+		}
 	}
 
 	/**

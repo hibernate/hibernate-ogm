@@ -100,4 +100,11 @@ public class OperationsQueue {
 		return operations.size();
 	}
 
+	/**
+	 * @return true if the queue is empty
+	 */
+	public boolean isEmpty() {
+		return operations.isEmpty();
+	}
+
 }

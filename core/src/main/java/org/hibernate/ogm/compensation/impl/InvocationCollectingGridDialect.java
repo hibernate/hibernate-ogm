@@ -60,10 +60,15 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class InvocationCollectingGridDialect extends ForwardingGridDialect<Serializable> {
 
-	private final EventContextManager eventContext;
+	private EventContextManager eventContext;
 
-	public InvocationCollectingGridDialect(GridDialect gridDialect, EventContextManager eventContextManager) {
+	public InvocationCollectingGridDialect(GridDialect gridDialect) {
 		super( gridDialect );
+	}
+
+	@Override
+	public void setEventContextManager(EventContextManager eventContextManager) {
+		super.setEventContextManager( eventContextManager );
 		this.eventContext = eventContextManager;
 	}
 

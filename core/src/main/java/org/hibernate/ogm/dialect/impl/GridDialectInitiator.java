@@ -15,7 +15,6 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.impl.InvocationCollectingGridDialect;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
-import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.configurationreader.impl.DefaultClassPropertyReaderContext;
 import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
@@ -50,14 +49,13 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 		DatastoreProvider datastore = registry.getService( DatastoreProvider.class );
 
 		boolean errorHandlerConfigured = configurationValues.containsKey( OgmProperties.ERROR_HANDLER );
-		EventContextManager eventContext = registry.getService( EventContextManager.class );
 
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
 		return ( (DefaultClassPropertyReaderContext<GridDialect>) propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
 				.instantiate() )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
-				.withInstantiator( new GridDialectInstantiator( datastore, errorHandlerConfigured, eventContext ) )
+				.withInstantiator( new GridDialectInstantiator( datastore, errorHandlerConfigured ) )
 				.getValue();
 	}
 
@@ -65,12 +63,10 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 
 		private final DatastoreProvider datastore;
 		private final boolean errorHandlerConfigured;
-		private final EventContextManager eventContext;
 
-		public GridDialectInstantiator(DatastoreProvider datastore, boolean errorHandlerConfigured, EventContextManager eventContext) {
+		public GridDialectInstantiator(DatastoreProvider datastore, boolean errorHandlerConfigured) {
 			this.datastore = datastore;
 			this.errorHandlerConfigured = errorHandlerConfigured;
-			this.eventContext = eventContext;
 		}
 
 		@Override
@@ -93,12 +89,12 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
 
 				if ( errorHandlerConfigured ) {
-					gridDialect = new InvocationCollectingGridDialect( gridDialect, eventContext );
+					gridDialect = new InvocationCollectingGridDialect( gridDialect );
 				}
 
 				if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
-					gridDialect = new BatchOperationsDelegator( batchable, eventContext );
+					gridDialect = new BatchOperationsDelegator( batchable );
 				}
 
 				log.useGridDialect( gridDialect.getClass() );
