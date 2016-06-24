@@ -122,6 +122,8 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		MapHelpers.updateAssociation( association );
+		// the association might have been removed prior to the update so we need to be sure it is present in the Map
+		provider.putAssociation( key, ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap() );
 	}
 
 	@Override

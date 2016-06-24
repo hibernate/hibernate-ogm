@@ -74,6 +74,8 @@ public final class MapHelpers {
 					break;
 			}
 		}
+		// the snapshot has been updated so we have to clear the various operations added to the Association
+		association.reset();
 	}
 
 }
