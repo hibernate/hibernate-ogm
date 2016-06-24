@@ -38,6 +38,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
+ * @author Guillaume Smet
  */
 public class Association {
 	private final AssociationSnapshot snapshot;
@@ -106,7 +107,7 @@ public class Association {
 	 */
 	public List<AssociationOperation> getOperations() {
 		List<AssociationOperation> result = new ArrayList<AssociationOperation>( currentState.size() + 1 );
-		if (cleared) {
+		if ( cleared ) {
 			result.add( new AssociationOperation( null, null, AssociationOperationType.CLEAR ) );
 		}
 		result.addAll( currentState.values() );
@@ -171,17 +172,25 @@ public class Association {
 	 * @return all keys of all rows contained within this association
 	 */
 	public Iterable<RowKey> getKeys() {
-		if ( cleared ) {
-			return Collections.emptyList();
-		}
-		else if ( currentState.isEmpty() ) {
-			return snapshot.getRowKeys();
+		if ( currentState.isEmpty() ) {
+			if ( cleared ) {
+				// if the association has been cleared and the currentState is empty, we consider that there are no rows.
+				return Collections.emptyList();
+			}
+			else {
+				// otherwise, the snapshot rows are the current ones
+				return snapshot.getRowKeys();
+			}
 		}
 		else {
 			// It may be a bit too large in case of removals, but that's fine for now
-			Set<RowKey> keys = new HashSet<RowKey>( snapshot.size() + currentState.size() );
-			for ( RowKey rowKey : snapshot.getRowKeys() ) {
-				keys.add( rowKey );
+			Set<RowKey> keys = new HashSet<RowKey>( cleared ? currentState.size() : snapshot.size() + currentState.size() );
+
+			if ( !cleared ) {
+				// we add the snapshot RowKeys only if the association has not been cleared
+				for ( RowKey rowKey : snapshot.getRowKeys() ) {
+					keys.add( rowKey );
+				}
 			}
 
 			for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
