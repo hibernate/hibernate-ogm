@@ -29,7 +29,7 @@ public class GridDialectInitiatorTest {
 		try {
 			StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
 					.applySetting( OgmProperties.ENABLED, true )
-					.applySetting( OgmProperties.GRID_DIALECT, "org.hibernate.ogm.test.boot.InvalidGridDialect" )
+					.applySetting( OgmProperties.GRID_DIALECT, InvalidGridDialect.class )
 					.applySetting( AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY, "jta" )
 					.build();
 
