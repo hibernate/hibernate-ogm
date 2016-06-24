@@ -66,7 +66,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
 	HibernateException cannotInstantiateGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, @Cause Exception e);
 
-	@Message(id = 14, value = "%1$s has no constructor accepting DatastoreProvider")
+	@Message(id = 14, value = "%1$s has no constructor accepting org.hibernate.ogm.datastore.spi.DatastoreProvider" )
 	HibernateException gridDialectHasNoProperConstructor(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass);
 
 	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
