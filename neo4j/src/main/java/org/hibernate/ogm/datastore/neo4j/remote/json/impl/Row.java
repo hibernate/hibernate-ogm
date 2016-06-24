@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.remote.json.impl;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The result of a {@link Statement} expressed as rows or {@link Graph}.
@@ -22,12 +23,22 @@ public class Row {
 
 	private Graph graph;
 
+	private List<Map<String, Object>> meta;
+
 	public Graph getGraph() {
 		return graph;
 	}
 
 	public List<Object> getRow() {
 		return row;
+	}
+
+	public List<Map<String, Object>> getMeta() {
+		return meta;
+	}
+
+	public void setMeta(List<Map<String, Object>> meta) {
+		this.meta = meta;
 	}
 
 	public void setRow(List<Object> row) {

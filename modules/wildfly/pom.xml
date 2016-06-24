@@ -51,6 +51,14 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-infinispan</artifactId>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                <!-- Hibernate Search might use a different version than Neo4j.
+                     It is safe to exclude it as we are going to use a module already present on WildFly -->
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>

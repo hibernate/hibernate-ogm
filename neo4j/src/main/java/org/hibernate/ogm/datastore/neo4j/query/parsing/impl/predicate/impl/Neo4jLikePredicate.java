@@ -46,7 +46,7 @@ public class Neo4jLikePredicate extends LikePredicate<StringBuilder> implements 
 	 */
 	@Override
 	public StringBuilder getNegatedQuery() {
-		builder.append( "NOT HAS(" );
+		builder.append( "NOT EXISTS(" );
 		identifier( builder, alias, propertyName );
 		builder.append( ") OR NOT(" );
 		getQuery();

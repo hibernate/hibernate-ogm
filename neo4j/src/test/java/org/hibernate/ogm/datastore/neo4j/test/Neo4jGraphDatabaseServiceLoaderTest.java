@@ -119,16 +119,6 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		}
 
 		@Override
-		public Iterable<Node> getAllNodes() {
-			return null;
-		}
-
-		@Override
-		public Iterable<RelationshipType> getRelationshipTypes() {
-			return null;
-		}
-
-		@Override
 		public void shutdown() {
 		}
 
@@ -164,11 +154,6 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public Node createNode(Label... labels) {
-			return null;
-		}
-
-		@Override
-		public ResourceIterable<Node> findNodesByLabelAndProperty(Label label, String key, Object value) {
 			return null;
 		}
 
@@ -214,6 +199,41 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public Result execute(String query, Map<String, Object> parameters) throws QueryExecutionException {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<Node> getAllNodes() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<Relationship> getAllRelationships() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<Label> getAllLabelsInUse() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<RelationshipType> getAllRelationshipTypesInUse() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<Label> getAllLabels() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<RelationshipType> getAllRelationshipTypes() {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<String> getAllPropertyKeys() {
 			return null;
 		}
 	}

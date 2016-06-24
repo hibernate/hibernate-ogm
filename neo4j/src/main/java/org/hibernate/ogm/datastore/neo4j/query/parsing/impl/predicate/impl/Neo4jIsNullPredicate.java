@@ -27,7 +27,7 @@ public class Neo4jIsNullPredicate extends IsNullPredicate<StringBuilder> impleme
 
 	@Override
 	public StringBuilder getQuery() {
-		builder.append( "NOT HAS(" );
+		builder.append( "NOT EXISTS(" );
 		identifier( builder, alias, propertyName );
 		builder.append( ")" );
 		return builder;
@@ -35,7 +35,7 @@ public class Neo4jIsNullPredicate extends IsNullPredicate<StringBuilder> impleme
 
 	@Override
 	public StringBuilder getNegatedQuery() {
-		builder.append( "HAS(" );
+		builder.append( "EXISTS(" );
 		identifier( builder, alias, propertyName );
 		builder.append( ")" );
 		return builder;

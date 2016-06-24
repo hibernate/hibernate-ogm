@@ -48,7 +48,7 @@ import org.hibernate.type.Type;
  */
 public abstract class BaseNeo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect, MultigetGridDialect {
 
-	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintViolation";
+	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintValidationFailed";
 
 	private ServiceRegistryImplementor serviceRegistry;
 

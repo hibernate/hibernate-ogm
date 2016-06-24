@@ -240,7 +240,7 @@
                   <include>org.neo4j:neo4j-graph-matching</include>
                   <include>org.neo4j:neo4j-jmx</include>
                   <include>org.neo4j:neo4j-cypher</include>
-              </includes>
+             </includes>
        </dependencySet>
        <dependencySet>
               <useProjectArtifact>false</useProjectArtifact>
@@ -248,25 +248,34 @@
               <useTransitiveFiltering>false</useTransitiveFiltering>
               <unpack>false</unpack>
               <includes>
-                  <!-- Include the Lucene version used by Neo4J, not the one from Hibernate Search! -->
-                  <include>org.apache.lucene:lucene-core</include>
                   <include>org.neo4j:neo4j-io</include>
+                  <include>org.neo4j:neo4j-security</include>
                   <include>org.neo4j:neo4j-lucene-index</include>
-                  <include>org.parboiled:parboiled-scala_2.11</include>
+                  <include>org.neo4j:neo4j-lucene-upgrade</include>
+                  <include>org.neo4j:neo4j-common</include>
+                  <include>org.neo4j:neo4j-resource</include>
                   <include>org.scala-lang:scala-reflect</include>
                   <include>org.scala-lang:scala-library</include>
-                  <include>org.scala-lang.modules:scala-parser-combinators_2.11</include>
+                  <include>org.neo4j:neo4j-collections</include>
                   <include>org.neo4j:neo4j-primitive-collections</include>
                   <include>org.neo4j:neo4j-codegen</include>
                   <include>org.neo4j:neo4j-unsafe</include>
-                  <include>org.neo4j:neo4j-function</include>
                   <include>org.neo4j:neo4j-logging</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-1.9_2.11</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-2.2_2.11</include>
+                  <include>org.neo4j:neo4j-graphdb-api</include>
                   <include>org.neo4j:neo4j-cypher-compiler-2.3</include>
                   <include>org.neo4j:neo4j-cypher-frontend-2.3</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-3.0</include>
+                  <include>org.neo4j:neo4j-cypher-frontend-3.0</include>
+                  <include>org.parboiled:parboiled-scala_2.11</include>
                   <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
                   <include>org.apache.commons:commons-lang3</include>
+
+                 <!-- Include the Lucene version used by Neo4J, not the one from Hibernate Search! -->
+                  <include>org.apache.lucene:lucene-core</include>
+                  <include>org.apache.lucene:lucene-codecs</include>
+                  <include>org.apache.lucene:lucene-backward-codecs</include>
+                  <include>org.apache.lucene:lucene-queryparser</include>
+                  <include>org.apache.lucene:lucene-analyzers-common</include>
               </includes>
        </dependencySet>
        <!-- HQL -->
