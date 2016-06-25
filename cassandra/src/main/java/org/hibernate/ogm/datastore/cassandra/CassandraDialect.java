@@ -66,6 +66,7 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -86,13 +87,11 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 	private final CassandraDatastoreProvider provider;
 	private final Session session;
-	private final QueryBuilder queryBuilder;
 	private final LoadingCache<String, PreparedStatement> preparedStatementCache;
 
 	public CassandraDialect(CassandraDatastoreProvider provider) {
 		this.provider = provider;
 		session = provider.getSession();
-		queryBuilder = provider.getQueryBuilder();
 
 
 		preparedStatementCache = CacheBuilder.newBuilder()
@@ -127,9 +126,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 		try {
 			BoundStatement boundStatement = new BoundStatement( preparedStatement );
-			for ( int i = 0; i < columnValues.length; i++ ) {
-				boundStatement.setObject( i, columnValues[i] );
-			}
+			boundStatement.bind( columnValues );
 			return session.execute( boundStatement );
 		}
 		catch (DriverException e) {
@@ -150,7 +147,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 
-		Select select = queryBuilder.select().all().from( quote( key.getTable() ) );
+		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
 		for ( int i = 1; i < key.getColumnNames().length; i++ ) {
 			selectWhere = selectWhere.and( eq( quote( key.getColumnNames()[i] ), QueryBuilder.bindMarker() ) );
@@ -198,7 +195,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 		if ( deleteOps.size() > 0 ) {
 
-			Delete.Selection deleteSelection = queryBuilder.delete();
+			Delete.Selection deleteSelection = QueryBuilder.delete();
 			for ( TupleOperation tupleOperation : deleteOps ) {
 				deleteSelection.column( quote( tupleOperation.getColumn() ) );
 			}
@@ -219,7 +216,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		if ( updateOps.size() > 0 ) {
 
 			// insert and update are both 'upsert' in cassandra.
-			Insert insert = queryBuilder.insertInto( quote( key.getTable() ) );
+			Insert insert = QueryBuilder.insertInto( quote( key.getTable() ) );
 			List<Object> columnValues = new LinkedList<>();
 			Set<String> seenColNames = new HashSet<>();
 			for ( int i = 0; i < updateOps.size(); i++ ) {
@@ -243,7 +240,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 
-		Delete delete = queryBuilder.delete().from( quote( key.getTable() ) );
+		Delete delete = QueryBuilder.delete().from( quote( key.getTable() ) );
 		Delete.Where deleteWhere = delete.where(
 				eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() )
 		);
@@ -260,7 +257,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		@SuppressWarnings("unchecked")
 		List<Column> tablePKCols = tableMetadata.getPrimaryKey().getColumns();
 
-		Select select = queryBuilder.select().all().from( quote( key.getTable() ) );
+		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
 		for ( int i = 1; i < key.getColumnNames().length; i++ ) {
 			selectWhere = selectWhere.and( eq( quote( key.getColumnNames()[i] ), QueryBuilder.bindMarker() ) );
@@ -370,7 +367,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		for ( AssociationOperation op : updateOps ) {
 			Tuple value = op.getValue();
 			List<Object> columnValues = new ArrayList<>();
-			Insert insert = queryBuilder.insertInto( quote( key.getTable() ) );
+			Insert insert = QueryBuilder.insertInto( quote( key.getTable() ) );
 			for ( String columnName : value.getColumnNames() ) {
 				insert.value( quote( columnName ), QueryBuilder.bindMarker( columnName ) );
 				columnValues.add( value.get( columnName ) );
@@ -382,7 +379,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		for ( AssociationOperation op : deleteOps ) {
 
 			RowKey value = op.getKey();
-			Delete.Selection deleteSelection = queryBuilder.delete();
+			Delete.Selection deleteSelection = QueryBuilder.delete();
 			for ( String columnName : op.getKey().getColumnNames() ) {
 				if ( !keyColumnNames.contains( columnName ) ) {
 					deleteSelection.column( quote( columnName ) );
@@ -414,7 +411,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 			keyColumnNames.add( column.getName() );
 		}
 
-		Delete.Selection deleteSelection = queryBuilder.delete();
+		Delete.Selection deleteSelection = QueryBuilder.delete();
 		for ( String columnName : key.getColumnNames() ) {
 			if ( !keyColumnNames.contains( columnName ) ) {
 				deleteSelection.column( quote( columnName ) );
@@ -447,7 +444,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
-		Select select = queryBuilder.select().all().from( quote( entityKeyMetadata.getTable() ) );
+		Select select = QueryBuilder.select().all().from( quote( entityKeyMetadata.getTable() ) );
 
 		ResultSet resultSet;
 		try {
@@ -504,7 +501,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 		ResultSet resultSet = bindAndExecute(
 				parameters,
-				session.newSimpleStatement( query.getQuery() )
+				new SimpleStatement( query.getQuery() )
 		);
 
 		int first = 0;
