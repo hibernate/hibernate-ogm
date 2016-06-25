@@ -127,7 +127,6 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 				bootstrapSession.close();
 
 				session = cluster.connect( config.getDatabaseName() );
-				queryBuilder = new QueryBuilder( cluster );
 
 				sequenceHandler = new CassandraSequenceHandler(this);
 			}

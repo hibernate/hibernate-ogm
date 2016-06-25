@@ -29,7 +29,7 @@
         <fongodbVersion>2.0.6</fongodbVersion>
         <neo4jVersion>3.0.3</neo4jVersion>
         <!-- Update dependency versions accordingly when updating C*  -->
-        <cassandraVersion>2.2.0-rc3</cassandraVersion>
+        <cassandraVersion>3.0.2</cassandraVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
         <lettuceVersion>4.1.Final</lettuceVersion>
         <rxjavaVersion>1.1.0</rxjavaVersion>
@@ -62,7 +62,7 @@
              of these libraries through this BOM, these versions are for internal usage to make sure the right
              JARs end up in the C* driver WildFly module
         -->
-        <codahaleMetricsVersion>3.0.2</codahaleMetricsVersion>
+        <codahaleMetricsVersion>3.1.2</codahaleMetricsVersion>
         <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
         <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->
         <!-- end of Cassandra dependencies -->
