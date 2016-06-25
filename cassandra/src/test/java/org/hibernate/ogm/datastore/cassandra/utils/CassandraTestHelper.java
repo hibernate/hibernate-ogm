@@ -140,7 +140,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 
 		CassandraDatastoreProvider provider = getProvider( sessionFactory );
-		Select select = provider.getQueryBuilder().select().all().from( quote( key.getTable() ) );
+		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
 		for ( int i = 1; i < key.getColumnNames().length; i++ ) {
 			selectWhere = selectWhere.and( eq( quote( key.getColumnNames()[i] ), QueryBuilder.bindMarker() ) );
@@ -148,9 +148,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 
 		PreparedStatement preparedStatement = provider.getSession().prepare( select );
 		BoundStatement boundStatement = new BoundStatement( preparedStatement );
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			boundStatement.setObject( i, key.getColumnValues()[i] );
-		}
+		boundStatement.bind( key.getColumnValues() );
 		ResultSet resultSet = provider.getSession().execute( boundStatement );
 
 		if ( resultSet.isExhausted() ) {
@@ -158,7 +156,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 		}
 
 		Row row = resultSet.one();
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 		for ( ColumnDefinitions.Definition definition : row.getColumnDefinitions() ) {
 			String k = definition.getName();
 			Object v = row.getObject( k );
@@ -203,13 +201,12 @@ public class CassandraTestHelper implements TestableGridDialect {
 
 		CassandraDatastoreProvider provider = CassandraTestHelper.getProvider( sessionFactory );
 
-		QueryBuilder queryBuilder = provider.getQueryBuilder();
 		Select select;
 		if ( columns == null || columns.isEmpty() ) {
-			select = queryBuilder.select().all().from( quote( table ) );
+			select = QueryBuilder.select().all().from( quote( table ) );
 		}
 		else {
-			Selection sel = queryBuilder.select();
+			Selection sel = QueryBuilder.select();
 			for ( String col : columns ) {
 				sel = sel.column( quote( col ) );
 			}
@@ -228,9 +225,7 @@ public class CassandraTestHelper implements TestableGridDialect {
 
 		PreparedStatement preparedStatement = session.prepare( select );
 		BoundStatement boundStatement = new BoundStatement( preparedStatement );
-		for ( int i = 0; i < values.size(); i++ ) {
-			boundStatement.setObject( i, values.get( i ) );
-		}
+		boundStatement.bind( values.toArray() );
 		ResultSet resultSet = session.execute( boundStatement );
 
 		if ( resultSet.isExhausted() ) {
