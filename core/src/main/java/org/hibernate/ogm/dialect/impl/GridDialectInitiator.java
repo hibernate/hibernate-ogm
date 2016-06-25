@@ -88,7 +88,7 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 					}
 				}
 				if ( injector == null ) {
-					log.gridDialectHasNoProperConstructor( clazz );
+					throw log.gridDialectHasNoProperConstructor( clazz );
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
 
