@@ -21,11 +21,11 @@ env:
     - REDIS_HOSTNAME=localhost
     - COUCHDB_HOSTNAME=localhost
     - CASSANDRA_HOSTNAME=localhost CASSANDRA_VERSION=2.2.5 
-    - NEO4J_HOSTNAME=localhost NEO4J_PORT=7474 NEO4J_VERSION=2.3.4 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate 
+    - NEO4J_HOSTNAME=localhost NEO4J_PORT=7474 NEO4J_VERSION=3.0.3 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
 install:
-  - neo4j-community-$NEO4J_VERSION/bin/neo4j start
+  - $NEO4J_HOME/bin/neo4j start
   - sudo apt-get install -qq couchdb
   - bash travis/setup-cassandra.sh 2>&1 > cassandra.log
   # The Maven install provided by Travis is outdated, use Maven wrapper to get the latest version
