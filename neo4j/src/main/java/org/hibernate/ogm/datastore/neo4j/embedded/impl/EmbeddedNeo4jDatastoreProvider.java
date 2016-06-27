@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.embedded.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl.EmbeddedNeo4jTransactionCoordinatorBuilder;
@@ -89,7 +89,7 @@ public class EmbeddedNeo4jDatastoreProvider extends BaseDatastoreProvider implem
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		return Neo4jDialect.class;
+		return EmbeddedNeo4jDialect.class;
 	}
 
 	public GraphDatabaseService getDatabase() {

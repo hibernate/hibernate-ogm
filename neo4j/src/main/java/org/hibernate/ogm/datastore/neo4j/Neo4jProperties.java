@@ -12,7 +12,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
  * Neo4j GridDialect configuration options.
  *
  * @author Davide D'Alto
- * @see org.hibernate.ogm.datastore.neo4j.Neo4jDialect
+ * @see org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect
  */
 public final class Neo4jProperties implements OgmProperties {
 

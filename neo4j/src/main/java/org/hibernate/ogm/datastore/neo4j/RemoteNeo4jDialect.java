@@ -252,7 +252,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		if (!readEntity.getErrors().isEmpty() ) {
 			ErrorResponse errorResponse = readEntity.getErrors().get( 0 );
 			switch ( errorResponse.getCode() ) {
-				case Neo4jDialect.CONSTRAINT_VIOLATION_CODE:
+				case EmbeddedNeo4jDialect.CONSTRAINT_VIOLATION_CODE:
 					throw extractException( key, tuple, errorResponse );
 				default:
 					throw new HibernateException( String.valueOf( errorResponse ) );

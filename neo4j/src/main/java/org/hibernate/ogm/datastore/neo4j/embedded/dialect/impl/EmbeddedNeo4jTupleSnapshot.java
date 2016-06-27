@@ -15,7 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
@@ -60,7 +60,7 @@ public final class EmbeddedNeo4jTupleSnapshot implements TupleSnapshot {
 		else if ( associatedEntityKeyMetadata.containsKey( column ) ) {
 			return readPropertyOnOtherNode( column );
 		}
-		else if ( Neo4jDialect.isPartOfRegularEmbedded( entityKeyMetadata.getColumnNames(), column ) ) {
+		else if ( EmbeddedNeo4jDialect.isPartOfRegularEmbedded( entityKeyMetadata.getColumnNames(), column ) ) {
 			return readEmbeddedProperty( column );
 		}
 		else {

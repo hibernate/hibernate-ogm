@@ -24,7 +24,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
-import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
@@ -306,7 +306,7 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
 		if ( EmbeddedNeo4jDatastoreProvider.class.isInstance( datastoreProvider ) ) {
-			return new Neo4jDialect( (EmbeddedNeo4jDatastoreProvider) datastoreProvider );
+			return new EmbeddedNeo4jDialect( (EmbeddedNeo4jDatastoreProvider) datastoreProvider );
 		}
 		if ( RemoteNeo4jDatastoreProvider.class.isInstance( datastoreProvider ) ) {
 			return new RemoteNeo4jDialect( (RemoteNeo4jDatastoreProvider) datastoreProvider );
