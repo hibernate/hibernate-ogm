@@ -32,7 +32,7 @@
         <module>cassandra</module>
         <module>redis</module>
         <module>jipijapa</module>
-        <module>modules</module>
+        <!-- <module>modules</module> The modules require all of the above modules to be enabled -->
         <module>performance</module>
     </modules>
 
@@ -701,6 +701,8 @@
                 <module>ehcache</module>
                 <module>infinispan</module>
                 <module>neo4j</module>
+                <!-- The WildFly modules require the other modules to be enabled too -->
+                <module>modules</module>
             </modules>
         </profile>
         <profile>
