@@ -57,7 +57,6 @@
         <concurrentlinkedhashmapVersion>1.4.2</concurrentlinkedhashmapVersion>
         <commonsLang3Version>3.3.2</commonsLang3Version>
         <asmVersion>5.0.3</asmVersion>
-        <luceneVersion>5.3.1</luceneVersion>
 
         <!--
              The following versions are required for the Cassandra driver; We don't expose a managed versions
