@@ -46,6 +46,7 @@
         <arquillianVersion>1.1.5.Final</arquillianVersion>
         <jmhVersion>1.0</jmhVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
+        <bytemanVersion>3.0.6</bytemanVersion>
 
         <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -106,6 +107,24 @@
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
                 <version>1.2.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman</artifactId>
+                <version>${bytemanVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-bmunit</artifactId>
+                <version>${bytemanVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-install</artifactId>
+                <version>${bytemanVersion}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
