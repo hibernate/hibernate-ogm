@@ -8,9 +8,9 @@ package org.hibernate.ogm.utils;
 
 import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
@@ -20,7 +20,7 @@ import org.junit.runners.model.InitializationError;
  *
  * @author Gunnar Morling
  */
-public class SkippableTestRunner extends BlockJUnit4ClassRunner {
+public class SkippableTestRunner extends BMUnitRunner {
 
 	public SkippableTestRunner(Class<?> klass) throws InitializationError {
 		super( klass );
