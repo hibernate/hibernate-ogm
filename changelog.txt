@@ -1,6 +1,36 @@
 Hibernate OGM Changelog
 =======================
 
+5.0.1.Final (30-06-2016)
+-------------------------
+
+** Bug
+    * OGM-1023 - mongodb     - MongoDB $regex operator using CLI syntax does not seem to work
+    * OGM-1104 - core        - Missing throw in GridDialectInitiator
+    * OGM-828 -             - Need to list entities when using Hibernate OGM on WildFly
+
+** Improvement
+    * OGM-769 - build       - Store release build steps as part of the OGM sources
+    * OGM-1102 - build       - Upgrade maven-jar-plugin to 3.0.1 to fix memory issues
+    * OGM-356 - query       - Support object comparison in JPQL queries for MongoDB and Neo4j
+    * OGM-1090 - build       - Use Maven Central first and only contact JBoss Nexus if the artifact is not found in Central
+
+** Sub-task
+    * OGM-1054 - core, neo4j - Create new type descriptors for conversion of Byte, byte[] and others
+
+** Task
+    * OGM-1056 - build       - Upgrade Maven plugin dependencies
+    * OGM-1065 - cassandra   - Support Cassandra 3.x
+    * OGM-1059 - build       - Update the comparison version of CLIRR
+    * OGM-1012 - tests       - Add integration test for Neo4j Remote
+    * OGM-1109 - neo4j       - Upgrade Neo4j to 2.3.5
+    * OGM-1058 - build       - Travis - Speed up the build
+    * OGM-1057 - build       - Make the build quieter
+    * OGM-1060 - mongodb     - Fix indentation issues in MongoDB pom.xml
+    * OGM-1072 - neo4j       - Update Neo4j to version 2.3.4
+    * OGM-1055 -             - Fix several typos in comments and test code
+    * OGM-944 -             - Use committed release step scripts in release job on Jenkins
+
 5.0.0.Final (13-05-2016)
 -------------------------
 
