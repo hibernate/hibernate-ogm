@@ -3,6 +3,7 @@ GEM
   specs:
     choice (0.2.0)
     git (1.2.9.1)
+    json (1.8.2)
 
 PLATFORMS
   java
@@ -11,3 +12,7 @@ PLATFORMS
 DEPENDENCIES
   choice
   git
+  json
+
+BUNDLED WITH
+   1.11.2
