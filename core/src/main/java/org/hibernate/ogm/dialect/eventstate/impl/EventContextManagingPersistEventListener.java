@@ -12,7 +12,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.event.service.spi.DuplicationStrategy;
 import org.hibernate.event.spi.PersistEvent;
 import org.hibernate.event.spi.PersistEventListener;
-import org.hibernate.jpa.event.internal.core.JpaPersistEventListener;
 import org.hibernate.ogm.util.impl.EffectivelyFinal;
 
 /**
@@ -67,8 +66,8 @@ public class EventContextManagingPersistEventListener implements PersistEventLis
 
 		@Override
 		public boolean areMatch(Object listener, Object original) {
-			if ( listener instanceof EventContextManagingPersistEventListener && original instanceof JpaPersistEventListener ) {
-				( (EventContextManagingPersistEventListener) listener ).setDelegate( (JpaPersistEventListener) original );
+			if ( listener instanceof EventContextManagingPersistEventListener && original instanceof PersistEventListener ) {
+				( (EventContextManagingPersistEventListener) listener ).setDelegate( (PersistEventListener) original );
 				return true;
 			}
 
