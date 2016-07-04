@@ -14,6 +14,8 @@ import org.bson.types.ObjectId;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.compensation.ErrorHandler;
+import org.hibernate.ogm.compensation.ErrorHandlingStrategy;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
@@ -36,12 +38,11 @@ public class ObjectIdTest extends OgmTestCase {
 
 		// when
 		session.persist( brian );
-
 		tx.commit();
 		session.clear();
 		tx = session.beginTransaction();
 
-		BarKeeper brianLoaded = (BarKeeper) session.load( BarKeeper.class, brian.getId() );
+		BarKeeper brianLoaded = session.load( BarKeeper.class, brian.getId() );
 
 		// then
 		assertThat( brianLoaded.getId() ).isEqualTo( brian.getId() );
@@ -69,7 +70,7 @@ public class ObjectIdTest extends OgmTestCase {
 		session.clear();
 		tx = session.beginTransaction();
 
-		BarKeeper brianLoaded = (BarKeeper) session.load( BarKeeper.class, brian.getId() );
+		BarKeeper brianLoaded = session.load( BarKeeper.class, brian.getId() );
 
 		// then
 		assertThat( brianLoaded.getName() ).isEqualTo( "Brian" );
@@ -96,7 +97,7 @@ public class ObjectIdTest extends OgmTestCase {
 		session.clear();
 		tx = session.beginTransaction();
 
-		Bar barLoaded = (Bar) session.load( Bar.class, goldFishBar.getId() );
+		Bar barLoaded = session.load( Bar.class, goldFishBar.getId() );
 
 		// then
 		assertThat( barLoaded.getName() ).isEqualTo( "Goldfisch Bar" );
@@ -131,7 +132,7 @@ public class ObjectIdTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// then
-		Bar barLoaded = (Bar) session.load( Bar.class, goldFishBar.getId() );
+		Bar barLoaded = session.load( Bar.class, goldFishBar.getId() );
 
 		assertThat( barLoaded.getName() ).isEqualTo( "Goldfisch Bar" );
 		assertThat( barLoaded.getMusicGenre() ).isNotNull();
@@ -141,7 +142,7 @@ public class ObjectIdTest extends OgmTestCase {
 		session.clear();
 		tx = session.beginTransaction();
 
-		MusicGenre genreLoaded = (MusicGenre) session.load( MusicGenre.class, goldFishBar.getMusicGenre().getId() );
+		MusicGenre genreLoaded = session.load( MusicGenre.class, goldFishBar.getMusicGenre().getId() );
 		assertThat( genreLoaded.getPlayedIn() ).onProperty( "name" ).containsOnly( "Goldfisch Bar", "Shark Station" );
 
 		tx.commit();
@@ -166,7 +167,7 @@ public class ObjectIdTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// then
-		Bar barLoaded = (Bar) session.load( Bar.class, goldFishBar.getId() );
+		Bar barLoaded = session.load( Bar.class, goldFishBar.getId() );
 		assertThat( barLoaded.getDoorMen() ).onProperty( "name" ).containsOnly( "Bruce", "Dwain" );
 
 		tx.commit();
@@ -204,7 +205,7 @@ public class ObjectIdTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// then
-		Snack frozenYogurtLoaded = (Snack) session.load( Snack.class, frozenYogurt.getId() );
+		Snack frozenYogurtLoaded = session.load( Snack.class, frozenYogurt.getId() );
 
 		assertThat( frozenYogurtLoaded.getName() ).isEqualTo( "frozen yogurt" );
 		assertThat( frozenYogurtLoaded.getIngredients() ).onProperty( "name" ).containsOnly( "salt", "milk" );
@@ -213,11 +214,11 @@ public class ObjectIdTest extends OgmTestCase {
 		session.clear();
 		tx = session.beginTransaction();
 
-		Ingredient milkLoaded = (Ingredient) session.load( Ingredient.class, milk.getId() );
+		Ingredient milkLoaded = session.load( Ingredient.class, milk.getId() );
 		assertThat( milkLoaded.getName() ).isEqualTo( "milk" );
 		assertThat( milkLoaded.getContainedIn() ).onProperty( "name" ).containsOnly( "frozen yogurt" );
 
-		Ingredient saltLoaded = (Ingredient) session.load( Ingredient.class, salt.getId() );
+		Ingredient saltLoaded = session.load( Ingredient.class, salt.getId() );
 		assertThat( saltLoaded.getName() ).isEqualTo( "salt" );
 		assertThat( saltLoaded.getContainedIn() ).onProperty( "name" ).containsOnly( "nachos", "frozen yogurt" );
 
@@ -241,7 +242,7 @@ public class ObjectIdTest extends OgmTestCase {
 		session.clear();
 		tx = session.beginTransaction();
 
-		Singer singerLoaded = (Singer) session.load( Singer.class, gloria.getId() );
+		Singer singerLoaded = session.load( Singer.class, gloria.getId() );
 
 		// then
 		assertThat( singerLoaded.getName() ).isEqualTo( "Gloria" );
@@ -269,9 +270,36 @@ public class ObjectIdTest extends OgmTestCase {
 		// then
 		assertCountQueryResult( session, "db.Comedian.count({ \"_id\" : { \"$oid\" : \"" + monty.getId() + "\" }, \"name\" : \"Monty\" })", 1L );
 
-		Comedian montyLoaded = (Comedian) session.load( Comedian.class, monty.getId() );
+		Comedian montyLoaded = session.load( Comedian.class, monty.getId() );
 		assertThat( ObjectId.isValid( montyLoaded.getId() ) ).isTrue();
 		assertThat( montyLoaded.getName() ).isEqualTo( "Monty" );
+
+		tx.commit();
+		session.close();
+	}
+
+	@Test
+	public void ogm1103Reproducer() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		BarKeeper brian = new BarKeeper( new ObjectId(), "Brian" );
+
+		// when
+		session.persist( brian );
+		session.flush();
+
+		brian.setName( "Bruce" );
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		BarKeeper brianLoaded = session.load( BarKeeper.class, brian.getId() );
+
+		// then
+		assertThat( brianLoaded.getId() ).isEqualTo( brian.getId() );
+		assertThat( brianLoaded.getName() ).isEqualTo( "Bruce" );
 
 		tx.commit();
 		session.close();
@@ -292,5 +320,19 @@ public class ObjectIdTest extends OgmTestCase {
 	@Override
 	protected void configure(Map<String, Object> settings) {
 		settings.put( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, false );
+	}
+
+	public static class MyErrorHandler implements ErrorHandler {
+
+		@Override
+		public ErrorHandlingStrategy onFailedGridDialectOperation(FailedGridDialectOperationContext context) {
+			System.out.println( context.getFailedOperation() );
+			return ErrorHandlingStrategy.ABORT;
+		}
+
+		@Override
+		public void onRollback(RollbackContext context) {
+			System.out.println( "#### rollback ###" );
+		}
 	}
 }

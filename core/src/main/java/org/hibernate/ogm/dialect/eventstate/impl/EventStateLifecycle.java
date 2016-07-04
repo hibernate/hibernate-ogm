@@ -7,6 +7,7 @@
 package org.hibernate.ogm.dialect.eventstate.impl;
 
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * Callback for event cycle scoped state objects.
@@ -19,8 +20,13 @@ import org.hibernate.engine.spi.SessionImplementor;
 public interface EventStateLifecycle<T> {
 
 	/**
-	 * Creates a new instance of the represented event state type. Invoked by {@link EventContextManager} in case a
-	 * event state type is accessed for the first time during a given event cycle.
+	 * Whether this lifecycle is needed as per the given configuration or not.
+	 */
+	boolean mustBeEnabled(ServiceRegistryImplementor serviceRegistry);
+
+	/**
+	 * Creates a new instance of the represented event state type. Invoked by {@link EventContextManager} when
+	 * initializing the state context for a given event cycle.
 	 */
 	T create(SessionImplementor session);
 
