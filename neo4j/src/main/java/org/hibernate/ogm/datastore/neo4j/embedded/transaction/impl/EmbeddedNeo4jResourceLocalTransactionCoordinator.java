@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.transaction.Status;
 
@@ -50,7 +51,7 @@ public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements Transac
 
 	private final transient List<TransactionObserver> observers;
 
-	private EmbeddedNeo4jDatastoreProvider provider;
+	private final EmbeddedNeo4jDatastoreProvider provider;
 
 	/**
 	 * Construct a ResourceLocalTransactionCoordinatorImpl instance. Package-protected to ensure access goes through
@@ -63,7 +64,7 @@ public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements Transac
 			TransactionCoordinatorOwner owner,
 			EmbeddedNeo4jDatastoreProvider provider) {
 		this.provider = provider;
-		this.observers = new ArrayList<TransactionObserver>();
+		this.observers = new ArrayList<>();
 		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 		this.owner = owner;
 	}
@@ -154,6 +155,11 @@ public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements Transac
 					tx = null;
 				}
 			}
+		}
+
+		@Override
+		public <T> T delegateCallable(Callable<T> callable, boolean transacted) throws HibernateException {
+			throw new UnsupportedOperationException( "Not implemented yet" );
 		}
 	}
 

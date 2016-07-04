@@ -48,7 +48,7 @@ public class EmulatedLocalTransactionCoordinatorBuilder implements TransactionCo
 
 	@Override
 	public ConnectionAcquisitionMode getDefaultConnectionAcquisitionMode() {
-		return ConnectionAcquisitionMode.DEFAULT;
+		return ConnectionAcquisitionMode.IMMEDIATELY;
 	}
 
 	/**
