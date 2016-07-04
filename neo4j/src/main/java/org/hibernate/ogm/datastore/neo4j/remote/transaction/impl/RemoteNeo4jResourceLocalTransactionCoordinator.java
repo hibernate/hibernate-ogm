@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.remote.transaction.impl;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.transaction.Status;
 
@@ -51,7 +52,7 @@ public class RemoteNeo4jResourceLocalTransactionCoordinator implements Transacti
 
 	private final transient List<TransactionObserver> observers;
 
-	private RemoteNeo4jDatastoreProvider provider;
+	private final RemoteNeo4jDatastoreProvider provider;
 
 	/**
 	 * Construct a {@link RemoteNeo4jResourceLocalTransactionCoordinator} instance. package-protected to ensure access goes through
@@ -64,7 +65,7 @@ public class RemoteNeo4jResourceLocalTransactionCoordinator implements Transacti
 			TransactionCoordinatorOwner owner,
 			RemoteNeo4jDatastoreProvider provider) {
 		this.provider = provider;
-		this.observers = new ArrayList<TransactionObserver>();
+		this.observers = new ArrayList<>();
 		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 		this.owner = owner;
 	}
@@ -155,6 +156,11 @@ public class RemoteNeo4jResourceLocalTransactionCoordinator implements Transacti
 					tx = null;
 				}
 			}
+		}
+
+		@Override
+		public <T> T delegateCallable(Callable<T> callable, boolean transacted) throws HibernateException {
+			throw new UnsupportedOperationException( "Not implemented yet" );
 		}
 	}
 
