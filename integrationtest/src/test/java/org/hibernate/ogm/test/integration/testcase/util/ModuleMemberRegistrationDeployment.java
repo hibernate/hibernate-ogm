@@ -48,6 +48,7 @@ public class ModuleMemberRegistrationDeployment {
 		public Builder persistenceXml(PersistenceDescriptor descriptor) {
 			resourceLocal = descriptor.getOrCreatePersistenceUnit().getTransactionType() == PersistenceUnitTransactionType._RESOURCE_LOCAL;
 			String persistenceXml = descriptor.exportAsString();
+			persistenceXml = ModulesHelper.injectVariables( persistenceXml );
 			archive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
 			return this;
 		}

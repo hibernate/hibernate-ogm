@@ -58,7 +58,7 @@ public class ModulesHelper {
 		return new StringAsset( manifest );
 	}
 
-	private static String injectVariables(String dependencies) {
+	public static String injectVariables(String dependencies) {
 		String variablesFromProperties = injectVariablesFromProperties( dependencies );
 		//The OGM module slot is "hardcoded" as a special case:
 		return applyPropertyReplacement( variablesFromProperties, "hibernate-ogm.module.slot", getModuleSlotString() );

@@ -440,4 +440,9 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 	public DeserializationResolver getDeserializationResolver() {
 		return delegate.getDeserializationResolver();
 	}
+
+	@Override
+	public String getUuid() {
+		return delegate.getUuid();
+	}
 }

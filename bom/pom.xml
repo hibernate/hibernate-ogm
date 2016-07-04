@@ -40,8 +40,8 @@
         <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
         <!-- Neo4j does not support Lucene 4 currently-->
         <neo4jLuceneVersion>5.5.0</neo4jLuceneVersion>
-        <hibernateVersion>5.0.9.Final</hibernateVersion>
-        <hibernateSearchVersion>5.5.3.Final</hibernateSearchVersion>
+        <hibernateVersion>5.1.1-SNAPSHOT</hibernateVersion>
+        <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <narayanaVersion>5.2.14.Final</narayanaVersion>
@@ -226,6 +226,11 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-infinispan</artifactId>
+                <version>${hibernateVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-java8</artifactId>
                 <version>${hibernateVersion}</version>
             </dependency>
 
