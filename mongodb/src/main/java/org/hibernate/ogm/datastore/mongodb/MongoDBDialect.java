@@ -156,9 +156,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	/**
 	 * Pattern used to recognize a constraint violation on the primary key.
 	 *
-	 * MongoDB returns an exception with {@code .$_id_ } while Fongo returns an exception with {@code ._id }
+	 * MongoDB returns an exception with {@code .$_id_ } or {@code  _id_ } while Fongo returns an exception with {@code ._id }
 	 */
-	private static final Pattern PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE = Pattern.compile( ".*\\.(\\$_id_|_id) .*" );
+	private static final Pattern PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE = Pattern.compile( ".*[. ]\\$?_id_? .*" );
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
