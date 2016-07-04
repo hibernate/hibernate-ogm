@@ -10,7 +10,7 @@
         <resource-root path="hibernate-ogm-core-${project.version}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" export="true" />
+        <module name="org.hibernate" export="true" slot="${hibernate-orm.module.slot}" />
         <module name="org.hibernate.commons-annotations" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
         <module name="org.hibernate.search.orm" slot="${hibernate-search.module.slot}" optional="true" />
