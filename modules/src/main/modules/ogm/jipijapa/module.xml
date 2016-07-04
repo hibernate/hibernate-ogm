@@ -10,8 +10,8 @@
         <resource-root path="hibernate-ogm-jipijapa-${project.version}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate.jipijapa-hibernate5" />
+        <module name="org.hibernate.jipijapa-hibernate5" slot="${hibernate-orm.module.slot}"/>
         <module name="org.jboss.as.jpa.spi" />
-        <module name="org.hibernate" />
+        <module name="org.hibernate" slot="${hibernate-orm.module.slot}" />
     </dependencies>
 </module>
