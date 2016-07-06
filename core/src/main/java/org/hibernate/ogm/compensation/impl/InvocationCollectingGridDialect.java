@@ -60,11 +60,16 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class InvocationCollectingGridDialect extends ForwardingGridDialect<Serializable> {
 
-	private final EventContextManager eventContext;
+	private EventContextManager eventContextManager;
 
-	public InvocationCollectingGridDialect(GridDialect gridDialect, EventContextManager eventContextManager) {
+	public InvocationCollectingGridDialect(GridDialect gridDialect) {
 		super( gridDialect );
-		this.eventContext = eventContextManager;
+	}
+
+	@Override
+	public void setEventContextManager(EventContextManager eventContextManager) {
+		super.setEventContextManager( eventContextManager );
+		this.eventContextManager = eventContextManager;
 	}
 
 	@Override
@@ -306,6 +311,6 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	 * Returns the {@link OperationCollector}. Must not store this as a field as it is flush-cycle scoped!
 	 */
 	private OperationCollector getOperationCollector() {
-		return eventContext.get( OperationCollector.class );
+		return eventContextManager.get( OperationCollector.class );
 	}
 }

@@ -11,15 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.compensation.impl.OperationCollector;
+import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.eventstate.impl.EventStateLifecycles.OperationCollectorLifecycle;
+import org.hibernate.ogm.dialect.eventstate.impl.EventStateLifecycles.OperationsQueueLifecycle;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.impl.Immutable;
 import org.hibernate.service.Service;
-import org.hibernate.service.spi.SessionFactoryServiceRegistry;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * A service which provides access to state specific to one event cycle (currently (auto)-flush or persist).
@@ -43,24 +48,47 @@ public class EventContextManager implements Service {
 	@Immutable
 	private final Map<Class<?>, EventStateLifecycle<?>> lifecycles;
 
-	public EventContextManager() {
+	public EventContextManager(ServiceRegistryImplementor serviceRegistry) {
 		this.stateHolder = new ThreadLocal<>();
-		this.lifecycles = Collections.unmodifiableMap( EventStateLifecycles.getLifecycles() );
+
+		Map<Class<?>, EventStateLifecycle<?>> lifecyclesBuilder = new HashMap<>();
+		if ( isOperationCollectorRequired( serviceRegistry ) ) {
+			lifecyclesBuilder.put( OperationCollector.class, OperationCollectorLifecycle.INSTANCE );
+		}
+		if ( isOperationsQueueRequired( serviceRegistry ) ) {
+			lifecyclesBuilder.put( OperationsQueue.class, OperationsQueueLifecycle.INSTANCE );
+		}
+
+		this.lifecycles = Collections.unmodifiableMap( lifecyclesBuilder );
 	}
 
 	/**
 	 * Whether any components will make use of the event context or not.
 	 */
-	public static boolean isEventContextRequired(Map<Object, Object> settings, SessionFactoryServiceRegistry serviceRegistry) {
+	public static boolean isEventContextRequired(ServiceRegistryImplementor serviceRegistry) {
+		return isOperationCollectorRequired( serviceRegistry ) || isOperationsQueueRequired( serviceRegistry );
+	}
+
+	@SuppressWarnings("unchecked")
+	private static boolean isOperationCollectorRequired(ServiceRegistryImplementor serviceRegistry) {
+		Map<Object, Object> settings = serviceRegistry.getService( ConfigurationService.class ).getSettings();
+		return settings.get( OgmProperties.ERROR_HANDLER ) != null;
+	}
+
+	private static boolean isOperationsQueueRequired(ServiceRegistryImplementor serviceRegistry) {
 		GridDialect gridDialect = serviceRegistry.getService( GridDialect.class );
 		BatchOperationsDelegator batchDelegator = GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class );
-
-		return settings.get( OgmProperties.ERROR_HANDLER ) != null || batchDelegator != null;
+		return batchDelegator != null;
 	}
 
 	void onEventBegin(EventSource session) {
 		Map<Class<?>, Object> stateMap = new HashMap<>();
 		stateMap.put( SessionImplementor.class, session );
+
+		for ( Entry<Class<?>, EventStateLifecycle<?>> lifecycleEntry : lifecycles.entrySet() ) {
+			stateMap.put( lifecycleEntry.getKey(), lifecycleEntry.getValue().create( session ) );
+		}
+
 		stateHolder.set( stateMap );
 	}
 
@@ -97,11 +125,6 @@ public class EventContextManager implements Service {
 		Map<Class<?>, Object> states = getStates();
 		T value = getState( states, stateType );
 
-		if ( value == null ) {
-			value = create( stateType, states );
-			states.put( stateType, value );
-		}
-
 		return value;
 	}
 
@@ -111,17 +134,6 @@ public class EventContextManager implements Service {
 	 */
 	public boolean isActive() {
 		return stateHolder.get() != null;
-	}
-
-	private <T> T create(Class<T> stateType, Map<Class<?>, Object> states) {
-		EventStateLifecycle<T> lifeycle = getLifecycle( stateType );
-
-		if ( lifeycle == null ) {
-			throw new IllegalStateException( "No lifecycle found for state type: " + stateType );
-		}
-
-		SessionImplementor session = getState( states, SessionImplementor.class );
-		return lifeycle.create( session );
 	}
 
 	private Map<Class<?>, Object> getStates() {

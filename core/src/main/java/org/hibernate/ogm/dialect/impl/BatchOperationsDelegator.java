@@ -39,11 +39,16 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	private static final Log log = LoggerFactory.make();
 
-	private final EventContextManager eventContext;
+	private EventContextManager eventContextManager;
 
-	public BatchOperationsDelegator(BatchableGridDialect dialect, EventContextManager eventContext) {
+	public BatchOperationsDelegator(BatchableGridDialect dialect) {
 		super( dialect );
-		this.eventContext = eventContext;
+	}
+
+	@Override
+	public void setEventContextManager(EventContextManager eventContextManager) {
+		super.setEventContextManager( eventContextManager );
+		this.eventContextManager = eventContextManager;
 	}
 
 	private boolean isBatchDisabled() {
@@ -53,8 +58,8 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	private OperationsQueue getOperationQueue() {
 		OperationsQueue operationsQueue = null;
 
-		if ( eventContext.isActive() ) {
-			operationsQueue = eventContext.get( OperationsQueue.class );
+		if ( eventContextManager.isActive() ) {
+			operationsQueue = eventContextManager.get( OperationsQueue.class );
 		}
 
 		if ( operationsQueue == null ) {
@@ -67,6 +72,12 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	@Override
 	public void executeBatch(OperationsQueue operationsQueue) {
+		if ( operationsQueue.isEmpty() ) {
+			// the queue might be empty as we initialize it at the beginning of the event cycle and there might not
+			// be any queueable operations.
+			return;
+		}
+
 		log.tracef( "Executing batch" );
 
 		try {

@@ -6,9 +6,6 @@
  */
 package org.hibernate.ogm.dialect.eventstate.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.compensation.impl.ErrorHandlerEnabledTransactionCoordinatorDecorator;
 import org.hibernate.ogm.compensation.impl.OperationCollector;
@@ -27,21 +24,12 @@ class EventStateLifecycles {
 	private EventStateLifecycles() {
 	}
 
-	public static Map<Class<?>, EventStateLifecycle<?>> getLifecycles() {
-		Map<Class<?>, EventStateLifecycle<?>> lifecycles = new HashMap<>();
-
-		lifecycles.put( OperationCollector.class, OperationCollectorLifecycle.INSTANCE );
-		lifecycles.put( OperationsQueue.class, OperationsQueueLifecycle.INSTANCE );
-
-		return lifecycles;
-	}
-
 	/**
-	 * Initializes the {@link OperationCollector} if accessed for the first time during a given event cycle.
+	 * Initializes the {@link OperationCollector} at the beginning of an event cycle.
 	 */
-	private static class OperationCollectorLifecycle implements EventStateLifecycle<OperationCollector> {
+	static class OperationCollectorLifecycle implements EventStateLifecycle<OperationCollector> {
 
-		private static EventStateLifecycle<?> INSTANCE = new OperationCollectorLifecycle();
+		static final EventStateLifecycle<?> INSTANCE = new OperationCollectorLifecycle();
 
 		@Override
 		public OperationCollector create(SessionImplementor session) {
@@ -55,14 +43,14 @@ class EventStateLifecycles {
 	}
 
 	/**
-	 * Initializes the {@link OperationsQueue} if accessed for the first time during a given event cycle and executes
+	 * Initializes the {@link OperationsQueue} at the beginning of an event cycle and executes
 	 * the operations it batches upon event finish.
 	 *
 	 * @author Gunnar Morling
 	 */
-	private static class OperationsQueueLifecycle implements EventStateLifecycle<OperationsQueue> {
+	static class OperationsQueueLifecycle implements EventStateLifecycle<OperationsQueue> {
 
-		private static EventStateLifecycle<?> INSTANCE = new OperationsQueueLifecycle();
+		static final EventStateLifecycle<?> INSTANCE = new OperationsQueueLifecycle();
 
 		@Override
 		public OperationsQueue create(SessionImplementor session) {

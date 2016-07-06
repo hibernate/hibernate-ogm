@@ -74,13 +74,14 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 		serviceRegistryBuilder.addInitiator( DatastoreProviderInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptionsServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmMutableIdentifierGeneratorFactoryInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( EventContextManagerInitiator.INSTANCE );
 
 		serviceRegistryBuilder.addInitiator( GridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( MultigetGridDialectInitiator.INSTANCE );
+
+		serviceRegistryBuilder.addInitiator( EventContextManagerInitiator.INSTANCE );
 	}
 
 	private boolean isOgmEnabled(Map<?, ?> settings) {
