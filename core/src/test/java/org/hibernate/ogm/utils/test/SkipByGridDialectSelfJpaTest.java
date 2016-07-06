@@ -11,7 +11,7 @@ import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 import static org.junit.Assert.fail;
@@ -29,7 +29,7 @@ import org.junit.Test;
 public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
 
 	@Test
-	@SkipByGridDialect({ HASHMAP, INFINISPAN, MONGODB, EHCACHE, NEO4J, NEO4J_REMOTE, COUCHDB, REDIS_JSON })
+	@SkipByGridDialect({ HASHMAP, INFINISPAN, MONGODB, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, REDIS_JSON })
 	public void testWhichAlwaysFails() {
 		fail( "This should never be executed" );
 	}

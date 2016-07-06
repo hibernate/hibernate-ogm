@@ -8,7 +8,7 @@ package org.hibernate.ogm.backendtck.massindex;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.util.Arrays;
@@ -34,7 +34,7 @@ import org.junit.Test;
 public class AssociationMassIndexerTest extends JpaTestCase {
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J, NEO4J_REMOTE }, comment = "Uses embedded key which is currently not supported by the db query parsers")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Uses embedded key which is currently not supported by the db query parsers")
 	public void testEntityWithAssociationMassIndexing() throws Exception {
 		populateDatastore();
 		purgeAll( IndexedNews.class, IndexedLabel.class );

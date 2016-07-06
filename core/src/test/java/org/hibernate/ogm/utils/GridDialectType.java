@@ -25,7 +25,7 @@ public enum GridDialectType {
 
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.MongoDBDialect", true, true ),
 
-	NEO4J( "org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect", false, true),
+	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect", false, true),
 
 	NEO4J_REMOTE( "org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect", false, true),
 

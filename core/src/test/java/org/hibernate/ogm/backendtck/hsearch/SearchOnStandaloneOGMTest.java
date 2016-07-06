@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  */
-@SkipByGridDialect(value = { GridDialectType.NEO4J, GridDialectType.NEO4J_REMOTE }, comment = "Neo4j is not compatible with HSEARCH 5")
+@SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE }, comment = "Neo4j is not compatible with HSEARCH 5")
 public class SearchOnStandaloneOGMTest extends OgmTestCase {
 
 	@Test

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import java.util.EnumSet;
 
@@ -76,7 +76,7 @@ public class ManyToManyExtraTest extends OgmTestCase {
 	}
 
 	private int expectedAssociationNumber() {
-		if ( EnumSet.of( NEO4J, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
+		if ( EnumSet.of( NEO4J_EMBEDDED, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
 			// In Neo4j relationships are bidirectional
 			return 1;
 		}

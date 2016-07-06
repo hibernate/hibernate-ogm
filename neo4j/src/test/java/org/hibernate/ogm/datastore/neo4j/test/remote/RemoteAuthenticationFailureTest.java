@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
  * @author Davide D'Alto
  */
 @RunWith(SkippableTestRunner.class)
-@SkipByGridDialect(value = { GridDialectType.NEO4J }, comment = "We need a remote server")
+@SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED }, comment = "We need a remote server")
 public class RemoteAuthenticationFailureTest {
 
 	@Test
