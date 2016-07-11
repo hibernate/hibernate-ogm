@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.boot.model.naming.impl;
 
-import java.util.regex.Pattern;
-
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl;
 import org.hibernate.boot.model.source.spi.AttributePath;
@@ -23,19 +21,13 @@ public class OgmImplicitNamingStrategy extends ImplicitNamingStrategyJpaComplian
 	/**
 	 * A pattern common to all property names used in element collections.
 	 */
-	private static final Pattern ELEMENT_COLLECTION_NAME_PATTERN = Pattern.compile( "collection&&element\\." );
+	private static final String ELEMENT_COLLECTION_NAME_PATTERN = "collection&&element\\.";
 
 	@Override
 	protected String transformAttributePath(AttributePath attributePath) {
 		// for element collections just use the simple name
-		String[] parts = ELEMENT_COLLECTION_NAME_PATTERN.split( attributePath.getFullPath() );
-
-		// for element collections just use the simple name
-		if ( parts.length == 2 ) {
-			return parts[1];
-		}
-		else {
-			return attributePath.getFullPath();
-		}
+		String fullPath = attributePath.getFullPath();
+		String attribute = fullPath.replaceAll( ELEMENT_COLLECTION_NAME_PATTERN, "" );
+		return attribute;
 	}
 }
