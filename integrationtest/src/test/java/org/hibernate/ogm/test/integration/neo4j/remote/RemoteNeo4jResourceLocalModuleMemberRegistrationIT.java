@@ -61,6 +61,7 @@ public class RemoteNeo4jResourceLocalModuleMemberRegistrationIT extends ModuleMe
 				.createProperty().name( Neo4jProperties.USERNAME ).value( getNeo4jUsername() ).up()
 				.createProperty().name( Neo4jProperties.PASSWORD ).value( getNeo4jPassword() ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}
