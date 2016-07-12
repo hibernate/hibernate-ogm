@@ -64,8 +64,6 @@ public class RemoteNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 				else {
 					// Ex: @ElementCollection List<Embedded> examples
 
-					targetColumnName = targetColumnName.substring( collectionRole.length()  + 1 );
-
 					if ( targetNode.containsKey( targetColumnName ) ) {
 						properties.put( associationColumn, targetNode.get( targetColumnName ) );
 					}
