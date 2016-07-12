@@ -13,7 +13,7 @@ package org.hibernate.ogm.datastore.impl;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
-public enum AvailableDatastoreProvider {
+public enum DatastoreProviderType {
 	MAP( "org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider" ),
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
@@ -27,7 +27,7 @@ public enum AvailableDatastoreProvider {
 
 	private String datastoreProviderClassName;
 
-	private AvailableDatastoreProvider(String datastoreProviderClassName) {
+	private DatastoreProviderType(String datastoreProviderClassName) {
 		this.datastoreProviderClassName = datastoreProviderClassName;
 	}
 
@@ -36,7 +36,7 @@ public enum AvailableDatastoreProvider {
 	}
 
 	public static boolean isShortName(String name) {
-		for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+		for ( DatastoreProviderType provider : DatastoreProviderType.values() ) {
 			if ( provider.name().equalsIgnoreCase( name ) ) {
 				return true;
 			}
@@ -44,7 +44,7 @@ public enum AvailableDatastoreProvider {
 		return false;
 	}
 
-	public static AvailableDatastoreProvider byShortName(String shortName) {
-		return AvailableDatastoreProvider.valueOf( shortName.toUpperCase() );
+	public static DatastoreProviderType byShortName(String shortName) {
+		return DatastoreProviderType.valueOf( shortName.toUpperCase() );
 	}
 }

@@ -122,7 +122,7 @@ public class JpaAttributeConverterTest extends OgmTestCase {
 	}
 
 	private EntityKey getPrinterEntityKey(UUID id) {
-		GridType uuidType = ( (SessionFactoryImplementor) sessions ).getServiceRegistry().
+		GridType uuidType = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().
 				getService( TypeTranslator.class ).
 				getType( StandardBasicTypes.UUID_BINARY );
 

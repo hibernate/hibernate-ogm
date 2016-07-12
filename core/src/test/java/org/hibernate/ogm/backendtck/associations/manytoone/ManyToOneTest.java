@@ -48,8 +48,8 @@ public class ManyToOneTest extends OgmTestCase {
 		assertThat( getNumberOfEntities( session ) ).isEqualTo( 3 );
 		assertThat( getNumberOfAssociations( session ) ).isEqualTo( expectedAssociations() );
 		transaction.commit();
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( expectedAssociations() );
 
 		session.clear();
 
@@ -61,8 +61,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( jerome );
 		session.delete( jug );
 		transaction.commit();
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 0 );
 
 		session.close();
 

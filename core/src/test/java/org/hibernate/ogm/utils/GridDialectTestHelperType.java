@@ -14,12 +14,12 @@ package org.hibernate.ogm.utils;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public enum GridModule {
+public enum GridDialectTestHelperType {
 
 	HASHMAP( "org.hibernate.ogm.utils.HashMapTestHelper" ) {
 
 		@Override
-		public Class<TestableGridDialect> loadTestableGridDialectClass() {
+		public Class<GridDialectTestHelper> loadGridDialectTestHelperClass() {
 			return null; //this one is special, we want it only as fallback when all others fail
 		}
 	},
@@ -34,11 +34,11 @@ public enum GridModule {
 
 	private final String testHelperClassName;
 
-	GridModule(String testHelperClassName) {
+	GridDialectTestHelperType(String testHelperClassName) {
 		this.testHelperClassName = testHelperClassName;
 	}
 
-	public Class<TestableGridDialect> loadTestableGridDialectClass() {
+	public Class<GridDialectTestHelper> loadGridDialectTestHelperClass() {
 		return TestHelper.loadClass( testHelperClassName );
 	}
 }

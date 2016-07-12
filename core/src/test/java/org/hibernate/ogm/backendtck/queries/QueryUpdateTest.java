@@ -24,7 +24,7 @@ public class QueryUpdateTest extends OgmTestCase {
 
 	@Before
 	public void insertTestEntities() throws Exception {
-		Session session = sessions.openSession();
+		Session session = sessionFactory.openSession();
 		Transaction transaction = session.beginTransaction();
 
 		Helicopter helicopter = new Helicopter();
@@ -38,7 +38,7 @@ public class QueryUpdateTest extends OgmTestCase {
 
 	@Test
 	public void canUpdateEntityReturnedByQuery() {
-		Session session = sessions.openSession();
+		Session session = sessionFactory.openSession();
 		Transaction transaction = session.beginTransaction();
 
 		Query query = session.createQuery( "from Helicopter h where name = 'Sergio'" );

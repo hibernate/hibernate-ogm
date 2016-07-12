@@ -333,7 +333,7 @@ to change as Hibernate OGM progresses. Ask, if you're not sure about it.
 
 Hibernate OGM brings a well suited infrastructure for tests. The test
 infrastructure consists of generic base classes (`OgmTestCase` for OGM and
-`JpaTestCase` for JPA) for tests and a test helper (see `TestableGridDialect`).
+`JpaTestCase` for JPA) for tests and a test helper (see `GridDialectTestHelper`).
 That classes are used to get a different view on data than the frontend-view
 by the `Session` and the `EntityManager`.
 

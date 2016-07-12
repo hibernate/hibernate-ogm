@@ -42,8 +42,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		assertThat( getNumberOfAssociations( session ) ).isEqualTo( 1 );
 		transaction.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 1 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 1 );
 
 		session.clear();
 
@@ -59,8 +59,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().add( sf3 );
 		transaction.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 4 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 1 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 4 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 1 );
 
 		session.clear();
 
@@ -82,8 +82,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().clear();
 		transaction.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 1 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 1 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 0 );
 
 		session.clear();
 
@@ -95,8 +95,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		session.flush();
 		transaction.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 0 );
 		session.close();
 
 		checkCleanCache();

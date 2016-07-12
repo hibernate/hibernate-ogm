@@ -30,7 +30,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -47,7 +47,7 @@ import com.mongodb.util.JSON;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
-public class MongoDBTestHelper implements TestableGridDialect {
+public class MongoDBTestHelper implements GridDialectTestHelper {
 
 	private static final Log log = LoggerFactory.getLogger();
 

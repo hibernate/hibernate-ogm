@@ -51,8 +51,8 @@ public class ManyToManyExtraTest extends OgmTestCase {
 		persist( session, math, english, john, mario, kate );
 		tx.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 5 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 5 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( expectedAssociationNumber() );
 		session.clear();
 
 		delete( session, math, english, john, mario, kate );

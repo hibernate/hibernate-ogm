@@ -33,7 +33,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.junit.Assert;
 
@@ -53,7 +53,7 @@ import com.datastax.driver.core.querybuilder.Select.Selection;
  *
  * @author Jonathan Halliday
  */
-public class CassandraTestHelper implements TestableGridDialect {
+public class CassandraTestHelper implements GridDialectTestHelper {
 
 	static {
 		// Read host and port from environment variable

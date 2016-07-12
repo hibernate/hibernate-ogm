@@ -54,11 +54,11 @@ import org.junit.runners.model.TestClass;
  * public class AnimalFarmTest {
  *
  *     @TestSessionFactory
- *     public SessionFactory sessions;
+ *     public SessionFactory sessionFactory;
  *
  *     @Test
  *     public void shouldCountAnimals() throws Exception {
- *         Session session = sessions.openSession();
+ *         Session session = sessionFactory.openSession();
  *         ...
  *         session.close();
  *     }

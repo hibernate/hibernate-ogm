@@ -29,7 +29,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 
 import com.lambdaworks.redis.api.sync.RedisKeyCommands;
 import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
@@ -41,7 +41,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class RedisTestHelper implements TestableGridDialect {
+public class RedisTestHelper implements GridDialectTestHelper {
 
 	static {
 		// Read host and port from environment variable
