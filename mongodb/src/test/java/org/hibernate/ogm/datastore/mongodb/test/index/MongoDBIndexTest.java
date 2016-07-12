@@ -13,7 +13,7 @@ import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.getInd
 import java.util.Map;
 
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testSuccessfulTextIndexCreation() throws Exception {
 		OgmSession session = openSession();
 

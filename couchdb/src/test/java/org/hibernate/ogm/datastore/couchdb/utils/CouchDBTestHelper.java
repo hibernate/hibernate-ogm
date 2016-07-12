@@ -45,7 +45,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
@@ -60,7 +60,7 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class CouchDBTestHelper implements TestableGridDialect {
+public class CouchDBTestHelper implements GridDialectTestHelper {
 
 	private static final Log logger = LoggerFactory.getLogger();
 

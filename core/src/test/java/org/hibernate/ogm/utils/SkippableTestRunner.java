@@ -6,9 +6,8 @@
  */
 package org.hibernate.ogm.utils;
 
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -115,8 +114,8 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 	}
 
 	private boolean isSkipped(SkipByDatastoreProvider skipByDatastoreProvider) {
-		for ( AvailableDatastoreProvider datastoreProvider : skipByDatastoreProvider.value() ) {
-			if ( datastoreProvider == TestHelper.getCurrentDatastoreProvider() ) {
+		for ( DatastoreProviderType datastoreProvider : skipByDatastoreProvider.value() ) {
+			if ( datastoreProvider == TestHelper.getCurrentDatastoreProviderType() ) {
 				return true;
 			}
 		}
@@ -125,10 +124,10 @@ public class SkippableTestRunner extends BlockJUnit4ClassRunner {
 	}
 
 	private boolean isSkipped(SkipByGridDialect skipByGridDialect) {
-		Class<? extends GridDialect> actualGridDialectClass = TestHelper.getCurrentGridDialect();
+		Class<? extends GridDialect> actualGridDialectClass = TestHelper.getCurrentGridDialectClass();
 
 		for ( GridDialectType gridDialectType : skipByGridDialect.value() ) {
-			Class<TestableGridDialect> gridDialectClass = gridDialectType.loadGridDialectClass();
+			Class<? extends GridDialect> gridDialectClass = gridDialectType.loadGridDialectClass();
 			if ( gridDialectClass == null ) {
 				continue;
 			}

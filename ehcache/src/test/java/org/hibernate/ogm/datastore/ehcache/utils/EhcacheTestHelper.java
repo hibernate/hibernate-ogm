@@ -28,14 +28,14 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
  * @author Alex Snaps
  */
-public class EhcacheTestHelper implements TestableGridDialect {
+public class EhcacheTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfEntities(Session session) {

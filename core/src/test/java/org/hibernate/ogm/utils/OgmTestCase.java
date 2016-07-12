@@ -39,7 +39,7 @@ public abstract class OgmTestCase {
 	 * The session factory used by all test methods of a test class.
 	 */
 	@TestSessionFactory
-	protected OgmSessionFactory sessions;
+	protected OgmSessionFactory sessionFactory;
 
 	private List<Session> openedSessions;
 
@@ -69,7 +69,7 @@ public abstract class OgmTestCase {
 	}
 
 	protected OgmSession openSession() {
-		OgmSession session = sessions.openSession();
+		OgmSession session = sessionFactory.openSession();
 		openedSessions.add( session );
 		return session;
 	}
@@ -97,11 +97,11 @@ public abstract class OgmTestCase {
 	}
 
 	protected OgmSessionFactoryImplementor sfi() {
-		return (OgmSessionFactoryImplementor) sessions;
+		return (OgmSessionFactoryImplementor) sessionFactory;
 	}
 
 	protected void checkCleanCache() {
-		assertThat( getNumberOfEntities( sessions ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
-		assertThat( getNumberOfAssociations( sessions ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
 }

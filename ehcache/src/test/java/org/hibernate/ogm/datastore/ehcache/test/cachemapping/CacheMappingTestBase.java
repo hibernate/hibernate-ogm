@@ -51,7 +51,7 @@ public abstract class CacheMappingTestBase extends OgmTestCase {
 	}
 
 	protected Cache<?> getEntityCache(String tableName, String... columnNames) {
-		return EhcacheTestHelper.getEntityCache( sessions, new DefaultEntityKeyMetadata( tableName, columnNames ) );
+		return EhcacheTestHelper.getEntityCache( sessionFactory, new DefaultEntityKeyMetadata( tableName, columnNames ) );
 	}
 
 	protected Cache<?> getAssociationCache(String tableName, String... columnNames) {
@@ -59,11 +59,11 @@ public abstract class CacheMappingTestBase extends OgmTestCase {
 				.columnNames( columnNames )
 				.build();
 
-		return EhcacheTestHelper.getAssociationCache( sessions, associationKeyMetadata );
+		return EhcacheTestHelper.getAssociationCache( sessionFactory, associationKeyMetadata );
 	}
 
 	protected Cache<?> getIdSourceCache(String tableName) {
-		return EhcacheTestHelper.getIdSourceCache( sessions, tableName );
+		return EhcacheTestHelper.getIdSourceCache( sessionFactory, tableName );
 	}
 
 	@Override

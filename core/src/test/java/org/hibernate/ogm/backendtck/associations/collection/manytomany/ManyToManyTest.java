@@ -41,8 +41,8 @@ public class ManyToManyTest extends OgmTestCase {
 		session.persist( owner );
 		tx.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 2 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 2 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( expectedAssociationNumber() );
 		session.clear();
 
 		// read from inverse side
@@ -69,8 +69,8 @@ public class ManyToManyTest extends OgmTestCase {
 		session.delete( soge );
 		tx.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 2 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 2 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( expectedAssociationNumber() );
 		session.clear();
 
 		// delete data
@@ -85,8 +85,8 @@ public class ManyToManyTest extends OgmTestCase {
 		session.delete( owner );
 		tx.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 0 );
 
 		session.close();
 		checkCleanCache();

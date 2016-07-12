@@ -18,12 +18,12 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,
- * so each GridDialect implementor should also implement a TestGridDialect, and list it by classname into
- * {@code org.hibernate.ogm.test.utils.TestHelper#knownTestDialects }.
+ * so for each GridDialect implementor we need to implement a GridDialectTestHelper, and list it in
+ * {@code org.hibernate.ogm.utils.GridModule }.
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public interface TestableGridDialect {
+public interface GridDialectTestHelper {
 
 	/**
 	 * Returns the number of entities in the datastore

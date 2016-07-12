@@ -44,7 +44,7 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.hibernate.service.spi.Stoppable;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -55,7 +55,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jTestHelper implements TestableGridDialect {
+public class Neo4jTestHelper implements GridDialectTestHelper {
 
 	private static final Map<String, String> hibernateProperties = readProperties();
 
