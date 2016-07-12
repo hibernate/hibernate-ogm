@@ -6,10 +6,7 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import java.util.Map;
-
 import org.hibernate.boot.Metadata;
-import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
@@ -58,9 +55,7 @@ public class OgmIntegrator implements Integrator {
 	}
 
 	private void attachEventContextManagingListenersIfRequired(SessionFactoryServiceRegistry serviceRegistry) {
-		@SuppressWarnings("unchecked")
-		Map<Object, Object> settings = serviceRegistry.getService( ConfigurationService.class ).getSettings();
-		if ( !EventContextManager.isEventContextRequired( settings, serviceRegistry ) ) {
+		if ( !EventContextManager.isEventContextRequired( serviceRegistry ) ) {
 			return;
 		}
 
@@ -79,7 +74,6 @@ public class OgmIntegrator implements Integrator {
 		}
 	}
 
-	@SuppressWarnings( "unchecked" )
 	private <T extends Integrator> T getIntegrator(Class<T> integratorType, SessionFactoryServiceRegistry serviceRegistry) {
 		Iterable<Integrator> integrators = serviceRegistry.getService( IntegratorService.class ).getIntegrators();
 
