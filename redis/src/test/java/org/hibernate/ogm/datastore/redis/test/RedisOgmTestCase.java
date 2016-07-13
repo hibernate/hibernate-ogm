@@ -24,7 +24,7 @@ public abstract class RedisOgmTestCase extends OgmTestCase {
 	}
 
 	protected RedisDatastoreProvider getProvider() {
-		return (RedisDatastoreProvider) sfi()
+		return (RedisDatastoreProvider) getSessionFactory()
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 	}

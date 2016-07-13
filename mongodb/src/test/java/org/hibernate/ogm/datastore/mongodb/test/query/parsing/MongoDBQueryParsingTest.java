@@ -256,7 +256,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		entityNames.put( "IndexedEntity", IndexedEntity.class );
 		EntityNamesResolver nameResolver = new MapBasedEntityNamesResolver( entityNames );
 
-		return new MongoDBProcessingChain( sfi(), nameResolver, namedParameters );
+		return new MongoDBProcessingChain( getSessionFactory(), nameResolver, namedParameters );
 	}
 
 	@Override

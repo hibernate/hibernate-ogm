@@ -486,12 +486,12 @@ public class CompensationSpiTest extends OgmTestCase {
 	}
 
 	private boolean currentDialectHasFacet(Class<? extends GridDialect> facet) {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		return GridDialects.hasFacet( gridDialect, facet );
 	}
 
 	private boolean currentDialectUsesLookupDuplicatePreventionStrategy() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{"id"} );
 
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;

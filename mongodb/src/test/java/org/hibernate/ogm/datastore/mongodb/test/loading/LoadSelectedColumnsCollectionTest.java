@@ -149,7 +149,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		AssociationContext associationContext = new AssociationContextImpl(
 				new AssociationTypeContextImpl(
 						OptionsContextImpl.forProperty(
-								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sfi().getProperties(), new ClassLoaderServiceImpl() ) ),
+								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( getSessionFactory().getProperties(), new ClassLoaderServiceImpl() ) ),
 								Project.class,
 								"modules"
 						),
@@ -185,7 +185,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 	}
 
 	protected <S extends Service> S getService(Class<S> serviceRole) {
-		SessionFactoryImplementor factory = super.sfi();
+		SessionFactoryImplementor factory = super.getSessionFactory();
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		return serviceRegistry.getService( serviceRole );
 	}
