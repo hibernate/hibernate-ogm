@@ -30,14 +30,14 @@ import org.junit.Test;
 public class JtaRollbackTest extends Neo4jJpaTestCase {
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.setTransactionType( PersistenceUnitTransactionType.JTA );
 	}
 
 	@Test
 	public void testRollbackCausedByException() throws Exception {
 		final Game game1 = new Game( "game-1", "Title 1" );
-		TransactionManager transactionManager = getTransactionManager();
+		TransactionManager transactionManager = getTransactionManager( getFactory() );
 		transactionManager.begin();
 		EntityManager em = getFactory().createEntityManager();
 		em.persist( game1 );
@@ -70,7 +70,7 @@ public class JtaRollbackTest extends Neo4jJpaTestCase {
 	@Test
 	public void testManualRollback() throws Exception {
 		final Game game1 = new Game( "game-1", "Title 1" );
-		TransactionManager transactionManager = getTransactionManager();
+		TransactionManager transactionManager = getTransactionManager( getFactory() );
 		transactionManager.begin();
 		EntityManager em = getFactory().createEntityManager();
 		em.persist( game1 );
@@ -104,7 +104,7 @@ public class JtaRollbackTest extends Neo4jJpaTestCase {
 	public void testFailedRollback() throws Exception {
 		final Game game1 = new Game( "game-1", "Title 1" );
 		final Game game2 = new Game( "game-2", "Title 2" );
-		TransactionManager transactionManager = getTransactionManager();
+		TransactionManager transactionManager = getTransactionManager( getFactory() );
 		transactionManager.begin();
 		EntityManager em = getFactory().createEntityManager();
 		em.persist( game1 );
@@ -151,7 +151,7 @@ public class JtaRollbackTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Game.class };
 	}
 }

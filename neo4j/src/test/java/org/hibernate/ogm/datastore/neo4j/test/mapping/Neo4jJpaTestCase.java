@@ -29,7 +29,7 @@ import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.QueryExecutionException;
@@ -42,12 +42,12 @@ import org.neo4j.graphdb.Transaction;
  *
  * @author Davide D'Alto
  */
-public abstract class Neo4jJpaTestCase extends JpaTestCase {
+public abstract class Neo4jJpaTestCase extends OgmJpaTestCase {
 
 	private static final Log log = LoggerFactory.getLogger();
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.getProperties().setProperty( Neo4jProperties.DATABASE_PATH, Neo4jTestHelper.dbLocation() );
 	}
 

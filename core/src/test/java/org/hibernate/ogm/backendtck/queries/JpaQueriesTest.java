@@ -12,7 +12,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,7 +22,7 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class JpaQueriesTest extends JpaTestCase {
+public class JpaQueriesTest extends OgmJpaTestCase {
 
 	private static final String POLICE_HELICOPTER = "Bell 206";
 
@@ -155,13 +155,13 @@ public class JpaQueriesTest extends JpaTestCase {
 		//Do not hide the real cause with an NPE if there are initialization issues:
 		if ( em != null ) {
 			em.getTransaction().commit();
-			removeEntities();
 			em.close();
+			removeEntities();
 		}
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Helicopter.class };
 	}
 
@@ -169,17 +169,6 @@ public class JpaQueriesTest extends JpaTestCase {
 		Helicopter helicopter = new Helicopter();
 		helicopter.setName( name );
 		return helicopter;
-	}
-
-	private void removeEntities() throws Exception {
-		em.getTransaction().begin();
-		for ( Class<?> each : getEntities() ) {
-			List<?> entities = em.createQuery( "FROM " + each.getSimpleName() ).getResultList();
-			for ( Object object : entities ) {
-				em.remove( object );
-			}
-		}
-		em.getTransaction().commit();
 	}
 
 }

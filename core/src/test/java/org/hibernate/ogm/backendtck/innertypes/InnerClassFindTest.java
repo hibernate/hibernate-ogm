@@ -10,7 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import javax.persistence.EntityManager;
 import org.hibernate.ogm.backendtck.innertypes.CommunityMember.Employee;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.Test;
 
 /**
@@ -25,7 +25,7 @@ import org.junit.Test;
  * @author Sanne Grinovero
  */
 @TestForIssue(jiraKey = "OGM-265")
-public class InnerClassFindTest extends JpaTestCase {
+public class InnerClassFindTest extends OgmJpaTestCase {
 
 	@Test
 	public void testInnerClassFind() throws Exception {
@@ -57,7 +57,7 @@ public class InnerClassFindTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[]{ CommunityMember.class, Employee.class };
 	}
 

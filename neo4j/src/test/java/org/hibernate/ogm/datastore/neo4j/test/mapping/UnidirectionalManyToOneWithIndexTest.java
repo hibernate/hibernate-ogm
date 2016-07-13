@@ -101,7 +101,7 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { Father.class, Child.class };
 	}
 

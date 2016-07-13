@@ -11,14 +11,14 @@ import javax.persistence.EntityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
-public class SequenceIdGeneratorTest extends JpaTestCase {
+public class SequenceIdGeneratorTest extends OgmJpaTestCase {
 	private EntityManager em;
 
 	@Before
@@ -86,7 +86,7 @@ public class SequenceIdGeneratorTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				Song.class,
 				Actor.class

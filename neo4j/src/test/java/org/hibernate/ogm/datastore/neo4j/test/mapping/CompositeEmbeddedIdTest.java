@@ -75,7 +75,7 @@ public class CompositeEmbeddedIdTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { News.class, Label.class };
 	}
 

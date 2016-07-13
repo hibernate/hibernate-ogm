@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
 @RunWith(SkippableTestRunner.class)
-public abstract class JpaTestCase {
+public abstract class SingleJpaTestCase {
 
 	private EntityManagerFactory factory;
 	private TransactionManager transactionManager;
@@ -66,7 +66,7 @@ public abstract class JpaTestCase {
 		info.setNonJtaDataSource( null );
 		info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
 		info.setPersistenceUnitName( "default" );
-		final URL persistenceUnitRootUrl = new File( "" ).toURL();
+		final URL persistenceUnitRootUrl = new File( "" ).toURI().toURL();
 		info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
 		info.setPersistenceXMLSchemaVersion( "2.0" );
 		info.setProperties( new Properties() );

@@ -12,14 +12,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class TableIdGeneratorTest extends JpaTestCase {
+public class TableIdGeneratorTest extends OgmJpaTestCase {
 	private EntityManager em;
 
 	@Before
@@ -79,7 +79,7 @@ public class TableIdGeneratorTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				Music.class,
 				Video.class,

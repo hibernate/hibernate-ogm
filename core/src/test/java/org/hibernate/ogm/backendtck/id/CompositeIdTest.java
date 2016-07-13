@@ -14,14 +14,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
-public class CompositeIdTest extends JpaTestCase {
+public class CompositeIdTest extends OgmJpaTestCase {
 	private EntityManager em;
 
 	@Before
@@ -111,7 +111,7 @@ public class CompositeIdTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				News.class,
 				NewsID.class,

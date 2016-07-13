@@ -18,16 +18,16 @@ import static org.junit.Assert.fail;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.utils.SkipByDatastoreProvider;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import org.junit.Test;
 
 /**
- * Test {@link SkipByDatastoreProvider} is working with {@link JpaTestCase}
+ * Test {@link SkipByDatastoreProvider} is working with {@link OgmJpaTestCase}
  *
  * @author Mark Paluch
  */
-public class SkipByDatastoreProviderSelfJpaTest extends JpaTestCase {
+public class SkipByDatastoreProviderSelfJpaTest extends OgmJpaTestCase {
 
 	@Test
 	@SkipByDatastoreProvider({
@@ -43,7 +43,7 @@ public class SkipByDatastoreProviderSelfJpaTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Hypothesis.class };
 	}
 

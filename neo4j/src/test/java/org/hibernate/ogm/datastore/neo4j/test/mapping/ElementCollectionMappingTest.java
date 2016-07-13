@@ -165,7 +165,7 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { StoryGame.class };
 	}
 }
