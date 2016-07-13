@@ -310,10 +310,14 @@ public class TestHelper {
 			// DatastoreProvider service initialized.
 			// This dialect instance is initialized with the default configuration and is not aware of the additional settings
 			// set in the test itself. This is not an issue per se as this dialect is not used for anything else.
-			Object gridDialect = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
-					.getService( GridDialect.class );
+			StandardServiceRegistry isolatedServiceRegistry = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() );
 
-			return GridDialects.getWrappedDialect( (GridDialect) gridDialect );
+			Object gridDialect = isolatedServiceRegistry.getService( GridDialect.class );
+			Class<? extends GridDialect> gridDialectClass = GridDialects.getWrappedDialect( (GridDialect) gridDialect );
+
+			StandardServiceRegistryBuilder.destroy( isolatedServiceRegistry );
+
+			return gridDialectClass;
 		}
 	}
 
@@ -322,10 +326,14 @@ public class TestHelper {
 		private static final DatastoreProviderType INSTANCE = getDatastoreProvider();
 
 		private static DatastoreProviderType getDatastoreProvider() {
-			Object datastoreProviderProperty = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
+			StandardServiceRegistry isolatedServiceRegistry = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() );
+
+			Object datastoreProviderProperty = isolatedServiceRegistry
 					.getService( ConfigurationService.class )
 					.getSettings()
 					.get( OgmProperties.DATASTORE_PROVIDER );
+
+			StandardServiceRegistryBuilder.destroy( isolatedServiceRegistry );
 
 			if ( datastoreProviderProperty == null ) {
 				return null;
@@ -387,4 +395,5 @@ public class TestHelper {
 			return null;
 		}
 	}
+
 }
