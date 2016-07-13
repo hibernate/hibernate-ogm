@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.backendtck.hsearch;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -14,7 +16,7 @@ import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -22,13 +24,11 @@ import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.junit.Test;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE }, comment = "Neo4j is not compatible with HSEARCH 5")
-public class HibernateSearchAtopOgmTest extends JpaTestCase {
+public class HibernateSearchAtopOgmTest extends OgmJpaTestCase {
 
 	@Test
 	public void testHibernateSearchJPAAPIUsage() throws Exception {
@@ -88,7 +88,7 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Insurance.class };
 	}
 }

@@ -19,7 +19,6 @@ import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.ErrorHandler.RollbackContext;
@@ -37,7 +36,7 @@ import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +51,7 @@ import org.junit.Test;
 		value = { GridDialectType.CASSANDRA },
 		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
 )
-public class CompensationSpiJpaTest  extends JpaTestCase {
+public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Shipment.class );
@@ -210,12 +209,12 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Shipment.class };
 	}
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.getProperties().put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
 	}
 
@@ -233,9 +232,4 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 
-	private TransactionManager getTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
-				.getSessionFactory();
-		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
-	}
 }

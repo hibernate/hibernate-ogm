@@ -95,7 +95,7 @@ public class MapTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { User.class, Address.class, PhoneNumber.class };
 	}
 

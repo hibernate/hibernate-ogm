@@ -15,13 +15,11 @@ import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 
-import java.util.List;
-
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +30,7 @@ import org.junit.Test;
 @SkipByGridDialect(
 		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH },
 		comment = "We need a QueryParserService to be able to perform these queries.")
-public class QueriesWithToOnePropertyTest extends JpaTestCase {
+public class QueriesWithToOnePropertyTest extends OgmJpaTestCase {
 
 	private EntityManager em;
 
@@ -74,25 +72,14 @@ public class QueriesWithToOnePropertyTest extends JpaTestCase {
 		//Do not hide the real cause with an NPE if there are initialization issues:
 		if ( em != null ) {
 			em.getTransaction().commit();
-			removeEntities();
 			em.close();
+			removeEntities();
 		}
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Address.class, Author.class, Hypothesis.class };
-	}
-
-	private void removeEntities() throws Exception {
-		em.getTransaction().begin();
-		for ( Class<?> each : getEntities() ) {
-			List<?> entities = em.createQuery( "FROM " + each.getSimpleName() ).getResultList();
-			for ( Object object : entities ) {
-				em.remove( object );
-			}
-		}
-		em.getTransaction().commit();
+	public Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] { Author.class, Address.class, Hypothesis.class };
 	}
 
 }

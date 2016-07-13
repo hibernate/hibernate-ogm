@@ -24,7 +24,7 @@ import java.util.TimeZone;
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import org.junit.Test;
 @SkipByGridDialect(
 		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH },
 		comment = "We need a QueryParserService to be able to perform these queries.")
-public class QueriesWithAssociationsTest extends JpaTestCase {
+public class QueriesWithAssociationsTest extends OgmJpaTestCase {
 
 	private EntityManager em;
 
@@ -148,6 +148,12 @@ public class QueriesWithAssociationsTest extends JpaTestCase {
 		garibaldiStreet.setStreet( "rue Garibaldi" );
 		em.persist( garibaldiStreet );
 
+		Address monumentStreet = new Address();
+		monumentStreet.setId( 3L );
+		monumentStreet.setCity( "London" );
+		monumentStreet.setStreet( "Monument Street" );
+		em.persist( monumentStreet );
+
 		Author alfred = new Author();
 		alfred.setId( 1L );
 		alfred.setName( "alfred" );
@@ -163,7 +169,7 @@ public class QueriesWithAssociationsTest extends JpaTestCase {
 		Author alphonse = new Author();
 		alphonse.setId( 3L );
 		alphonse.setName( "alphonse" );
-		alphonse.setAddress( mainStreet );
+		alphonse.setAddress( monumentStreet );
 		em.persist( alphonse );
 
 		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( "GMT" ) );
@@ -214,25 +220,14 @@ public class QueriesWithAssociationsTest extends JpaTestCase {
 		//Do not hide the real cause with an NPE if there are initialization issues:
 		if ( em != null ) {
 			em.getTransaction().commit();
-			removeEntities();
 			em.close();
+			removeEntities();
 		}
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Address.class, Author.class, Hypothesis.class };
-	}
-
-	private void removeEntities() throws Exception {
-		em.getTransaction().begin();
-		for ( Class<?> each : getEntities() ) {
-			List<?> entities = em.createQuery( "FROM " + each.getSimpleName() ).getResultList();
-			for ( Object object : entities ) {
-				em.remove( object );
-			}
-		}
-		em.getTransaction().commit();
+	public Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] { Hypothesis.class, Author.class, Address.class };
 	}
 
 }

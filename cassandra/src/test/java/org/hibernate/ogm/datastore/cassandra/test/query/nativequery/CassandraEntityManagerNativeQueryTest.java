@@ -18,7 +18,7 @@ import javax.persistence.Query;
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -31,7 +31,7 @@ import org.junit.Test;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Jonathan Halliday
  */
-public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
+public class CassandraEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
@@ -132,7 +132,7 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Test
 	@Ignore
-	// TODO OGM-564 Re-enable once HHH-8237 is resolved and we're on ORM 4.3.6
+	// TODO OGM-564 Re-enable once HHH-9279 is resolved and we upgraded ORM
 	public void testProjectionQueryWithTypeConversion() throws Exception {
 		begin();
 
@@ -203,7 +203,7 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {OscarWildePoem.class, Critic.class};
 	}
 
@@ -228,7 +228,8 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 
 	private EntityManager delete(Object... entities) {
 		for ( Object object : entities ) {
-			em.detach( object );
+			Object entity = em.merge( object );
+			em.remove( entity );
 		}
 		return em;
 	}

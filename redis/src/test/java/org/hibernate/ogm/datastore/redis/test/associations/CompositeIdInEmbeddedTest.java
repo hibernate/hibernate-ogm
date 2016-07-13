@@ -16,8 +16,8 @@ import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
  */
 public class CompositeIdInEmbeddedTest extends CompositeIdTest {
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
+	protected void configure(GetterPersistenceUnitInfo info) {
+		super.configure( info );
 		info.getProperties()
 				.put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.IN_ENTITY );
 	}

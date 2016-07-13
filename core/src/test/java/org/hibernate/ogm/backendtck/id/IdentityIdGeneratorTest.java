@@ -15,7 +15,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.Throwables;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.SingleJpaTestCase;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +24,7 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
-public class IdentityIdGeneratorTest extends JpaTestCase {
+public class IdentityIdGeneratorTest extends SingleJpaTestCase {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

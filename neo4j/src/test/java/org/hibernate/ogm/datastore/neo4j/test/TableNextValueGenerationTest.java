@@ -19,7 +19,7 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  * @author Davide D'Alto
  */
-public class TableNextValueGenerationTest extends JpaTestCase {
+public class TableNextValueGenerationTest extends OgmJpaTestCase {
 
 	private static final String HIBERNATE_SEQUENCES = "hibernate_sequences";
 	private static final String THREAD_SAFETY_SEQUENCE = "ThreadSafetySequence";
@@ -84,7 +84,7 @@ public class TableNextValueGenerationTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { EntityWithTableGenerator.class, AnotherEntityWithTableGenerator.class };
 	}
 

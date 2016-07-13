@@ -22,7 +22,7 @@ import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
@@ -31,7 +31,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class AssociationMassIndexerTest extends JpaTestCase {
+public class AssociationMassIndexerTest extends OgmJpaTestCase {
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Uses embedded key which is currently not supported by the db query parsers")
@@ -131,13 +131,13 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { IndexedNews.class, IndexedLabel.class };
 	}
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
+	protected void configure(GetterPersistenceUnitInfo info) {
+		super.configure( info );
 		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "ram" );
 		// Infinispan requires to be set to distribution mode for this test to pass
 		info.getProperties().setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );

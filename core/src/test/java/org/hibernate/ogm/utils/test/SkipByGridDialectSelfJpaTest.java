@@ -18,15 +18,15 @@ import static org.junit.Assert.fail;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.Test;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Test {@link SkipByGridDialect} is working with {@link OgmJpaTestCase}
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class SkipByGridDialectSelfJpaTest extends OgmJpaTestCase {
 
 	@Test
 	@SkipByGridDialect({ HASHMAP, INFINISPAN, MONGODB, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, REDIS_JSON })
@@ -40,7 +40,7 @@ public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Hypothesis.class };
 	}
 
