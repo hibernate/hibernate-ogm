@@ -170,7 +170,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
 				gridDialect,
 				InvokedOperationsLoggingDialect.class

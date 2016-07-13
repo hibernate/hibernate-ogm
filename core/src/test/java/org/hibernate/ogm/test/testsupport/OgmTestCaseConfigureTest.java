@@ -33,7 +33,7 @@ public class OgmTestCaseConfigureTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1113")
 	public void testConfigureWorksProperly() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 
 		assertThat( ( (GridDialectLogger) gridDialect ).getGridDialect() ).isInstanceOf( InvocationCollectingGridDialect.class );
 	}

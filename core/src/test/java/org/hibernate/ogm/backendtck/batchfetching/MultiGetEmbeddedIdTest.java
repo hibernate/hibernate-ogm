@@ -174,7 +174,7 @@ public class MultiGetEmbeddedIdTest extends OgmTestCase {
 	}
 
 	private MultigetGridDialect multiGetGridDialect() {
-		MultigetGridDialect gridDialect = sfi().getServiceRegistry().getService( MultigetGridDialect.class );
+		MultigetGridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( MultigetGridDialect.class );
 		return gridDialect;
 	}
 

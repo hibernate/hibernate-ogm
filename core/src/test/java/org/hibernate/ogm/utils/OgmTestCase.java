@@ -96,7 +96,7 @@ public abstract class OgmTestCase {
 		}
 	}
 
-	protected OgmSessionFactoryImplementor sfi() {
+	protected OgmSessionFactoryImplementor getSessionFactory() {
 		return (OgmSessionFactoryImplementor) sessionFactory;
 	}
 
