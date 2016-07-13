@@ -16,7 +16,6 @@ import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
@@ -27,7 +26,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Base class for OGM tests. While tests also can directly make use of {@link OgmTestRunner}, this base class provides
- * template methods for entity type configuration and modifications to {@link Configuration} as well as a member for the
+ * template methods for entity type configuration and modifications to the configuration as well as a member for the
  * session factory.
  *
  * @author Gunnar Morling
@@ -55,13 +54,13 @@ public abstract class OgmTestCase {
 	 */
 	protected abstract Class<?>[] getAnnotatedClasses();
 
-	@SessionFactoryConfiguration
+	@TestSessionFactoryConfiguration
 	private void modifyConfiguration(Map<String, Object> cfg) {
 		configure( cfg );
 	}
 
 	/**
-	 * Can be overridden in subclasses to inspect or modify the {@link Configuration} of this test.
+	 * Can be overridden in subclasses to inspect or modify the configuration of this test.
 	 *
 	 * @param cfg the configuration
 	 */
