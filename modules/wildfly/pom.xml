@@ -95,13 +95,12 @@
             <artifactId>hibernate-envers</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- This is to satisfy Neo4J's custom Lucene,
-          not to be confused with the one used by Hibernate Search -->
+        <!-- This is to satisfy Neo4J's custom Lucene: might not match the needs of Hibernate Search -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <optional>true</optional>
-            <version>${neo4jLuceneVersion}</version>
+            <version>${luceneVersion}</version>
         </dependency>
     </dependencies>
 

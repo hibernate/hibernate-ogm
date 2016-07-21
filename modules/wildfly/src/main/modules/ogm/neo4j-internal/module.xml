@@ -11,11 +11,11 @@
     </properties>
 
     <resources>
-        <resource-root path="lucene-core-${neo4jLuceneVersion}.jar" />
-        <resource-root path="lucene-codecs-${neo4jLuceneVersion}.jar" />
-        <resource-root path="lucene-backward-codecs-${neo4jLuceneVersion}.jar" />
-        <resource-root path="lucene-queryparser-${neo4jLuceneVersion}.jar" />
-        <resource-root path="lucene-analyzers-common-${neo4jLuceneVersion}.jar" />
+        <resource-root path="lucene-core-${luceneVersion}.jar" />
+        <resource-root path="lucene-codecs-${luceneVersion}.jar" />
+        <resource-root path="lucene-backward-codecs-${luceneVersion}.jar" />
+        <resource-root path="lucene-queryparser-${luceneVersion}.jar" />
+        <resource-root path="lucene-analyzers-common-${luceneVersion}.jar" />
 
         <resource-root path="neo4j-lucene-upgrade-${neo4jVersion}.jar" />
         <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />

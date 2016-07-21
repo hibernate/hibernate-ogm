@@ -38,12 +38,12 @@
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler23Version>2.3.4</neo4jCypherCompiler23Version>
         <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
-        <!-- Neo4j does not support Lucene 4 currently-->
-        <neo4jLuceneVersion>5.5.0</neo4jLuceneVersion>
         <hibernateVersion>5.0.9.Final</hibernateVersion>
         <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.3.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
+        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
+        <luceneVersion>5.5.2</luceneVersion>
         <narayanaVersion>5.2.14.Final</narayanaVersion>
         <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
@@ -263,6 +263,43 @@
                         <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Apache Lucene : we control the version explicitly to
+                pick a good compromise across Hibernate Search, Neo4J, Infinispan, HQL Parser -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers-common</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-misc</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-facet</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-backward-codecs</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-codecs</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${luceneVersion}</version>
             </dependency>
             <!-- Hibernate Search / Infinispan integration -->
             <dependency>
