@@ -50,12 +50,6 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>hibernate-search-engine</artifactId>
-                    <groupId>org.hibernate</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
