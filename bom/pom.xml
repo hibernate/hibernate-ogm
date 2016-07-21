@@ -44,6 +44,7 @@
         <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
+        <luceneVersion>5.5.2</luceneVersion>
         <narayanaVersion>5.2.14.Final</narayanaVersion>
         <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
@@ -263,6 +264,33 @@
                         <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Apache Lucene : we control the version explicitly to
+                pick a good compromise across Hibernate Search, Neo4J, Infinispan, HQL Parser -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers-common</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-misc</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-facet</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-backward-codecs</artifactId>
+                <version>${luceneVersion}</version>
             </dependency>
             <!-- Hibernate Search / Infinispan integration -->
             <dependency>
