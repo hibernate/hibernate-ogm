@@ -456,6 +456,18 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asmVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>${scalaLibraryVersion}</version>
+            </dependency>
+
             <!-- Cassandra -->
             <dependency>
                 <groupId>com.datastax.cassandra</groupId>

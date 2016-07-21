@@ -32,13 +32,6 @@
                 <artifactId>maven-processor-plugin</artifactId>
             </plugin>
             <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <!-- Skipping it because neo4j uses a different Lucene version -->
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>
