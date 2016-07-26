@@ -415,7 +415,8 @@ Hibernate OGM however is currently not included in WildFly, so you have to enabl
 Optionally you could download a different version of the Hibernate Search modules, provided it is compatible with the Hibernate OGM version you plan to use.
 For example you might want to download a more recent micro version of what is included in WildFly 10 at the time of publishing this documentation.
 
-The Hibernate Search documentation explains the details of downloading and deploying a custom version: http://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html/search-configuration.html#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
+The Hibernate Search documentation explains the details of downloading and deploying a custom version:
+http://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
 
 This approach might require you to make changes to the XML definitions of the Hibernate OGM modules to change the references to the Hibernate Search slot
 to the slot version that you plan to use.
