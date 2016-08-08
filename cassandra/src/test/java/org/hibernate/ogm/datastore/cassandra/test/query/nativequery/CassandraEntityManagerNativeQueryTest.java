@@ -202,6 +202,34 @@ public class CassandraEntityManagerNativeQueryTest extends OgmJpaTestCase {
 		commit();
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-1008")
+	@SuppressWarnings("unchecked")
+	public void testQueryWithParameters() throws Exception {
+		Query query;
+
+		begin();
+
+		query = em.createNativeQuery( "SELECT * FROM \"WILDE_POEM\" WHERE name = ?" );
+		query.setParameter( 1, "Portia" ); // CQL parameters positions start at 1
+
+		List<OscarWildePoem> results = query.getResultList();
+		assertThat( results ).as( "Unexpected number of results" ).hasSize( 1 );
+
+		commit();
+
+//		Named parameters do not work at all due to CassandraParameterMetadataBuilder's limitations.
+//		See https://hibernate.atlassian.net/projects/OGM/issues/OGM-1008 for dicussions about this issue.
+//		begin();
+//
+//		Query query = em.createNativeQuery( "SELECT * \"WILDE_POEM\" WHERE name = :nameParam" );
+//		query.setParameter( "nameParam", "Portia" );
+//		List<OscarWildePoem> results = query.getResultList();
+//		assertThat( results ).as( "Unexpected number of results" ).hasSize( 1 );
+//
+//		commit();
+	}
+
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {OscarWildePoem.class, Critic.class};
