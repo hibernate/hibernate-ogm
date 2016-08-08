@@ -124,3 +124,24 @@ Cassandra does not natively support sequences (auto increment identifiers) at pr
 Cassandra does not support transactions. Changes to a single Entity are atomic. Changes to more than one entity are neither atomic nor isolated.
 
 Cassandra does not distinguish between update and insert operations and will not prevent creation of an Entity with duplicate Id, instead treating it as modification of the existing Entity.
+
+=== Native queries
+
+Native queries are supported: you can execute native CQL queries using the [classname]`EntityManager` infrastructure.
+
+Currently, only ordinal parameters are supported, named parameters do not work.
+
+.Using native CQL queries
+====
+[source, JAVA]
+----
+Query query = em.createNativeQuery( "SELECT * FROM \"WILDE_POEM\" WHERE name = ?" );
+query.setParameter( 1, "Portia" ); // CQL parameters positions start at 1
+List<OscarWildePoem> results = query.getResultList();
+----
+====
+
+[WARNING]
+====
+Unlike in JPQL, in CQL, parameters positions start at 1, not 0.
+====
