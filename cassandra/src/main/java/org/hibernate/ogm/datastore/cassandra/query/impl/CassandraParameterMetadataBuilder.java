@@ -46,7 +46,7 @@ public class CassandraParameterMetadataBuilder implements ParameterMetadataBuild
 
 			// the cassandra metadata will give us the CQL type, but the type conversion system only goes
 			// in hibernate->cassandra direction, so we can't turn it back into the required hibernate type.
-			// instead we rely on the cached hibernate metdata from schema creation time
+			// instead we rely on the cached hibernate metadata from schema creation time
 
 			String tableName = columnDefinitions.getTable( 0 );
 			Table table = metaDataCache.get( tableName );
