@@ -42,7 +42,7 @@
         <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
         <hibernateVersion>5.0.9.Final</hibernateVersion>
         <hibernateSearchVersion>5.5.3.Final</hibernateSearchVersion>
-        <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
+        <hibernateParserVersion>1.3.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <narayanaVersion>5.2.14.Final</narayanaVersion>
         <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
