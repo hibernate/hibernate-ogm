@@ -264,6 +264,12 @@
                             <version>[${minJdkVersion},)</version>
                         </requireJavaVersion>
                         <DependencyConvergence />
+                        <bannedDependencies>
+                            <searchTransitive>true</searchTransitive>
+                            <excludes>
+                                <exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec</exclude>
+                            </excludes>
+                        </bannedDependencies>
                     </rules>
                 </configuration>
             </plugin>
