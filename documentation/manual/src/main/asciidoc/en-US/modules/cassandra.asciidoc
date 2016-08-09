@@ -6,7 +6,7 @@ http://cassandra.apache.org/[Cassandra] is a distributed column family database.
 
 This implementation uses http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html[CQL3]
  over the native wire protocol with https://github.com/datastax/java-driver[java-driver].
-The currently supported version is Cassandra 2.1.
+The currently supported versions are Cassandra 2.2.x and Cassandra 3.0.x.
 
 
 [NOTE]
