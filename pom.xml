@@ -69,8 +69,6 @@
          all integration tests need to know which version that shall be.
          So the property needs to be defined in the global parent pom -->
         <hibernate-search.module.slot>main</hibernate-search.module.slot>
-        <!-- Following might not match the slot, for example when 'main' is being used. Needed in docs URL rendering. -->
-        <hibernate-search-major-minor-version>5.5</hibernate-search-major-minor-version>
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>10.1.0.CR1</version.wildfly>
@@ -290,11 +288,31 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                    <id>parse-version</id>
-                    <goals>
-                        <goal>parse-version</goal>
-                    </goals>
-                  </execution>
+                        <id>parse-project-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>parse-orm-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>hibernateParsedVersion</propertyPrefix>
+                            <versionString>${hibernateVersion}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-search-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>hibernateSearchParsedVersion</propertyPrefix>
+                            <versionString>${hibernateSearchVersion}</versionString>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

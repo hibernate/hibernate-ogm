@@ -159,7 +159,7 @@ Set the JTA platform to the right Java EE container.
 The property is `hibernate.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
-https://docs.jboss.org/hibernate/orm/5.0/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
+https://docs.jboss.org/hibernate/orm/{hibernate-orm-major-minor-version}/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
 For example in WildFly 10 you would pick `JBossAS`, although in WildFly these settings are automatically injected so you could skip this.
 
 In your [filename]`persistence.xml` you usually need to define an existing datasource.
@@ -319,7 +319,7 @@ Add the dependency to your project - the group id is `org.hibernate` and artifac
 Then configure where you want to store your indexes,
 map your entities with the relevant index annotations and you are good to go.
 For more information, simply check the
-https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
+https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 In <<ogm-infinispan-indexstorage>> we'll discuss how to store your Lucene indexes in Infinispan.
 This is useful even if you don't plan to use Infinispan as your primary data store.

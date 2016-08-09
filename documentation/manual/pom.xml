@@ -88,9 +88,10 @@
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
                         <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-orm-major-minor-version>${hibernateParsedVersion.majorVersion}.${hibernateParsedVersion.minorVersion}</hibernate-orm-major-minor-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
-                        <hibernate-search-major-minor-version>${hibernate-search-major-minor-version}</hibernate-search-major-minor-version>
+                        <hibernate-search-major-minor-version>${hibernateSearchParsedVersion.majorVersion}.${hibernateSearchParsedVersion.minorVersion}</hibernate-search-major-minor-version>
                         <infinispan-version>${infinispanVersion}</infinispan-version>
                         <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
                         <ehcache-version>${ehcacheVersion}</ehcache-version>
