@@ -1915,7 +1915,7 @@ It should also define three cache names:
 This configuration is not going to scale well on write operations:
 to do that you should read about the master/slave and sharding options in Hibernate Search.
 The complete explanation and configuration options can be found in the
-http://docs.jboss.org/hibernate/search/5.5/reference/en-US/html_single/#infinispan-directories[Hibernate Search Reference Guide]
+https://docs.jboss.org/hibernate/search/5.5/reference/en-US/html_single/#infinispan-directories[Hibernate Search Reference Guide]
 
 Some NoSQL support storage of Lucene indexes directly,
 in which case you might skip the Infinispan Lucene integration
