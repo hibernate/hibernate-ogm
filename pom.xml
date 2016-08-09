@@ -340,7 +340,19 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <!-- This override is needed to fix
+                                https://issues.apache.org/jira/browse/MJAR-226
+                              We don't update the maven-jar-plugin yet as it introduces an incompatibility with Eclipse m2e:
+                                http://lists.jboss.org/pipermail/hibernate-dev/2016-August/015192.html
+                              An m2e update is expected to make this redundant, we'll then upgrade to maven-jar-plugin 3.0.2+ -->
+                            <artifactId>maven-archiver</artifactId>
+                            <groupId>org.apache.maven</groupId>
+                            <version>3.1.1</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
