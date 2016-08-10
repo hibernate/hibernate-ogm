@@ -75,15 +75,13 @@
              of these libraries through this BOM, these versions are for internal usage to make sure the right
              JARs end up in the C* driver WildFly module
         -->
-        <codahaleMetricsVersion>3.1.2</codahaleMetricsVersion>
+        <cassandraCodahaleMetricsVersion>3.1.2</cassandraCodahaleMetricsVersion>
         <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
 
         <!-- Redis -->
-        <lettuceVersion>4.1.Final</lettuceVersion>
+        <lettuceVersion>4.2.1.Final</lettuceVersion>
         <!-- Update dependency versions accordingly when updating lettuce  -->
-        <rxjavaVersion>1.1.0</rxjavaVersion>
-        <hdrHistogramVersion>2.1.8</hdrHistogramVersion>
-        <latencyUtilsVersion>2.0.3</latencyUtilsVersion>
+        <lettuceRxjavaVersion>1.1.6</lettuceRxjavaVersion>
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 

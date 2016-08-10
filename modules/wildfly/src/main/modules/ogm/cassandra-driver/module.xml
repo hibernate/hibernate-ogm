@@ -11,7 +11,7 @@
     </properties>
     <resources>
         <resource-root path="cassandra-driver-core-${cassandraVersion}.jar" />
-        <resource-root path="metrics-core-${codahaleMetricsVersion}.jar" />
+        <resource-root path="metrics-core-${cassandraCodahaleMetricsVersion}.jar" />
         <resource-root path="guava-${cassandraGuavaVersion}.jar" />
     </resources>
     <dependencies>

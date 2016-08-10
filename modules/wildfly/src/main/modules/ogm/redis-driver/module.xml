@@ -11,9 +11,7 @@
     </properties>
     <resources>
         <resource-root path="lettuce-${lettuceVersion}.jar" />
-        <resource-root path="rxjava-${rxjavaVersion}.jar" />
-        <resource-root path="LatencyUtils-${latencyUtilsVersion}.jar" />
-        <resource-root path="HdrHistogram-${hdrHistogramVersion}.jar" />
+        <resource-root path="rxjava-${lettuceRxjavaVersion}.jar" />
         <resource-root path="commons-pool2-${lettuceCommonsPoolVersion}.jar" />
     </resources>
     <dependencies>
