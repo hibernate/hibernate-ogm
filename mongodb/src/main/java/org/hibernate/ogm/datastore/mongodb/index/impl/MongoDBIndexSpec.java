@@ -91,10 +91,13 @@ public class MongoDBIndexSpec {
 		options.put( "name", indexName );
 		if ( unique ) {
 			options.put( "unique", true );
-			//  MongoDB only allows one null value per unique index which is not in line with what we usually consider
+			// MongoDB only allows one null value per unique index which is not in line with what we usually consider
 			// as the definition of a unique constraint. Thus, we mark the index as sparse to only index values
-			// defined and avoid this issue.
-			options.put( "sparse", true );
+			// defined and avoid this issue. We do this only if a partialFilterExpression has not been defined
+			// as partialFilterExpression and sparse are exclusive.
+			if ( !options.containsField( "partialFilterExpression" ) ) {
+				options.put( "sparse", true );
+			}
 		}
 		if ( Boolean.TRUE.equals( options.get( "text" ) ) ) {
 			// text is an option we take into account to mark an index as a full text index as we cannot put "text" as

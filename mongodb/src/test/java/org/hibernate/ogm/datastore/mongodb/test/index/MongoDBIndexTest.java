@@ -37,7 +37,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
 
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'sparse' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
+		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
 				indexMap.get( "author_idx" ).toString() );
 		// TODO OGM-1080: the order should be -1 but we are waiting for ORM 5.2 which exposes this value and allows us to retrieve it
 		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'name' : 1} , 'name' : 'name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'expireAfterSeconds' : 10}",
@@ -58,7 +58,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
 
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 2}",
+		assertJsonEquals( "{ 'v' : 1 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
 				indexMap.get( "author_name_text_idx" ).toString() );
 
 		session.close();
