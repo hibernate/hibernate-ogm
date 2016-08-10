@@ -57,7 +57,7 @@
         <skipUnitTests>false</skipUnitTests>
 
         <!-- The following properties configure the embedded MongoDB instance used for tests -->
-        <embeddedMongoDbVersion>3.0.2</embeddedMongoDbVersion>
+        <embeddedMongoDbVersion>3.0.12</embeddedMongoDbVersion>
         <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
         <embeddedMongoDbTempDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}extracted</embeddedMongoDbTempDir>
         <embeddedMongoDbLogDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</embeddedMongoDbLogDir>
