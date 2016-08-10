@@ -11,8 +11,8 @@
     </properties>
 
     <resources>
-        <resource-root path="hibernate-hql-lucene-${hibernateParserVersion}.jar"/>
-        <resource-root path="hibernate-hql-parser-${hibernateParserVersion}.jar"/>
+        <resource-root path="hibernate-hql-lucene-${hibernateHqlParserVersion}.jar"/>
+        <resource-root path="hibernate-hql-parser-${hibernateHqlParserVersion}.jar"/>
         <resource-root path="antlr-runtime-3.4.jar"/>
     </resources>
 

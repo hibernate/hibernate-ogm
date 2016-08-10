@@ -21,42 +21,55 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- compile/runtime dependency versions, managed in the BOM -->
-        <classmateVersion>1.0.0</classmateVersion>
-        <ehcacheVersion>2.6.9</ehcacheVersion>
-        <infinispanVersion>8.2.3.Final</infinispanVersion>
-        <mongodbVersion>3.2.2</mongodbVersion>
-        <fongodbVersion>2.0.6</fongodbVersion>
-        <neo4jVersion>3.0.3</neo4jVersion>
-        <!-- Update dependency versions accordingly when updating C*  -->
-        <cassandraVersion>3.1.0</cassandraVersion>
-        <!-- Update dependency versions accordingly when updating lettuce  -->
-        <lettuceVersion>4.1.Final</lettuceVersion>
-        <rxjavaVersion>1.1.0</rxjavaVersion>
-        <hdrHistogramVersion>2.1.8</hdrHistogramVersion>
-        <latencyUtilsVersion>2.0.3</latencyUtilsVersion>
-        <!-- Neo4j supports different versions of Cypher -->
-        <neo4jCypherCompiler23Version>2.3.4</neo4jCypherCompiler23Version>
-        <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
+        <!--
+            These dependencies should be aligned with the ones from the Wildfly version we support
+            See the version.wildfly property in the hibernate-ogm-parent pom
+            See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
+        -->
         <hibernateVersion>5.0.9.Final</hibernateVersion>
         <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
-        <hibernateParserVersion>1.3.0.Final</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
-        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
-        <luceneVersion>5.5.2</luceneVersion>
-        <narayanaVersion>5.2.14.Final</narayanaVersion>
-        <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
-        <slf4jVersion>1.7.5</slf4jVersion>
-        <resteasyVersion>3.0.14.Final</resteasyVersion>
-        <jacksonVersion>2.5.4</jacksonVersion>
-        <parboiledVersion>1.1.7</parboiledVersion>
-        <scalaLibraryVersion>2.11.8</scalaLibraryVersion>
-        <concurrentlinkedhashmapVersion>1.4.2</concurrentlinkedhashmapVersion>
-        <commonsLang3Version>3.3.2</commonsLang3Version>
-        <asmVersion>5.0.3</asmVersion>
+        <infinispanVersion>8.2.3.Final</infinispanVersion>
+        <classmateVersion>1.3.1</classmateVersion>
+        <resteasyVersion>3.0.18.Final</resteasyVersion> <!-- Used by CouchDB and Neo4j remote -->
+        <jacksonVersion>2.7.4</jacksonVersion>
+        <slf4jVersion>1.7.7</slf4jVersion> <!-- Note: Wildfly 10.1.0.CR1 uses a custom jboss version -->
+        <netty4Version>4.0.33.Final</netty4Version>
+        <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
+        <narayanaVersion>5.3.3.Final</narayanaVersion>
+        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
+        <luceneVersion>5.5.2</luceneVersion>
 
+        <!-- Various dependencies -->
+        <hibernateHqlParserVersion>1.3.0.Final</hibernateHqlParserVersion>
+        <parboiledVersion>1.1.7</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
+        <asmVersion>5.0.3</asmVersion> <!-- used for Parboiled and Neo4j -->
+
+        <!-- Ehcache -->
+        <ehcacheVersion>2.6.9</ehcacheVersion>
+
+        <!-- MongoDB -->
+        <mongodbDriverVersion>3.2.2</mongodbDriverVersion>
+        <mongodbVersion>3.0.2</mongodbVersion>
+        <fongodbVersion>2.0.6</fongodbVersion>
+
+        <!-- Neo4j -->
+        <neo4jVersion>3.0.3</neo4jVersion>
+        <!-- Update dependency versions accordingly when updating Neo4j  -->
+        <!-- Neo4j supports different versions of Cypher -->
+        <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
+        <neo4jCypherCompiler23Version>2.3.4</neo4jCypherCompiler23Version>
+        <neo4jScalaLibraryVersion>2.11.8</neo4jScalaLibraryVersion>
+        <neo4jCommonsLang3Version>3.3.2</neo4jCommonsLang3Version>
+        <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
+        <!-- See Parboiled dependency above -->
+        <!-- See Lucene dependency above -->
+
+        <!-- Cassandra -->
+        <cassandraVersion>3.1.0</cassandraVersion>
+        <!-- Update dependency versions accordingly when updating C*  -->
         <!--
              The following versions are required for the Cassandra driver; We don't expose a managed versions
              of these libraries through this BOM, these versions are for internal usage to make sure the right
@@ -64,12 +77,16 @@
         -->
         <codahaleMetricsVersion>3.1.2</codahaleMetricsVersion>
         <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
-        <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->
-        <!-- end of Cassandra dependencies -->
 
+        <!-- Redis -->
+        <lettuceVersion>4.1.Final</lettuceVersion>
+        <!-- Update dependency versions accordingly when updating lettuce  -->
+        <rxjavaVersion>1.1.0</rxjavaVersion>
+        <hdrHistogramVersion>2.1.8</hdrHistogramVersion>
+        <latencyUtilsVersion>2.0.3</latencyUtilsVersion>
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
-        <lettuceGuavaVersion>18.0</lettuceGuavaVersion>
-        <netty4Version>4.0.26.Final</netty4Version>
+        <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
+
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -418,12 +435,12 @@
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-parser</artifactId>
-                <version>${hibernateParserVersion}</version>
+                <version>${hibernateHqlParserVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-lucene</artifactId>
-                <version>${hibernateParserVersion}</version>
+                <version>${hibernateHqlParserVersion}</version>
                 <!-- TODO Remove once parser is updated -->
                 <exclusions>
                     <exclusion>
@@ -435,7 +452,7 @@
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-mongodb</artifactId>
-                <version>${hibernateParserVersion}</version>
+                <version>${hibernateHqlParserVersion}</version>
             </dependency>
 
             <!-- NoSQL databases -->
@@ -476,7 +493,7 @@
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
-                <version>${mongodbVersion}</version>
+                <version>${mongodbDriverVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.fakemongo</groupId>
@@ -514,7 +531,7 @@
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-reflect</artifactId>
-                <version>${scalaLibraryVersion}</version>
+                <version>${neo4jScalaLibraryVersion}</version>
             </dependency>
 
             <!-- Cassandra -->
