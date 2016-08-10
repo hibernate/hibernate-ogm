@@ -244,6 +244,25 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testQueryWithOptions() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 }, $explain: true, $comment: 'a very useful comment',"
+				+ "$maxTimeMS: 500 }";
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = session.createNativeQuery( nativeQuery )
+				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
+				.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 2L, 3L, 1L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
 		assertThat( poem ).isNotNull();
 		assertThat( poem.getId() ).as( "Wrong Id" ).isEqualTo( expectedPoem.getId() );
