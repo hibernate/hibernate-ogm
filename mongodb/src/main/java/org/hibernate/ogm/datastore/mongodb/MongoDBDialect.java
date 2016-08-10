@@ -94,6 +94,7 @@ import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
+import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -912,9 +913,79 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
 			EntityKeyMetadata entityKeyMetadata) {
-		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
-		if ( query.getOrderBy() != null ) {
-			cursor.sort( query.getOrderBy() );
+		BasicDBObject criteria = (BasicDBObject) query.getCriteria();
+		DBObject orderby = query.getOrderBy();
+		String hintIndexName = null;
+		DBObject hintDBObject = null;
+		int maxScan = -1;
+		long maxTimeMS = -1;
+		boolean snapshot = false;
+		DBObject min = null;
+		DBObject max = null;
+		String comment = null;
+		boolean explain = false;
+
+		// We need to extract the different parts of the criteria and pass them to the cursor API
+		if ( criteria.containsField( "$query" ) ) {
+			if ( orderby == null ) {
+				orderby = (DBObject) criteria.get( "$orderby" );
+			}
+
+			Object hintObject = criteria.get( "$hint" );
+			if ( hintObject instanceof String ) {
+				hintIndexName = (String) hintObject;
+			}
+			else if ( hintObject instanceof DBObject ) {
+				hintDBObject = (DBObject) hintObject;
+			}
+			maxScan = criteria.getInt( "$maxScan", -1 );
+			maxTimeMS = criteria.getLong( "$maxTimeMS", -1 );
+
+			snapshot = criteria.getBoolean( "$snapshot", false );
+			min = (DBObject) criteria.get( "$min" );
+			max = (DBObject) criteria.get( "$max" );
+
+			comment = criteria.getString( "$comment" );
+			explain = criteria.getBoolean( "$explain", false );
+
+			criteria = (BasicDBObject) criteria.get( "$query" );
+		}
+
+		DBCursor cursor = collection.find( criteria, query.getProjection() );
+
+		if ( orderby != null ) {
+			cursor.sort( orderby );
+		}
+
+		if ( !StringHelper.isNullOrEmptyString( hintIndexName ) ) {
+			cursor.hint( hintIndexName );
+		}
+		if ( hintDBObject != null ) {
+			cursor.hint( hintDBObject );
+		}
+		if ( maxScan > 0 ) {
+			cursor.maxScan( maxScan );
+		}
+		if ( maxTimeMS > 0 ) {
+			cursor.maxTime( maxTimeMS, TimeUnit.MILLISECONDS );
+		}
+		// orderby and snapshot are exclusive
+		if ( orderby == null && snapshot ) {
+			cursor.snapshot();
+		}
+		if ( min != null ) {
+			cursor.min( min );
+		}
+		if ( max != null ) {
+			cursor.max( max );
+		}
+
+		if ( !StringHelper.isNullOrEmptyString( comment ) ) {
+			cursor.comment( comment );
+		}
+
+		if ( explain ) {
+			cursor.explain();
 		}
 
 		// apply firstRow/maxRows if present

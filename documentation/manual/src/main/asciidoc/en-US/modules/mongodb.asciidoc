@@ -7,7 +7,8 @@ written in C++ with strong emphasis on ease of use.
 The nested nature of documents make it a particularly natural fit for most object representations.
 
 This implementation is based upon the MongoDB Java driver.
-The currently supported version is {mongodb-version}.
+
+We currently support version {mongodb-version} and 3.2.
 
 === Configuring MongoDB
 
