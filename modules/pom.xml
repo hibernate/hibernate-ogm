@@ -16,8 +16,8 @@
     <artifactId>hibernate-ogm-modules</artifactId>
     <packaging>pom</packaging>
 
-    <name>Hibernate OGM JBoss Modules</name>
-    <description>Create JBoss Modules for Hibernate OGM</description>
+    <name>Hibernate OGM WildFly Module</name>
+    <description>Hibernate OGM modules creation to use in WildFly</description>
 
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
@@ -33,11 +33,89 @@
         <hibernate.ogm.neo4j-internal.module.slot>${project.version}</hibernate.ogm.neo4j-internal.module.slot>
         <hibernate.ogm.couchdb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.couchdb.module.slot>
         <hibernate.ogm.redis.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.redis.module.slot>
+        <hibernate.hql.module.slot>${hibernateParserVersion}</hibernate.hql.module.slot>
+        <infinispan.module.slot>ispn-8.2</infinispan.module.slot>
     </properties>
 
-    <modules>
-        <module>wildfly</module>
-    </modules>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Overriding the version used for tests in OGM (managed in the parent) with the one used by the C* driver -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <optional>true</optional>
+                <version>${cassandraGuavaVersion}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-jipijapa</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-infinispan</artifactId>
+            <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                <!-- Hibernate Search might use a different version than Neo4j.
+                     It is safe to exclude it as we are going to use a module already present on WildFly -->
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-ehcache</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-mongodb</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-neo4j</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-couchdb</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-cassandra</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-redis</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-envers</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- This is to satisfy Neo4J's custom Lucene: might not match the needs of Hibernate Search -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <optional>true</optional>
+            <version>${luceneVersion}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -47,6 +125,9 @@
                     <!-- Skipping it because neo4j uses a different Lucene version -->
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
