@@ -58,7 +58,7 @@
         <skipUnitTests>false</skipUnitTests>
 
         <!-- The following properties configure the embedded MongoDB instance used for tests -->
-        <embeddedMongoDbVersion>3.0.2</embeddedMongoDbVersion>
+        <embeddedMongoDbVersion>${mongodbVersion}</embeddedMongoDbVersion>
         <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
         <embeddedMongoDbTempDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}extracted</embeddedMongoDbTempDir>
         <embeddedMongoDbLogDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</embeddedMongoDbLogDir>
@@ -317,6 +317,16 @@
                         <configuration>
                             <propertyPrefix>hibernateSearchParsedVersion</propertyPrefix>
                             <versionString>${hibernateSearchVersion}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-mongodb-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>mongodbParsedVersion</propertyPrefix>
+                            <versionString>${mongodbVersion}</versionString>
                         </configuration>
                     </execution>
                 </executions>

@@ -20,8 +20,8 @@
         <resource-root path="neo4j-lucene-upgrade-${neo4jVersion}.jar" />
         <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
         <resource-root path="parboiled-scala_2.11-${parboiledVersion}.jar" />
-        <resource-root path="scala-library-${scalaLibraryVersion}.jar" />
-        <resource-root path="scala-reflect-${scalaLibraryVersion}.jar" />
+        <resource-root path="scala-library-${neo4jScalaLibraryVersion}.jar" />
+        <resource-root path="scala-reflect-${neo4jScalaLibraryVersion}.jar" />
         <resource-root path="neo4j-security-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graphdb-api-${neo4jVersion}.jar" />
         <resource-root path="neo4j-io-${neo4jVersion}.jar" />
@@ -36,8 +36,8 @@
         <resource-root path="neo4j-cypher-frontend-2.3-${neo4jCypherCompiler23Version}.jar" />
         <resource-root path="neo4j-cypher-compiler-3.0-${neo4jCypherCompiler30Version}.jar" />
         <resource-root path="neo4j-cypher-frontend-3.0-${neo4jCypherCompiler30Version}.jar" />
-        <resource-root path="concurrentlinkedhashmap-lru-${concurrentlinkedhashmapVersion}.jar" />
-        <resource-root path="commons-lang3-${commonsLang3Version}.jar" />
+        <resource-root path="concurrentlinkedhashmap-lru-${neo4jConcurrentlinkedhashmapVersion}.jar" />
+        <resource-root path="commons-lang3-${neo4jCommonsLang3Version}.jar" />
     </resources>
 
     <dependencies>
