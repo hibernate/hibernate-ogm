@@ -31,6 +31,19 @@ To run the minimum project build without integration tests, documentation and di
 
 The following sections describe these options in more detail.
 
+### Importing sources in Eclipse
+
+Assuming you are running a recent Eclipse version such as Eclipse Neon, the only preparation step is to update the m2e plugin
+to at least version 0.17.2.
+At time of writing this, this version wasn't officially released yet but you can get a preview from this Eclipse update site:
+ - https://otto.takari.io/content/sites/m2e.extras/m2eclipse-mavenarchiver/0.17.2/N/LATEST/
+
+Import the project as any standard Maven project.
+This might trigger a dialog to automatically find and install additional m2e plugins: allow that.
+
+Finally, you'll want to make sure that Annotation Processors are enabled in your settings
+`Maven -> Annotation Processing` and then pick "Automatically Configure JDT APT".
+
 ### Integration tests
 
 You can skip integration tests by specifying the `skipITs` property:
