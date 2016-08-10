@@ -61,6 +61,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- commons-pool2 dependency is optional in latest lettuce -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>${lettuceCommonsPoolVersion}</version>
+        </dependency>
         <dependency>
             <artifactId>netty-handler</artifactId>
             <groupId>io.netty</groupId>
