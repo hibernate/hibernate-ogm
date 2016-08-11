@@ -3,7 +3,7 @@
 
 ########################################################################################################################
 # The purpose of this tool is to handle several pre release tasks. These tasks are:
-# - Update the data in readme.md
+# - Update the data in README.md
 # - Update the changelog.txt (using JIRA's REST API to get the required information)
 # - Print a release file template for the hibernate.org website
 ########################################################################################################################
@@ -49,7 +49,7 @@ Choice.options do
   option :update_readme, :required => false do
     short '-r'
     long '--update-readme=<path to readme>'
-    desc 'If specified the date in readme.md will be updated'
+    desc 'If specified the date in README.md will be updated'
   end
 
   option :update_changelog, :required => false do
@@ -207,7 +207,7 @@ def calculate_max_component_length(processed_issues)
 end
 
 #######################################################################################################################
-# Updates version and date in readme.md
+# Updates version and date in README.md
 def update_readme(readme_file_name, release_version)
   readme = File.read(readme_file_name)
   updated_readme = readme.gsub(/^Version:.*$/, "Version: #{release_version} - #{$now.strftime("%d %b %Y")}")
@@ -251,7 +251,7 @@ readme_file_name = Choice.choices[:update_readme]
 if !readme_file_name.nil? and !readme_file_name.empty?
   abort "ERROR: #{readme_file_name} is not a valid file" unless File.exist?(readme_file_name)
   update_readme(readme_file_name, release_version)
-  git_commit(readme_file_name, "[Jenkins release job] readme.md updated by release build #{release_version}")
+  git_commit(readme_file_name, "[Jenkins release job] README.md updated by release build #{release_version}")
 end
 
 change_log_file_name = Choice.choices[:update_changelog]
