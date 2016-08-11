@@ -95,7 +95,7 @@
                         <infinispan-version>${infinispanVersion}</infinispan-version>
                         <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
                         <ehcache-version>${ehcacheVersion}</ehcache-version>
-                        <mongodb-version>${mongodbVersion}</mongodb-version>
+                        <mongodb-version>${mongodbParsedVersion.majorVersion}.${mongodbParsedVersion.minorVersion}</mongodb-version>
                     </attributes>
                 </configuration>
             </plugin>
