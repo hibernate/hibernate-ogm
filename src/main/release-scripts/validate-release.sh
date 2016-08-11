@@ -3,7 +3,7 @@
 RELEASE_VERSION=$1
 WORKSPACE=${WORKSPACE:-'.'}
 CHANGELOG=$WORKSPACE/changelog.txt
-README=$WORKSPACE/readme.md
+README=$WORKSPACE/README.md
 
 git fetch --tags
 
@@ -12,7 +12,7 @@ then
         echo "ERROR: tag '$RELEASE_VERSION' already exists, aborting. If you really want to release this version, delete the tag in the workspace first."
         exit 1
 else
-        echo "SUCCESS: tag '$RELEASE_VERSION' does not exists"
+        echo "SUCCESS: tag '$RELEASE_VERSION' does not exist"
 fi
 
 if grep -q "$RELEASE_VERSION" $README ;

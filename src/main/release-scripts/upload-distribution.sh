@@ -11,13 +11,13 @@ if [ -z "$RELEASE_VERSION" ]
 fi
 
 echo "##################################################"
-echo "# Uploading Hibernate OGM $RELEASE_VEVISION on"
-echo "# $DIST_PARENT"
+echo "# Uploading Hibernate OGM $RELEASE_VERSION on"
+echo "# $DIST_PARENT_DIR"
 echo "##################################################"
 echo "Workspace: $WORKSPACE"
 
 (echo mkdir $DIST_PARENT_DIR/$RELEASE_VERSION; echo quit) | sftp -b - frs.sourceforge.net
-scp readme.md frs.sourceforge.net:$DIST_PARENT_DIR/$RELEASE_VERSION
+scp README.md frs.sourceforge.net:$DIST_PARENT_DIR/$RELEASE_VERSION
 scp changelog.txt frs.sourceforge.net:$DIST_PARENT_DIR/$RELEASE_VERSION
 scp distribution/target/hibernate-ogm-$RELEASE_VERSION-dist.zip frs.sourceforge.net:$DIST_PARENT_DIR/$RELEASE_VERSION
 scp distribution/target/hibernate-ogm-$RELEASE_VERSION-dist.tar.gz frs.sourceforge.net:$DIST_PARENT_DIR/$RELEASE_VERSION
