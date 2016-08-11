@@ -186,7 +186,7 @@
 
     <files>
         <file>
-            <source>../readme.md</source>
+            <source>../README.md</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
         </file>
@@ -207,7 +207,7 @@
             <outputDirectory>sources</outputDirectory>
             <useDefaultExcludes>true</useDefaultExcludes>
             <excludes>
-                <exclude>../readme.md</exclude>
+                <exclude>../README.md</exclude>
                 <exclude>../license.txt</exclude>
                 <exclude>../changelog.txt</exclude>
                 <exclude>../*.sh</exclude>

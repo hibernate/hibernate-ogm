@@ -14,7 +14,7 @@ echo "Preparing the release ..."
 
 pushd $WORKSPACE/src/main/release-scripts
 bundle install
-./pre-release.rb -v $RELEASE_VERSION -r $WORKSPACE/readme.md -c $WORKSPACE/changelog.txt
+./pre-release.rb -v $RELEASE_VERSION -r $WORKSPACE/README.md -c $WORKSPACE/changelog.txt
 sh validate-release.sh $RELEASE_VERSION
 sh update-version.sh $RELEASE_VERSION
 sh create-tag.sh $RELEASE_VERSION
