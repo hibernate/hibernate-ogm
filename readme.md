@@ -31,6 +31,13 @@ To run the minimum project build without integration tests, documentation and di
 
 The following sections describe these options in more detail.
 
+### Importing sources in Eclipse
+
+Import the project as any standard Maven project.
+This might trigger a dialog to automatically find and install additional m2e plugins: allow that.
+
+Make sure that annotation processing is enabled in your project settings (see "Properties" - "Maven" - "Annotation Processing", the setting should be "Automatically configure JDT APT").
+
 ### Integration tests
 
 You can skip integration tests by specifying the `skipITs` property:
