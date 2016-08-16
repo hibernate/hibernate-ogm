@@ -318,11 +318,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static BasicDBObject prepareIdObject(IdSourceKey key) {
-		return prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+		return prepareIdObject( key.getColumnName(), key.getColumnValue() );
+	}
+
+	private static BasicDBObject prepareIdObject(String columnName, String columnValue) {
+		return new BasicDBObject( ID_FIELDNAME, prepareIdObjectValue( columnName, columnValue ) );
 	}
 
 	private static BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues) {
 		return new BasicDBObject( ID_FIELDNAME, prepareIdObjectValue( columnNames, columnValues ) );
+	}
+
+	private static Object prepareIdObjectValue(String columnName, String columnValue) {
+		return columnValue;
 	}
 
 	private static Object prepareIdObjectValue(String[] columnNames, Object[] columnValues) {

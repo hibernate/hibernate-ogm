@@ -50,7 +50,7 @@ public abstract class BaseNeo4jSequenceGenerator {
 	}
 
 	protected String sequenceName(IdSourceKey key) {
-		return key.getMetadata().getType() == IdSourceType.SEQUENCE ? key.getMetadata().getName() : (String) key.getColumnValues()[0];
+		return key.getMetadata().getType() == IdSourceType.SEQUENCE ? key.getMetadata().getName() : key.getColumnValue();
 	}
 
 	protected Map<String, Object> params(NextValueRequest request) {

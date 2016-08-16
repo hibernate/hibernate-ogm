@@ -6,29 +6,31 @@
  */
 package org.hibernate.ogm.model.key.spi;
 
-import java.util.Arrays;
-
 /**
  * Represents a source of an id sequence such as a table (row) or a physical sequence.
+ * This is used to identify a Sequence or a Table based id generator.
+ * At most a single column is needed: columnName and columnValue to map to the attributes of
+ * JPA's TableGenerated.
  *
  * @author Gunnar Morling
+ * @author Sanne Grinovero
  */
-public class IdSourceKey {
+public final class IdSourceKey {
 
 	private final IdSourceKeyMetadata metadata;
-	private final String[] columnNames;
-	private final Object[] columnValues;
+	private final String columnName;
+	private final String columnValue;
 	private final int hashCode;
 
-	private IdSourceKey(IdSourceKeyMetadata metadata, Object[] columnValues) {
+	private IdSourceKey(IdSourceKeyMetadata metadata, String columnValue) {
 		this.metadata = metadata;
-		this.columnNames = metadata.getKeyColumnName() != null ? new String[] { metadata.getKeyColumnName() } : null;
-		this.columnValues = columnValues;
+		this.columnName = metadata.getKeyColumnName();
+		this.columnValue = columnValue;
 		this.hashCode = calculateHashCode();
 	}
 
 	public static IdSourceKey forTable(IdSourceKeyMetadata metadata, String segmentName) {
-		return new IdSourceKey( metadata, new Object[] { segmentName } );
+		return new IdSourceKey( metadata, segmentName );
 	}
 
 	public static IdSourceKey forSequence(IdSourceKeyMetadata metadata) {
@@ -53,8 +55,8 @@ public class IdSourceKey {
 	 *
 	 * @return the segment column name when using a table-based generator, {@code null} otherwise
 	 */
-	public String[] getColumnNames() {
-		return columnNames;
+	public String getColumnName() {
+		return columnName;
 	}
 
 	/**
@@ -62,8 +64,8 @@ public class IdSourceKey {
 	 *
 	 * @return the segment name when using a table-based generator, {@code null} otherwise
 	 */
-	public Object[] getColumnValues() {
-		return columnValues;
+	public String getColumnValue() {
+		return columnValue;
 	}
 
 	@Override
@@ -79,11 +81,27 @@ public class IdSourceKey {
 		if ( obj == null ) {
 			return false;
 		}
-		if ( getClass() != obj.getClass() ) {
+		if ( IdSourceKey.class != obj.getClass() ) {
 			return false;
 		}
 		IdSourceKey other = (IdSourceKey) obj;
-		if ( !Arrays.equals( columnValues, other.columnValues ) ) {
+		if ( columnName == null ) {
+			if ( other.columnName != null ) {
+				return false;
+			}
+		}
+		else if ( ! columnName.equals( other.columnName ) ) {
+			return false;
+		}
+		if ( columnValue == null ) {
+			if ( other.columnValue != null ) {
+				return false;
+			}
+		}
+		else if ( ! columnValue.equals( other.columnValue ) ) {
+			return false;
+		}
+		if ( hashCode != other.hashCode ) {
 			return false;
 		}
 		if ( metadata == null ) {
@@ -91,7 +109,7 @@ public class IdSourceKey {
 				return false;
 			}
 		}
-		else if ( !metadata.equals( other.metadata ) ) {
+		else if ( ! metadata.equals( other.metadata ) ) {
 			return false;
 		}
 		return true;
@@ -99,15 +117,16 @@ public class IdSourceKey {
 
 	@Override
 	public String toString() {
-		return "IdSourceKey [metadata=" + metadata + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues=" + Arrays.toString( columnValues )
-				+ "]";
+		return "IdSourceKey [metadata=" + metadata + ", columnName='" + columnName + "', columnValue='" + columnValue + "']";
 	}
 
 	private int calculateHashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode( columnValues );
-		result = prime * result + ( ( metadata == null ) ? 0 : metadata.hashCode() );
+		result = prime * result + ( (columnName == null) ? 0 : columnName.hashCode() );
+		result = prime * result + ( (columnValue == null) ? 0 : columnValue.hashCode() );
+		result = prime * result + ( (metadata == null) ? 0 : metadata.hashCode() );
 		return result;
 	}
+
 }

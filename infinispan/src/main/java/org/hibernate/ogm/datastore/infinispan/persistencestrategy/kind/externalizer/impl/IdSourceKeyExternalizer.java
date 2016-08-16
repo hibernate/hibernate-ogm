@@ -52,8 +52,10 @@ public class IdSourceKeyExternalizer implements AdvancedExternalizer<IdSourceKey
 	public void writeObject(ObjectOutput output, IdSourceKey key) throws IOException {
 		output.writeInt( VERSION );
 		output.writeUTF( key.getTable() );
-		output.writeObject( key.getColumnNames() );
-		output.writeObject( key.getColumnValues() );
+		//Wrapping in String[] and Object[] respectively as this used to be the format,
+		//to maintain compatibility with Hibernate OGM 5.0
+		output.writeObject( new String[] { key.getColumnName() } );
+		output.writeObject( new Object[] { key.getColumnValue() } );
 	}
 
 	@Override

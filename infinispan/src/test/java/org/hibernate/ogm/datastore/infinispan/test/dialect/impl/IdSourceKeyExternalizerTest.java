@@ -43,8 +43,8 @@ public class IdSourceKeyExternalizerTest {
 
 		// then
 		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
-		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
-		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
+		assertThat( unmarshalledKey.getColumnName() ).isEqualTo( key.getColumnName() );
+		assertThat( unmarshalledKey.getColumnValue() ).isEqualTo( key.getColumnValue() );
 
 		assertTrue( key.equals( unmarshalledKey ) );
 		assertTrue( unmarshalledKey.equals( key ) );

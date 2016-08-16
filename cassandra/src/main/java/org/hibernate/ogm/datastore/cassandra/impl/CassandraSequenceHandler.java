@@ -130,19 +130,19 @@ public class CassandraSequenceHandler {
 		Long valueFromDb = null;
 		boolean done = false;
 		do {
-			valueFromDb = nextValueSelect( metadata, key.getColumnValues()[0].toString() );
+			valueFromDb = nextValueSelect( metadata, key.getColumnValue() );
 
 			if ( valueFromDb == null ) {
 				//if not there, insert initial value
 				valueFromDb = nextValueInsert( metadata,
-						key.getColumnValues()[0].toString(),
+						key.getColumnValue(),
 						(long) request.getInitialValue()
 				);
 			}
 
 			//update seq value ready for the next reader
 			Long updatedValue = valueFromDb + (long) request.getIncrement();
-			done = nextValueUpdate( metadata, key.getColumnValues()[0].toString(), valueFromDb, updatedValue );
+			done = nextValueUpdate( metadata, key.getColumnValue(), valueFromDb, updatedValue );
 		}
 		while ( !done );
 

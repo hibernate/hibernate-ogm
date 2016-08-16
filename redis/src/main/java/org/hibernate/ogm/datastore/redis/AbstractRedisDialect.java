@@ -132,8 +132,8 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	protected String identifierId(IdSourceKey key) {
 		String prefix = IDENTIFIERS + ":" + key.getTable();
 
-		if ( key.getColumnNames() != null ) {
-			String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+		if ( key.getColumnName() != null ) {
+			String entityId = key.getColumnValue();
 			return prefix + ":" + entityId;
 		}
 		return prefix;

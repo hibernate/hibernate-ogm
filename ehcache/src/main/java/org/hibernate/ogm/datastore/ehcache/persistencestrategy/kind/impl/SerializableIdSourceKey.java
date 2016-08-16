@@ -10,7 +10,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Arrays;
 
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.common.impl.VersionChecker;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
@@ -34,16 +33,16 @@ public class SerializableIdSourceKey implements Externalizable {
 	private static final int VERSION = 1;
 
 	private String table;
-	private String[] columnNames;
-	private Object[] columnValues;
+	private String columnName;
+	private Object columnValue;
 
 	// required by Externalizable
 	public SerializableIdSourceKey() {
 	}
 
 	SerializableIdSourceKey(IdSourceKey key) {
-		columnNames = key.getColumnNames();
-		columnValues = key.getColumnValues();
+		columnName = key.getColumnName();
+		columnValue = key.getColumnValue();
 		table = key.getTable();
 	}
 
@@ -51,20 +50,20 @@ public class SerializableIdSourceKey implements Externalizable {
 		return table;
 	}
 
-	public String[] getColumnNames() {
-		return columnNames;
+	public String getColumnNames() {
+		return columnName;
 	}
 
-	public Object[] getColumnValues() {
-		return columnValues;
+	public Object getColumnValues() {
+		return columnValue;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode( columnNames );
-		result = prime * result + Arrays.hashCode( columnValues );
+		result = prime * result + ( ( columnName == null ) ? 0 : columnName.hashCode() );
+		result = prime * result + ( ( columnValue == null ) ? 0 : columnValue.hashCode() );
 		result = prime * result + ( ( table == null ) ? 0 : table.hashCode() );
 		return result;
 	}
@@ -81,10 +80,20 @@ public class SerializableIdSourceKey implements Externalizable {
 			return false;
 		}
 		SerializableIdSourceKey other = (SerializableIdSourceKey) obj;
-		if ( !Arrays.equals( columnNames, other.columnNames ) ) {
+		if ( columnName == null ) {
+			if ( other.columnName != null ) {
+				return false;
+			}
+		}
+		else if ( ! columnName.equals( other.columnName ) ) {
 			return false;
 		}
-		if ( !Arrays.equals( columnValues, other.columnValues ) ) {
+		if ( columnValue == null ) {
+			if ( other.columnValue != null ) {
+				return false;
+			}
+		}
+		else if ( ! columnValue.equals( other.columnValue ) ) {
 			return false;
 		}
 		if ( table == null ) {
@@ -100,16 +109,17 @@ public class SerializableIdSourceKey implements Externalizable {
 
 	@Override
 	public String toString() {
-		return "SerializableIdSourceKey [table=" + table + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues="
-				+ Arrays.toString( columnValues ) + "]";
+		return "SerializableIdSourceKey [columnName='" + columnName + "', columnValues='" + columnValue + "']";
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt( VERSION );
 		out.writeUTF( table );
-		out.writeObject( columnNames );
-		out.writeObject( columnValues );
+		//Wrapping in String[] and Object[] respectively as this used to be the format,
+		//to maintain compatibility with Hibernate OGM 5.0
+		out.writeObject( new String[] { columnName } );
+		out.writeObject( new Object[] { columnValue } );
 	}
 
 	@Override
@@ -117,7 +127,7 @@ public class SerializableIdSourceKey implements Externalizable {
 		VersionChecker.readAndCheckVersion( in, VERSION, SerializableIdSourceKey.class );
 
 		table = in.readUTF();
-		columnNames = (String[]) in.readObject();
-		columnValues = (Object[]) in.readObject();
+		columnName = ( (String[]) in.readObject() )[0];
+		columnValue = ( (Object[]) in.readObject() )[0];
 	}
 }
