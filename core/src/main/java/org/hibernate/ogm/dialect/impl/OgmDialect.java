@@ -10,9 +10,11 @@ import javax.persistence.GenerationType;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.identity.IdentityColumnSupport;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.id.impl.OgmIdentityColumnSupport;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
@@ -41,6 +43,11 @@ public class OgmDialect extends Dialect {
 	 */
 	public GridDialect getGridDialect() {
 		return gridDialect;
+	}
+
+	@Override
+	public IdentityColumnSupport getIdentityColumnSupport() {
+		return new OgmIdentityColumnSupport( gridDialect );
 	}
 
 	/**
