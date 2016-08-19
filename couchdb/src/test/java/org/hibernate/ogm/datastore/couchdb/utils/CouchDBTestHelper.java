@@ -45,6 +45,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -186,7 +187,7 @@ public class CouchDBTestHelper implements GridDialectTestHelper {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( session.getSessionFactory() );
 		EntityDocument entity = dataStore.getEntity( Identifier.createEntityId( key ) );
-		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
+		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity, SnapshotType.UPDATE );
 		Set<String> columnNames = snapshot.getColumnNames();
 		for ( String columnName : columnNames ) {
 			tupleMap.put( columnName, snapshot.get( columnName ) );

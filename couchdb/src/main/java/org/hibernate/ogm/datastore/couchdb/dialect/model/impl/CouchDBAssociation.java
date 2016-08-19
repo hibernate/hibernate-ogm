@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 
 /**
@@ -25,12 +26,12 @@ public abstract class CouchDBAssociation {
 	/**
 	 * Creates a {@link CouchDBAssociation} from the given {@link EntityDocument} and association name.
 	 *
-	 * @param entity the owner of the association
+	 * @param tuplePointer the owner of the association
 	 * @param associationKeyMetadata association key meta-data
 	 * @return a {@link CouchDBAssociation} representing the association
 	 */
-	public static CouchDBAssociation fromEmbeddedAssociation(EntityDocument entity, AssociationKeyMetadata associationKeyMetadata) {
-		return new EmbeddedAssociation( entity, associationKeyMetadata );
+	public static CouchDBAssociation fromEmbeddedAssociation(TuplePointer tuplePointer, AssociationKeyMetadata associationKeyMetadata) {
+		return new EmbeddedAssociation( tuplePointer, associationKeyMetadata );
 	}
 
 	/**

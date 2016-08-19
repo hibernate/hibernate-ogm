@@ -12,6 +12,7 @@ import java.util.List;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -39,7 +40,7 @@ public class EntityTupleRows {
 		List<Tuple> tuples = new ArrayList<Tuple>( rows.size() );
 		if ( rows.size() > 0 ) {
 			for ( Row row : rows ) {
-				tuples.add( new Tuple( new CouchDBTupleSnapshot( row.getValue().getProperties() ) ) );
+				tuples.add( new Tuple( new CouchDBTupleSnapshot( row.getValue(), SnapshotType.UPDATE ) ) );
 			}
 		}
 		return tuples;

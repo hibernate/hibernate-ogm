@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.couchdb;
 
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+import static org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType.UPDATE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,8 +30,15 @@ import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBStringType;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
+import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.Operation;
+import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -51,6 +59,9 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
 import org.hibernate.ogm.type.impl.SerializableAsStringType;
@@ -69,8 +80,9 @@ import org.hibernate.type.Type;
  *
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
+ * @author Guillaume Smet
  */
-public class CouchDBDialect extends BaseGridDialect {
+public class CouchDBDialect extends BaseGridDialect implements GroupingByEntityDialect {
 
 	private final CouchDBDatastoreProvider provider;
 
@@ -82,42 +94,152 @@ public class CouchDBDialect extends BaseGridDialect {
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
-			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
+			return new Tuple( new CouchDBTupleSnapshot( entity, SnapshotType.UPDATE ) );
 		}
-
-		return null;
+		else if ( isInTheInsertionQueue( key, operationContext ) ) {
+			return createTuple( key, operationContext );
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new Tuple( new CouchDBTupleSnapshot( key ) );
+		return new Tuple( new CouchDBTupleSnapshot( new EntityDocument( key ), SnapshotType.INSERT ) );
+	}
+
+	@Override
+	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation) {
+		EntityKey entityKey = groupedOperation.getEntityKey();
+
+		EntityDocument owningEntity = null;
+		List<AssociationKey> associationsToRemove = new ArrayList<>();
+		OptionsContext optionsContext = null;
+		SnapshotType snapshotType = SnapshotType.UPDATE;
+
+		for ( Operation operation : groupedOperation.getOperations() ) {
+			if ( operation instanceof InsertOrUpdateTupleOperation ) {
+				InsertOrUpdateTupleOperation insertOrUpdateTupleOperation = (InsertOrUpdateTupleOperation) operation;
+				Tuple tuple = insertOrUpdateTupleOperation.getTuplePointer().getTuple();
+				TupleContext tupleContext = insertOrUpdateTupleOperation.getTupleContext();
+
+				if ( SnapshotType.INSERT.equals( tuple.getSnapshot().getSnapshotType() ) ) {
+					snapshotType = SnapshotType.INSERT;
+				}
+
+				if (owningEntity == null) {
+					owningEntity = getEntityFromTuple( tuple );
+				}
+
+				String revision = (String) tuple.getSnapshot().get( Document.REVISION_FIELD_NAME );
+
+				// load the latest revision for updates without the revision being present; a warning about
+				// this mapping will have been issued at factory start-up
+				if ( revision == null && !SnapshotType.INSERT.equals( snapshotType ) ) {
+					owningEntity.setRevision( getDataStore().getCurrentRevision( Identifier.createEntityId( entityKey ), false ) );
+				}
+
+				EmbeddableStateFinder embeddableStateFinder = new EmbeddableStateFinder( tuple, tupleContext );
+
+				for ( TupleOperation tupleOperation : tuple.getOperations() ) {
+					String column = tupleOperation.getColumn();
+					if ( entityKey.getMetadata().isKeyColumn( column ) ) {
+						continue;
+					}
+					switch ( tupleOperation.getType() ) {
+					case PUT:
+						owningEntity.set( column, tupleOperation.getValue() );
+						break;
+					case PUT_NULL:
+					case REMOVE:
+						// try and find if this column is within an embeddable and if that embeddable is null
+						// if true, unset the full embeddable
+						String nullEmbeddable = embeddableStateFinder.getOuterMostNullEmbeddableIfAny( column );
+						if ( nullEmbeddable != null ) {
+							// we have a null embeddable
+							owningEntity.unset( nullEmbeddable );
+						}
+						else {
+							// simply unset the column
+							owningEntity.unset( column );
+						}
+						break;
+					}
+				}
+
+				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
+			}
+			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+				InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+				AssociationKey associationKey = insertOrUpdateAssociationOperation.getAssociationKey();
+				org.hibernate.ogm.model.spi.Association association = insertOrUpdateAssociationOperation.getAssociation();
+				AssociationContext associationContext = insertOrUpdateAssociationOperation.getContext();
+
+				CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
+				Object rows = getAssociationRows( association, associationKey, associationContext );
+
+				couchDBAssociation.setRows( rows );
+
+				if ( isStoredInEntityStructure( associationKey.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
+					if ( owningEntity == null ) {
+						owningEntity = (EntityDocument) couchDBAssociation.getOwningDocument();
+						optionsContext = associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext();
+					}
+				}
+				else {
+					// We don't want to remove the association anymore as it's superseded by an update
+					associationsToRemove.remove( associationKey );
+
+					getDataStore().saveDocument( couchDBAssociation.getOwningDocument() );
+				}
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
+				AssociationContext associationContext = removeAssociationOperation.getContext();
+
+				if ( isStoredInEntityStructure( associationKey.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
+					if ( owningEntity == null ) {
+						TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( associationKey, associationContext );
+						owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
+					}
+					if ( owningEntity != null ) {
+						owningEntity.unset( associationKey.getMetadata().getCollectionRole() );
+						optionsContext = associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext();
+					}
+				}
+				else {
+					associationsToRemove.add( associationKey );
+				}
+			}
+			else {
+				throw new IllegalStateException( operation.getClass().getSimpleName() + " not supported here" );
+			}
+		}
+
+		if ( owningEntity != null ) {
+			try {
+				storeEntity( entityKey, owningEntity, optionsContext );
+			}
+			catch (OptimisticLockException ole) {
+				if ( SnapshotType.INSERT.equals( snapshotType ) ) {
+					throw new TupleAlreadyExistsException( entityKey, ole );
+				}
+				else {
+					throw ole;
+				}
+			}
+		}
+
+		if ( associationsToRemove.size() > 0 ) {
+			removeAssociations( associationsToRemove );
+		}
 	}
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
-		Tuple tuple = tuplePointer.getTuple();
-		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
-
-		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
-
-		// load the latest revision for updates without the revision being present; a warning about
-		// this mapping will have been issued at factory start-up
-		if ( revision == null && !snapshot.isCreatedOnInsert() ) {
-			revision = getDataStore().getCurrentRevision( Identifier.createEntityId( key ), false );
-		}
-
-		try {
-			// this will raise an optimistic locking exception if the revision is either null or not the current one
-			getDataStore().saveDocument( new EntityDocument( key, revision, tuple ) );
-		}
-		catch (OptimisticLockException ole) {
-			if ( snapshot.isCreatedOnInsert() ) {
-				throw new TupleAlreadyExistsException( key, ole );
-			}
-			else {
-				throw ole;
-			}
-		}
+		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
 	}
 
 	@Override
@@ -130,14 +252,19 @@ public class CouchDBDialect extends BaseGridDialect {
 		CouchDBAssociation couchDBAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( key, associationContext );
+			if ( tuplePointer == null ) {
+				// The entity associated with this association has already been removed
+				// see ManyToOneTest#testRemovalOfTransientEntityWithAssociation
+				return null;
+			}
+			EntityDocument owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
 
 			if ( owningEntity != null && DotPatternMapHelpers.hasField(
 					owningEntity.getPropertiesAsHierarchy(),
-					key.getMetadata()
-							.getCollectionRole()
+					key.getMetadata().getCollectionRole()
 			) ) {
-				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
+				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( tuplePointer, key.getMetadata() );
 			}
 		}
 		else {
@@ -155,34 +282,37 @@ public class CouchDBDialect extends BaseGridDialect {
 		CouchDBAssociation couchDBAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( key, associationContext );
+			EntityDocument owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
 			if ( owningEntity == null ) {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
+				tuplePointer.setTuple( new Tuple( new CouchDBTupleSnapshot( owningEntity, UPDATE ) ) );
 			}
 
-			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
+			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( tuplePointer, key.getMetadata() );
 		}
 		else {
 			AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
 			couchDBAssociation = CouchDBAssociation.fromAssociationDocument( association );
 		}
 
-		return new Association( new CouchDBAssociationSnapshot( couchDBAssociation, key ) );
+		Association association = new Association( new CouchDBAssociationSnapshot( couchDBAssociation, key ) );
+
+		// in the case of an association stored in the entity structure, we might end up with rows present in the current snapshot of the entity
+		// while we want an empty association here. So, in this case, we clear the snapshot to be sure the association created is empty.
+		if ( !association.isEmpty() ) {
+			association.clear();
+		}
+
+		return association;
 	}
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey associationKey, Association association, AssociationContext associationContext) {
-		Object rows = getAssociationRows( association, associationKey, associationContext );
-
-		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
-		couchDBAssociation.setRows( rows );
-
-		getDataStore().saveDocument( couchDBAssociation.getOwningDocument() );
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	private Object getAssociationRows(Association association, AssociationKey associationKey, AssociationContext associationContext) {
-
-
 		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey(
 				association,
 				associationKey,
@@ -244,16 +374,7 @@ public class CouchDBDialect extends BaseGridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
-			if ( owningEntity != null ) {
-				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
-				getDataStore().saveDocument( owningEntity );
-			}
-		}
-		else {
-			removeDocumentIfPresent( Identifier.createAssociationId( key ) );
-		}
+		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
 	}
 
 	@Override
@@ -316,23 +437,15 @@ public class CouchDBDialect extends BaseGridDialect {
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		forTuple( consumer, entityKeyMetadata );
-	}
-
-	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
-		return DuplicateInsertPreventionStrategy.NATIVE;
-	}
-
-	private void forTuple(ModelConsumer consumer, EntityKeyMetadata entityKeyMetadata) {
-		List<Tuple> tuples = getTuples( entityKeyMetadata );
+		List<Tuple> tuples = getDataStore().getTuples( entityKeyMetadata );
 		for ( Tuple tuple : tuples ) {
 			consumer.consume( tuple );
 		}
 	}
 
-	private List<Tuple> getTuples(EntityKeyMetadata entityKeyMetadata) {
-		return getDataStore().getTuples( entityKeyMetadata );
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
+		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 
 	private CouchDBDatastore getDataStore() {
@@ -343,6 +456,34 @@ public class CouchDBDialect extends BaseGridDialect {
 		String currentRevision = getDataStore().getCurrentRevision( id, false );
 		if ( currentRevision != null ) {
 			getDataStore().deleteDocument( id, currentRevision );
+		}
+	}
+
+	private TuplePointer getEmbeddingEntityTuplePointer(AssociationKey key, AssociationContext associationContext) {
+		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
+
+		if ( tuplePointer.getTuple() == null ) {
+			tuplePointer.setTuple( getTuple( key.getEntityKey(), associationContext ) );
+		}
+
+		return tuplePointer;
+	}
+
+	private EntityDocument getEntityFromTuple(Tuple tuple) {
+		if ( tuple == null ) {
+			return null;
+		}
+		return ( (CouchDBTupleSnapshot) tuple.getSnapshot() ).getEntity();
+	}
+
+	private void storeEntity(EntityKey key, EntityDocument entity, OptionsContext optionsContext) {
+		// this will raise an optimistic locking exception if the revision is either null or not the current one
+		getDataStore().saveDocument( entity );
+	}
+
+	public void removeAssociations(List<AssociationKey> keys) {
+		for ( AssociationKey key : keys ) {
+			removeDocumentIfPresent( Identifier.createAssociationId( key ) );
 		}
 	}
 }

@@ -13,15 +13,11 @@ import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyAssociationContext;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleContext;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
-import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
-import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -30,7 +26,6 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.junit.After;
@@ -72,18 +67,6 @@ public class CouchDBDialectTest {
 	}
 
 	@Test
-	public void getTupleShouldReturnTheSearchedOne() {
-		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
-
-		dialect.insertOrUpdateTuple( key, new TuplePointer( createdTuple ), emptyTupleContext() );
-
-		Tuple actualTuple = dialect.getTuple( key, emptyTupleContext() );
-
-		assertThat( actualTuple.get( "id" ) ).isEqualTo( createdTuple.get( "id" ) );
-	}
-
-	@Test
 	public void removeTupleShouldDeleteTheCreatedTuple() {
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 		dialect.createTuple( key, emptyTupleContext() );
@@ -91,19 +74,6 @@ public class CouchDBDialectTest {
 		dialect.removeTuple( key, emptyTupleContext() );
 
 		assertThat( new CouchDBTestHelper().getNumberOfEntities( datastoreProvider.getDataStore() ) ).isEqualTo( 0 );
-	}
-
-	@Test
-	public void updateTupleShouldAddTheNewColumnValue() {
-
-		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
-		createdTuple.put( "name", "and" );
-
-		dialect.insertOrUpdateTuple( key, new TuplePointer( createdTuple ), emptyTupleContext() );
-
-		Tuple tuple = dialect.getTuple( key, emptyTupleContext() );
-		assertThat( (String) tuple.get( "name" ) ).isEqualTo( "and" );
 	}
 
 	@Test
@@ -121,33 +91,6 @@ public class CouchDBDialectTest {
 
 		assertThat( createAssociation.getSnapshot() ).isNotNull();
 		assertThat( createAssociation.getSnapshot().getRowKeys() ).isEmpty();
-	}
-
-	@Test
-	public void updateAnAssociationShouldAddATuple() {
-		String tableName = "user_address";
-		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
-		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
-		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple tuple = dialect.createTuple( entityKey, emptyTupleContext() );
-		dialect.insertOrUpdateTuple( entityKey, new TuplePointer( tuple ), emptyTupleContext() );
-
-		AssociationKey key = createAssociationKey(
-				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
-		);
-		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
-
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "user_id", "Emmanuel" );
-		properties.put( "addresses_id", 1 );
-		Tuple associationTuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
-
-		RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
-		createAssociation.put( rowKey, associationTuple );
-		dialect.insertOrUpdateAssociation( key, createAssociation, emptyAssociationContext() );
-
-		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext() );
-		assertThat( actualAssociation.get( rowKey ).hashCode() ).isNotNull();
 	}
 
 	private EntityKey createEntityKey(String tableName, String[] columnNames, Object[] values) {

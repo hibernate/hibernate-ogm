@@ -13,6 +13,7 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 
@@ -23,11 +24,11 @@ import org.hibernate.ogm.model.key.spi.AssociationType;
  */
 class EmbeddedAssociation extends CouchDBAssociation {
 
-	private final EntityDocument entity;
+	private final TuplePointer tuplePointer;
 	private final AssociationKeyMetadata associationKeyMetadata;
 
-	public EmbeddedAssociation(EntityDocument entity, AssociationKeyMetadata associationKeyMetadata) {
-		this.entity = entity;
+	public EmbeddedAssociation(TuplePointer tuplePointer, AssociationKeyMetadata associationKeyMetadata) {
+		this.tuplePointer = tuplePointer;
 		this.associationKeyMetadata = associationKeyMetadata;
 	}
 
@@ -36,7 +37,7 @@ class EmbeddedAssociation extends CouchDBAssociation {
 	public Object getRows() {
 		Object rows;
 		Object fieldValue = DotPatternMapHelpers.getValueOrNull(
-				entity.getPropertiesAsHierarchy(), associationKeyMetadata.getCollectionRole()
+				getEntity().getPropertiesAsHierarchy(), associationKeyMetadata.getCollectionRole()
 		);
 
 		if ( fieldValue == null ) {
@@ -54,12 +55,13 @@ class EmbeddedAssociation extends CouchDBAssociation {
 
 	@Override
 	public void setRows(Object rows) {
+		EntityDocument entity = getEntity();
 		if ( isEmpty( rows ) ) {
-			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			entity.unset( associationKeyMetadata.getCollectionRole() );
 		}
 		else {
 
-			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			entity.unset( associationKeyMetadata.getCollectionRole() );
 			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
 				Object value = ( (Collection<?>) rows ).iterator().next();
 				entity.set( associationKeyMetadata.getCollectionRole(), value );
@@ -89,6 +91,10 @@ class EmbeddedAssociation extends CouchDBAssociation {
 
 	@Override
 	public Document getOwningDocument() {
-		return entity;
+		return getEntity();
+	}
+
+	private EntityDocument getEntity() {
+		return ( (CouchDBTupleSnapshot) tuplePointer.getTuple().getSnapshot() ).getEntity();
 	}
 }
