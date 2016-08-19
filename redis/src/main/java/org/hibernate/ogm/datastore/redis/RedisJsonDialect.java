@@ -195,10 +195,14 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			);
 		}
 		else {
-			Long currentTtl = connection.pttl( entityId( associationKey.getEntityKey() ) );
+			Long currentTtl = getCurrentTtl( entityId( associationKey.getEntityKey() ) );
 			storeAssociation( associationKey, (Association) redisAssociation.getOwningDocument() );
 			setAssociationTTL( associationKey, associationContext, currentTtl );
 		}
+	}
+
+	private Long getCurrentTtl(String objectKey) {
+		return connection.pttl( objectKey );
 	}
 
 	/**
@@ -248,7 +252,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			return rows;
 		}
 
-		List<Object> rows = new ArrayList<Object>( association.size() );
+		List<Object> rows = new ArrayList<>( association.size() );
 		for ( RowKey rowKey : association.getKeys() ) {
 			rows.add( getAssociationRow( association.get( rowKey ), key ) );
 		}
@@ -313,7 +317,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			Entity document,
 			OptionsContext optionsContext) {
 
-		Long currentTtl = connection.pttl( entityId( key ) );
+		Long currentTtl = getCurrentTtl( entityId( key ) );
 
 		entityStorageStrategy.storeEntity( entityId( key ), document );
 
@@ -339,7 +343,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		}
 
 		Iterable<Entity> entities = entityStorageStrategy.getEntities( ids );
-		List<Tuple> tuples = new ArrayList<Tuple>( keys.length );
+		List<Tuple> tuples = new ArrayList<>( keys.length );
 
 		int i = 0;
 		for ( Entity entity : entities ) {
