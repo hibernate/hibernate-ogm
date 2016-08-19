@@ -1364,7 +1364,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
 				// so we determine if it concerns the primary key by matching on the message
 				if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
-					throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+					throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), dke );
 				}
 				else {
 					throw log.constraintViolationOnFlush( dke.getMessage(), dke );

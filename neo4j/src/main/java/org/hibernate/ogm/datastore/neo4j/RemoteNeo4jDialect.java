@@ -265,7 +265,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	private HibernateException extractException(EntityKey key, Tuple tuple, ErrorResponse errorResponse) {
 		if ( errorResponse.getMessage().matches( ".*Node \\d+ already exists with label.*" ) ) {
 			// This is the exception we expect for this kind of error by the CompensationAPI and some unit tests
-			return new TupleAlreadyExistsException( key.getMetadata(), tuple, errorResponse.getMessage() );
+			return new TupleAlreadyExistsException( key, errorResponse.getMessage() );
 		}
 		else {
 			return log.constraintViolation( key, errorResponse.getMessage(), null );

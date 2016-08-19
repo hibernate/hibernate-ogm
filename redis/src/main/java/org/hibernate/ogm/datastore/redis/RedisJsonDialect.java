@@ -234,9 +234,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public org.hibernate.ogm.model.spi.Association getAssociation(
-			AssociationKey key,
-			AssociationContext associationContext) {
+	public org.hibernate.ogm.model.spi.Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		RedisAssociation redisAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
@@ -311,7 +309,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	private TuplePointer getEmbeddingEntityTuplePointer(AssociationKey key, AssociationContext associationContext) {
 		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
 
-		if (tuplePointer.getTuple() == null) {
+		if ( tuplePointer.getTuple() == null ) {
 			tuplePointer.setTuple( getTuple( key.getEntityKey(), associationContext ) );
 		}
 

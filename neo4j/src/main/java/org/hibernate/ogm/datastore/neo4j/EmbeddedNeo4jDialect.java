@@ -248,7 +248,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			if ( CONSTRAINT_VIOLATION_CODE.equals( qee.getStatusCode() ) ) {
 				Throwable cause = findRecognizableCause( qee );
 				if ( cause instanceof UniquePropertyConstraintViolationKernelException ) {
-					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, qee );
+					throw new TupleAlreadyExistsException( key, qee );
 				}
 			}
 			throw qee;

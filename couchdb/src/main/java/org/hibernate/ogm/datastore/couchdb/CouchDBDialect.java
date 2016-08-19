@@ -112,7 +112,7 @@ public class CouchDBDialect extends BaseGridDialect {
 		}
 		catch (OptimisticLockException ole) {
 			if ( snapshot.isCreatedOnInsert() ) {
-				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, ole );
+				throw new TupleAlreadyExistsException( key, ole );
 			}
 			else {
 				throw ole;
