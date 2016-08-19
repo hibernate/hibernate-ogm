@@ -1229,6 +1229,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	public void checkVersionAndRaiseSOSE(Serializable id, Object oldVersion, SessionImplementor session, Tuple resultset) {
+		// The tuple has been deleted
+		if ( resultset == null ) {
+			raiseStaleObjectStateException( id );
+			return;
+		}
+
 		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
 
 		if ( !gridVersionType.isEqual( oldVersion, resultSetVersion, getFactory() ) ) {
