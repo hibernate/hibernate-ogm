@@ -21,6 +21,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 
 /**
@@ -37,6 +38,7 @@ public class Hypothesis {
 	private Author author;
 
 	@Id
+	@SortableField
 	public String getId() {
 		return id;
 	}
@@ -46,6 +48,7 @@ public class Hypothesis {
 	}
 
 	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
+	@SortableField
 	public String getDescription() {
 		return description;
 	}
@@ -57,6 +60,7 @@ public class Hypothesis {
 	@Column(name = "pos")
 	@Field(analyze = Analyze.NO)
 	@NumericField
+	@SortableField
 	public int getPosition() {
 		return position;
 	}
