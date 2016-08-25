@@ -54,7 +54,7 @@ public class ElementCollectionOfEmbeddableWithNamedColumnMappingTest extends Ogm
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-893")
+	@TestForIssue(jiraKey = "OGM-1151")
 	public void testMappingForElementCollectionWithNamedColumn() {
 		assertDbObject(
 				getSessionFactory(),
