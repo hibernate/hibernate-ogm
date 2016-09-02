@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.backendtck.associations.onetoone;
+package org.hibernate.ogm.backendtck.dialectinvocations;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +14,8 @@ import org.junit.Test;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.backendtck.associations.onetoone.Husband;
+import org.hibernate.ogm.backendtck.associations.onetoone.Wife;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
