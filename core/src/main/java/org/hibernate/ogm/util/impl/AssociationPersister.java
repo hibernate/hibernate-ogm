@@ -200,7 +200,7 @@ public class AssociationPersister {
 			association = null;
 			OgmEntityEntryState.getStateFor( session, hostingEntity ).setAssociation( associationKeyMetadata.getCollectionRole(), null );
 		}
-		else {
+		else if ( !getAssociation().getOperations().isEmpty() ) {
 			gridDialect.insertOrUpdateAssociation( getAssociationKey(), getAssociation(), getAssociationContext() );
 		}
 
