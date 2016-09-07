@@ -21,9 +21,11 @@ import org.hibernate.ogm.datastore.redis.impl.hash.RedisHashTypeConverter;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationType;
@@ -60,34 +62,33 @@ public class RedisHashDialect extends AbstractRedisDialect {
 
 	@Override
 	@SuppressWarnings({"unchecked", "rawtypes" })
-	public Tuple getTuple(
-			EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		String entityIdString = entityId( key );
 		if ( !connection.exists( entityIdString ) ) {
 			return null;
 		}
 
 		Map<String, Object> objects;
-		if ( tupleContext.getTupleTypeContext().getSelectableColumns().isEmpty() ) {
+		if ( operationContext.getTupleTypeContext().getSelectableColumns().isEmpty() ) {
 			objects = (Map) connection.hgetall( entityIdString );
 		}
 		else {
-			List<String> hmget = connection.hmget( entityIdString, getFields( tupleContext ) );
-			objects = toEntity( tupleContext, hmget );
+			List<String> hmget = connection.hmget( entityIdString, getFields( operationContext.getTupleTypeContext() ) );
+			objects = toEntity( operationContext.getTupleTypeContext(), hmget );
 		}
 
 		return new Tuple( new RedisHashTupleSnapshot( objects ) );
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		return new Tuple( new RedisHashTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
-	private Map<String, Object> toEntity(TupleContext tupleContext, List<String> hmget) {
+	private Map<String, Object> toEntity(TupleTypeContext tupleTypeContext, List<String> hmget) {
 		Map<String, Object> objects = new HashMap<>();
-		for ( int i = 0; i < tupleContext.getTupleTypeContext().getSelectableColumns().size(); i++ ) {
-			String columnName = tupleContext.getTupleTypeContext().getSelectableColumns().get( i );
+		for ( int i = 0; i < tupleTypeContext.getSelectableColumns().size(); i++ ) {
+			String columnName = tupleTypeContext.getSelectableColumns().get( i );
 			String value = hmget.get( i );
 			if ( value == null ) {
 				continue;
@@ -97,14 +98,15 @@ public class RedisHashDialect extends AbstractRedisDialect {
 		return objects;
 	}
 
-	private String[] getFields(TupleContext tupleContext) {
-		return tupleContext.getTupleTypeContext().getSelectableColumns().toArray( new String[tupleContext.getTupleTypeContext().getSelectableColumns().size()] );
+	private String[] getFields(TupleTypeContext tupleTypeContext) {
+		return tupleTypeContext.getSelectableColumns().toArray( new String[tupleTypeContext.getSelectableColumns().size()] );
 	}
 
 	@Override
 	public void insertOrUpdateTuple(
-			EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException {
+			EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
 
+		Tuple tuple = tuplePointer.getTuple();
 		Map<String, Object> map = ( (RedisHashTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, map );
 
@@ -243,7 +245,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	private Object getAssociationRows(
 			Association association,
 			AssociationKey key) {
-		List<Object> rows = new ArrayList<Object>( association.size() );
+		List<Object> rows = new ArrayList<>( association.size() );
 		for ( RowKey rowKey : association.getKeys() ) {
 			rows.add( getAssociationRow( association.get( rowKey ), key ) );
 		}

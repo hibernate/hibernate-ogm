@@ -44,8 +44,10 @@ import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -69,11 +71,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		InsertOrUpdateTupleImpl insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, tuple );
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		InsertOrUpdateTupleImpl insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, tuplePointer.getTuple() );
 
 		try {
-			super.insertOrUpdateTuple( key, tuple, tupleContext );
+			super.insertOrUpdateTuple( key, tuplePointer, tupleContext );
 		}
 		catch (Exception e) {
 			handleException( insertOrUpdateTuple, e );
@@ -145,7 +147,7 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 		GridDialectOperation gridDialectOperation;
 		if ( operation instanceof InsertOrUpdateTupleOperation ) {
 			InsertOrUpdateTupleOperation insertOrUpdateTuple = (InsertOrUpdateTupleOperation) operation;
-			gridDialectOperation = new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuple() );
+			gridDialectOperation = new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuplePointer().getTuple() );
 		}
 		else if ( operation instanceof RemoveTupleOperation ) {
 			RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
@@ -168,12 +170,12 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		Tuple tuple = null;
 		CreateTupleWithKey createTupleWithKey = new CreateTupleWithKeyImpl( key );
 
 		try {
-			tuple = super.createTuple( key, tupleContext );
+			tuple = super.createTuple( key, operationContext );
 		}
 		catch (Exception e) {
 			handleException( createTupleWithKey, e );
@@ -244,12 +246,12 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	// IdentityColumnAwareGridDialect
 
 	@Override
-	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
 		Tuple tuple = null;
 		CreateTuple createTuple = new CreateTupleImpl( entityKeyMetadata );
 
 		try {
-			tuple = super.createTuple( entityKeyMetadata, tupleContext );
+			tuple = super.createTuple( entityKeyMetadata, operationContext );
 		}
 		catch (Exception e) {
 			handleException( createTuple, e );

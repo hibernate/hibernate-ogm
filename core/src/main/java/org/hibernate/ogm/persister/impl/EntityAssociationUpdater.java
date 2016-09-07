@@ -159,7 +159,7 @@ class EntityAssociationUpdater {
 		}
 		associationPersister.getAssociation().put( rowKey, associationRow );
 
-		if ( associationPersister.getAssociationContext().getEntityTuple() == null ) {
+		if ( associationPersister.getAssociationContext().getEntityTuplePointer().getTuple() == null ) {
 			throw log.entityTupleNotFound( associationKeyMetadata.getCollectionRole(), associationPersister.getAssociationKey().getEntityKey() );
 		}
 

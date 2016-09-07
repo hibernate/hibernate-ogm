@@ -21,15 +21,15 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTypeConverter;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jMapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jMapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jNodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleSnapshot;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jNodesTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
@@ -40,9 +40,11 @@ import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -144,7 +146,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext context) {
+	public Tuple getTuple(EntityKey key, OperationContext context) {
 		Node entityNode = entityQueries.get( key.getMetadata() ).findEntity( dataBase, key.getColumnValues() );
 		if ( entityNode == null ) {
 			return null;
@@ -189,8 +191,10 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
-					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node, tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
-							tupleContext.getTupleTypeContext().getAllRoles(), keys[i].getMetadata() ) );
+					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
+							tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+							tupleContext.getTupleTypeContext().getAllRoles(),
+							keys[i].getMetadata() ) );
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -212,12 +216,13 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext tupleContext) {
 		return new Tuple( EmbeddedNeo4jTupleSnapshot.emptySnapshot( key.getMetadata() ) );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		EmbeddedNeo4jTupleSnapshot snapshot = (EmbeddedNeo4jTupleSnapshot) tuple.getSnapshot();
 
 		// insert

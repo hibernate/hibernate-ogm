@@ -49,10 +49,12 @@ import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -145,7 +147,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext context) {
+	public Tuple getTuple(EntityKey key, OperationContext context) {
 		RemoteNeo4jEntityQueries queries = entityQueries.get( key.getMetadata() );
 		Long txId = transactionId( context.getTransactionContext() );
 		NodeWithEmbeddedNodes node = queries.findEntity( dataBase, txId, key.getColumnValues() );
@@ -217,7 +219,8 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		// insert
 		final Map<String, EntityKey> toOneAssociations = new HashMap<>();
 		Statements statements = new Statements();
@@ -538,7 +541,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 				keys[i] = new EntityKey( entityKeyMetadata, values );
 			}
 			ClosableIterator<NodeWithEmbeddedNodes> entities = entityQueries.get( entityKeyMetadata ).findEntities( dataBase, keys, txId );
-			return new RemoteNeo4jNodesTupleIterator( dataBase, txId, queries, response, entityKeyMetadata, tupleContext, entities );
+			return new RemoteNeo4jNodesTupleIterator( dataBase, txId, queries, response, entityKeyMetadata, tupleContext.getTupleTypeContext(), entities );
 		}
 		else {
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );

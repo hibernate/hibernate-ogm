@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.remote.dialect.impl;
 import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 
@@ -25,7 +25,7 @@ public class RemoteNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 	private final RemoteNeo4jClient dataBase;
 	private final RemoteNeo4jEntityQueries entityQueries;
 	private final Long txId;
-	private final TupleContext tupleContext;
+	private final TupleTypeContext tupleTypeContext;
 	private final ClosableIterator<NodeWithEmbeddedNodes> entities;
 
 	public RemoteNeo4jNodesTupleIterator(RemoteNeo4jClient dataBase,
@@ -33,20 +33,20 @@ public class RemoteNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 			RemoteNeo4jEntityQueries entityQueries,
 			StatementsResponse response,
 			EntityKeyMetadata entityKeyMetadata,
-			TupleContext tupleContext,
+			TupleTypeContext tupleTypeContext,
 			ClosableIterator<NodeWithEmbeddedNodes> entities) {
 		this.dataBase = dataBase;
 		this.txId = txId;
 		this.entityQueries = entityQueries;
 		this.entityKeyMetadata = entityKeyMetadata;
-		this.tupleContext = tupleContext;
+		this.tupleTypeContext = tupleTypeContext;
 		this.entities = entities;
 	}
 
 	private Tuple createTuple(NodeWithEmbeddedNodes node) {
 		return new Tuple(
-				new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
-						tupleContext.getTupleTypeContext().getAllRoles(), entityKeyMetadata ) );
+				new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleTypeContext.getAllAssociatedEntityKeyMetadata(),
+						tupleTypeContext.getAllRoles(), entityKeyMetadata ) );
 	}
 
 	@Override
@@ -68,4 +68,5 @@ public class RemoteNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 	public void close() {
 		entities.close();
 	}
+
 }

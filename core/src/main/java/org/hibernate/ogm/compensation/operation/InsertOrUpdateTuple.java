@@ -12,7 +12,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Represents one execution of
- * {@link GridDialect#insertOrUpdateTuple(EntityKey, Tuple, org.hibernate.ogm.dialect.spi.TupleContext)}.
+ * {@link GridDialect#insertOrUpdateTuple(EntityKey, TuplePointer, org.hibernate.ogm.dialect.spi.TupleContext)}.
  *
  * @author Gunnar Morling
  */

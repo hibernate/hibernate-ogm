@@ -22,8 +22,10 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -68,7 +70,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		Map<String, Object> entityMap = provider.getEntityTuple( key );
 		if ( entityMap == null ) {
 			return null;
@@ -90,16 +92,16 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		HashMap<String,Object> tuple = new HashMap<String,Object>();
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
+		HashMap<String,Object> tuple = new HashMap<String, Object>();
 		provider.putEntity( key, tuple );
 		return new Tuple( new MapTupleSnapshot( tuple ) );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Map<String,Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
-		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Map<String,Object> entityRecord = ( (MapTupleSnapshot) tuplePointer.getTuple().getSnapshot() ).getMap();
+		MapHelpers.applyTupleOpsOnMap( tuplePointer.getTuple(), entityRecord );
 	}
 
 	@Override

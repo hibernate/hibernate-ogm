@@ -20,8 +20,8 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.impl.TransactionContextHelper;
 
@@ -93,7 +93,6 @@ public class GridDialectOperationContexts {
 		private AssociatedEntityKeyMetadata associatedEntityKeyMetadata = null;
 		private String roleOnMainSide = null;
 		private TransactionContext transactionContext = null;
-		private Tuple tuple = null;
 
 		public AssociationContextBuilder optionsContext(OptionsContext optionsContext) {
 			this.optionsContext = optionsContext;
@@ -117,7 +116,7 @@ public class GridDialectOperationContexts {
 
 		public AssociationContext buildAssociationContext() {
 			return new AssociationContextImpl( new AssociationTypeContextImpl( optionsContext, ownerEntityOptionsContext, ownerEntityTupleTypeContext,
-					associatedEntityKeyMetadata, roleOnMainSide ), tuple, transactionContext );
+					associatedEntityKeyMetadata, roleOnMainSide ), new TuplePointer(), transactionContext );
 		}
 	}
 

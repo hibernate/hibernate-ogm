@@ -11,7 +11,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 
 /**
  * Represents one execution of
- * {@link IdentityColumnAwareGridDialect#createTuple(EntityKeyMetadata, org.hibernate.ogm.dialect.spi.TupleContext)}.
+ * {@link IdentityColumnAwareGridDialect#createTuple(EntityKeyMetadata, org.hibernate.ogm.dialect.spi.OperationContext)}.
  *
  * @author Gunnar Morling
  */

@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
@@ -29,6 +29,6 @@ public interface AssociationContext extends OperationContext {
 	 *
 	 * @return A tuple representing the entity on the current side of the association
 	 */
-	Tuple getEntityTuple();
+	TuplePointer getEntityTuplePointer();
 
 }

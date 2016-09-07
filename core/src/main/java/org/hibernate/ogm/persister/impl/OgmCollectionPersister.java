@@ -32,6 +32,9 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.impl.OgmBasicCollectionLoader;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -621,7 +624,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			OgmEntityPersister persister = (OgmEntityPersister) getElementPersister();
 			final EntityKey entityKey = EntityKeyBuilder.fromPersister( persister, entityId, session );
 
-			final Tuple entityTuple = gridDialect.getTuple( entityKey, persister.getTupleContext( session ) );
+			final TuplePointer entityTuplePointer = getSharedTuplePointer( entityKey, entity, persister.getTupleContext( session ), session );
+			final Tuple entityTuple = entityTuplePointer.getTuple();
 			// the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if ( entityTuple == null ) {
 				return;
@@ -640,7 +644,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext( session ) );
+			gridDialect.insertOrUpdateTuple( entityKey, entityTuplePointer, persister.getTupleContext( session ) );
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
@@ -884,6 +888,19 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			.associationKeyMetadata( associationKeyMetadata )
 			.associationTypeContext( associationTypeContext )
 			.session( session );
+	}
+
+	private TuplePointer getSharedTuplePointer(EntityKey key, Object entity, TupleContext tupleContext, SessionImplementor session) {
+		if (entity == null) {
+			return new TuplePointer( gridDialect.getTuple( key, tupleContext ) );
+		}
+
+		TuplePointer tuplePointer = OgmEntityEntryState.getStateFor( session, entity ).getTuplePointer();
+		if (tuplePointer.getTuple() == null) {
+			tuplePointer.setTuple( gridDialect.getTuple( key, tupleContext ) );
+		}
+
+		return tuplePointer;
 	}
 
 	@Override

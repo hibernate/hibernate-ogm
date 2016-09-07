@@ -47,7 +47,7 @@ public abstract class BaseGridDialect implements GridDialect {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 
-	protected static boolean isInTheInsertionQueue(EntityKey key, TupleContext tupleContext) {
+	protected static boolean isInTheInsertionQueue(EntityKey key, OperationContext tupleContext) {
 		OperationsQueue queue = tupleContext.getOperationsQueue();
 		return queue != null && queue.isInTheInsertionQueue( key );
 	}

@@ -8,6 +8,7 @@ package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -46,17 +47,17 @@ public interface GridDialect extends Service {
 	 * Return the tuple with the given column for a given key
 	 *
 	 * @param key The tuple identifier
-	 * @param tupleContext Contains additional information that might be used to create the tuple
+	 * @param operationContext Contains additional information that might be used to create the tuple
 	 * @return the tuple identified by the key
 	 */
-	Tuple getTuple(EntityKey key, TupleContext tupleContext);
+	Tuple getTuple(EntityKey key, OperationContext operationContext);
 
 	/**
 	 * Creates a new tuple for the given entity key.
 	 * <p>
 	 * Only invoked if no tuple is present yet for the given key. Implementations should not perform a round-trip to the
 	 * datastore but rather return a transient instance. The OGM engine will invoke
-	 * {@link #insertOrUpdateTuple(EntityKey, Tuple, TupleContext)} subsequently.
+	 * {@link #insertOrUpdateTuple(EntityKey, TuplePointer, TupleContext)} subsequently.
 	 * <p>
 	 * Columns in the tuple may represent properties of the corresponding entity as well as *-to-one associations to
 	 * other entities. Implementations may choose to persist the latter e.g. in form of fields or as actual
@@ -64,20 +65,20 @@ public interface GridDialect extends Service {
 	 * corresponding association role for a given column can be obtained from the passed tuple context.
 	 *
 	 * @param key The tuple identifier
-	 * @param tupleContext Contains additional information that might be used to create the tuple
+	 * @param operationContext Contains additional information that might be used to create the tuple
 	 * @return the created tuple
 	 */
-	Tuple createTuple(EntityKey key, TupleContext tupleContext);
+	Tuple createTuple(EntityKey key, OperationContext operationContext);
 
 	/**
 	 * Inserts or updates the tuple corresponding to the given entity key.
 	 *
 	 * @param key The tuple identifier
-	 * @param tuple The list of operations to execute
+	 * @param tuplePointer A pointer to the list of operations to execute
 	 * @param tupleContext Contains additional information that might be used to create or update the tuple
 	 * @throws TupleAlreadyExistsException upon insertion of a tuple with an already existing unique identifier
 	 */
-	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException;
+	void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException;
 
 	/**
 	 * Remove the tuple for a given key

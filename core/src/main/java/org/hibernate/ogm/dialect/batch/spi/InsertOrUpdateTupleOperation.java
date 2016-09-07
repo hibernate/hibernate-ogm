@@ -7,8 +7,8 @@
 package org.hibernate.ogm.dialect.batch.spi;
 
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Contains the data required to update a tuple
@@ -17,18 +17,18 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class InsertOrUpdateTupleOperation implements GroupableEntityOperation {
 
-	private final Tuple tuple;
+	private final TuplePointer tuplePointer;
 	private final EntityKey entityKey;
 	private final TupleContext tupleContext;
 
-	public InsertOrUpdateTupleOperation(Tuple tuple, EntityKey entityKey, TupleContext tupleContext) {
-		this.tuple = tuple;
+	public InsertOrUpdateTupleOperation(TuplePointer tuplePointer, EntityKey entityKey, TupleContext tupleContext) {
+		this.tuplePointer = tuplePointer;
 		this.entityKey = entityKey;
 		this.tupleContext = tupleContext;
 	}
 
-	public Tuple getTuple() {
-		return tuple;
+	public TuplePointer getTuplePointer() {
+		return tuplePointer;
 	}
 
 	@Override

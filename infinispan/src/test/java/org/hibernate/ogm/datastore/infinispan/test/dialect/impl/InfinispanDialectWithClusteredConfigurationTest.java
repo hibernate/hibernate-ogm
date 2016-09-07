@@ -27,6 +27,7 @@ import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
@@ -99,7 +100,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, new TuplePointer( tuple ), emptyTupleContext() );
 
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
@@ -159,7 +160,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, new TuplePointer( tuple ), emptyTupleContext() );
 
 		// then
 		MyConsumer consumer = new MyConsumer();

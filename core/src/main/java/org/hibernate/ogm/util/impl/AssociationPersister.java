@@ -258,7 +258,7 @@ public class AssociationPersister {
 		if ( associationContext == null ) {
 			associationContext = new AssociationContextImpl(
 					associationTypeContext,
-					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null,
+					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuplePointer() : null,
 					transactionContext( session )
 			);
 		}

@@ -70,6 +70,5 @@ public class TupleContextHelper {
 		public OperationsQueue getOperationsQueue() {
 			throw LOG.tupleContextNotAvailable();
 		}
-
 	}
 }

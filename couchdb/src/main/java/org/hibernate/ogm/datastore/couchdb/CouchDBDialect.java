@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.couchdb;
 
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,9 +37,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -57,8 +61,6 @@ import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-
 /**
  * Stores tuples and associations as JSON documents inside CouchDB.
  * <p>
@@ -77,7 +79,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
@@ -87,12 +89,13 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		return new Tuple( new CouchDBTupleSnapshot( key ) );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
 
 		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );

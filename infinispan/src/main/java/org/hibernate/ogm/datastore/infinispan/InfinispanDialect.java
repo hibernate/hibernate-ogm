@@ -29,8 +29,10 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -95,7 +97,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		EK cacheKey = getKeyProvider().getEntityCacheKey( key );
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
 		return getTupleFromCacheKey( cacheKey, cache );
@@ -116,7 +118,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
@@ -126,7 +128,8 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, atomicMap );
 	}

@@ -7,6 +7,7 @@
 package org.hibernate.ogm.dialect.identity.spi;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -24,10 +25,10 @@ public interface IdentityColumnAwareGridDialect extends GridDialect {
 	 * to the datastore should be performed.
 	 *
 	 * @param entityKeyMetadata Represents the entity type for which the tuple should be created
-	 * @param tupleContext Provides additional meta-data useful for tuple creation
+	 * @param operationContext Provides additional meta-data useful for tuple creation
 	 * @return the newly created tuple
 	 */
-	Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext);
+	Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext);
 
 	/**
 	 * Inserts the given tuple into the datastore, generating an id while doing so. The generated id is to be added to

@@ -36,6 +36,7 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -159,7 +160,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
-				new Tuple( new MongoDBTupleSnapshot( null, null, null ) ),
+				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null, null ) ) ),
 				transactionContext( session )
 		);
 

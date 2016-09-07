@@ -77,9 +77,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -173,9 +175,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		DBObject found = this.getObject( key, tupleContext );
-		return createTuple( key, tupleContext, found );
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		DBObject found = this.getObject( key, operationContext );
+		return createTuple( key, operationContext, found );
 	}
 
 	@Override
@@ -219,11 +221,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return Arrays.asList( tuples );
 	}
 
-	private static Tuple createTuple(EntityKey key, TupleContext tupleContext, DBObject found) {
+	private static Tuple createTuple(EntityKey key, OperationContext operationContext, DBObject found) {
 		if ( found != null ) {
 			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
 		}
-		else if ( isInTheInsertionQueue( key, tupleContext ) ) {
+		else if ( isInTheInsertionQueue( key, operationContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
 			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata(), INSERT ) );
 		}
@@ -233,12 +235,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
 		return new Tuple( new MongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata, SnapshotType.INSERT ) );
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext OperationContext) {
 		DBObject toSave = prepareIdObject( key );
 		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getMetadata(), SnapshotType.INSERT ) );
 	}
@@ -247,7 +249,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Returns a {@link DBObject} representing the entity which embeds the specified association.
 	 */
 	private DBObject getEmbeddingEntity(AssociationKey key, AssociationContext associationContext) {
-		DBObject embeddingEntityDocument = associationContext.getEntityTuple() != null ? ( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject() : null;
+		DBObject embeddingEntityDocument = associationContext.getEntityTuplePointer().getTuple() != null ?
+				( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject() : null;
 
 		if ( embeddingEntityDocument != null ) {
 			return embeddingEntityDocument;
@@ -263,12 +266,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
-		ReadPreference readPreference = getReadPreference( tupleContext );
+	private DBObject getObject(EntityKey key, OperationContext operationContext) {
+		ReadPreference readPreference = getReadPreference( operationContext );
 
 		DBCollection collection = getCollection( key );
 		DBObject searchObject = prepareIdObject( key );
-		BasicDBObject projection = getProjection( tupleContext );
+		BasicDBObject projection = getProjection( operationContext );
 
 		return collection.findOne( searchObject, projection, readPreference );
 	}
@@ -286,8 +289,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collection.find( query, projection );
 	}
 
-	private static BasicDBObject getProjection(TupleContext tupleContext) {
-		return getProjection( tupleContext.getTupleTypeContext().getSelectableColumns() );
+	private static BasicDBObject getProjection(OperationContext operationContext) {
+		return getProjection( operationContext.getTupleTypeContext().getSelectableColumns() );
 	}
 
 	/**
@@ -404,7 +407,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
 		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
@@ -473,7 +476,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static BasicDBObject objectForUpdate(Tuple tuple, TupleContext tupleContext, BasicDBObject updateStatement) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 		EmbeddableStateFinder embeddableStateFinder = new EmbeddableStateFinder( tuple, tupleContext );
-		Set<String> nullEmbeddables = new HashSet<String>();
+		Set<String> nullEmbeddables = new HashSet<>();
 
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
@@ -1241,7 +1244,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		for ( Operation operation : groupedOperation.getOperations() ) {
 			if ( operation instanceof InsertOrUpdateTupleOperation ) {
 				InsertOrUpdateTupleOperation tupleOperation = (InsertOrUpdateTupleOperation) operation;
-				Tuple tuple = tupleOperation.getTuple();
+				Tuple tuple = tupleOperation.getTuplePointer().getTuple();
 				MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 				writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( tupleOperation.getTupleContext() ) );
 
@@ -1274,7 +1277,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 						MongoHelpers.setValue( insertStatement, collectionRole, rows );
 					}
 					else {
-						MongoHelpers.setValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject(),
+						MongoHelpers.setValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject(),
 								associationKey.getMetadata().getCollectionRole(), toStore );
 						addSetToQuery( updateStatement, collectionRole, toStore );
 					}
@@ -1302,8 +1305,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( associationContext ) );
 					String collectionRole = associationKey.getMetadata().getCollectionRole();
 
-					if ( associationContext.getEntityTuple() != null ) {
-						MongoHelpers.resetValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject(),
+					if ( associationContext.getEntityTuplePointer().getTuple() != null ) {
+						MongoHelpers.resetValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject(),
 								collectionRole );
 					}
 					addUnsetToQuery( updateStatement, collectionRole );
@@ -1428,8 +1431,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private static ReadPreference getReadPreference(TupleContext tupleContext) {
-		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	private static ReadPreference getReadPreference(OperationContext operationContext) {
+		return operationContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {

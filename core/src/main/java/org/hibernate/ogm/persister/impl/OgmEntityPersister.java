@@ -56,6 +56,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.entity.impl.BatchingEntityLoaderBuilder;
@@ -583,7 +584,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		//snapshot is a Map in the end
-		final Tuple resultset = getResultsetById( id, session );
+		final Tuple resultset = getFreshTuple( EntityKeyBuilder.fromPersister( this, id, session ), session );
 
 		//if there is no resulting row, return null
 		if ( resultset == null || resultset.getSnapshot().isEmpty() ) {
@@ -599,12 +600,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 		return values;
-	}
-
-	private Tuple getResultsetById(Serializable id, SessionImplementor session) {
-		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key, getTupleContext( session ) );
-		return resultset;
 	}
 
 	@Override
@@ -672,7 +667,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Tuple resultset = getResultsetById( id, session );
+		final Tuple resultset = getFreshTuple( EntityKeyBuilder.fromPersister( this, id, session ), session );
 
 		if (resultset == null) {
 			return null;
@@ -709,12 +704,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key, getTupleContext( session ) );
+		final TuplePointer tuplePointer = getSharedTuplePointer( key, currentVersion, session );
+		final Tuple resultset = tuplePointer.getTuple();
 		checkVersionAndRaiseSOSE( id, currentVersion, session, resultset );
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext( session ) );
-
-		OgmEntityEntryState.getStateFor( session, nextVersion ).setTuple( resultset );
+		gridDialect.insertOrUpdateTuple( key, tuplePointer, getTupleContext( session ) );
 
 		return nextVersion;
 	}
@@ -1137,32 +1131,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
 				final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-				Tuple resultset = null;
-
-				if ( mightRequireInverseAssociationManagement || usesNonAtomicOptimisticLocking ) {
-					resultset = gridDialect.getTuple( key, getTupleContext( session ) );
-				}
-				else {
-					OgmEntityEntryState extraState = entry.getExtraState( OgmEntityEntryState.class );
-					if ( extraState != null ) {
-						resultset = extraState.getTuple();
-					}
-					if ( resultset == null ) {
-						resultset = gridDialect.getTuple( key, getTupleContext( session ) );
-					}
-				}
 
 				final boolean useVersion = j == 0 && isVersioned();
 
-				resultset = createNewResultSetIfNull( key, resultset, id, session );
-
-				final EntityMetamodel entityMetamodel = getEntityMetamodel();
-
 				if ( usesNonAtomicOptimisticLocking ) {
+					final Tuple tupleInDatastore = getFreshTuple( key, session );
+					final EntityMetamodel entityMetamodel = getEntityMetamodel();
+
 					// Write any appropriate versioning conditional parameters
 					if ( useVersion && entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.VERSION ) {
 						if ( checkVersion( propsToUpdate ) ) {
-							checkVersionAndRaiseSOSE( id, oldVersion, session, resultset );
+							checkVersionAndRaiseSOSE( id, oldVersion, session, tupleInDatastore );
 						}
 					}
 					else if ( isAllOrDirtyOptLocking() && oldFields != null ) {
@@ -1183,7 +1162,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 								//FIXME what do do with settable?
 								boolean[] settable = type.toColumnNullness( oldFields[i], factory );
 								final Object snapshotValue = type.nullSafeGet(
-										resultset, getPropertyColumnNames( i ), session, object
+										tupleInDatastore, getPropertyColumnNames( i ), session, object
 										);
 
 								if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
@@ -1193,6 +1172,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						}
 					}
 				}
+
+				TuplePointer tuplePointer = getSharedTuplePointer( key, object, session );
+				Tuple resultset = tuplePointer.getTuple();
+				resultset = createNewResultSetIfNull( key, resultset, id, session );
+				saveSharedTuple( object, resultset, session );
 
 				if ( mightRequireInverseAssociationManagement ) {
 					removeFromInverseAssociations( resultset, j, id, session );
@@ -1227,14 +1211,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					}
 				}
 				else {
-					gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext( session ) );
+					gridDialect.insertOrUpdateTuple( key, tuplePointer, getTupleContext( session ) );
 				}
 
 				if ( mightRequireInverseAssociationManagement ) {
 					addToInverseAssociations( resultset, j, id, session );
 				}
-
-				OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
 			}
 		}
 	}
@@ -1353,7 +1335,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			throw new HibernateException( "Dialect failed to generate id for entity type " + entityKeyMetadata );
 		}
 
-		OgmEntityEntryState.getStateFor( session, object ).setTuple( tuple );
+		saveSharedTuple( object, tuple, session );
 
 		return id;
 	}
@@ -1390,7 +1372,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Tuple resultset = null;
 
 			if ( duplicateInsertPreventionStrategy == DuplicateInsertPreventionStrategy.LOOK_UP ) {
-				resultset = gridDialect.getTuple( key, this.getTupleContext( session ) );
+				resultset = getFreshTuple( key, session );
 
 				if ( j == 0 && resultset != null ) {
 					if ( invocationCollectingGridDialect == null ) {
@@ -1408,6 +1390,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 
 			resultset = createNewResultSetIfNull( key, resultset, id, session );
+			TuplePointer tuplePointer = saveSharedTuple( object, resultset, session );
 
 			// add the discriminator
 			if ( j == 0 && discriminator.isNeeded() ) {
@@ -1417,15 +1400,13 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			dehydrate( resultset, fields, propertiesToInsert, j, id, session );
 
 			try {
-				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext( session ) );
+				gridDialect.insertOrUpdateTuple( key, tuplePointer, getTupleContext( session ) );
 			}
 			catch ( TupleAlreadyExistsException taee ) {
 				throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), taee );
 			}
 
 			addToInverseAssociations( resultset, 0, id, session );
-
-			OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
 		}
 	}
 
@@ -1807,7 +1788,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			SessionImplementor session,
 			GenerationTiming matchTiming) {
 
-		Tuple tuple = getResultsetById( id, session );
+		Tuple tuple = getFreshTuple( EntityKeyBuilder.fromPersister( this, id, session ), session );
+		saveSharedTuple( entity, tuple, session );
 
 		if ( tuple == null || tuple.getSnapshot().isEmpty() ) {
 			throw log.couldNotRetrieveEntityForRetrievalOfGeneratedProperties( getEntityName(), id );
@@ -1823,8 +1805,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				setPropertyValue( entity, propertyIndex, state[propertyIndex] );
 			}
 		}
-
-		OgmEntityEntryState.getStateFor( session, entity ).setTuple( tuple );
 	}
 
 	/**
@@ -1861,5 +1841,24 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		throw new StaleObjectStateException( getEntityName(), id );
+	}
+
+	private TuplePointer getSharedTuplePointer(EntityKey key, Object entity, SessionImplementor session) {
+		if ( entity == null ) {
+			return new TuplePointer( getFreshTuple( key, session ) );
+		}
+
+		return OgmEntityEntryState.getStateFor( session, entity ).getTuplePointer();
+	}
+
+	private TuplePointer saveSharedTuple(Object entity, Tuple tuple, SessionImplementor session) {
+		TuplePointer tuplePointer = OgmEntityEntryState.getStateFor( session, entity ).getTuplePointer();
+		tuplePointer.setTuple( tuple );
+		return tuplePointer;
+	}
+
+	private Tuple getFreshTuple(EntityKey key, SessionImplementor session) {
+		TupleContext tupleContext = getTupleContext( session );
+		return gridDialect.getTuple( key, tupleContext );
 	}
 }

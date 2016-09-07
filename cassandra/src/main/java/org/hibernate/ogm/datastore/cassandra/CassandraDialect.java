@@ -44,9 +44,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -146,7 +148,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 
 		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
@@ -167,15 +169,16 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		Map<String, Object> toSave = new HashMap<String, Object>();
 		toSave.put( key.getColumnNames()[0], key.getColumnValues()[0] );
 		return new Tuple( new MapTupleSnapshot( toSave ) );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext)
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext)
 			throws TupleAlreadyExistsException {
+		Tuple tuple = tuplePointer.getTuple();
 
 		List<TupleOperation> updateOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );
 		List<TupleOperation> deleteOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );

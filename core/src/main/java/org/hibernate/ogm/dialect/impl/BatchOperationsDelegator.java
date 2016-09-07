@@ -9,8 +9,8 @@ package org.hibernate.ogm.dialect.impl;
 import java.io.Serializable;
 
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
-import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
@@ -20,8 +20,10 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
@@ -91,22 +93,25 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		TupleContext contextWithQueue = new TupleContextImpl(
-				(TupleContextImpl) tupleContext,
-				getOperationQueue()
-		);
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		OperationContext contextWithQueue;
+		if ( operationContext instanceof AssociationContext ) {
+			contextWithQueue = new AssociationContextImpl( (AssociationContextImpl) operationContext, getOperationQueue() );
+		}
+		else {
+			contextWithQueue = new TupleContextImpl( (TupleContextImpl) operationContext, getOperationQueue() );
+		}
 
 		return super.getTuple( key, contextWithQueue );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			super.insertOrUpdateTuple( key, tuple, tupleContext );
+			super.insertOrUpdateTuple( key, tuplePointer, tupleContext );
 		}
 		else {
-			getOperationQueue().add( new InsertOrUpdateTupleOperation( tuple, key, tupleContext ) );
+			getOperationQueue().add( new InsertOrUpdateTupleOperation( tuplePointer, key, tupleContext ) );
 		}
 	}
 

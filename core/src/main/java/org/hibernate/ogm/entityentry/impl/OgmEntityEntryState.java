@@ -21,27 +21,23 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * Entity-dependent state specific to Hibernate OGM.
  *
  * @author Gunnar Morling
+ * @author Guillaume Smet
  */
 public class OgmEntityEntryState implements EntityEntryExtraState {
 
 	private static final Log log = LoggerFactory.make();
 
 	private EntityEntryExtraState next;
-	private Tuple tuple;
+	private final TuplePointer tuplePointer = new TuplePointer();
 	private Map<String, Association> associations;
 
 	/**
-	 * The {@link Tuple} representing the given entity, as loaded from the datastore. May be {@code null} in case the
-	 * loading code failed to set it.
+	 * Return the stable pointer to the {@link Tuple} representing the given entity, as loaded from the datastore.
 	 *
-	 * @return the tuple representing the given entity
+	 * @return the pointer to the tuple representing the given entity
 	 */
-	public Tuple getTuple() {
-		return tuple;
-	}
-
-	public void setTuple(Tuple tuple) {
-		this.tuple = tuple;
+	public TuplePointer getTuplePointer() {
+		return tuplePointer;
 	}
 
 	/**

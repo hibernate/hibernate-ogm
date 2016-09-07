@@ -18,7 +18,9 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -55,9 +57,9 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		log.tracef( "Reading tuple with key %1$s and context %2$s", key, tupleContext );
-		return super.getTuple( key, tupleContext );
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		log.tracef( "Reading tuple with key %1$s and context %2$s", key, operationContext );
+		return super.getTuple( key, operationContext );
 	}
 
 	@Override
@@ -69,20 +71,20 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		log.tracef( "Creating tuple with key %1$s", key );
-		return super.createTuple( key, tupleContext );
+		return super.createTuple( key, operationContext );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		if ( tuple.getSnapshot().isEmpty() ) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		if ( tuplePointer.getTuple().getSnapshot().isEmpty() ) {
 			log.tracef( "Inserting tuple with key %1$s into datastore", key );
 		}
 		else {
 			log.tracef( "Updating tuple with key %1$s in datastore", key );
 		}
-		super.insertOrUpdateTuple( key, tuple, tupleContext );
+		super.insertOrUpdateTuple( key, tuplePointer, tupleContext );
 	}
 
 	@Override

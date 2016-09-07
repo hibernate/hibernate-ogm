@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.model.spi.TupleSnapshot;
-import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;

@@ -21,6 +21,7 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -75,7 +76,7 @@ public class CouchDBDialectTest {
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 
-		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext() );
+		dialect.insertOrUpdateTuple( key, new TuplePointer( createdTuple ), emptyTupleContext() );
 
 		Tuple actualTuple = dialect.getTuple( key, emptyTupleContext() );
 
@@ -99,7 +100,7 @@ public class CouchDBDialectTest {
 		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 		createdTuple.put( "name", "and" );
 
-		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext() );
+		dialect.insertOrUpdateTuple( key, new TuplePointer( createdTuple ), emptyTupleContext() );
 
 		Tuple tuple = dialect.getTuple( key, emptyTupleContext() );
 		assertThat( (String) tuple.get( "name" ) ).isEqualTo( "and" );
@@ -129,7 +130,7 @@ public class CouchDBDialectTest {
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
 		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 		Tuple tuple = dialect.createTuple( entityKey, emptyTupleContext() );
-		dialect.insertOrUpdateTuple( entityKey, tuple, emptyTupleContext() );
+		dialect.insertOrUpdateTuple( entityKey, new TuplePointer( tuple ), emptyTupleContext() );
 
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames

@@ -9,8 +9,6 @@ package org.hibernate.ogm.datastore.ehcache;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.ehcache.Element;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
@@ -31,9 +29,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -42,6 +42,8 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.persister.entity.Lockable;
+
+import net.sf.ehcache.Element;
 
 /**
  * Persists domain models in the Ehcache key/value store.
@@ -85,7 +87,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		final Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 		final Element element = entityCache.get( getKeyProvider().getEntityCacheKey( key ) );
 		if ( element != null ) {
@@ -102,12 +104,13 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		return new Tuple( new MapTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
