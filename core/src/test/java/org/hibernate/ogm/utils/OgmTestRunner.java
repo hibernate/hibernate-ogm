@@ -140,6 +140,8 @@ public class OgmTestRunner extends SkippableTestRunner {
 		}
 		finally {
 			if ( testMethodScopedSessionFactory != null ) {
+				cleanUpPendingTransactionIfRequired();
+				TestHelper.dropSchemaAndDatabase( testScopedSessionFactory );
 				testMethodScopedSessionFactory.close();
 			}
 		}
