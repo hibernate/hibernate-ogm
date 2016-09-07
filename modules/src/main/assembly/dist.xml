@@ -45,8 +45,18 @@
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.basedir}/ogm/infinispan-remote/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-remote/${hibernate.ogm.infinispan-remote.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.aliases.basedir}/ogm/infinispan/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/infinispan/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.aliases.basedir}/ogm/infinispan-remote/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-remote/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -165,6 +175,15 @@
             <unpack>false</unpack>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/hibernate/ogm/infinispan-remote/${hibernate.ogm.infinispan-remote.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-remote</include>
             </includes>
         </dependencySet>
         <dependencySet>

@@ -147,6 +147,7 @@
         <local-cache name="Race_Runners" />
         <local-cache name="Runner" />
         <local-cache name="Printer" />
+        <local-cache name="MagicCard" />
 
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
