@@ -1766,7 +1766,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	public void processInsertGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
-		if ( !hasUpdateGeneratedProperties() ) {
+		if ( !hasInsertGeneratedProperties() ) {
 			throw new AssertionFailure("no insert-generated properties");
 		}
 		processGeneratedProperties( id, entity, state, session, GenerationTiming.INSERT );
