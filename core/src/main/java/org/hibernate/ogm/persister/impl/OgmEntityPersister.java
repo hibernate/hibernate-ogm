@@ -1754,6 +1754,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return spaces;
 	}
 
+	/**
+	 * Returns the TupleTypeContext associated with this entity type.
+	 *
+	 * @return the tupleTypeContext
+	 */
 	public TupleTypeContext getTupleTypeContext() {
 		return tupleTypeContext;
 	}
@@ -1761,13 +1766,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	/**
 	 * Returns the {@link TupleContext}.
 	 *
-	 * @param session the current session, if null the {@link TupleContext#getTransactionContext()} will be null.
+	 * @param session the current session, cannot be null. If you don't have a session, you probably want to use {@code getTupleTypeContext()}.
 	 * @return the tupleContext for the session
 	 */
 	public TupleContext getTupleContext(SessionImplementor session) {
-		if ( session == null ) {
-			return new TupleContextImpl( tupleTypeContext, null );
-		}
 		return new TupleContextImpl( tupleTypeContext, TransactionContextHelper.transactionContext( session ) );
 	}
 

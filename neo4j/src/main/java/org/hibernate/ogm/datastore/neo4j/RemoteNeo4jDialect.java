@@ -52,6 +52,7 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -501,8 +502,11 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
-		Long txId = transactionId( tupleContext.getTransactionContext() );
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+		// TODO OGM-1111 we don't have a transaction context here as we are not in a session yet.
+		// This is now clear thanks to the new TupleTypeContext contract.
+		//Long txId = transactionId( tupleContext.getTransactionContext() );
+		Long txId = null;
 		RemoteNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
 		ClosableIterator<NodeWithEmbeddedNodes> queryNodes = entityQueries.get( entityKeyMetadata ).findEntitiesWithEmbedded( dataBase, txId );
 		while ( queryNodes.hasNext() ) {

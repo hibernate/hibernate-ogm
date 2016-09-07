@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.infinispan.test.dialect.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleContext;
+import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleTypeContext;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -162,7 +163,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 		// then
 		MyConsumer consumer = new MyConsumer();
-		dialect2.forEachTuple( consumer, emptyTupleContext(), keyMetadata );
+		dialect2.forEachTuple( consumer, emptyTupleTypeContext(), keyMetadata );
 		assertThat( consumer.consumedTuple.get( "foo" ) ).isEqualTo( "bar" );
 	}
 

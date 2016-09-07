@@ -42,6 +42,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -554,13 +555,13 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
 		try {
 			while ( queryNodes.hasNext() ) {
 				Node next = queryNodes.next();
 				Tuple tuple = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( next,
-						tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(), tupleContext.getTupleTypeContext().getAllRoles(),
+						tupleTypeContext.getAllAssociatedEntityKeyMetadata(), tupleTypeContext.getAllRoles(),
 						entityKeyMetadata ) );
 				consumer.consume( tuple );
 			}
