@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -33,8 +33,8 @@ public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		this( entityKeyMetadata, null );
 	}
 
-	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		super( entityKeyMetadata, tupleContext, false );
+	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		super( entityKeyMetadata, tupleTypeContext, false );
 	}
 
 	/**

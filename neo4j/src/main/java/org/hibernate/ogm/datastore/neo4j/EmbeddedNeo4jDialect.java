@@ -152,8 +152,8 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		return new Tuple(
 				EmbeddedNeo4jTupleSnapshot.fromNode(
 						entityNode,
-						context.getAllAssociatedEntityKeyMetadata(),
-						context.getAllRoles(),
+						context.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+						context.getTupleTypeContext().getAllRoles(),
 						key.getMetadata()
 				)
 		);
@@ -188,8 +188,8 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
-					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
-							keys[i].getMetadata() ) );
+					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node, tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+							tupleContext.getTupleTypeContext().getAllRoles(), keys[i].getMetadata() ) );
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -443,7 +443,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void removeTupleOperation(EntityKey entityKey, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( !tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
 				String[] split = split( operation.getColumn() );
@@ -455,7 +455,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		}
 		// if the column represents a to-one association, remove the relationship
 		else {
-			String associationRole = tupleContext.getRole( operation.getColumn() );
+			String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 
 				Iterator<Relationship> relationships = node.getRelationships( withName( associationRole ) ).iterator();
@@ -505,7 +505,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			// the column represents a to-one association, map it as relationship
 			putOneToOneAssociation( tuple, node, operation, tupleContext, processedAssociationRoles );
 		}
@@ -533,12 +533,12 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void putOneToOneAssociation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		String associationRole = tupleContext.getRole( operation.getColumn() );
+		String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 
 		if ( !processedAssociationRoles.contains( associationRole ) ) {
 			processedAssociationRoles.add( associationRole );
 
-			EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+			EntityKey targetKey = getEntityKey( tuple, tupleContext.getTupleTypeContext().getAssociatedEntityKeyMetadata( operation.getColumn() ) );
 
 			// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
 			// properties, so the type is uniquely identifying it
@@ -560,7 +560,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			while ( queryNodes.hasNext() ) {
 				Node next = queryNodes.next();
 				Tuple tuple = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( next,
-						tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+						tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(), tupleContext.getTupleTypeContext().getAllRoles(),
 						entityKeyMetadata ) );
 				consumer.consume( tuple );
 			}

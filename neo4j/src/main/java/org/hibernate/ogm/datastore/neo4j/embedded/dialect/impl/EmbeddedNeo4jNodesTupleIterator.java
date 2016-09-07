@@ -38,7 +38,7 @@ public class EmbeddedNeo4jNodesTupleIterator extends EmbeddedNeo4jMapsTupleItera
 
 	private Tuple createTuple(Node node) {
 		return new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
-				tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
+				tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(), tupleContext.getTupleTypeContext().getAllRoles(),
 				entityKeyMetadata ) );
 	}
 }

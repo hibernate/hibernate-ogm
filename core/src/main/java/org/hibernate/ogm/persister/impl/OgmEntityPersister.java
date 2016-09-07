@@ -46,6 +46,7 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
+import org.hibernate.ogm.dialect.impl.TupleTypeContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -53,6 +54,7 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
@@ -190,7 +192,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 * A context with additional meta-data to be passed to grid dialect operations relating to the entity type
 	 * represented by this persister.
 	 */
-	private TupleContextImpl tupleContext;
+	private TupleTypeContextImpl tupleTypeContext;
 
 	OgmEntityPersister(
 			final PersistentClass persistentClass,
@@ -526,10 +528,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	@Override
 	protected void doPostInstantiate() {
 		inverseOneToOneAssociationKeyMetadata = Collections.unmodifiableMap( initInverseOneToOneAssociationKeyMetadata() );
-		tupleContext = createTupleContext();
+		tupleTypeContext = createTupleTypeContext();
 	}
 
-	private TupleContextImpl createTupleContext() {
+	private TupleTypeContextImpl createTupleTypeContext() {
 		Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata = newHashMap();
 		Map<String, String> roles = newHashMap();
 
@@ -546,12 +548,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 
-		return new TupleContextImpl(
+		return new TupleTypeContextImpl(
 				selectableColumnNames( discriminator ),
 				associatedEntityKeyMetadata,
 				roles,
-				optionsService.context().getEntityOptions( getMappedClass() ),
-				null
+				optionsService.context().getEntityOptions( getMappedClass() )
 		);
 	}
 
@@ -749,6 +750,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( inversePersister.getMappedClass(), associationKeyMetadata.getCollectionRole() ),
 				serviceContext.getEntityOptions( inversePersister.getMappedClass() ),
+				inversePersister.getTupleTypeContext(),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				getPropertyNames()[propertyIndex]
 		);
@@ -1752,17 +1754,21 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return spaces;
 	}
 
+	public TupleTypeContext getTupleTypeContext() {
+		return tupleTypeContext;
+	}
+
 	/**
 	 * Returns the {@link TupleContext}.
 	 *
 	 * @param session the current session, if null the {@link TupleContext#getTransactionContext()} will be null.
 	 * @return the tupleContext for the session
 	 */
-	public TupleContext getTupleContext( SessionImplementor session ) {
+	public TupleContext getTupleContext(SessionImplementor session) {
 		if ( session == null ) {
-			return tupleContext;
+			return new TupleContextImpl( tupleTypeContext, null );
 		}
-		return new TupleContextImpl( tupleContext, TransactionContextHelper.transactionContext( session ) );
+		return new TupleContextImpl( tupleTypeContext, TransactionContextHelper.transactionContext( session ) );
 	}
 
 	public String getJpaEntityName() {

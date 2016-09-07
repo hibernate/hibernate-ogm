@@ -195,7 +195,9 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 	}
 
 	private TupleContext tupleContext(Session session) {
-		return new GridDialectOperationContexts.TupleContextBuilder().transactionContext( session ).buildTupleContext();
+		return new GridDialectOperationContexts.TupleContextBuilder().transactionContext( session )
+				.tupleTypeContext( GridDialectOperationContexts.emptyTupleTypeContext() )
+				.buildTupleContext();
 	}
 
 	@Override

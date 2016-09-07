@@ -7,23 +7,22 @@
 
 package org.hibernate.ogm.test.datastore.document;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
-import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
+import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.options.spi.OptionsContext;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.ogm.utils.GridDialectOperationContexts;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -55,43 +54,6 @@ public class EmbeddableStateFinderTest {
 
 		TupleContext context = new TupleContext() {
 			@Override
-			public OptionsContext getOptionsContext() {
-				return null;
-			}
-
-			@Override
-			public List<String> getSelectableColumns() {
-				List<String> results = new ArrayList<String>();
-				results.addAll( tupleData.keySet() );
-				return results;
-			}
-
-			@Override
-			public boolean isPartOfAssociation(String column) {
-				return false;
-			}
-
-			@Override
-			public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata(String column) {
-				return null;
-			}
-
-			@Override
-			public Map<String, AssociatedEntityKeyMetadata> getAllAssociatedEntityKeyMetadata() {
-				return null;
-			}
-
-			@Override
-			public String getRole(String column) {
-				return null;
-			}
-
-			@Override
-			public Map<String, String> getAllRoles() {
-				return null;
-			}
-
-			@Override
 			public OperationsQueue getOperationsQueue() {
 				return null;
 			}
@@ -99,6 +61,13 @@ public class EmbeddableStateFinderTest {
 			@Override
 			public TransactionContext getTransactionContext() {
 				return null;
+			}
+
+			@Override
+			public TupleTypeContext getTupleTypeContext() {
+				List<String> results = new ArrayList<String>();
+				results.addAll( tupleData.keySet() );
+				return new GridDialectOperationContexts.TupleTypeContextBuilder().selectableColumns( results ).buildTupleTypeContext();
 			}
 		};
 

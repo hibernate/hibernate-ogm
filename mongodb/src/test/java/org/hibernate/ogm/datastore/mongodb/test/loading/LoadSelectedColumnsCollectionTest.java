@@ -155,6 +155,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 								"modules"
 						),
 						EmptyOptionsContext.INSTANCE,
+						GridDialectOperationContexts.emptyTupleTypeContext(),
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
@@ -179,8 +180,11 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new Object[] { id }
 		);
 		TupleContext tupleContext = new GridDialectOperationContexts.TupleContextBuilder()
-				.selectableColumns( selectedColumns )
-				.optionContext( TestOptionContext.INSTANCE )
+				.tupleTypeContext(
+						new GridDialectOperationContexts.TupleTypeContextBuilder()
+								.selectableColumns( selectedColumns )
+								.optionContext( TestOptionContext.INSTANCE )
+								.buildTupleTypeContext() )
 				.buildTupleContext();
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );

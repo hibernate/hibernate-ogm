@@ -149,7 +149,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 					}
 				}
 
-				optionsContext = tupleContext.getOptionsContext();
+				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
 				InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;

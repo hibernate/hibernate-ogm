@@ -854,6 +854,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( getOwnerEntityPersister().getMappedClass(), associationKeyMetadata.getCollectionRole() ),
 				serviceContext.getEntityOptions( getOwnerEntityPersister().getMappedClass() ),
+				getOwnerEntityPersister().getTupleTypeContext(),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				mainSidePropertyName
 		);
@@ -884,4 +885,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			.associationTypeContext( associationTypeContext )
 			.session( session );
 	}
+
+	@Override
+	public OgmEntityPersister getOwnerEntityPersister() {
+		return (OgmEntityPersister) super.getOwnerEntityPersister();
+	}
+
 }

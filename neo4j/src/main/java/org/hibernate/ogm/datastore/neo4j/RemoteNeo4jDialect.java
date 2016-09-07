@@ -18,7 +18,6 @@ import java.util.Set;
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -123,9 +122,8 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		for ( EntityPersister entityPersister : entityPersisters ) {
 			if (entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
-				SessionImplementor currentSession = null;
-				TupleContext tupleContext = ogmEntityPersister.getTupleContext( currentSession );
-				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new RemoteNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), tupleContext ) );
+				TupleTypeContext tupleTypeContext = ogmEntityPersister.getTupleTypeContext();
+				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new RemoteNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), tupleTypeContext ) );
 			}
 		}
 		return queryMap;
@@ -160,8 +158,8 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 						txId,
 						queries,
 						node,
-						context.getAllAssociatedEntityKeyMetadata(),
-						context.getAllRoles(),
+						context.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+						context.getTupleTypeContext().getAllRoles(),
 						key.getMetadata()
 						)
 				);
@@ -204,8 +202,8 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 									txId,
 									entityQueries.get( metadata ),
 									node,
-									tupleContext.getAllAssociatedEntityKeyMetadata(),
-									tupleContext.getAllRoles(),
+									tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+									tupleContext.getTupleTypeContext().getAllRoles(),
 									metadata
 									)
 							);
@@ -451,7 +449,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void removeTupleOperation(EntityKey entityKey, Map<String, Object> ownerNode, TupleOperation operation, Statements statements, TupleContext tupleContext, TransactionContext transactionContext, Set<String> processedAssociationRoles) {
-		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( !tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
 				Statement statement = entityQueries.get( entityKey.getMetadata() ).removeEmbeddedColumnStatement( entityKey.getColumnValues(),
@@ -464,7 +462,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 			}
 		}
 		else {
-			String associationRole = tupleContext.getRole( operation.getColumn() );
+			String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 				Long txId = transactionId( transactionContext );
 				entityQueries.get( entityKey.getMetadata() ).removeToOneAssociation( dataBase, txId, entityKey.getColumnValues(), associationRole );
@@ -473,7 +471,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, Statements statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			// the column represents a to-one association, map it as relationship
 			putOneToOneAssociation( entityKey, tuple, node, toOneAssociations, operation, tupleContext, processedAssociationRoles );
 		}
@@ -491,12 +489,12 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void putOneToOneAssociation(EntityKey ownerKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		String associationRole = tupleContext.getRole( operation.getColumn() );
+		String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 
 		if ( !processedAssociationRoles.contains( associationRole ) ) {
 			processedAssociationRoles.add( associationRole );
 
-			EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+			EntityKey targetKey = getEntityKey( tuple, tupleContext.getTupleTypeContext().getAssociatedEntityKeyMetadata( operation.getColumn() ) );
 
 			toOneAssociations.put( associationRole, targetKey );
 		}

@@ -286,7 +286,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static BasicDBObject getProjection(TupleContext tupleContext) {
-		return getProjection( tupleContext.getSelectableColumns() );
+		return getProjection( tupleContext.getTupleTypeContext().getSelectableColumns() );
 	}
 
 	/**
@@ -1363,7 +1363,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static WriteConcern getWriteConcern(TupleContext tupleContext) {
-		return tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
 	private static WriteConcern getWriteConcern(AssociationContext associationContext) {
@@ -1420,7 +1420,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static ReadPreference getReadPreference(TupleContext tupleContext) {
-		return tupleContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {

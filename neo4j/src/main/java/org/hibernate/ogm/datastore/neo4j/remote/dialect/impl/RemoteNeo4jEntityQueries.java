@@ -32,7 +32,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -51,8 +51,8 @@ public class RemoteNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		this( entityKeyMetadata, null );
 	}
 
-	public RemoteNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		super( entityKeyMetadata, tupleContext, true );
+	public RemoteNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		super( entityKeyMetadata, tupleTypeContext, true );
 	}
 
 	public NodeWithEmbeddedNodes findEntity(RemoteNeo4jClient executionEngine, Long transactionId, Object[] columnValues) {

@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
-import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 
@@ -16,16 +15,7 @@ import org.hibernate.ogm.model.spi.Tuple;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
-public interface AssociationContext {
-
-	/**
-	 * Provides access to the operations queue of the current flush cycle if the active dialect supports the batched
-	 * execution of operations.
-	 *
-	 * @return the operations queue of the current flush or {@code null} if the active dialect does the batched
-	 * execution of operations
-	 */
-	OperationsQueue getOperationsQueue();
+public interface AssociationContext extends OperationContext {
 
 	/**
 	 * Provides context information related to the given association's type.
@@ -41,10 +31,4 @@ public interface AssociationContext {
 	 */
 	Tuple getEntityTuple();
 
-	/**
-	 * Provides the information related to the transactional boundaries the query can be executed
-	 *
-	 * @return a transaction context containing information about the current running transaction, or null
-	 */
-	TransactionContext getTransactionContext();
 }

@@ -67,7 +67,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 		}
 
 		Map<String, Object> objects;
-		if ( tupleContext.getSelectableColumns().isEmpty() ) {
+		if ( tupleContext.getTupleTypeContext().getSelectableColumns().isEmpty() ) {
 			objects = (Map) connection.hgetall( entityIdString );
 		}
 		else {
@@ -85,8 +85,8 @@ public class RedisHashDialect extends AbstractRedisDialect {
 
 	private Map<String, Object> toEntity(TupleContext tupleContext, List<String> hmget) {
 		Map<String, Object> objects = new HashMap<>();
-		for ( int i = 0; i < tupleContext.getSelectableColumns().size(); i++ ) {
-			String columnName = tupleContext.getSelectableColumns().get( i );
+		for ( int i = 0; i < tupleContext.getTupleTypeContext().getSelectableColumns().size(); i++ ) {
+			String columnName = tupleContext.getTupleTypeContext().getSelectableColumns().get( i );
 			String value = hmget.get( i );
 			if ( value == null ) {
 				continue;
@@ -97,7 +97,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	}
 
 	private String[] getFields(TupleContext tupleContext) {
-		return tupleContext.getSelectableColumns().toArray( new String[tupleContext.getSelectableColumns().size()] );
+		return tupleContext.getTupleTypeContext().getSelectableColumns().toArray( new String[tupleContext.getTupleTypeContext().getSelectableColumns().size()] );
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 		List<String> toDelete = getKeysForRemoval( tuple );
 
 		String entityId = entityId( key );
-		Long ttl = getObjectTTL( entityId, tupleContext.getOptionsContext() );
+		Long ttl = getObjectTTL( entityId, tupleContext.getTupleTypeContext().getOptionsContext() );
 
 		if ( !toDelete.isEmpty() ) {
 			connection.hdel( entityId, toDelete.toArray( new String[toDelete.size()] ) );

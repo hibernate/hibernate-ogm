@@ -45,8 +45,8 @@ public class RemoteNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 
 	private Tuple createTuple(NodeWithEmbeddedNodes node) {
 		return new Tuple(
-				new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleContext.getAllAssociatedEntityKeyMetadata(),
-						tupleContext.getAllRoles(), entityKeyMetadata ) );
+				new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+						tupleContext.getTupleTypeContext().getAllRoles(), entityKeyMetadata ) );
 	}
 
 	@Override

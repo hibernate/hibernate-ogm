@@ -34,6 +34,13 @@ public interface AssociationTypeContext {
 	OptionsContext getOwnerEntityOptionsContext();
 
 	/**
+	 * Provide access to the {@link TupleTypeContext} of the entity owner of the association.
+	 *
+	 * @return a context object providing access to the {code TupleTypeContext} of the owner entity.
+	 */
+	TupleTypeContext getOwnerEntityTupleTypeContext();
+
+	/**
 	 * Provides meta-data about the entity key on the other side of this association.
 	 *
 	 * @return A meta-data object providing information about the entity key on the other side of this information.
@@ -49,4 +56,5 @@ public interface AssociationTypeContext {
 	 * association.
 	 */
 	String getRoleOnMainSide();
+
 }

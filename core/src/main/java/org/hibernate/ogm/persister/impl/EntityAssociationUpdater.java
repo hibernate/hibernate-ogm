@@ -189,6 +189,7 @@ class EntityAssociationUpdater {
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( entityType, associationKeyMetadata.getCollectionRole() ),
 				serviceContext.getEntityOptions( entityType ),
+				persister.getTupleTypeContext(),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				persister.getPropertyNames()[propertyIndex]
 		);

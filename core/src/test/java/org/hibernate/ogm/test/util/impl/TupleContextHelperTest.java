@@ -51,7 +51,7 @@ public class TupleContextHelperTest extends OgmTestCase {
 		thrown.expectMessage( "OGM000087" );
 
 		TupleContext tupleContext = TupleContextHelper.tupleContext( (SessionImplementor) openSession(), null );
-		tupleContext.getAllRoles();
+		tupleContext.getTupleTypeContext().getAllRoles();
 	}
 
 	@Test

@@ -8,6 +8,7 @@ package org.hibernate.ogm.dialect.impl;
 
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.options.spi.OptionsContext;
@@ -22,13 +23,16 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 
 	private final OptionsContext optionsContext;
 	private final OptionsContext ownerEntityOptionsContext;
+	private final TupleTypeContext ownerEntityTupleTypeContext;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String roleOnMainSide;
 
 	public AssociationTypeContextImpl(OptionsContext optionsContext, OptionsContext ownerEntityOptionsContext,
+			TupleTypeContext ownerEntityTupleTypeContext,
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide) {
 		this.optionsContext = optionsContext;
 		this.ownerEntityOptionsContext = ownerEntityOptionsContext;
+		this.ownerEntityTupleTypeContext = ownerEntityTupleTypeContext;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.roleOnMainSide = roleOnMainSide;
 	}
@@ -41,6 +45,11 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 	@Override
 	public OptionsContext getOwnerEntityOptionsContext() {
 		return ownerEntityOptionsContext;
+	}
+
+	@Override
+	public TupleTypeContext getOwnerEntityTupleTypeContext() {
+		return ownerEntityTupleTypeContext;
 	}
 
 	/**
