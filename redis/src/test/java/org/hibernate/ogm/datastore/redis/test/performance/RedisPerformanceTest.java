@@ -64,7 +64,7 @@ public class RedisPerformanceTest extends RedisOgmTestCase {
 		int getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getEntity" );
 		int storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "storeEntity" );
 		assertThat( getEntityInvocationCount ).isEqualTo( 1 );
-		assertThat( storeEntityInvocationCount ).isEqualTo( 2 );
+		assertThat( storeEntityInvocationCount ).isEqualTo( 1 );
 
 		// Check that all the counters have been reset to 0
 		getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getEntity" );
@@ -82,7 +82,7 @@ public class RedisPerformanceTest extends RedisOgmTestCase {
 		getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getEntity" );
 		storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "storeEntity" );
 		assertThat( getEntityInvocationCount ).isEqualTo( 1 );
-		assertThat( storeEntityInvocationCount ).isEqualTo( 3 );
+		assertThat( storeEntityInvocationCount ).isEqualTo( 1 );
 
 		// Assert removal has been propagated
 		tx = session.beginTransaction();

@@ -98,7 +98,7 @@ public class MongoDBPerformanceTest extends OgmTestCase {
 		loadInvocationCount = BytemanHelper.getAndResetInvocationCount( "load" );
 		updateInvocationCount = BytemanHelper.getAndResetInvocationCount( "update" );
 		assertThat( loadInvocationCount ).isEqualTo( 1 );
-		assertThat( updateInvocationCount ).isEqualTo( 3 );
+		assertThat( updateInvocationCount ).isEqualTo( 1 );
 
 		//assert removal has been propagated
 		tx = session.beginTransaction();
