@@ -600,7 +600,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				? getEmbeddingEntity( key, associationContext )
 				: associationKeyToObject( key, storageStrategy );
 
-		return new Association( new MongoDBAssociationSnapshot( document, key, storageStrategy ) );
+		Association association = new Association( new MongoDBAssociationSnapshot( document, key, storageStrategy ) );
+		// in the case of an association stored in the entity structure, we might end up with rows present in the
+		// current snapshot of the entity while we want an empty association here. So, in this case, we clear the
+		// snapshot to be sure the association created is empty.
+		if ( !association.isEmpty() ) {
+			association.clear();
+		}
+
+		return association;
 	}
 
 	/**
