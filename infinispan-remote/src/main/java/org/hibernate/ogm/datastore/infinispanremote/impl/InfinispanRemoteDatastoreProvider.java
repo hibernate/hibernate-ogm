@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMapper;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamSerializerSetup;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
@@ -42,6 +43,12 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 				implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final Log log = LoggerFactory.getLogger();
+
+	/**
+	 * The org.infinispan.commons.marshall.Marshaller instance which shall be used
+	 * by our Hot Rod client.
+	 */
+	private final OgmProtoStreamMarshaller marshaller = new OgmProtoStreamMarshaller();
 
 	// Only available during configuration
 	private InfinispanRemoteConfiguration config;
@@ -84,7 +91,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	@Override
 	public void start() {
-		hotrodClient = HotRodClientBuilder.builder().withConfiguration( config ).build();
+		hotrodClient = HotRodClientBuilder.builder().withConfiguration( config, marshaller ).build();
 		hotrodClient.start();
 		config = null; //no longer needed
 	}
@@ -124,10 +131,10 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		//FIXME make this name configurable & give it a sensible default:
 		final String generatedProtobufName = "Hibernate_OGM_Generated_schema.proto";
 		sd.deploySchema( generatedProtobufName, protobufCache, schemaCapture, schemaOverrideService );
-		this.sequences = new HotRodSequenceHandler( this, sd.getSequenceDefinitions() );
+		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
 		setMappedCacheNames( sd );
 		startAndValidateCaches();
-		perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd );
+		perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
 	}
 
 	private void startAndValidateCaches() {

@@ -36,6 +36,7 @@ public final class HotRodSequencer {
 
 	private final RemoteCache<SequenceId, Long> remoteCache;
 	private final SerializationContext serContext;
+	private final OgmProtoStreamMarshaller marshaller;
 	private final int increment;
 	private final SequenceId id;
 
@@ -46,20 +47,22 @@ public final class HotRodSequencer {
 			RemoteCache<SequenceId, Long> remoteCache,
 			SequenceTableDefinition sequenceTableDefinition,
 			NextValueRequest initialRequest,
-			SerializationContext serContext) {
+			SerializationContext serContext,
+			OgmProtoStreamMarshaller marshaller) {
 				this.remoteCache = remoteCache;
 				this.increment = initialRequest.getIncrement();
 				this.serContext = serContext;
+				this.marshaller = marshaller;
 				this.id = new SequenceId( initialRequest.getKey().getColumnValue() );
 	}
 
 	Number getSequenceValue(NextValueRequest request) {
 		try {
-			OgmProtoStreamMarshaller.setCurrentSerializationContext( serContext );
+			marshaller.setCurrentSerializationContext( serContext );
 			return getSequenceValueInternal( request );
 		}
 		finally {
-			OgmProtoStreamMarshaller.setCurrentSerializationContext( null );
+			marshaller.setCurrentSerializationContext( null );
 		}
 	}
 

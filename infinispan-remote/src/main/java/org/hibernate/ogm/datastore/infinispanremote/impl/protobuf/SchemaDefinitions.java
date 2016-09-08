@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMapper;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
@@ -94,10 +95,11 @@ public class SchemaDefinitions {
 		return Collections.unmodifiableSet( unionSet );
 	}
 
-	public Map<String,ProtoDataMapper> generateSchemaMappingAdapters(InfinispanRemoteDatastoreProvider provider, SchemaDefinitions sd) {
+	public Map<String,ProtoDataMapper> generateSchemaMappingAdapters(InfinispanRemoteDatastoreProvider provider,
+			SchemaDefinitions sd, OgmProtoStreamMarshaller marshaller) {
 		Map<String,ProtoDataMapper> adaptersCollector = new HashMap<>();
 		definitionsByTableName.forEach( ( k, v ) ->
-			adaptersCollector.put( k, v.createProtoDataMapper( provider.getCache( k ), sd ) )
+			adaptersCollector.put( k, v.createProtoDataMapper( provider.getCache( k ), sd, marshaller ) )
 			);
 		return Collections.unmodifiableMap( adaptersCollector );
 	}

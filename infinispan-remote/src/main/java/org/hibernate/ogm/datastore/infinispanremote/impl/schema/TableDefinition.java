@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.CompositeProto
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.ProtofieldAccessorSet;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.TypeDeclarationsCollector;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMapper;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamSerializerSetup;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
@@ -74,13 +75,14 @@ public final class TableDefinition implements ProtobufTypeExporter, ProtobufEntr
 		valueComponents.forEach( v -> v.collectTypeDefinitions( typesDefCollector ) );
 	}
 
-	public ProtoDataMapper createProtoDataMapper(RemoteCache remoteCache, SchemaDefinitions sd) {
+	public ProtoDataMapper createProtoDataMapper(RemoteCache remoteCache,
+			SchemaDefinitions sd, OgmProtoStreamMarshaller marshaller) {
 		try {
 			CompositeProtobufCoDec codec = new CompositeProtobufCoDec( tableName,
 					qualify( protobufTypeName ), qualify( protobufIdTypeName ),
 					keyComponents, valueComponents, remoteCache, sd );
 			SerializationContext serializationContext = ProtostreamSerializerSetup.buildSerializationContext( sd, codec );
-			return new ProtoDataMapper( codec, serializationContext );
+			return new ProtoDataMapper( codec, serializationContext, marshaller );
 		}
 		catch (DescriptorParserException | IOException e) {
 			throw new RuntimeException( e );

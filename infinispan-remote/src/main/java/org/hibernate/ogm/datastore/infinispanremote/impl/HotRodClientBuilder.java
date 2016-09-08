@@ -24,6 +24,8 @@ public class HotRodClientBuilder {
 
 	private InfinispanRemoteConfiguration config;
 
+	private OgmProtoStreamMarshaller marshaller;
+
 	private HotRodClientBuilder() {
 		//not to be created directly
 	}
@@ -32,8 +34,9 @@ public class HotRodClientBuilder {
 		return new HotRodClientBuilder();
 	}
 
-	public HotRodClientBuilder withConfiguration(InfinispanRemoteConfiguration config) {
+	public HotRodClientBuilder withConfiguration(InfinispanRemoteConfiguration config, OgmProtoStreamMarshaller marshaller) {
 		this.config = config;
+		this.marshaller = marshaller;
 		return this;
 	}
 
@@ -42,7 +45,7 @@ public class HotRodClientBuilder {
 				new ConfigurationBuilder()
 					.classLoader( HotRodClientBuilder.class.getClassLoader() )
 					.withProperties( getHotRodConfigurationProperties() )
-					.marshaller( new OgmProtoStreamMarshaller() )
+					.marshaller( marshaller )
 					.build() );
 	}
 

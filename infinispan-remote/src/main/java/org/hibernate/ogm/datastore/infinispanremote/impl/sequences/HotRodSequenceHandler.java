@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
@@ -40,12 +41,15 @@ public class HotRodSequenceHandler {
 	private final InfinispanRemoteDatastoreProvider provider;
 	private final ConcurrentMap<String,SequencesPerCache> sequencesPerCache = new ConcurrentHashMap<>();
 	private final Map<String, SequenceTableDefinition> idSchemaPerName;
+	private final OgmProtoStreamMarshaller marshaller;
 
 	public HotRodSequenceHandler(
 			InfinispanRemoteDatastoreProvider infinispanRemoteDatastoreProvider,
+			OgmProtoStreamMarshaller marshaller,
 			Map<String, SequenceTableDefinition> idSchemaPerName) {
 		this.provider = infinispanRemoteDatastoreProvider;
 		this.idSchemaPerName = idSchemaPerName;
+		this.marshaller = marshaller;
 	}
 
 	public Number getSequenceValue(NextValueRequest request) {
@@ -58,7 +62,8 @@ public class HotRodSequenceHandler {
 			return new SequencesPerCache(
 					provider,
 					sequenceTableDefinition,
-					provider.getCache( cacheName )
+					provider.getCache( cacheName ),
+					marshaller
 			);
 		}
 		);

@@ -24,8 +24,10 @@ public final class ProtoDataMapper implements ProtoStreamMappingAdapter, Protost
 
 	private final SerializationContext serContext;
 	private final MainOgmCoDec delegate;
+	private final OgmProtoStreamMarshaller marshaller;
 
-	public ProtoDataMapper(MainOgmCoDec delegate, SerializationContext serContext) throws DescriptorParserException, IOException {
+	public ProtoDataMapper(MainOgmCoDec delegate, SerializationContext serContext, OgmProtoStreamMarshaller marshaller) throws DescriptorParserException, IOException {
+		this.marshaller = marshaller;
 		this.delegate = Objects.requireNonNull( delegate );
 		this.serContext = Objects.requireNonNull( serContext );
 	}
@@ -48,22 +50,22 @@ public final class ProtoDataMapper implements ProtoStreamMappingAdapter, Protost
 	@Override
 	public <T> T withinCacheEncodingContext(CacheOperation<T> function) {
 		try {
-			OgmProtoStreamMarshaller.setCurrentSerializationContext( serContext );
+			marshaller.setCurrentSerializationContext( serContext );
 			return (T) function.doOnCache( delegate.getLinkedCache() );
 		}
 		finally {
-			OgmProtoStreamMarshaller.setCurrentSerializationContext( null );
+			marshaller.setCurrentSerializationContext( null );
 		}
 	}
 
 	@Override
 	public <T> T withinCacheEncodingContext(AssociationCacheOperation<T> function) {
 		try {
-			OgmProtoStreamMarshaller.setCurrentSerializationContext( serContext );
+			marshaller.setCurrentSerializationContext( serContext );
 			return (T) function.doOnCache( delegate.getLinkedCache() );
 		}
 		finally {
-			OgmProtoStreamMarshaller.setCurrentSerializationContext( null );
+			marshaller.setCurrentSerializationContext( null );
 		}
 	}
 
