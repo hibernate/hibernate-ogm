@@ -11,13 +11,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisHashTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.redis.impl.hash.RedisHashTypeConverter;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.Operation;
+import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
@@ -35,6 +40,8 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
@@ -48,8 +55,9 @@ import com.lambdaworks.redis.ScanArgs;
  * JSON serialization of a {@link org.hibernate.ogm.datastore.redis.dialect.value.Association} object in list/set data structures.
  *
  * @author Mark Paluch
+ * @author Guillaume Smet
  */
-public class RedisHashDialect extends AbstractRedisDialect {
+public class RedisHashDialect extends AbstractRedisDialect implements GroupingByEntityDialect {
 
 	public RedisHashDialect(RedisDatastoreProvider provider) {
 		super( provider.getConnection(), provider.isCluster() );
@@ -61,32 +69,31 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	}
 
 	@Override
-	@SuppressWarnings({"unchecked", "rawtypes" })
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		String entityIdString = entityId( key );
 		if ( !connection.exists( entityIdString ) ) {
 			return null;
 		}
 
-		Map<String, Object> objects;
+		Map<String, String> objects;
 		if ( operationContext.getTupleTypeContext().getSelectableColumns().isEmpty() ) {
-			objects = (Map) connection.hgetall( entityIdString );
+			objects = connection.hgetall( entityIdString );
 		}
 		else {
 			List<String> hmget = connection.hmget( entityIdString, getFields( operationContext.getTupleTypeContext() ) );
 			objects = toEntity( operationContext.getTupleTypeContext(), hmget );
 		}
 
-		return new Tuple( new RedisHashTupleSnapshot( objects ) );
+		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( objects ), SnapshotType.UPDATE ) );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new Tuple( new RedisHashTupleSnapshot( new HashMap<String, Object>() ) );
+		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( new HashMap<String, String>() ), SnapshotType.INSERT ) );
 	}
 
-	private Map<String, Object> toEntity(TupleTypeContext tupleTypeContext, List<String> hmget) {
-		Map<String, Object> objects = new HashMap<>();
+	private Map<String, String> toEntity(TupleTypeContext tupleTypeContext, List<String> hmget) {
+		Map<String, String> objects = new HashMap<>();
 		for ( int i = 0; i < tupleTypeContext.getSelectableColumns().size(); i++ ) {
 			String columnName = tupleTypeContext.getSelectableColumns().get( i );
 			String value = hmget.get( i );
@@ -105,74 +112,26 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	@Override
 	public void insertOrUpdateTuple(
 			EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
-
-		Tuple tuple = tuplePointer.getTuple();
-		Map<String, Object> map = ( (RedisHashTupleSnapshot) tuple.getSnapshot() ).getMap();
-		MapHelpers.applyTupleOpsOnMap( tuple, map );
-
-		Map<String, String> entity = getEntityForUpdate( key, tuple );
-		List<String> toDelete = getKeysForRemoval( tuple );
-
-		String entityId = entityId( key );
-		Long ttl = getObjectTTL( entityId, tupleContext.getTupleTypeContext().getOptionsContext() );
-
-		if ( !toDelete.isEmpty() ) {
-			connection.hdel( entityId, toDelete.toArray( new String[toDelete.size()] ) );
-		}
-
-		if ( !entity.isEmpty() ) {
-			connection.hmset( entityId, entity );
-		}
-
-		setObjectTTL( entityId, ttl );
-	}
-
-	private Map<String, String> getEntityForUpdate(EntityKey key, Tuple tuple) {
-		Map<String, String> entity = new HashMap<>();
-		for ( TupleOperation action : tuple.getOperations() ) {
-
-			switch ( action.getType() ) {
-				case PUT:
-					// TODO: IllegalStateException when value is not String/Character?
-					if ( action.getValue() instanceof Character ) {
-						entity.put( action.getColumn(), action.getValue().toString() );
-					}
-					else {
-						entity.put( action.getColumn(), (String) action.getValue() );
-					}
-					break;
-			}
-		}
-		return entity;
-	}
-
-	private List<String> getKeysForRemoval(Tuple tuple) {
-		List<String> toDelete = new ArrayList<>();
-
-		for ( TupleOperation action : tuple.getOperations() ) {
-			switch ( action.getType() ) {
-				case REMOVE:
-				case PUT_NULL:
-					toDelete.add( action.getColumn() );
-					break;
-			}
-		}
-		return toDelete;
+		throw new UnsupportedOperationException( "Method not supported by this dialect anymore" );
 	}
 
 	@Override
 	public Association getAssociation(
 			AssociationKey key, AssociationContext associationContext) {
-		RedisAssociation redisAssociation;
-		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			String entityId = entityId( key.getEntityKey() );
+		RedisAssociation redisAssociation = null;
 
-			if ( !connection.exists( entityId ) ) {
+		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
+			TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( key, associationContext );
+			if ( tuplePointer == null ) {
+				// The entity associated with this association has already been removed
+				// see ManyToOneTest#testRemovalOfTransientEntityWithAssociation
 				return null;
 			}
+			HashEntity owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
 
-			Map<String, String> entity = connection.hgetall( entityId );
-			redisAssociation = RedisAssociation.fromEmbeddedAssociation( entity, key.getMetadata() );
+			if ( owningEntity != null && owningEntity.has( key.getMetadata().getCollectionRole() ) ) {
+				redisAssociation = RedisAssociation.fromHashEmbeddedAssociation( tuplePointer, key.getMetadata() );
+			}
 		}
 		else {
 			org.hibernate.ogm.datastore.redis.dialect.value.Association association = getAssociation( key );
@@ -196,17 +155,20 @@ public class RedisHashDialect extends AbstractRedisDialect {
 
 		RedisAssociation redisAssociation;
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Map<String, String> entity = connection.hgetall( entityId( key.getEntityKey() ) );
-			redisAssociation = RedisAssociation.fromEmbeddedAssociation( entity, key.getMetadata() );
+			TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( key, associationContext );
+			HashEntity owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
+
+			if ( owningEntity == null ) {
+				owningEntity = new HashEntity( new HashMap<String, String>() );
+				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
+				tuplePointer.setTuple( new Tuple( new RedisHashTupleSnapshot( owningEntity, SnapshotType.UPDATE ) ) );
+			}
+
+			redisAssociation = RedisAssociation.fromHashEmbeddedAssociation( tuplePointer, key.getMetadata() );
 
 		}
 		else {
-			org.hibernate.ogm.datastore.redis.dialect.value.Association association = getAssociation( key );
-
-			if ( association == null ) {
-				return null;
-			}
-			redisAssociation = RedisAssociation.fromAssociationDocument( association );
+			redisAssociation = RedisAssociation.fromAssociationDocument( new org.hibernate.ogm.datastore.redis.dialect.value.Association() );
 		}
 
 		return new org.hibernate.ogm.model.spi.Association(
@@ -219,27 +181,7 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	@Override
 	public void insertOrUpdateAssociation(
 			AssociationKey associationKey, Association association, AssociationContext associationContext) {
-		Object rows = getAssociationRows( association, associationKey );
-
-		RedisAssociation redisAssociation = ( (RedisAssociationSnapshot) association.getSnapshot() ).getRedisAssociation();
-		redisAssociation.setRows( rows );
-
-		if ( isStoredInEntityStructure(
-				associationKey.getMetadata(),
-				associationContext.getAssociationTypeContext()
-		) ) {
-			HashEntity owningDocument = (HashEntity) redisAssociation.getOwningDocument();
-			connection.hmset( entityId( associationKey.getEntityKey() ), owningDocument.getEntity() );
-		}
-		else {
-			String associationId = associationId( associationKey );
-			Long ttl = getObjectTTL( associationId, associationContext.getAssociationTypeContext().getOptionsContext() );
-			storeAssociation(
-					associationKey,
-					(org.hibernate.ogm.datastore.redis.dialect.value.Association) redisAssociation.getOwningDocument()
-			);
-			setObjectTTL( associationId, ttl );
-		}
+		throw new UnsupportedOperationException( "Method not supported by this dialect anymore" );
 	}
 
 	private Object getAssociationRows(
@@ -285,11 +227,11 @@ public class RedisHashDialect extends AbstractRedisDialect {
 
 			for ( String key : cursor.getKeys() ) {
 				Map<String, String> hgetall = connection.hgetall( key );
-				Map<String, Object> entity = new HashMap<>();
+				Map<String, String> properties = new HashMap<>();
 
-				entity.putAll( hgetall );
-				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, entity );
-				consumer.consume( new Tuple( new RedisHashTupleSnapshot( entity ) ) );
+				properties.putAll( hgetall );
+				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, properties );
+				consumer.consume( new Tuple( new RedisHashTupleSnapshot( new HashEntity( properties ), SnapshotType.UPDATE ) ) );
 			}
 
 		} while ( !cursor.isFinished() );
@@ -299,16 +241,145 @@ public class RedisHashDialect extends AbstractRedisDialect {
 			EntityKeyMetadata entityKeyMetadata,
 			String prefix,
 			String key,
-			Map<String, Object> document) {
+			Map<String, String> document) {
 		if ( key.startsWith( prefix ) ) {
 
 			String keyWithoutPrefix = key.substring( prefix.length() );
 
-			Map<String, Object> keys = keyToMap( entityKeyMetadata, keyWithoutPrefix );
+			Map<String, String> keys = keyToMap( entityKeyMetadata, keyWithoutPrefix );
 
-			for ( Map.Entry<String, Object> entry : keys.entrySet() ) {
+			for ( Map.Entry<String, String> entry : keys.entrySet() ) {
 				document.put( entry.getKey(), entry.getValue() );
 			}
 		}
 	}
+
+	@Override
+	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation) {
+		String entityId = entityId( groupedOperation.getEntityKey() );
+		HashEntity owningEntity = null;
+		List<String> toDelete = new ArrayList<String>();
+		List<AssociationKey> associationsToRemove = new ArrayList<AssociationKey>();
+		OptionsContext optionsContext = null;
+
+		for ( Operation operation : groupedOperation.getOperations() ) {
+			if ( operation instanceof InsertOrUpdateTupleOperation ) {
+				InsertOrUpdateTupleOperation insertOrUpdateTupleOperation = (InsertOrUpdateTupleOperation) operation;
+				Tuple tuple = insertOrUpdateTupleOperation.getTuplePointer().getTuple();
+				TupleContext tupleContext = insertOrUpdateTupleOperation.getTupleContext();
+
+				if (owningEntity == null) {
+					owningEntity = getEntityFromTuple( tuple );
+				}
+
+				for ( TupleOperation action : tuple.getOperations() ) {
+					switch ( action.getType() ) {
+						case PUT:
+							// TODO: IllegalStateException when value is not String/Character?
+							if ( action.getValue() instanceof Character ) {
+								owningEntity.set( action.getColumn(), action.getValue().toString() );
+							}
+							else {
+								owningEntity.set( action.getColumn(), (String) action.getValue() );
+							}
+							toDelete.remove( action.getColumn() );
+							break;
+						case REMOVE:
+						case PUT_NULL:
+							owningEntity.unset( action.getColumn() );
+							toDelete.add( action.getColumn() );
+							break;
+					}
+				}
+
+				tuple.getSnapshot().setSnapshotType( SnapshotType.UPDATE );
+
+				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
+			}
+			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+				InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+				AssociationKey associationKey = insertOrUpdateAssociationOperation.getAssociationKey();
+				org.hibernate.ogm.model.spi.Association association = insertOrUpdateAssociationOperation.getAssociation();
+				AssociationContext associationContext = insertOrUpdateAssociationOperation.getContext();
+
+				Object rows = getAssociationRows( association, associationKey );
+
+				RedisAssociation redisAssociation = ( (RedisAssociationSnapshot) association.getSnapshot() ).getRedisAssociation();
+				redisAssociation.setRows( rows );
+
+				if ( isStoredInEntityStructure(
+						associationKey.getMetadata(),
+						associationContext.getAssociationTypeContext()
+				) ) {
+					if ( owningEntity == null ) {
+						owningEntity = (HashEntity) redisAssociation.getOwningDocument();
+						optionsContext = associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext();
+					}
+				}
+				else {
+					// We don't want to remove the association anymore as it's superseded by an update
+					associationsToRemove.remove( associationKey );
+
+					String associationId = associationId( associationKey );
+					Long ttl = getObjectTTL( associationId, associationContext.getAssociationTypeContext().getOptionsContext() );
+					storeAssociation(
+							associationKey,
+							(org.hibernate.ogm.datastore.redis.dialect.value.Association) redisAssociation.getOwningDocument()
+					);
+					setObjectTTL( associationId, ttl );
+				}
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
+				AssociationContext associationContext = removeAssociationOperation.getContext();
+
+				if ( isStoredInEntityStructure( associationKey.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
+					if ( owningEntity == null ) {
+						TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( associationKey, associationContext );
+						owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
+					}
+					if ( owningEntity != null ) {
+						owningEntity.unset( associationKey.getMetadata().getCollectionRole() );
+						optionsContext = associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext();
+					}
+					toDelete.add( associationKey.getMetadata().getCollectionRole() );
+				}
+				else {
+					associationsToRemove.add( associationKey );
+				}
+			}
+			else {
+				throw new IllegalStateException( operation.getClass().getSimpleName() + " not supported here" );
+			}
+		}
+
+		if ( owningEntity != null ) {
+			storeEntity( groupedOperation.getEntityKey(), owningEntity, optionsContext );
+		}
+		if ( !toDelete.isEmpty() ) {
+			connection.hdel( entityId, toDelete.toArray( new String[toDelete.size()] ) );
+		}
+		if ( associationsToRemove.size() > 0 ) {
+			removeAssociations( associationsToRemove );
+		}
+	}
+
+	private HashEntity getEntityFromTuple(Tuple tuple) {
+		if ( tuple == null ) {
+			return null;
+		}
+		return ( (RedisHashTupleSnapshot) tuple.getSnapshot() ).getEntity();
+	}
+
+	private void storeEntity(EntityKey key, HashEntity entity, OptionsContext optionsContext) {
+		String entityId = entityId( key );
+
+		if ( !entity.isEmpty() ) {
+			Long currentTtl = getObjectTTL( entityId, optionsContext );
+			connection.hmset( entityId, entity.getProperties() );
+			setObjectTTL( entityId, currentTtl );
+		}
+	}
+
 }

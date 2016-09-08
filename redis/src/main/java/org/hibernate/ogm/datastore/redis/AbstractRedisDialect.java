@@ -25,9 +25,11 @@ import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -287,9 +289,10 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	 * Single key: Use the value from the key
 	 * Multiple keys: De-serialize the JSON map.
 	 */
-	protected Map<String, Object> keyToMap(EntityKeyMetadata entityKeyMetadata, String key) {
+	@SuppressWarnings("unchecked")
+	protected Map<String, String> keyToMap(EntityKeyMetadata entityKeyMetadata, String key) {
 		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
-			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) key );
+			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], key );
 		}
 		return strategy.deserialize( key, Map.class );
 	}
@@ -351,6 +354,19 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		else {
 			connection.rpush( associationId, serializedRows );
 		}
+	}
+
+	/**
+	 * Retrieve entity that contains the association, do not enhance with entity key
+	 */
+	protected TuplePointer getEmbeddingEntityTuplePointer(AssociationKey key, AssociationContext associationContext) {
+		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
+
+		if ( tuplePointer.getTuple() == null ) {
+			tuplePointer.setTuple( getTuple( key.getEntityKey(), associationContext ) );
+		}
+
+		return tuplePointer;
 	}
 
 	/**

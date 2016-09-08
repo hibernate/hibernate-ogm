@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.Map;
-
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
@@ -27,7 +25,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 public abstract class RedisAssociation {
 
 	/**
-	 * Creates a {@link RedisAssociation} from the given {@link Entity} and association name.
+	 * Creates a {@link RedisAssociation} from the given {@link TuplePointer} and association name.
 	 *
 	 * @param tuplePointer a pointer to the owner of the association
 	 * @param associationKeyMetadata association key meta-data
@@ -43,15 +41,15 @@ public abstract class RedisAssociation {
 	/**
 	 * Creates a {@link RedisAssociation} from the given {@link java.util.Map} and association name.
 	 *
-	 * @param entity the owner of the association
+	 * @param tuplePointer a pointer to the owner of the association
 	 * @param associationKeyMetadata association key meta-data
 	 *
 	 * @return a {@link RedisAssociation} representing the association
 	 */
-	public static RedisAssociation fromEmbeddedAssociation(
-			Map<String, String> entity,
+	public static RedisAssociation fromHashEmbeddedAssociation(
+			TuplePointer tuplePointer,
 			AssociationKeyMetadata associationKeyMetadata) {
-		return new HashEmbeddedAssociation( entity, associationKeyMetadata );
+		return new HashEmbeddedAssociation( tuplePointer, associationKeyMetadata );
 	}
 
 	/**

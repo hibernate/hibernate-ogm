@@ -6,9 +6,9 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
@@ -16,27 +16,28 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
  */
 public class RedisHashTupleSnapshot implements TupleSnapshot {
 
-	private final Map<String, Object> map;
+	private final HashEntity entity;
 
-	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
+	private SnapshotType snapshotType;
 
-	public RedisHashTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
+	public RedisHashTupleSnapshot(HashEntity entity, SnapshotType snapshotType) {
+		this.entity = entity;
+		this.snapshotType = snapshotType;
 	}
 
 	@Override
 	public Object get(String column) {
-		return map.get( column );
+		return entity.get( column );
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return map.isEmpty();
+		return entity.isEmpty();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
-		return map.keySet();
+		return entity.getColumnNames();
 	}
 
 	@Override
@@ -49,7 +50,7 @@ public class RedisHashTupleSnapshot implements TupleSnapshot {
 		this.snapshotType = snapshotType;
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	public HashEntity getEntity() {
+		return entity;
 	}
 }

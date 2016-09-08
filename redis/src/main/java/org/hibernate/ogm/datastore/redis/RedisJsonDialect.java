@@ -152,6 +152,8 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 					}
 				}
 
+				tuple.getSnapshot().setSnapshotType( SnapshotType.UPDATE );
+
 				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
@@ -303,17 +305,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		}
 
 		return association;
-	}
-
-	// Retrieve entity that contains the association, do not enhance with entity key
-	private TuplePointer getEmbeddingEntityTuplePointer(AssociationKey key, AssociationContext associationContext) {
-		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
-
-		if ( tuplePointer.getTuple() == null ) {
-			tuplePointer.setTuple( getTuple( key.getEntityKey(), associationContext ) );
-		}
-
-		return tuplePointer;
 	}
 
 	@Override
