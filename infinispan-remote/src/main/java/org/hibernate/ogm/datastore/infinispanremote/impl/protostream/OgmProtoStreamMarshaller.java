@@ -30,9 +30,7 @@ import org.infinispan.protostream.SerializationContext;
  */
 public final class OgmProtoStreamMarshaller extends ProtoStreamMarshaller {
 
-	//FIXME all static threadlocals should die
-	// See https://hibernate.atlassian.net/browse/OGM-1163
-	private static final ThreadLocal<SerializationContext> currentSerializationContext = new ThreadLocal<>();
+	private final ThreadLocal<SerializationContext> currentSerializationContext = new ThreadLocal<>();
 
 	public OgmProtoStreamMarshaller() {
 	}
@@ -42,7 +40,7 @@ public final class OgmProtoStreamMarshaller extends ProtoStreamMarshaller {
 		return currentSerializationContext.get();
 	}
 
-	public static void setCurrentSerializationContext(SerializationContext sc) {
+	public void setCurrentSerializationContext(SerializationContext sc) {
 		currentSerializationContext.set( sc );
 	}
 
