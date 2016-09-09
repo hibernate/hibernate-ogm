@@ -45,7 +45,7 @@ public class GraphAssertions {
 
 		StatementsResponse response = engine.executeQueriesInNewTransaction( statements );
 		validate( response );
-		assertThat( response.getResults().get( 0 ).getData() ).isNotEmpty().as( "Node ["  + node.getAlias() + "] not found, Looked for " + nodeAsCypher + " with parameters: " + node.getParams() );
+		assertThat( response.getResults().get( 0 ).getData() ).as( "Node ["  + node.getAlias() + "] not found, Looked for " + nodeAsCypher + " with parameters: " + node.getParams() ).isNotEmpty();
 		List<Node> nodes = response.getResults().get( 0 ).getData().get( 0 ).getGraph().getNodes();
 
 		Graph.Node nodeFound = nodes.get( 0 );
@@ -130,7 +130,7 @@ public class GraphAssertions {
 		validate( response );
 		List<Node> nodes = response.getResults().get( 0 ).getData().get( 0 ).getGraph().getNodes();
 
-		assertThat( nodes ).isNotEmpty().as( "Relationships not found, Looked for " + relationshipAsCypher + " with parameters: " + relationship.getParams() );
+		assertThat( nodes ).as( "Relationships not found, Looked for " + relationshipAsCypher + " with parameters: " + relationship.getParams() ).isNotEmpty();
 		assertThat( nodes ).hasSize( 1 );
 	}
 
