@@ -7,6 +7,8 @@
 package org.hibernate.ogm.dialect.batch.spi;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * A {@link GridDialect} that can group operations for a given entity.
@@ -16,10 +18,18 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 public interface GroupingByEntityDialect extends GridDialect {
 
 	/**
-	 * Execute all the changes collected for a given entity.
+	 * Execute all the changes collected in the {@link OperationsQueue}.
 	 *
-	 * @param groupedOperation the grouped operation
+	 * @param operationsQueue the operations queue
 	 */
-	void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation);
+	void executeBatch(OperationsQueue operationsQueue);
+
+	/**
+	 * Flush all the pending operations.
+	 *
+	 * @param entityKey the {@link EntityKey} of the entity which is the origin of this operation
+	 * @param tupleContext the {@link TupleContext}
+	 */
+	void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext);
 
 }

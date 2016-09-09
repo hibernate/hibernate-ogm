@@ -25,8 +25,8 @@ import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
+import org.hibernate.ogm.dialect.impl.AbstractGroupingByEntityDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
@@ -47,7 +47,7 @@ import com.lambdaworks.redis.cluster.models.partitions.RedisClusterNode;
 /**
  * @author Mark Paluch
  */
-public abstract class AbstractRedisDialect extends BaseGridDialect {
+public abstract class AbstractRedisDialect extends AbstractGroupingByEntityDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";

@@ -12,11 +12,14 @@ import java.io.Serializable;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
+import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -213,7 +216,12 @@ public class AssociationPersister {
 	 */
 	private void updateHostingEntityIfRequired() {
 		if ( hostingEntity != null && hostingEntityRequiresReadAfterUpdate() ) {
-			EntityPersister entityPersister = getHostingEntityPersister();
+			OgmEntityPersister entityPersister = getHostingEntityPersister();
+
+			if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) ) {
+				( (GroupingByEntityDialect) gridDialect ).flushPendingOperations( getAssociationKey().getEntityKey(),
+						entityPersister.getTupleContext( session ) );
+			}
 
 			entityPersister.processUpdateGeneratedProperties(
 					entityPersister.getIdentifier( hostingEntity, session ),
@@ -242,12 +250,12 @@ public class AssociationPersister {
 		return hostingEntityRequiresReadAfterUpdate;
 	}
 
-	private EntityPersister getHostingEntityPersister() {
+	private OgmEntityPersister getHostingEntityPersister() {
 		if ( hostingEntityPersister == null ) {
 			hostingEntityPersister = session.getFactory().getEntityPersister( hostingEntityType.getName() );
 		}
 
-		return hostingEntityPersister;
+		return (OgmEntityPersister) hostingEntityPersister;
 	}
 
 	/**
@@ -258,7 +266,7 @@ public class AssociationPersister {
 		if ( associationContext == null ) {
 			associationContext = new AssociationContextImpl(
 					associationTypeContext,
-					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuplePointer() : null,
+					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuplePointer() : new TuplePointer(),
 					transactionContext( session )
 			);
 		}

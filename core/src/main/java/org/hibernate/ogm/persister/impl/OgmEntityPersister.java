@@ -41,6 +41,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.compensation.impl.InvocationCollectingGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
@@ -708,7 +709,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		final Tuple resultset = tuplePointer.getTuple();
 		checkVersionAndRaiseSOSE( id, currentVersion, session, resultset );
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.insertOrUpdateTuple( key, tuplePointer, getTupleContext( session ) );
+		insertOrUpdateTuple( key, tuplePointer, hasUpdateGeneratedProperties(), session );
 
 		return nextVersion;
 	}
@@ -1211,13 +1212,21 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					}
 				}
 				else {
-					gridDialect.insertOrUpdateTuple( key, tuplePointer, getTupleContext( session ) );
+					insertOrUpdateTuple( key, tuplePointer, hasUpdateGeneratedProperties(), session );
 				}
 
 				if ( mightRequireInverseAssociationManagement ) {
 					addToInverseAssociations( resultset, j, id, session );
 				}
 			}
+		}
+	}
+
+	public void insertOrUpdateTuple(final EntityKey entityKey, TuplePointer tuplePointer, final boolean forceExecutePending, final SessionImplementor session) {
+		TupleContext tupleContext = getTupleContext( session );
+		gridDialect.insertOrUpdateTuple( entityKey, tuplePointer, tupleContext );
+		if ( forceExecutePending && GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) ) {
+			( (GroupingByEntityDialect) gridDialect ).flushPendingOperations( entityKey, tupleContext );
 		}
 	}
 
@@ -1406,7 +1415,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			dehydrate( resultset, fields, propertiesToInsert, j, id, session );
 
 			try {
-				gridDialect.insertOrUpdateTuple( key, tuplePointer, getTupleContext( session ) );
+				insertOrUpdateTuple( key, tuplePointer, hasInsertGeneratedProperties(), session );
 			}
 			catch ( TupleAlreadyExistsException taee ) {
 				throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), taee );

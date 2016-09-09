@@ -14,7 +14,6 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
-import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
@@ -65,6 +64,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
+	private final GroupingByEntityDialect groupingByEntityGridDialect;
 	private final QueryableGridDialect<T> queryableGridDialect;
 	private final SessionFactoryLifecycleAwareDialect sessionFactoryAwareDialect;
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
@@ -77,6 +77,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		this.gridDialect = gridDialect;
 		this.batchableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, BatchableGridDialect.class );
+		this.groupingByEntityGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, GroupingByEntityDialect.class );
 		this.queryableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, QueryableGridDialect.class );
 		this.sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryLifecycleAwareDialect.class );
 		this.identityColumnAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
@@ -174,11 +175,17 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 	/*
 	 * @see org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect
+	 * @see org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect
 	 */
 
 	@Override
 	public void executeBatch(OperationsQueue queue) {
-		batchableGridDialect.executeBatch( queue );
+		if ( batchableGridDialect != null ) {
+			batchableGridDialect.executeBatch( queue );
+		}
+		else if ( groupingByEntityGridDialect != null ) {
+			groupingByEntityGridDialect.executeBatch( queue );
+		}
 	}
 
 	/*
@@ -292,9 +299,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation operation) {
-		if ( gridDialect instanceof GroupingByEntityDialect ) {
-			( (GroupingByEntityDialect) gridDialect ).executeGroupedChangesToEntity( operation );
-		}
+	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
+		groupingByEntityGridDialect.flushPendingOperations( entityKey, tupleContext );
 	}
 }

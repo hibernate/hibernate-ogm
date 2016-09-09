@@ -93,7 +93,7 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
 		assertThat( onRollbackInvocations.hasNext() ).isFalse();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			GridDialectOperation operation = appliedOperations.next();
@@ -102,24 +102,6 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 			ExecuteBatch batch = operation.as( ExecuteBatch.class );
 			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
 			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
-			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
-			assertThat( batchedOperations.hasNext() ).isFalse();
-		}
-		else if ( currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
-			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
-			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
-
-			GridDialectOperation operation = appliedOperations.next();
-			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
-			ExecuteBatch batch = operation.as( ExecuteBatch.class );
-			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
-			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
-			assertThat( batchedOperations.hasNext() ).isFalse();
-
-			operation = appliedOperations.next();
-			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
-			batch = operation.as( ExecuteBatch.class );
-			batchedOperations = batch.getOperations().iterator();
 			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
 			assertThat( batchedOperations.hasNext() ).isFalse();
 		}
@@ -184,12 +166,7 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
 		assertThat( onRollbackInvocations.hasNext() ).isFalse();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
-			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
-			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
-			assertThat( appliedOperations.next() ).isInstanceOf( ExecuteBatch.class );
-		}
-		else if ( currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 
@@ -198,12 +175,6 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 			ExecuteBatch batch = operation.as( ExecuteBatch.class );
 			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
 			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
-			assertThat( batchedOperations.hasNext() ).isFalse();
-
-			operation = appliedOperations.next();
-			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
-			batch = operation.as( ExecuteBatch.class );
-			batchedOperations = batch.getOperations().iterator();
 			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
 			assertThat( batchedOperations.hasNext() ).isFalse();
 		}

@@ -39,9 +39,9 @@ import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
+import org.hibernate.ogm.dialect.impl.AbstractGroupingByEntityDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
-import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -82,7 +82,7 @@ import org.hibernate.type.Type;
  * @author Gunnar Morling
  * @author Guillaume Smet
  */
-public class CouchDBDialect extends BaseGridDialect implements GroupingByEntityDialect {
+public class CouchDBDialect extends AbstractGroupingByEntityDialect implements GroupingByEntityDialect {
 
 	private final CouchDBDatastoreProvider provider;
 

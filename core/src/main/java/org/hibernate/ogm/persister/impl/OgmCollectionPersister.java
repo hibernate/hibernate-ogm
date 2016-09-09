@@ -618,6 +618,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, AssociationKey associationKey, Tuple associationRow, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
@@ -645,12 +646,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.insertOrUpdateTuple( entityKey, entityTuplePointer, persister.getTupleContext( session ) );
+			persister.insertOrUpdateTuple( entityKey, entityTuplePointer, persister.hasUpdateGeneratedProperties() || persister.hasInsertGeneratedProperties(), session );
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( associationRow, elementColumnNames );
-			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
+			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, elementColumnNames, session, null );
 
 			if ( inverseCollectionPersister == null ) {
 				return;

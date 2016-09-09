@@ -16,6 +16,7 @@ import org.hibernate.ogm.compensation.operation.CreateAssociationWithKey;
 import org.hibernate.ogm.compensation.operation.CreateTuple;
 import org.hibernate.ogm.compensation.operation.CreateTupleWithKey;
 import org.hibernate.ogm.compensation.operation.ExecuteBatch;
+import org.hibernate.ogm.compensation.operation.FlushPendingOperations;
 import org.hibernate.ogm.compensation.operation.GridDialectOperation;
 import org.hibernate.ogm.compensation.operation.InsertOrUpdateAssociation;
 import org.hibernate.ogm.compensation.operation.InsertTuple;
@@ -26,6 +27,7 @@ import org.hibernate.ogm.compensation.operation.impl.CreateAssociationWithKeyImp
 import org.hibernate.ogm.compensation.operation.impl.CreateTupleImpl;
 import org.hibernate.ogm.compensation.operation.impl.CreateTupleWithKeyImpl;
 import org.hibernate.ogm.compensation.operation.impl.ExecuteBatchImpl;
+import org.hibernate.ogm.compensation.operation.impl.FlushPendingOperationsImpl;
 import org.hibernate.ogm.compensation.operation.impl.InsertOrUpdateAssociationImpl;
 import org.hibernate.ogm.compensation.operation.impl.InsertOrUpdateTupleImpl;
 import org.hibernate.ogm.compensation.operation.impl.InsertTupleImpl;
@@ -126,21 +128,41 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation operation) {
+	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
+		OperationsQueue queue = tupleContext.getOperationsQueue();
+		OperationsQueue newQueue = new OperationsQueue();
 		List<GridDialectOperation> operations = new ArrayList<>();
-		for ( Operation groupedOperation : operation.getOperations() ) {
-			operations.add( getSimpleGridDialectOperations( groupedOperation ) );
+
+		if ( !queue.isClosed() ) {
+			Operation operation = queue.poll();
+
+			// TODO OGM-766 Avoid the looping + re-creation
+			while ( operation != null ) {
+				newQueue.add( operation );
+
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					GroupedChangesToEntityOperation groupedChangesOnEntity = (GroupedChangesToEntityOperation) operation;
+					for (Operation groupedOperation : groupedChangesOnEntity.getOperations()) {
+						operations.add( getSimpleGridDialectOperations( groupedOperation ) );
+					}
+				}
+				else {
+					operations.add( getSimpleGridDialectOperations( operation ) );
+				}
+
+				operation = queue.poll();
+			}
 		}
 
-		ExecuteBatch executeBatch = new ExecuteBatchImpl( operations );
+		FlushPendingOperations flushPendingOperations = new FlushPendingOperationsImpl( operations );
 		try {
-			super.executeGroupedChangesToEntity( operation );
+			super.flushPendingOperations( entityKey, tupleContext );
 		}
 		catch (Exception e) {
-			handleException( executeBatch, e );
+			handleException( flushPendingOperations, e );
 		}
 
-		handleAppliedOperation( executeBatch );
+		handleAppliedOperation( flushPendingOperations );
 	}
 
 	private GridDialectOperation getSimpleGridDialectOperations(Operation operation) {

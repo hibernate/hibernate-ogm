@@ -9,11 +9,9 @@ package org.hibernate.ogm.dialect.impl;
 import java.io.Serializable;
 
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
-import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
@@ -76,11 +74,9 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		log.tracef( "Executing batch" );
 
 		try {
-			if ( GridDialects.hasFacet( getGridDialect(), BatchableGridDialect.class ) ) {
+			if ( GridDialects.hasFacet( getGridDialect(), BatchableGridDialect.class )
+					|| GridDialects.hasFacet( getGridDialect(), GroupingByEntityDialect.class ) ) {
 				super.executeBatch( operationsQueue );
-			}
-			else if ( GridDialects.hasFacet( getGridDialect(), GroupingByEntityDialect.class ) ) {
-				executeOperations( operationsQueue );
 			}
 		}
 		catch ( TupleAlreadyExistsException taee ) {
@@ -155,30 +151,16 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		}
 	}
 
-	private void executeOperations(OperationsQueue queue) {
-		if ( !queue.isClosed() ) {
-			Operation operation = queue.poll();
-
-			while ( operation != null ) {
-				if ( operation instanceof GroupedChangesToEntityOperation ) {
-					GroupedChangesToEntityOperation entityOperation = (GroupedChangesToEntityOperation) operation;
-					super.executeGroupedChangesToEntity( entityOperation );
-				}
-				else if ( operation instanceof RemoveTupleOperation ) {
-					RemoveTupleOperation removeTupleOperation = (RemoveTupleOperation) operation;
-					super.removeTuple( removeTupleOperation.getEntityKey(), removeTupleOperation.getTupleContext() );
-				}
-				else {
-					throw new UnsupportedOperationException( "Operation not supported: " + operation.getClass().getSimpleName() );
-				}
-				operation = queue.poll();
-			}
-
-			queue.clear();
-		}
+	@Override
+	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
+		super.flushPendingOperations( entityKey, withQueue( tupleContext ) );
 	}
 
 	private AssociationContext withQueue(AssociationContext associationContext) {
 		return new AssociationContextImpl( (AssociationContextImpl) associationContext, getOperationQueue() );
+	}
+
+	private TupleContext withQueue(TupleContext tupleContext) {
+		return new TupleContextImpl( (TupleContextImpl) tupleContext, getOperationQueue() );
 	}
 }
