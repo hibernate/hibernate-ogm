@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.Session;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
@@ -725,12 +726,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				// shortcut to avoid loop if we can
 				if ( associationType != AssociationType.OTHER ) {
 					for ( RowKey assocEntryKey : association.getKeys() ) {
+						Tuple associationRow = association.get( assocEntryKey );
+						Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
+						@SuppressWarnings("unchecked")
+						Object entity = ( (Session) session ).get( getElementPersister().getMappedClass(), entityId );
+
 						// we unfortunately cannot mass change the update of the associated entity
 						updateInverseSideOfAssociationNavigation(
 								session,
-								null,
+								entity,
 								associationPersister.getAssociationKey(),
-								association.get( assocEntryKey ),
+								associationRow,
 								Action.REMOVE,
 								assocEntryKey
 								);
