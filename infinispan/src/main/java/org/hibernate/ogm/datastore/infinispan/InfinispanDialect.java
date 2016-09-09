@@ -40,6 +40,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -113,7 +114,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 			return null;
 		}
 		else {
-			return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
+			return new Tuple( new InfinispanTupleSnapshot( atomicMap ), SnapshotType.UPDATE );
 		}
 	}
 
@@ -124,7 +125,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
 		EK cacheKey = getKeyProvider().getEntityCacheKey( key );
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, true );
-		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
+		return new Tuple( new InfinispanTupleSnapshot( atomicMap ), SnapshotType.INSERT );
 	}
 
 	@Override

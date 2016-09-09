@@ -6,9 +6,6 @@
  */
 package org.hibernate.ogm.datastore.redis;
 
-import static org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType.INSERT;
-import static org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType.UPDATE;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,8 +45,8 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
-import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
@@ -87,7 +84,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
 
 		if ( entity != null ) {
-			return new Tuple( new RedisJsonTupleSnapshot( entity, UPDATE ) );
+			return new Tuple( new RedisJsonTupleSnapshot( entity ), SnapshotType.UPDATE );
 		}
 		else if ( isInTheInsertionQueue( key, operationContext ) ) {
 			return createTuple( key, operationContext );
@@ -99,7 +96,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new Tuple( new RedisJsonTupleSnapshot( new Entity(), INSERT ) );
+		return new Tuple( new RedisJsonTupleSnapshot( new Entity() ), SnapshotType.INSERT );
 	}
 
 	@Override
@@ -152,7 +149,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 					}
 				}
 
-				tuple.getSnapshot().setSnapshotType( SnapshotType.UPDATE );
+				tuple.setSnapshotType( SnapshotType.UPDATE );
 
 				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
 			}
@@ -282,7 +279,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			if ( owningEntity == null ) {
 				owningEntity = new Entity();
 				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
-				tuplePointer.setTuple( new Tuple( new RedisJsonTupleSnapshot( owningEntity, UPDATE ) ) );
+				tuplePointer.setTuple( new Tuple( new RedisJsonTupleSnapshot( owningEntity ), SnapshotType.UPDATE ) );
 			}
 
 			redisAssociation = RedisAssociation.fromEmbeddedAssociation( tuplePointer, key.getMetadata() );
@@ -387,7 +384,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
 
-				consumer.consume( new Tuple( new RedisJsonTupleSnapshot( document, SnapshotType.UPDATE ) ) );
+				consumer.consume( new Tuple( new RedisJsonTupleSnapshot( document ), SnapshotType.UPDATE ) );
 			}
 
 		} while ( !cursor.isFinished() );
@@ -436,7 +433,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			if ( entity != null ) {
 				EntityKey key = keys[i];
 				addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
-				tuples.add( new Tuple( new RedisJsonTupleSnapshot( entity, SnapshotType.UPDATE ) ) );
+				tuples.add( new Tuple( new RedisJsonTupleSnapshot( entity ), SnapshotType.UPDATE ) );
 			}
 			else {
 				tuples.add( null );

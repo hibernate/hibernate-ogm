@@ -56,6 +56,7 @@ import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -158,7 +159,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 						context.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
 						context.getTupleTypeContext().getAllRoles(),
 						key.getMetadata()
-				)
+				), SnapshotType.UPDATE
 		);
 	}
 
@@ -194,7 +195,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
 							tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
 							tupleContext.getTupleTypeContext().getAllRoles(),
-							keys[i].getMetadata() ) );
+							keys[i].getMetadata() ), SnapshotType.UPDATE );
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -217,7 +218,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext tupleContext) {
-		return new Tuple( EmbeddedNeo4jTupleSnapshot.emptySnapshot( key.getMetadata() ) );
+		return new Tuple( EmbeddedNeo4jTupleSnapshot.emptySnapshot( key.getMetadata() ), SnapshotType.INSERT );
 	}
 
 	@Override
@@ -345,7 +346,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 				AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
 				EmbeddedNeo4jTupleAssociationSnapshot snapshot = new EmbeddedNeo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
 				RowKey rowKey = convert( associationKey, snapshot );
-				tuples.put( rowKey, new Tuple( snapshot ) );
+				tuples.put( rowKey, new Tuple( snapshot, SnapshotType.UPDATE ) );
 			}
 			return tuples;
 		}
@@ -567,7 +568,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 				Node next = queryNodes.next();
 				Tuple tuple = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( next,
 						tupleTypeContext.getAllAssociatedEntityKeyMetadata(), tupleTypeContext.getAllRoles(),
-						entityKeyMetadata ) );
+						entityKeyMetadata ), SnapshotType.UPDATE );
 				consumer.consume( tuple );
 			}
 		}

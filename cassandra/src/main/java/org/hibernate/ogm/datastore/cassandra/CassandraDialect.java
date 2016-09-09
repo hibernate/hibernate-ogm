@@ -57,6 +57,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -164,7 +165,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		}
 
 		Row row = resultSet.one();
-		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) );
+		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE );
 		return tuple;
 	}
 
@@ -172,7 +173,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		Map<String, Object> toSave = new HashMap<String, Object>();
 		toSave.put( key.getColumnNames()[0], key.getColumnValues()[0] );
-		return new Tuple( new MapTupleSnapshot( toSave ) );
+		return new Tuple( new MapTupleSnapshot( toSave ), SnapshotType.INSERT );
 	}
 
 	@Override
@@ -460,7 +461,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		Iterator<Row> iter = resultSet.iterator();
 		while ( iter.hasNext() ) {
 			Row row = iter.next();
-			consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) ) );
+			consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE ) );
 		}
 	}
 

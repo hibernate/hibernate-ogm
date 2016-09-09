@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementResult;
 import org.hibernate.ogm.datastore.neo4j.remote.json.impl.StatementsResponse;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
 /**
  * Iterates over the results of a native query when each result is not mapped by an entity
@@ -52,7 +53,7 @@ public class RemoteNeo4jMapsTupleIterator implements ClosableIterator<Tuple> {
 		for ( int i = 0; i < columns.size(); i++ ) {
 			properties.put( columns.get( i ), next.getRow().get( i ) );
 		}
-		return new Tuple( new MapTupleSnapshot( properties ) );
+		return new Tuple( new MapTupleSnapshot( properties ), SnapshotType.UPDATE );
 	}
 
 	@Override

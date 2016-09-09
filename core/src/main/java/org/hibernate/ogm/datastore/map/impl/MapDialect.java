@@ -33,6 +33,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -76,7 +77,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 			return null;
 		}
 		else {
-			return new Tuple( new MapTupleSnapshot( entityMap ) );
+			return new Tuple( new MapTupleSnapshot( entityMap ), SnapshotType.UPDATE );
 		}
 	}
 
@@ -86,7 +87,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 		List<Tuple> results = new ArrayList<>( mapResults.size() );
 		// should be done with a lambda for the tuple creation but that's for demo purposes
 		for ( Map<String, Object> entry : mapResults ) {
-			results.add( entry != null ? new Tuple( new MapTupleSnapshot( entry ) ) : null );
+			results.add( entry != null ? new Tuple( new MapTupleSnapshot( entry ), SnapshotType.UPDATE ) : null );
 		}
 		return results;
 	}
@@ -95,7 +96,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		HashMap<String,Object> tuple = new HashMap<String, Object>();
 		provider.putEntity( key, tuple );
-		return new Tuple( new MapTupleSnapshot( tuple ) );
+		return new Tuple( new MapTupleSnapshot( tuple ), SnapshotType.INSERT );
 	}
 
 	@Override
@@ -149,7 +150,7 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
 		for ( EntityKey key : entityMap.keySet() ) {
 			if ( key.getTable().equals( metadata.getTable() ) ) {
-				consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ) ) );
+				consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ), SnapshotType.UPDATE ) );
 			}
 		}
 	}

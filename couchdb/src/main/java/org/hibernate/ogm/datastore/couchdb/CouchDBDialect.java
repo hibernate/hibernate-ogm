@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.couchdb;
 
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-import static org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType.UPDATE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,8 +58,8 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
-import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
@@ -94,7 +93,7 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
-			return new Tuple( new CouchDBTupleSnapshot( entity, SnapshotType.UPDATE ) );
+			return new Tuple( new CouchDBTupleSnapshot( entity ), SnapshotType.UPDATE );
 		}
 		else if ( isInTheInsertionQueue( key, operationContext ) ) {
 			return createTuple( key, operationContext );
@@ -106,7 +105,7 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new Tuple( new CouchDBTupleSnapshot( new EntityDocument( key ), SnapshotType.INSERT ) );
+		return new Tuple( new CouchDBTupleSnapshot( new EntityDocument( key ) ), SnapshotType.INSERT );
 	}
 
 	@Override
@@ -124,7 +123,7 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 				Tuple tuple = insertOrUpdateTupleOperation.getTuplePointer().getTuple();
 				TupleContext tupleContext = insertOrUpdateTupleOperation.getTupleContext();
 
-				if ( SnapshotType.INSERT.equals( tuple.getSnapshot().getSnapshotType() ) ) {
+				if ( SnapshotType.INSERT.equals( tuple.getSnapshotType() ) ) {
 					snapshotType = SnapshotType.INSERT;
 				}
 
@@ -286,7 +285,7 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 			EntityDocument owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
 			if ( owningEntity == null ) {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
-				tuplePointer.setTuple( new Tuple( new CouchDBTupleSnapshot( owningEntity, UPDATE ) ) );
+				tuplePointer.setTuple( new Tuple( new CouchDBTupleSnapshot( owningEntity ), SnapshotType.UPDATE ) );
 			}
 
 			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( tuplePointer, key.getMetadata() );

@@ -12,6 +12,7 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
 /**
  * Iterates over the result of a native query when each result is a neo4j node. This is the case when the result of
@@ -46,7 +47,7 @@ public class RemoteNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 	private Tuple createTuple(NodeWithEmbeddedNodes node) {
 		return new Tuple(
 				new RemoteNeo4jTupleSnapshot( dataBase, txId, entityQueries, node, tupleTypeContext.getAllAssociatedEntityKeyMetadata(),
-						tupleTypeContext.getAllRoles(), entityKeyMetadata ) );
+						tupleTypeContext.getAllRoles(), entityKeyMetadata ), SnapshotType.UPDATE );
 	}
 
 	@Override

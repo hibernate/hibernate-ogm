@@ -17,8 +17,6 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
 public final class MapTupleSnapshot implements TupleSnapshot {
 	private final Map<String, Object> map;
 
-	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
-
 	public MapTupleSnapshot(Map<String, Object> map) {
 		this.map = map;
 	}
@@ -39,15 +37,5 @@ public final class MapTupleSnapshot implements TupleSnapshot {
 
 	public Map<String, Object> getMap() {
 		return map;
-	}
-
-	@Override
-	public SnapshotType getSnapshotType() {
-		return snapshotType;
-	}
-
-	@Override
-	public void setSnapshotType(SnapshotType snapshotType) {
-		this.snapshotType = snapshotType;
 	}
 }

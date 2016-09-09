@@ -20,11 +20,9 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
 public class CouchDBTupleSnapshot implements TupleSnapshot {
 
 	private final EntityDocument entity;
-	private SnapshotType snapshotType;
 
-	public CouchDBTupleSnapshot(EntityDocument entity, SnapshotType snapshotType) {
+	public CouchDBTupleSnapshot(EntityDocument entity) {
 		this.entity = entity;
-		this.snapshotType = snapshotType;
 	}
 
 	@Override
@@ -40,16 +38,6 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return entity.getKeys();
-	}
-
-	@Override
-	public SnapshotType getSnapshotType() {
-		return snapshotType;
-	}
-
-	@Override
-	public void setSnapshotType(SnapshotType snapshotType) {
-		this.snapshotType = snapshotType;
 	}
 
 	public EntityDocument getEntity() {

@@ -21,6 +21,7 @@ import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ public class EmbeddableStateFinderTest {
 		tupleData.put( "nested3.null1.b2", null );
 		tupleData.put( "nested3.null2", null );
 
-		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleData ) );
+		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleData ), SnapshotType.UPDATE );
 
 		TupleContext context = new TupleContext() {
 			@Override

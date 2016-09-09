@@ -11,6 +11,7 @@ import java.util.Map;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 
@@ -39,6 +40,6 @@ public class EmbeddedNeo4jNodesTupleIterator extends EmbeddedNeo4jMapsTupleItera
 	private Tuple createTuple(Node node) {
 		return new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
 				tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(), tupleContext.getTupleTypeContext().getAllRoles(),
-				entityKeyMetadata ) );
+				entityKeyMetadata ), SnapshotType.UPDATE );
 	}
 }

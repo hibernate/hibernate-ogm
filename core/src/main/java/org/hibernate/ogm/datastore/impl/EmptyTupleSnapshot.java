@@ -18,8 +18,6 @@ public final class EmptyTupleSnapshot implements TupleSnapshot {
 
 	public static final TupleSnapshot INSTANCE = new EmptyTupleSnapshot();
 
-	private SnapshotType snapshotType = SnapshotType.UNKNOWN;
-
 	private EmptyTupleSnapshot() {
 	}
 
@@ -36,15 +34,5 @@ public final class EmptyTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return Collections.emptySet();
-	}
-
-	@Override
-	public SnapshotType getSnapshotType() {
-		return snapshotType;
-	}
-
-	@Override
-	public void setSnapshotType(SnapshotType snapshotType) {
-		this.snapshotType = snapshotType;
 	}
 }

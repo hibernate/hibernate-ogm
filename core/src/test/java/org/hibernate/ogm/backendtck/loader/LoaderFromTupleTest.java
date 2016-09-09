@@ -24,6 +24,7 @@ import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.persister.entity.EntityPersister;
@@ -48,7 +49,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 		EntityKey key = new EntityKey( new DefaultEntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
 		Map<String, Object> entityTuple = extractEntityTuple( session, key );
-		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ) );
+		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ), SnapshotType.UPDATE );
 
 		EntityPersister persister = ( (SessionFactoryImplementor) session.getSessionFactory() )
 				.getEntityPersister( Feeling.class.getName() );

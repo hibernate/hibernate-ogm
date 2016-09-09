@@ -12,6 +12,7 @@ import java.util.Set;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -28,7 +29,7 @@ public final class MapAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey column) {
 		Map<String, Object> rawResult = associationMap.get( column );
-		return rawResult != null ? new Tuple( new MapTupleSnapshot( rawResult ) ) : null;
+		return rawResult != null ? new Tuple( new MapTupleSnapshot( rawResult ), SnapshotType.UPDATE ) : null;
 	}
 
 	@Override

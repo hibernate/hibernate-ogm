@@ -22,7 +22,7 @@ import org.hibernate.ogm.datastore.impl.SetFromCollection;
 /**
  * Represents a Tuple (think of it as a row)
  *
- * A tuple accepts a TupleShapshot which is a read-only state
+ * A tuple accepts a TupleSnapshot which is a read-only state
  * of the tuple at creation time.
  *
  * A tuple collects changes applied to it. These changes are represented by a
@@ -34,15 +34,30 @@ import org.hibernate.ogm.datastore.impl.SetFromCollection;
  */
 public class Tuple {
 
+	/**
+	 * Identifies the purpose of a {@link TupleSnapshot}.
+	 */
+	public enum SnapshotType {
+		INSERT,
+		UPDATE,
+		/**
+		 * This one is used by dialects not implementing completely the snapshot paradigm.
+		 */
+		UNKNOWN
+	}
+
 	private final TupleSnapshot snapshot;
 	private Map<String, TupleOperation> currentState = null; //lazy initialize the Map as it costs quite some memory
+	private SnapshotType snapshotType;
 
 	public Tuple() {
 		this.snapshot = EmptyTupleSnapshot.INSTANCE;
+		this.snapshotType = SnapshotType.INSERT;
 	}
 
-	public Tuple(TupleSnapshot snapshot) {
+	public Tuple(TupleSnapshot snapshot, SnapshotType snapshotType) {
 		this.snapshot = snapshot;
+		this.snapshotType = snapshotType;
 	}
 
 	public Object get(String column) {
@@ -97,6 +112,14 @@ public class Tuple {
 
 	public TupleSnapshot getSnapshot() {
 		return snapshot;
+	}
+
+	public SnapshotType getSnapshotType() {
+		return snapshotType;
+	}
+
+	public void setSnapshotType(SnapshotType snapshotType) {
+		this.snapshotType = snapshotType;
 	}
 
 	public Set<String> getColumnNames() {

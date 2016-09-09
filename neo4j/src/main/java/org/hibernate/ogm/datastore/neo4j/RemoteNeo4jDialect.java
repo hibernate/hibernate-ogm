@@ -18,7 +18,6 @@ import java.util.Set;
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.dialect.impl.NodeWithEmbeddedNodes;
@@ -64,6 +63,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
@@ -164,8 +164,9 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 						context.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
 						context.getTupleTypeContext().getAllRoles(),
 						key.getMetadata()
-						)
-				);
+				),
+				SnapshotType.UPDATE
+		);
 	}
 
 	@Override
@@ -208,8 +209,9 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 									tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
 									tupleContext.getTupleTypeContext().getAllRoles(),
 									metadata
-									)
-							);
+							),
+							SnapshotType.UPDATE
+					);
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -226,7 +228,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		Statements statements = new Statements();
 		Map<String, Object> properties = new HashMap<>();
 		applyTupleOperations( key, tuple, properties, toOneAssociations, statements, tuple.getOperations(), tupleContext, tupleContext.getTransactionContext() );
-		if ( tuple.getSnapshot() instanceof EmptyTupleSnapshot ) {
+		if ( SnapshotType.INSERT.equals( tuple.getSnapshotType() ) ) {
 			Statement statement = entityQueries.get( key.getMetadata() ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
 			statements.getStatements().add( 0, statement );
 		}
@@ -237,6 +239,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		Long txId = transactionId( tupleContext.getTransactionContext() );
 		StatementsResponse readEntity = dataBase.executeQueriesInOpenTransaction( txId, statements );
 		validate( readEntity, key, tuple );
+		tuple.setSnapshotType( SnapshotType.UPDATE );
 	}
 
 	private Long transactionId(TransactionContext context) {
@@ -364,7 +367,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 			RemoteNeo4jTupleAssociationSnapshot snapshot = new RemoteNeo4jTupleAssociationSnapshot( dataBase,
 					associationQueries.get( associationKey.getMetadata() ), row, associationKey, associatedEntityKeyMetadata );
 			RowKey rowKey = convert( associationKey, snapshot );
-			tuples.put( rowKey, new Tuple( snapshot ) );
+			tuples.put( rowKey, new Tuple( snapshot, SnapshotType.UPDATE ) );
 		}
 		return tuples;
 	}
@@ -514,7 +517,7 @@ public class RemoteNeo4jDialect extends BaseNeo4jDialect {
 		ClosableIterator<NodeWithEmbeddedNodes> queryNodes = entityQueries.get( entityKeyMetadata ).findEntitiesWithEmbedded( dataBase, txId );
 		while ( queryNodes.hasNext() ) {
 			NodeWithEmbeddedNodes next = queryNodes.next();
-			Tuple tuple = new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, txId, queries, next, entityKeyMetadata ) );
+			Tuple tuple = new Tuple( new RemoteNeo4jTupleSnapshot( dataBase, txId, queries, next, entityKeyMetadata ), SnapshotType.UPDATE );
 			consumer.consume( tuple );
 		}
 	}

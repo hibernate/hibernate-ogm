@@ -39,8 +39,8 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
-import org.hibernate.ogm.model.spi.TupleSnapshot.SnapshotType;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
@@ -84,12 +84,12 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 			objects = toEntity( operationContext.getTupleTypeContext(), hmget );
 		}
 
-		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( objects ), SnapshotType.UPDATE ) );
+		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( objects ) ), SnapshotType.UPDATE );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( new HashMap<String, String>() ), SnapshotType.INSERT ) );
+		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( new HashMap<String, String>() ) ), SnapshotType.INSERT );
 	}
 
 	private Map<String, String> toEntity(TupleTypeContext tupleTypeContext, List<String> hmget) {
@@ -161,7 +161,7 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 			if ( owningEntity == null ) {
 				owningEntity = new HashEntity( new HashMap<String, String>() );
 				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
-				tuplePointer.setTuple( new Tuple( new RedisHashTupleSnapshot( owningEntity, SnapshotType.UPDATE ) ) );
+				tuplePointer.setTuple( new Tuple( new RedisHashTupleSnapshot( owningEntity ), SnapshotType.UPDATE ) );
 			}
 
 			redisAssociation = RedisAssociation.fromHashEmbeddedAssociation( tuplePointer, key.getMetadata() );
@@ -231,7 +231,7 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 
 				properties.putAll( hgetall );
 				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, properties );
-				consumer.consume( new Tuple( new RedisHashTupleSnapshot( new HashEntity( properties ), SnapshotType.UPDATE ) ) );
+				consumer.consume( new Tuple( new RedisHashTupleSnapshot( new HashEntity( properties ) ), SnapshotType.UPDATE ) );
 			}
 
 		} while ( !cursor.isFinished() );
@@ -292,7 +292,7 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 					}
 				}
 
-				tuple.getSnapshot().setSnapshotType( SnapshotType.UPDATE );
+				tuple.setSnapshotType( SnapshotType.UPDATE );
 
 				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
 			}

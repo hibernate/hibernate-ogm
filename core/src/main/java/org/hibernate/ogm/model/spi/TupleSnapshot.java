@@ -27,18 +27,6 @@ import java.util.Set;
 public interface TupleSnapshot {
 
 	/**
-	 * Identifies the purpose of a {@link TupleSnapshot}.
-	 */
-	public enum SnapshotType {
-		INSERT,
-		UPDATE,
-		/**
-		 * This one is used by dialects not implementing completely the snapshot paradigm.
-		 */
-		UNKNOWN
-	}
-
-	/**
 	 * Get the value of a column in the tuple
 	 *
 	 * @param column the name of the column
@@ -59,19 +47,5 @@ public interface TupleSnapshot {
 	 * @return the columns names
 	 */
 	Set<String> getColumnNames();
-
-	/**
-	 * Get the type of this snapshot
-	 *
-	 * @return the type of the snapshot
-	 */
-	SnapshotType getSnapshotType();
-
-	/**
-	 * Set the type of this snapshot
-	 *
-	 * @param snapshotType the new {@link SnapshotType}
-	 */
-	void setSnapshotType(SnapshotType snapshotType);
 
 }

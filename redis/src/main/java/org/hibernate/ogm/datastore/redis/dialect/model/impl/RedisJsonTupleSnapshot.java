@@ -18,11 +18,8 @@ public class RedisJsonTupleSnapshot implements TupleSnapshot {
 
 	private final Entity entity;
 
-	private SnapshotType snapshotType;
-
-	public RedisJsonTupleSnapshot(Entity entity, SnapshotType snapshotType) {
+	public RedisJsonTupleSnapshot(Entity entity) {
 		this.entity = entity;
-		this.snapshotType = snapshotType;
 	}
 
 	@Override
@@ -38,15 +35,6 @@ public class RedisJsonTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return entity.getKeys();
-	}
-
-	@Override
-	public SnapshotType getSnapshotType() {
-		return snapshotType;
-	}
-
-	public void setSnapshotType(SnapshotType snapshotType) {
-		this.snapshotType = snapshotType;
 	}
 
 	public Entity getEntity() {

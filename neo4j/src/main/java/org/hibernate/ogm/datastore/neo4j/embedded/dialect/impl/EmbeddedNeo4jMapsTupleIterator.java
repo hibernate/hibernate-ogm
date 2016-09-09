@@ -11,6 +11,7 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Result;
 
@@ -38,7 +39,7 @@ public class EmbeddedNeo4jMapsTupleIterator implements ClosableIterator<Tuple> {
 	}
 
 	protected Tuple convert(Map<String, Object> next) {
-		return new Tuple( new MapTupleSnapshot( next ) );
+		return new Tuple( new MapTupleSnapshot( next ), SnapshotType.UPDATE );
 	}
 
 	@Override

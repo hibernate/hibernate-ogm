@@ -28,12 +28,10 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	private final DBObject dbObject;
 	private final EntityKeyMetadata keyMetadata;
-	private SnapshotType snapshotType;
 
-	public MongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata meta, SnapshotType snapshotType) {
+	public MongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata meta) {
 		this.dbObject = dbObject;
 		this.keyMetadata = meta;
-		this.snapshotType = snapshotType;
 	}
 
 	public DBObject getDbObject() {
@@ -43,15 +41,6 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return dbObject.keySet();
-	}
-
-	@Override
-	public SnapshotType getSnapshotType() {
-		return snapshotType;
-	}
-
-	public void setSnapshotType(SnapshotType snapshotType) {
-		this.snapshotType = snapshotType;
 	}
 
 	@Override

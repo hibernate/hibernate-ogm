@@ -47,6 +47,7 @@ import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.Option;
@@ -160,7 +161,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
-				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null, null ) ) ),
+				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null ), SnapshotType.UPDATE ) ),
 				transactionContext( session )
 		);
 

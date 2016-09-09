@@ -41,6 +41,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
 
 import net.sf.ehcache.Element;
@@ -100,12 +101,12 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 
 	@SuppressWarnings("unchecked")
 	private Tuple createTuple(final Element element) {
-		return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getObjectValue() ) );
+		return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getObjectValue() ), SnapshotType.UPDATE );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new Tuple( new MapTupleSnapshot( new HashMap<String, Object>() ) );
+		return new Tuple( new MapTupleSnapshot( new HashMap<String, Object>() ), SnapshotType.INSERT );
 	}
 
 	@Override
