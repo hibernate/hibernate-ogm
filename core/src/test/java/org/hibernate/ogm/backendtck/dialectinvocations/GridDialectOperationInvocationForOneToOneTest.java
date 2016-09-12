@@ -26,6 +26,7 @@ import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestForIssue;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -36,6 +37,7 @@ import static org.fest.assertions.Assertions.assertThat;
 @SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.NEO4J_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.REDIS_HASH },
 		comment = "For Cassandra and Neo4j, the getAssociation always return an association, thus we don't have the createAssociation call. " +
 					"Redis Hash is just weird.")
+@TestForIssue(jiraKey = "OGM-1152")
 public class GridDialectOperationInvocationForOneToOneTest extends OgmTestCase {
 
 	@Before
