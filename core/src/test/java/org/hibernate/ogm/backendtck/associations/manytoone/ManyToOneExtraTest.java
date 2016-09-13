@@ -22,7 +22,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Emmanuel Bernard
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
 		comment = "Basket.products list - bag semantics unsupported (no primary key)"
 )
 public class ManyToOneExtraTest extends OgmTestCase {

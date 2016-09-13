@@ -1,0 +1,19 @@
+package HibernateOGMGenerated;
+
+message hibernate_sequences_id {
+	required string sequence_name = 1;
+}
+
+message hibernate_sequences {
+	required int64 next_val = 2;
+}
+
+message Actor_id {
+	required int64 id = 1;
+}
+
+message Actor {
+	required int64 id = 1;
+	optional string bestMovieTitle = 2;
+	optional string name = 3;
+}

@@ -27,6 +27,7 @@
         <hibernate.ogm.jipijapa.module.slot>${project.version}</hibernate.ogm.jipijapa.module.slot>
         <hibernate.ogm.ehcache.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.infinispan.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan.module.slot>
+        <hibernate.ogm.infinispan-remote.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan-remote.module.slot>
         <hibernate.ogm.cassandra.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.cassandra.module.slot>
         <hibernate.ogm.mongodb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.neo4j.module.slot>
@@ -72,6 +73,11 @@
                     <artifactId>hibernate-search-engine</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-infinispan-remote</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>

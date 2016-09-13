@@ -57,7 +57,8 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Shipment.class );
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "MongoDB tests runs w/o transaction manager")
+	@SkipByGridDialect(value = { GridDialectType.MONGODB, GridDialectType.INFINISPAN_REMOTE },
+		comment = "MongoDB and Infinispan Remote tests runs w/o transaction manager")
 	public void onRollbackTriggeredThroughJtaPresentsAppliedInsertOperations() throws Exception {
 		Map<String, Object> settings = new HashMap<>();
 		settings.putAll( TestHelper.getDefaultTestSettings() );

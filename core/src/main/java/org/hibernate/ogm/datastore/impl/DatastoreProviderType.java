@@ -16,6 +16,7 @@ package org.hibernate.ogm.datastore.impl;
 public enum DatastoreProviderType {
 	MAP( "org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider" ),
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
+	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
 	FONGO( "org.hibernate.ogm.datastore.mongodb.impl.FongoDBDatastoreProvider" ),

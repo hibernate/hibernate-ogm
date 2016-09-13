@@ -1,0 +1,20 @@
+package HibernateOGMGenerated;
+
+message Helicopter_id {
+	required string UUID = 1;
+}
+
+message Helicopter {
+	required string UUID = 1;
+	optional string name = 2;
+}
+
+message Hypothesis_id {
+	required string id = 1;
+}
+
+message Hypothesis {
+	required string id = 1;
+	optional string description = 2;
+	optional int32 pos = 3;
+}

@@ -28,7 +28,7 @@ import org.junit.Test;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
 		comment = "hibernate core doesn't supply required primary key metadata for collections"
 )
 public class MapTest extends OgmTestCase {

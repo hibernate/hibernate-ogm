@@ -189,7 +189,9 @@ public class TestHelper {
 	}
 
 	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
-		dropSchemaAndDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+		if ( emf != null ) {
+			dropSchemaAndDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+		}
 	}
 
 	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {

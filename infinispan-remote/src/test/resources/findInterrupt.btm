@@ -1,0 +1,8 @@
+# This is extremely useful to find issues with interaction with Infinispan
+
+RULE findInterrupt
+CLASS java.lang.Thread
+METHOD interrupt
+IF TRUE
+DO traceStack("found the caller!\n", 10)
+ENDRULE

@@ -46,6 +46,7 @@ import org.jboss.logging.annotations.MessageLogger;
  * <li>1401-1500: neo4j</li>
  * <li>1501-1600: ehcache</li>
  * <li>1601-1700: redis</li>
+ * <li>1701-1800: infinispan_remote</li>
  * </ul>
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
@@ -295,4 +296,5 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 87, value = "The tuple context is not available, probably because we are dealing with more than a single entity type")
 	HibernateException tupleContextNotAvailable();
+
 }

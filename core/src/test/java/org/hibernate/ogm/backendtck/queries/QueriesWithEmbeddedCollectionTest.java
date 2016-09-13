@@ -38,7 +38,8 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  * @author Davide D'Alto
  */
-@SkipByGridDialect(value = GridDialectType.CASSANDRA, comment = "Bag semantics not supported by Cassandra backend")
+@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
+	comment = "Bag semantics not supported by backends which require a primary key")
 public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@TestSessionFactory
@@ -139,7 +140,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
 	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfPropertyInEmbeddedCollection() throws Exception {
@@ -149,7 +150,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
 	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfEmbeddedInEmbeddedCollection() throws Exception {
@@ -159,7 +160,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
 	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfEmbeddedInEmbeddedCollectionWithNull() throws Exception {
@@ -169,7 +170,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
 	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfPropertiesInEmbeddedCollection() throws Exception {
@@ -181,7 +182,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
 	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfPropertiesInEmbeddedCollectionWithInnerJoin() throws Exception {
@@ -195,7 +196,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
 	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionWithMultipleAssociations() throws Exception {
