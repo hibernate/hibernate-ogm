@@ -41,9 +41,9 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Emmanuel Bernard emmanuel@hibernate.org
  * @author Guillaume Smet
  */
-@SkipByGridDialect(value = { GridDialectType.NEO4J_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.REDIS_HASH },
+@SkipByGridDialect(value = { GridDialectType.NEO4J_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.REDIS_HASH, GridDialectType.INFINISPAN_REMOTE },
 		comment = "For Neo4j, the getAssociation always return an association, thus we don't have the createAssociation call. " +
-				"Redis Hash is just weird.")
+				"Redis Hash is just weird. Infinispan Remote needs to be investigated.")
 @TestForIssue(jiraKey = "OGM-1152")
 public class GridDialectOperationInvocationForElementCollectionTest extends OgmTestCase {
 
