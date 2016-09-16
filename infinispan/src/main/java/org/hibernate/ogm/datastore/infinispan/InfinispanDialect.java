@@ -18,7 +18,7 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
@@ -59,9 +59,9 @@ import org.infinispan.distexec.mapreduce.Reducer;
  */
 public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
-	private final InfinispanDatastoreProvider provider;
+	private final InfinispanEmbeddedDatastoreProvider provider;
 
-	public InfinispanDialect(InfinispanDatastoreProvider provider) {
+	public InfinispanDialect(InfinispanEmbeddedDatastoreProvider provider) {
 		this.provider = provider;
 	}
 

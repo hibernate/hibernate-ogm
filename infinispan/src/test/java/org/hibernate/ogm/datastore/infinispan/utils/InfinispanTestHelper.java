@@ -17,7 +17,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -80,25 +80,25 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
-		InfinispanDatastoreProvider provider = getProvider( session.getSessionFactory() );
+		InfinispanEmbeddedDatastoreProvider provider = getProvider( session.getSessionFactory() );
 		return getEntityCache( session.getSessionFactory(), key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
 	}
 
 	private static Cache<?, Map<String, Object>> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
-		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
+		InfinispanEmbeddedDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getEntityCache( entityKeyMetadata );
 	}
 
-	public static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
+	public static InfinispanEmbeddedDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
-		if ( !( InfinispanDatastoreProvider.class.isInstance( provider ) ) ) {
+		if ( !( InfinispanEmbeddedDatastoreProvider.class.isInstance( provider ) ) ) {
 			throw new RuntimeException( "Not testing with Infinispan, cannot extract underlying cache" );
 		}
-		return InfinispanDatastoreProvider.class.cast( provider );
+		return InfinispanEmbeddedDatastoreProvider.class.cast( provider );
 	}
 
 	private static Cache<?, ?> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
-		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
+		InfinispanEmbeddedDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getAssociationCache( associationKeyMetadata );
 	}
 
@@ -124,7 +124,7 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new InfinispanDialect( (InfinispanDatastoreProvider) datastoreProvider );
+		return new InfinispanDialect( (InfinispanEmbeddedDatastoreProvider) datastoreProvider );
 	}
 
 	@Override

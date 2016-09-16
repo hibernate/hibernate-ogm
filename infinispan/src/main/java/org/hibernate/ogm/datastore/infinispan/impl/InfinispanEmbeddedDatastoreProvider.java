@@ -40,7 +40,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author Sanne Grinovero
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class InfinispanDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
+public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {
 
 	private static final Log LOG = LoggerFactory.getLogger();
