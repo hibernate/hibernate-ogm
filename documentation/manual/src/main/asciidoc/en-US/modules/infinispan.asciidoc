@@ -74,7 +74,7 @@ which is a good starting point for new users - you don't have to set any propert
 
 .Hibernate OGM properties for Infinispan
 `hibernate.ogm.datastore.provider`::
-Set it to `infinispan` to use Infinispan as the datastore provider.
+Set it to `infinispan_embedded` to use Infinispan as the datastore provider in embedded mode.
 `hibernate.ogm.infinispan.cachemanager_jndi_name`::
 If you have an Infinispan [classname]`EmbeddedCacheManager` registered in JNDI,
 provide the JNDI name and Hibernate OGM will use this instance

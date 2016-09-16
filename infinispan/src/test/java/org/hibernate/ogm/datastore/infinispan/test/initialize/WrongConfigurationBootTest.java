@@ -53,7 +53,7 @@ public class WrongConfigurationBootTest {
 	 */
 	private void tryBoot(String configurationResourceName) {
 		Map<String, Object> settings = new HashMap<>();
-		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan" );
+		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_embedded" );
 		settings.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, configurationResourceName );
 
 		SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings );

@@ -295,4 +295,9 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 87, value = "The tuple context is not available, probably because we are dealing with more than a single entity type")
 	HibernateException tupleContextNotAvailable();
+
+	@LogMessage(level = WARN)
+	@Message(id = 88, value = "Configuration is referring to deprecated datastore provider name '%1$s'. Please use the new form '%2$s' instead.")
+	void usingDeprecatedDatastoreProviderName(String deprecatedName, String newName);
+
 }

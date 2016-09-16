@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+
 /**
  * This enumeration describes all available datastore providers by providing some shortcuts.
  * It's used for the Datastore Provider initialization to find the provider to instantiate.
@@ -14,8 +17,16 @@ package org.hibernate.ogm.datastore.impl;
  * @author Gunnar Morling
  */
 public enum DatastoreProviderType {
+
 	MAP( "org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider" ),
+
+	/**
+	 * @deprecated use {@link #INFINISPAN_EMBEDDED} instead to avoid ambiguities.
+	 */
+	@Deprecated
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
+
+	INFINISPAN_EMBEDDED( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
 	FONGO( "org.hibernate.ogm.datastore.mongodb.impl.FongoDBDatastoreProvider" ),
@@ -25,6 +36,8 @@ public enum DatastoreProviderType {
 	COUCHDB_EXPERIMENTAL( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" ),
 	CASSANDRA_EXPERIMENTAL( "org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider" ),
 	REDIS_EXPERIMENTAL( "org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider" );
+
+	private static final Log log = LoggerFactory.make();
 
 	private String datastoreProviderClassName;
 
@@ -46,6 +59,9 @@ public enum DatastoreProviderType {
 	}
 
 	public static DatastoreProviderType byShortName(String shortName) {
+		if ( "infinispan".equalsIgnoreCase( shortName ) ) {
+			log.usingDeprecatedDatastoreProviderName( "infinispan", "infinispan_embedded" );
+		}
 		return DatastoreProviderType.valueOf( shortName.toUpperCase() );
 	}
 }

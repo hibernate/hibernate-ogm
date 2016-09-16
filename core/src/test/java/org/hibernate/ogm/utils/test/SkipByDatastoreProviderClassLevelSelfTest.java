@@ -9,7 +9,7 @@ package org.hibernate.ogm.utils.test;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.CASSANDRA_EXPERIMENTAL;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.COUCHDB_EXPERIMENTAL;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.EHCACHE;
-import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.INFINISPAN;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.INFINISPAN_EMBEDDED;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.MAP;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.MONGODB;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_EMBEDDED;
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Mark Paluch
  */
 @SkipByDatastoreProvider({
-		MAP, INFINISPAN, MONGODB, EHCACHE, NEO4J_EMBEDDED, COUCHDB_EXPERIMENTAL, REDIS_EXPERIMENTAL, CASSANDRA_EXPERIMENTAL
+		MAP, INFINISPAN_EMBEDDED, MONGODB, EHCACHE, NEO4J_EMBEDDED, COUCHDB_EXPERIMENTAL, REDIS_EXPERIMENTAL, CASSANDRA_EXPERIMENTAL
 	})
 public class SkipByDatastoreProviderClassLevelSelfTest extends OgmTestCase {
 

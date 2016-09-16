@@ -15,8 +15,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.infinispan.Infinispan;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
+import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -129,6 +129,6 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
-		return Infinispan.class;
+		return InfinispanEmbedded.class;
 	}
 }

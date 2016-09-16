@@ -42,7 +42,7 @@ let us know (see <<ogm-howtocontribute-contribute>>).
 ====
 Some NoSQL databases can not provide an efficient implementation for IDENTITY or SEQUENCE,
 for these cases we recommend you use a UUID based generator.
-For example on Infinispan using IDENTITY is possible but it will require using cluster
+For example on Infinispan (in embedded mode) using IDENTITY is possible but it will require using cluster
 wide coordination to maintain the counters, which is not going to perform very well.
 
 [source, JAVA]
