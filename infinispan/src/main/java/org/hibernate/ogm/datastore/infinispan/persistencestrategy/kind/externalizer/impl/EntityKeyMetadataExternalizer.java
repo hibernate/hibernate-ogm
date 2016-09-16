@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.VersionChecker;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -26,7 +26,7 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  * nodes in order to find the matching entries from the global entity cache.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
- * {@link InfinispanDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
+ * {@link InfinispanEmbeddedDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
  * configuration file.
  *
  * @author Gunnar Morling

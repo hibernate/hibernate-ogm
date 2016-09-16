@@ -24,9 +24,9 @@ public enum DatastoreProviderType {
 	 * @deprecated use {@link #INFINISPAN_EMBEDDED} instead to avoid ambiguities.
 	 */
 	@Deprecated
-	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
+	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider" ),
 
-	INFINISPAN_EMBEDDED( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
+	INFINISPAN_EMBEDDED( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
 	FONGO( "org.hibernate.ogm.datastore.mongodb.impl.FongoDBDatastoreProvider" ),

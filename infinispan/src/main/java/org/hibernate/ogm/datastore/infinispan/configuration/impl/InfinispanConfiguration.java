@@ -10,13 +10,13 @@ import java.net.URL;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Configuration for {@link InfinispanDatastoreProvider}.
+ * Configuration for {@link InfinispanEmbeddedDatastoreProvider}.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
