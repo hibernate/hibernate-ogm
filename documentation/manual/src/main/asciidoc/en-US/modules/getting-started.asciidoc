@@ -174,7 +174,7 @@ Create a `META-INF/persistence.xml` file.
         <properties>
             <!-- Here you will pick which NoSQL technology to use, and configure it;
                  in this example we start a local in-memory Infinispan node. -->
-            <property name="hibernate.ogm.datastore.provider" value="infinispan"/>
+            <property name="hibernate.ogm.datastore.provider" value="infinispan_embedded"/>
         </properties>
     </persistence-unit>
 </persistence>

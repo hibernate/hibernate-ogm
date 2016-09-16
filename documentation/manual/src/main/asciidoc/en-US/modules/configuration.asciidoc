@@ -36,7 +36,7 @@ The provider name is [classname]`org.hibernate.ogm.jpa.HibernateOgmPersistence`.
             <property name="hibernate.transaction.jta.platform"
                       value="JBossTS" />
             <property name="hibernate.ogm.datastore.provider"
-                      value="infinispan" />
+                      value="infinispan_embedded" />
         </properties>
     </persistence-unit>
 </persistence>
@@ -99,7 +99,7 @@ StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
     //assuming JBoss TransactionManager in standalone mode
     .applySetting( AvailableSettings.JTA_PLATFORM, "JBossTS" )
     //assuming Infinispan as the backend, using the default settings
-    .applySetting( OgmProperties.DATASTORE_PROVIDER, Infinispan.DATASTORE_PROVIDER_NAME );
+    .applySetting( OgmProperties.DATASTORE_PROVIDER, InfinispanEmbedded.DATASTORE_PROVIDER_NAME );
     .build();
 
 //build the SessionFactory
@@ -181,7 +181,7 @@ This is not needed by Hibernate OGM: it will ignore the datasource, but JPA spec
         <jta-data-source>java:/DefaultDS</jta-data-source>
         <properties>
             <property name="hibernate.transaction.jta.platform" value="JBossAS" />
-            <property name="hibernate.ogm.datastore.provider" value="infinispan" />
+            <property name="hibernate.ogm.datastore.provider" value="infinispan_embedded" />
         </properties>
     </persistence-unit>
 </persistence>
