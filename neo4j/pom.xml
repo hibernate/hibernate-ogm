@@ -176,6 +176,14 @@
             </properties>
         </profile>
 
+        <!-- Executes the tests against a separately started Neo4j server using the Bolt protocol interface -->
+        <profile>
+            <id>neo4j-bolt</id>
+            <properties>
+                <datastoreProvider>neo4j_bolt</datastoreProvider>
+            </properties>
+        </profile>
+
         <!-- Executes the tests against a separately started Neo4j server using the HTTP interface -->
         <profile>
             <id>neo4j-http</id>
