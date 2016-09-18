@@ -42,6 +42,13 @@ public class Neo4j implements DatastoreConfiguration<GlobalContext<?, ?>> {
 	 */
 	public static final String HTTP_DATASTORE_PROVIDER_NAME = "NEO4J_HTTP";
 
+	/**
+	 * Short name of the data store provider for a remote Neo4j server using Bolt.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String BOLT_DATASTORE_PROVIDER_NAME = "NEO4J_BOLT";
+
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
 		return GenericOptionModel.createGlobalContext( context );
