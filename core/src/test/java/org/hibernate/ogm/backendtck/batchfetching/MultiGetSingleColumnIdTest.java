@@ -43,6 +43,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "id" } );
 
+	// A key that does not exists in the datastore
 	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ -666 } );
 
 	private static final BoardGame DOMINION = new BoardGame( 1, "Dominion" );
@@ -59,14 +60,14 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 				EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
 				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
-				assertThat( tuples.get( 0 ).get( "id" ) ).isEqualTo( SPLENDOR.getId() );
-				assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
+				assertThat( id( tuples.get( 0 ) ) ).isEqualTo( SPLENDOR.getId() );
+				assertThat( name( tuples.get( 0 ) ) ).isEqualTo( SPLENDOR.getName() );
 
-				assertThat( tuples.get( 1 ).get( "id" ) ).isEqualTo( DOMINION.getId() );
-				assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( DOMINION.getName() );
+				assertThat( id( tuples.get( 1 ) ) ).isEqualTo( DOMINION.getId() );
+				assertThat( name( tuples.get( 1 ) ) ).isEqualTo( DOMINION.getName() );
 
-				assertThat( tuples.get( 2 ).get( "id" ) ).isEqualTo( KING_OF_TOKYO.getId() );
-				assertThat( tuples.get( 2 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
+				assertThat( id( tuples.get( 2 ) ) ).isEqualTo( KING_OF_TOKYO.getId() );
+				assertThat( name( tuples.get( 2 ) ) ).isEqualTo( KING_OF_TOKYO.getName() );
 
 				tx.commit();
 			}
@@ -89,8 +90,8 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 				assertThat( tuples.get( 0 ) ).isNull();
 
-				assertThat( tuples.get( 1 ).get( "id" ) ).isEqualTo( KING_OF_TOKYO.getId() );
-				assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
+				assertThat( id( tuples.get( 1 ) ) ).isEqualTo( KING_OF_TOKYO.getId() );
+				assertThat( name( tuples.get( 1 ) ) ).isEqualTo( KING_OF_TOKYO.getName() );
 
 				assertThat( tuples.get( 2 ) ).isNull();
 				assertThat( tuples.get( 3 ) ).isNull();
@@ -183,6 +184,19 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[]{ BoardGame.class };
+	}
+
+	// The conversion to the right type is done later and some datastore don't keep track of the exact type.
+	// For example Neo4j in remote mode, will return a Long instead of an Integer.
+	private Integer id(Tuple tuple) {
+		Object object = tuple.get(  "id" );
+		Integer integer = Integer.valueOf( String.valueOf( object ) );
+		return integer;
+	}
+
+	private String name(Tuple tuple) {
+		Object object = tuple.get( "name" );
+		return String.valueOf( object );
 	}
 
 	@Entity
