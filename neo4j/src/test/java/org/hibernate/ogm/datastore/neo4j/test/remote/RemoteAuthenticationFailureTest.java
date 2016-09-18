@@ -13,7 +13,9 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
+import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.utils.PropertiesReader;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.SkippableTestRunner;
@@ -37,7 +39,10 @@ public class RemoteAuthenticationFailureTest {
 		properties.setProperty( OgmProperties.PORT, System.getProperties().getProperty( OgmProperties.PORT ) );
 		properties.setProperty( OgmProperties.USERNAME, "completely wrong" );
 		properties.setProperty( OgmProperties.PASSWORD, "completely wrong" );
-		RemoteNeo4jDatastoreProvider remoteDatastoreProvider = new RemoteNeo4jDatastoreProvider();
+		String provider = PropertiesReader.getHibernateProperties().get( OgmProperties.DATASTORE_PROVIDER );
+		DatastoreProviderType clazz = DatastoreProviderType.byShortName( provider );
+		RemoteNeo4jDatastoreProvider remoteDatastoreProvider =
+				(RemoteNeo4jDatastoreProvider) ( Class.forName( clazz.getDatastoreProviderClassName() ) ).newInstance();
 		remoteDatastoreProvider.configure( properties );
 		try {
 			remoteDatastoreProvider.start();

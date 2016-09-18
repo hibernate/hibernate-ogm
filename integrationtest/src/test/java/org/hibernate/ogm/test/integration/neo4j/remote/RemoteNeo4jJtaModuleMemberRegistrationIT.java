@@ -56,7 +56,7 @@ public class RemoteNeo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegist
 				.provider( HibernateOgmPersistence.class.getName() )
 				.getOrCreateProperties();
 		PersistenceDescriptor persistenceDescriptor = propertiesContext
-				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.REMOTE_DATASTORE_PROVIDER_NAME ).up()
+				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.HTTP_DATASTORE_PROVIDER_NAME ).up()
 				.createProperty().name( Neo4jProperties.HOST ).value( getNeo4jHost() ).up()
 				.createProperty().name( Neo4jProperties.USERNAME ).value( getNeo4jUsername() ).up()
 				.createProperty().name( Neo4jProperties.PASSWORD ).value( getNeo4jPassword() ).up()

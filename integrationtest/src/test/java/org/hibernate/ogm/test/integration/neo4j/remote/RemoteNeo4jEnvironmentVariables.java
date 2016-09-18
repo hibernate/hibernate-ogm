@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.test.integration.neo4j.remote;
 
-import org.hibernate.ogm.datastore.neo4j.remote.impl.RemoteNeo4jConfiguration;
+import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jConfiguration;
 
 /**
  * @author Davide D'Alto
@@ -36,7 +36,7 @@ public class RemoteNeo4jEnvironmentVariables {
 	private static void setPortNumber() {
 		neo4jPortNumber = System.getenv( PORT );
 		if ( isNull( neo4jPortNumber ) ) {
-			neo4jPortNumber = String.valueOf( RemoteNeo4jConfiguration.DEFAULT_PORT );
+			neo4jPortNumber = String.valueOf( RemoteNeo4jConfiguration.DEFAULT_HTTP_PORT );
 		}
 	}
 

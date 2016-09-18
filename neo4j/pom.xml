@@ -175,12 +175,12 @@
                 <datastoreProvider>neo4j_embedded</datastoreProvider>
             </properties>
         </profile>
-    
-        <!-- Executes the tests against a separately started Neo4j server -->
+
+        <!-- Executes the tests against a separately started Neo4j server using the HTTP interface -->
         <profile>
-            <id>neo4j-remote</id>
+            <id>neo4j-http</id>
             <properties>
-                <datastoreProvider>neo4j_remote</datastoreProvider>
+                <datastoreProvider>neo4j_http</datastoreProvider>
             </properties>
         </profile>
     </profiles>

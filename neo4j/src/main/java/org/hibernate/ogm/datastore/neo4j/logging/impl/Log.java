@@ -87,8 +87,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1418, value = "Missing sequence: %s")
 	HibernateException sequenceNotFound(String sequenceName);
 
-	@Message(id = 1419, value = "Authentication failed on %s, error code %s %s")
-	HibernateException authenticationFailed(String host, int status, String reasonPhrase);
+	@Message(id = 1419, value = "Connection failed on %s, error code %s %s")
+	HibernateException connectionFailed(String host, String status, String reasonPhrase);
 
 	@Message(id = 1420, value = "Sequences creation failed: %s, %s")
 	HibernateException sequencesCreationException(String code, String message);
