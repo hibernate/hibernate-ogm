@@ -63,6 +63,11 @@
             <artifactId>neo4j</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+        </dependency>
+
         <!-- RESTEasy and Jackson -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
