@@ -17,7 +17,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.BaseNeo4jDialect;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -183,7 +183,7 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 	@Test
 	public void shouldThrowExceptionForDuplicatedIdentifierWithNativeQuery() throws Throwable {
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001416: " + EmbeddedNeo4jDialect.CONSTRAINT_VIOLATION_CODE );
+		thrown.expectMessage( "OGM001416: " + BaseNeo4jDialect.CONSTRAINT_VIOLATION_CODE );
 
 		executeCypherQuery( "CREATE (n:`UniqueConstraintTest$EntityWithConstraints` {id: {id}})", singletonMap( "id", (Object) entityWithConstraints.id ) );
 	}
