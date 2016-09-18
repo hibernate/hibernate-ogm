@@ -14,10 +14,10 @@ import java.util.Properties;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jInternalProperties;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jGraphDatabaseServiceFactoryProvider;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jInternalProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
-import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
+import org.hibernate.ogm.datastore.neo4j.utils.EmbeddedNeo4jTestHelperDelegate;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
@@ -45,7 +45,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 	@Test
 	public void testEmbeddedIsTheDefaultGraphDatabaseService() throws Exception {
 		Properties properties = new Properties();
-		properties.put( Neo4jProperties.DATABASE_PATH, Neo4jTestHelper.dbLocation() );
+		properties.put( Neo4jProperties.DATABASE_PATH, EmbeddedNeo4jTestHelperDelegate.dbLocation() );
 		EmbeddedNeo4jGraphDatabaseServiceFactoryProvider graphService = new EmbeddedNeo4jGraphDatabaseServiceFactoryProvider();
 		GraphDatabaseService db = graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
@@ -55,8 +55,9 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 	@Test
 	public void testSelectedGraphDatabaseServiceIsLoaded() throws Exception {
 		Properties properties = new Properties();
-		properties.put( Neo4jProperties.DATABASE_PATH, Neo4jTestHelper.dbLocation() );
+		properties.put( Neo4jProperties.DATABASE_PATH, EmbeddedNeo4jTestHelperDelegate.dbLocation() );
 		properties.put( EmbeddedNeo4jInternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, MockGraphServiceFactory.class.getName() );
+
 		EmbeddedNeo4jGraphDatabaseServiceFactoryProvider graphService = new EmbeddedNeo4jGraphDatabaseServiceFactoryProvider();
 		GraphDatabaseService db = graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
@@ -66,7 +67,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 	@Test
 	public void testPropertiesArePassed() throws Exception {
 		Properties properties = new Properties();
-		properties.put( Neo4jProperties.DATABASE_PATH, Neo4jTestHelper.dbLocation() );
+		properties.put( Neo4jProperties.DATABASE_PATH, EmbeddedNeo4jTestHelperDelegate.dbLocation() );
 		properties.put( EmbeddedNeo4jInternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, MockGraphServiceFactory.class.getName() );
 		EmbeddedNeo4jGraphDatabaseServiceFactoryProvider graphService = new EmbeddedNeo4jGraphDatabaseServiceFactoryProvider();
 		MockGraphDatabaseService db = (MockGraphDatabaseService) graphService.load( properties, new ClassLoaderServiceImpl() ).create();

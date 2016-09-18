@@ -7,18 +7,15 @@
 package org.hibernate.ogm.datastore.neo4j.embedded.impl;
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Set;
 
-import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
@@ -45,66 +42,53 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * @author Davide D'Alto
  * @author Gunnar Morling
  */
-public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner<GraphDatabaseService> {
+public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
 
 	@Override
-	public void initializeSchema(SchemaDefinitionContext context) {
-		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
-		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
-		EmbeddedNeo4jDatastoreProvider provider = (EmbeddedNeo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
-
-		createSequences( context.getDatabase(), context.getAllIdSourceKeyMetadata(), provider );
-		createEntityConstraints( provider.getDatabase(), context.getDatabase(), sessionFactoryImplementor.getProperties() );
+	protected void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {
+		EmbeddedNeo4jDatastoreProvider neo4jProvider = (EmbeddedNeo4jDatastoreProvider) provider;
+		neo4jProvider.getSequenceGenerator().createSequences( sequences );
+		neo4jProvider.getSequenceGenerator().createUniqueConstraintsForTableSequences( allIdSourceKeyMetadata );
 	}
 
-	private void createSequences(Database database, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata, EmbeddedNeo4jDatastoreProvider provider) {
-		List<Sequence> sequences = sequences( database );
-		provider.getSequenceGenerator().createSequences( sequences );
-		provider.getSequenceGenerator().createUniqueConstraintsForTableSequences( idSourceKeyMetadata );
-	}
-
-	private void createEntityConstraints(GraphDatabaseService neo4jDb, Database database, Properties properties) {
-		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret( properties.get(
-				Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY )
-		);
-
-		log.debugf( "%1$s property set to %2$s" , Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY, constraintMethod );
-		if ( constraintMethod == UniqueConstraintSchemaUpdateStrategy.SKIP ) {
-			log.tracef( "Skipping generation of unique constraints" );
-		}
-		else {
-			log.debug( "Creating missing constraints" );
-			Transaction tx = null;
-			try {
-				tx = neo4jDb.beginTx();
-				addUniqueConstraints( neo4jDb, database );
-				tx.success();
+	@Override
+	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
+		EmbeddedNeo4jDatastoreProvider neo4jProvider = (EmbeddedNeo4jDatastoreProvider) provider;
+		GraphDatabaseService neo4jDb = neo4jProvider.getDatabase();
+		Transaction tx = neo4jDb.beginTx();
+		try {
+			for ( UniqueConstraintDetails constraint : constraints ) {
+				createUniqueConstraint( neo4jDb, constraint );
 			}
-			finally {
+			tx.success();
+		}
+		finally {
+			if ( tx != null ) {
 				tx.close();
 			}
 		}
 	}
 
-	@Override
-	protected void createUniqueConstraintIfMissing(GraphDatabaseService neo4jDb, Label label, String property) {
-		if ( isMissingUniqueConstraint( neo4jDb, label, property ) ) {
+	private void createUniqueConstraint(GraphDatabaseService neo4jDb, UniqueConstraintDetails constraint) {
+		Label label = constraint.getLabel();
+		String property = constraint.getProperty();
+		if ( isMissingUniqueConstraint( neo4jDb, constraint ) ) {
 			log.tracef( "Creating unique constraint for nodes labeled as %1$s on property %2$s", label, property );
-			neo4jDb.schema().constraintFor( label ).assertPropertyIsUnique( property ).create();
+			neo4jDb.schema().constraintFor( constraint.getLabel() ).assertPropertyIsUnique( constraint.getProperty() ).create();
 		}
 		else {
 			log.tracef( "Unique constraint already exists for nodes labeled as %1$s on property %2$s", label, property );
 		}
 	}
 
-	private boolean isMissingUniqueConstraint(GraphDatabaseService neo4jDb, Label label, String propertyName) {
-		Iterable<ConstraintDefinition> constraints = neo4jDb.schema().getConstraints( label );
+	private boolean isMissingUniqueConstraint(GraphDatabaseService neo4jDb, UniqueConstraintDetails constraintDetails) {
+		Iterable<ConstraintDefinition> constraints = neo4jDb.schema().getConstraints( constraintDetails.getLabel() );
 		for ( ConstraintDefinition constraint : constraints ) {
 			if ( constraint.isConstraintType( ConstraintType.UNIQUENESS ) ) {
 				for ( String propertyKey : constraint.getPropertyKeys() ) {
-					if ( propertyKey.equals( propertyName ) ) {
+					if ( propertyKey.equals( constraintDetails.getProperty() ) ) {
 						return false;
 					}
 				}

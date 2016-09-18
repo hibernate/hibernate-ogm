@@ -34,6 +34,8 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * The alias used when a query returns an entity as result.
 	 */
 	public static final String ENTITY_ALIAS = "owner";
+	public static final String EMBEDDED_ALIAS = "emb";
+	public static final String EMBEDDED_REL = "r";
 
 	private static final int CACHE_CAPACITY = 1000;
 	private static final int CACHE_CONCURRENCY_LEVEL = 20;
@@ -56,6 +58,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	private final String removeToOneAssociation;
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
+	private final String findEntityWithEmbeddedEndNodeQuery;
 	private final String findEntitiesQuery;
 	private final String findAssociationPartialQuery;
 	private final String createEntityQuery;
@@ -84,6 +87,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		this.findAssociationPartialQuery = initMatchOwnerEntityNode( entityKeyMetadata );
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
 		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata, includeEmbedded );
+		this.findEntityWithEmbeddedEndNodeQuery = initFindEntityQueryWithEmbeddedEndNode( entityKeyMetadata );
 		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata, includeEmbedded );
 		this.createEntityQuery = initCreateEntityQuery( entityKeyMetadata );
 		this.updateEntityProperties = initMatchOwnerEntityNode( entityKeyMetadata );
@@ -166,6 +170,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			escapeIdentifier( queryBuilder, entityKeyMetadata.getColumnNames()[0] );
 			queryBuilder.append( " IN {0}" );
 			appendGetEmbeddedNodesIfNeeded( includeEmbedded, queryBuilder );
+			if ( includeEmbedded ) {
+				queryBuilder.append( ", " );
+				queryBuilder.append( EMBEDDED_ALIAS );
+			}
 		}
 		return queryBuilder.toString();
 	}
@@ -416,6 +424,15 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return queryBuilder.toString();
 	}
 
+	private static String initFindEntityQueryWithEmbeddedEndNode(EntityKeyMetadata entityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder();
+		appendMatchOwnerEntityNode( queryBuilder, entityKeyMetadata );
+		appendGetEmbeddedNodesIfNeeded( true, queryBuilder );
+		queryBuilder.append( ", " );
+		queryBuilder.append( EMBEDDED_ALIAS );
+		return queryBuilder.toString();
+	}
+
 	private static void appendGetEmbeddedNodesIfNeeded(boolean includeEmbedded, StringBuilder queryBuilder) {
 		if ( includeEmbedded ) {
 			appendOptionalMatchOwnerEmbeddedNodes( queryBuilder );
@@ -432,7 +449,9 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	private static void appendOptionalMatchOwnerEmbeddedNodes(StringBuilder queryBuilder) {
 		queryBuilder.append( " OPTIONAL MATCH (" );
 		queryBuilder.append( ENTITY_ALIAS );
-		queryBuilder.append( ") -[r*]->(:" );
+		queryBuilder.append( ") -[r*]->(" );
+		queryBuilder.append( EMBEDDED_ALIAS );
+		queryBuilder.append( ":" );
 		queryBuilder.append( NodeLabel.EMBEDDED );
 		queryBuilder.append( ")" );
 	}
@@ -653,6 +672,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 
 	public String getFindEntityQuery() {
 		return findEntityQuery;
+	}
+
+	public String getFindEntityWithEmbeddedEndNodeQuery() {
+		return findEntityWithEmbeddedEndNodeQuery;
 	}
 
 	public String getFindEntitiesQuery() {
