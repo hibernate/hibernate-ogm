@@ -276,6 +276,7 @@
                   <include>org.neo4j:neo4j-cypher-frontend-2.3</include>
                   <include>org.neo4j:neo4j-cypher-compiler-3.0</include>
                   <include>org.neo4j:neo4j-cypher-frontend-3.0</include>
+                  <include>org.neo4j.driver:neo4j-java-driver</include>
                   <include>org.parboiled:parboiled-scala_2.11</include>
                   <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
                   <include>org.apache.commons:commons-lang3</include>
