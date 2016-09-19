@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.test.integration.neo4j.remote;
+package org.hibernate.ogm.test.integration.neo4j.remote.http;
 
 import static org.hibernate.ogm.test.integration.neo4j.remote.RemoteNeo4jEnvironmentVariables.getNeo4jHost;
 import static org.hibernate.ogm.test.integration.neo4j.remote.RemoteNeo4jEnvironmentVariables.getNeo4jPassword;
@@ -36,12 +36,12 @@ import org.junit.runner.RunWith;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
-public class RemoteNeo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
+public class HttpNeo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
 
 	@Deployment
 	public static Archive<?> createTestArchive() throws Exception {
 		return new ModuleMemberRegistrationDeployment
-				.Builder( RemoteNeo4jJtaModuleMemberRegistrationIT.class )
+				.Builder( HttpNeo4jJtaModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.neo4j:${hibernate-ogm.module.slot} services" )
 				.createDeployment();
