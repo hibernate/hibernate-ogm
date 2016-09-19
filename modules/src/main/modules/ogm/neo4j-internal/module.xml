@@ -17,6 +17,7 @@
         <resource-root path="lucene-queryparser-${luceneVersion}.jar" />
         <resource-root path="lucene-analyzers-common-${luceneVersion}.jar" />
 
+        <resource-root path="neo4j-java-driver-${neo4jJavaDriverVersion}.jar" />
         <resource-root path="neo4j-lucene-upgrade-${neo4jVersion}.jar" />
         <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
         <resource-root path="parboiled-scala_2.11-${parboiledVersion}.jar" />
