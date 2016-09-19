@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl.sequences;
 
+import java.util.Random;
+
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
@@ -19,14 +21,18 @@ import org.infinispan.protostream.SerializationContext;
  * This implements the atomic operations to model a source for named sequences.
  * The SequenceId represents the name of this sequence and is specific to a Remote Cache.
  *
- * The implementation uses optimistic locking and currently has no fallback strategy:
- * this is not suited for high contention scenarios. Not least, the Hot Rod client
- * API doesn't allow to issue both the CAS operation and return the new version
- * in case of failure, so the failure of an optimistic replace operation needs
- * to re-read the version, introducing additional delays and making further
- * failures more likely.
+ * The implementation uses optimistic locking and is therefore not suited for
+ * high contention scenarios. If an high degree of contention is detected,
+ * a warning will be logged and a randomized exponential backoff strategy
+ * will kick in in hope of resolving the contention problem but severely
+ * impacting performance: if this warning is logged it's best to consider
+ * alternative ID assignment strategies in the domain model; ideally
+ * application assigned.
  *
- * TODO: see OGM-1161 to discuss options.
+ * Also, the Hot Rod client API currently doesn't allow to issue both the
+ * CAS operation and return the new version in case of failure, so the failure of
+ * an optimistic replace operation needs to re-read the version, introducing
+ * additional delays and making further failures more likely.
  *
  * @author Sanne Grinovero
  */
@@ -34,11 +40,16 @@ public final class HotRodSequencer {
 
 	private static final Log log = LoggerFactory.getLogger();
 
+	private static final int START_EXPONENTIAL_FALLBACK = 10;
+
+	private static final int LOG_WARNING_EACH_N_OPS = 10;
+
 	private final RemoteCache<SequenceId, Long> remoteCache;
 	private final SerializationContext serContext;
 	private final OgmProtoStreamMarshaller marshaller;
 	private final int increment;
 	private final SequenceId id;
+	private final Random random = new Random();
 
 	private long lastKnownVersion = -1;
 	private Long lastKnownRemoteValue = null;
@@ -80,8 +91,6 @@ public final class HotRodSequencer {
 		//now to CAS:
 		int casCycle = 0;
 		while ( true ) {
-			//TODO introduce a safety net against excessive spinning?
-			//See https://hibernate.atlassian.net/browse/OGM-1161
 			Long targetValue = Long.valueOf( lastKnownRemoteValue.longValue() + increment );
 			boolean done = attemptCASWriteValue( targetValue );
 			if ( done ) {
@@ -91,10 +100,28 @@ public final class HotRodSequencer {
 				//On failure of CAS, refresh what we know about the remote version and value:
 				getRemoteVersion();
 				casCycle++;
-				if ( casCycle % 10 == 0 ) {
+				if ( casCycle % LOG_WARNING_EACH_N_OPS == 0 ) {
 					log.excessiveCasForSequencer( id.getSegmentName() );
 				}
+				if ( casCycle > START_EXPONENTIAL_FALLBACK ) {
+					delayRandomizerAtCycle( casCycle - START_EXPONENTIAL_FALLBACK );
+				}
 			}
+		}
+	}
+
+	private void delayRandomizerAtCycle(int casCycle) {
+		final int exponentialMaxMilliseconds = 2 ^ casCycle;
+		final int nextWait = random.nextInt( exponentialMaxMilliseconds );
+		if ( nextWait == 0 ) {
+			return;
+		}
+		try {
+			Thread.sleep( nextWait );
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw log.interruptedDuringCASSequenceGeneration();
 		}
 	}
 
@@ -110,8 +137,7 @@ public final class HotRodSequencer {
 	private void getRemoteVersion() {
 		VersionedValue<Long> versioned = remoteCache.getVersioned( id );
 		if ( versioned == null ) {
-			//Critical failure (only happens if the Infinispan servers lost data)
-			//TODO
+			throw log.criticalDataLossDetected();
 		}
 		lastKnownVersion = versioned.getVersion();
 		lastKnownRemoteValue = (Long) versioned.getValue();

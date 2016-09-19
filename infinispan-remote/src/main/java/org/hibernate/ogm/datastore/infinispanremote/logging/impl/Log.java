@@ -68,4 +68,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = WARN)
 	void excessiveCasForSequencer(String segmentName);
 
+	@Message(id = 1713, value = "This thread was interrupted while in a CAS loop to generate a unique sequence number" )
+	HibernateException interruptedDuringCASSequenceGeneration();
+
+	@Message(id = 1714, value = "A remote read returned null while this entry was definitely initialized before. Possible data loss on the Infinispan server?" )
+	HibernateException criticalDataLossDetected();
+
 }
