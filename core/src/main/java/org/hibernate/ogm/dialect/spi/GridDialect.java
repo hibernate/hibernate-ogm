@@ -187,4 +187,11 @@ public interface GridDialect extends Service {
 	 * same primary key
 	 */
 	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
+
+	/**
+	 * Whether this dialect uses navigational information to deal with the inverse side of an association.
+	 *
+	 * @return {@code true} is this dialect uses navigational information.
+	 */
+	boolean usesNavigationalInformationForInverseSideOfAssociations();
 }

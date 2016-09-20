@@ -302,4 +302,10 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
 		groupingByEntityGridDialect.flushPendingOperations( entityKey, tupleContext );
 	}
+
+	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return gridDialect.usesNavigationalInformationForInverseSideOfAssociations();
+	}
+
 }

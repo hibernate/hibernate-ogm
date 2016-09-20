@@ -189,4 +189,9 @@ public abstract class BaseNeo4jDialect extends BaseGridDialect implements Querya
 		}
 		return parameters;
 	}
+
+	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return false;
+	}
 }

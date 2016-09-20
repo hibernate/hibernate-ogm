@@ -43,6 +43,11 @@ public abstract class BaseGridDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return true;
+	}
+
+	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
 	}

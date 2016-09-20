@@ -96,6 +96,7 @@ import org.hibernate.tuple.NonIdentifierAttribute;
 import org.hibernate.tuple.ValueGeneration;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.ComponentType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
@@ -173,12 +174,26 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 * persisters to be set up). So this is used to exclude some properties, whereas the final decision is done during
 	 * updates via {@link BiDirectionalAssociationHelper}.
 	 */
-	private final boolean[] propertyMightRequireInverseAssociationManagement;
+	private final boolean[] propertyMightBeMainSideOfBidirectionalAssociation;
 
 	/**
 	 * Whether there is at least one property which might represent the main side of a bi-directional association or not.
 	 */
-	private final boolean mightRequireInverseAssociationManagement;
+	private final boolean mightManageInverseAssociations;
+
+	/**
+	 * Stores for each property whether it has navigational information that might need to be removed on entity
+	 * deletion.
+	 * <p>
+	 * The property has navigational information if the property is of collection type and is the inverse side of an
+	 * assocation.
+	 */
+	private final boolean[] propertyMightHaveNavigationalInformation;
+
+	/**
+	 * Whether this entity has at least one property having navigational information.
+	 */
+	private final boolean mightHaveNavigationalInformation;
 
 	/**
 	 * Whether this persister uses an "emulated", i.e. non-atomic, optimistic locking or not.
@@ -326,8 +341,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		initCustomSQLStrings();
 
-		propertyMightRequireInverseAssociationManagement = getPropertyMightRequireInverseAssociationManagement();
-		mightRequireInverseAssociationManagement = initMayManageInverseAssociations();
+		propertyMightBeMainSideOfBidirectionalAssociation = getPropertyMightBeMainSideOfBidirectionalAssociation();
+		mightManageInverseAssociations = initMightManageInverseAssociations();
+		propertyMightHaveNavigationalInformation = getPropertyMightHaveNavigationalInformation();
+		mightHaveNavigationalInformation = initMightHaveNavigationalInformation();
 		usesNonAtomicOptimisticLocking = initUsesNonAtomicOptimisticLocking();
 
 		initLockers();
@@ -489,22 +506,48 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 	}
 
-	private boolean[] getPropertyMightRequireInverseAssociationManagement() {
-		boolean[] propertyMightRequireInverseAssociationManagement = new boolean[getEntityMetamodel().getPropertySpan()];
+	private boolean[] getPropertyMightBeMainSideOfBidirectionalAssociation() {
+		boolean[] propertyMightBeMainSideOfBidirectionalAssociation = new boolean[getEntityMetamodel().getPropertySpan()];
 
 		for ( int propertyIndex = 0; propertyIndex < getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
 			Type propertyType = getPropertyTypes()[propertyIndex];
 			boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
 
-			propertyMightRequireInverseAssociationManagement[propertyIndex] = isStarToOne || getPropertyUniqueness()[propertyIndex];
+			propertyMightBeMainSideOfBidirectionalAssociation[propertyIndex] = isStarToOne || getPropertyUniqueness()[propertyIndex];
 		}
 
-		return propertyMightRequireInverseAssociationManagement;
+		return propertyMightBeMainSideOfBidirectionalAssociation;
 	}
 
-	private boolean initMayManageInverseAssociations() {
-		for ( boolean mightManageReverseAssociation : propertyMightRequireInverseAssociationManagement ) {
-			if ( mightManageReverseAssociation ) {
+	private boolean initMightManageInverseAssociations() {
+		for ( boolean mightManageInverseAssociation : propertyMightBeMainSideOfBidirectionalAssociation ) {
+			if ( mightManageInverseAssociation ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean[] getPropertyMightHaveNavigationalInformation() {
+		boolean[] propertyMightHaveNavigationalInformation = new boolean[getEntityMetamodel().getPropertySpan()];
+
+		for ( int propertyIndex = 0; propertyIndex < getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
+			Type propertyType = getPropertyTypes()[propertyIndex];
+			if ( propertyType.isCollectionType() ) {
+				propertyMightHaveNavigationalInformation[propertyIndex] = true;
+			}
+			else {
+				propertyMightHaveNavigationalInformation[propertyIndex] = false;
+			}
+		}
+
+		return propertyMightHaveNavigationalInformation;
+	}
+
+	private boolean initMightHaveNavigationalInformation() {
+		for ( boolean hasNavigationalInformation : propertyMightHaveNavigationalInformation ) {
+			if ( hasNavigationalInformation ) {
 				return true;
 			}
 		}
@@ -1179,7 +1222,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				resultset = createNewResultSetIfNull( key, resultset, id, session );
 				saveSharedTuple( object, resultset, session );
 
-				if ( mightRequireInverseAssociationManagement ) {
+				if ( mightManageInverseAssociations ) {
 					removeFromInverseAssociations( resultset, j, id, session );
 				}
 				dehydrate( resultset, fields, propsToUpdate, j, id, session );
@@ -1215,7 +1258,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					insertOrUpdateTuple( key, tuplePointer, hasUpdateGeneratedProperties(), session );
 				}
 
-				if ( mightRequireInverseAssociationManagement ) {
+				if ( mightManageInverseAssociations ) {
 					addToInverseAssociations( resultset, j, id, session );
 				}
 			}
@@ -1294,7 +1337,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.propertyMightRequireInverseAssociationManagement( propertyMightBeMainSideOfBidirectionalAssociation )
 				.removeNavigationalInformationFromInverseSide();
 	}
 
@@ -1311,7 +1354,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.propertyMightRequireInverseAssociationManagement( propertyMightBeMainSideOfBidirectionalAssociation )
 				.addNavigationalInformationForInverseSide();
 	}
 
@@ -1469,7 +1512,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		Object[] loadedState = getLoadedState( id, session );
 		Tuple currentState = null;
 
-		if ( mightRequireInverseAssociationManagement || usesNonAtomicOptimisticLocking ) {
+		if ( mightManageInverseAssociations || usesNonAtomicOptimisticLocking ) {
 			currentState = gridDialect.getTuple( key, getTupleContext( session ) );
 		}
 
@@ -1488,16 +1531,22 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 			}
 
-			//delete inverse association information
-			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
-			if ( mightRequireInverseAssociationManagement ) {
-				new EntityAssociationUpdater( this )
-					.id( id )
-					.resultset( currentState )
-					.session( session )
-					.tableIndex( j )
-					.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
-					.removeNavigationalInformationFromInverseSide();
+			if ( gridDialect.usesNavigationalInformationForInverseSideOfAssociations() ) {
+				//delete inverse association information
+				//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
+				if ( mightManageInverseAssociations ) {
+					new EntityAssociationUpdater( this )
+							.id( id )
+							.resultset( currentState )
+							.session( session )
+							.tableIndex( j )
+							.propertyMightRequireInverseAssociationManagement( propertyMightBeMainSideOfBidirectionalAssociation )
+							.removeNavigationalInformationFromInverseSide();
+				}
+
+				if ( mightHaveNavigationalInformation ) {
+					removeNavigationInformation( id, object, session );
+				}
 			}
 
 			if ( optimisticLockingAwareGridDialect != null && isVersioned() ) {
@@ -1528,6 +1577,30 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 			else {
 				gridDialect.removeTuple( key, getTupleContext( session ) );
+			}
+		}
+	}
+
+	private void removeNavigationInformation(Serializable id, Object entity, SessionImplementor session) {
+		for ( int propertyIndex = 0; propertyIndex < getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
+			if ( propertyMightHaveNavigationalInformation[propertyIndex] ) {
+				CollectionType collectionType = (CollectionType) getPropertyTypes()[propertyIndex];
+				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) getFactory()
+						.getCollectionPersister( collectionType.getRole() );
+
+				AssociationPersister associationPersister = new AssociationPersister( collectionPersister.getOwnerEntityPersister().getMappedClass() )
+						.hostingEntity( entity )
+						.gridDialect( gridDialect )
+						.key( id, collectionPersister.getKeyGridType() )
+						.associationKeyMetadata( collectionPersister.getAssociationKeyMetadata() )
+						.associationTypeContext( collectionPersister.getAssociationTypeContext() )
+						.session( session );
+
+				Association association = associationPersister.getAssociationOrNull();
+				if ( association != null && !association.isEmpty() ) {
+					association.clear();
+					associationPersister.flushToDatastore();
+				}
 			}
 		}
 	}

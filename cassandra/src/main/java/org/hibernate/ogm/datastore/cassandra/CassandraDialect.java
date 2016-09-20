@@ -539,4 +539,10 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		// the db server supplied metadata or parsing assistance we can't do much meaningful validation.
 		return nativeQuery;
 	}
+
+	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return false;
+	}
+
 }
