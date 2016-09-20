@@ -618,7 +618,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, AssociationKey associationKey, Tuple associationRow, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
