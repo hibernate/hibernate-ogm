@@ -1380,6 +1380,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
+	/**
+	 * As we merge several operations into one operation, we need to be sure the write concern applied to the aggregated
+	 * operation respects all the requirements expressed for each separate operation.
+	 *
+	 * Thus, for each parameter of the write concern, we keep the stricter one for the resulting merged write concern.
+	 */
 	@SuppressWarnings("deprecation")
 	private static WriteConcern mergeWriteConcern(WriteConcern original, WriteConcern writeConcern) {
 		if ( original == null ) {
