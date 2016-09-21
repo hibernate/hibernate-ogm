@@ -27,7 +27,6 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.OperationContext;
-import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
@@ -110,12 +109,6 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 	}
 
 	@Override
-	public void insertOrUpdateTuple(
-			EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
-		throw new UnsupportedOperationException( "Method not supported by this dialect anymore" );
-	}
-
-	@Override
 	public Association getAssociation(
 			AssociationKey key, AssociationContext associationContext) {
 		RedisAssociation redisAssociation = null;
@@ -178,12 +171,6 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 		);
 	}
 
-	@Override
-	public void insertOrUpdateAssociation(
-			AssociationKey associationKey, Association association, AssociationContext associationContext) {
-		throw new UnsupportedOperationException( "Method not supported by this dialect anymore" );
-	}
-
 	private Object getAssociationRows(
 			Association association,
 			AssociationKey key) {
@@ -193,18 +180,6 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 		}
 
 		return rows;
-	}
-
-	@Override
-	public void removeAssociation(
-			AssociationKey key, AssociationContext associationContext) {
-		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			String entityId = entityId( key.getEntityKey() );
-			connection.hdel( entityId, key.getMetadata().getCollectionRole() );
-		}
-		else {
-			connection.del( associationId( key ) );
-		}
 	}
 
 	@Override

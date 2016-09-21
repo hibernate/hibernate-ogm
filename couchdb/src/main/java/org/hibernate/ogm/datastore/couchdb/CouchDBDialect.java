@@ -237,11 +237,6 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
-	}
-
-	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		removeDocumentIfPresent( Identifier.createEntityId( key ) );
 	}
@@ -306,11 +301,6 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 		return association;
 	}
 
-	@Override
-	public void insertOrUpdateAssociation(AssociationKey associationKey, Association association, AssociationContext associationContext) {
-		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
-	}
-
 	private Object getAssociationRows(Association association, AssociationKey associationKey, AssociationContext associationContext) {
 		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey(
 				association,
@@ -369,11 +359,6 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 		}
 
 		return rowObject.getPropertiesAsHierarchy();
-	}
-
-	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
 	}
 
 	@Override

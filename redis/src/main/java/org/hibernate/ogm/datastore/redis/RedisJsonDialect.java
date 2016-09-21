@@ -100,11 +100,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
-		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
-	}
-
-	@Override
 	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation) {
 		Entity owningEntity = null;
 		List<AssociationKey> associationsToRemove = new ArrayList<>();
@@ -304,13 +299,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		return association;
 	}
 
-	@Override
-	public void insertOrUpdateAssociation(
-			AssociationKey associationKey, org.hibernate.ogm.model.spi.Association association,
-			AssociationContext associationContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
-	}
-
 	/**
 	 * Returns the rows of the given association as to be stored in the database. Elements of the returned list are
 	 * either
@@ -363,11 +351,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		}
 
 		return rows;
-	}
-
-	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		throw new UnsupportedOperationException("Method not supported in GridDialect anymore");
 	}
 
 	@Override

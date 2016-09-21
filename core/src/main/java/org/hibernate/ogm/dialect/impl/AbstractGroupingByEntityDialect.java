@@ -11,9 +11,12 @@ import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 
 
@@ -53,6 +56,23 @@ public abstract class AbstractGroupingByEntityDialect extends BaseGridDialect im
 	@Override
 	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
 		executeBatch( tupleContext.getOperationsQueue() );
+	}
+
+	@Override
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		throw new UnsupportedOperationException( "Method not supported by GroupingByEntityDialect implementations" );
+	}
+
+	@Override
+	public void insertOrUpdateAssociation(
+			AssociationKey associationKey, org.hibernate.ogm.model.spi.Association association,
+			AssociationContext associationContext) {
+		throw new UnsupportedOperationException( "Method not supported by GroupingByEntityDialect implementations" );
+	}
+
+	@Override
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+		throw new UnsupportedOperationException( "Method not supported by GroupingByEntityDialect implementations" );
 	}
 
 	protected abstract void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation);
