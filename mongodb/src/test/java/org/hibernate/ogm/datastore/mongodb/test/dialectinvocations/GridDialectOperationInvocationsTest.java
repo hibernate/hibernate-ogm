@@ -70,9 +70,9 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch[insertOrUpdateTuple]",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch[insertOrUpdateTuple]",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
 				"executeBatch[removeTuple]"
 		);
@@ -116,12 +116,12 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
 				"getAssociation",
-				"executeBatch[insertOrUpdateTuple,insertOrUpdateAssociation]",
+				"executeBatch[group[insertOrUpdateTuple,insertOrUpdateAssociation]]",
 				"getTuple",
 				"getAssociation",
 				"getTuple",
 				"getAssociation",
-				"executeBatch[removeAssociation,removeTuple]"
+				"executeBatch[group[removeAssociation],removeTuple]"
 				);
 	}
 
@@ -155,8 +155,8 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch[insertOrUpdateTuple]",
-				"executeBatch[insertOrUpdateTuple]",
+				"executeBatch[group[insertOrUpdateTuple]]",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
 				"executeBatch[removeTuple]"
 		);
@@ -196,9 +196,9 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		session.close();
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch[insertOrUpdateTuple]",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"executeBackendQuery",
-				"executeBatch[insertOrUpdateTuple]",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
 				"executeBatch[removeTuple]"
 		);

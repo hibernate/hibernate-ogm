@@ -13,29 +13,20 @@
  */
 package org.hibernate.ogm.backendtck.dialectinvocations;
 
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandChild;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandMother;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
-import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
-import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard emmanuel@hibernate.org
@@ -45,16 +36,11 @@ import static org.fest.assertions.Assertions.assertThat;
 		comment = "For Neo4j, the getAssociation always return an association, thus we don't have the createAssociation call. " +
 				"Redis Hash is just weird.")
 @TestForIssue(jiraKey = "OGM-1152")
-public class GridDialectOperationInvocationForElementCollectionTest extends OgmTestCase {
-
-	@Before
-	public void resetOperationsLog() {
-		getOperationsLogger().reset();
-	}
+public class GridDialectOperationInvocationsForElementCollectionTest extends AbstractGridDialectOperationInvocationsTest {
 
 	@Test
 	public void testEmbeddableCollectionAsList() throws Exception {
-		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getGridDialect();
 
 		// Insert entity with embedded collection
 		Session session = openSession();
@@ -69,14 +55,33 @@ public class GridDialectOperationInvocationForElementCollectionTest extends OgmT
 		session.persist( grandMother );
 		tx.commit();
 
-		if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) ) {
+			if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
+				assertThat( getOperations() ).containsExactly(
+						"createTuple",
+						"getAssociation",
+						"createAssociation",
+						"executeBatch[group[insertOrUpdateTuple,insertOrUpdateAssociation]]"
+				);
+			}
+			else {
+				assertThat( getOperations() ).containsExactly(
+						"getTuple",
+						"createTuple",
+						"getAssociation",
+						"createAssociation",
+						"executeBatch[group[insertOrUpdateTuple,insertOrUpdateAssociation]]"
+				);
+			}
+		}
+		else if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"createTuple",
 					"getAssociation",
-					"executeBatch[insertOrUpdateTuple,insertOrUpdateAssociation]"
+					"executeBatch[group[insertOrUpdateTuple,insertOrUpdateAssociation]]"
 			);
 		}
-		else if ( isDuplicateInsertPreventionStragetyNative( gridDialect ) ) {
+		else if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"createTuple",
 					"insertOrUpdateTuple",
@@ -107,43 +112,29 @@ public class GridDialectOperationInvocationForElementCollectionTest extends OgmT
 		tx.commit();
 		session.clear();
 
-		if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
-			// As mentioned below, the operations give a false impression of optimization
-			// as batches are executed under the hood (getAssociation directly calls executeBatch)
-			// when getAssociation is called. See the comments.
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) || GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // load GrandMother
 					"getAssociation", // collection is loaded by gdMother.getGrandChildren()
-					"getAssociation", // association loaded to delete rows
-					"getAssociation", // load association to update row
-										// before that, executes the batch containing the insertOrUpdateAssociation operation
-					"getAssociation", // load association to insert rows
-										// before that, executes the batch containing the insertOrUpdateAssociation operation
-					"executeBatch[insertOrUpdateAssociation]" // a no-op in this case since there is no line to update
+					"executeBatch[group[insertOrUpdateAssociation,insertOrUpdateAssociation,insertOrUpdateAssociation]]"
 			);
 		}
-		else if ( isDuplicateInsertPreventionStragetyNative( gridDialect ) ) {
+		else if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // load GrandMother
 					"getAssociation", // collection is loaded by gdMother.getGrandChildren()
-					"getAssociation", // association loaded to delete rows
 					"insertOrUpdateAssociation", //remove 1,leia row from association
-					"getAssociation", // load association to update row
-					"insertOrUpdateAssociation", // put 0,leia (essentially removing luke)
-					"getAssociation", // load association to insert rows
-					"insertOrUpdateAssociation" // a no-op in this case since there is no line to update
+					"insertOrUpdateAssociation" // put 0,leia (essentially removing luke)
+												// the last insertOrUpdateAssociation is skipped as there is no line to insert
 			);
 		}
 		else {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // load GrandMother
 					"getAssociation", // collection is loaded by gdMother.getGrandChildren()
-					"getAssociation", // association loaded to delete rows
 					"insertOrUpdateAssociation", //remove 1,leia row from association
-					"getAssociation", // load association to update row
-					"insertOrUpdateAssociation", // put 0,leia (essentially removing luke)
-					"getAssociation", // load association to insert rows
-					"insertOrUpdateAssociation" // a no-op in this case since there is no line to update
+					"insertOrUpdateAssociation" // put 0,leia (essentially removing luke)
+												// the last insertOrUpdateAssociation is skipped as there is no line to insert
 			);
 		}
 
@@ -157,19 +148,17 @@ public class GridDialectOperationInvocationForElementCollectionTest extends OgmT
 		session.delete( grandMother );
 		tx.commit();
 
-		if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) || GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // load grand mother
 					"getAssociation", // load collection
-					"getAssociation", // load collection for removal
-					"executeBatch[removeAssociation,removeTuple]" // batched removal
+					"executeBatch[group[removeAssociation],removeTuple]" // batched removal
 			);
 		}
-		else if ( isDuplicateInsertPreventionStragetyNative( gridDialect ) ) {
+		else if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // load grand mother
 					"getAssociation", // load collection
-					"getAssociation", // load collection for removal
 					"removeAssociation", // actual collection removal
 					"removeTuple" // remove tuple
 			);
@@ -178,7 +167,6 @@ public class GridDialectOperationInvocationForElementCollectionTest extends OgmT
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // load grand mother
 					"getAssociation", // load collection
-					"getAssociation", // load collection for removal
 					"removeAssociation", // actual collection removal
 					"removeTuple" // remove tuple
 			);
@@ -191,27 +179,4 @@ public class GridDialectOperationInvocationForElementCollectionTest extends OgmT
 		return new Class<?>[] { GrandMother.class, GrandChild.class };
 	}
 
-	@Override
-	protected void configure(Map<String, Object> settings) {
-		settings.put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
-	}
-
-	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
-		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
-				gridDialect,
-				InvokedOperationsLoggingDialect.class
-		);
-
-		return invocationLogger;
-	}
-
-	private List<String> getOperations() {
-		return getOperationsLogger().getOperations();
-	}
-
-	private boolean isDuplicateInsertPreventionStragetyNative(GridDialect gridDialect) {
-		return DuplicateInsertPreventionStrategy.NATIVE
-				.equals( gridDialect.getDuplicateInsertPreventionStrategy( new DefaultEntityKeyMetadata( "GrandMother", new String[]{ "id" } ) ) );
-	}
 }

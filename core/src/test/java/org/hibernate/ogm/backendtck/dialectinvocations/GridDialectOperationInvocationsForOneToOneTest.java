@@ -6,29 +6,20 @@
  */
 package org.hibernate.ogm.backendtck.dialectinvocations;
 
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
+import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.associations.onetoone.Husband;
 import org.hibernate.ogm.backendtck.associations.onetoone.Wife;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
-import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
-import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard emmanuel@hibernate.org
@@ -38,16 +29,11 @@ import static org.fest.assertions.Assertions.assertThat;
 		comment = "For Cassandra and Neo4j, the getAssociation always return an association, thus we don't have the createAssociation call. " +
 					"Redis Hash is just weird.")
 @TestForIssue(jiraKey = "OGM-1152")
-public class GridDialectOperationInvocationForOneToOneTest extends OgmTestCase {
-
-	@Before
-	public void resetOperationsLog() {
-		getOperationsLogger().reset();
-	}
+public class GridDialectOperationInvocationsForOneToOneTest extends AbstractGridDialectOperationInvocationsTest {
 
 	@Test
 	public void testBidirectionalOneToOne() throws Exception {
-		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getGridDialect();
 
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -62,23 +48,56 @@ public class GridDialectOperationInvocationForOneToOneTest extends OgmTestCase {
 		transaction.commit();
 		session.clear();
 
-		if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) ) {
+			if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
+				assertThat( getOperations() ).containsExactly(
+						"getTuple", // when adding Husband, ORM looks at Wife and checks if it is transient
+									// since it is transient and id is manually set, this leads to a lookup
+						"createTuple", // creating Husband tuple
+						"createTuple", // creating Wife tuple
+						"getAssociation", // read the association info from Wife to Husband
+											// before that, executes the batch containing the 2 insertOrUpdateTuple operations
+						"createAssociation", // could not find the association so create one
+						"executeBatch[group[insertOrUpdateTuple,insertOrUpdateTuple],group[insertOrUpdateTuple,insertOrUpdateAssociation]]"
+						// inserting Husband without FK
+						// update Husband with wife FK
+						// inserting Wife without association
+						// actually update the (inverse) association with a wife -> husband entry
+				);
+			}
+			else {
+				assertThat( getOperations() ).containsExactly(
+						"getTuple", // when adding Husband, ORM looks at Wife and checks if it is transient
+									// since it is transient and id is manually set, this leads to a lookup
+						"getTuple", // when inserting Husband, we do a lookup to check whether it is already present
+									// DuplicateInsertPreventionStrategy.LOOKUP
+						"createTuple", // creating Husband tuple
+						"getTuple", // when inserting Wife, we do a lookup to check whether it is already present
+									// DuplicateInsertPreventionStrategy.LOOKUP
+						"createTuple", // creating Wife tuple
+						"getAssociation", // read the association info from Wife to Husband
+						"createAssociation", // could not find the association so create one
+						"executeBatch[group[insertOrUpdateTuple,insertOrUpdateTuple],group[insertOrUpdateTuple,insertOrUpdateAssociation]]"
+						// inserting Husband without FK
+						// update Husband with wife FK
+						// inserting Wife without association
+						// actually update the (inverse) association with a wife -> husband entry
+				);
+			}
+		}
+		else if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // when adding Husband, ORM looks at Wife and checks if it is transient
 								// since it is transient and id is manually set, this leads to a lookup
 					"createTuple", // creating Husband tuple
 					"createTuple", // creating Wife tuple
-					"getTuple", // read Husband as we mightRequireInverseAssociationManagement (OgmEntityPersister:1137)
-								// or if non atomic optimistic locking: in this case we could still use the entity entry
-								// state cache
-								// if the value has been loaded during the overall flush
 					"getAssociation", // read the association info from Wife to Husband
 										// before that, executes the batch containing the 2 insertOrUpdateTuple operations
 					"createAssociation", // could not find the association so create one
-					"executeBatch[insertOrUpdateAssociation]" // execute the batch of insert/update operations
+					"executeBatch[group[insertOrUpdateAssociation]]" // execute the batch of insert/update operations
 			);
 		}
-		else if ( isDuplicateInsertPreventionStragetyNative( gridDialect ) ) {
+		else if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
 			assertThat( getOperations() ).containsExactly(
 					"getTuple", // when adding Husband, ORM looks at Wife and checks if it is transient
 								// since it is transient and id is manually set, this leads to a lookup
@@ -86,10 +105,6 @@ public class GridDialectOperationInvocationForOneToOneTest extends OgmTestCase {
 					"insertOrUpdateTuple", // inserting Husband without fk
 					"createTuple", // creating Wife tuple
 					"insertOrUpdateTuple", // inserting Wife without association
-					"getTuple", // read Husband as we mightRequireInverseAssociationManagement (OgmEntityPersister:1137)
-								// or if non atomic optimistic locking: in this case we could still use the entity entry
-								// state cache
-								// if the value has been loaded during the overall flush
 					"insertOrUpdateTuple", // update Husband with wife FK
 					"getAssociation", // read the association info from Wife to Husband
 					"createAssociation", // could not find the association so create one
@@ -109,10 +124,6 @@ public class GridDialectOperationInvocationForOneToOneTest extends OgmTestCase {
 								// DuplicateInsertPreventionStrategy.LOOKUP
 					"createTuple", // creating Wife tuple
 					"insertOrUpdateTuple", // inserting Wife without association
-					"getTuple", // read Husband as we mightRequireInverseAssociationManagement (OgmEntityPersister:1137)
-								// or if non atomic optimistic locking: in this case we could still use the entity entry
-								// state cache
-								// if the value has been loaded during the overall flush
 					"insertOrUpdateTuple", // update Husband with wife FK
 					"getAssociation", // read the association info from Wife to Husband
 					"createAssociation", // could not find the association so create one
@@ -135,27 +146,4 @@ public class GridDialectOperationInvocationForOneToOneTest extends OgmTestCase {
 		return new Class<?>[] { Husband.class, Wife.class };
 	}
 
-	@Override
-	protected void configure(Map<String, Object> settings) {
-		settings.put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
-	}
-
-	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
-		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
-				gridDialect,
-				InvokedOperationsLoggingDialect.class
-		);
-
-		return invocationLogger;
-	}
-
-	private List<String> getOperations() {
-		return getOperationsLogger().getOperations();
-	}
-
-	private boolean isDuplicateInsertPreventionStragetyNative(GridDialect gridDialect) {
-		return DuplicateInsertPreventionStrategy.NATIVE
-				.equals( gridDialect.getDuplicateInsertPreventionStrategy( new DefaultEntityKeyMetadata( "TableName", new String[]{ "id" } ) ) );
-	}
 }
