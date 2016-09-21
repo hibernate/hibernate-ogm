@@ -52,15 +52,35 @@ public class OperationsQueue {
 	public OperationsQueue() {
 	}
 
-	public void add(InsertOrUpdateTupleOperation operation) {
-		add( (GroupableEntityOperation) operation );
+	public void add(Operation operation) {
+		validate();
+
+		log.debugf( "Add batched operation %1$s", operation );
+
+		if ( operation instanceof InsertOrUpdateTupleOperation ) {
+			addInsertOrUpdateTupleOperation( (InsertOrUpdateTupleOperation) operation );
+		}
+		else if ( operation instanceof GroupableEntityOperation ) {
+			addGroupableEntityOperation( (GroupableEntityOperation) operation );
+		}
+		else {
+			addOperation( operation );
+		}
+	}
+
+	private void addInsertOrUpdateTupleOperation(InsertOrUpdateTupleOperation operation) {
+		addGroupableEntityOperation( operation );
 		insertionQueue.add( operation.getEntityKey() );
 	}
 
-	public void add(GroupableEntityOperation operation) {
+	private void addGroupableEntityOperation(GroupableEntityOperation operation) {
 		validate();
 		GroupedChangesToEntityOperation groupedOperation = getOrCreateGroupedChangesOnEntityOperation( operation.getEntityKey() );
 		groupedOperation.addOperation( operation );
+	}
+
+	private void addOperation(Operation operation) {
+		operations.add( operation );
 	}
 
 	private GroupedChangesToEntityOperation getOrCreateGroupedChangesOnEntityOperation(EntityKey entityKey) {
@@ -73,20 +93,10 @@ public class OperationsQueue {
 		return groupedOperations.get( entityKey );
 	}
 
-	public void add(Operation operation) {
-		validate();
-		addOperation( operation );
-	}
-
 	private void validate() {
 		if ( isClosed() ) {
 			throw log.closedOperationQueue();
 		}
-	}
-
-	private void addOperation(Operation operation) {
-		log.debugf( "Add batched operation %1$s", operation );
-		operations.add( operation );
 	}
 
 	public Operation poll() {
