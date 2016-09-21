@@ -153,6 +153,8 @@ public class AssociationPersister {
 				}
 				else {
 					association = gridDialect.getAssociation( key, getAssociationContext() );
+					OgmEntityEntryState.getStateFor( session, hostingEntity )
+							.setAssociation( associationKeyMetadata.getCollectionRole(), association );
 				}
 			}
 			else {
@@ -161,10 +163,10 @@ public class AssociationPersister {
 
 			if ( association == null ) {
 				association = gridDialect.createAssociation( key, getAssociationContext() );
-			}
-			if ( hostingEntity != null ) {
-				OgmEntityEntryState.getStateFor( session, hostingEntity )
-						.setAssociation( associationKeyMetadata.getCollectionRole(), association );
+				if ( hostingEntity != null ) {
+					OgmEntityEntryState.getStateFor( session, hostingEntity )
+							.setAssociation( associationKeyMetadata.getCollectionRole(), association );
+				}
 			}
 		}
 		return association;
