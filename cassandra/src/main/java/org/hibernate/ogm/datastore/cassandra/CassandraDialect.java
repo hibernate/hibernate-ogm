@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleIterator;
 import org.hibernate.ogm.datastore.cassandra.query.impl.CassandraParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -259,7 +260,6 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
-		@SuppressWarnings("unchecked")
 		List<Column> tablePKCols = tableMetadata.getPrimaryKey().getColumns();
 
 		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
@@ -401,6 +401,8 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 			bindAndExecute( columnValues.toArray(), delete );
 		}
+
+		MapHelpers.updateAssociation( association );
 	}
 
 	@Override
