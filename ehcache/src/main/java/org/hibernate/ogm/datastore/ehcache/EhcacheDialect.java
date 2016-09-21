@@ -175,6 +175,8 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			}
 		}
 
+		association.reset();
+
 		final Cache<AK> associationCache = getCacheManager().getAssociationCache( key.getMetadata() );
 		associationCache.put( new Element( getKeyProvider().getAssociationCacheKey( key ), associationRows ) );
 	}
