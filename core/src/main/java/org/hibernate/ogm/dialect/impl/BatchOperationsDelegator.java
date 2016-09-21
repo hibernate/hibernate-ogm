@@ -71,11 +71,10 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	@Override
 	public void executeBatch(OperationsQueue operationsQueue) {
-		log.tracef( "Executing batch" );
-
 		try {
 			if ( GridDialects.hasFacet( getGridDialect(), BatchableGridDialect.class )
 					|| GridDialects.hasFacet( getGridDialect(), GroupingByEntityDialect.class ) ) {
+				log.tracef( "Executing batch" );
 				super.executeBatch( operationsQueue );
 			}
 		}
