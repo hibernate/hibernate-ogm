@@ -409,7 +409,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testNotLikeQuery() throws Exception {
-		List<?> result = session.createQuery( "from Hypothesis h where (description IS NULL OR h.description NOT LIKE '%dimensions%') and 1=1" ).list();
+		List<?> result = session.createQuery( "from Hypothesis h where h.description NOT LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "17", "18", "19", "20" );
 	}
 

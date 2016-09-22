@@ -130,7 +130,9 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 	}
 
 	private <T> OgmQueryLoader getLoader(QueryParameters queryParameters) {
-		QueryParsingResult queryParsingResult = queryParameters != null ? getQuery( queryParameters ) : queryParser.parseQuery( sessionFactory, query );
+		QueryParsingResult queryParsingResult = queryParameters != null
+				? getQuery( queryParameters )
+				: queryParser.parseQuery( sessionFactory, query );
 
 		BackendQuery<T> query = new BackendQuery<T>( (T) queryParsingResult.getQueryObject(), singleEntityMetadataInformation );
 
