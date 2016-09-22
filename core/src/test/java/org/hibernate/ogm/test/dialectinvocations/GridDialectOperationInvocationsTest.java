@@ -19,6 +19,7 @@ import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +27,7 @@ import org.junit.Test;
  * Asserts the number and order of grid dialect operations.
  * @author Gunnar Morling
  */
+@TestForIssue(jiraKey = "OGM-1152")
 public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 	@Before

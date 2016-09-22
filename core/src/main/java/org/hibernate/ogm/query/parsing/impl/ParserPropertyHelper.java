@@ -239,7 +239,9 @@ public class ParserPropertyHelper implements PropertyHelper {
 			if ( associatedJoinable.isCollection() ) {
 				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) associatedJoinable;
 				if ( collectionPersister.getType().isComponentType() ) {
-					StringBuilder columnNameBuilder = new StringBuilder( );
+					StringBuilder columnNameBuilder = new StringBuilder( propertyName );
+					columnNameBuilder.append( "." );
+
 					// Collection of embeddables
 					appendComponentCollectionPath( columnNameBuilder, collectionPersister, pathIterator );
 					return columnNameBuilder.toString();

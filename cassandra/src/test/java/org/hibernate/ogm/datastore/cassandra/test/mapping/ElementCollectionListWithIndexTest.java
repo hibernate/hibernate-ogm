@@ -56,14 +56,14 @@ public class ElementCollectionListWithIndexTest extends OgmTestCase {
 		rowAssertion( session.getSessionFactory(), "GrandMother_grandChildren" )
 				.keyColumn( "GrandMother_id", granny.getId() )
 				.keyColumn( "birthorder", 0 )
-				.assertColumn( "grandChildren.name", "Luke" )
+				.assertColumn( "name", "Luke" )
 				.assertNoOtherColumnPresent()
 				.execute();
 
 		rowAssertion( session.getSessionFactory(), "GrandMother_grandChildren" )
 				.keyColumn( "GrandMother_id", granny.getId() )
 				.keyColumn( "birthorder", 1 )
-				.assertColumn( "grandChildren.name", "Leia" )
+				.assertColumn( "name", "Leia" )
 				.assertNoOtherColumnPresent()
 				.execute();
 

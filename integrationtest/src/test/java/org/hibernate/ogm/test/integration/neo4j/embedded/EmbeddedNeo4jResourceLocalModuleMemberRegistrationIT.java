@@ -59,6 +59,7 @@ public class EmbeddedNeo4jResourceLocalModuleMemberRegistrationIT extends Module
 				.value( EmbeddedNeo4jJtaModuleMemberRegistrationIT.neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
+				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}

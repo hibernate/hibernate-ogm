@@ -16,6 +16,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 
 /**
@@ -45,6 +46,7 @@ public class Helicopter {
 
 	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
 	@Column(name = "helicopterName")
+	@SortableField
 	public String getName() {
 		return name;
 	}
@@ -54,6 +56,7 @@ public class Helicopter {
 	}
 
 	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
+	@SortableField
 	public String getMake() {
 		return make;
 	}

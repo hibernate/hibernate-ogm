@@ -14,6 +14,7 @@ import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
+import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
 
 /**
  * {@link SessionFactoryBuilder} building tge {@link OgmSessionFactory}.
@@ -52,5 +53,10 @@ public class OgmSessionFactoryBuilderImpl extends AbstractDelegatingSessionFacto
 		OgmSessionFactoryOptions options = new OgmSessionFactoryOptions( delegate.buildSessionFactoryOptions() );
 
 		return new OgmSessionFactoryImpl( new SessionFactoryImpl( metadata, options ) );
+	}
+
+	@Override
+	public SessionFactoryBuilder applyConnectionHandlingMode(PhysicalConnectionHandlingMode connectionHandlingMode) {
+		return delegate.applyConnectionHandlingMode( connectionHandlingMode );
 	}
 }

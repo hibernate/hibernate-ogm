@@ -108,6 +108,15 @@
                                         <outputDirectory>${project.build.directory}</outputDirectory>
                                     </artifactItem>
                                     <artifactItem>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-orm-modules</artifactId>
+                                        <version>${hibernateVersion}</version>
+                                        <classifier>wildfly-10-dist</classifier>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
                                         <groupId>${project.groupId}</groupId>
                                         <artifactId>hibernate-ogm-modules</artifactId>
                                         <classifier>wildfly-10-dist</classifier>
@@ -120,6 +129,15 @@
                                         <groupId>org.infinispan</groupId>
                                         <artifactId>infinispan-as-embedded-modules</artifactId>
                                         <version>${infinispanVersion}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-search-modules</artifactId>
+                                        <version>${hibernateSearchVersion}</version>
+                                        <classifier>wildfly-10-dist</classifier>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>

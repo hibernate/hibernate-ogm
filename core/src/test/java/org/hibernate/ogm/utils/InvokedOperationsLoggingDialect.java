@@ -176,6 +176,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	public void executeBatch(OperationsQueue queue) {
 		OperationsQueue newQueue = new OperationsQueue();
 		StringBuilder sb = new StringBuilder();
+		List<String> subOperations = new ArrayList<String>();
 
 		if ( !queue.isClosed() ) {
 			Operation operation = queue.poll();
@@ -184,15 +185,19 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 
 				if ( operation instanceof InsertOrUpdateTupleOperation ) {
 					sb.append( "InsertOrUpdateTuple(" ).append( ( (InsertOrUpdateTupleOperation) operation ).getEntityKey() ).append( " )" );
+					subOperations.add( "insertOrUpdateTuple" );
 				}
 				else if ( operation instanceof RemoveTupleOperation ) {
 					sb.append( "RemoveTuple(" ).append( ( (RemoveTupleOperation) operation ).getEntityKey() ).append( " )" );
+					subOperations.add( "removeTuple" );
 				}
 				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
 					sb.append( "InsertOrUpdateAssociation(" ).append( ( (InsertOrUpdateAssociationOperation) operation ).getAssociationKey() ).append( " )" );
+					subOperations.add( "insertOrUpdateAssociation" );
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
 					sb.append( "RemoveAssociation(" ).append( ( (RemoveAssociationOperation) operation ).getAssociationKey() ).append( " )" );
+					subOperations.add( "removeAssociation" );
 				}
 
 				operation = queue.poll();
@@ -205,7 +210,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 
 		super.executeBatch( newQueue );
 
-		log( "executeBatch", sb.toString(), "VOID" );
+		log( "executeBatch[" + StringHelper.join( subOperations, "," ) + "]", sb.toString(), "VOID" );
 	}
 
 	private void log(String operation, String parameters, String returnValue) {
