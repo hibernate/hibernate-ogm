@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.document.impl;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.MapStorageOption;
 import org.hibernate.ogm.dialect.spi.AssociationContext;

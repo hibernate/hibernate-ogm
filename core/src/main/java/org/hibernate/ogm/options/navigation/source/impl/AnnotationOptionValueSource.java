@@ -113,14 +113,16 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 	 */
 	private <A extends Annotation> AnnotationConverter<A> getConverter(Annotation annotation) {
 		MappingOption mappingOption = annotation.annotationType().getAnnotation( MappingOption.class );
+		if ( mappingOption == null ) {
+			return null;
+		}
 
 		// wrong type would be a programming error of the annotation developer
 		@SuppressWarnings("unchecked")
-		Class<? extends AnnotationConverter<A>> converterClass = (Class<? extends AnnotationConverter<A>>) ( mappingOption != null ? mappingOption.value()
-				: null );
+		Class<? extends AnnotationConverter<A>> converterClass = (Class<? extends AnnotationConverter<A>>) mappingOption.value();
 
 		try {
-			return converterClass != null ? converterClass.newInstance() : null;
+			return converterClass.newInstance();
 		}
 		catch (Exception e) {
 			throw log.cannotConvertAnnotation( converterClass, e );

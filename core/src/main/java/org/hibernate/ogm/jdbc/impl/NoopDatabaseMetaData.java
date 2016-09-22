@@ -895,10 +895,12 @@ public class NoopDatabaseMetaData implements DatabaseMetaData {
 		return null;
 	}
 
+	@Override
 	public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public boolean generatedKeyAlwaysReturned() throws SQLException {
 		return false;  //To change body of implemented methods use File | Settings | File Templates.
 	}

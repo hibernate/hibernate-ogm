@@ -217,7 +217,7 @@ public class BatchFetchingTest extends OgmTestCase {
 	}
 
 	private boolean isMultigetDialect() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		return GridDialects.hasFacet( gridDialect, MultigetGridDialect.class );
 	}
 
@@ -227,7 +227,7 @@ public class BatchFetchingTest extends OgmTestCase {
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
 				gridDialect,
 				InvokedOperationsLoggingDialect.class

@@ -1,6 +1,98 @@
 Hibernate OGM Changelog
 =======================
 
+5.0.0.Final (13-05-2016)
+-------------------------
+
+** Bug
+    * OGM-973 - build                - Do not ship an 'org.parboiled' WildFly module
+    * OGM-1039 - documentation, neo4j  - Fix javadoc for embedded Neo4j transaction coordinators
+    * OGM-854 - neo4j                - Neo4j - *ToOne association not populated for entity returned from JP-QL or native NoSQL query
+
+** Improvement
+    * OGM-1018 - core, documentation  - hibernate-search-orm is not optional if you have Hibernate Search on the class path
+    * OGM-1017 - cassandra            - Cassandra should store java.math.BigDecimal as decimal
+    * OGM-899 - documentation        - Wrong OS Name
+    * OGM-860 -                      - Move DocumentHelpers to more sensible place
+    * OGM-1015 - build                - Publish WildFly modules using a slot reflecting the version of OGM
+    * OGM-1053 - documentation        - Minor various documentation updates for 5.0 release
+
+** New Feature
+    * OGM-1046 - build, tests         - Tests in the package 'org.hibernate.ogm.backendtck.batchfetching' aren't committing the transaction
+    * OGM-1034 - neo4j                - Propagate changed property values to embedded nodes when updating an association
+    * OGM-1027 - mongodb              - Support BSON function calls in the MongoDB native parser
+    * OGM-1030 - build                - Upgrade to ORM 5.0.9
+    * OGM-1028 - core                 - Add more verbosity to exception thrown by OgmEntityEntryState#getStateFor()
+    * OGM-581 - query                - Support Query#setParameterList()
+
+** Sub-task
+    * OGM-991 - documentation        - Add a unit test to make sure the Getting Started Guide is having the right configuration
+    * OGM-921 - documentation        - Remove hint for adding JBoss repo
+
+** Task
+    * OGM-1013 - tests                - Add unit tests for ArrayHelper utility class
+    * OGM-1002 - build, tests         - Move integration tests in the same module
+    * OGM-1022 - documentation        - Improve documentation around MongoDB CLI syntax
+    * OGM-1048 -                      - Travis - Cassandra download URL is not stable
+    * OGM-1010 - documentation, tests - No longer require users to import the Hibernate Search modules
+    * OGM-1036 - build                - Upgrade to Hibernate Search 5.5.3.Final
+    * OGM-1037 - infinispan           - Upgrade to Infinispan 8.2.1.Final
+    * OGM-1009 - tests                - Minor resource leaks in integration tests
+    * OGM-713 - build, documentation - Remove mention of the full Object/Grid Mapper name in the documentation
+    * OGM-1050 -                      - Fix several typos in method names and comments
+    * OGM-1011 - core, mongodb        - Move ByteStringType to core and update name and javadoc
+    * OGM-888 - documentation        - Update reference documentation after migration to ORM 5
+    * OGM-990 - documentation        - The Getting Started Guide needs to be updated
+    * OGM-1021 - tests                - Add Travis support
+
+5.0.0.CR1 (29-03-2016)
+-------------------------
+
+** Bug
+    * [OGM-900] - Support dots in MongoDB collection names
+    * [OGM-950] - Add Guava version used by Cassandra backend to distribution
+    * [OGM-952] - Add support for JPA AttributeConverter / @Convert type
+    * [OGM-962] - Yes/No and True/False types are incorrectly written to Cassandra
+    * [OGM-969] - Add test for DefaultAssociationKeyMetadata#equals()
+    * [OGM-970] - ClassCastException when running query on entity with batch size > 1
+    * [OGM-993] - Modules for Infinispan should use the Infinispan community modules rather than the WildFly ones
+    * [OGM-995] - MongoDBQueryDescriptor contains javadoc errors causing the build to fail
+    * [OGM-1007] - Add missing dependencies to the Redis module for wildfly
+
+
+** New Feature
+    * [OGM-519] - Add support for executing native update queries
+    * [OGM-873] - Implement hash strategy
+    * [OGM-953] - Convert query parameter types to grid types in core
+    * [OGM-978] - Map java.util.UUID to Cassandra's native uuid type
+
+** Task
+    * [OGM-679] - Don't persist null values in CouchDB
+    * [OGM-941] - Add mapping tests for Cassandra
+    * [OGM-979] - Upgrade to WildFly 10.0.0.Final
+    * [OGM-989] - Align Narayana and JTA API versions to those of WildFly 10 and Infinispan 8
+    * [OGM-997] - Upgrade to JUnit 4.12
+    * [OGM-1001] - Upgrade the checkstyle plugin to allow using Java 8 lambdas
+
+** Improvement
+    * [OGM-711] - Avoid exporting module org.jboss.jts to user classpath
+    * [OGM-897] - cache cassandra PreparedStatements
+    * [OGM-909] - Support Cassandra native CQL queries
+    * [OGM-945] - Batch-fetch association elements if supported by dialect
+    * [OGM-947] - Implement Redis Cluster support
+    * [OGM-948] - Update Redis driver library to 4.0.2.Final
+    * [OGM-959] - Remove dead code in TestHelper
+    * [OGM-961] - Refactor Cassandra row handling
+    * [OGM-966] - Refactor test for Neo4j sequence generation
+    * [OGM-972] - Upgrade to Neo4j 2.3
+    * [OGM-977] - MongoDB - add support for more types of native queries
+    * [OGM-985] - Upgrade MongoDB java Driver
+    * [OGM-988] - Redis and Cassandra use the same range for the Log message ids
+    * [OGM-992] - Upgrade to Infinispan 8.1.0.Final
+    * [OGM-994] - Upgrade to Infinispan 8.2.0.Final
+    * [OGM-1003] - Add license header to make file in Redis backend
+    * [OGM-1004] - Build is failing because of JavaDoc
+
 5.0.0.Beta1 (18-12-2015)
 -------------------------
 

@@ -35,18 +35,18 @@ public class AssociationDocumentStorageConfiguredViaAnnotationsTest extends OgmT
 	public void associationDocumentStorageSetToCollectionPerTypeOnEntityLevel() throws Exception {
 		createCloudWithTwoProducedSnowflakes();
 
-		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessions ) ).isEqualTo( 1 );
+		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessionFactory ) ).isEqualTo( 1 );
 	}
 
 	@Test
 	public void associationDocumentStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
-		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessions ) ).isEqualTo( 1 );
-		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessions ) ).isEqualTo( 1 );
+		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessionFactory ) ).isEqualTo( 1 );
+		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessionFactory ) ).isEqualTo( 1 );
 	}
 
 	private void createCloudWithTwoProducedSnowflakes() {
@@ -93,7 +93,7 @@ public class AssociationDocumentStorageConfiguredViaAnnotationsTest extends OgmT
 		}
 
 		public AnnotatedCloud createAndSave() {
-			Session session = sessions.openSession();
+			Session session = sessionFactory.openSession();
 			Transaction transaction = session.beginTransaction();
 
 			AnnotatedCloud annotatedCloud = new AnnotatedCloud();
@@ -124,7 +124,7 @@ public class AssociationDocumentStorageConfiguredViaAnnotationsTest extends OgmT
 
 	@After
 	public void removeCloudAndSnowflakes() {
-		Session session = sessions.openSession();
+		Session session = sessionFactory.openSession();
 		Transaction transaction = session.beginTransaction();
 
 		if ( cloud != null ) {
@@ -141,8 +141,8 @@ public class AssociationDocumentStorageConfiguredViaAnnotationsTest extends OgmT
 		transaction.commit();
 		session.close();
 
-		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfEntities( sessionFactory ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfAssociations( sessionFactory ) ).isEqualTo( 0 );
 	}
 
 	@Override

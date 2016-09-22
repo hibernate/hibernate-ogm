@@ -149,7 +149,8 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 				, chaoticBranchNode1EvilEnding
 				, chaoticBranchNode2
 				, neutralBranchNode1
-				, neutralBranchNode2);
+				, neutralBranchNode2
+		);
 
 		assertThatOnlyTheseRelationshipsExist(
 				relationship1
@@ -164,7 +165,7 @@ public class ElementCollectionMappingTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { StoryGame.class };
 	}
 }

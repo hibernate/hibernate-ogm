@@ -54,4 +54,11 @@
      <firstname>Mark</firstname>
      <surname>Paluch</surname>
    </author>
+   <author>
+      <firstname>Guillaume</firstname>
+      <surname>Smet</surname>
+      <affiliation>
+         <shortaffil>Red Hat</shortaffil>
+      </affiliation>
+   </author>
 </authorgroup>

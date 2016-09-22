@@ -115,7 +115,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 			Element previous = entityCache.putIfAbsent( new Element( getKeyProvider().getEntityCacheKey( key ), entityRecord ) );
 			if ( previous != null ) {
-				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, null );
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple );
 			}
 		}
 		else {
@@ -160,6 +160,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			switch ( action.getType() ) {
 				case CLEAR:
 					associationRows.clear();
+					break;
 				case PUT:
 					associationRows.put( new SerializableRowKey( action.getKey() ), MapHelpers.associationRowToMap( action.getValue() ) );
 					break;
@@ -205,8 +206,8 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		getCacheManager().forEachTuple( new EntityKeyProcessor( consumer ), entityKeyMetadatas );
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		getCacheManager().forEachTuple( new EntityKeyProcessor( consumer ), entityKeyMetadata );
 	}
 
 	@Override

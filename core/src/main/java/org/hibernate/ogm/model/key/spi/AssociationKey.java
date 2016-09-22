@@ -11,7 +11,7 @@ import java.util.Arrays;
 import org.hibernate.annotations.common.AssertionFailure;
 
 /**
- * Represents the key used to link a property value and the id of it's owning entity
+ * Represents the key used to link a property value and the id of its owning entity
  *
  * @author Emmanuel Bernard
  * @author Sanne Grinovero

@@ -19,6 +19,7 @@ import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraTimeType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraTrueFalseType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraUuidType;
 import org.hibernate.ogm.datastore.cassandra.type.impl.CassandraYesNoType;
+import org.hibernate.ogm.type.impl.BigDecimalPassThroughType;
 import org.hibernate.ogm.type.impl.BooleanType;
 import org.hibernate.ogm.type.impl.ByteType;
 import org.hibernate.ogm.type.impl.ClassType;
@@ -72,6 +73,7 @@ public enum CassandraTypeMapper {
 		mapper.put( CassandraCalendarDateType.INSTANCE, "timestamp" );
 		mapper.put( CassandraCalendarType.INSTANCE, "timestamp" );
 		mapper.put( CassandraPrimitiveByteArrayType.INSTANCE, "blob" );
+		mapper.put( BigDecimalPassThroughType.INSTANCE, "decimal" );
 	}
 
 	public String hibernateToCQL(GridType gridType) {
@@ -145,6 +147,10 @@ public enum CassandraTypeMapper {
 
 		if ( type == StandardBasicTypes.UUID_BINARY ) {
 			return CassandraUuidType.INSTANCE;
+		}
+
+		if ( type == org.hibernate.type.BigDecimalType.INSTANCE ) {
+			return BigDecimalPassThroughType.INSTANCE;
 		}
 
 		return null;

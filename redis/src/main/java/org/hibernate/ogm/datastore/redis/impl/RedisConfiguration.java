@@ -63,6 +63,7 @@ public class RedisConfiguration {
 	private final String password;
 	private final long timeout;
 	private final boolean ssl;
+	private final boolean cluster;
 
 	public RedisConfiguration(ConfigurationPropertyReader propertyReader) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
@@ -85,6 +86,11 @@ public class RedisConfiguration {
 
 		this.ssl = propertyReader
 				.property( RedisProperties.SSL, boolean.class )
+				.withDefault( false )
+				.getValue();
+
+		this.cluster = propertyReader
+				.property( RedisProperties.CLUSTER, boolean.class )
 				.withDefault( false )
 				.getValue();
 	}
@@ -133,5 +139,14 @@ public class RedisConfiguration {
 	 */
 	public boolean isSsl() {
 		return ssl;
+	}
+
+	/**
+	 * @return Flag, whether to use Redis Cluster.
+	 *
+	 * @see RedisProperties#CLUSTER
+	 */
+	public boolean isCluster() {
+		return cluster;
 	}
 }

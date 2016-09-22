@@ -12,8 +12,8 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
+import org.hibernate.hql.ast.common.JoinType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.spi.TupleOperation;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -33,7 +33,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void errorGeneratingSequence(String sequenceName, @Cause Exception e);
 
 	@Message(id = 1403, value = "Constraint violation for entity %s: %s")
-	HibernateException constraintViolation(EntityKey entityKey, TupleOperation operation, @Cause Exception cause);
+	HibernateException constraintViolation(EntityKey entityKey, String message, @Cause Exception cause);
 
 	@LogMessage(level = WARN)
 	@Message(id = 1404, value = "Neo4j does not support constraints spanning multiple columns. Unique key %1$s for %2$s on columns %3$s cannot be created")
@@ -53,4 +53,43 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1408, value = "Error while cheking transaction status")
 	HibernateException exceptionWhileChekingTransactionStatus(@Cause Exception e);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1409, value = "Join type %1$s is not fully supported with Neo4j")
+	void joinTypeNotFullySupported(JoinType joinType);
+
+	@Message(id = 1410, value = "Error performing isolated work")
+	HibernateException unableToPerformIsolatedWork(@Cause Exception e);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1411, value = "Cannot join transaction using a non-JTA entity manager.")
+	void callingJoinTransactionOnNonJtaEntityManager();
+
+	@Message(id = 1412, value = "Neo4j cannot execute work outside an isolated transaction.")
+	HibernateException cannotExecuteWorkOutsideIsolatedTransaction();
+
+	@LogMessage(level = WARN)
+	@Message(id = 1413, value = "Unable to rollback transaction")
+	void unableToRollbackTransaction(@Cause Exception e);
+
+	@Message(id = 1414, value = "Neo4j does not support multiple hosts configuration: %s")
+	HibernateException doesNotSupportMultipleHosts(String hosts);
+
+	@Message(id = 1415, value = "An error occurred, malformed database URL. Database host: %s, database port: %03d, database name: %s")
+	HibernateException malformedDataBaseUrl(@Cause Exception e, String databaseHost, int databasePort, String databaseName);
+
+	@Message(id = 1416, value = "%s: %s")
+	HibernateException nativeQueryException( String code, String message, @Cause Exception cause);
+
+	@Message(id = 1417, value = "Constraints creation failed: %s, %s")
+	HibernateException constraintsCreationException(String code, String message);
+
+	@Message(id = 1418, value = "Missing sequence: %s")
+	HibernateException sequenceNotFound(String sequenceName);
+
+	@Message(id = 1419, value = "Authentication failed on %s, error code %s %s")
+	HibernateException authenticationFailed(String host, int status, String reasonPhrase);
+
+	@Message(id = 1420, value = "Sequences creation failed: %s, %s")
+	HibernateException sequencesCreationException(String code, String message);
 }

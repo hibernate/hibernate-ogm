@@ -27,7 +27,7 @@ import org.junit.Test;
 public class ResourceLocalRollbackTest extends Neo4jJpaTestCase {
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.setTransactionType( PersistenceUnitTransactionType.RESOURCE_LOCAL );
 	}
 
@@ -86,7 +86,7 @@ public class ResourceLocalRollbackTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Game.class };
 	}
 }

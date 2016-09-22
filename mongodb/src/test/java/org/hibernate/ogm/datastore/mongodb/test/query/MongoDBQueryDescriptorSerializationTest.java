@@ -36,6 +36,8 @@ public class MongoDBQueryDescriptorSerializationTest {
 				new BasicDBObject( "foo", "bar" ),
 				new BasicDBObject( "foo", 1 ),
 				new BasicDBObject( "bar", 1 ),
+				new BasicDBObject(),
+				new BasicDBObject(),
 				Arrays.asList( "foo, bar" )
 		);
 

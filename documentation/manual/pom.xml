@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -86,14 +86,16 @@
                         <docinfo>true</docinfo>
                         <experimental>true</experimental>
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
+                        <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-orm-major-minor-version>${hibernateParsedVersion.majorVersion}.${hibernateParsedVersion.minorVersion}</hibernate-orm-major-minor-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
-                        <hibernate-search-major-minor-version>${hibernate-search-major-minor-version}</hibernate-search-major-minor-version>
-                        <hibernate-search-full-module-id>${hibernate-search-full-module-id}</hibernate-search-full-module-id>
+                        <hibernate-search-major-minor-version>${hibernateSearchParsedVersion.majorVersion}.${hibernateSearchParsedVersion.minorVersion}</hibernate-search-major-minor-version>
                         <infinispan-version>${infinispanVersion}</infinispan-version>
-                        <jboss-jta-version>${jbossjtaVersion}</jboss-jta-version>
-                        <mongodb-version>${mongodbVersion}</mongodb-version>
+                        <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
+                        <ehcache-version>${ehcacheVersion}</ehcache-version>
+                        <mongodb-version>${mongodbParsedVersion.majorVersion}.${mongodbParsedVersion.minorVersion}</mongodb-version>
                     </attributes>
                 </configuration>
             </plugin>
@@ -207,7 +209,7 @@
                                     <pluginExecutionFilter>
                                         <groupId>org.jboss.maven.plugins</groupId>
                                         <artifactId>maven-jdocbook-plugin</artifactId>
-                                        <versionRange>[2.3.4,)</versionRange>
+                                        <versionRange>[2.3.10,)</versionRange>
                                         <goals>
                                             <goal>generate</goal>
                                             <goal>resources</goal>

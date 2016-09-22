@@ -29,7 +29,7 @@ import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
-import com.lambdaworks.redis.RedisConnection;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -114,7 +114,7 @@ public class TTLConfiguredProgrammaticallyTest {
 		return getConnection().pttl( associationKey );
 	}
 
-	private RedisConnection<String, String> getConnection() {
+	private RedisClusterCommands<String, String> getConnection() {
 		return getProvider().getConnection();
 	}
 

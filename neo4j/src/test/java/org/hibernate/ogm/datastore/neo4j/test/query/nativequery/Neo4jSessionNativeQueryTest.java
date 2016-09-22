@@ -51,7 +51,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		Transaction tx = session.beginTransaction();
 		delete( session, portia );
 		delete( session, athanasia );
-		delete( session, ballade);
+		delete( session, ballade );
 		tx.commit();
 		session.clear();
 		session.close();
@@ -225,7 +225,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { OscarWildePoem.class };
+		return new Class<?>[] { OscarWildePoem.class, Critic.class };
 	}
 
 }

@@ -54,18 +54,18 @@ public class NativeApiFindBenchmark extends NativeApiBenchmarkBase {
 				DBObject author = new BasicDBObject( 5 );
 
 				author.put( "_id", i );
-				author.put("bio", "This is a decent size bio made of " + clientHolder.rand.nextDouble() + " stuffs" );
-				author.put("dob", new Date() );
-				author.put("fname", "Jessie " + clientHolder.rand.nextInt() );
-				author.put("lname", "Landis " + clientHolder.rand.nextInt() );
-				author.put("mname", "" + clientHolder.rand.nextInt( 26 ) );
+				author.put( "bio", "This is a decent size bio made of " + clientHolder.rand.nextDouble() + " stuffs" );
+				author.put( "dob", new Date() );
+				author.put( "fname", "Jessie " + clientHolder.rand.nextInt() );
+				author.put( "lname", "Landis " + clientHolder.rand.nextInt() );
+				author.put( "mname", "" + clientHolder.rand.nextInt( 26 ) );
 
 				authors.add( author );
 
 				if ( i % 1000 == 0 ) {
 					authorCollection.insert( authors );
 					System.out.println( "Inserted " + i + " entities" );
-					authors = new ArrayList<DBObject>(1000);
+					authors = new ArrayList<DBObject>( 1000 );
 				}
 			}
 

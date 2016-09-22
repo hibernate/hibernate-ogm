@@ -134,11 +134,11 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	}
 
 	private OgmEntityPersister getEntityPersister(String entityName) {
-		return (OgmEntityPersister) ( sfi() ).getEntityPersister( entityName );
+		return (OgmEntityPersister) ( getSessionFactory() ).getEntityPersister( entityName );
 	}
 
 	private OgmCollectionPersister getCollectionPersister(String role) {
-		return (OgmCollectionPersister) ( sfi() ).getCollectionPersister( role );
+		return (OgmCollectionPersister) ( getSessionFactory() ).getCollectionPersister( role );
 	}
 
 	@Override

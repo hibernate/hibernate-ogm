@@ -100,7 +100,7 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { MultiAddressAccount.class, Address.class };
 	}
 

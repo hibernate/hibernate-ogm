@@ -13,7 +13,6 @@ import java.util.List;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
-import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
@@ -23,6 +22,7 @@ import org.hibernate.persister.entity.Joinable;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.ComponentType;
+import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
 /**
@@ -30,6 +30,7 @@ import org.hibernate.type.Type;
  * column names they are mapped to.
  *
  * @author Davide D'Alto
+ * @author Guillaume Smet
  */
 public class ParserPropertyHelper implements PropertyHelper {
 
@@ -61,11 +62,8 @@ public class ParserPropertyHelper implements PropertyHelper {
 	public Object convertToBackendType(String entityType, List<String> propertyPath, Object value) {
 		Type propertyType = getPropertyType( entityType, propertyPath );
 		GridType ogmType = sessionFactory.getServiceRegistry().getService( TypeTranslator.class ).getType( propertyType );
-		Tuple tuple = new Tuple();
 
-		ogmType.nullSafeSet( tuple, value, new String[] { "dummy" }, null );
-
-		return tuple.get( "dummy" );
+		return ogmType.convertToBackendType( value, sessionFactory );
 	}
 
 	protected Type getPropertyType(String entityType, List<String> propertyPath) {
@@ -77,8 +75,8 @@ public class ParserPropertyHelper implements PropertyHelper {
 			return propertyType;
 		}
 		else if ( propertyType.isComponentType() ) {
-			// Embeddded property
-			return getComponentPropertyType( propertyType, pathIterator );
+			// Embedded property
+			return getAssociationPropertyType( propertyType, pathIterator );
 		}
 		else if ( propertyType.isAssociationType() ) {
 			Joinable associatedJoinable = ( (AssociationType) propertyType ).getAssociatedJoinable( persister.getFactory() );
@@ -86,21 +84,29 @@ public class ParserPropertyHelper implements PropertyHelper {
 				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) associatedJoinable;
 				if ( collectionPersister.getType().isComponentType() ) {
 					// Collection of embeddables
-					return getComponentPropertyType( collectionPersister.getType(), pathIterator );
+					return getAssociationPropertyType( collectionPersister.getType(), pathIterator );
 				}
+			}
+			else if ( propertyType.isEntityType() ) {
+				// @*ToOne associations
+				return getAssociationPropertyType( propertyType, pathIterator );
 			}
 		}
 		throw new UnsupportedOperationException( "Unrecognized property type: " + propertyType );
 	}
 
-	private Type getComponentPropertyType(Type type, Iterator<String> pathIterator) {
+	private Type getAssociationPropertyType(Type type, Iterator<String> pathIterator) {
 		if ( pathIterator.hasNext() ) {
 			String property = pathIterator.next();
-			Type subType = componentPropertyType( (ComponentType) type, property );
+			Type subType = associationPropertyType( type, property );
 			if ( subType.isComponentType() ) {
-				return getComponentPropertyType( subType, pathIterator );
+				return getAssociationPropertyType( subType, pathIterator );
 			}
 			else if ( subType.isAssociationType() ) {
+				Joinable associatedJoinable = ( (AssociationType) subType ).getAssociatedJoinable( sessionFactory );
+				if ( !associatedJoinable.isCollection() && subType.isEntityType() ) {
+					return getAssociationPropertyType( subType, pathIterator );
+				}
 				throw new UnsupportedOperationException( "Queries on collection in embeddables are not supported: " + property );
 			}
 			else {
@@ -112,8 +118,16 @@ public class ParserPropertyHelper implements PropertyHelper {
 		}
 	}
 
-	private Type componentPropertyType(ComponentType componentType, String property) {
-		return componentType.getSubtypes()[componentType.getPropertyIndex( property )];
+	private Type associationPropertyType(Type type, String property) {
+		if ( type instanceof ComponentType ) {
+			ComponentType componentType = (ComponentType) type;
+			return componentType.getSubtypes()[componentType.getPropertyIndex( property )];
+		}
+		else if ( type instanceof EntityType ) {
+			OgmEntityPersister persister = getPersister( type.getName() );
+			return persister.getPropertyType( property );
+		}
+		throw new UnsupportedOperationException( "Unrecognized property type: " + type );
 	}
 
 	protected OgmEntityPersister getPersister(String entityType) {
@@ -129,7 +143,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 	 * Checks if the path leads to an embedded property or association.
 	 *
 	 * @param targetTypeName the entity with the property
-	 * @param namesWithoutAlias the path to the the property with all the aliases resolved
+	 * @param namesWithoutAlias the path to the property with all the aliases resolved
 	 * @return {@code true} if the property is an embedded, {@code false} otherwise.
 	 */
 	public boolean isEmbeddedProperty(String targetTypeName, List<String> namesWithoutAlias) {
@@ -153,7 +167,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 	 * Check if the path to the property correspond to an association.
 	 *
 	 * @param targetTypeName the name of the entity containing the property
-	 * @param pathWithoutAlias the path to the property WIHTOUT aliases
+	 * @param pathWithoutAlias the path to the property WITHOUT aliases
 	 * @return {@code true} if the property is an association or {@code false} otherwise
 	 */
 	public boolean isAssociation(String targetTypeName, List<String> pathWithoutAlias) {
@@ -216,7 +230,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 			return persister.getPropertyColumnNames( propertyName )[0];
 		}
 		else if ( propertyType.isComponentType() ) {
-			// Embeddded property
+			// Embedded property
 			String componentPropertyName = StringHelper.join( propertyPath, "." );
 			return persister.getPropertyColumnNames( componentPropertyName )[0];
 		}
@@ -227,7 +241,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 				if ( collectionPersister.getType().isComponentType() ) {
 					StringBuilder columnNameBuilder = new StringBuilder( );
 					// Collection of embeddables
-					appendComponenCollectionPath( columnNameBuilder, collectionPersister, pathIterator );
+					appendComponentCollectionPath( columnNameBuilder, collectionPersister, pathIterator );
 					return columnNameBuilder.toString();
 				}
 			}
@@ -235,10 +249,10 @@ public class ParserPropertyHelper implements PropertyHelper {
 		throw new UnsupportedOperationException( "Unrecognized property type: " + propertyType );
 	}
 
-	private void appendComponenCollectionPath(StringBuilder columnNameBuilder, OgmCollectionPersister persister, Iterator<String> pathIterator) {
+	private void appendComponentCollectionPath(StringBuilder columnNameBuilder, OgmCollectionPersister persister, Iterator<String> pathIterator) {
 		if ( pathIterator.hasNext() ) {
 			String property = pathIterator.next();
-			Type subType = componentPropertyType( (ComponentType) persister.getType(), property );
+			Type subType = associationPropertyType( persister.getType(), property );
 			if ( subType.isComponentType() ) {
 				property += "." + StringHelper.join( pathIterator, "." );
 			}

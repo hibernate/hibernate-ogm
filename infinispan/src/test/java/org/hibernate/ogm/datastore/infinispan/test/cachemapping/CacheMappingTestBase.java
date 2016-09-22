@@ -74,7 +74,7 @@ public abstract class CacheMappingTestBase extends OgmTestCase {
 	}
 
 	private InfinispanDatastoreProvider getProvider() {
-		return (InfinispanDatastoreProvider) sfi()
+		return (InfinispanDatastoreProvider) getSessionFactory()
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 	}

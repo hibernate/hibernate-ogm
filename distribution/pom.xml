@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -37,12 +37,6 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
-            <!-- 
-              Neo4j currently does not support Lucene 4 so we need to include Lucene 3 in the distribution package.
-
-              Maven only consider one version of a dependency so we copy the dependency in a separate folder and
-              we include it in the distribution package using the fileSet section in the assembly.
-             -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -57,7 +51,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
                                     <artifactId>lucene-core</artifactId>
-                                    <version>${neo4jLuceneVersion}</version>
+                                    <version>${luceneVersion}</version>
                                     <type>jar</type>
                                 </artifactItem>
                            </artifactItems>

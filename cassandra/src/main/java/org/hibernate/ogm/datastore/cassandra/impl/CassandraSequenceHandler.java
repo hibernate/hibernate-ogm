@@ -54,7 +54,7 @@ public class CassandraSequenceHandler {
 
 	private Long nextValueSelect(IdSourceKeyMetadata metadata, String sequenceName) {
 
-		Statement select = provider.getQueryBuilder().select().column( quote( metadata.getValueColumnName() )  )
+		Statement select = QueryBuilder.select().column( quote( metadata.getValueColumnName() )  )
 				.from( quote( metadata.getName() ) )
 				.where( eq( metadata.getKeyColumnName(), QueryBuilder.bindMarker() ) );
 
@@ -79,7 +79,7 @@ public class CassandraSequenceHandler {
 
 	private Long nextValueInsert(IdSourceKeyMetadata metadata, String sequenceName, Long value) {
 
-		Insert insert = provider.getQueryBuilder().insertInto( quote( metadata.getName() ))
+		Insert insert = QueryBuilder.insertInto( quote( metadata.getName() ) )
 				.value( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) )
 				.value( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value" ) )
 				.ifNotExists();
@@ -101,7 +101,7 @@ public class CassandraSequenceHandler {
 
 	private boolean nextValueUpdate(IdSourceKeyMetadata metadata, String sequenceName, Long oldValue, Long newValue) {
 
-		Statement update = provider.getQueryBuilder().update( quote( metadata.getName() ) )
+		Statement update = QueryBuilder.update( quote( metadata.getName() ) )
 				.with( set( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value_new" ) ) )
 				.where( eq( quote( metadata.getKeyColumnName() ), QueryBuilder.bindMarker( "sequence_name" ) ) )
 				.onlyIf( eq( quote( metadata.getValueColumnName() ), QueryBuilder.bindMarker( "sequence_value_old" ) ) );
@@ -130,19 +130,19 @@ public class CassandraSequenceHandler {
 		Long valueFromDb = null;
 		boolean done = false;
 		do {
-			valueFromDb = nextValueSelect( metadata, key.getColumnValues()[0].toString() );
+			valueFromDb = nextValueSelect( metadata, key.getColumnValue() );
 
 			if ( valueFromDb == null ) {
 				//if not there, insert initial value
 				valueFromDb = nextValueInsert( metadata,
-						key.getColumnValues()[0].toString(),
+						key.getColumnValue(),
 						(long) request.getInitialValue()
 				);
 			}
 
 			//update seq value ready for the next reader
 			Long updatedValue = valueFromDb + (long) request.getIncrement();
-			done = nextValueUpdate( metadata, key.getColumnValues()[0].toString(), valueFromDb, updatedValue );
+			done = nextValueUpdate( metadata, key.getColumnValue(), valueFromDb, updatedValue );
 		}
 		while ( !done );
 

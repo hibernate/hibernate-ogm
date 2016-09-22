@@ -13,14 +13,14 @@ import java.util.Properties;
 import org.fest.util.Files;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.impl.EmbeddedGraphDatabaseFactory;
+import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jGraphDatabaseFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test that it is possible to create and initialize the {@link EmbeddedGraphDatabaseFactory} without exceptions.
+ * Test that it is possible to create and initialize the {@link EmbeddedNeo4jGraphDatabaseFactory} without exceptions.
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
@@ -40,7 +40,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 
 	@Test
 	public void testLoadPropertiesFromUrl() throws Exception {
-		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
+		EmbeddedNeo4jGraphDatabaseFactory factory = new EmbeddedNeo4jGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
 		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().toExternalForm() );
@@ -50,7 +50,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 
 	@Test
 	public void testLoadPropertiesFromFilePath() throws Exception {
-		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
+		EmbeddedNeo4jGraphDatabaseFactory factory = new EmbeddedNeo4jGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
 		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().getFile() );
@@ -60,7 +60,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 
 	@Test(expected = HibernateException.class)
 	public void testLoadMalformedPropertiesLocation() throws Exception {
-		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
+		EmbeddedNeo4jGraphDatabaseFactory factory = new EmbeddedNeo4jGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
 		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, "aKDJSAGFKJAFLASFlaLfsfaf" );

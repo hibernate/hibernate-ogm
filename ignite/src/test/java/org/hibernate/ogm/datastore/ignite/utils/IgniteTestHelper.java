@@ -15,6 +15,7 @@ import java.util.Set;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CachePeekMode;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -31,14 +32,14 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
  * @author Dmitriy Kozlov
  */
-public class IgniteTestHelper implements TestableGridDialect {
+public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -70,18 +71,30 @@ public class IgniteTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		return 0;
+		int asscociationCount = 0;
+		Set<IgniteCache<String, BinaryObject>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<String, BinaryObject>, Boolean>() );
+
+		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
+			IgniteCache<String, BinaryObject> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
+			if ( !processedCaches.contains( associationCache ) ) {
+				asscociationCount += associationCache.size();
+				processedCaches.add( associationCache );
+			}
+		}
+
+		return asscociationCount;
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) session.getSessionFactory();
 		IgniteCache<String, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
-		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getEntityKeyString( key );
+		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getKeyString( key );
 
 		Map<String, Object> result = new HashMap<>();
 		Object po = cache.get( cacheKey );
 
-		IgniteDialect igniteDialect = (IgniteDialect) ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService( GridDialect.class );
+		IgniteDialect igniteDialect = (IgniteDialect) sessionFactory.getServiceRegistry().getService( GridDialect.class );
 		TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( po );
 		for (String fieldName : snapshot.getColumnNames()) {
 			result.put( fieldName, snapshot.get( fieldName ) );
@@ -133,6 +146,18 @@ public class IgniteTestHelper implements TestableGridDialect {
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return Ignite.class;
+	}
+
+	@Override
+	public long getNumberOfEntities(Session session)
+	{
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session)
+	{
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 }

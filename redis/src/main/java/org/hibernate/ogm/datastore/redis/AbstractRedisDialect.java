@@ -7,16 +7,23 @@
 package org.hibernate.ogm.datastore.redis;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
+import org.hibernate.ogm.datastore.redis.logging.impl.Log;
+import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -30,7 +37,11 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
-import com.lambdaworks.redis.RedisConnection;
+import com.lambdaworks.redis.KeyScanCursor;
+import com.lambdaworks.redis.ScanArgs;
+import com.lambdaworks.redis.cluster.api.sync.RedisAdvancedClusterCommands;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
+import com.lambdaworks.redis.cluster.models.partitions.RedisClusterNode;
 
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 
@@ -42,13 +53,49 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";
 
-	protected final RedisConnection<String, String> connection;
+	private static final Pattern MODE_PATTERN = Pattern.compile( "^redis_mode:([a-z]+)$", Pattern.MULTILINE );
+	private static final Log log = LoggerFactory.getLogger();
+
+	protected final RedisClusterCommands<String, String> connection;
 	protected final JsonSerializationStrategy strategy = new JsonSerializationStrategy();
+	protected final boolean clusterMode;
 
-
-	public AbstractRedisDialect(RedisConnection<String, String> connection) {
+	/**
+	 * Creates a new {@link AbstractRedisDialect}.
+	 *
+	 * @param connection a Redis connection (A regular Redis connection implements also {@link RedisClusterCommands})
+	 * @param configuredForCluster {@code true} if the connection is configured for cluster operations.
+	 */
+	public AbstractRedisDialect(RedisClusterCommands<String, String> connection, boolean configuredForCluster) {
 
 		this.connection = connection;
+
+		String redisMode = getRedisMode( connection );
+		if ( redisMode != null ) {
+			log.connectedRedisNodeRunsIn( redisMode );
+			clusterMode = "cluster".equalsIgnoreCase( redisMode.trim() );
+		}
+		else {
+			clusterMode = false;
+		}
+
+		if ( configuredForCluster && !clusterMode ) {
+			log.redisModeMismatchClusterModeConfigured( redisMode );
+		}
+		else if ( !configuredForCluster && clusterMode ) {
+			log.redisModeMismatchStandaloneModeConfigured( redisMode );
+		}
+	}
+
+	private String getRedisMode(RedisClusterCommands<String, String> connection) {
+		String info = connection.info( "server" );
+		Matcher matcher = MODE_PATTERN.matcher( info );
+		if ( matcher.find() ) {
+			return matcher.group( 1 );
+		}
+
+		log.cannotDetermineRedisMode( info );
+		return null;
 	}
 
 	@Override
@@ -85,8 +132,8 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	protected String identifierId(IdSourceKey key) {
 		String prefix = IDENTIFIERS + ":" + key.getTable();
 
-		if ( key.getColumnNames() != null ) {
-			String entityId = keyToString( key.getColumnNames(), key.getColumnValues() );
+		if ( key.getColumnName() != null ) {
+			String entityId = key.getColumnValue();
 			return prefix + ":" + entityId;
 		}
 		return prefix;
@@ -274,7 +321,9 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 	/**
 	 * Retrieve association from a Redis List or Redis Set, depending on the association type.
+	 *
 	 * @param key the association key
+	 *
 	 * @return the association
 	 */
 	protected org.hibernate.ogm.datastore.redis.dialect.value.Association getAssociation(AssociationKey key) {
@@ -298,6 +347,7 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 	/**
 	 * Store an association to a Redis List or Redis Set, depending on the association type.
+	 *
 	 * @param key the association key
 	 * @param association the association document
 	 */
@@ -315,5 +365,124 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 				connection.rpush( associationId, strategy.serialize( row ) );
 			}
 		}
+	}
+
+	/**
+	 * Scan over keys. This method is aware whether the client is connected to a Redis Cluster.
+	 * If so, then a Redis Cluster scan requires to iterate over master nodes and keep the
+	 * state within a custom {@link KeyScanCursor} instance.
+	 *
+	 * @param cursor
+	 * @param scanArgs
+	 *
+	 * @return
+	 */
+	protected KeyScanCursor<String> scan(KeyScanCursor<String> cursor, ScanArgs scanArgs) {
+
+		if ( !clusterMode ) {
+			return scan( connection, cursor, scanArgs );
+		}
+
+		return clusterScan( cursor, scanArgs );
+	}
+
+	private KeyScanCursor<String> scan(
+			RedisClusterCommands<String, String> commands,
+			KeyScanCursor<String> cursor,
+			ScanArgs scanArgs) {
+		if ( cursor != null ) {
+			return commands.scan( cursor, scanArgs );
+		}
+		return commands.scan( scanArgs );
+	}
+
+	@SuppressWarnings("unchecked")
+	private KeyScanCursor<String> clusterScan(KeyScanCursor<String> cursor, ScanArgs scanArgs) {
+
+		RedisAdvancedClusterCommands<String, String> commands = (RedisAdvancedClusterCommands<String, String>) connection;
+		List<String> nodeIds;
+		String currentNodeId;
+
+		if ( cursor == null ) {
+			Set<RedisClusterNode> masterNodes = commands.masters().asMap().keySet();
+			nodeIds = new ArrayList<>();
+
+			for ( RedisClusterNode masterNode : masterNodes ) {
+
+				if ( masterNode.getSlots().isEmpty() ) {
+					continue;
+				}
+				nodeIds.add( masterNode.getNodeId() );
+			}
+
+			if ( nodeIds.isEmpty() ) {
+				return scan( connection, cursor, scanArgs );
+			}
+
+			currentNodeId = nodeIds.get( 0 );
+		}
+		else {
+
+			ClusterwideKeyScanCursor<String> clusterKeyScanCursor = (ClusterwideKeyScanCursor<String>) cursor;
+			nodeIds = clusterKeyScanCursor.nodeIds;
+
+			currentNodeId = getNodeIdForNextScanIteration( nodeIds, clusterKeyScanCursor );
+		}
+
+		RedisClusterCommands<String, String> nodeConnection = commands.getConnection( currentNodeId );
+		KeyScanCursor<String> nodeKeyScanCursor = scan( nodeConnection, cursor, scanArgs );
+
+		return new ClusterwideKeyScanCursor(
+				nodeIds,
+				currentNodeId,
+				nodeKeyScanCursor
+		);
+	}
+
+	private String getNodeIdForNextScanIteration(
+			List<String> nodeIds,
+			ClusterwideKeyScanCursor<String> clusterKeyScanCursor) {
+		if ( clusterKeyScanCursor.isScanOnCurrentNodeFinished() ) {
+
+			int nodeIndex = nodeIds.indexOf( clusterKeyScanCursor.currentNodeId );
+			return nodeIds.get( nodeIndex + 1 );
+		}
+
+		return clusterKeyScanCursor.currentNodeId;
+	}
+
+	/**
+	 * @return {@code true} if the connected Redis node (default connection) is running in Redis Cluster mode.
+	 */
+	public boolean isClusterMode() {
+		return clusterMode;
+	}
+
+	static class ClusterwideKeyScanCursor<K> extends KeyScanCursor<K> {
+		final List<String> nodeIds;
+		final String currentNodeId;
+		final KeyScanCursor<K> cursor;
+
+		public ClusterwideKeyScanCursor(List<String> nodeIds, String currentNodeId, KeyScanCursor<K> cursor) {
+			super();
+			this.nodeIds = nodeIds;
+			this.currentNodeId = currentNodeId;
+			this.cursor = cursor;
+			setCursor( cursor.getCursor() );
+			getKeys().addAll( cursor.getKeys() );
+
+			if ( cursor.isFinished() ) {
+				int nodeIndex = nodeIds.indexOf( currentNodeId );
+				if ( nodeIndex == -1 || nodeIndex == nodeIds.size() - 1 ) {
+					setFinished( true );
+				}
+			}
+
+		}
+
+		private boolean isScanOnCurrentNodeFinished() {
+			return cursor.isFinished();
+		}
+
 	}
 }

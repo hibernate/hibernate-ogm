@@ -452,13 +452,9 @@ public class CouchDBDatastore {
 	private String createId(IdSourceKey key) {
 		StringBuilder builder = new StringBuilder( key.getTable() );
 		builder.append( ":" );
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			builder.append( key.getColumnNames()[i] );
-		}
+		builder.append( key.getColumnName() );
 		builder.append( ":" );
-		for ( int i = 0; i < key.getColumnValues().length; i++ ) {
-			builder.append( key.getColumnValues()[i] );
-		}
+		builder.append( key.getColumnValue() );
 		return builder.toString();
 	}
 

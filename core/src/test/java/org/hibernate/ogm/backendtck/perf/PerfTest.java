@@ -13,7 +13,7 @@ import java.util.Random;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.SingleJpaTestCase;
 import org.junit.Ignore;
 
 /**
@@ -23,7 +23,7 @@ import org.junit.Ignore;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Ignore
-public class PerfTest extends JpaTestCase {
+public class PerfTest extends SingleJpaTestCase {
 
 	private static Random rand = new Random();
 

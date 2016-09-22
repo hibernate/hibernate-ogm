@@ -29,6 +29,13 @@ public interface TupleContext {
 	OptionsContext getOptionsContext();
 
 	/**
+	 * Provides the information related to the transactional boundaries the query can be executed
+	 *
+	 * @return a transaction context containing information about the current running transaction, or null
+	 */
+	TransactionContext getTransactionContext();
+
+	/**
 	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of
 	 * the complete document/record. If the dialect supports the embedded storage of element collections and
 	 * associations, the respective columns will be part of the returned list as well.
@@ -58,7 +65,7 @@ public interface TupleContext {
 	AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata(String column);
 
 	/**
-	 * Get the the meta-data of all the associated entities keys
+	 * Get the meta-data of all the associated entities keys
 	 *
 	 * @return the meta-data about all the *-to-one associations represented in a given tuple, keyed by column name.
 	 */
@@ -75,7 +82,7 @@ public interface TupleContext {
 	/**
 	 * Get all the roles
 	 *
-	 * @return the the roles, keyed by column name.
+	 * @return the roles, keyed by column name.
 	 */
 	Map<String, String> getAllRoles();
 

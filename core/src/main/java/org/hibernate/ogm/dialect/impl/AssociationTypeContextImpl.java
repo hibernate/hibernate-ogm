@@ -21,11 +21,14 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 public class AssociationTypeContextImpl implements AssociationTypeContext {
 
 	private final OptionsContext optionsContext;
+	private final OptionsContext ownerEntityOptionsContext;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String roleOnMainSide;
 
-	public AssociationTypeContextImpl(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide) {
+	public AssociationTypeContextImpl(OptionsContext optionsContext, OptionsContext ownerEntityOptionsContext,
+			AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide) {
 		this.optionsContext = optionsContext;
+		this.ownerEntityOptionsContext = ownerEntityOptionsContext;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.roleOnMainSide = roleOnMainSide;
 	}
@@ -33,6 +36,11 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	@Override
+	public OptionsContext getOwnerEntityOptionsContext() {
+		return ownerEntityOptionsContext;
 	}
 
 	/**

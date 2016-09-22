@@ -24,7 +24,7 @@ public class PersistentIdSourceKey {
 	}
 
 	public static PersistentIdSourceKey fromIdSourceKey(IdSourceKey key) {
-		return new PersistentIdSourceKey( key.getColumnNames()[0], key.getColumnValues()[0] );
+		return new PersistentIdSourceKey( key.getColumnName(), key.getColumnValue() );
 	}
 
 	public String getName() {

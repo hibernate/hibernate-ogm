@@ -13,6 +13,9 @@ import java.util.Set;
 import org.apache.ignite.binary.BinaryObject;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
+/**
+ * @author Victor Kadachigov
+ */
 public class IgnitePortableTupleSnapshot implements TupleSnapshot {
 
 	private final BinaryObject binaryObject;

@@ -49,7 +49,7 @@ import com.lambdaworks.redis.ScanArgs;
 public class RedisHashDialect extends AbstractRedisDialect {
 
 	public RedisHashDialect(RedisDatastoreProvider provider) {
-		super( provider.getConnection() );
+		super( provider.getConnection(), provider.isCluster() );
 	}
 
 	@Override
@@ -264,33 +264,24 @@ public class RedisHashDialect extends AbstractRedisDialect {
 	}
 
 	@Override
-	public void forEachTuple(
-			ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		KeyScanCursor<String> cursor = null;
+		String prefix = entityKeyMetadata.getTable() + ":";
 
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			KeyScanCursor<String> cursor = null;
-			String prefix = entityKeyMetadata.getTable() + ":";
+		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
+		do {
+			cursor = scan( cursor, scanArgs );
 
-			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
-			do {
-				if ( cursor != null ) {
-					cursor = connection.scan( cursor, scanArgs );
-				}
-				else {
-					cursor = connection.scan( scanArgs );
-				}
+			for ( String key : cursor.getKeys() ) {
+				Map<String, String> hgetall = connection.hgetall( key );
+				Map<String, Object> entity = new HashMap<>();
 
-				for ( String key : cursor.getKeys() ) {
-					Map<String, String> hgetall = connection.hgetall( key );
-					Map<String, Object> entity = new HashMap<>();
+				entity.putAll( hgetall );
+				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, entity );
+				consumer.consume( new Tuple( new RedisTupleSnapshot( entity ) ) );
+			}
 
-					entity.putAll( hgetall );
-					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, entity );
-					consumer.consume( new Tuple( new RedisTupleSnapshot( entity ) ) );
-				}
-
-			} while ( !cursor.isFinished() );
-		}
+		} while ( !cursor.isFinished() );
 	}
 
 	protected void addKeyValuesFromKeyName(

@@ -402,8 +402,8 @@ it's not suited for all use cases
 
 For a complete understanding of what Hibernate Search can do for you
 and how to use it, 
-go check the http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
+go check the https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 === Using the Criteria API
 
-At this time, we have not implemented support for the Criteria APIs (neither Hibernate native and JPA).
+At this time, we have not implemented support for the Criteria APIs (neither Hibernate native nor JPA).

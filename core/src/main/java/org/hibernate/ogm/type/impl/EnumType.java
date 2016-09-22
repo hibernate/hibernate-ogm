@@ -10,6 +10,7 @@ import java.sql.Types;
 
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.NotYetImplementedException;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
@@ -125,6 +126,13 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 			resultset.put( names[0], endValue );
 		}
 
+	}
+
+	@Override
+	public Object convertToBackendType(Object value, SessionFactoryImplementor sessionFactory) {
+		Tuple tuple = new Tuple();
+		nullSafeSet( tuple, value, new String[] { "dummy" }, (SessionImplementor) null );
+		return tuple.get( "dummy" );
 	}
 
 	//copied for core enum type

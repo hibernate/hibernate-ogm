@@ -16,9 +16,9 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * A queue for {@link Operation}.
+ * A queue for {@link Operation}s.
  * <p>
- * It keeps track of the element that are going to be affected by an {@link InsertOrUpdateTupleOperation}.
+ * It keeps track of the elements that are going to be affected by an {@link InsertOrUpdateTupleOperation}.
  * The queue can be closed, in that case it will throw an exception when trying to add or poll an operation.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -27,7 +27,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class OperationsQueue {
 
 	/**
-	 * A queue that it is always closed
+	 * A queue that is always closed
 	 */
 	public static final OperationsQueue CLOSED_QUEUE = new OperationsQueue() {
 		@Override
@@ -68,14 +68,16 @@ public class OperationsQueue {
 
 	public Operation poll() {
 		validate();
-		Operation operation = operations.poll();
-		entityKeys.remove( operation );
-		return operation;
+		return operations.poll();
+	}
+
+	public void clear() {
+		entityKeys.clear();
+		operations.clear();
 	}
 
 	public void close() {
-		entityKeys.clear();
-		operations.clear();
+		clear();
 		closed = true;
 	}
 

@@ -8,7 +8,7 @@ package org.hibernate.ogm.utils.test;
 
 import static org.junit.Assert.fail;
 
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 public class SkipByDatastoreProviderSelfTest {
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.MAP)
+	@SkipByDatastoreProvider(DatastoreProviderType.MAP)
 	public void shouldBeSkipped() {
 		fail( "Should not be invoked" );
 	}

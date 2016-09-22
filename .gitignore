@@ -1,3 +1,6 @@
+# Our build scripts - necessary for our release jobs
+hibernate-noorm-release-scripts
+
 #OS
 .DS_Store
 
@@ -26,6 +29,7 @@ bin/
 
 #build
 target/
+work/
 
 #test output
 test-output/

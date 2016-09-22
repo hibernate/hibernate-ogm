@@ -26,7 +26,7 @@ public class ScientistWithSequence {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "scientist_seq")
-	@SequenceGenerator(name = "scientist_seq", allocationSize=100)
+	@SequenceGenerator(name = "scientist_seq", allocationSize = 100)
 	private Long id;
 
 	private String name;

@@ -9,26 +9,22 @@ package org.hibernate.ogm.backendtck.batchfetching;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.utils.EmptyOptionsContext;
+import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
@@ -45,14 +41,9 @@ import org.junit.Test;
 @SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.INFINISPAN, GridDialectType.EHCACHE, GridDialectType.REDIS_HASH })
 public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
-	private static final Map<String, AssociatedEntityKeyMetadata> EMPTY_ASSOCIATION_METADATA = Collections.emptyMap();
-	private static final Map<String, String> EMPTY_ROLES = Collections.emptyMap();
-
-	private static final TupleContext TUPLECONTEXT = new TupleContextImpl( Arrays.asList( "name", "publisher" ), EMPTY_ASSOCIATION_METADATA, EMPTY_ROLES,
-			EmptyOptionsContext.INSTANCE );
 	private static final EntityKeyMetadata METADATA = new DefaultEntityKeyMetadata( "BoardGame", new String[] { "id" } );
 
-	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[] { -666 } );
+	private static final EntityKey NOT_IN_THE_DB = new EntityKey( METADATA, new Object[]{ -666 } );
 
 	private static final BoardGame DOMINION = new BoardGame( 1, "Dominion" );
 	private static final BoardGame KING_OF_TOKYO = new BoardGame( 2, "King of Tokyo" );
@@ -60,60 +51,85 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Test
 	public void testGetTuplesWithoutNulls() throws Exception {
-		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
+		try ( OgmSession session = openSession() ) {
+			Transaction tx = session.beginTransaction();
+			try {
+				MultigetGridDialect dialect = multiGetGridDialect();
 
-			EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { key( SPLENDOR ), key( DOMINION ), key( KING_OF_TOKYO ) };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
-			assertThat( tuples.get( 0 ).get( "id" ) ).isEqualTo( SPLENDOR.getId() );
-			assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
+				assertThat( tuples.get( 0 ).get( "id" ) ).isEqualTo( SPLENDOR.getId() );
+				assertThat( tuples.get( 0 ).get( "name" ) ).isEqualTo( SPLENDOR.getName() );
 
-			assertThat( tuples.get( 1 ).get( "id" ) ).isEqualTo( DOMINION.getId() );
-			assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( DOMINION.getName() );
+				assertThat( tuples.get( 1 ).get( "id" ) ).isEqualTo( DOMINION.getId() );
+				assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( DOMINION.getName() );
 
-			assertThat( tuples.get( 2 ).get( "id" ) ).isEqualTo( KING_OF_TOKYO.getId() );
-			assertThat( tuples.get( 2 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
+				assertThat( tuples.get( 2 ).get( "id" ) ).isEqualTo( KING_OF_TOKYO.getId() );
+				assertThat( tuples.get( 2 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
 
-			session.getTransaction().commit();
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
 	@Test
 	public void testGetTuplesWithNulls() throws Exception {
-		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
+		try ( OgmSession session = openSession() ) {
+			Transaction tx = session.beginTransaction();
+			try {
+				MultigetGridDialect dialect = multiGetGridDialect();
 
-			EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, key( KING_OF_TOKYO ), NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
-			assertThat( tuples.get( 0 ) ).isNull();
+				assertThat( tuples.get( 0 ) ).isNull();
 
-			assertThat( tuples.get( 1 ).get( "id" ) ).isEqualTo( KING_OF_TOKYO.getId() );
-			assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
+				assertThat( tuples.get( 1 ).get( "id" ) ).isEqualTo( KING_OF_TOKYO.getId() );
+				assertThat( tuples.get( 1 ).get( "name" ) ).isEqualTo( KING_OF_TOKYO.getName() );
 
-			assertThat( tuples.get( 2 ) ).isNull();
-			assertThat( tuples.get( 3 ) ).isNull();
+				assertThat( tuples.get( 2 ) ).isNull();
+				assertThat( tuples.get( 3 ) ).isNull();
 
-			session.getTransaction().commit();
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
 	@Test
 	public void testGetTuplesWithAllNulls() throws Exception {
-		try (OgmSession session = openSession()) {
-			session.getTransaction().begin();
-			MultigetGridDialect dialect = multiGetGridDialect();
+		try ( OgmSession session = openSession() ) {
+			Transaction tx = session.beginTransaction();
+			try {
+				MultigetGridDialect dialect = multiGetGridDialect();
 
-			EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
-			List<Tuple> tuples = dialect.getTuples( keys, TUPLECONTEXT );
+				EntityKey[] keys = new EntityKey[] { NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB, NOT_IN_THE_DB };
+				List<Tuple> tuples = dialect.getTuples( keys, tupleContext( session ) );
 
-			assertThat( tuples ).containsExactly( null, null, null, null );
+				assertThat( tuples ).containsExactly( null, null, null, null );
 
-			session.getTransaction().commit();
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
+	}
+
+	private TupleContext tupleContext(Session session) {
+		return new GridDialectOperationContexts.TupleContextBuilder()
+				.selectableColumns( "name", "publisher" )
+				.transactionContext( session )
+				.buildTupleContext();
 	}
 
 	private EntityKey key(BoardGame boardGame) {
@@ -123,18 +139,24 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 
 	@Before
 	public void prepareDataset() {
-		try (OgmSession session = openSession()) {
-			session.beginTransaction();
-			session.persist( DOMINION );
-			session.persist( KING_OF_TOKYO );
-			session.persist( SPLENDOR );
-			session.getTransaction().commit();
+		try ( OgmSession session = openSession() ) {
+			Transaction tx = session.beginTransaction();
+			try {
+				session.persist( DOMINION );
+				session.persist( KING_OF_TOKYO );
+				session.persist( SPLENDOR );
+				tx.commit();
+			}
+			catch (Exception e) {
+				rollback( tx );
+				throw e;
+			}
 		}
 	}
 
 	@After
 	public void deleteDataset() {
-		try (OgmSession session = openSession()) {
+		try ( OgmSession session = openSession() ) {
 			Transaction tx = session.beginTransaction();
 			delete( session, DOMINION );
 			delete( session, SPLENDOR );
@@ -148,13 +170,19 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 	}
 
 	private MultigetGridDialect multiGetGridDialect() {
-		MultigetGridDialect gridDialect = sfi().getServiceRegistry().getService( MultigetGridDialect.class );
+		MultigetGridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( MultigetGridDialect.class );
 		return gridDialect;
+	}
+
+	private void rollback(Transaction tx) {
+		if ( tx != null ) {
+			tx.rollback();
+		}
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BoardGame.class };
+		return new Class<?>[]{ BoardGame.class };
 	}
 
 	@Entity

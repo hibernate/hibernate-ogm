@@ -35,11 +35,11 @@ public class NativeApiInsertBenchmark extends NativeApiBenchmarkBase {
 		for ( int i = 0; i < OPERATIONS_PER_INVOCATION; i++ ) {
 			DBObject author = new BasicDBObject( 5 );
 
-			author.put("Bio", "This is a decent size bio made of " + stateHolder.rand.nextDouble() + " stuffs" );
-			author.put("Dob", new Date() );
-			author.put("Fname", "Jessie " + stateHolder.rand.nextInt() );
-			author.put("Lname", "Landis " + stateHolder.rand.nextInt() );
-			author.put("Mname", "" + stateHolder.rand.nextInt( 26 ) );
+			author.put( "Bio", "This is a decent size bio made of " + stateHolder.rand.nextDouble() + " stuffs" );
+			author.put( "Dob", new Date() );
+			author.put( "Fname", "Jessie " + stateHolder.rand.nextInt() );
+			author.put( "Lname", "Landis " + stateHolder.rand.nextInt() );
+			author.put( "Mname", "" + stateHolder.rand.nextInt( 26 ) );
 
 			authorCollection.insert( author );
 		}
@@ -79,11 +79,11 @@ public class NativeApiInsertBenchmark extends NativeApiBenchmarkBase {
 		for ( int i = 0; i < OPERATIONS_PER_INVOCATION; i++ ) {
 			DBObject author = new BasicDBObject( 5 );
 
-			author.put("Bio", "This is a decent size bio made of " + stateHolder.rand.nextDouble() + " stuffs" );
-			author.put("Dob", new Date() );
-			author.put("Fname", "Jessie " + stateHolder.rand.nextInt() );
-			author.put("Lname", "Landis " + stateHolder.rand.nextInt() );
-			author.put("Mname", "" + stateHolder.rand.nextInt( 26 ) );
+			author.put( "Bio", "This is a decent size bio made of " + stateHolder.rand.nextDouble() + " stuffs" );
+			author.put( "Dob", new Date() );
+			author.put( "Fname", "Jessie " + stateHolder.rand.nextInt() );
+			author.put( "Lname", "Landis " + stateHolder.rand.nextInt() );
+			author.put( "Mname", "" + stateHolder.rand.nextInt( 26 ) );
 
 			authors.add( author );
 		}

@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.redis.test.options.ttl;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -13,11 +15,8 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.redis.test.RedisOgmTestCase;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for Redis Expiry.
@@ -87,8 +86,49 @@ public class GlobalPropertyTTLTest extends RedisOgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void ttlOnAssociationStoredInEntityDoesntOverrideTtlOnEntity() {
+		OgmSession session = openSession();
+		session.getTransaction().begin();
+
+		// given
+
+		Song healTheWorld = new Song( "heal the world" );
+		session.persist( healTheWorld );
+
+		BandWithAssociationStoredInEntity band = new BandWithAssociationStoredInEntity( "1", "one-hit-wonder", healTheWorld );
+		session.persist( band );
+
+		session.getTransaction().commit();
+
+		// when
+		Long bandTTL = getConnection().pttl( "BandWithAssociationStoredInEntity:1" );
+
+		// then
+		assertThat( bandTTL ).isGreaterThan( TimeUnit.DAYS.toMillis( 4 ) );
+
+		// when
+
+		session.getTransaction().begin();
+
+		band = session.load( BandWithAssociationStoredInEntity.class, "1" );
+
+		Song newSong = new Song( "New fancy song" );
+		session.persist( newSong );
+		band.getSongs().add( newSong );
+
+		session.persist( band );
+
+		session.getTransaction().commit();
+
+		// then
+		assertThat( bandTTL ).isGreaterThan( TimeUnit.DAYS.toMillis( 4 ) );
+
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {LogRecord.class, Band.class, Song.class};
+		return new Class<?>[] {LogRecord.class, Band.class, Song.class, BandWithAssociationStoredInEntity.class};
 	}
 }

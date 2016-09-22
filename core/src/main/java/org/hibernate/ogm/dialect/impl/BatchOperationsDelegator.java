@@ -65,18 +65,19 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		}
 	}
 
-	public void executeBatch() {
+	@Override
+	public void executeBatch(OperationsQueue operationsQueue) {
 		log.tracef( "Executing batch" );
 
 		try {
-			super.executeBatch( getOperationQueue() );
+			super.executeBatch( operationsQueue );
 		}
 		catch ( TupleAlreadyExistsException taee ) {
 			// TODO: Ideally, we should log the entity name + id here; For now we trust the datastore to provide this
 			// information via the original exception; It'd require a fair bit of changes to obtain the entity name here
 			// (we'd have to obtain the persister matching the given entity key metadata which in turn would require
 			// access to the session factory which is not easily available here)
-			throw log.mustNotInsertSameEntityTwice( null, taee );
+			throw log.mustNotInsertSameEntityTwice( taee.getMessage(), taee );
 		}
 	}
 

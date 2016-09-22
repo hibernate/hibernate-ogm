@@ -267,7 +267,7 @@ public class ObjectIdTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// then
-		assertCountQueryResult( session, "db.Comedian.count({ \"_id\" : { \"$oid\" : \"" + monty.getId() + "\" }, \"name\" : \"Monty\" })", 1L);
+		assertCountQueryResult( session, "db.Comedian.count({ \"_id\" : { \"$oid\" : \"" + monty.getId() + "\" }, \"name\" : \"Monty\" })", 1L );
 
 		Comedian montyLoaded = (Comedian) session.load( Comedian.class, monty.getId() );
 		assertThat( ObjectId.isValid( montyLoaded.getId() ) ).isTrue();

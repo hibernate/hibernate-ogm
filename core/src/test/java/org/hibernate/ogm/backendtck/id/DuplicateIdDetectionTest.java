@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -27,9 +27,9 @@ import static org.junit.Assert.fail;
  */
 @SkipByGridDialect(
 		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support uniq constraint even on primary key except by explicit/slow CAS use"
+		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
 )
-public class DuplicateIdDetectionTest extends JpaTestCase {
+public class DuplicateIdDetectionTest extends OgmJpaTestCase {
 	EntityManager em;
 
 	@Before
@@ -125,7 +125,7 @@ public class DuplicateIdDetectionTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { MakeupArtist.class, MakeupArtistWithCompositeKey.class };
 	}
 }

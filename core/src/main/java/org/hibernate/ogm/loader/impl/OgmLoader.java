@@ -379,7 +379,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 						id,
 						hydratedObjects,
 						keys,
-						returnProxies);
+						returnProxies );
 				results.add( result );
 			}
 			//TODO collect subselect result key
@@ -488,7 +488,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		Tuple tuple = resultset.unwrap( TupleAsMapResultSet.class ).getTuple();
 		extractKeysFromResultSet( session, optionalId, tuple, keys );
 
-		registerNonExists( keys, persisters, session);
+		registerNonExists( keys, persisters, session );
 
 		//it's a non existing object: cut short
 		if (resultset == null) {
@@ -568,7 +568,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 					keys[index] = EntityKeyBuilder.fromPersister( persister, (Serializable) qp.getPositionalParameterValues()[index], session );
 				}
 				if ( multigetGridDialect != null ) {
-					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext() ) ) {
+					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext( session ) ) ) {
 						if ( tuple != null ) {
 							resultset.addTuple( tuple );
 						}
@@ -576,7 +576,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				}
 				else {
 					for ( EntityKey entityKey : keys ) {
-						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext( session ) );
 						if ( entry != null ) {
 							resultset.addTuple( entry );
 						}
@@ -585,7 +585,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			}
 			else {
 				final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
-				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
+				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext( session ) );
 				if ( entry != null ) {
 					resultset.addTuple( entry );
 				}
@@ -1166,7 +1166,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			);
 
 		if ( persister.hasRowId() ) {
-			throw new HibernateException( "Hibernate OGM does nto support row id");
+			throw new HibernateException( "Hibernate OGM does not support row id");
 		}
 		final Object rowId = null;
 
@@ -1218,7 +1218,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 	/**
 	 * For missing objects associated by one-to-one with another object in the
-	 * result set, register the fact that the the object is missing with the
+	 * result set, register the fact that the  object is missing with the
 	 * session.
 	 *
 	 * copied form Loader#registerNonExists

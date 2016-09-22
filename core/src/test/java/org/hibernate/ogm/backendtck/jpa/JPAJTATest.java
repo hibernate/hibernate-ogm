@@ -6,29 +6,26 @@
  */
 package org.hibernate.ogm.backendtck.jpa;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.Rule;
 import org.junit.Test;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class JPAJTATest extends JpaTestCase {
+public class JPAJTATest extends OgmJpaTestCase {
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Poem.class );
 
@@ -68,14 +65,8 @@ public class JPAJTATest extends JpaTestCase {
 		emf.close();
 	}
 
-	private TransactionManager getTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
-				.getSessionFactory();
-		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
-	}
-
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Poem.class };
 	}
 }

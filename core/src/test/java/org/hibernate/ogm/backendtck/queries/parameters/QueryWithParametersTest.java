@@ -12,14 +12,11 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 
 import org.hibernate.ogm.utils.PackagingRule;
-import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -30,32 +27,14 @@ import org.junit.Test;
  * @author Gunnar Morling
  *
  */
-public class QueryWithParametersTest {
+public class QueryWithParametersTest extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Movie.class );
 
-	private EntityManagerFactory emf;
-
-	@Before
-	public void setupEntityManagerFactory() throws Exception {
-		Map<String, String> properties = TestHelper.getDefaultTestSettings();
-		properties.put( "hibernate.search.default.directory_provider", "ram" );
-
-		emf = Persistence.createEntityManagerFactory( "ogm", properties );
-
-		insertTestEntities();
-	}
-
-	@After
-	public void closeEntityManagerFactory() {
-		TestHelper.dropSchemaAndDatabase( emf );
-		emf.close();
-	}
-
 	@Test
 	public void canUseByteForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.viewerRating = 8", Movie.class )
@@ -69,7 +48,7 @@ public class QueryWithParametersTest {
 
 	@Test
 	public void canUseByteAsParameterForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.viewerRating = :viewerRating", Movie.class )
@@ -84,7 +63,7 @@ public class QueryWithParametersTest {
 
 	@Test
 	public void canUseByteAsParameterForInComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.viewerRating IN (:viewerRating)", Movie.class )
@@ -100,7 +79,7 @@ public class QueryWithParametersTest {
 	@Test
 	@Ignore("TODO HQLPARSER-59")
 	public void canUseEnumLiteralForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.genre = org.hibernate.ogm.backendtck.queries.enums.Genre.THRILLER", Movie.class )
@@ -114,7 +93,7 @@ public class QueryWithParametersTest {
 
 	@Test
 	public void canUseEnumAsParameterForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.genre = :genre", Movie.class )
@@ -129,7 +108,7 @@ public class QueryWithParametersTest {
 
 	@Test
 	public void canUseQueriesWithEnumAsParameterForInQuery() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.genre IN (:genre)", Movie.class )
@@ -145,7 +124,7 @@ public class QueryWithParametersTest {
 	@Test
 	@Ignore("TODO HQLPARSER-59")
 	public void canUseBooleanLiteralForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.suitableForKids = FALSE", Movie.class )
@@ -159,7 +138,7 @@ public class QueryWithParametersTest {
 
 	@Test
 	public void canUseBooleanAsParameterForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.suitableForKids = :suitable", Movie.class )
@@ -175,7 +154,7 @@ public class QueryWithParametersTest {
 	@Test
 	@Ignore("TODO HQLPARSER-59")
 	public void canUseDateLiteralForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.releaseDate = '02 April 1958'", Movie.class )
@@ -189,7 +168,7 @@ public class QueryWithParametersTest {
 
 	@Test
 	public void canUseDateParameterForSimpleComparison() {
-		EntityManager entityManager = emf.createEntityManager();
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		List<Movie> thrillers = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.releaseDate = :releaseDate", Movie.class )
@@ -202,8 +181,9 @@ public class QueryWithParametersTest {
 		entityManager.close();
 	}
 
-	private void insertTestEntities() throws Exception {
-		EntityManager entityManager = emf.createEntityManager();
+	@Before
+	public void insertTestEntities() throws Exception {
+		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
 
 		entityManager.persist( new Movie( "movie-1", Genre.COMEDY, "To thatch a roof", true, new GregorianCalendar( 1955, 5, 10 ).getTime(), (byte) 8 ) );
@@ -213,5 +193,24 @@ public class QueryWithParametersTest {
 
 		entityManager.getTransaction().commit();
 		entityManager.close();
+	}
+
+	@After
+	public void removeTestEntities() {
+		EntityManager entityManager = getFactory().createEntityManager();
+		entityManager.getTransaction().begin();
+
+		entityManager.remove( entityManager.find( Movie.class, "movie-1" ) );
+		entityManager.remove( entityManager.find( Movie.class, "movie-2" ) );
+		entityManager.remove( entityManager.find( Movie.class, "movie-3" ) );
+		entityManager.remove( entityManager.find( Movie.class, "movie-4" ) );
+
+		entityManager.getTransaction().commit();
+		entityManager.close();
+	}
+
+	@Override
+	protected Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] { Movie.class };
 	}
 }

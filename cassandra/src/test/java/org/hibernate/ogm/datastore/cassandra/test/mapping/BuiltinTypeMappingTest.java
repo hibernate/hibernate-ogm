@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.cassandra.test.mapping;
 
 import static org.hibernate.ogm.datastore.cassandra.utils.CassandraTestHelper.rowAssertion;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.hibernate.Transaction;
@@ -25,6 +26,8 @@ import org.junit.Test;
  */
 public class BuiltinTypeMappingTest extends OgmTestCase {
 
+	private static final BigDecimal PI = new BigDecimal( "3.14159265359" );
+
 	private String bookmarkId;
 
 	@Before
@@ -38,6 +41,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		bookmark.setRead( true );
 		bookmark.setShared( true );
 		bookmark.setSerialNumber( UUID.fromString( "59339fd6-b3d5-4876-a031-9ab43f09e642" ) );
+		bookmark.setSiteWeight( PI );
 
 		session.persist( bookmark );
 		transaction.commit();
@@ -121,6 +125,20 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		rowAssertion( session.getSessionFactory(), "Bookmark" )
 				.keyColumn( "id", bookmarkId )
 				.assertColumn( "serialNumber", UUID.fromString( "59339fd6-b3d5-4876-a031-9ab43f09e642" ) )
+				.execute();
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void bigDecimalMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		rowAssertion( session.getSessionFactory(), "Bookmark" )
+				.keyColumn( "id", bookmarkId )
+				.assertColumn( "siteWeight", PI )
 				.execute();
 
 		transaction.commit();

@@ -17,7 +17,7 @@ import javax.persistence.Query;
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
+public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
@@ -87,6 +87,15 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 		assertThat( result ).isEqualTo( "Portia" );
 
+
+		nativeQuery = "db.WILDE_POEM.findOne( "
+				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
+				+ "{ 'name' : 1 }"
+				+ " )";
+		result = (String) em.createNativeQuery( nativeQuery, "poemNameMapping" ).getSingleResult();
+
+		assertThat( result ).isEqualTo( "Portia" );
+
 		commit();
 	}
 
@@ -99,8 +108,20 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 				+ "{ 'name' : 1, 'author' : 1 }"
 				+ " )";
 		Object[] result = (Object[]) em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getSingleResult();
-
 		assertThat( Arrays.asList( result ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
+
+		nativeQuery = "db.WILDE_POEM.findOne( "
+				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
+				+ "{ 'name' : 1, 'author' : 1 }"
+				+ " )";
+		result = (Object[]) em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getSingleResult();
+		assertThat( Arrays.asList( result ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
+
+		@SuppressWarnings("unchecked")
+		List<Object[]> results = em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getResultList();
+		assertThat( results ).isNotNull();
+		assertThat( results.size() ).isEqualTo( 1 );
+		assertThat( Arrays.asList( results.get( 0 ) ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
 
 		commit();
 	}
@@ -262,7 +283,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { OscarWildePoem.class, LiteratureSociety.class, Poet.class, Critic.class };
 	}
 
@@ -287,7 +308,8 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 	private EntityManager delete(Object... entities) {
 		for ( Object object : entities ) {
-			em.detach( object );
+			Object entity = em.merge( object );
+			em.remove( entity );
 		}
 		return em;
 	}

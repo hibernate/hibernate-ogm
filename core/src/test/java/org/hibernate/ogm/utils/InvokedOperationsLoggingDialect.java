@@ -166,8 +166,8 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
-		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		ClosableIterator<Tuple> result = super.executeBackendQuery( query, queryParameters, tupleContext );
 		log( "executeBackendQuery", query.toString() + ", " + queryParameters.toString(), "tbd." );
 		return result;
 	}
@@ -284,7 +284,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 			if ( !Files.exists( file ) ) {
 				file = Files.createFile( file );
 			}
-			Files.write( file, ("#\top\tparameters\tresult" + System.lineSeparator() ).getBytes(), StandardOpenOption.TRUNCATE_EXISTING );
+			Files.write( file, ( "#\top\tparameters\tresult" + System.lineSeparator() ).getBytes(), StandardOpenOption.TRUNCATE_EXISTING );
 		}
 		catch (IOException e) {
 			throw new RuntimeException( e );

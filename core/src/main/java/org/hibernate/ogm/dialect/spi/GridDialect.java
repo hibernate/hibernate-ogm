@@ -165,14 +165,17 @@ public interface GridDialect extends Service {
 	GridType overrideType(Type type);
 
 	/**
-	 * A consumer is called for each tuple matching the selected {@link EntityKeyMetadata}.
+	 * A consumer is called for each tuple matching the selected {@link EntityKeyMetadata}. The tuples must be of the
+	 * same indexed type.
 	 *
 	 * @param consumer
 	 *            the instance that is going to be called for every {@link Tuple}
-	 * @param entityKeyMetadatas
-	 *            the key metadata of the tables for which we want to apply the costumer
+	 * @param tupleContext
+	 *            contains additional information that might be used to build the tuple
+	 * @param entityKeyMetadata
+	 *            the key metadata of the table for which we want to apply the consumer
 	 */
-	void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas);
+	void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata);
 
 	/**
 	 * Returns this dialect's strategy for detecting the insertion of several entity tuples of the given type with the

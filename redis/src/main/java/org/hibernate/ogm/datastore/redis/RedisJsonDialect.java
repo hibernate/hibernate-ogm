@@ -43,7 +43,6 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import com.lambdaworks.redis.KeyScanCursor;
-import com.lambdaworks.redis.RedisConnection;
 import com.lambdaworks.redis.ScanArgs;
 
 /**
@@ -58,13 +57,10 @@ import com.lambdaworks.redis.ScanArgs;
  */
 public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGridDialect {
 
-	protected final RedisConnection<String, String> connection;
-
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
 
 	public RedisJsonDialect(RedisDatastoreProvider provider) {
-		super( provider.getConnection() );
-		connection = provider.getConnection();
+		super( provider.getConnection(), provider.isCluster() );
 		this.entityStorageStrategy = new JsonEntityStorageStrategy( strategy, connection );
 	}
 
@@ -154,7 +150,8 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			Entity owningEntity = getEmbeddingEntity( key );
 
 			if ( owningEntity == null ) {
-				owningEntity = storeEntity( key.getEntityKey(), new Entity(), associationContext );
+				owningEntity = new Entity();
+				storeEntity( key.getEntityKey(), new Entity(), associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
 			}
 
 			redisAssociation = RedisAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
@@ -194,14 +191,18 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			storeEntity(
 					associationKey.getEntityKey(),
 					(Entity) redisAssociation.getOwningDocument(),
-					associationContext
+					associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext()
 			);
 		}
 		else {
-			Long currentTtl = connection.pttl( entityId( associationKey.getEntityKey() ) );
+			Long currentTtl = getCurrentTtl( entityId( associationKey.getEntityKey() ) );
 			storeAssociation( associationKey, (Association) redisAssociation.getOwningDocument() );
 			setAssociationTTL( associationKey, associationContext, currentTtl );
 		}
+	}
+
+	private Long getCurrentTtl(String objectKey) {
+		return connection.pttl( objectKey );
 	}
 
 	/**
@@ -251,7 +252,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			return rows;
 		}
 
-		List<Object> rows = new ArrayList<Object>( association.size() );
+		List<Object> rows = new ArrayList<>( association.size() );
 		for ( RowKey rowKey : association.getKeys() ) {
 			rows.add( getAssociationRow( association.get( rowKey ), key ) );
 		}
@@ -266,7 +267,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
-				storeEntity( key.getEntityKey(), owningEntity, associationContext );
+				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
 			}
 		}
 		else {
@@ -275,30 +276,23 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public void forEachTuple(final ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			KeyScanCursor<String> cursor = null;
-			String prefix = entityKeyMetadata.getTable() + ":";
+	public void forEachTuple(final ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		KeyScanCursor<String> cursor = null;
+		String prefix = entityKeyMetadata.getTable() + ":";
 
-			ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
-			do {
-				if ( cursor != null ) {
-					cursor = connection.scan( cursor, scanArgs );
-				}
-				else {
-					cursor = connection.scan( scanArgs );
-				}
+		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
+		do {
+			cursor = scan( cursor, scanArgs );
 
-				for ( String key : cursor.getKeys() ) {
-					Entity document = entityStorageStrategy.getEntity( key );
+			for ( String key : cursor.getKeys() ) {
+				Entity document = entityStorageStrategy.getEntity( key );
 
-					addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
+				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
 
-					consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
-				}
+				consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
+			}
 
-			} while ( !cursor.isFinished() );
-		}
+		} while ( !cursor.isFinished() );
 	}
 
 	private void storeEntity(
@@ -315,33 +309,19 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			entityDocument.set( entry.getKey(), entry.getValue() );
 		}
 
-		storeEntity( key, entityDocument, optionsContext, operations );
+		storeEntity( key, entityDocument, optionsContext );
 	}
 
 	private void storeEntity(
 			EntityKey key,
 			Entity document,
-			OptionsContext optionsContext,
-			Set<TupleOperation> operations) {
+			OptionsContext optionsContext) {
 
-		Long currentTtl = connection.pttl( entityId( key ) );
+		Long currentTtl = getCurrentTtl( entityId( key ) );
 
-		entityStorageStrategy.storeEntity( entityId( key ), document, operations );
+		entityStorageStrategy.storeEntity( entityId( key ), document );
 
 		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
-	}
-
-	private Entity storeEntity(EntityKey key, Entity entity, AssociationContext associationContext) {
-		Long currentTtl = connection.pttl( entityId( key ) );
-
-		entityStorageStrategy.storeEntity(
-				entityId( key ),
-				entity,
-				null
-		);
-
-		setEntityTTL( key, currentTtl, getTTL( associationContext ) );
-		return entity;
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {
@@ -363,7 +343,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		}
 
 		Iterable<Entity> entities = entityStorageStrategy.getEntities( ids );
-		List<Tuple> tuples = new ArrayList<Tuple>( keys.length );
+		List<Tuple> tuples = new ArrayList<>( keys.length );
 
 		int i = 0;
 		for ( Entity entity : entities ) {

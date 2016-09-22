@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -20,6 +21,7 @@ import org.hibernate.ogm.datastore.redis.AbstractRedisDialect;
 import org.hibernate.ogm.datastore.redis.Redis;
 import org.hibernate.ogm.datastore.redis.RedisHashDialect;
 import org.hibernate.ogm.datastore.redis.RedisJsonDialect;
+import org.hibernate.ogm.datastore.redis.RedisProperties;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
@@ -27,7 +29,10 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
+
+import com.lambdaworks.redis.api.sync.RedisKeyCommands;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -35,9 +40,8 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lambdaworks.redis.api.sync.RedisCommands;
 
-public class RedisTestHelper implements TestableGridDialect {
+public class RedisTestHelper implements GridDialectTestHelper {
 
 	static {
 		// Read host and port from environment variable
@@ -50,6 +54,11 @@ public class RedisTestHelper implements TestableGridDialect {
 		if ( isNotNull( redisPort ) ) {
 			System.getProperties().setProperty( OgmProperties.PORT, redisPort );
 		}
+
+		String redisCluster = System.getenv( "REDIS_CLUSTER" );
+		if ( isNotNull( redisCluster ) ) {
+			System.getProperties().setProperty( RedisProperties.CLUSTER, redisCluster );
+		}
 	}
 
 	private static boolean isNotNull(String value) {
@@ -57,8 +66,8 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		RedisDatastoreProvider castProvider = getProvider( session.getSessionFactory() );
 		AbstractRedisDialect gridDialect = getGridDialect( castProvider );
 
 		if ( gridDialect instanceof RedisJsonDialect ) {
@@ -66,7 +75,7 @@ public class RedisTestHelper implements TestableGridDialect {
 		}
 
 		if ( gridDialect instanceof RedisHashDialect ) {
-			return extractFromHashDialect( sessionFactory, key, (RedisHashDialect) gridDialect );
+			return extractFromHashDialect( session.getSessionFactory(), key, (RedisHashDialect) gridDialect );
 		}
 
 		throw new IllegalStateException( "Unsupported dialect " + gridDialect );
@@ -97,7 +106,7 @@ public class RedisTestHelper implements TestableGridDialect {
 			EntityKey key,
 			RedisHashDialect gridDialect) {
 
-		RedisCommands<String, String> connection = getConnection( sessionFactory );
+		RedisClusterCommands<String, String> connection = getConnection( sessionFactory );
 
 		String entityId = gridDialect.entityId( key );
 
@@ -147,11 +156,11 @@ public class RedisTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		RedisCommands<String, String> connection = getConnection( sessionFactory );
+		RedisClusterCommands<String, String> connection = getConnection( sessionFactory );
 		connection.flushall();
 	}
 
-	private RedisCommands<String, String> getConnection(SessionFactory sessionFactory) {
+	private RedisClusterCommands<String, String> getConnection(SessionFactory sessionFactory) {
 		RedisDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getConnection();
 	}
@@ -162,8 +171,13 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		RedisCommands<String, String> connection = getConnection( sessionFactory );
+		RedisClusterCommands<String, String> connection = getConnection( sessionFactory );
 		List<String> keys = connection.keys( "*" );
 
 		long result = 0;
@@ -199,6 +213,11 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		long associationCount = getNumberOfGlobalAssociations( sessionFactory );
 		associationCount += getNumberOfEmbeddedAssociations( sessionFactory );
@@ -219,12 +238,12 @@ public class RedisTestHelper implements TestableGridDialect {
 	}
 
 	public long getNumberOfGlobalAssociations(SessionFactory sessionFactory) {
-		RedisCommands<String, String> connection = getConnection( sessionFactory );
+		RedisKeyCommands<String, String> connection = getConnection( sessionFactory );
 		return connection.keys( AbstractRedisDialect.ASSOCIATIONS + ":*" ).size();
 	}
 
 	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
-		RedisCommands<String, String> connection = getConnection( sessionFactory );
+		RedisClusterCommands<String, String> connection = getConnection( sessionFactory );
 
 		long associationCount = 0;
 		List<String> keys = connection.keys( "*" );

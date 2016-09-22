@@ -22,11 +22,15 @@ public final class RedisProperties implements KeyValueStoreProperties, DocumentS
 	 */
 	public static final String TIMEOUT = "hibernate.ogm.redis.connection_timeout";
 
-
 	/**
 	 * boolean flag, whether to use SSL. Defaults to false.
 	 */
 	public static final String SSL = "hibernate.ogm.redis.ssl";
+
+	/**
+	 * boolean flag, whether to use Redis Cluster. Defaults to false.
+	 */
+	public static final String CLUSTER = "hibernate.ogm.redis.cluster";
 
 	/**
 	 * Configuration property for setting the expiry of keys. This value is set in milliseconds.

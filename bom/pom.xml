@@ -10,7 +10,7 @@
 
     <groupId>org.hibernate.ogm</groupId>
     <artifactId>hibernate-ogm-bom</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -21,55 +21,73 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- compile/runtime dependency versions, managed in the BOM -->
-        <classmateVersion>1.0.0</classmateVersion>
-        <ehcacheVersion>2.6.9</ehcacheVersion>
-        <infinispanVersion>8.0.2.Final</infinispanVersion>
-        <mongodbVersion>3.0.3</mongodbVersion>
-        <fongodbVersion>2.0.2</fongodbVersion>
-        <neo4jVersion>2.3.2</neo4jVersion>
-        <igniteVersion>1.5.0.final</igniteVersion>
-        <!-- Update dependency versions accordingly when updating C*  -->
-        <cassandraVersion>2.2.0-rc3</cassandraVersion>
-        <!-- Update dependency versions accordingly when updating lettuce  -->
-        <lettuceVersion>4.0.2.Final</lettuceVersion>
-        <!-- Neo4j supports different versions of Cypher -->
-        <neo4jCypherCompiler19Version>2.0.5</neo4jCypherCompiler19Version>
-        <neo4jCypherCompiler22Version>2.2.6</neo4jCypherCompiler22Version>
-        <!-- Neo4j does not support Lucene 4 currently-->
-        <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
-        <hibernateVersion>5.0.5.Final</hibernateVersion>
-        <hibernateSearchVersion>5.5.1.Final</hibernateSearchVersion>
-        <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
+        <!--
+            These dependencies should be aligned with the ones from the Wildfly version we support
+            See the version.wildfly property in the hibernate-ogm-parent pom
+            See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
+        -->
+        <hibernateVersion>5.0.9.Final</hibernateVersion>
+        <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
-        <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
-        <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
-        <slf4jVersion>1.7.5</slf4jVersion>
-        <resteasyVersion>3.0.9.Final</resteasyVersion>
-        <jacksonVersion>2.4.1</jacksonVersion>
-        <parboiledVersion>1.1.7</parboiledVersion>
-        <scalaLibraryVersion>2.11.7</scalaLibraryVersion>
-        <scalaParserCombinatorVersion>1.0.4</scalaParserCombinatorVersion>
-        <concurrentlinkedhashmapVersion>1.4.2</concurrentlinkedhashmapVersion>
-        <commonsLang3Version>3.3.2</commonsLang3Version>
-        <asmVersion>5.0.3</asmVersion>
-        <luceneVersion>5.3.1</luceneVersion>
+        <infinispanVersion>8.2.3.Final</infinispanVersion>
+        <classmateVersion>1.3.1</classmateVersion>
+        <resteasyVersion>3.0.18.Final</resteasyVersion> <!-- Used by CouchDB and Neo4j remote -->
+        <jacksonVersion>2.7.4</jacksonVersion>
+        <slf4jVersion>1.7.7</slf4jVersion> <!-- Note: Wildfly 10.1.0.CR1 uses a custom jboss version -->
+        <netty4Version>4.0.33.Final</netty4Version>
+        <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
+        <narayanaVersion>5.3.3.Final</narayanaVersion>
+        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
+        <luceneVersion>5.5.2</luceneVersion>
 
+        <!-- Various dependencies -->
+        <hibernateHqlParserVersion>1.3.0.Final</hibernateHqlParserVersion>
+        <parboiledVersion>1.1.7</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
+        <asmVersion>5.0.3</asmVersion> <!-- used for Parboiled and Neo4j -->
+
+        <!-- Ehcache -->
+        <ehcacheVersion>2.6.11</ehcacheVersion>
+
+        <!-- MongoDB -->
+        <mongodbDriverVersion>3.3.0</mongodbDriverVersion>
+        <mongodbVersion>3.2.8</mongodbVersion>
+        <fongodbVersion>2.0.7</fongodbVersion>
+
+        <!-- Neo4j -->
+        <neo4jVersion>3.0.4</neo4jVersion>
+        <!-- Update dependency versions accordingly when updating Neo4j  -->
+        <!-- Neo4j supports different versions of Cypher -->
+        <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
+        <neo4jCypherCompiler23Version>2.3.5</neo4jCypherCompiler23Version>
+        <neo4jScalaLibraryVersion>2.11.8</neo4jScalaLibraryVersion>
+        <neo4jCommonsLang3Version>3.3.2</neo4jCommonsLang3Version>
+        <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
+        <!-- See Parboiled dependency above -->
+        <!-- See Lucene dependency above -->
+
+        <!-- Cassandra -->
+        <cassandraVersion>3.1.0</cassandraVersion>
+        <!-- Update dependency versions accordingly when updating C*  -->
         <!--
              The following versions are required for the Cassandra driver; We don't expose a managed versions
              of these libraries through this BOM, these versions are for internal usage to make sure the right
              JARs end up in the C* driver WildFly module
         -->
-        <codahaleMetricsVersion>3.0.2</codahaleMetricsVersion>
+        <cassandraCodahaleMetricsVersion>3.1.2</cassandraCodahaleMetricsVersion>
         <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
-        <!-- slf4J is also being used - luckily it's in synch with the above defined version 1.7.5 -->
-        <!-- end of Cassandra dependencies -->
 
+        <!-- Redis -->
+        <lettuceVersion>4.2.1.Final</lettuceVersion>
+        <!-- Update dependency versions accordingly when updating lettuce  -->
+        <lettuceRxjavaVersion>1.1.6</lettuceRxjavaVersion>
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
-        <lettuceGuavaVersion>18.0</lettuceGuavaVersion>
-        <netty4Version>4.0.26.Final</netty4Version>
+        <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
+
+		<!-- Ignite -->
+        <igniteVersion>1.7.0</igniteVersion>
+
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -125,19 +143,31 @@
             <id>emmanuelbernard</id>
             <name>Emmanuel Bernard</name>
             <email>emmanuel@hibernate.org</email>
-            <url>http://in.relation.to/Bloggers/Emmanuel</url>
+            <url>http://in.relation.to/emmanuel-bernard/</url>
         </developer>
         <developer>
             <id>sannegrinovero</id>
             <name>Sanne Grinovero</name>
             <email>sanne@hibernate.org</email>
-            <url>http://in.relation.to/Bloggers/Sanne</url>
+            <url>http://in.relation.to/sanne-grinovero/</url>
         </developer>
         <developer>
             <id>gunnarmorling</id>
             <name>Gunnar Morling</name>
             <email>gunnar@hibernate.org</email>
-            <url>http://in.relation.to/Bloggers/Gunnar</url>
+            <url>http://in.relation.to/gunnar-morling/</url>
+        </developer>
+        <developer>
+            <id>davidedalto</id>
+            <name>Davide D'Alto</name>
+            <email>davide@hibernate.org</email>
+            <url>http://in.relation.to/davide-dalto/</url>
+        </developer>
+        <developer>
+            <id>guillaumesmet</id>
+            <name>Guillaume Smet</name>
+            <email>guillaume.smet@hibernate.org</email>
+            <url>http://in.relation.to/guillaume-smet/</url>
         </developer>
     </developers>
 
@@ -199,6 +229,10 @@
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -209,6 +243,10 @@
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -243,6 +281,10 @@
                         <artifactId>slf4j-api</artifactId>
                         <groupId>org.slf4j</groupId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>geronimo-jta_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -263,6 +305,43 @@
                         <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <!-- Apache Lucene : we control the version explicitly to
+                pick a good compromise across Hibernate Search, Neo4J, Infinispan, HQL Parser -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers-common</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-misc</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-facet</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-backward-codecs</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-codecs</artifactId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${luceneVersion}</version>
             </dependency>
             <!-- Hibernate Search / Infinispan integration -->
             <dependency>
@@ -293,6 +372,11 @@
                 <version>${project.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-jipijapa</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
@@ -369,12 +453,12 @@
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-parser</artifactId>
-                <version>${hibernateParserVersion}</version>
+                <version>${hibernateHqlParserVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-lucene</artifactId>
-                <version>${hibernateParserVersion}</version>
+                <version>${hibernateHqlParserVersion}</version>
                 <!-- TODO Remove once parser is updated -->
                 <exclusions>
                     <exclusion>
@@ -386,7 +470,7 @@
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-mongodb</artifactId>
-                <version>${hibernateParserVersion}</version>
+                <version>${hibernateHqlParserVersion}</version>
             </dependency>
 
             <!-- NoSQL databases -->
@@ -427,7 +511,7 @@
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
-                <version>${mongodbVersion}</version>
+                <version>${mongodbDriverVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.fakemongo</groupId>
@@ -456,6 +540,18 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asmVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>${neo4jScalaLibraryVersion}</version>
+            </dependency>
+
             <!-- Cassandra -->
             <dependency>
                 <groupId>com.datastax.cassandra</groupId>
@@ -471,44 +567,56 @@
             </dependency>
             
             <!-- Ignite -->
-        <dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-core</artifactId>
-			<version>${igniteVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-jta</artifactId>
-			<version>${igniteVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-indexing</artifactId>
-			<version>${igniteVersion}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-spring</artifactId>
-            <version>${igniteVersion}</version>
-            <scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>${commonsLang3Version}</version>
-		</dependency>
+	        <dependency>
+				<groupId>org.apache.ignite</groupId>
+				<artifactId>ignite-core</artifactId>
+				<version>${igniteVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.ignite</groupId>
+				<artifactId>ignite-jta</artifactId>
+				<version>${igniteVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.ignite</groupId>
+				<artifactId>ignite-indexing</artifactId>
+				<version>${igniteVersion}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.lucene</groupId>
+						<artifactId>lucene-core</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+	        <dependency>
+	            <groupId>org.apache.ignite</groupId>
+	            <artifactId>ignite-spring</artifactId>
+	            <version>${igniteVersion}</version>
+	            <scope>test</scope>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+	        <dependency>
+	            <groupId>org.apache.ignite</groupId>
+	            <artifactId>ignite-slf4j</artifactId>
+	            <version>${igniteVersion}</version>
+	            <scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${neo4jCommonsLang3Version}</version>
+			</dependency>
+	        <dependency>
+	            <groupId>org.slf4j</groupId>
+	            <artifactId>jcl-over-slf4j</artifactId>
+				<version>${slf4jVersion}</version>
+	            <scope>test</scope>
+	        </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>
@@ -527,22 +635,10 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
                 <version>${resteasyVersion}</version>
-                <exclusions>
-                    <!-- Actually RESTEasy shouldn't depend on a slf4j backend -->
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-simple</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${resteasyVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>jaxrs-api</artifactId>
                 <version>${resteasyVersion}</version>
             </dependency>
 
@@ -589,135 +685,9 @@
                 <version>${jacksonVersion}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.jbossts</groupId>
-                <artifactId>jbossjta</artifactId>
-                <version>${jbossjtaVersion}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.ws.native</groupId>
-                        <artifactId>jbossws-native-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>emma</artifactId>
-                        <groupId>emma</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>emma_ant</artifactId>
-                        <groupId>emma</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>hornetq-core</artifactId>
-                        <groupId>org.hornetq</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>netty</artifactId>
-                        <groupId>org.jboss.netty</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>wrapper</artifactId>
-                        <groupId>tanukisoft</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jacorb</artifactId>
-                        <groupId>jacorb</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jfreechart</artifactId>
-                        <groupId>jfree</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-corba-ots-spi</artifactId>
-                        <groupId>org.jboss.integration</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-server-manager</artifactId>
-                        <groupId>org.jboss.jbossas</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-ejb-api_3.1_spec</artifactId>
-                        <groupId>org.jboss.spec.javax.ejb</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jnp-client</artifactId>
-                        <groupId>org.jboss.naming</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jbossws-common</artifactId>
-                        <groupId>org.jboss.ws</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jcl-over-slf4j</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>stax-api</artifactId>
-                        <groupId>stax</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>idl</artifactId>
-                        <groupId>jacorb</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-connector-api_1.5_spec</artifactId>
-                        <groupId>org.jboss.spec.javax.resource</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-transaction-spi</artifactId>
-                        <groupId>org.jboss.integration</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-remoting</artifactId>
-                        <groupId>org.jboss.remoting</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>slf4j-api</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>dom4j</artifactId>
-                        <groupId>dom4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>commons-codec</artifactId>
-                        <groupId>commons-codec</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-logmanager</artifactId>
-                        <groupId>org.jboss.logmanager</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>hibernate-jpa-2.0-api</artifactId>
-                        <groupId>org.hibernate.javax.persistence</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>commons-logging</artifactId>
-                        <groupId>commons-logging</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jcommon</artifactId>
-                        <groupId>jfree</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>commons-httpclient</artifactId>
-                        <groupId>commons-httpclient</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-logging-processor</artifactId>
-                        <groupId>org.jboss.logging</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>jboss-logging-generator</artifactId>
-                        <groupId>org.jboss.logging</groupId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.jboss.narayana.jta</groupId>
+                <artifactId>narayana-jta</artifactId>
+                <version>${narayanaVersion}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

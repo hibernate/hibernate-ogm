@@ -63,7 +63,7 @@ public class StringMappedTypeSerialisationTest extends OgmTestCase {
 		//Check directly in the cache the values stored
 		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Bookmark", new String[] { "id" } );
 		EntityKey key = new EntityKey( keyMetadata, new Object[] { b.getId() } );
-		Map<String, Object> entity = extractEntityTuple( sessions, key );
+		Map<String, Object> entity = extractEntityTuple( session, key );
 
 		assertEquals( "String-mapped BigInteger incorrect", entity.get( "visitCount" ), "444" );
 		assertEquals( "String-mapped UUID incorrect", entity.get( "serialNumber" ), serialNumber.toString() );

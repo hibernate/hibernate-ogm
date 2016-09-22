@@ -304,6 +304,15 @@ public interface GridType extends Serializable {
 	throws HibernateException;
 
 	/**
+	 * Returns the value which has been stored in the datastore so that we can perform queries on it.
+	 *
+	 * @param value the object we use in the query
+	 * @param sessionFactory the sessionFactory
+	 * @return the object as stored in the database
+	 */
+	Object convertToBackendType(Object value, SessionFactoryImplementor sessionFactory);
+
+	/**
 	 * A representation of the value to be embedded in a log file.
 	 *
 	 * @param value the object to convert into a string to log

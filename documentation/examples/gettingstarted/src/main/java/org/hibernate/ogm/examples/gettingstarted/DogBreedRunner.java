@@ -1,3 +1,9 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
 package org.hibernate.ogm.examples.gettingstarted;
 
 import org.hibernate.ogm.examples.gettingstarted.domain.Breed;
@@ -9,16 +15,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
-import java.lang.reflect.InvocationTargetException;
 
 public class DogBreedRunner {
 
-	private static final String JBOSS_TM_CLASS_NAME = "com.arjuna.ats.jta.TransactionManager";
 	private static final Log logger = LoggerFactory.make();
 
 	public static void main(String[] args) {
 
-		TransactionManager tm = getTransactionManager();
+		TransactionManager tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
 
 		//build the EntityManagerFactory as you would build in in Hibernate Core
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm-jpa-tutorial" );
@@ -51,25 +55,11 @@ public class DogBreedRunner {
 			tm.commit();
 
 			emf.close();
-		} catch ( Exception e ) {
+		}
+		catch ( Exception e ) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public static TransactionManager getTransactionManager() {
-		try {
-			Class<?> tmClass = DogBreedRunner.class.getClassLoader().loadClass( JBOSS_TM_CLASS_NAME );
-			return (TransactionManager) tmClass.getMethod( "transactionManager" ).invoke( null );
-		} catch ( ClassNotFoundException e ) {
-			e.printStackTrace();
-		} catch ( InvocationTargetException e ) {
-			e.printStackTrace();
-		} catch ( NoSuchMethodException e ) {
-			e.printStackTrace();
-		} catch ( IllegalAccessException e ) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 }

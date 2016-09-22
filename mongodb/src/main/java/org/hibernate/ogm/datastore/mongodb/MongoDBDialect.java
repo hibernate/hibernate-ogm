@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
+import static java.lang.Boolean.FALSE;
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
@@ -19,12 +20,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
-import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
@@ -48,7 +52,6 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
-import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
@@ -87,10 +90,12 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
+import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -100,6 +105,8 @@ import org.parboiled.support.ParsingResult;
 
 import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.BulkWriteResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -107,6 +114,7 @@ import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -132,6 +140,7 @@ import com.mongodb.WriteConcern;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Thorsten Möller &lt;thorsten.moeller@sbi.ch&gt;
  */
 public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect {
 
@@ -144,6 +153,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static final Log log = LoggerFactory.getLogger();
 
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
+
+	/**
+	 * Pattern used to recognize a constraint violation on the primary key.
+	 *
+	 * MongoDB returns an exception with {@code .$_id_ } or {@code  _id_ } while Fongo returns an exception with {@code ._id }
+	 */
+	private static final Pattern PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE = Pattern.compile( ".*[. ]\\$?_id_? .*" );
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -185,7 +201,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * This method assumes that the entries in the cursor might not be in the same order as the keys and some keys might
 	 * not have a matching result in the db.
 	 */
-	private List<Tuple> tuplesResult(EntityKey[] keys, Object[] searchObjects, TupleContext tupleContext, DBCursor cursor) {
+	private static List<Tuple> tuplesResult(EntityKey[] keys, Object[] searchObjects, TupleContext tupleContext, DBCursor cursor) {
 		// The list is initialized with null because some keys might not have a corresponding value in the cursor
 		Tuple[] tuples = new Tuple[searchObjects.length];
 		for ( DBObject dbObject : cursor ) {
@@ -200,7 +216,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return Arrays.asList( tuples );
 	}
 
-	private Tuple createTuple(EntityKey key, TupleContext tupleContext, DBObject found) {
+	private static Tuple createTuple(EntityKey key, TupleContext tupleContext, DBObject found) {
 		if ( found != null ) {
 			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
 		}
@@ -213,7 +229,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private boolean isInTheQueue(EntityKey key, TupleContext tupleContext) {
+	private static boolean isInTheQueue(EntityKey key, TupleContext tupleContext) {
 		OperationsQueue queue = tupleContext.getOperationsQueue();
 		return queue != null && queue.contains( key );
 	}
@@ -225,7 +241,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		DBObject toSave = this.prepareIdObject( key );
+		DBObject toSave = prepareIdObject( key );
 		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getMetadata(), SnapshotType.INSERT ) );
 	}
 
@@ -272,14 +288,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collection.find( query, projection );
 	}
 
-	private BasicDBObject getProjection(TupleContext tupleContext) {
+	private static BasicDBObject getProjection(TupleContext tupleContext) {
 		return getProjection( tupleContext.getSelectableColumns() );
 	}
 
 	/**
 	 * Returns a projection object for specifying the fields to retrieve during a specific find operation.
 	 */
-	private BasicDBObject getProjection(List<String> fieldNames) {
+	private static BasicDBObject getProjection(List<String> fieldNames) {
 		BasicDBObject projection = new BasicDBObject( fieldNames.size() );
 		for ( String column : fieldNames ) {
 			projection.put( column, 1 );
@@ -297,19 +313,27 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 *
 	 * @return the DBObject which represents the id field
 	 */
-	private BasicDBObject prepareIdObject(EntityKey key) {
-		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+	private static BasicDBObject prepareIdObject(EntityKey key) {
+		return prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
 
-	private BasicDBObject prepareIdObject(IdSourceKey key) {
-		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+	private static BasicDBObject prepareIdObject(IdSourceKey key) {
+		return prepareIdObject( key.getColumnName(), key.getColumnValue() );
 	}
 
-	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues) {
+	private static BasicDBObject prepareIdObject(String columnName, String columnValue) {
+		return new BasicDBObject( ID_FIELDNAME, prepareIdObjectValue( columnName, columnValue ) );
+	}
+
+	private static BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues) {
 		return new BasicDBObject( ID_FIELDNAME, prepareIdObjectValue( columnNames, columnValues ) );
 	}
 
-	private Object prepareIdObjectValue(String[] columnNames, Object[] columnValues) {
+	private static Object prepareIdObjectValue(String columnName, String columnValue) {
+		return columnValue;
+	}
+
+	private static Object prepareIdObjectValue(String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length == 1 ) {
 			return columnValues[0];
 		}
@@ -354,18 +378,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private BasicDBObject getSubQuery(String operator, BasicDBObject query) {
+	private static BasicDBObject getSubQuery(String operator, BasicDBObject query) {
 		return query.get( operator ) != null ? (BasicDBObject) query.get( operator ) : new BasicDBObject();
 	}
 
-	private void addSubQuery(String operator, BasicDBObject query, String column, Object value) {
-		BasicDBObject subQuery = this.getSubQuery( operator, query );
+	private static void addSubQuery(String operator, BasicDBObject query, String column, Object value) {
+		BasicDBObject subQuery = getSubQuery( operator, query );
 		query.append( operator, subQuery.append( column, value ) );
 	}
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		BasicDBObject idObject = this.prepareIdObject( key );
+		BasicDBObject idObject = prepareIdObject( key );
 
 		DBObject updater = objectForUpdate( tuple, idObject, tupleContext );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
@@ -374,14 +398,21 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			getCollection( key ).update( idObject, updater, true, false, writeConcern );
 		}
 		catch ( DuplicateKeyException dke ) {
-			throw new TupleAlreadyExistsException( key.getMetadata(), tuple, dke );
+			// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
+			// so we determine if it concerns the primary key by matching on the message
+			if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, dke );
+			}
+			else {
+				throw log.constraintViolationForEntity( key, dke.getMessage(), dke );
+			}
 		}
 	}
 
 	@Override
 	//TODO deal with dotted column names once this method is used for ALL / Dirty optimistic locking
 	public boolean updateTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, Tuple tuple, TupleContext tupleContext) {
-		BasicDBObject idObject = this.prepareIdObject( entityKey );
+		BasicDBObject idObject = prepareIdObject( entityKey );
 
 		for ( String versionColumn : oldLockState.getColumnNames() ) {
 			idObject.put( versionColumn, oldLockState.get( versionColumn ) );
@@ -411,9 +442,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	/**
-	 * Creates a dbObject that can be pass to the mongoDB batch insert function
+	 * Creates a DBObject that can be passed to the MongoDB batch insert function
 	 */
-	private DBObject objectForInsert(Tuple tuple, DBObject dbObject) {
+	private static DBObject objectForInsert(Tuple tuple, DBObject dbObject) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
@@ -432,7 +463,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return dbObject;
 	}
 
-	private DBObject objectForUpdate(Tuple tuple, DBObject idObject, TupleContext tupleContext) {
+	private static DBObject objectForUpdate(Tuple tuple, DBObject idObject, TupleContext tupleContext) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 		EmbeddableStateFinder embeddableStateFinder = new EmbeddableStateFinder( tuple, tupleContext );
 		Set<String> nullEmbeddables = new HashSet<String>();
@@ -443,7 +474,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			if ( notInIdField( snapshot, column ) ) {
 				switch ( operation.getType() ) {
 				case PUT:
-					this.addSubQuery( "$set", updater, column, operation.getValue() );
+					addSubQuery( "$set", updater, column, operation.getValue() );
 					break;
 				case PUT_NULL:
 				case REMOVE:
@@ -454,24 +485,24 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 						// we have a null embeddable
 						if ( ! nullEmbeddables.contains( nullEmbeddable ) ) {
 							// we have not processed it yet
-							this.addSubQuery( "$unset", updater, nullEmbeddable, Integer.valueOf( 1 ) );
+							addSubQuery( "$unset", updater, nullEmbeddable, Integer.valueOf( 1 ) );
 							nullEmbeddables.add( nullEmbeddable );
 						}
 					}
 					else {
 						// simply unset the column
-						this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
+						addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
 					}
 					break;
 				}
 			}
 		}
 		/*
-		* Needed because in case of object with only an ID field
+		* Needed because in case of an object with only an ID field
 		* the "_id" won't be persisted properly.
 		* With this adjustment, it will work like this:
-		*	if the object (from snapshot) doesn't exist so create the one represented by updater
-		*	so if at this moment the "_id" is not enforce properly an ObjectID will be created by the server instead
+		*	if the object (from snapshot) doesn't exist, create the one represented by updater
+		*	so if at this moment the "_id" is not enforced properly, an ObjectID will be created by the server instead
 		*	of the custom id
 		 */
 		if ( updater.size() == 0 ) {
@@ -480,7 +511,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return updater;
 	}
 
-	private boolean notInIdField(MongoDBTupleSnapshot snapshot, String column) {
+	private static boolean notInIdField(MongoDBTupleSnapshot snapshot, String column) {
 		return !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.isKeyColumn( column );
 	}
 
@@ -515,7 +546,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return getAssociationCollection( key, storageStrategy ).findOne( associationKeyObject, getProjection( key, false ), readPreference );
 	}
 
-	private DBObject getProjection(AssociationKey key, boolean embedded) {
+	private static DBObject getProjection(AssociationKey key, boolean embedded) {
 		if ( embedded ) {
 			return getProjection( Collections.singletonList( key.getMetadata().getCollectionRole() ) );
 		}
@@ -524,7 +555,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private boolean isInTheQueue(EntityKey key, AssociationContext associationContext) {
+	private static boolean isInTheQueue(EntityKey key, AssociationContext associationContext) {
 		OperationsQueue queue = associationContext.getOperationsQueue();
 		return queue != null && queue.contains( key );
 	}
@@ -561,7 +592,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private boolean isEmbeddedAssociation(AssociationKey key) {
+	private static boolean isEmbeddedAssociation(AssociationKey key) {
 		return AssociationKind.EMBEDDED_COLLECTION == key.getMetadata().getAssociationKind();
 	}
 
@@ -591,7 +622,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * another {@code DBObject}.
 	 * </ul>
 	 */
-	private Object getAssociationRows(Association association, AssociationKey key, AssociationContext associationContext) {
+	private static Object getAssociationRows(Association association, AssociationKey key, AssociationContext associationContext) {
 		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey( association, key, associationContext );
 
 		// transform map entries such as ( addressType='home', address_id=123) into the more
@@ -628,7 +659,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
+	private static Object getAssociationRow(Tuple row, AssociationKey associationKey) {
 		String[] rowKeyColumnsToPersist = associationKey.getMetadata().getColumnsWithoutKeyColumns( row.getColumnNames() );
 
 		// return value itself if there is only a single column to store
@@ -669,7 +700,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			collection = this.getCollection( key.getEntityKey() );
-			query = this.prepareIdObject( key.getEntityKey() );
+			query = prepareIdObject( key.getEntityKey() );
 			associationField = key.getMetadata().getCollectionRole();
 
 			//TODO would that fail if getCollectionRole has dots?
@@ -692,7 +723,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			DBObject entity = this.prepareIdObject( key.getEntityKey() );
+			DBObject entity = prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
 				addSubQuery( "$unset", updater, key.getMetadata().getCollectionRole(), Integer.valueOf( 1 ) );
@@ -715,7 +746,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		DBCollection currentCollection = getCollection( request.getKey().getTable() );
-		DBObject query = this.prepareIdObject( request.getKey() );
+		DBObject query = prepareIdObject( request.getKey() );
 		//all columns should match to find the value
 
 		String valueColumnName = request.getKey().getMetadata().getValueColumnName();
@@ -723,7 +754,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		BasicDBObject update = new BasicDBObject();
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
 		Integer incrementObject = Integer.valueOf( request.getIncrement() );
-		this.addSubQuery( "$inc", update, valueColumnName, incrementObject );
+		addSubQuery( "$inc", update, valueColumnName, incrementObject );
 		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
 		Object idFromDB;
 		idFromDB = result == null ? null : result.get( valueColumnName );
@@ -731,7 +762,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			//not inserted yet so we need to add initial value to increment to have the right next value in the DB
 			//FIXME that means there is a small hole as when there was not value in the DB, we do add initial value in a non atomic way
 			BasicDBObject updateForInitial = new BasicDBObject();
-			this.addSubQuery( "$inc", updateForInitial, valueColumnName, request.getInitialValue() );
+			addSubQuery( "$inc", updateForInitial, valueColumnName, request.getInitialValue() );
 			currentCollection.findAndModify( query, null, null, false, updateForInitial, false, true );
 			idFromDB = request.getInitialValue(); //first time we ask this value
 		}
@@ -775,31 +806,77 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
 		DB db = provider.getDatabase();
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
-			for ( DBObject dbObject : collection.find() ) {
-				consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata, UPDATE ) ) );
-			}
+		DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
+		for ( DBObject dbObject : collection.find() ) {
+			consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata, UPDATE ) ) );
 		}
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
-		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
+		EntityKeyMetadata entityKeyMetadata =
+				backendQuery.getSingleEntityMetadataInformationOrNull() == null ? null :
+					backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 
-		switch( queryDescriptor.getOperation() ) {
+		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
+			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
+		}
+
+		switch ( queryDescriptor.getOperation() ) {
 			case FIND:
 				return doFind( queryDescriptor, queryParameters, collection, entityKeyMetadata );
+			case FINDONE:
+				return doFindOne( queryDescriptor, collection, entityKeyMetadata );
+			case FINDANDMODIFY:
+				return doFindAndModify( queryDescriptor, collection, entityKeyMetadata );
 			case AGGREGATE:
 				return doAggregate( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case COUNT:
 				return doCount( queryDescriptor, collection );
+			case INSERT:
+			case REMOVE:
+			case UPDATE:
+				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
+			default:
+				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
+		}
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(final BackendQuery<MongoDBQueryDescriptor> backendQuery, final QueryParameters queryParameters, final TupleContext tupleContext) {
+		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
+
+		EntityKeyMetadata entityKeyMetadata =
+				backendQuery.getSingleEntityMetadataInformationOrNull() == null ? null :
+					backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+
+		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
+		DBCollection collection = provider.getDatabase().getCollection( collectionName );
+
+		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
+			throw new UnsupportedOperationException("Positional parameters are not yet supported for MongoDB native queries.");
+		}
+
+		switch ( queryDescriptor.getOperation() ) {
+			case INSERT:
+				return doInsert( queryDescriptor, collection );
+			case REMOVE:
+				return doRemove( queryDescriptor, collection );
+			case UPDATE:
+				return doUpdate( queryDescriptor, collection );
+			case FIND:
+			case FINDONE:
+			case FINDANDMODIFY:
+			case AGGREGATE:
+			case COUNT:
+				throw log.readQueryMustBeExecutedViaGetResultList( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
 		}
@@ -822,7 +899,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 
-	private ClosableIterator<Tuple> doAggregate(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
+	private static ClosableIterator<Tuple> doAggregate(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
 		List<DBObject> pipeline = new ArrayList<DBObject>();
 
 		pipeline.add( stage( "$match", query.getCriteria() ) );
@@ -851,17 +928,87 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return new MongoDBAggregationOutput( output, entityKeyMetadata );
 	}
 
-	private DBObject stage(String key, Object value) {
+	private static DBObject stage(String key, Object value) {
 		DBObject stage = new BasicDBObject();
 		stage.put( key, value );
 		return stage;
 	}
 
-	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
+	private static ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
 			EntityKeyMetadata entityKeyMetadata) {
-		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
-		if ( query.getOrderBy() != null ) {
-			cursor.sort( query.getOrderBy() );
+		BasicDBObject criteria = (BasicDBObject) query.getCriteria();
+		DBObject orderby = query.getOrderBy();
+		String hintIndexName = null;
+		DBObject hintDBObject = null;
+		int maxScan = -1;
+		long maxTimeMS = -1;
+		boolean snapshot = false;
+		DBObject min = null;
+		DBObject max = null;
+		String comment = null;
+		boolean explain = false;
+
+		// We need to extract the different parts of the criteria and pass them to the cursor API
+		if ( criteria.containsField( "$query" ) ) {
+			if ( orderby == null ) {
+				orderby = (DBObject) criteria.get( "$orderby" );
+			}
+
+			Object hintObject = criteria.get( "$hint" );
+			if ( hintObject instanceof String ) {
+				hintIndexName = (String) hintObject;
+			}
+			else if ( hintObject instanceof DBObject ) {
+				hintDBObject = (DBObject) hintObject;
+			}
+			maxScan = criteria.getInt( "$maxScan", -1 );
+			maxTimeMS = criteria.getLong( "$maxTimeMS", -1 );
+
+			snapshot = criteria.getBoolean( "$snapshot", false );
+			min = (DBObject) criteria.get( "$min" );
+			max = (DBObject) criteria.get( "$max" );
+
+			comment = criteria.getString( "$comment" );
+			explain = criteria.getBoolean( "$explain", false );
+
+			criteria = (BasicDBObject) criteria.get( "$query" );
+		}
+
+		DBCursor cursor = collection.find( criteria, query.getProjection() );
+
+		if ( orderby != null ) {
+			cursor.sort( orderby );
+		}
+
+		if ( !StringHelper.isNullOrEmptyString( hintIndexName ) ) {
+			cursor.hint( hintIndexName );
+		}
+		if ( hintDBObject != null ) {
+			cursor.hint( hintDBObject );
+		}
+		if ( maxScan > 0 ) {
+			cursor.maxScan( maxScan );
+		}
+		if ( maxTimeMS > 0 ) {
+			cursor.maxTime( maxTimeMS, TimeUnit.MILLISECONDS );
+		}
+		// orderby and snapshot are exclusive
+		if ( orderby == null && snapshot ) {
+			cursor.snapshot();
+		}
+		if ( min != null ) {
+			cursor.min( min );
+		}
+		if ( max != null ) {
+			cursor.max( max );
+		}
+
+		if ( !StringHelper.isNullOrEmptyString( comment ) ) {
+			cursor.comment( comment );
+		}
+
+		if ( explain ) {
+			cursor.explain();
 		}
 
 		// apply firstRow/maxRows if present
@@ -876,10 +1023,138 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return new MongoDBResultsCursor( cursor, entityKeyMetadata );
 	}
 
-	private ClosableIterator<Tuple> doCount(MongoDBQueryDescriptor query, DBCollection collection) {
+	private static ClosableIterator<Tuple> doFindOne(final MongoDBQueryDescriptor query, final DBCollection collection,
+			final EntityKeyMetadata entityKeyMetadata) {
+
+		final DBObject theOne = collection.findOne( query.getCriteria(), query.getProjection() );
+		return new SingleTupleIterator(theOne, collection, entityKeyMetadata);
+	}
+
+	private static ClosableIterator<Tuple> doFindAndModify(final MongoDBQueryDescriptor queryDesc, final DBCollection collection,
+			final EntityKeyMetadata entityKeyMetadata) {
+
+		DBObject query = (DBObject) queryDesc.getCriteria().get( "query" );
+		DBObject fields = (DBObject) queryDesc.getCriteria().get( "fields" );
+		DBObject sort = (DBObject) queryDesc.getCriteria().get( "sort" );
+		Boolean remove = (Boolean) queryDesc.getCriteria().get( "remove" );
+		DBObject update = (DBObject) queryDesc.getCriteria().get( "update" );
+		Boolean nevv = (Boolean) queryDesc.getCriteria().get( "new" );
+		Boolean upsert = (Boolean) queryDesc.getCriteria().get( "upsert" );
+		Boolean bypass = (Boolean) queryDesc.getCriteria().get( "bypassDocumentValidation" );
+		DBObject o = (DBObject) queryDesc.getCriteria().get( "writeConcern" );
+		WriteConcern wc = getWriteConcern( o );
+		final DBObject theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ),
+				update, (nevv != null ? nevv : false), (upsert != null ? upsert : false), (bypass != null ? bypass : false),
+				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern() ) );
+		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
+	}
+
+	@SuppressWarnings("unchecked")
+	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
+		DBObject insert = queryDesc.getUpdateOrInsert();
+		DBObject options = queryDesc.getOptions();
+		Boolean ordered = FALSE;
+		WriteConcern wc = null;
+		if ( options != null ) {
+			ordered = (Boolean) options.get( "ordered" );
+			ordered = ( ordered != null ) ? ordered : FALSE;
+			DBObject o = (DBObject) options.get( "writeConcern" );
+			wc = getWriteConcern( o );
+		}
+
+		// Need to use BulkWriteOperation here rather than collection.insert(..) because the WriteResult returned
+		// by the latter returns 0 for getN() even if the insert was successful (which is bizarre, but that's the way it
+		// is defined...)
+		BulkWriteOperation bo = ( ordered ) ? collection.initializeOrderedBulkOperation() : collection.initializeUnorderedBulkOperation();
+		if ( insert instanceof List<?> ) {
+			for ( DBObject i : (List<DBObject>) insert ) {
+				bo.insert( i );
+			}
+		}
+		else {
+			bo.insert( insert );
+		}
+
+		final BulkWriteResult result = bo.execute( ( wc != null ? wc : collection.getWriteConcern() ) );
+
+		if ( result.isAcknowledged() ) {
+			return result.getInsertedCount();
+		}
+		return -1; // Not sure if we should throw an exception instead?
+	}
+
+	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
+		DBObject query = queryDesc.getCriteria();
+		DBObject options = queryDesc.getOptions();
+		Boolean justOne = FALSE;
+		WriteConcern wc = null;
+		if ( options != null ) {
+			justOne = (Boolean) options.get( "justOne" );
+			justOne = ( justOne != null ) ? justOne : FALSE;
+			if ( justOne ) { // IMPROVE See https://jira.mongodb.org/browse/JAVA-759
+				throw new UnsupportedOperationException( "Using 'justOne' in a remove query is not yet supported." );
+			}
+			DBObject o = (DBObject) options.get( "writeConcern" );
+			wc = getWriteConcern( o );
+		}
+
+		final WriteResult result = collection.remove( query, ( wc != null ? wc : collection.getWriteConcern() ) );
+		if ( result.wasAcknowledged() ) {
+			return result.getN();
+		}
+		return -1; // Not sure if we should throw an exception instead?
+	}
+
+	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final DBCollection collection) {
+		DBObject query = queryDesc.getCriteria();
+		DBObject update = queryDesc.getUpdateOrInsert();
+		DBObject options = queryDesc.getOptions();
+		Boolean upsert = FALSE;
+		Boolean multi = FALSE;
+		WriteConcern wc = null;
+		if ( options != null ) {
+			upsert = (Boolean) options.get( "upsert" );
+			upsert = ( upsert != null ) ? upsert : FALSE;
+			multi = (Boolean) options.get( "multi" );
+			multi = ( multi != null ) ? multi : FALSE;
+			DBObject o = (DBObject) options.get( "writeConcern" );
+			wc = getWriteConcern( o );
+		}
+
+		final WriteResult result = collection.update( query, update, upsert, multi, ( wc != null ? wc : collection.getWriteConcern() ) );
+		if ( result.wasAcknowledged() ) {
+			// IMPROVE How could we return result.getUpsertedId() if it was an upsert, or isUpdateOfExisting()?
+			// I see only a possibility by using javax.persistence.StoredProcedureQuery in the application
+			// and then using getOutputParameterValue(String) to get additional result values.
+			return result.getN();
+		}
+		return -1; // Not sure if we should throw an exception instead?
+	}
+
+	private static ClosableIterator<Tuple> doCount(MongoDBQueryDescriptor query, DBCollection collection) {
 		long count = collection.count( query.getCriteria() );
 		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", count ) );
 		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot ) ) );
+	}
+
+	/**
+	 * @param obj A JSON object representing a write concern.
+	 * @return The parsed write concern or <code>null</code> if <code>obj</code> is <code>null</code>.
+	 */
+	private static WriteConcern getWriteConcern(DBObject obj) {
+		WriteConcern wc = null;
+		if ( obj != null ) {
+			Object w = obj.get( "w" );
+			Boolean j = (Boolean) obj.get( "j" );
+			Integer t = (Integer) obj.get( "wtimeout" );
+			if ( w instanceof String ) {
+				wc = new WriteConcern( (String) w, ( t != null ? t : 0 ), false, ( j != null ? j : false ) );
+			}
+			if ( w instanceof Number ) {
+				wc = new WriteConcern( ( (Number) w ).intValue(), ( t != null ? t : 0 ), false, ( j != null ? j : false ) );
+			}
+		}
+		return wc;
 	}
 
 	/**
@@ -894,7 +1169,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * @param entityKeyMetadata meta-data in case this is a query with exactly one entity return
 	 * @return the name of the MongoDB collection to execute the given query against
 	 */
-	private String getCollectionName(BackendQuery<?> customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
+	private static String getCollectionName(BackendQuery<?> customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
 		if ( queryDescriptor.getCollectionName() != null ) {
 			return queryDescriptor.getCollectionName();
 		}
@@ -906,7 +1181,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private DBObject associationKeyToObject(AssociationKey key, AssociationStorageStrategy storageStrategy) {
+	private static DBObject associationKeyToObject(AssociationKey key, AssociationStorageStrategy storageStrategy) {
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			throw new AssertionFailure( MongoHelpers.class.getName()
 					+ ".associationKeyToObject should not be called for associations embedded in entity documents");
@@ -932,7 +1207,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return idObject;
 	}
 
-	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKey key, AssociationContext associationContext) {
+	private static AssociationStorageStrategy getAssociationStorageStrategy(AssociationKey key, AssociationContext associationContext) {
 		return getAssociationStorageStrategy( key.getMetadata(), associationContext.getAssociationTypeContext() );
 	}
 
@@ -941,7 +1216,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * given via the option mechanism, that one will be taken, otherwise the default value as given via the
 	 * corresponding configuration property is applied.
 	 */
-	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKeyMetadata keyMetadata, AssociationTypeContext associationTypeContext) {
+	private static AssociationStorageStrategy getAssociationStorageStrategy(AssociationKeyMetadata keyMetadata, AssociationTypeContext associationTypeContext) {
 		AssociationStorageType associationStorage = associationTypeContext
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
@@ -992,7 +1267,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			for ( MongoDBTupleSnapshot insertSnapshot : insertSnapshots ) {
 				insertSnapshot.setSnapshotType( UPDATE );
 			}
-			queue.close();
+			queue.clear();
 		}
 	}
 
@@ -1061,12 +1336,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		inserts.get( collection ).put( entityKey, newDocument );
 	}
 
-	private DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, BatchInsertionTask batchInsert, EntityKey entityKey) {
+	private static DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, BatchInsertionTask batchInsert, EntityKey entityKey) {
 		DBObject fromBatchInsertion = batchInsert.get( entityKey );
 		return fromBatchInsertion != null ? fromBatchInsertion : snapshot.getDbObject();
 	}
 
-	private BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, EntityKeyMetadata entityKeyMetadata, DBCollection collection, WriteConcern writeConcern) {
+	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, EntityKeyMetadata entityKeyMetadata, DBCollection collection, WriteConcern writeConcern) {
 		BatchInsertionTask insertsForCollection = inserts.get( collection );
 
 		if ( insertsForCollection == null ) {
@@ -1077,7 +1352,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return insertsForCollection;
 	}
 
-	private void flushInserts(Map<DBCollection, BatchInsertionTask> inserts) {
+	private static void flushInserts(Map<DBCollection, BatchInsertionTask> inserts) {
 		for ( Map.Entry<DBCollection, BatchInsertionTask> entry : inserts.entrySet() ) {
 			DBCollection collection = entry.getKey();
 			if ( entry.getValue().isEmpty() ) {
@@ -1089,25 +1364,32 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				collection.insert( entry.getValue().getAll(), entry.getValue().getWriteConcern() );
 			}
 			catch ( DuplicateKeyException dke ) {
-				throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+				// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
+				// so we determine if it concerns the primary key by matching on the message
+				if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
+					throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+				}
+				else {
+					throw log.constraintViolationOnFlush( dke.getMessage(), dke );
+				}
 			}
 		}
 		inserts.clear();
 	}
 
-	private WriteConcern getWriteConcern(TupleContext tupleContext) {
+	private static WriteConcern getWriteConcern(TupleContext tupleContext) {
 		return tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
-	private WriteConcern getWriteConcern(AssociationContext associationContext) {
+	private static WriteConcern getWriteConcern(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
-	private ReadPreference getReadPreference(TupleContext tupleContext) {
+	private static ReadPreference getReadPreference(TupleContext tupleContext) {
 		return tupleContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
-	private ReadPreference getReadPreference(AssociationContext associationContext) {
+	private static ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
@@ -1172,6 +1454,49 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		@Override
 		public void close() {
 			cursor.close();
+		}
+	}
+
+	private static class SingleTupleIterator implements ClosableIterator<Tuple> {
+		private DBObject theOne;
+		private final EntityKeyMetadata metadata;
+		private final DBCollection collection;
+
+		public SingleTupleIterator(DBObject theOne, DBCollection collection, EntityKeyMetadata metadata) {
+			this.theOne = theOne;
+			this.collection = collection;
+			this.metadata = metadata;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return theOne != null;
+		}
+
+		@Override
+		public Tuple next() {
+			if ( theOne == null ) {
+				throw new NoSuchElementException(); // Seemingly a programming error if this line is ever reached.
+			}
+
+			Tuple t = new Tuple( new MongoDBTupleSnapshot( theOne, metadata, UPDATE ) );
+			theOne = null;
+			return t;
+		}
+
+		@Override
+		public void remove() {
+			if ( theOne == null ) {
+				throw new IllegalStateException(); // Seemingly a programming error if this line is ever reached.
+			}
+
+			collection.remove( theOne );
+			theOne = null;
+		}
+
+		@Override
+		public void close() {
+			// Nothing to do.
 		}
 	}
 

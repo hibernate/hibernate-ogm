@@ -17,7 +17,6 @@ import java.util.Set;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -43,8 +42,8 @@ import org.junit.runners.model.TestClass;
  * {@link TestSessionFactory#scope() } setting, either the same session factory instance will be used for all test
  * methods of a given test class or a new session factory will be created and injected for each individual test method.
  * <p>
- * Finally the {@link Configuration} used for bootstrapping the factory can optionally be modified by annotating a
- * configuration method with the {@link SessionFactoryConfiguration} a shown in the example below.
+ * Finally the configuration used for bootstrapping the factory can optionally be modified by annotating a
+ * configuration method with the {@link TestSessionFactoryConfiguration} a shown in the example below.
  * <p>
  * Usage example:
  *
@@ -54,21 +53,18 @@ import org.junit.runners.model.TestClass;
  * public class AnimalFarmTest {
  *
  *     @TestSessionFactory
- *     public SessionFactory sessions;
+ *     public SessionFactory sessionFactory;
  *
  *     @Test
  *     public void shouldCountAnimals() throws Exception {
- *         Session session = sessions.openSession();
+ *         Session session = sessionFactory.openSession();
  *         ...
  *         session.close();
  *     }
  *
- *    @SessionFactoryConfiguration
- *    public static void configure(Configuration cfg) {
- *        cfg.setProperty(
- *            Environment.MONGODB_ASSOCIATIONS_STORE,
- *            AssociationStorage.COLLECTION.name()
- *        );
+ *    @TestSessionFactoryConfiguration
+ *    public static void configure(Map<String, Object> cfg) {
+ *        cfg.put( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorage.COLLECTION.name() );
  *    }
  *
  *    @TestEntities
@@ -218,7 +214,7 @@ public class OgmTestRunner extends SkippableTestRunner {
 		Map<String, Object> testSpecificSettings = new HashMap<>();
 
 		try {
-			for ( FrameworkMethod frameworkMethod : getTestClass().getAnnotatedMethods( SessionFactoryConfiguration.class ) ) {
+			for ( FrameworkMethod frameworkMethod : getTestClass().getAnnotatedMethods( TestSessionFactoryConfiguration.class ) ) {
 				Method method = frameworkMethod.getMethod();
 				method.setAccessible( true );
 				method.invoke( super.createTest(), testSpecificSettings );

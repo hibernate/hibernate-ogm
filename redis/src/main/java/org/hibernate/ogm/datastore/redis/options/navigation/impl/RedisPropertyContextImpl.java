@@ -48,6 +48,7 @@ public abstract class RedisPropertyContextImpl
 		return this;
 	}
 
+	@Override
 	public RedisPropertyContext mapStorage(MapStorageType mapStorage) {
 		Contracts.assertParameterNotNull( mapStorage, "mapStorage" );
 		addPropertyOption( new MapStorageOption(), mapStorage );

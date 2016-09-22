@@ -3,16 +3,17 @@
 [preface]
 == Preface
 
-Hibernate Object/Grid Mapper (OGM) is a persistence engine
+Hibernate OGM is a persistence engine
 providing Java Persistence (JPA) support for NoSQL datastores.
 It reuses Hibernate ORM's object life cycle management and (de)hydration engine
 but persists entities into a NoSQL store (key/value, document, column-oriented, etc)
 instead of a relational database.
-It reuses the Java Persistence Query Language (JP-QL)
-as an interface to querying stored data.
 
-The project is now fairly mature when it comes to the storage strategies.
-And the feature set is sufficient to be used in your projects.
+It allows using the Java Persistence Query Language (JP-QL) as an interface to querying stored data,
+in addition to using native queries of the specific NoSQL database.
+
+The project is now fairly mature when it comes to the storage strategies,
+and the feature set is sufficient to be used in your projects.
 We do have however much bigger ambitions than a simple object mapper.
 Many things are on the roadmap (more NoSQL, query, denormalization engine, etc).
 If you feel a feature is missing, <<ogm-howtocontribute-contribute,report it to us>>.
@@ -37,16 +38,8 @@ Check <<ogm-howtocontribute-contribute>> on how to contact us.
 ====
 We worked hard on this documentation but we know it is far from perfect.
 If you find something confusing or feel that an explanation is missing,
-contact us in one of the following ways:
-
-* post on https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM's forum].
-* open bug reports in https://hibernate.atlassian.net/browse/OGM[JIRA]
-* propose improvements on the
-  http://www.hibernate.org/community/mailinglists[development mailing list]
-* join us on IRC to discuss developments and improvements
-  (`#hibernate-dev` on `freenode.net`;
-  you need to be registered on freenode:
-  the room does not accept "anonymous" users).
+please let us know.
+Getting in touch is easy: see http://hibernate.org/community/[contacting the developer community].
 ====
 
 === Goals
@@ -64,14 +57,14 @@ Hibernate OGM:
 
 NoSQL can be very disconcerting as it is composed of many disparate solutions
 with different benefits and drawbacks.
-Speaking only of the main ones, NoSQL is at least categorized in four families:
+NoSQL databases can be loosely classified in four families:
 
 * graph oriented databases
 * key/value stores: essentially Maps
   but with different behaviors and ideas behind various products
   (data grids, persistent with strong or eventual consistency, etc)
 * document based datastores:
-  contains as value semi-structured documents (think JSON)
+  maps which contain semi-structured documents (think JSON)
 * column based datastores
 
 
@@ -94,6 +87,8 @@ will hopefully help people to explore alternative datastores.
 
 Hibernate OGM also aims at helping people scale traditional relational databases
 by providing a NoSQL front-end and keeping the same JPA APIs and domain model.
+It could for example help to migrate a selection of your model from an RDBMS
+to a particular NoSQL solution which better fits the typical use case.
 
 === What we have today
 

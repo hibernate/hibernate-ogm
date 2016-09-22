@@ -46,7 +46,7 @@ public class Neo4jInPredicate extends InPredicate<StringBuilder> implements Nega
 
 	@Override
 	public StringBuilder getNegatedQuery() {
-		builder.append( "NOT HAS(" );
+		builder.append( "NOT EXISTS(" );
 		identifier( builder, alias, propertyName );
 		builder.append( ") OR " );
 		builder.append( " NONE( " );

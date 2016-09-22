@@ -5,8 +5,9 @@
 == Map your entities
 
 This section mainly describes the specificities of Hibernate OGM mappings.
-It is not be a comprehensive guide to entity mappings,
-the complete guide is http://docs.jboss.org/hibernate/orm/4.3/manual/en-US/html/ch05.html[Hibernate ORM's documentation]:
+It's not meant to be a comprehensive guide to entity mappings,
+the complete guide is
+https://docs.jboss.org/hibernate/orm/{hibernate-orm-major-minor-version}/userguide/html_single/Hibernate_User_Guide.html#domain-model[Hibernate ORM's documentation]:
 after all Hibernate OGM _is_ Hibernate ORM.
 
 === Supported entity mapping
@@ -39,9 +40,10 @@ let us know (see <<ogm-howtocontribute-contribute>>).
 
 [NOTE]
 ====
-We recommend you use a UUID based generator
-as this type of generator allows maximum scalability to the underlying datastore
-as no cluster-wide counter is necessary.
+Some NoSQL databases can not provide an efficient implementation for IDENTITY or SEQUENCE,
+for these cases we recommend you use a UUID based generator.
+For example on Infinispan using IDENTITY is possible but it will require using cluster
+wide coordination to maintain the counters, which is not going to perform very well.
 
 [source, JAVA]
 ----

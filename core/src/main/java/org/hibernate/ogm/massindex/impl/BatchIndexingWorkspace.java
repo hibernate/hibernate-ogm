@@ -66,18 +66,15 @@ public class BatchIndexingWorkspace implements Runnable {
 		this.monitor = monitor;
 	}
 
-	private EntityKeyMetadata getEntityKeyMetadata() {
-		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
-		return new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
-	}
-
 	@Override
 	public void run() {
 		ErrorHandler errorHandler = searchIntegrator.getErrorHandler();
 		try {
-			final EntityKeyMetadata keyMetadata = getEntityKeyMetadata();
+			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
+			final EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+
 			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler, tenantId );
-			gridDialect.forEachTuple( new OptionallyWrapInJTATransaction( sessionFactory, errorHandler, consumer ), keyMetadata );
+			gridDialect.forEachTuple( new OptionallyWrapInJTATransaction( sessionFactory, errorHandler, consumer ), persister.getTupleContext( null ), keyMetadata );
 		}
 		catch ( RuntimeException re ) {
 			// being this an async thread we want to make sure everything is somehow reported

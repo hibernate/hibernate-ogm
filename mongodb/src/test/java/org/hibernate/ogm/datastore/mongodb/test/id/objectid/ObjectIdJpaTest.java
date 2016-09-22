@@ -12,7 +12,7 @@ import javax.persistence.EntityManager;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,7 +24,7 @@ import org.junit.Test;
  * @author Gunnar Morling
  *
  */
-public class ObjectIdJpaTest extends JpaTestCase {
+public class ObjectIdJpaTest extends OgmJpaTestCase {
 	private EntityManager em;
 
 	@Before
@@ -59,12 +59,12 @@ public class ObjectIdJpaTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Bar.class, DoorMan.class, MusicGenre.class };
 	}
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.getProperties().put( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "false" );
 	}
 }

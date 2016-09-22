@@ -7,6 +7,7 @@
 package org.hibernate.ogm.type.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 
@@ -50,5 +51,10 @@ public class CollectionType extends GridTypeDelegatingToCoreType {
 			throws HibernateException {
 		//CollectionType.delegate returns a marker object. We pass it through.
 		return delegate.hydrate( null, names, session, owner );
+	}
+
+	@Override
+	public Object convertToBackendType(Object value, SessionFactoryImplementor sessionFactory) {
+		return null;
 	}
 }

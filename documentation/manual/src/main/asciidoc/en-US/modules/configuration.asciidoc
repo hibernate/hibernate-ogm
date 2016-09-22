@@ -13,8 +13,7 @@ Depending of your choice, the bootstrapping strategy is slightly different.
 
 ==== Using JPA
 
-The good news is that if you use JPA as your primary API,
-the configuration is extremely simple.
+If you use JPA as your primary API, the configuration is extremely simple.
 Hibernate OGM is seen as a persistence provider
 which you need to configure in your [filename]`persistence.xml`.
 That's it!
@@ -49,15 +48,19 @@ There are a couple of things to notice:
 * there is no JDBC dialect setting
 * there is no JDBC setting except sometimes a `jta-data-source`
   (check <<ogm-configuration-environments-javaee>> for more info)
-* there is no DDL scheme generation options (`hbm2ddl`)
-  as NoSQL generally do not require schemas
+* most NoSQL databases do not require a schema, in which case schema generation options (`hbm2ddl`)
+  do not apply
 * if you use JTA (which we recommend), you will need to set the JTA platform
 
 
 You also need to configure which NoSQL datastore you want to use
 and how to connect to it.
 We will detail how to do that later in <<ogm-datastore-providers>>.
-In this case, we have used the defaults settings for Infinispan.
+
+In this case, we have used the defaults settings for Infinispan:
+this will start a local, in-memory Infinispan instance which is useful for testing
+but the stored data will be lost on shutdown.
+You might think of this configuration as similar to storing your data in an hashmap.
 
 From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 
@@ -65,12 +68,22 @@ From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 * by injecting the [classname]`EntityManager` / [classname]`EntityManagerFactory` in a Java EE container
 * by using your favorite injection framework (CDI - Weld, Spring, Guice)
 
+[NOTE]
+====
+Note that what you're starting is not an exotic new JPA implementation but is in all effects
+an instance of Hibernate ORM, although using some alternative internal components to deal
+with the NoSQL stores.
+This means that any framework and tool integrating with Hibernate ORM can integrate with
+Hibernate OGM - of course as long as it's not making assumptions such as that a JDBC
+datasource will be used.
+====
+
 
 ==== Using Hibernate ORM native APIs
 
 If you want to bootstrap Hibernate OGM using the native Hibernate APIs,
 use the new bootstrap API from Hibernate ORM 5.
-By setting `OgmProperties.ENABLED` to true, Hibernate OGM instead of ORM will be bootstrapped.
+By setting `OgmProperties.ENABLED` to true, the Hibernate OGM components will be activated.
 Note that unwrapping into `OgmSessionFactoryBuilder` is not strictly needed,
 but it will allow you to set Hibernate OGM specific options in the future and also gives you a reference
 to `OgmSessionFactory` instead of `SessionFactory`.
@@ -119,10 +132,11 @@ In this case, we have used the defaults settings for Infinispan.
 
 === Environments
 
-Hibernate OGM runs in various environments,
-pretty much what you are used to with Hibernate ORM.
-There are however environments where it works better
-and has been more thoroughly tested.
+Hibernate OGM runs in various environments: it should work pretty much in all environments in which Hibernate ORM runs.
+There are however some selected environments in which it was tested more thoroughly than others.
+The current version is being tested regularly in Java SE (without a container) and within the WildFly 10 application server;
+at time of writing this there's no known reason for it to not work in different containers as long as you remember that it requires a
+specific version of Hibernate ORM: some containers might package a conflicting version.
 
 [[ogm-configuration-environments-javaee]]
 
@@ -145,12 +159,11 @@ Set the JTA platform to the right Java EE container.
 The property is `hibernate.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
-http://docs.jboss.org/hibernate/orm/5.0/userGuide/en-US/html_single/#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
-For example, in WildFly, use `JBossAS`.
+https://docs.jboss.org/hibernate/orm/{hibernate-orm-major-minor-version}/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
+For example in WildFly 10 you would pick `JBossAS`, although in WildFly these settings are automatically injected so you could skip this.
 
-In your [filename]`persistence.xml`, you also need to define an existing datasource.
-It is not needed by Hibernate OGM
-and won't be used but the JPA specification mandates this setting.
+In your [filename]`persistence.xml` you usually need to define an existing datasource.
+This is not needed by Hibernate OGM: it will ignore the datasource, but JPA specification mandates the setting.
 
 .persistence.xml file
 ====
@@ -188,10 +201,7 @@ There is a set of common misconceptions in the Java community about JTA:
 * JTA works in Java EE only
 * JTA is slower than "simple" transactions
 
-
-None of that is true of course,
-let me show you how to use JBoss Transaction
-in a standalone environment with Hibernate OGM.
+None of these are true: let me show you how to use the Narayana Transactions Manager in a standalone environment with Hibernate OGM.
 
 In Hibernate OGM, make sure to set the following properties:
 
@@ -201,17 +211,17 @@ In Hibernate OGM, make sure to set the following properties:
 * `hibernate.transaction.jta.platform` to `JBossTS` in both cases.
 
 
-On the JBoss Transaction side, add JBoss Transaction in your classpath.
+Add the Narayana Transactions Manager to your classpath.
 If you use maven, it should look like this:
 
-.JBoss Transaction dependency declaration
+.Narayana Transactions Manager dependency declaration
 ====
 [source, XML]
 [subs="verbatim,attributes"]
 ----
 <dependency>
-    <groupId>org.jboss.jbossts</groupId>
-    <artifactId>jbossjta</artifactId>
+    <groupId>org.jboss.narayana.jta</groupId>
+    <artifactId>narayana-jta</artifactId>
     <version>{jboss-jta-version}</version>
 </dependency>
 ----
@@ -260,14 +270,13 @@ em.close();
 ====
 
 That was not too hard, was it?
-Note that application frameworks like Seam
-or Spring Framework should be able to initialize the transaction manager
+Note that application frameworks like the Spring Framework should be able to initialize the transaction manager
 and call it to demarcate transactions for you.
 Check their respective documentation.
 
 ==== Without JTA
 
-While this approach works today, it does not ensure that works are done transactionally
+While this approach works today, it does not ensure that operations are done transactionally
 and hence won't be able to rollback your work.
 This will change in the future but in the mean time,
 such an environment is not recommended.
@@ -310,7 +319,7 @@ Add the dependency to your project - the group id is `org.hibernate` and artifac
 Then configure where you want to store your indexes,
 map your entities with the relevant index annotations and you are good to go.
 For more information, simply check the
-http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
+https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 In <<ogm-infinispan-indexstorage>> we'll discuss how to store your Lucene indexes in Infinispan.
 This is useful even if you don't plan to use Infinispan as your primary data store.
@@ -330,21 +339,27 @@ making deployments smaller and quicker, and also making it possible to deploy mu
 More details about modules are described in
 https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[Class Loading in WildFly].
 
-If you apply the following instructions you can create super small deployments which do not include any dependency.
+When deploying a JPA application on WildFly, you should be aware that there are some additional useful configuration properties defined by the WildFly JPA subsystem.
+These are documented in https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide].
+
+If you apply the following instructions you can create small and efficient deployments which do not include any dependency,
+as you can include your favourite version of Hibernate OGM directly to the collection of container provided libraries.
 
 ==== Packaging Hibernate OGM applications for WildFly 10
 
 You can download the pre-packaged module ZIP for this version of Hibernate OGM from:
 
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly10-{hibernate-ogm-version}.zip[Sourceforge]
-* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly10&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-wildfly-10-dist.zip[Sourceforge]
+* https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-wildfly-10-dist.zip[The Maven Central repository]
 
 Unpack the archive into the `modules` folder of your WildFly 10 installation.
 The modules included are:
 
-* _org.hibernate.ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
-* _org.hibernate.ogm.<%DATASTORE%>_, one module for each datastore, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
+* _org.hibernate.ogm_, the core Hibernate OGM library.
+* _org.hibernate.ogm.<%DATASTORE%>_, one module for each datastore, with _<%DATASTORE%>_ being one of _infinispan_, _mongodb_ etc.
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
+
+The module slot to use for Hibernate OGM {hibernate-ogm-version} is `{hibernate-ogm-module-slot}` as the format of the slot name does not include the "micro" part of the project version.
 
 There are two ways to include the dependencies in your project:
 
@@ -352,8 +367,9 @@ Using the manifest::
 Add this entry to the MANIFEST.MF in your archive (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source]
+[subs="verbatim,attributes"]
 ----
-Dependencies: org.hibernate.ogm services, org.hibernate.ogm.<%DATASTORE%>:main services
+Dependencies: org.hibernate.ogm:{hibernate-ogm-module-slot} services, org.hibernate.ogm.<%DATASTORE%>:{hibernate-ogm-module-slot} services
 ----
 
 Using jboss-deployment-structure.xml::
@@ -361,45 +377,65 @@ This is a JBoss-specific descriptor.
 Add a `WEB-INF/jboss-deployment-structure.xml` in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source, XML]
+[subs="verbatim,attributes"]
 ----
 <jboss-deployment-structure>
     <deployment>
         <dependencies>
-            <module name="org.hibernate.ogm" slot="main" services="export" />
-            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="main" services="export" />
+            <module name="org.hibernate.ogm" slot="{hibernate-ogm-module-slot}" services="export" />
+            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="{hibernate-ogm-module-slot}" services="export" />
         </dependencies>
     </deployment>
 </jboss-deployment-structure>
 ----
 
 More information about the descriptor can be found in the
-https://docs.jboss.org/author/display/WFLY9/Class+Loading+in+WildFly[WildFly documentation].
+https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly documentation].
+
+==== Configure your persistence.xml to use your choice of persistence provider
+
+WildFly will by default attempt to guess which Persistence Provider you need by having a look at the `provider` section of the `persistence.xml`.
+
 
 ==== Enabling both the Hibernate Search and Hibernate OGM modules
 
-A compatible Hibernate Search module is included in WildFly 10: all you have to do is activate the dependency.
+A compatible Hibernate Search module is included in WildFly 10, and Hibernate Search is activated automatically if you're indexing any entity.
 
-When using WildFly, no library is available to your deployments unless you explicitly request it, or unless it is the implementation for a JavaEE service which your application is using.
-For example, Hibernate ORM will be available by default to your application if you are including the definition of a persistence unit,
-although there are options to prevent that, for example to use a different JPA implementor or to use a different version of Hibernate ORM.
+When using WildFly several of the technologies it includes are automatically enabled.
+For example Hibernate ORM is made available to your applications if your `persistence.xml` defines a persistence unit using Hibernate as persistence provider
+(or is not specifying any provider, as Hibernate is the default one).
 
-Hibernate Search is not automatically provided, so you have to make it available explicitly either via the `MANIFEST.MF` or via a custom `jboss-deployment-structure.xml`.
+Similarly, Hibernate Search is automatically activated and made available on the user's application classpath if and when the application server detects the need for it.
+This is the default behaviour, but you are in control and can override this all; see the https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide]
+for a full list of properties you can explicitly set.
+Among these you fill find properties to control and override which modules are activated.
 
-To do that, the `MANIFEST.MF` of your deployment will look like:
-
-.Example MANIFEST.MF for an application using Hibernate OGM for CouchDB and also Hibernate Search
-====
-[source]
-[subs="verbatim,attributes"]
-----
-org.hibernate.ogm services, org.hibernate.ogm.couchdb services, {hibernate-search-full-module-id} services
-----
-====
+Hibernate OGM however is currently not included in WildFly, so you have to enable it explicitly.
 
 Optionally you could download a different version of the Hibernate Search modules, provided it is compatible with the Hibernate OGM version you plan to use.
 For example you might want to download a more recent micro version of what is included in WildFly 10 at the time of publishing this documentation.
 
-The Hibernate Search documentation explains the details of downloading and deploying a custom version: http://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html/search-configuration.html#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
+The Hibernate Search documentation explains the details of downloading and deploying a custom version:
+https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
 
 This approach might require you to make changes to the XML definitions of the Hibernate OGM modules to change the references to the Hibernate Search slot
 to the slot version that you plan to use.
+
+==== Using the Hibernate OGM modules with Infinispan
+
+The Infinispan project also provides custom modules for WildFly 10.
+Hibernate OGM modules require these modules if you're planning to use the Hibernate OGM / Infinispan combination on WildFly.
+
+This release of Hibernate OGM was tested exclusively with Infinispan version {infinispan-version};
+the Infinispan project generally attempts to maintain the same API and integration points within the same major.minor version,
+so a micro version update should be safe but is untested.
+
+In case you want to experiment with a more significant version upgrade, you will need to edit the modules of Hibernate OGM:
+the module identifiers are hardcoded in the XML files representing the module.
+
+Download the Infinispan modules pack for WildFly 10 from here:
+
+ * https://repo1.maven.org/maven2/org/infinispan/infinispan-as-embedded-modules/{infinispan-version}/infinispan-as-embedded-modules-{infinispan-version}.zip[Infinispan WildFly modules version {infinispan-version} from the Maven repository]
+
+Then similarly to what you did with the Hibernate OGM modules zip, unpack this one too in your `modules` directory within the application server.
+

@@ -158,8 +158,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+		gridDialect.forEachTuple( consumer, tupleContext, entityKeyMetadata );
 	}
 
 	@Override
@@ -181,8 +181,13 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	 */
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
-		return queryableGridDialect.executeBackendQuery( query, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		return queryableGridDialect.executeBackendQuery( query, queryParameters, tupleContext );
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<T> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		return queryableGridDialect.executeBackendUpdateQuery( query, queryParameters, tupleContext );
 	}
 
 	@Override

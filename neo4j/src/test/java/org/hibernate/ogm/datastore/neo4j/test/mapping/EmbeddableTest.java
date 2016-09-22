@@ -56,7 +56,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 				.property( "login", account.getLogin() )
 				.property( "password", account.getPassword() )
 				.property( "version", account.getVersion() )
-				.property( "postal_code", account.getHomeAddress().getZipCode());
+				.property( "postal_code", account.getHomeAddress().getZipCode() );
 
 		NodeForGraphAssertions homeAddressNode = node( "home", EMBEDDED.name() )
 				.property( "street1", address.getStreet1() )
@@ -160,7 +160,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { Account.class, Address.class };
 	}
 }

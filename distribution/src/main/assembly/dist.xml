@@ -186,7 +186,7 @@
 
     <files>
         <file>
-            <source>../readme.md</source>
+            <source>../README.md</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
         </file>
@@ -207,9 +207,13 @@
             <outputDirectory>sources</outputDirectory>
             <useDefaultExcludes>true</useDefaultExcludes>
             <excludes>
-                <exclude>../readme.md</exclude>
+                <exclude>../README.md</exclude>
+                <exclude>../how-to-release.md</exclude>
                 <exclude>../license.txt</exclude>
                 <exclude>../changelog.txt</exclude>
+                <exclude>../.travis.yml</exclude>
+                <exclude>../travis/**</exclude>
+                <exclude>../hibernate-noorm-release-scripts/**</exclude>
                 <exclude>../*.sh</exclude>
                 <exclude>**/.git/**</exclude>
                 <exclude>**/.gitignore</exclude>

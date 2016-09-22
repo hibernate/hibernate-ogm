@@ -162,7 +162,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 		// then
 		MyConsumer consumer = new MyConsumer();
-		dialect2.forEachTuple( consumer, keyMetadata );
+		dialect2.forEachTuple( consumer, emptyTupleContext(), keyMetadata );
 		assertThat( consumer.consumedTuple.get( "foo" ) ).isEqualTo( "bar" );
 	}
 

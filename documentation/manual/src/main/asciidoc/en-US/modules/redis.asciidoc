@@ -28,6 +28,7 @@ Should you find any bugs or have feature requests for this dialect,
 then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM issue tracker].
 ====
 
+[[ogm-redis-configuration]]
 === Configuring Redis
 
 Hibernate OGM uses the https://github.com/mp911de/lettuce[lettuce] library to talk to Redis,
@@ -69,6 +70,11 @@ Defines the timeout used by the driver
 when the connection to the Redis instance is initiated.
 This configuration is expressed in milliseconds.
 The default value is `5000`.
+hibernate.ogm.redis.cluster::
+Boolean flag to enable Redis Cluster mode.
+It's strongly recommended to use simple primary and association keys
+as composite keys are serialized as JSON which may interfere the slot distribution.
+Curly braces within keys are used to denote http://redis.io/topics/cluster-spec#keys-hash-tags[hash tags] to group keys within one slot.
 hibernate.ogm.redis.ttl::
 Defines the TTL for entities and associations.
 TTL can be configured on entity and association level (see <<ogm-redis-annotation-configuration>>
@@ -135,6 +141,12 @@ public class Zoo {
 ----
 ====
 
+The annotation on the entity level expresses that all associations of the `Zoo`
+class should be stored in separate association documents.
+This setting applies to the `animals` and `employees` associations.
+Only the elements of the `visitors` association will be stored in the document of the corresponding `Zoo` entity
+as per the configuration of that specific property which takes precedence over the entity-level configuration.
+
 .Configuring the TTL/expiry using annotations
 ====
 [source, JAVA]
@@ -147,7 +159,12 @@ public class Zoo {
     private Set<Animal> animals;
 
     @OneToMany
+    @TTL(value = 3, unit = TimeUnit.DAYS)
     private Set<Person> employees;
+
+    @OneToMany
+    @AssociationStorage(AssociationStorageType.IN_ENTITY)
+    private Set<Person> visitors;
 
     //...
 }
@@ -159,11 +176,8 @@ Hibernate OGM allows to specify a TTL value on entities and associations. The TT
 the entity using the http://redis.io/commands/pexpire[PEXPIRE] command. Every write to Redis will
 set a new TTL.
 
-The annotation on the entity level expresses that all associations of the `Zoo`
-class should be stored in separate assocation documents.
-This setting applies to the `animals` and `employees` associations.
-Only the elements of the `visitors` association will be stored in the document of the corresponding `Zoo` entity
-as per the configuration of that specific property which takes precedence over the entity-level configuration.
+You can specify a different TTL on associations if they are stored as separate documents. In the case of `visitors`
+which is stored in the entity, the TTL of the association will be the one of the entity.
 
 [[ogm-redis-storage-principles]]
 === Storage principles
@@ -2301,3 +2315,10 @@ Hibernate OGM is a work in progress
 and we are actively working on JP-QL query support.
 
 In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM.
+
+=== Redis Cluster
+
+Using Hibernate OGM with Redis Cluster is a matter of enabling Redis Cluster mode (see <<ogm-redis-configuration>>).
+Data stored with Hibernate OGM Redis is distributed across Redis Cluster nodes
+according to the http://redis.io/topics/cluster-spec#keys-distribution-model[Redis key distribution model]
+based on the hash slot of the key of each entity.

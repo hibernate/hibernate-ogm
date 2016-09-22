@@ -23,7 +23,7 @@ public class StringMappedGridTypeDescriptor implements GridTypeDescriptor {
 		return new BasicGridBinder<X>(javaTypeDescriptor, this) {
 			@Override
 			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
-				resultset.put( names[0], javaTypeDescriptor.toString( value) );
+				resultset.put( names[0], javaTypeDescriptor.toString( value ) );
 			}
 		};
 	}

@@ -70,7 +70,7 @@ public class ReferencedCompositeIdTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Director.class, Tournament.class, TournamentId.class };
 	}
 }

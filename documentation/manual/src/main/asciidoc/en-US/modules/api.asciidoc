@@ -92,7 +92,7 @@ NoSQLQuery query = ogmSession.createNativeQuery(...);
 
 === On flush and transactions
 
-While most underlying datastores do not support transaction,
+Even though some underlying NoSQL datastores do not support transaction,
 it is important to demarcate transaction via the Hibernate OGM APIs.
 Let's see why.
 
@@ -161,7 +161,7 @@ transactionManager.commit(); // will flush changes to the datastore
 
 [NOTE]
 ====
-The error compensation API described in the following is an experimental feature as of version {hibernate-ogm-version}.
+The error compensation API described in the following is an experimental feature.
 It will be enriched with additional features over time.
 This might require changes to existing method signatures
 and thus may break code using a previous version of the API.
@@ -171,7 +171,8 @@ Please let us know about your usage of the API and your wishes regarding futher 
 
 If an error occurs during flushing a set of changes,
 some data changes may already have been applied in the datastore.
-If the store is non-transactional, there is no way to rollback (undo) these changes.
+If the store is non-transactional, there is no way to rollback (undo) these changes if they
+were already flushed.
 In this case it is desirable to know which changes have been applied and which ones failed
 in order to take appropriate action.
 

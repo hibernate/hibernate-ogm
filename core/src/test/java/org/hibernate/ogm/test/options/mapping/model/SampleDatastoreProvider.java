@@ -83,7 +83,7 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
 		}
 	}
 }

@@ -72,7 +72,7 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class[] { AccountOwner.class, BankAccount.class };
 	}
 

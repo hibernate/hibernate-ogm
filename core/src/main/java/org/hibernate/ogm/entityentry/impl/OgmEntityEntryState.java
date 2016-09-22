@@ -10,7 +10,8 @@ import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.EntityEntryExtraState;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.util.impl.Contracts;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Entity-dependent state specific to Hibernate OGM.
@@ -18,6 +19,8 @@ import org.hibernate.ogm.util.impl.Contracts;
  * @author Gunnar Morling
  */
 public class OgmEntityEntryState implements EntityEntryExtraState {
+
+	private static final Log log = LoggerFactory.make();
 
 	private EntityEntryExtraState next;
 	private Tuple tuple;
@@ -38,7 +41,9 @@ public class OgmEntityEntryState implements EntityEntryExtraState {
 
 	public static OgmEntityEntryState getStateFor(SessionImplementor session, Object object) {
 		EntityEntry entityEntry = session.getPersistenceContext().getEntry( object );
-		Contracts.assertNotNull( entityEntry, "entityEntry" );
+		if ( entityEntry == null ) {
+			throw log.cannotFindEntityEntryForEntity( object );
+		}
 
 		OgmEntityEntryState ogmEntityState = entityEntry.getExtraState( OgmEntityEntryState.class );
 		if ( ogmEntityState == null ) {

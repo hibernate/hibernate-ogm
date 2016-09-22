@@ -53,7 +53,7 @@ Default value is `DROP_RECREATE_QUIETLY`.
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via `Neo4jProperties`
+you should use the constants defined on `org.hibernate.ogm.datastore.neo4j.Neo4jProperties`
 when specifying the configuration properties listed above.
 
 Common properties shared between stores are declared on `OgmProperties`
@@ -222,7 +222,7 @@ image::neo4j-@EmbeddedId-example.png[align="center", depth="", scalefit="1"]
 
 Embedded elements are stored as separate nodes labeled with `EMBEDDED`.
 
-The the type of the relationship that connects the entity node to the embedded node is
+The type of the relationship that connects the entity node to the embedded node is
 the attribute name representing the embedded in the java class.
 
 .Embedded object
@@ -762,14 +762,14 @@ explicitly), the Neo4J transaction is also committed or rollbacked.
 This makes for a nice integration in a Java EE container.
 
 [CAUTION]
-----
+====
 This is NOT a true JTA/XA integration but more a lifecycle alignment:
 changes on more than one datasource won't be executed as a single atomic transaction.
 
 In particular, if the JTA transaction involves multiple resources, Neo4j might commit
 before a failure of another resource. In this case, Neo4j won't be able to rollback even
 if the JTA transaction will.
-----
+====
 
 [[ogm-neo4j-queries]]
 === Queries

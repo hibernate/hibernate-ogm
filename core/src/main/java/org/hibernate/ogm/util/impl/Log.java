@@ -66,7 +66,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
 	HibernateException cannotInstantiateGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, @Cause Exception e);
 
-	@Message(id = 14, value = "%1$s has no constructor accepting DatasourceProvider")
+	@Message(id = 14, value = "%1$s has no constructor accepting org.hibernate.ogm.datastore.spi.DatastoreProvider" )
 	HibernateException gridDialectHasNoProperConstructor(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass);
 
 	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
@@ -286,4 +286,13 @@ public interface Log extends BasicLogger {
 	@Message(id = 84, value = "Unable to find basic type support for [%2$s] when using JPA AttributeConverter [%1$s]." +
 			"Is the datastore type of the converter a supported type for your datastore?")
 	PersistenceException cannotFindTypeForAttributeConverter(@FormatWith(ClassObjectFormatter.class) Class<?> converted, @FormatWith(ClassObjectFormatter.class) Class<?> databaseColumnJavaType);
+
+	@Message(id = 85, value = "Unable to find an entity entry for the entity '%1$s'")
+	PersistenceException cannotFindEntityEntryForEntity(Object entity);
+
+	@Message(id = 86, value = "Transaction identifier not available")
+	HibernateException transactionIdIsNotAvailable();
+
+	@Message(id = 87, value = "The tuple context is not available, probably because we are dealing with more than a single entity type")
+	HibernateException tupleContextNotAvailable();
 }

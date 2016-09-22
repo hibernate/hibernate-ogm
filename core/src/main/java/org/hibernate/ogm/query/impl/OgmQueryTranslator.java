@@ -32,8 +32,7 @@ import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
-import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.query.spi.QueryParsingResult;
@@ -80,7 +79,10 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 	 */
 	private SelectClause selectClause;
 
-	private EntityKeyMetadata singleEntityKeyMetadata;
+	/**
+	 * When the query is only targeting one type, we register the EntityMetadataInformation for this type.
+	 */
+	private EntityMetadataInformation singleEntityMetadataInformation;
 
 	/**
 	 * Not all stores support parameterized queries. As a temporary measure, we therefore cache created queries per set
@@ -110,7 +112,7 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 			// Unfortunately, we cannot obtain the select clause from the delegate, so we need to parse it again
 			selectClause = getSelectClause( replacements, null );
 			Type[] queryReturnTypes = selectClause.getQueryReturnTypes();
-			this.singleEntityKeyMetadata = getSingleEntityKeyMetadataOrNull( queryReturnTypes );
+			singleEntityMetadataInformation = determineSingleEntityInformation( queryReturnTypes );
 		}
 		catch ( Exception qse ) {
 			throw log.querySyntaxException( qse, query );
@@ -130,33 +132,31 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 	private <T> OgmQueryLoader getLoader(QueryParameters queryParameters) {
 		QueryParsingResult queryParsingResult = queryParameters != null ? getQuery( queryParameters ) : queryParser.parseQuery( sessionFactory, query );
 
-		BackendQuery<T> query = new BackendQuery<T>( (T) queryParsingResult.getQueryObject(), singleEntityKeyMetadata );
+		BackendQuery<T> query = new BackendQuery<T>( (T) queryParsingResult.getQueryObject(), singleEntityMetadataInformation );
 
 		return new OgmQueryLoader( delegate, sessionFactory, selectClause, query, queryParsingResult.getColumnNames() );
 	}
 
 	/**
-	 * Returns the {@link EntityKeyMetadata} of the entity type selected by this query.
-	 * @param queryReturnTypes
-	 *
-	 * @return the {@link EntityKeyMetadata} of the entity type selected by this query or {@code null} in case this
+	 * Determine the relevant information for the entity type selected by this query or {@code null} in case this
 	 * query does not select exactly one entity type (e.g. in case of scalar values or joins (if supported in future revisions)).
+	 * @param queryReturnTypes
 	 */
-	private EntityKeyMetadata getSingleEntityKeyMetadataOrNull(Type[] queryReturnTypes) {
-		EntityKeyMetadata metadata = null;
+	private EntityMetadataInformation determineSingleEntityInformation(Type[] queryReturnTypes) {
+		EntityMetadataInformation metadataInformation = null;
 
 		for ( Type queryReturn : queryReturnTypes ) {
 			if ( queryReturn instanceof EntityType ) {
-				if ( metadata != null ) {
+				if ( metadataInformation != null ) {
 					return null;
 				}
 				EntityType rootReturn = (EntityType) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getName() );
-				metadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+				metadataInformation = new EntityMetadataInformation(persister.getEntityKeyMetadata(), rootReturn.getReturnedClass().getName() );
 			}
 		}
 
-		return metadata;
+		return metadataInformation;
 	}
 
 	private QueryParsingResult getQuery(QueryParameters queryParameters) {

@@ -23,6 +23,7 @@ public class LongType extends AbstractGenericBasicType<Long> {
 		super( PassThroughGridTypeDescriptor.INSTANCE, LongTypeDescriptor.INSTANCE );
 	}
 
+	@Override
 	public String getName() {
 		return "long";
 	}

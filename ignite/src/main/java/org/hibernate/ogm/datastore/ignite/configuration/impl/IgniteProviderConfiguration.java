@@ -26,9 +26,10 @@ public class IgniteProviderConfiguration {
 	/**
 	 * Name of the default Ignite configuration file
 	 */
-	private static final String DEFAULT_CONFIG = "org/hibernate/ogm/datastore/ignite/config.xml";
+	private static final String DEFAULT_CONFIG = "ignite-config.xml";
 
-	protected URL url;
+	private URL url;
+	private String instanceName;
 
 	/**
 	 * Initialize the internal values from the given {@link Map}.
@@ -50,12 +51,25 @@ public class IgniteProviderConfiguration {
 //					}
 //			)
 			.getValue();
+
+		this.instanceName = new ConfigurationPropertyReader( configurationMap )
+				.property( IgniteProperties.IGNITE_INSTANCE_NAME, String.class )
+				.getValue();
 	}
+
 	/**
 	 * @see IgniteProperties#CONFIGURATION_RESOURCE_NAME
-	 * @return An URL to an XML file
+	 * @return An URL to Ignite configuration file
 	 */
 	public URL getUrl() {
 		return url;
+	}
+
+	/**
+	 * @see IgniteProperties#IGNITE_INSTANCE_NAME
+	 * @return the name of existing Ignite instance
+	 */
+	public String getInstanceName() {
+		return instanceName;
 	}
 }

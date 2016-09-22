@@ -152,7 +152,7 @@ http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official docum
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via `MongoDBProperties`
+you should use the constants accessible via `org.hibernate.ogm.datastore.mongodb.MongoDBProperties`
 when specifying the configuration properties listed above.
 
 Common properties shared between stores are declared on `OgmProperties`
@@ -2989,6 +2989,108 @@ Associations collection
 ----
 ====
 
+[[ogm-mongodb-indexes-unique-constraints]]
+=== Indexes and unique constraints
+
+==== Standard indexes and unique constraints
+
+You can create your index and unique constraints in MongoDB using the standard JPA annotations.
+
+.Creating indexes and unique constraints using JPA annotations
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+    @Index(columnList = "author, name", name = "author_name_idx", unique = true),
+    @Index(columnList = "name DESC", name = "name_desc_idx")
+})
+public class Poem {
+
+    @Id
+    private String id;
+    private String name;
+    private String author;
+
+    @Column(unique = true)
+    private String url;
+
+   // getters, setters ...
+}
+----
+====
+
+[NOTE]
+====
+MongoDB supports unique constraints via unique indexes. It considers `null` as a value to be unique: you can only
+have one `null` value per unique index. This is not what is commonly accepted as the definition of a unique constraint in
+the JPA world. Thus, by default, we create the unique indexes as `sparse`: it only indexes defined values so that the
+unique constraints accept multiple `null` values.
+====
+
+==== Using MongoDB specific index options
+
+MongoDB supports https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/[a number of options for
+index creation].
+
+It is possible to define them using the `@IndexOption` annotation.
+
+.Creating indexes with MongoDB specific options
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+    @Index(columnList = "author", name = "author_idx")
+})
+@IndexOptions(
+    @IndexOption(forIndex = "author_idx", options = "{ background : true, sparse : true, partialFilterExpression : { author: 'Verlaine' } }")
+)
+public class Poem {
+
+    @Id
+    private String id;
+    private String name;
+    private String author;
+
+   // getters, setters ...
+}
+----
+====
+
+`@IndexOption` simply passes the options to MongoDB at index creation: you can use every option available in MongoDB.
+
+==== Full text indexes
+
+MongoDB supports the ability to create one (and only one) full text index per collection.
+
+As JPA does not support the ability to define `text` as an order in the `@Index` annotation (only `ASC` and `DESC`
+are supported), this ability has been included inside the `@IndexOption` mechanism. You simply need to add `text: true`
+to the options passed to MongoDB, Hibernate OGM interprets it and translates the index to a full text index.
+
+.Creating a full text index
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+    @Index(columnList = "author, name", name = "author_name_text_idx")
+})
+@IndexOptions(
+    @IndexOption(forIndex = "author_name_text_idx", options = "{ text: true, default_language : 'fr', weights : { author: 2, name: 5 } }")
+)
+public class Poem {
+
+    @Id
+    private String id;
+    private String name;
+    private String author;
+
+   // getters, setters ...
+}
+----
+====
+
 === Transactions
 
 MongoDB does not support transactions.
@@ -3129,7 +3231,7 @@ Hibernate OGM also supports certain forms of native queries for MongoDB.
 Currently two forms of native queries are available via the MongoDB backend:
 
 * find queries specifying the search criteria only
-* queries specified using the MongoDB CLI syntax
+* queries specified using the MongoDB CLI syntax (<<ogm-mongodb-cli-syntax>>)
 
 The former always maps results to entity types.
 The latter either maps results to entity types or to certain supported forms of projection.
@@ -3232,6 +3334,8 @@ Hibernate OGM stores data in a natural way so you can still execute queries usin
 MongoDB driver, the main drawback is that the results are going to be raw MongoDB
 documents and not managed entities.
 
+[[ogm-mongodb-cli-syntax]]
+
 ===== CLI Syntax
 
 [WARNING]
@@ -3239,13 +3343,31 @@ documents and not managed entities.
 Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
 ====
 
-Hibernate OGM can execute native queries expressed using the MongoDB CLI syntax with some limitation
-Currently only `find()` and `count()` queries are supported via the CLI syntax.
-Further query types (including updating queries) may be supported in future revisions.
+Hibernate OGM can execute native queries expressed using the MongoDB CLI syntax with some limitations.
+Currently `find()`, `findOne()`, `findAndModify()`, and `count()` queries are supported. Furthermore, three
+types of write queries are supported via the CLI syntax: `insert()`, `remove()`, and `update()`. Other query
+types may be supported in future versions.
+
+As one would expect, `find()`, `findOne()`, `findAndModify()`, and `count()` can be executed using
+`javax.persistence.Query.getSingleResult()` or `javax.persistence.Query.getResultList()`, while `insert()`,
+`remove()`, and `update()` require using `javax.persistence.Query.executeUpdate()`. Also note that,
+`javax.persistence.Query.executeUpdate()` may return `-1` in case execution of a query was not acknowledged
+relative to the write concern used.
+
+The following functions can be used in the provided JSON:
+`BinData`, `Date`, `HexData`, `ISODate`, `NumberLong`, `ObjectId`, `Timestamp`,
+`RegExp`, `DBPointer`, `UUID`, `GUID`, `CSUUID`, `CSGUID`, `JUUID`, `JGUID`, `PYUUID`, `PYGUID`.
+
+[NOTE]
+====
+`NumberInt` is not supported as it is currently not supported by the MongoDB Java driver.
+====
 
 No cursor operations such as `sort()` are supported.
 Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
 such as `$orderby` within the criteria parameter.
+
+You can limit the results of a query using the `setMaxResults(...)` method.
 
 JSON parameters passed via the CLI syntax must be specified using the
 http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode].
@@ -3253,32 +3375,80 @@ Specifically, keys need to be given within quotes; the only relaxation of this i
 may be used when specifying attribute names/values to facilitate embedding queries within
 Java strings.
 
+Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
+are not (yet) converted using suitable Hibernate OGM type implementations.
+This requirement is tracked under https://hibernate.atlassian.net/browse/OGM-1031[OGM-1031].
+
 .CLI syntax examples
 ====
 [source, JAVA]
 ----
 
 // Valid syntax
-String valid = "db.OscarWild.find({ \"name\" : \"Athanasia\" })";
+String valid = "db.Poem.find({ \"name\" : \"Athanasia\" })";
 
-String alsoValid = "db.OscarWild.find({ '$or' : [{'name': 'Athanasia' }. {'name': 'Portia' }]})";
+String alsoValid = "db.Poem.find({ '$or' : [{'name': 'Athanasia' }, {'name': 'Portia' }]})";
 
 // NOT Valid syntax, it will throw an exception: com.mongodb.util.JSONParseException
-String notValid =  "db.WILDE_POEM.find({ name : \"Athanasia\" })".
+String notValid =  "db.Poem.find({ name : \"Athanasia\" })";
 
-String alsoNotValid = "db.OscarWild.find({ $or : [{name: 'Athanasia' }. {name: 'Portia' }]})";
+String alsoNotValid = "db.Poem.find({ $or : [{name: 'Athanasia' }, {name: 'Portia' }]})";
 
 ----
 ====
 
-Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
-are not (yet) converted using suitable Hibernate OGM type implementations.
+.CLI syntax sort and limit results alternatives
+====
+[source, JAVA]
+----
+String nativeQuery = "db.Poem.find({ '$query': { 'author': 'Oscar Wilde' }, '$orderby' : { 'name' : 1 } })";
+
+// Using hibernate session
+List<Poem> result = session.createNativeQuery( nativeQuery )
+	.addEntity( Poem.class )
+	.setMaxResults( 2 )
+	.list();
+
+// Using JPA entity manager
+List<Poem> results = em.createNativeQuery( nativeQuery, Poem.class )
+	.setMaxResults( 2 )
+	.getResultList();
+----
+====
+
+.CLI syntax update examples
+====
+[source, JAVA]
+----
+String updateQuery = "db.Poem.findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'author': 'Oscar Wilde' } }, 'new': true })";
+List<Poem> updated = session.createNativeQuery( updateQuery ).addEntity( Poem.class ).list();
+
+String insertQuery = "db.Poem.insert({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+int inserted = session.createNativeQuery( insertQuery ).executeUpdate();
+
+String removeQuery = "db.Poem.remove({ '_id': { '$numberLong': '11' } })";
+int removed = session.createNativeQuery( removeQuery ).executeUpdate();
+----
+====
+
+[WARNING]
+====
+Support for the `$regexp` operator is limited to the string syntax. We do not support the `/pattern/` syntax as it is not
+currently supported by the MongoDB Java driver.
+
+[source, JAVA]
+----
+// Valid syntax
+String nativeQuery = "{ $query : { author : { $regex : '^Oscar' } }, $orderby : { name : 1 } }";
+List<Poem> result = session.createNativeQuery( nativeQuery ).addEntity( Poem.class ).list();
+----
+====
 
 ==== Hibernate Search
 
 You can index your entities using Hibernate Search.
 That way, a set of secondary indexes independent of MongoDB is maintained by Hibernate Search
-and you can write queries on top of them.
+and you can run Lucene queries on top of them.
 The benefit of this approach is a nice integration at the JPA / Hibernate API level
 (managed entities are returned by the queries).
 The drawback is that you need to store the Lucene indexes somewhere

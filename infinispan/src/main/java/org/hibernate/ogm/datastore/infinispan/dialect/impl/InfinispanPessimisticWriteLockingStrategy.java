@@ -57,9 +57,9 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 		LocalCacheManager<EK, ?, ?> cacheManager = getCacheManager();
 		KeyProvider<EK, ?, ?> keyProvider = getKeyProvider();
 
-		AdvancedCache<EK, ?> advCache = cacheManager.getEntityCache( ( (OgmEntityPersister) lockable).getRootEntityKeyMetadata() ).getAdvancedCache();
+		AdvancedCache<EK, ?> advCache = cacheManager.getEntityCache( ( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata() ).getAdvancedCache();
 		EntityKey key = EntityKeyBuilder.fromData(
-				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
+				( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
 				identifierGridType,
 				id,
 				session );

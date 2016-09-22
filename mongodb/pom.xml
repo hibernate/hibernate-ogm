@@ -3,7 +3,7 @@
     <parent>
         <artifactId>hibernate-ogm-parent</artifactId>
         <groupId>org.hibernate.ogm</groupId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -14,6 +14,10 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -52,10 +56,6 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.common</groupId>
@@ -141,6 +141,21 @@
         <dependency>
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -261,10 +276,10 @@
         <profile>
             <id>fongo</id>
             <activation>
-                 <property>
-                     <name>mongodbProvider</name>
-                     <value>fongo</value>
-                 </property>
+                <property>
+                    <name>mongodbProvider</name>
+                    <value>fongo</value>
+                </property>
             </activation>
             <properties>
                 <datastoreProvider>fongo</datastoreProvider>
@@ -282,10 +297,10 @@
         <profile>
             <id>external-mongodb</id>
             <activation>
-                 <property>
-                     <name>mongodbProvider</name>
-                     <value>external</value>
-                 </property>
+                <property>
+                    <name>mongodbProvider</name>
+                    <value>external</value>
+                </property>
             </activation>
             <properties>
                 <datastoreProvider>mongodb</datastoreProvider>

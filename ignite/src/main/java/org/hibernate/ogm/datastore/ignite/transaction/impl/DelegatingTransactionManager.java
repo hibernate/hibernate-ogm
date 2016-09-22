@@ -21,9 +21,12 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
+import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 
 public class DelegatingTransactionManager implements TransactionManager {
 
+	private static final Log log = LoggerFactory.getLogger();
 	private static final String WAS_TRANSACTION_MANAGER_CLASS_NAME = "com.ibm.tx.jta.impl.TranManagerSet";
 	private static final String WAS_TRANSACTION_MANAGER_METHOD_NAME = "instance";
 	private static final String JBOSS_TRANSACTION_MANAGER_JNDI_NAME = "java:jboss/TransactionManager";
@@ -53,7 +56,7 @@ public class DelegatingTransactionManager implements TransactionManager {
 								delegate = initJBossTransactionManager();
 								break;
 							default:
-								throw new UnsupportedOperationException( "Unsupported application server" );
+								throw log.unsupportedApplicationServer();
 						}
 						INSTANCE = new DelegatingTransactionManager( delegate, applicationServer );
 					}

@@ -8,13 +8,17 @@ package org.hibernate.ogm.datastore.ignite.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
+import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
+import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.persistencestrategy.IgniteSerializableEntityKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 
 public class IgniteKeyProvider {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	public static IgniteKeyProvider INSTANCE = new IgniteKeyProvider();
 
@@ -27,8 +31,8 @@ public class IgniteKeyProvider {
 	 * @param key entity key
 	 * @return string key
 	 */
-	public String getEntityKeyString(EntityKey key) {
-		return getKeyStringByColumnValues( key.getColumnValues() );
+	public String getKeyString(EntityKey key) {
+		return getKeyString( key.getColumnValues() );
 	}
 
 	/**
@@ -36,12 +40,12 @@ public class IgniteKeyProvider {
 	 * @param key id source key
 	 * @return string key
 	 */
-	public String getIdSourceKeyString(IdSourceKey key) {
-		return getKeyStringByColumnValues( key.getColumnValues() );
+	public String getKeyString(AssociationKey key) {
+		return getKeyString( key.getColumnValues() );
 	}
 
-	private String getKeyStringByColumnValues(Object[] columnValues) {
-		return StringUtils.join( columnValues, "-" );
+	public String getKeyString(Object[] columnValues) {
+		return StringUtils.join( columnValues, '-' );
 	}
 
 	/**
@@ -53,7 +57,7 @@ public class IgniteKeyProvider {
 		if (entity.indexOf( "." ) >= 0) {
 			String[] arr = entity.split( "\\." );
 			if (arr.length != 2) {
-				throw new IgniteHibernateException( "Invalid entity name " + entity );
+				throw log.invalidEntityName( entity );
 			}
 			return arr[1];
 		}
@@ -66,9 +70,6 @@ public class IgniteKeyProvider {
 	 * @return
 	 */
 	public String getEntityCache(EntityKeyMetadata keyMetadata) {
-		if ( keyMetadata == null ) {
-			throw new IgniteHibernateException( "EntityKeyMetadata is null" );
-		}
 		return getEntityCache( keyMetadata.getTable() );
 	}
 
@@ -76,7 +77,7 @@ public class IgniteKeyProvider {
 		if ( entity.indexOf( "." ) >= 0 ) {
 			String[] arr = entity.split( "\\." );
 			if ( arr.length != 2 ) {
-				throw new IgniteHibernateException( "Invalid entity name " + entity );
+				throw log.invalidEntityName( entity );
 			}
 			return arr[0];
 		}
@@ -89,9 +90,6 @@ public class IgniteKeyProvider {
 	 * @return
 	 */
 	public String getIdSourceCache(IdSourceKeyMetadata keyMetadata) {
-		if ( keyMetadata == null ) {
-			throw new IgniteHibernateException( "AssociationKeyMetadata is null" );
-		}
 		return getEntityCache( keyMetadata.getName() );
 	}
 }
