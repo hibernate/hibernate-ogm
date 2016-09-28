@@ -189,7 +189,7 @@ public class MultiGetSingleColumnIdTest extends OgmTestCase {
 	// The conversion to the right type is done later and some datastore don't keep track of the exact type.
 	// For example Neo4j in remote mode, will return a Long instead of an Integer.
 	private Integer id(Tuple tuple) {
-		Object object = tuple.get(  "id" );
+		Object object = tuple.get( "id" );
 		Integer integer = Integer.valueOf( String.valueOf( object ) );
 		return integer;
 	}
