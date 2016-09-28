@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.http.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
-
 import java.util.List;
 import java.util.Set;
 
@@ -59,12 +57,7 @@ public class HttpNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		Statements statements = new Statements();
 		for ( UniqueConstraintDetails constraint : constraints ) {
 			log.tracef( "Creating unique constraint for nodes labeled as %1$s on property %2$s", constraint.getLabel().name(), constraint.getProperty() );
-			StringBuilder queryBuilder = new StringBuilder( "CREATE CONSTRAINT ON (n:" );
-			escapeIdentifier( queryBuilder, constraint.getLabel().name() );
-			queryBuilder.append( ") ASSERT n." );
-			escapeIdentifier( queryBuilder, constraint.getProperty() );
-			queryBuilder.append( " IS UNIQUE" );
-			statements.addStatement( new Statement( queryBuilder.toString() ) );
+			statements.addStatement( new Statement( constraint.asCypherQuery() ) );
 		}
 
 		log.debug( "Creating missing constraints" );
