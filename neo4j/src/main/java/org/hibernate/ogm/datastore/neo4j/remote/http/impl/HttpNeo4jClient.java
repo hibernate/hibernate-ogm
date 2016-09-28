@@ -30,7 +30,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
  *
  * @author Davide D'Alto
  */
-public class HttpNeo4jClient {
+public class HttpNeo4jClient implements AutoCloseable {
 
 	private static final int OK_STATUS_CODE = Response.Status.OK.getStatusCode();
 
@@ -98,6 +98,7 @@ public class HttpNeo4jClient {
 	/**
 	 * Release all the resources
 	 */
+	@Override
 	public void close() {
 		client.close();
 	}
