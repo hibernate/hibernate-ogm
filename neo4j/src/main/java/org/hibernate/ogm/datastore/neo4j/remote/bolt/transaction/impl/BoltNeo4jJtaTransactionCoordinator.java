@@ -6,16 +6,15 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.bolt.transaction.impl;
 
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jDatastoreProvider;
-import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.BaseNeo4jJtaTransactionCoordinator;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jSynchronization;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.RemoteTransactionDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
-import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Transaction;
@@ -30,7 +29,7 @@ import org.neo4j.driver.v1.Transaction;
  *
  * @author Davide D'Alto
  */
-public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
+public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator implements BaseNeo4jJtaTransactionCoordinator {
 
 	private final Driver driver;
 	private Transaction tx;
@@ -43,8 +42,7 @@ public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 
 	@Override
 	public TransactionDriver getTransactionDriverControl() {
-		TransactionDriver driver = super.getTransactionDriverControl();
-		return new RemoteTransactionDriver( driver );
+		return new RemoteTransactionDriver( this, super.getTransactionDriverControl() );
 	}
 
 	@Override
@@ -59,15 +57,26 @@ public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 		join();
 	}
 
-	private void join() {
+	@Override
+	public void join() {
 		if ( tx == null && delegate.isActive() && delegate.getTransactionCoordinatorBuilder().isJta() ) {
-			session = driver.session();
-			tx = session.beginTransaction();
-			delegate.getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization() );
+			beginTransaction();
+			delegate.getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization( this ) );
 		}
 	}
 
-	private void success() {
+	@Override
+	public void beginTransaction() {
+		if ( session == null ) {
+			session = driver.session();
+		}
+		if ( tx == null ) {
+			tx = session.beginTransaction();
+		}
+	}
+
+	@Override
+	public void success() {
 		if ( tx != null ) {
 			try {
 				tx.success();
@@ -80,7 +89,8 @@ public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 		}
 	}
 
-	private void failure() {
+	@Override
+	public void failure() {
 		if ( tx != null ) {
 			try {
 				tx.failure();
@@ -102,88 +112,13 @@ public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 		}
 	}
 
-	private class Neo4jSynchronization implements Synchronization {
-
-		@Override
-		public void beforeCompletion() {
-			TransactionStatus status = delegate.getTransactionDriverControl().getStatus();
-			if ( status == TransactionStatus.MARKED_ROLLBACK ) {
-				failure();
-			}
-			else {
-				success();
-			}
-		}
-
-		@Override
-		public void afterCompletion(int status) {
-			if ( tx != null ) {
-				if ( status != Status.STATUS_COMMITTED ) {
-					failure();
-				}
-				else {
-					success();
-				}
-			}
-		}
+	@Override
+	public boolean isTransactionOpen() {
+		return tx != null;
 	}
 
-	private class RemoteTransactionDriver extends ForwardingTransactionDriver implements IdentifiableDriver {
-
-		public RemoteTransactionDriver(TransactionDriver delegate) {
-			super( delegate );
-		}
-
-		@Override
-		public Transaction getTransactionId() {
-			return tx;
-		}
-
-		@Override
-		public void begin() {
-			super.begin();
-			if ( session == null ) {
-				session = driver.session();
-			}
-			if ( tx == null ) {
-				tx = session.beginTransaction();
-			}
-		}
-
-		@Override
-		public void commit() {
-			try {
-				try {
-					super.commit();
-					success();
-				}
-				catch (Exception e) {
-					try {
-						failure();
-					}
-					catch (Exception re) {
-					}
-					throw e;
-				}
-			}
-			finally {
-				closeSession();
-			}
-		}
-
-		@Override
-		public void rollback() {
-			try {
-				try {
-					super.rollback();
-				}
-				finally {
-					failure();
-				}
-			}
-			finally {
-				closeSession();
-			}
-		}
+	@Override
+	public Object getTransactionId() {
+		return tx;
 	}
 }

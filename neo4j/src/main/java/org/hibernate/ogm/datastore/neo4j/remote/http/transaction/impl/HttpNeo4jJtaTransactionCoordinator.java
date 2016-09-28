@@ -6,16 +6,15 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.http.transaction.impl;
 
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider;
-import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.BaseNeo4jJtaTransactionCoordinator;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jSynchronization;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.RemoteTransactionDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
-import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 /**
  * A {@link TransactionCoordinator} for a remote Neo4j.
@@ -27,7 +26,7 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
  *
  * @author Davide D'Alto
  */
-public class HttpNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator {
+public class HttpNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoordinator implements BaseNeo4jJtaTransactionCoordinator {
 
 	private final HttpNeo4jClient remoteNeo4j;
 	private HttpNeo4jTransaction tx;
@@ -39,8 +38,7 @@ public class HttpNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 
 	@Override
 	public TransactionDriver getTransactionDriverControl() {
-		TransactionDriver driver = super.getTransactionDriverControl();
-		return new RemoteTransactionDriver( driver );
+		return new RemoteTransactionDriver( this, super.getTransactionDriverControl() );
 	}
 
 	@Override
@@ -55,99 +53,45 @@ public class HttpNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 		join();
 	}
 
-	private void join() {
+	@Override
+	public void join() {
 		if ( tx == null && delegate.isActive() && delegate.getTransactionCoordinatorBuilder().isJta() ) {
-			tx = remoteNeo4j.beginTx();
-			delegate.getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization() );
+			beginTransaction();
+			delegate.getLocalSynchronizations().registerSynchronization( new Neo4jSynchronization( this ) );
 		}
 	}
 
-	private void success() {
+	@Override
+	public void success() {
 		if ( tx != null ) {
 			tx.commit();
 			tx = null;
 		}
 	}
 
-	private void failure() {
+	@Override
+	public void failure() {
 		if ( tx != null ) {
 			tx.rollback();
 			tx = null;
 		}
 	}
 
-	private class Neo4jSynchronization implements Synchronization {
-
-		@Override
-		public void beforeCompletion() {
-			TransactionStatus status = delegate.getTransactionDriverControl().getStatus();
-			if ( status == TransactionStatus.MARKED_ROLLBACK ) {
-				failure();
-			}
-			else {
-				success();
-			}
-		}
-
-		@Override
-		public void afterCompletion(int status) {
-			if ( tx != null ) {
-				if ( status != Status.STATUS_COMMITTED ) {
-					failure();
-				}
-				else {
-					success();
-				}
-			}
-		}
+	@Override
+	public boolean isTransactionOpen() {
+		return tx != null;
 	}
 
-	private class RemoteTransactionDriver extends ForwardingTransactionDriver implements IdentifiableDriver {
-
-		public RemoteTransactionDriver(TransactionDriver delegate) {
-			super( delegate );
+	@Override
+	public Object getTransactionId() {
+		if ( tx == null ) {
+			return null;
 		}
+		return tx.getId();
+	}
 
-		@Override
-		public Long getTransactionId() {
-			if ( tx == null ) {
-				return null;
-			}
-			return tx.getId();
-		}
-
-		@Override
-		public void begin() {
-			super.begin();
-			if ( tx == null ) {
-				tx = remoteNeo4j.beginTx();
-			}
-		}
-
-		@Override
-		public void commit() {
-			try {
-				super.commit();
-				success();
-			}
-			catch (Exception e) {
-				try {
-					failure();
-				}
-				catch ( Exception re ) {
-				}
-				throw e;
-			}
-		}
-
-		@Override
-		public void rollback() {
-			try {
-				super.rollback();
-			}
-			finally {
-				failure();
-			}
-		}
+	@Override
+	public void beginTransaction() {
+		tx = remoteNeo4j.beginTx();
 	}
 }
