@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.impl;
 
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 import static org.neo4j.graphdb.DynamicLabel.label;
 
 import java.util.ArrayList;
@@ -57,6 +58,19 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 
 		public String getProperty() {
 			return property;
+		}
+
+		/**
+		 * @return the cypher query for the creation of the constraint
+		 */
+		public String asCypherQuery() {
+			StringBuilder queryBuilder = new StringBuilder( "CREATE CONSTRAINT ON (n:" );
+			escapeIdentifier( queryBuilder, label.name() );
+			queryBuilder.append( ") ASSERT n." );
+			escapeIdentifier( queryBuilder, property );
+			queryBuilder.append( " IS UNIQUE" );
+			String query = queryBuilder.toString();
+			return query;
 		}
 
 		@Override

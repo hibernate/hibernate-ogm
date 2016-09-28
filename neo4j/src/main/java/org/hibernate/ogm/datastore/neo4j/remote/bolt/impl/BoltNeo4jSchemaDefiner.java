@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.bolt.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -64,12 +62,7 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		List<Statement> statements = new ArrayList<>();
 		for ( UniqueConstraintDetails constraint : constraints ) {
 			log.tracef( "Creating unique constraint for nodes labeled as %1$s on property %2$s", constraint.getLabel(), constraint.getProperty() );
-			StringBuilder queryBuilder = new StringBuilder( "CREATE CONSTRAINT ON (n:" );
-			escapeIdentifier( queryBuilder, constraint.getLabel().name() );
-			queryBuilder.append( ") ASSERT n." );
-			escapeIdentifier( queryBuilder, constraint.getProperty() );
-			queryBuilder.append( " IS UNIQUE" );
-			statements.add( new Statement( queryBuilder.toString() ) );
+			statements.add( new Statement( constraint.asCypherQuery() ) );
 		}
 
 		run( provider, statements );
