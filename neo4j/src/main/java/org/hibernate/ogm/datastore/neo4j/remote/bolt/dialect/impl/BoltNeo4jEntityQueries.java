@@ -19,7 +19,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
 import org.hibernate.ogm.datastore.neo4j.remote.common.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -45,8 +45,8 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	private static final ClosableIteratorAdapter<RemoteNeo4jAssociationPropertiesRow> EMPTY_RELATIONSHIPS = new ClosableIteratorAdapter<>(
 			EMPTY_RELATIONSHIPS_ITERATOR );
 
-	public BoltNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		super( entityKeyMetadata, tupleContext, true );
+	public BoltNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		super( entityKeyMetadata, tupleTypeContext, true );
 	}
 
 	public NodeWithEmbeddedNodes findEntity(Transaction tx, Object[] columnValues) {

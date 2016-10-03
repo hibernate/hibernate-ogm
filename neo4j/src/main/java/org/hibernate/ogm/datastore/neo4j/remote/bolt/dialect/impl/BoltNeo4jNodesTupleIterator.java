@@ -9,9 +9,10 @@ package org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl;
 import java.util.Map;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.types.Node;
 
@@ -25,7 +26,7 @@ public class BoltNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final BoltNeo4jEntityQueries entityQueries;
-	private final TupleContext tupleContext;
+	private final TupleTypeContext tupleTypeContext;
 	private final ClosableIterator<NodeWithEmbeddedNodes> entities;
 	private final Transaction tx;
 
@@ -33,18 +34,18 @@ public class BoltNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 			Transaction tx,
 			BoltNeo4jEntityQueries entityQueries,
 			EntityKeyMetadata entityKeyMetadata,
-			TupleContext tupleContext,
+			TupleTypeContext tupleTypeContext,
 			ClosableIterator<NodeWithEmbeddedNodes> entities) {
 		this.tx = tx;
 		this.entityQueries = entityQueries;
 		this.entityKeyMetadata = entityKeyMetadata;
-		this.tupleContext = tupleContext;
+		this.tupleTypeContext = tupleTypeContext;
 		this.entities = entities;
 	}
 
 	private Tuple createTuple(NodeWithEmbeddedNodes node) {
-		Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, node, entityKeyMetadata, tupleContext, entityQueries );
-		return new Tuple( new BoltNeo4jTupleSnapshot( node, entityKeyMetadata, toOneEntities, tupleContext ) );
+		Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, node, entityKeyMetadata, tupleTypeContext, entityQueries );
+		return new Tuple( new BoltNeo4jTupleSnapshot( node, entityKeyMetadata, toOneEntities, tupleTypeContext ), SnapshotType.UPDATE );
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.neo4j.BaseNeo4jDialect;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
@@ -46,14 +46,14 @@ public final class BoltNeo4jTupleSnapshot implements TupleSnapshot {
 			NodeWithEmbeddedNodes node,
 			EntityKeyMetadata metadata,
 			Map<String, Node> toOneEntities,
-			TupleContext tupleContext
+			TupleTypeContext tupleTypeContext
 			) {
 		this.node = node.getOwner();
 		this.embeddedNodes = node.getEmbeddedNodes();
 		this.entityKeyMetadata = metadata;
 		this.toOneEntities = toOneEntities;
-		this.associatedEntityKeyMetadata = tupleContext.getAllAssociatedEntityKeyMetadata();
-		this.rolesByColumn = tupleContext.getAllRoles();
+		this.associatedEntityKeyMetadata = tupleTypeContext.getAllAssociatedEntityKeyMetadata();
+		this.rolesByColumn = tupleTypeContext.getAllRoles();
 	}
 
 	@Override

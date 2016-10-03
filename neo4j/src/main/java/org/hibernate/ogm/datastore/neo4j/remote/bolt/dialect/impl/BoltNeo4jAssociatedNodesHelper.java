@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.neo4j.driver.v1.Transaction;
@@ -26,12 +26,13 @@ public final class BoltNeo4jAssociatedNodesHelper {
 	private BoltNeo4jAssociatedNodesHelper() {
 	}
 
-	public static Map<String, Node> findAssociatedNodes(Transaction tx, NodeWithEmbeddedNodes node, EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext, BoltNeo4jEntityQueries queries) {
-		Map<String, Node> associatedNodes = new HashMap<>( tupleContext.getAllAssociatedEntityKeyMetadata().size() );
-		if ( tupleContext.getAllAssociatedEntityKeyMetadata().size() > 0 ) {
+	public static Map<String, Node> findAssociatedNodes(Transaction tx, NodeWithEmbeddedNodes node, EntityKeyMetadata entityKeyMetadata,
+			TupleTypeContext tupleTypeContext, BoltNeo4jEntityQueries queries) {
+		Map<String, Node> associatedNodes = new HashMap<>( tupleTypeContext.getAllAssociatedEntityKeyMetadata().size() );
+		if ( tupleTypeContext.getAllAssociatedEntityKeyMetadata().size() > 0 ) {
 			Object[] keyValues = keyValues( node.getOwner(), entityKeyMetadata );
-			for ( Entry<String, AssociatedEntityKeyMetadata> entry : tupleContext.getAllAssociatedEntityKeyMetadata().entrySet() ) {
-				String associationRole = tupleContext.getAllRoles().get( entry.getKey() );
+			for ( Entry<String, AssociatedEntityKeyMetadata> entry : tupleTypeContext.getAllAssociatedEntityKeyMetadata().entrySet() ) {
+				String associationRole = tupleTypeContext.getAllRoles().get( entry.getKey() );
 				Node associatedEntity = queries.findAssociatedEntity( tx, keyValues, associationRole );
 				associatedNodes.put( associationRole, associatedEntity );
 			}

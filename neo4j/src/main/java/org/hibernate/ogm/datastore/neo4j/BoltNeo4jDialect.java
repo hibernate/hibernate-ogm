@@ -19,8 +19,6 @@ import java.util.Set;
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jAssociatedNodesHelper;
@@ -43,9 +41,12 @@ import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -56,6 +57,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
@@ -122,10 +124,8 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		for ( EntityPersister entityPersister : entityPersisters ) {
 			if ( entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
-				SessionImplementor currentSession = null;
-				TupleContext tupleContext = ogmEntityPersister.getTupleContext( currentSession );
 				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(),
-						new BoltNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), tupleContext ) );
+						new BoltNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), ogmEntityPersister.getTupleTypeContext() ) );
 			}
 		}
 		return queryMap;
@@ -164,7 +164,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 				}
 				EntityKey[] keys = entityKeys.toArray( new EntityKey[entityKeys.size()] );
 				ClosableIterator<NodeWithEmbeddedNodes> entities = entitiesQueries.get( entityKeyMetadata ).findEntities( keys, transaction );
-				return new BoltNeo4jNodesTupleIterator( transaction, queries, entityKeyMetadata, tupleContext, entities );
+				return new BoltNeo4jNodesTupleIterator( transaction, queries, entityKeyMetadata, tupleContext.getTupleTypeContext(), entities );
 		}
 		else {
 			Transaction transaction = transaction( tupleContext );
@@ -173,8 +173,8 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		}
 	}
 
-	private Transaction transaction(TupleContext tupleContext) {
-		return (Transaction) ( tupleContext.getTransactionContext() ).getTransactionId();
+	private Transaction transaction(OperationContext operationContext) {
+		return (Transaction) ( operationContext.getTransactionContext() ).getTransactionId();
 	}
 
 	private Transaction transaction(AssociationContext associationContext) {
@@ -190,22 +190,24 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		Transaction tx = transaction( tupleContext );
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		Transaction tx = transaction( operationContext );
 		BoltNeo4jEntityQueries queries = entitiesQueries.get( key.getMetadata() );
 		NodeWithEmbeddedNodes owner = queries.findEntity( tx, key.getColumnValues() );
 		if ( owner == null ) {
 			return null;
 		}
 
-		Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, owner, key.getMetadata(), tupleContext, queries );
+		Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, owner, key.getMetadata(),
+				operationContext.getTupleTypeContext(), queries );
 
 		return new Tuple(
 				new BoltNeo4jTupleSnapshot(
 						owner,
 						key.getMetadata(),
 						toOneEntities,
-						tupleContext ) );
+						operationContext.getTupleTypeContext() ),
+				SnapshotType.UPDATE );
 	}
 
 	@Override
@@ -241,13 +243,15 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 					EntityKeyMetadata metadata = keys[i].getMetadata();
 					EntityKey key = keys[i];
 					BoltNeo4jEntityQueries entityQueries = entitiesQueries.get( key.getMetadata() );
-					Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, node, metadata, tupleContext, entityQueries );
+					Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, node, metadata,
+							tupleContext.getTupleTypeContext(), entityQueries );
 					tuples[i] = new Tuple(
 							new BoltNeo4jTupleSnapshot(
 									node,
 									metadata,
 									toOneEntities,
-									tupleContext ) );
+									tupleContext.getTupleTypeContext() ),
+							SnapshotType.UPDATE );
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -257,12 +261,13 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
+		Tuple tuple = tuplePointer.getTuple();
 		final Map<String, EntityKey> toOneAssociations = new HashMap<>();
 		Map<String, Object> properties = new HashMap<>();
 		List<Statement> statements = new ArrayList<>();
 		applyTupleOperations( key, tuple, properties, toOneAssociations, statements, tuple.getOperations(), tupleContext, tupleContext.getTransactionContext() );
-		if ( tuple.getSnapshot() instanceof EmptyTupleSnapshot ) {
+		if ( SnapshotType.INSERT.equals( tuple.getSnapshotType() ) ) {
 			// Insert new node
 			Statement statement = entitiesQueries.get( key.getMetadata() ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
 			statements.add( 0, statement );
@@ -273,11 +278,12 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		saveToOneAssociations( statements, key, toOneAssociations );
 		try {
 			runAll( transaction( tupleContext ), statements );
+			tuple.setSnapshotType( SnapshotType.UPDATE );
 		}
 		catch (ClientException e) {
 			switch ( e.neo4jErrorCode() ) {
 				case BaseNeo4jDialect.CONSTRAINT_VIOLATION_CODE:
-					throw extractException( key, tuple, e );
+					throw extractException( key, e );
 				default:
 					throw new HibernateException( e.getMessage() );
 			}
@@ -295,10 +301,10 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		result.hasNext();
 	}
 
-	private HibernateException extractException(EntityKey key, Tuple tuple, ClientException exception) {
+	private HibernateException extractException(EntityKey key, ClientException exception) {
 		if ( exception.getMessage().matches( ".*Node \\d+ already exists with label.*" ) ) {
 			// This is the exception we expect for this kind of error by the CompensationAPI and some unit tests
-			return new TupleAlreadyExistsException( key.getMetadata(), tuple, exception.getMessage() );
+			return new TupleAlreadyExistsException( key, exception.getMessage() );
 		}
 		else {
 			return log.constraintViolation( key, exception.getMessage(), null );
@@ -340,7 +346,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	private void removeTupleOperation(EntityKey entityKey, Map<String, Object> ownerNode, TupleOperation operation, List<Statement> statements, TupleContext tupleContext, TransactionContext transactionContext, Set<String> processedAssociationRoles) {
-		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( !tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
 				Statement statement = entitiesQueries.get( entityKey.getMetadata() ).removeEmbeddedColumnStatement( entityKey.getColumnValues(),
@@ -353,7 +359,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 			}
 		}
 		else {
-			String associationRole = tupleContext.getRole( operation.getColumn() );
+			String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 				Transaction tx = (Transaction) transactionContext.getTransactionId();
 				entitiesQueries.get( entityKey.getMetadata() ).removeToOneAssociation( tx, entityKey.getColumnValues(), associationRole );
@@ -362,7 +368,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, List<Statement> statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			// the column represents a to-one association, map it as relationship
 			putOneToOneAssociation( entityKey, tuple, node, toOneAssociations, operation, tupleContext, processedAssociationRoles );
 		}
@@ -376,12 +382,12 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	private void putOneToOneAssociation(EntityKey ownerKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		String associationRole = tupleContext.getRole( operation.getColumn() );
+		String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 
 		if ( !processedAssociationRoles.contains( associationRole ) ) {
 			processedAssociationRoles.add( associationRole );
 
-			EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+			EntityKey targetKey = getEntityKey( tuple, tupleContext.getTupleTypeContext().getAssociatedEntityKeyMetadata( operation.getColumn() ) );
 
 			toOneAssociations.put( associationRole, targetKey );
 		}
@@ -421,11 +427,12 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
 			BoltNeo4jTupleAssociationSnapshot snapshot = new BoltNeo4jTupleAssociationSnapshot( row, associationKey, associatedEntityKeyMetadata );
 			RowKey rowKey = convert( associationKey, snapshot );
-			tuples.put( rowKey, new Tuple( snapshot ) );
+			tuples.put( rowKey, new Tuple( snapshot, SnapshotType.UPDATE ) );
 		}
 		return tuples;
 	}
 
+	@Override
 	protected RowKey convert(AssociationKey associationKey, TupleSnapshot snapshot) {
 		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Object[] values = new Object[columnNames.length];
@@ -548,7 +555,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		throw new NotSupportedException( "OGM-1111", "This is not supported yet for Neo4j remote" );
 	}
 }
