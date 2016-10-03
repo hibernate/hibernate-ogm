@@ -6,11 +6,13 @@ http://www.neo4j.org[Neo4j] is a robust (fully ACID) transactional property grap
 This kind of databases are suited for those type of problems that can be represented with a graph 
 like social relationships or road maps for example.
 
-At the moment only the support for the embedded Neo4j is included in OGM.
+Hibernate OGM can connect to an embedded Neo4j or a remote server.
+The connection to the remote server can occur via the Bolt protocol or the Http API.
 
 === How to add Neo4j integration
 
 .1. Add the dependencies to your project
+
 If your project uses Maven you can add this to the pom.xml: 
 
 [source, XML]
@@ -22,16 +24,58 @@ If your project uses Maven you can add this to the pom.xml:
     <version>{hibernate-ogm-version}</version>
 </dependency>
 ----
-Alternatively you can find the required libraries in the distribution package on https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-{hibernate-ogm-version}-dist.zip[SourceForge]
 
-.2. Add the following properties:
+Alternatively you can find the required libraries in the distribution package on
+https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-{hibernate-ogm-version}-dist.zip[SourceForge]
 
+.2. Use the following properties
+
+If you want to use Neo4j in embedded mode:
+
+====
 [source, properties]
 [subs="verbatim,attributes"]
 ----
 hibernate.ogm.datastore.provider = neo4j_embedded
 hibernate.ogm.neo4j.database_path = C:\example\mydb
 ----
+====
+
+If you want to connect to a remote server without authentication on localhost, you can use:
+
+====
+[source, properties]
+[subs="verbatim,attributes"]
+----
+hibernate.ogm.datastore.provider = neo4j_bolt
+----
+====
+
+or 
+
+====
+[source, properties]
+[subs="verbatim,attributes"]
+----
+hibernate.ogm.datastore.provider = neo4j_http
+----
+====
+
+The difference between `neo4j_bolt` and `neo4j_http` is that in the first case Hibernate OGM
+will connect to the server using the Bolt protocol, in the second case it will use the http interface.
+
+You can select a different host, port and enable authentication with the following additional properties:
+
+====
+[source, properties]
+[subs="verbatim,attributes"]
+----
+hibernate.ogm.datastore.provider = neo4j_bolt # or neo4j_http
+hibernate.ogm.datastore.host = example.com:8989
+hibernate.ogm.datastore.username = example_username
+hibernate.ogm.datastore.password = example_password
+----
+====
 
 === Configuring Neo4j
 
@@ -49,6 +93,15 @@ Other possible values (defined on the `org.hibernate.tool.hbm2ddl.UniqueConstrai
 but the effect will be the same (since Neo4j constraints don't have a name):
 keep the existing constraints and create the missing one.
 Default value is `DROP_RECREATE_QUIETLY`.
+hibernate.ogm.datastore.host (optional)::
+The host name and the port to use when connecting to a remote server.
+Default value for Http is `localhost:7474`.
+Default value for Bolt is `localhost:7687`.
+hibernate.ogm.datastore.username (optional)::
+The authentication username for the remote server.
+Hibernate OGM will try to authenticate only if this property is set.
+hibernate.ogm.datastore.password (optional)::
+The password to use when connecting remotely.
 
 [NOTE]
 ====
