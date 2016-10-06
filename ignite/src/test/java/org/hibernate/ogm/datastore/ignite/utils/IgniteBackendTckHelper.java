@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.ignite.utils;
+package org.hibernate.ogm.datastore.ignite.test;
 
 import org.junit.extensions.cpsuite.ClasspathSuite;
 import org.junit.runner.RunWith;
@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ClasspathSuite.class)
 @ClasspathSuite.ClassnameFilters({
+
 
 	// failed
 
@@ -40,7 +41,6 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
-//	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.HibernateCoreAPIWrappingTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.JNDIReferenceTest",
 //	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorTest",
