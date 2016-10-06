@@ -36,8 +36,6 @@ import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
-import org.hibernate.ogm.type.impl.EnumType;
-import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import antlr.ANTLRException;
@@ -49,7 +47,6 @@ import antlr.collections.AST;
  * Parser for Ignite Hql queries
  *
  * @author Dmitriy Kozlov
- *
  */
 public class IgniteHqlQueryParser {
 
@@ -139,7 +136,7 @@ public class IgniteHqlQueryParser {
 			if (!selectClause.isScalarSelect()) {
 				// Create query with fields _KEY and _VAL
 //				String alias = ((QueryNode)walker.getAST()).getFromClause().getFromElement().getTableAlias();
-				FromReferenceNode dotNode = (FromReferenceNode) ((QueryNode) walker.getAST()).getSelectClause().getFirstChild();
+				FromReferenceNode dotNode = (FromReferenceNode) ( (QueryNode) walker.getAST() ).getSelectClause().getFirstChild();
 				String alias = dotNode.getFromElement().getTableAlias();
 				StringBuffer buf = new StringBuffer("select ");
 				buf.append( alias ).append( "._KEY" ).append( " , " );
@@ -171,15 +168,7 @@ public class IgniteHqlQueryParser {
 		while (matcher.matches()) {
 			String param = matcher.group( 1 );
 			String paramName = param.substring( 1 );
-			GridType type = parameterMap.get( paramName ).getType();
-			Object value = parameterMap.get( paramName ).getValue();
-			// because that is how it should work for EnumType
-			if (type instanceof EnumType) {
-				if (((EnumType) type).isOrdinal()) {
-					value = ((Enum) parameterMap.get( paramName ).getValue()).ordinal();
-				}
-			}
-			result.add( value );
+			result.add( parameterMap.get( paramName ).getValue() );
 			pos = subStr.indexOf( param ) + param.length();
 			subStr = subStr.substring( pos );
 			matcher = pattern.matcher( subStr );
@@ -188,6 +177,31 @@ public class IgniteHqlQueryParser {
 		return result;
 	}
 
+//	/**
+//	 * Appends "OR Field IS NULL" to "Field NOT LIKE..."
+//	 * @author Victor Kadachigov
+//	 */
+//	private class NotLikeProcessor implements NodeTraverser.VisitationStrategy {
+//		private final ASTFactory astFactory;
+//
+//		public NotLikeProcessor(ASTFactory astFactory) {
+//			this.astFactory = astFactory;
+//		}
+//
+//		@Override
+//		public void visit(AST node) {
+//			AST notLikeNode = node.getFirstChild();
+//			if (notLikeNode != null && notLikeNode.getType() == HqlTokenTypes.NOT_LIKE) {
+//				AST leftPartNode = notLikeNode.getFirstChild();
+//				Node rightPartNode = (Node)notLikeNode.getFirstChild().getNextSibling();
+//				AST orNode = ASTUtil.createParent(astFactory, HqlTokenTypes.OR, "or", notLikeNode);
+//				log.info("!!!!!!!!!!!!!!!!!!!!! NOT_LIKE");
+//			}
+//
+//		}
+//
+//	}
+
 	private HqlParser parse(String hql, SessionFactoryImplementor sessionFactory) throws TokenStreamException, RecognitionException {
 		// Parse the query string into an HQL AST.
 		final HqlParser parser = HqlParser.getInstance( hql );
@@ -195,13 +209,18 @@ public class IgniteHqlQueryParser {
 
 		parser.statement();
 
+
+
 		final AST hqlAst = parser.getAST();
 
 		final NodeTraverser walker = new NodeTraverser( new JavaConstantConverter( sessionFactory ) );
 		walker.traverseDepthFirst( hqlAst );
 
+//		final NodeTraverser walker2 = new NodeTraverser( new NotLikeProcessor( parser.getASTFactory() ) );
+//		walker2.traverseDepthFirst( hqlAst );
+
 		ASTPrinter HQL_TOKEN_PRINTER = new ASTPrinter( HqlTokenTypes.class );
-		log.debug( HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ) );
+		log.info( HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ) );
 
 		parser.getParseErrorHandler().throwQueryException();
 		return parser;

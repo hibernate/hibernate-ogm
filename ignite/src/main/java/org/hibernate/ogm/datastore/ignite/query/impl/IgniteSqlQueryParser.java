@@ -351,7 +351,7 @@ public class IgniteSqlQueryParser {
 				namedParameterBindPoints.put( name, list );
 			}
 			else {
-				((List) o).add( loc );
+				( (List) o ).add( loc );
 			}
 		}
 	}

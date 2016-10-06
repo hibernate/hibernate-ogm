@@ -32,6 +32,7 @@ import org.hibernate.ogm.datastore.ignite.impl.IgnitePortableAssociationSnapshot
 import org.hibernate.ogm.datastore.ignite.impl.IgnitePortableTupleSnapshot;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.ignite.options.impl.CollocatedAssociationOption;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteQueryDescriptor;
@@ -108,7 +109,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			throw new IgniteHibernateException("Cache " + key.getMetadata().getTable() + " is not found");
 		}
 		else {
-			Object po = entityCache.get( provider.getKeyProvider().getEntityKeyString( key ) );
+			Object po = entityCache.get( provider.getKeyProvider().getKeyString( key ) );
 			if (po != null) {
 				return new Tuple(new IgnitePortableTupleSnapshot( po ));
 			}
@@ -134,14 +135,14 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 				builder.setField( columnName, value );
 			}
 		}
-		String keyStr = provider.getKeyProvider().getEntityKeyString( key );
+		String keyStr = provider.getKeyProvider().getKeyString( key );
 		entityCache.put( keyStr , builder.build() );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
-		entityCache.remove( provider.getKeyProvider().getEntityKeyString( key ) );
+		entityCache.remove( provider.getKeyProvider().getKeyString( key ) );
 	}
 
 	@Override
@@ -159,9 +160,17 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 				throw new IgniteHibernateException( "Composite keys are not supported yet." );
 			}
 
-			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, true ), key.getColumnValues() );
+			QueryHints.Builder hintsBuilder = new QueryHints.Builder();
+			Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
+			if (isCollocated) {
+				hintsBuilder.setAffinityRun( true );
+				hintsBuilder.setAffinityKey( provider.getKeyProvider().getKeyString( key ) );
+			}
+			QueryHints hints = hintsBuilder.build();
 
-			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, new QueryHints() );
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints, provider.getKeyProvider().getKeyString( key ) );
+			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
+
 			Iterator<List<?>> iterator = list.iterator();
 			if ( iterator.hasNext() ) {
 				Map<RowKey, BinaryObject> associationMap = new HashMap<>();
@@ -235,7 +244,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		boolean clearInsteadOfRemove = clearAssociation( key );
 
 		for ( AssociationOperation op : association.getOperations() ) {
-			Tuple currentStateTuple = op.getValue();
+			Tuple currentStateTuple = op.getType() != AssociationOperationType.REMOVE
+											? op.getValue() : association.getSnapshot().get( op.getKey() );
 			String id = currentStateTuple.get( idColumnName ).toString();
 			if ( op.getType() == AssociationOperationType.CLEAR
 					|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
@@ -299,14 +309,26 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			return;
 		}
 
+		if ( key.getColumnNames().length > 1 ) {
+			throw new IgniteHibernateException( "Composite keys are not supported yet." );
+		}
+
 		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
+
+		QueryHints.Builder hintsBuilder = new QueryHints.Builder();
+		Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
+		if ( isCollocated ) {
+			hintsBuilder.setAffinityRun( true );
+			hintsBuilder.setAffinityKey( provider.getKeyProvider().getKeyString( key ) );
+		}
+		QueryHints hints = hintsBuilder.build();
 
 		if ( clearAssociation( key ) ) {
 			// clear reference
 			Map<String, BinaryObject> changedObjects = new HashMap<>();
 
-			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, true ), key.getColumnValues() );
-			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, new QueryHints() );
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, true ), hints, provider.getKeyProvider().getKeyString( key ) );
+			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 			for (List<?> item : list) {
 				String id = item.get( 0 ).toString();
 				BinaryObject clearBo = (BinaryObject) item.get( 1 );
@@ -331,8 +353,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			// remove objects
 			Set<String> removedObjects = new HashSet<>();
 
-			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, false ), key.getColumnValues() );
-			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, new QueryHints() );
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(  createAssociationQuery( key, false ), hints, key.getColumnValues() );
+			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 			for (List<?> item : list) {
 				removedObjects.add( item.get( 0 ).toString() );
 			}
@@ -350,26 +372,30 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		Number result = null;
+		Long result = null;
 		switch (request.getKey().getMetadata().getType()) {
 			case TABLE:
-				IgniteCache<String, Object> cache = provider.getIdSourceCache( request.getKey().getMetadata() );
-				String idSourceKey = provider.getKeyProvider().getIdSourceKeyString( request.getKey() );
-				Object previousValue = cache.get( idSourceKey );
+				IgniteCache<String, Long> cache = provider.getIdSourceCache( request.getKey().getMetadata() );
+				String idSourceKey =  request.getKey().getColumnValue();
+				Long previousValue = cache.get( idSourceKey );
 				if (previousValue == null) {
-					if (cache.putIfAbsent( idSourceKey, request.getInitialValue() )) {
-						previousValue = request.getInitialValue();
+					result = (long) request.getInitialValue();
+					if ( !cache.putIfAbsent( idSourceKey, result ) ) {
+						previousValue = (long) request.getInitialValue();
 					}
 				}
-				if (previousValue != null) {
-					while (!cache.replace( idSourceKey, previousValue, ((Number) previousValue).longValue() + request.getIncrement() )) {
-						previousValue = cache.get( idSourceKey );
+				if ( previousValue != null ) {
+					while ( true ) {
+						result = previousValue + request.getIncrement();
+						if (cache.replace( idSourceKey, previousValue, result )) {
+							break;
+						}
+						else {
+							previousValue = cache.get( idSourceKey );
+						}
 					}
-					return ((Number) previousValue).longValue() + request.getIncrement();
 				}
-				else {
-					return request.getInitialValue();
-				}
+				break;
 			case SEQUENCE:
 				IgniteAtomicSequence seq = provider.atomicSequence( request.getKey().getMetadata().getName(), request.getInitialValue(), true );
 				result = seq.getAndAdd( request.getIncrement() );
@@ -384,16 +410,20 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		// TODO Auto-generated method stub
+	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
 		throw new UnsupportedOperationException("forEachTuple() is not implemented");
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<IgniteQueryDescriptor> backendQuery, QueryParameters queryParameters) {
+	public int executeBackendUpdateQuery(BackendQuery<IgniteQueryDescriptor> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		throw new UnsupportedOperationException("executeBackendUpdateQuery() is not implemented");
+	}
+
+	@Override
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<IgniteQueryDescriptor> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		IgniteCache<String, BinaryObject> cache;
-		if (backendQuery.getSingleEntityKeyMetadataOrNull() != null) {
-			cache = provider.getEntityCache( backendQuery.getSingleEntityKeyMetadataOrNull() );
+		if (backendQuery.getSingleEntityMetadataInformationOrNull() != null) {
+			cache = provider.getEntityCache( backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata() );
 		}
 		else if (backendQuery.getQuery().getQuerySpaces().size() > 0) {
 			cache = provider.getEntityCache( backendQuery.getQuery().getQuerySpaces().iterator().next() );
@@ -401,11 +431,12 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		else {
 			throw new IgniteHibernateException( "Can't find cache name" );
 		}
+		QueryHints hints = ( new QueryHints.Builder( queryParameters.getQueryHints() ) ).build();
 		SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(
 										backendQuery.getQuery().getSql(),
+										hints,
 										IgniteHqlQueryParser.createParameterList( backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters() ).toArray()
 								);
-		QueryHints hints = new QueryHints( queryParameters.getQueryHints() );
 		Iterable<List<?>> result = executeWithHints( cache, sqlQuery, hints );
 
 		if (backendQuery.getQuery().isHasScalar()) {
@@ -419,9 +450,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	private Iterable<List<?>> executeWithHints( IgniteCache<String, BinaryObject> cache, SqlFieldsQuery sqlQuery, QueryHints hints ) {
 		Iterable<List<?>> result;
 
-		if (hints.isCollocated()) {
-			sqlQuery.setCollocated( true );
-		}
 		if (hints.isLocal()) {
 			if (!provider.isClientMode()) {
 				sqlQuery.setLocal( true );
@@ -432,6 +460,11 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		else {
 			result = cache.query( sqlQuery );
+
+//			//vk: For Slava and Igor only.
+//			List<List<?>> list = cache.query( sqlQuery ).getAll();
+//			log.info( "Query result: " + list.size() + " items" );
+//			result = list;
 		}
 
 		return result;
@@ -453,11 +486,11 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		return IgniteGridTypeMapper.INSTANCE.overrideType( type );
 	}
 
-	public void loadCache(Set<EntityKeyMetadata> cachesInfo) {
-		for (EntityKeyMetadata ci : cachesInfo) {
-			provider.getEntityCache( ci );
-		}
-	}
+//	public void loadCache(Set<EntityKeyMetadata> cachesInfo) {
+//		for (EntityKeyMetadata ci : cachesInfo) {
+//			provider.getEntityCache( ci );
+//		}
+//	}
 
 	private abstract class BaseResultCursor<T> implements ClosableIterator<Tuple> {
 		private final Iterator<T> resultIterator;

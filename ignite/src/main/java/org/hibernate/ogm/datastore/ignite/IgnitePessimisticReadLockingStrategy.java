@@ -51,7 +51,7 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
 		GridType idGridType = typeTranslator.getType( lockable.getIdentifierType() );
-		EntityKey key = EntityKeyBuilder.fromData( ((OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
+		EntityKey key = EntityKeyBuilder.fromData( ( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
 													idGridType,
 													id,
 													session );
