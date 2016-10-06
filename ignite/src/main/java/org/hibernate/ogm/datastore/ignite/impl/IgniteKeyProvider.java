@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.ignite.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.persistencestrategy.IgniteSerializableEntityKey;
@@ -18,9 +17,9 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 
 public class IgniteKeyProvider {
 
-	private static final Log log = LoggerFactory.getLogger();
-
 	public static IgniteKeyProvider INSTANCE = new IgniteKeyProvider();
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	public IgniteSerializableEntityKey getEntityCacheKey(EntityKey key) {
 		return new IgniteSerializableEntityKey( key );

@@ -26,7 +26,7 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 
 	public IgnitePortableAssociationSnapshot(String rowKeyIndexColumnNames[]) {
 		if ( rowKeyIndexColumnNames != null && rowKeyIndexColumnNames.length > 0 ) {
-			this.associationMap = new TreeMap<RowKey, BinaryObject>( new RawKeyComparator(rowKeyIndexColumnNames) ); 
+			this.associationMap = new TreeMap<RowKey, BinaryObject>( new RawKeyComparator(rowKeyIndexColumnNames) );
 		}
 		else {
 			this.associationMap = new HashMap<RowKey, BinaryObject>();
@@ -34,7 +34,7 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	public IgnitePortableAssociationSnapshot(Map<RowKey, BinaryObject> associationMap, String rowKeyIndexColumnNames[]) {
-		this(rowKeyIndexColumnNames);
+		this( rowKeyIndexColumnNames );
 		this.associationMap.putAll( associationMap );
 	}
 
@@ -62,15 +62,15 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 	public BinaryObject getBinary(RowKey rowKey) {
 		return associationMap.get( rowKey );
 	}
-	
+
 	private class RawKeyComparator implements Comparator<RowKey> {
-		
+
 		private final String sortFields[];
-		
+
 		public RawKeyComparator(String[] sortFields) {
 			this.sortFields = sortFields != null ? sortFields : new String[0];
 		}
-		
+
 		@Override
 		public int compare(RowKey key1, RowKey key2) {
 			CompareToBuilder builder = new CompareToBuilder();

@@ -18,9 +18,9 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @ClasspathSuite.ClassnameFilters({
 
-	
+
 	// failed
-	
+
 //	"org.hibernate.ogm.backendtck.associations.collection.types.ListTest", 				// passed -testOrderedListAndCompositeId
 //	"org.hibernate.ogm.backendtck.associations.collection.types.MapContentsStoredInSeparateDocumentTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.types.MapTest",
@@ -29,15 +29,15 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
-//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest"
-	
-	
+
+
 
 	// passed
-	
+
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest",    			// -testDefaultBiDirManyToOneCompositeKeyTest
-//	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest", 			
+//	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest",
 //	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
@@ -55,8 +55,8 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.innertypes.InnerClassFindTest",
 //	"org.hibernate.ogm.backendtck.jpa.JPAJTATest",
 //	"org.hibernate.ogm.backendtck.jpa.JPAResourceLocalTest",
-//	"org.hibernate.ogm.backendtck.jpa.JPAAPIWrappingTest",	
-//	"org.hibernate.ogm.backendtck.jpa.JPAStandaloneORMAndOGMTest", 
+//	"org.hibernate.ogm.backendtck.jpa.JPAAPIWrappingTest",
+//	"org.hibernate.ogm.backendtck.jpa.JPAStandaloneORMAndOGMTest",
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
 //	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
@@ -66,7 +66,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.simpleentity.InheritanceTest",
 //	"org.hibernate.ogm.backendtck.simpleentity.NullableFieldValueTest",
 //	"org.hibernate.ogm.backendtck.simpleentity.CRUDTest",
-	
+
 	// not checked
 
 //	"org.hibernate.ogm.datastore.ignite.test.IgniteTest",

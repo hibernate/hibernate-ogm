@@ -8,10 +8,8 @@ package org.hibernate.ogm.datastore.ignite.logging.impl;
 
 import org.apache.ignite.IgniteException;
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.jboss.logging.Logger.Level;
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;

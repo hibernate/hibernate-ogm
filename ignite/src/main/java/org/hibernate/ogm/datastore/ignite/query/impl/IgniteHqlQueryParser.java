@@ -28,22 +28,17 @@ import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.internal.ast.QueryTranslatorImpl.JavaConstantConverter;
 import org.hibernate.hql.internal.ast.SqlGenerator;
 import org.hibernate.hql.internal.ast.tree.FromReferenceNode;
-import org.hibernate.hql.internal.ast.tree.Node;
 import org.hibernate.hql.internal.ast.tree.QueryNode;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.hql.internal.ast.util.ASTPrinter;
-import org.hibernate.hql.internal.ast.util.ASTUtil;
 import org.hibernate.hql.internal.ast.util.NodeTraverser;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
-import org.hibernate.ogm.type.impl.EnumType;
-import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 import antlr.ANTLRException;
-import antlr.ASTFactory;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
@@ -141,7 +136,7 @@ public class IgniteHqlQueryParser {
 			if (!selectClause.isScalarSelect()) {
 				// Create query with fields _KEY and _VAL
 //				String alias = ((QueryNode)walker.getAST()).getFromClause().getFromElement().getTableAlias();
-				FromReferenceNode dotNode = (FromReferenceNode) ((QueryNode) walker.getAST()).getSelectClause().getFirstChild();
+				FromReferenceNode dotNode = (FromReferenceNode) ( (QueryNode) walker.getAST() ).getSelectClause().getFirstChild();
 				String alias = dotNode.getFromElement().getTableAlias();
 				StringBuffer buf = new StringBuffer("select ");
 				buf.append( alias ).append( "._KEY" ).append( " , " );
@@ -181,14 +176,14 @@ public class IgniteHqlQueryParser {
 
 		return result;
 	}
-	
+
 //	/**
 //	 * Appends "OR Field IS NULL" to "Field NOT LIKE..."
 //	 * @author Victor Kadachigov
 //	 */
 //	private class NotLikeProcessor implements NodeTraverser.VisitationStrategy {
 //		private final ASTFactory astFactory;
-//		
+//
 //		public NotLikeProcessor(ASTFactory astFactory) {
 //			this.astFactory = astFactory;
 //		}
@@ -202,9 +197,9 @@ public class IgniteHqlQueryParser {
 //				AST orNode = ASTUtil.createParent(astFactory, HqlTokenTypes.OR, "or", notLikeNode);
 //				log.info("!!!!!!!!!!!!!!!!!!!!! NOT_LIKE");
 //			}
-//			
+//
 //		}
-//		
+//
 //	}
 
 	private HqlParser parse(String hql, SessionFactoryImplementor sessionFactory) throws TokenStreamException, RecognitionException {
@@ -213,8 +208,8 @@ public class IgniteHqlQueryParser {
 		parser.setFilter( true );
 
 		parser.statement();
-		
-		
+
+
 
 		final AST hqlAst = parser.getAST();
 

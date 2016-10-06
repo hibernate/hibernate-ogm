@@ -9,13 +9,8 @@ package org.hibernate.ogm.datastore.ignite.configuration.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.hql.spi.QueryTranslatorFactory;
-import org.hibernate.ogm.boot.impl.OgmConfigurationServiceImpl;
-import org.hibernate.ogm.boot.impl.OgmServiceRegistryInitializer;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.ignite.jpa.impl.IgniteOgmPersisterClassResolver;
-import org.hibernate.ogm.datastore.ignite.query.impl.IgniteQueryTranslatorFactory;
-import org.hibernate.ogm.service.impl.OgmConfigurationService;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.persister.spi.PersisterClassResolver;
 import org.hibernate.service.spi.ServiceContributor;
@@ -30,7 +25,7 @@ import org.hibernate.service.spi.ServiceContributor;
  * @author Victor Kadachigov
  */
 public class IgniteServiceRegistryInitializer implements ServiceContributor {
-	
+
 	@Override
 	public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
 		Map<Object, Object> settings = serviceRegistryBuilder.getSettings();
@@ -39,9 +34,8 @@ public class IgniteServiceRegistryInitializer implements ServiceContributor {
 		if ( !isOgmEnabled ) {
 			return;
 		}
-		
+
 		serviceRegistryBuilder.addService( PersisterClassResolver.class, new IgniteOgmPersisterClassResolver() );
-		serviceRegistryBuilder.addService( QueryTranslatorFactory.class, new IgniteQueryTranslatorFactory() );
 	}
 
 	private boolean isOgmEnabled(Map<?, ?> settings) {

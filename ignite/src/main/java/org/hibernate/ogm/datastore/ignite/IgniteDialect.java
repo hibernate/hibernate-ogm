@@ -244,7 +244,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		boolean clearInsteadOfRemove = clearAssociation( key );
 
 		for ( AssociationOperation op : association.getOperations() ) {
-			Tuple currentStateTuple = op.getType() != AssociationOperationType.REMOVE 
+			Tuple currentStateTuple = op.getType() != AssociationOperationType.REMOVE
 											? op.getValue() : association.getSnapshot().get( op.getKey() );
 			String id = currentStateTuple.get( idColumnName ).toString();
 			if ( op.getType() == AssociationOperationType.CLEAR
@@ -431,7 +431,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		else {
 			throw new IgniteHibernateException( "Can't find cache name" );
 		}
-		QueryHints hints = (new QueryHints.Builder( queryParameters.getQueryHints() ) ).build();
+		QueryHints hints = ( new QueryHints.Builder( queryParameters.getQueryHints() ) ).build();
 		SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(
 										backendQuery.getQuery().getSql(),
 										hints,

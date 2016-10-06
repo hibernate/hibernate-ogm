@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteIllegalStateException;
 import org.apache.ignite.IgniteState;
 import org.apache.ignite.Ignition;
@@ -24,7 +23,6 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgniteEx;
 import org.apache.ignite.internal.IgnitionEx;
-import org.apache.ignite.internal.processors.cache.IgniteCacheProxy;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.thread.IgniteThread;
@@ -98,7 +96,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 		}
 		if ( cache == null ) {
-			log.unknownCache(entityCacheName);
+			log.unknownCache( entityCacheName );
 			CacheConfiguration<String, T> config = new CacheConfiguration<>();
 			config.setName( entityCacheName );
 			cache = cacheManager.getOrCreateCache( config );
@@ -254,7 +252,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		public List<T> call() throws Exception {
 			IgniteCache<String, BinaryObject> cache = ignite.cache( cacheName );
 			if ( cache == null ) {
-				throw log.cacheNotFound(cacheName);
+				throw log.cacheNotFound( cacheName );
 			}
 			cache = cache.withKeepBinary();
 			return (List<T>) cache.query( query ).getAll();
