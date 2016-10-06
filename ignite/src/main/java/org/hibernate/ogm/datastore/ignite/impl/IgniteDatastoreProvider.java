@@ -22,7 +22,6 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgniteEx;
 import org.apache.ignite.internal.IgnitionEx;
-import org.apache.ignite.internal.processors.cache.IgniteCacheProxy;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.thread.IgniteThread;
@@ -91,7 +90,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 		}
 		if ( cache == null ) {
-			log.warn( "Unknown cache '" + entityCacheName + "'. Creating new with default settings." );
+			log.unknownCache( entityCacheName );
 			CacheConfiguration<String, T> config = new CacheConfiguration<>();
 			config.setName( entityCacheName );
 			cache = cacheManager.getOrCreateCache( config );
@@ -235,7 +234,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		public List<T> call() throws Exception {
 			IgniteCache<String, BinaryObject> cache = ignite.cache( cacheName );
 			if ( cache == null ) {
-				throw LOG.cacheNotFound( cacheName );
+				throw log.cacheNotFound( cacheName );
 			}
 			cache = ( (IgniteCacheProxy<String, BinaryObject>) cache ).keepBinary();
 			return (List<T>) cache.query( query ).getAll();

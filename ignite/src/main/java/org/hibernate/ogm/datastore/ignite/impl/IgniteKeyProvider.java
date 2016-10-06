@@ -19,6 +19,8 @@ public class IgniteKeyProvider {
 
 	public static IgniteKeyProvider INSTANCE = new IgniteKeyProvider();
 
+	private static final Log log = LoggerFactory.getLogger();
+
 	private static final Log LOG = LoggerFactory.getLogger();
 
 	public IgniteSerializableEntityKey getEntityCacheKey(EntityKey key) {

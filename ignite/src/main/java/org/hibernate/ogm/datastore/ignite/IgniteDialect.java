@@ -226,7 +226,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect {
 		boolean clearInsteadOfRemove = clearAssociation( key );
 
 		for ( AssociationOperation op : association.getOperations() ) {
-			Tuple currentStateTuple = op.getValue();
+			Tuple currentStateTuple = op.getType() != AssociationOperationType.REMOVE
+											? op.getValue() : association.getSnapshot().get( op.getKey() );
 			String id = currentStateTuple.get( idColumnName ).toString();
 			if ( op.getType() == AssociationOperationType.CLEAR
 					|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
@@ -385,8 +386,33 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect {
 		if ( hints.isCollocated() ) {
 			sqlQuery.setCollocated( true );
 		}
-		if ( hints.isLocal() ) {
-			if ( !provider.isClientMode() ) {
+		else if (backendQuery.getQuery().getQuerySpaces().size() > 0) {
+			cache = provider.getEntityCache( backendQuery.getQuery().getQuerySpaces().iterator().next() );
+		}
+		else {
+			throw new IgniteHibernateException( "Can't find cache name" );
+		}
+		QueryHints hints = ( new QueryHints.Builder( queryParameters.getQueryHints() ) ).build();
+		SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(
+										backendQuery.getQuery().getSql(),
+										hints,
+										IgniteHqlQueryParser.createParameterList( backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters() ).toArray()
+								);
+		Iterable<List<?>> result = executeWithHints( cache, sqlQuery, hints );
+
+		if (backendQuery.getQuery().isHasScalar()) {
+			return new IgniteProjectionResultCursor( result, backendQuery.getQuery().getCustomQueryReturns(), queryParameters.getRowSelection() );
+		}
+		else {
+			return new IgnitePortableFromProjectionResultCursor( result, queryParameters.getRowSelection() );
+		}
+	}
+
+	private Iterable<List<?>> executeWithHints( IgniteCache<String, BinaryObject> cache, SqlFieldsQuery sqlQuery, QueryHints hints ) {
+		Iterable<List<?>> result;
+
+		if (hints.isLocal()) {
+			if (!provider.isClientMode()) {
 				sqlQuery.setLocal( true );
 			}
 		}

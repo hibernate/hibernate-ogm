@@ -23,14 +23,16 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 	private final String rowKeyIndexColumnNames[];
 
 	public IgnitePortableAssociationSnapshot(String rowKeyIndexColumnNames[]) {
-		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
-		this.associationMap = new HashMap<>();
+		if ( rowKeyIndexColumnNames != null && rowKeyIndexColumnNames.length > 0 ) {
+			this.associationMap = new TreeMap<RowKey, BinaryObject>( new RawKeyComparator(rowKeyIndexColumnNames) );
+		}
+		else {
+			this.associationMap = new HashMap<RowKey, BinaryObject>();
+		}
 	}
 
 	public IgnitePortableAssociationSnapshot(Map<RowKey, BinaryObject> associationMap, String rowKeyIndexColumnNames[]) {
-		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
-		Comparator<RowKey> comparator = createMapComparator();
-		this.associationMap = comparator != null ? new TreeMap<RowKey, BinaryObject>( comparator ) : new HashMap<RowKey, BinaryObject>();
+		this( rowKeyIndexColumnNames );
 		this.associationMap.putAll( associationMap );
 	}
 
@@ -64,5 +66,23 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 
 	public BinaryObject getBinary(RowKey rowKey) {
 		return associationMap.get( rowKey );
+	}
+
+	private class RawKeyComparator implements Comparator<RowKey> {
+
+		private final String sortFields[];
+
+		public RawKeyComparator(String[] sortFields) {
+			this.sortFields = sortFields != null ? sortFields : new String[0];
+		}
+
+		@Override
+		public int compare(RowKey key1, RowKey key2) {
+			CompareToBuilder builder = new CompareToBuilder();
+			for ( String name : sortFields ) {
+				builder.append( key1.getColumnValue( name ), key2.getColumnValue( name ) );
+			}
+			return builder.toComparison();
+		}
 	}
 }
