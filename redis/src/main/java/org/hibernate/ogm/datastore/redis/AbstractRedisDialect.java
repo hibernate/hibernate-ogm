@@ -117,7 +117,7 @@ public abstract class AbstractRedisDialect extends AbstractGroupingByEntityDiale
 
 	/**
 	 * Create a String representation of the identifier key in the format of {@code Identifiers:(table name):(columnId)}.
-	 * {@see #IDENTIFIERS}
+	 * {@link #IDENTIFIERS}
 	 *
 	 * @param key Key for the identifier
 	 *
@@ -234,7 +234,7 @@ public abstract class AbstractRedisDialect extends AbstractGroupingByEntityDiale
 
 	/**
 	 * Create a String representation of the entity key in the format of {@code Association:(table name):(columnId)}.
-	 * {@see #ASSOCIATIONS}
+	 * {@link #ASSOCIATIONS}
 	 *
 	 * @param key Key of the association
 	 *
