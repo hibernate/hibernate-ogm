@@ -10,7 +10,7 @@
 
     <groupId>org.hibernate.ogm</groupId>
     <artifactId>hibernate-ogm-bom</artifactId>
-    <version>5.0.2.Final</version>
+    <version>5.0.3-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
