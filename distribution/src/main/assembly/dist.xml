@@ -20,8 +20,7 @@
         <format>tar.gz</format>
         <format>zip</format>
     </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>
-    <baseDirectory>/</baseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
 
     <!-- Configure the module artifacts which make it into the distribution bundle -->
     <dependencySets>
@@ -233,11 +232,11 @@
         </fileSet>
         <fileSet>
             <directory>../documentation/manual/target/docbook/publish</directory>
-            <outputDirectory>dist/docs/reference</outputDirectory>
+            <outputDirectory>docs/reference</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../documentation/javadoc/target/apidocs</directory>
-            <outputDirectory>dist/docs/api</outputDirectory>
+            <outputDirectory>docs/api</outputDirectory>
         </fileSet>
         <!--  Lucene Core 3.6.2 for Neo4j -->
         <fileSet>
