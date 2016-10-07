@@ -1,6 +1,25 @@
 Hibernate OGM Changelog
 =======================
 
+5.0.2.Final (07-10-2016)
+-------------------------
+
+** Bug
+    * OGM-1127 - documentation - Fix link to hibernate search documentation
+    * OGM-1122 - core          - Association#getKeys() does not take into account the currentState if clear is used
+    * OGM-1121 - ehcache       - Missing break statement in EhcacheDialect#insertOrUpdateAssociation
+    * OGM-1114 -               - Event context not set up for all event cycles
+
+** Improvement
+    * OGM-1146 - build         - Properly ignore hibernate-noorm-release-scripts directory in the build
+    * OGM-1143 - documentation - Rename readme.md to README.md for consistency with other projects
+    * OGM-1141 - mongodb       - Upgrade MongoDB driver to 3.3.0 and MongoDB to 3.2.8
+    * OGM-1132 - cassandra     - Document that we only support ordinal parameters for Cassandra native queries for now
+
+** Task
+    * OGM-1183 - documentation - Minor fixes to the javadoc
+    * OGM-1130 - build, core   - Upgrade to Hibernate HQL Parser version 1.3.0.Final
+
 5.0.1.Final (30-06-2016)
 -------------------------
 
