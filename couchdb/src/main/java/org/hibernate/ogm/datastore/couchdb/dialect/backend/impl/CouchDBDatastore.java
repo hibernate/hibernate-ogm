@@ -278,8 +278,9 @@ public class CouchDBDatastore {
 		long value;
 		try {
 			SequenceDocument sequence = getSequence( key, initialValue );
-			value = sequence.getValue();
-			incrementValueAndSave( increment, sequence );
+			String columnName = key.getMetadata().getValueColumnName();
+			value = sequence.getValue( columnName );
+			incrementValueAndSave( columnName, increment, sequence );
 		}
 		catch (ResteasyClientException crf) {
 			throw logger.errorCalculatingNextValue( crf );
@@ -423,8 +424,8 @@ public class CouchDBDatastore {
 		}
 	}
 
-	private void incrementValueAndSave(int increment, SequenceDocument identifier) {
-		identifier.increase( increment );
+	private void incrementValueAndSave(String columnName, int increment, SequenceDocument identifier) {
+		identifier.increase( columnName, increment );
 		saveDocument( identifier );
 	}
 
@@ -464,7 +465,9 @@ public class CouchDBDatastore {
 			String id = createId( key );
 			response = databaseClient.getKeyValueById( id );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( SequenceDocument.class );
+				SequenceDocument identifier = response.readEntity( SequenceDocument.class );
+				identifier.enusreValueProperty( key.getMetadata().getValueColumnName(), initialValue );
+				return identifier;
 			}
 			else if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
 				SequenceDocument identifier = new SequenceDocument( key.getMetadata().getValueColumnName(), initialValue );

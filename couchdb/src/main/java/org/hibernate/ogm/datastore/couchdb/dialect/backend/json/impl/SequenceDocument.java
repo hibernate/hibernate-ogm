@@ -34,24 +34,22 @@ public class SequenceDocument extends Document {
 	public static final String TYPE_NAME = "sequence";
 
 	private final Map<String, Object> properties = newHashMap( 1 );
-	private String valueProperty;
 
 	// Only used by Jackson
 	SequenceDocument() {
 	}
 
 	public SequenceDocument(String valueProperty, long initialValue) {
-		this.valueProperty = valueProperty;
 		properties.put( valueProperty, String.valueOf( initialValue ) );
 	}
 
 	@JsonIgnore
-	public long getValue() {
+	public long getValue(String valueProperty) {
 		return Long.valueOf( (String) properties.get( valueProperty ) );
 	}
 
-	public void increase(int increment) {
-		long value = getValue() + increment;
+	public void increase(String valueProperty, int increment) {
+		long value = getValue( valueProperty ) + increment;
 		properties.put( valueProperty, String.valueOf( value ) );
 	}
 
@@ -64,10 +62,12 @@ public class SequenceDocument extends Document {
 
 	@JsonAnySetter
 	void set(String name, Object value) {
-		if ( valueProperty == null ) {
-			valueProperty = name;
-		}
-
 		properties.put( name, value );
+	}
+
+	public void enusreValueProperty(String valueProperty, int initialValue) {
+		if ( !properties.containsKey( valueProperty ) ) {
+			properties.put( valueProperty, String.valueOf( initialValue ) );
+		}
 	}
 }
