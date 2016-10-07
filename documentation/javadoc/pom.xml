@@ -103,6 +103,7 @@
                         ${basedir}/../../neo4j/src/main/java;
                         ${basedir}/../../couchdb/src/main/java;
                         ${basedir}/../../redis/src/main/java;
+                        ${basedir}/../../cassandra/src/main/java;
                     </sourcepath>
                     <show>public</show>
                     <tags>
