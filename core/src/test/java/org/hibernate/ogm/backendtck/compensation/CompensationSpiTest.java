@@ -30,6 +30,7 @@ import org.hibernate.ogm.compensation.operation.GridDialectOperation;
 import org.hibernate.ogm.compensation.operation.InsertOrUpdateTuple;
 import org.hibernate.ogm.compensation.operation.UpdateTupleWithOptimisticLock;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
@@ -92,7 +93,8 @@ public class CompensationSpiTest extends OgmTestCase {
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
 		assertThat( onRollbackInvocations.hasNext() ).isFalse();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) ||
+				currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			GridDialectOperation operation = appliedOperations.next();
@@ -148,7 +150,8 @@ public class CompensationSpiTest extends OgmTestCase {
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
 		assertThat( onRollbackInvocations.hasNext() ).isFalse();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class )
+				|| currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( ExecuteBatch.class );
@@ -220,6 +223,16 @@ public class CompensationSpiTest extends OgmTestCase {
 			UpdateTupleWithOptimisticLock updateTupleWithOptimisticLock = appliedOperation.as( UpdateTupleWithOptimisticLock.class );
 			assertThat( updateTupleWithOptimisticLock.getEntityKey().getTable() ).isEqualTo( "Shipment" );
 			assertThat( updateTupleWithOptimisticLock.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
+		}
+		else if ( currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
+			GridDialectOperation operation = appliedOperations.next();
+			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
+			ExecuteBatch batch = operation.as( ExecuteBatch.class );
+			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
+			InsertOrUpdateTuple insertOrUpdate = batchedOperations.next().as( InsertOrUpdateTuple.class );
+			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
+			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
+			assertThat( batchedOperations.hasNext() ).isFalse();
 		}
 		else {
 			GridDialectOperation appliedOperation = appliedOperations.next();
@@ -299,6 +312,16 @@ public class CompensationSpiTest extends OgmTestCase {
 			assertThat( updateTupleWithOptimisticLock.getEntityKey().getTable() ).isEqualTo( "Shipment" );
 			assertThat( updateTupleWithOptimisticLock.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
 		}
+		else if ( currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
+			GridDialectOperation operation = appliedOperations.next();
+			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
+			ExecuteBatch batch = operation.as( ExecuteBatch.class );
+			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
+			InsertOrUpdateTuple insertOrUpdate = batchedOperations.next().as( InsertOrUpdateTuple.class );
+			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
+			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
+			assertThat( batchedOperations.hasNext() ).isFalse();
+		}
 		else {
 			GridDialectOperation appliedOperation = appliedOperations.next();
 			assertThat( appliedOperation ).isInstanceOf( InsertOrUpdateTuple.class );
@@ -334,7 +357,8 @@ public class CompensationSpiTest extends OgmTestCase {
 		assertThat( onFailedOperationInvocations.hasNext() ).isFalse();
 
 		// then expect the failed op
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( (currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class )) &&
+				!currentDialectUsesLookupDuplicatePreventionStrategy() ) {
 			assertThat( invocation.getFailedOperation() ).isInstanceOf( ExecuteBatch.class );
 		}
 		else {
@@ -347,7 +371,8 @@ public class CompensationSpiTest extends OgmTestCase {
 		// and the applied ops
 		Iterator<GridDialectOperation> appliedOperations = invocation.getAppliedGridDialectOperations().iterator();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) ||
+				currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			GridDialectOperation operation = appliedOperations.next();

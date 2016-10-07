@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.impl;
 import java.io.Serializable;
 
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
@@ -16,8 +17,11 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
@@ -41,7 +45,7 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	private final EventContextManager eventContext;
 
-	public BatchOperationsDelegator(BatchableGridDialect dialect, EventContextManager eventContext) {
+	public BatchOperationsDelegator(GridDialect dialect, EventContextManager eventContext) {
 		super( dialect );
 		this.eventContext = eventContext;
 	}
@@ -67,10 +71,12 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	@Override
 	public void executeBatch(OperationsQueue operationsQueue) {
-		log.tracef( "Executing batch" );
-
 		try {
-			super.executeBatch( operationsQueue );
+			if ( GridDialects.hasFacet( getGridDialect(), BatchableGridDialect.class )
+					|| GridDialects.hasFacet( getGridDialect(), GroupingByEntityDialect.class ) ) {
+				log.tracef( "Executing batch" );
+				super.executeBatch( operationsQueue );
+			}
 		}
 		catch ( TupleAlreadyExistsException taee ) {
 			// TODO: Ideally, we should log the entity name + id here; For now we trust the datastore to provide this
@@ -82,22 +88,25 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		TupleContext contextWithQueue = new TupleContextImpl(
-				(TupleContextImpl) tupleContext,
-				getOperationQueue()
-		);
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		OperationContext contextWithQueue;
+		if ( operationContext instanceof AssociationContext ) {
+			contextWithQueue = new AssociationContextImpl( (AssociationContextImpl) operationContext, getOperationQueue() );
+		}
+		else {
+			contextWithQueue = new TupleContextImpl( (TupleContextImpl) operationContext, getOperationQueue() );
+		}
 
 		return super.getTuple( key, contextWithQueue );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			super.insertOrUpdateTuple( key, tuple, tupleContext );
+			super.insertOrUpdateTuple( key, tuplePointer, tupleContext );
 		}
 		else {
-			getOperationQueue().add( new InsertOrUpdateTupleOperation( tuple, key, tupleContext ) );
+			getOperationQueue().add( new InsertOrUpdateTupleOperation( tuplePointer, key, tupleContext ) );
 		}
 	}
 
@@ -141,7 +150,16 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 		}
 	}
 
+	@Override
+	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
+		super.flushPendingOperations( entityKey, withQueue( tupleContext ) );
+	}
+
 	private AssociationContext withQueue(AssociationContext associationContext) {
 		return new AssociationContextImpl( (AssociationContextImpl) associationContext, getOperationQueue() );
+	}
+
+	private TupleContext withQueue(TupleContext tupleContext) {
+		return new TupleContextImpl( (TupleContextImpl) tupleContext, getOperationQueue() );
 	}
 }

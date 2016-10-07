@@ -124,7 +124,10 @@ public class MultiGetMultiColumnsIdTest extends OgmTestCase {
 
 	private TupleContext tupleContext(Session session) {
 		return new GridDialectOperationContexts.TupleContextBuilder()
-				.selectableColumns( METADATA.getColumnNames() )
+				.tupleTypeContext(
+						new GridDialectOperationContexts.TupleTypeContextBuilder()
+								.selectableColumns( METADATA.getColumnNames() )
+								.buildTupleTypeContext() )
 				.transactionContext( session )
 				.buildTupleContext();
 	}

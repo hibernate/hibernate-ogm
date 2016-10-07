@@ -47,7 +47,6 @@ public class BatchInsertTest extends OgmTestCase {
 	@Test
 	public void testImplicitFlushWithUpdates() throws Exception {
 		int numInsert = 3;
-		int numUpdate = 1;
 
 		Session session = openSession();
 		session.beginTransaction();
@@ -60,7 +59,7 @@ public class BatchInsertTest extends OgmTestCase {
 		session.getTransaction().commit();
 		session.close();
 
-		Assertions.assertThat( LeakingMongoDBDialect.queueSize ).isEqualTo( numUpdate + ( numInsert + 1 ) );
+		Assertions.assertThat( LeakingMongoDBDialect.queueSize ).isEqualTo( numInsert + 1 );
 	}
 
 	@Test

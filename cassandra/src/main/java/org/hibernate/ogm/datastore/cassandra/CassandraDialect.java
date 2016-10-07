@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.cassandra.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.cassandra.model.impl.ResultSetTupleIterator;
 import org.hibernate.ogm.datastore.cassandra.query.impl.CassandraParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -44,8 +45,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -54,6 +58,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -145,7 +150,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 
 		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
 		Select.Where selectWhere = select.where( eq( quote( key.getColumnNames()[0] ), QueryBuilder.bindMarker() ) );
@@ -161,20 +166,21 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		}
 
 		Row row = resultSet.one();
-		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) );
+		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE );
 		return tuple;
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		Map<String, Object> toSave = new HashMap<String, Object>();
 		toSave.put( key.getColumnNames()[0], key.getColumnValues()[0] );
-		return new Tuple( new MapTupleSnapshot( toSave ) );
+		return new Tuple( new MapTupleSnapshot( toSave ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext)
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext)
 			throws TupleAlreadyExistsException {
+		Tuple tuple = tuplePointer.getTuple();
 
 		List<TupleOperation> updateOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );
 		List<TupleOperation> deleteOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );
@@ -254,7 +260,6 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		Table tableMetadata = provider.getMetaDataCache().get( key.getTable() );
-		@SuppressWarnings("unchecked")
 		List<Column> tablePKCols = tableMetadata.getPrimaryKey().getColumns();
 
 		Select select = QueryBuilder.select().all().from( quote( key.getTable() ) );
@@ -396,6 +401,8 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 
 			bindAndExecute( columnValues.toArray(), delete );
 		}
+
+		MapHelpers.updateAssociation( association );
 	}
 
 	@Override
@@ -443,7 +450,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		Select select = QueryBuilder.select().all().from( quote( entityKeyMetadata.getTable() ) );
 
 		ResultSet resultSet;
@@ -456,7 +463,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		Iterator<Row> iter = resultSet.iterator();
 		while ( iter.hasNext() ) {
 			Row row = iter.next();
-			consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ) ) );
+			consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE ) );
 		}
 	}
 
@@ -534,4 +541,10 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		// the db server supplied metadata or parsing assistance we can't do much meaningful validation.
 		return nativeQuery;
 	}
+
+	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return false;
+	}
+
 }

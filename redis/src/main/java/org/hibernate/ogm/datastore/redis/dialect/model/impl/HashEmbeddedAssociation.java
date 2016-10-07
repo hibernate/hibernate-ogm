@@ -7,11 +7,14 @@
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
 import java.util.Collection;
-import java.util.Map;
 
 import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
+import org.hibernate.ogm.datastore.redis.logging.impl.Log;
+import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * A {@link RedisAssociation} backed by a Redis Hash.
@@ -20,35 +23,39 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
  */
 class HashEmbeddedAssociation extends RedisAssociation {
 
-	private final Map<String, String> entity;
-	private final HashEntity hashEntity;
+	private static final Log log = LoggerFactory.getLogger();
+
+	private final TuplePointer tuplePointer;
 	private final AssociationKeyMetadata associationKeyMetadata;
 
-	public HashEmbeddedAssociation(Map<String, String> entity, AssociationKeyMetadata associationKeyMetadata) {
-		this.entity = entity;
+	public HashEmbeddedAssociation(TuplePointer tuplePointer, AssociationKeyMetadata associationKeyMetadata) {
 		this.associationKeyMetadata = associationKeyMetadata;
-		hashEntity = new HashEntity( entity );
+		this.tuplePointer = tuplePointer;
 	}
 
 	@Override
 	public Object getRows() {
-		return entity.get( associationKeyMetadata.getCollectionRole() );
+		return getEntity().get( associationKeyMetadata.getCollectionRole() );
 	}
 
 	@Override
 	public void setRows(Object rows) {
-
 		if ( isEmpty( rows ) ) {
-			entity.put( associationKeyMetadata.getCollectionRole(), null );
+			getEntity().set( associationKeyMetadata.getCollectionRole(), null );
 		}
 		else {
-			Object value = ( (Collection) rows ).iterator().next();
-			entity.put( associationKeyMetadata.getCollectionRole(), (String) value );
+			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
+				Object value = ( (Collection<?>) rows ).iterator().next();
+				getEntity().set( associationKeyMetadata.getCollectionRole(), (String) value );
+			}
+			else {
+				throw log.embeddedToManyAssociationsNotSupportByRedisHash( associationKeyMetadata.getEntityKeyMetadata().getTable(),
+						associationKeyMetadata.getCollectionRole() );
+			}
 		}
 	}
 
 	protected boolean isEmpty(Object rows) {
-
 		if ( rows == null ) {
 			return true;
 		}
@@ -62,6 +69,10 @@ class HashEmbeddedAssociation extends RedisAssociation {
 
 	@Override
 	public StructuredValue getOwningDocument() {
-		return hashEntity;
+		return getEntity();
+	}
+
+	private HashEntity getEntity() {
+		return ( (RedisHashTupleSnapshot) tuplePointer.getTuple().getSnapshot() ).getEntity();
 	}
 }

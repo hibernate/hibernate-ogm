@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
 /**
  * An {@link AssociationSnapshot} based on a serializable map.
@@ -34,7 +35,7 @@ public final class SerializableMapAssociationSnapshot implements AssociationSnap
 	@Override
 	public Tuple get(RowKey column) {
 		Map<String, Object> rawResult = associationMap.get( new SerializableRowKey( column ) );
-		return rawResult != null ? new Tuple( new MapTupleSnapshot( rawResult ) ) : null;
+		return rawResult != null ? new Tuple( new MapTupleSnapshot( rawResult ), SnapshotType.UPDATE ) : null;
 	}
 
 	@Override

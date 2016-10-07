@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.redis;
 
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,16 +20,16 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonSerializationStrategy;
 import org.hibernate.ogm.datastore.redis.logging.impl.Log;
 import org.hibernate.ogm.datastore.redis.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.redis.options.impl.TTLOption;
+import org.hibernate.ogm.dialect.impl.AbstractGroupingByEntityDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -43,12 +44,10 @@ import com.lambdaworks.redis.cluster.api.sync.RedisAdvancedClusterCommands;
 import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 import com.lambdaworks.redis.cluster.models.partitions.RedisClusterNode;
 
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-
 /**
  * @author Mark Paluch
  */
-public abstract class AbstractRedisDialect extends BaseGridDialect {
+public abstract class AbstractRedisDialect extends AbstractGroupingByEntityDialect {
 
 	public static final String IDENTIFIERS = "Identifiers";
 	public static final String ASSOCIATIONS = "Associations";
@@ -96,11 +95,6 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 
 		log.cannotDetermineRedisMode( info );
 		return null;
-	}
-
-	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( new RedisTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
 	@Override
@@ -182,55 +176,38 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 		return rowObject.getPropertiesAsHierarchy();
 	}
 
-
-	protected Long getTTL(OptionsContext optionsContext) {
-		return optionsContext.getUnique( TTLOption.class );
+	protected Long getObjectTTL(String objectId, OptionsContext optionsContext) {
+		Long ttl = optionsContext.getUnique( TTLOption.class );
+		if ( ttl == null ) {
+			ttl = connection.pttl( objectId );
+			if ( ttl != null && ttl <= 0 ) {
+				ttl = null;
+			}
+		}
+		return ttl;
 	}
-
-	protected Long getTTL(AssociationContext associationContext) {
-		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( TTLOption.class );
-	}
-
 
 	protected String getKeyWithoutTablePrefix(String prefixBytes, String key) {
 		return key.substring( prefixBytes.length() );
 	}
 
-	protected void setAssociationTTL(
-			AssociationKey associationKey,
-			AssociationContext associationContext,
-			Long currentTtl) {
-		Long ttl = getTTL( associationContext );
+	protected void setObjectTTL(String objectId, Long ttl) {
 		if ( ttl != null ) {
-			expireAssociation( associationKey, ttl );
-		}
-		else if ( currentTtl != null && currentTtl > 0 ) {
-			expireAssociation( associationKey, currentTtl );
+			connection.pexpire( objectId, ttl );
 		}
 	}
 
-	protected void setEntityTTL(EntityKey key, Long currentTtl, Long configuredTTL) {
-		if ( configuredTTL != null ) {
-			expireEntity( key, configuredTTL );
+	protected void removeAssociations(List<AssociationKey> keys) {
+		if ( keys.isEmpty() ) {
+			return;
 		}
-		else if ( currentTtl != null && currentTtl > 0 ) {
-			expireEntity( key, currentTtl );
+		String[] ids = new String[keys.size()];
+		int i = 0;
+		for ( AssociationKey key : keys ) {
+			ids[i] = associationId( key );
+			i++;
 		}
-	}
-
-	protected void expireEntity(EntityKey key, Long ttl) {
-		String associationId = entityId( key );
-		connection.pexpire( associationId, ttl );
-	}
-
-
-	protected void expireAssociation(AssociationKey key, Long ttl) {
-		String associationId = associationId( key );
-		connection.pexpire( associationId, ttl );
-	}
-
-	protected void removeAssociation(AssociationKey key) {
-		connection.del( associationId( key ) );
+		connection.del( ids );
 	}
 
 	protected void remove(EntityKey key) {
@@ -312,9 +289,10 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	 * Single key: Use the value from the key
 	 * Multiple keys: De-serialize the JSON map.
 	 */
-	protected Map<String, Object> keyToMap(EntityKeyMetadata entityKeyMetadata, String key) {
+	@SuppressWarnings("unchecked")
+	protected Map<String, String> keyToMap(EntityKeyMetadata entityKeyMetadata, String key) {
 		if ( entityKeyMetadata.getColumnNames().length == 1 ) {
-			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], (Object) key );
+			return Collections.singletonMap( entityKeyMetadata.getColumnNames()[0], key );
 		}
 		return strategy.deserialize( key, Map.class );
 	}
@@ -355,16 +333,40 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 			AssociationKey key,
 			org.hibernate.ogm.datastore.redis.dialect.value.Association association) {
 		String associationId = associationId( key );
+
 		connection.del( associationId );
 
-		for ( Object row : association.getRows() ) {
-			if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
-				connection.sadd( associationId, strategy.serialize( row ) );
-			}
-			else {
-				connection.rpush( associationId, strategy.serialize( row ) );
-			}
+		List<Object> rows = association.getRows();
+
+		if ( rows.isEmpty() ) {
+			return;
 		}
+
+		String[] serializedRows = new String[rows.size()];
+		int i = 0;
+		for ( Object row : rows ) {
+			serializedRows[i] = strategy.serialize( row );
+			i++;
+		}
+		if ( key.getMetadata().getAssociationType() == AssociationType.SET ) {
+			connection.sadd( associationId, serializedRows );
+		}
+		else {
+			connection.rpush( associationId, serializedRows );
+		}
+	}
+
+	/**
+	 * Retrieve entity that contains the association, do not enhance with entity key
+	 */
+	protected TuplePointer getEmbeddingEntityTuplePointer(AssociationKey key, AssociationContext associationContext) {
+		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
+
+		if ( tuplePointer.getTuple() == null ) {
+			tuplePointer.setTuple( getTuple( key.getEntityKey(), associationContext ) );
+		}
+
+		return tuplePointer;
 	}
 
 	/**

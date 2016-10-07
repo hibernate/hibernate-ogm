@@ -21,7 +21,7 @@ env:
     - REDIS_HOSTNAME=127.0.0.1
     - COUCHDB_HOSTNAME=127.0.0.1
     - CASSANDRA_VERSION=3.0.7 CASSANDRA_HOSTNAME=127.0.0.1
-    - NEO4J_VERSION=3.0.3 NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
+    - NEO4J_VERSION=3.0.6 NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
 install:
@@ -40,7 +40,8 @@ before_script:
   - curl -vX POST http://neo4j:neo4j@$NEO4J_HOSTNAME:$NEO4J_PORT/user/neo4j/password -d"password=$NEO4J_PASSWORD"
 script:
   - ./mvnw -s settings-example.xml clean install
-  - ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-remote -am clean install
-  - ./mvnw -s settings-example.xml -pl mongodb -DmongodbProvider=fongo -am clean install
+  - ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-http clean install
+  - NEO4J_PORT=7687 ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-bolt clean install
+  - ./mvnw -s settings-example.xml -pl mongodb -DmongodbProvider=fongo clean install
 after_script:
   - rm -rf $HOME/.m2/repository/org/hibernate/ogm/

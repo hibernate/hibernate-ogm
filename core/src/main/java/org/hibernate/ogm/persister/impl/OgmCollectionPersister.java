@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.Session;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
@@ -32,6 +33,9 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.impl.OgmBasicCollectionLoader;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -621,7 +625,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			OgmEntityPersister persister = (OgmEntityPersister) getElementPersister();
 			final EntityKey entityKey = EntityKeyBuilder.fromPersister( persister, entityId, session );
 
-			final Tuple entityTuple = gridDialect.getTuple( entityKey, persister.getTupleContext( session ) );
+			final TuplePointer entityTuplePointer = getSharedTuplePointer( entityKey, entity, persister.getTupleContext( session ), session );
+			final Tuple entityTuple = entityTuplePointer.getTuple();
 			// the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if ( entityTuple == null ) {
 				return;
@@ -640,12 +645,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext( session ) );
+			persister.insertOrUpdateTuple( entityKey, entityTuplePointer, persister.hasUpdateGeneratedProperties() || persister.hasInsertGeneratedProperties(), session );
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( associationRow, elementColumnNames );
-			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
+			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, elementColumnNames, session, null );
 
 			if ( inverseCollectionPersister == null ) {
 				return;
@@ -721,12 +726,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				// shortcut to avoid loop if we can
 				if ( associationType != AssociationType.OTHER ) {
 					for ( RowKey assocEntryKey : association.getKeys() ) {
+						Tuple associationRow = association.get( assocEntryKey );
+						Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
+						@SuppressWarnings("unchecked")
+						Object entity = ( (Session) session ).get( getElementPersister().getMappedClass(), entityId );
+
 						// we unfortunately cannot mass change the update of the associated entity
 						updateInverseSideOfAssociationNavigation(
 								session,
-								null,
+								entity,
 								associationPersister.getAssociationKey(),
-								association.get( assocEntryKey ),
+								associationRow,
 								Action.REMOVE,
 								assocEntryKey
 								);
@@ -854,6 +864,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( getOwnerEntityPersister().getMappedClass(), associationKeyMetadata.getCollectionRole() ),
 				serviceContext.getEntityOptions( getOwnerEntityPersister().getMappedClass() ),
+				getOwnerEntityPersister().getTupleTypeContext(),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				mainSidePropertyName
 		);
@@ -884,4 +895,23 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			.associationTypeContext( associationTypeContext )
 			.session( session );
 	}
+
+	private TuplePointer getSharedTuplePointer(EntityKey key, Object entity, TupleContext tupleContext, SessionImplementor session) {
+		if (entity == null) {
+			return new TuplePointer( gridDialect.getTuple( key, tupleContext ) );
+		}
+
+		TuplePointer tuplePointer = OgmEntityEntryState.getStateFor( session, entity ).getTuplePointer();
+		if (tuplePointer.getTuple() == null) {
+			tuplePointer.setTuple( gridDialect.getTuple( key, tupleContext ) );
+		}
+
+		return tuplePointer;
+	}
+
+	@Override
+	public OgmEntityPersister getOwnerEntityPersister() {
+		return (OgmEntityPersister) super.getOwnerEntityPersister();
+	}
+
 }

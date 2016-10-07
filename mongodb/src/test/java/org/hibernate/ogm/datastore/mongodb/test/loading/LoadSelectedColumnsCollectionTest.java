@@ -36,6 +36,7 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -46,6 +47,7 @@ import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.Option;
@@ -155,10 +157,11 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 								"modules"
 						),
 						EmptyOptionsContext.INSTANCE,
+						GridDialectOperationContexts.emptyTupleTypeContext(),
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
-				new Tuple( new MongoDBTupleSnapshot( null, null, null ) ),
+				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null ), SnapshotType.UPDATE ) ),
 				transactionContext( session )
 		);
 
@@ -179,8 +182,11 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new Object[] { id }
 		);
 		TupleContext tupleContext = new GridDialectOperationContexts.TupleContextBuilder()
-				.selectableColumns( selectedColumns )
-				.optionContext( TestOptionContext.INSTANCE )
+				.tupleTypeContext(
+						new GridDialectOperationContexts.TupleTypeContextBuilder()
+								.selectableColumns( selectedColumns )
+								.optionContext( TestOptionContext.INSTANCE )
+								.buildTupleTypeContext() )
 				.buildTupleContext();
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );

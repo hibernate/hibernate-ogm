@@ -63,6 +63,11 @@
             <artifactId>neo4j</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+        </dependency>
+
         <!-- RESTEasy and Jackson -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
@@ -170,12 +175,20 @@
                 <datastoreProvider>neo4j_embedded</datastoreProvider>
             </properties>
         </profile>
-    
-        <!-- Executes the tests against a separately started Neo4j server -->
+
+        <!-- Executes the tests against a separately started Neo4j server using the Bolt protocol interface -->
         <profile>
-            <id>neo4j-remote</id>
+            <id>neo4j-bolt</id>
             <properties>
-                <datastoreProvider>neo4j_remote</datastoreProvider>
+                <datastoreProvider>neo4j_bolt</datastoreProvider>
+            </properties>
+        </profile>
+
+        <!-- Executes the tests against a separately started Neo4j server using the HTTP interface -->
+        <profile>
+            <id>neo4j-http</id>
+            <properties>
+                <datastoreProvider>neo4j_http</datastoreProvider>
             </properties>
         </profile>
     </profiles>

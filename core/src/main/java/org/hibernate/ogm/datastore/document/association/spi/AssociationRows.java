@@ -16,6 +16,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
 /**
  * Represents the rows of an association in form of {@link AssociationRow}s.
@@ -38,7 +39,7 @@ public class AssociationRows implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey rowKey) {
 		AssociationRow<?> row = rows.get( rowKey );
-		return row != null ? new Tuple( row ) : null;
+		return row != null ? new Tuple( row, SnapshotType.UPDATE ) : null;
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 
@@ -23,16 +24,18 @@ import org.hibernate.ogm.model.key.spi.AssociationType;
  */
 class EmbeddedAssociation extends RedisAssociation {
 
-	private final Entity entity;
+	private final TuplePointer tuplePointer;
 	private final AssociationKeyMetadata associationKeyMetadata;
 
-	public EmbeddedAssociation(Entity entity, AssociationKeyMetadata associationKeyMetadata) {
-		this.entity = entity;
+	public EmbeddedAssociation(TuplePointer tuplePointer, AssociationKeyMetadata associationKeyMetadata) {
+		this.tuplePointer = tuplePointer;
 		this.associationKeyMetadata = associationKeyMetadata;
 	}
 
 	@Override
 	public Object getRows() {
+		Entity entity = getEntity();
+
 		Object rows;
 		Object fieldValue = DotPatternMapHelpers.getValueOrNull(
 				entity.getPropertiesAsHierarchy(), associationKeyMetadata.getCollectionRole()
@@ -53,12 +56,13 @@ class EmbeddedAssociation extends RedisAssociation {
 
 	@Override
 	public void setRows(Object rows) {
+		Entity entity = getEntity();
 		if ( isEmpty( rows ) ) {
-			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			entity.unset( associationKeyMetadata.getCollectionRole() );
 		}
 		else {
 
-			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+			entity.unset( associationKeyMetadata.getCollectionRole() );
 			if ( associationKeyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE && rows instanceof Collection ) {
 				Object value = ( (Collection) rows ).iterator().next();
 				entity.set( associationKeyMetadata.getCollectionRole(), value );
@@ -88,6 +92,10 @@ class EmbeddedAssociation extends RedisAssociation {
 
 	@Override
 	public StructuredValue getOwningDocument() {
-		return entity;
+		return getEntity();
+	}
+
+	private Entity getEntity() {
+		return ( (RedisJsonTupleSnapshot) tuplePointer.getTuple().getSnapshot() ).getEntity();
 	}
 }

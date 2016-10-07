@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -34,6 +34,8 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * The alias used when a query returns an entity as result.
 	 */
 	public static final String ENTITY_ALIAS = "owner";
+	public static final String EMBEDDED_ALIAS = "emb";
+	public static final String EMBEDDED_REL = "r";
 
 	private static final int CACHE_CAPACITY = 1000;
 	private static final int CACHE_CONCURRENCY_LEVEL = 20;
@@ -56,6 +58,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	private final String removeToOneAssociation;
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
+	private final String findEntityWithEmbeddedEndNodeQuery;
 	private final String findEntitiesQuery;
 	private final String findAssociationPartialQuery;
 	private final String createEntityQuery;
@@ -74,7 +77,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 
-	public BaseNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext, boolean includeEmbedded) {
+	public BaseNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext, boolean includeEmbedded) {
 		this.entityKeyMetadata = entityKeyMetadata;
 		this.includeEmbedded = includeEmbedded;
 		this.updateEmbeddedPropertyQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
@@ -84,26 +87,27 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		this.findAssociationPartialQuery = initMatchOwnerEntityNode( entityKeyMetadata );
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
 		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata, includeEmbedded );
+		this.findEntityWithEmbeddedEndNodeQuery = initFindEntityQueryWithEmbeddedEndNode( entityKeyMetadata );
 		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata, includeEmbedded );
 		this.createEntityQuery = initCreateEntityQuery( entityKeyMetadata );
 		this.updateEntityProperties = initMatchOwnerEntityNode( entityKeyMetadata );
 		this.createEntityWithPropertiesQuery = initCreateEntityWithPropertiesQuery( entityKeyMetadata );
 		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
 		this.updateEmbeddedNodeQuery = initUpdateEmbeddedNodeQuery( entityKeyMetadata );
-		this.updateToOneQuery = initUpdateToOneQuery( entityKeyMetadata, tupleContext );
-		this.findAssociatedEntityQuery = initFindAssociatedEntityQuery( entityKeyMetadata, tupleContext );
-		this.findEmbeddedNodeQueries = initFindEmbeddedNodeQuery( entityKeyMetadata, tupleContext );
+		this.updateToOneQuery = initUpdateToOneQuery( entityKeyMetadata, tupleTypeContext );
+		this.findAssociatedEntityQuery = initFindAssociatedEntityQuery( entityKeyMetadata, tupleTypeContext );
+		this.findEmbeddedNodeQueries = initFindEmbeddedNodeQuery( entityKeyMetadata, tupleTypeContext );
 
 		this.multiGetQuery = initMultiGetEntitiesQuery( entityKeyMetadata, includeEmbedded );
 
-		this.removeEmbeddedPropertyQuery = initRemoveEmbeddedPropertyQuery( entityKeyMetadata, tupleContext );
-		this.removePropertyQueries = initRemovePropertyQueries( entityKeyMetadata, tupleContext );
-		this.removeToOneAssociation = initRemoveToOneAssociation( entityKeyMetadata, tupleContext );
+		this.removeEmbeddedPropertyQuery = initRemoveEmbeddedPropertyQuery( entityKeyMetadata, tupleTypeContext );
+		this.removePropertyQueries = initRemovePropertyQueries( entityKeyMetadata, tupleTypeContext );
+		this.removeToOneAssociation = initRemoveToOneAssociation( entityKeyMetadata, tupleTypeContext );
 		this.singlePropertyKey = entityKeyMetadata.getColumnNames().length == 1;
 		this.keyColumns = entityKeyMetadata.getColumnNames();
 	}
 
-	private String initRemoveToOneAssociation(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	private String initRemoveToOneAssociation(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
 		StringBuilder queryBuilder = new StringBuilder();
 		appendMatchOwnerEntityNode( queryBuilder, entityKeyMetadata );
 		queryBuilder.append( " -[r]-> (:" );
@@ -114,13 +118,13 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return queryBuilder.toString();
 	}
 
-	private Map<String, String> initRemovePropertyQueries(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		if ( tupleContext == null ) {
+	private Map<String, String> initRemovePropertyQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext == null ) {
 			return Collections.emptyMap();
 		}
 
 		Map<String, String> removeColumn = new HashMap<>();
-		for ( String column : tupleContext.getSelectableColumns() ) {
+		for ( String column : tupleTypeContext.getSelectableColumns() ) {
 			if ( !column.contains( "." ) ) {
 				StringBuilder queryBuilder = new StringBuilder();
 				queryBuilder.append( "MATCH " );
@@ -166,6 +170,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			escapeIdentifier( queryBuilder, entityKeyMetadata.getColumnNames()[0] );
 			queryBuilder.append( " IN {0}" );
 			appendGetEmbeddedNodesIfNeeded( includeEmbedded, queryBuilder );
+			if ( includeEmbedded ) {
+				queryBuilder.append( ", " );
+				queryBuilder.append( EMBEDDED_ALIAS );
+			}
 		}
 		return queryBuilder.toString();
 	}
@@ -174,12 +182,12 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * MATCH (owner:ENTITY:Account {login: {0}}) -[:type]-> (e:EMBEDDED)
 	 * REMOVE e.property
 	 */
-	private Map<String, String> initRemoveEmbeddedPropertyQuery(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		if ( tupleContext == null ) {
+	private Map<String, String> initRemoveEmbeddedPropertyQuery(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext == null ) {
 			return Collections.emptyMap();
 		}
 		Map<String, String> removeColumn = new HashMap<>();
-		for ( String column : tupleContext.getSelectableColumns() ) {
+		for ( String column : tupleTypeContext.getSelectableColumns() ) {
 			if ( EmbeddedHelper.isPartOfEmbedded( column ) ) {
 				if ( !removeColumn.containsKey( column ) ) {
 					StringBuilder queryBuilder = new StringBuilder();
@@ -219,12 +227,12 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return Collections.unmodifiableMap( removeColumn );
 	}
 
-	private Map<String, String> initUpdateToOneQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleContext tupleContext) {
-		if (tupleContext != null) {
-			Map<String, AssociatedEntityKeyMetadata> allAssociatedEntityKeyMetadata = tupleContext.getAllAssociatedEntityKeyMetadata();
+	private Map<String, String> initUpdateToOneQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext != null ) {
+			Map<String, AssociatedEntityKeyMetadata> allAssociatedEntityKeyMetadata = tupleTypeContext.getAllAssociatedEntityKeyMetadata();
 			Map<String, String> queries = new HashMap<>( allAssociatedEntityKeyMetadata.size() );
 			for ( Entry<String, AssociatedEntityKeyMetadata> entry : allAssociatedEntityKeyMetadata.entrySet() ) {
-				String associationRole = tupleContext.getRole( entry.getKey() );
+				String associationRole = tupleTypeContext.getRole( entry.getKey() );
 				AssociatedEntityKeyMetadata associatedEntityKeyMetadata = entry.getValue();
 				EntityKeyMetadata targetKeyMetadata = associatedEntityKeyMetadata.getEntityKeyMetadata();
 				StringBuilder queryBuilder = new StringBuilder( "MATCH " );
@@ -249,12 +257,12 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return Collections.emptyMap();
 	}
 
-	private Map<String, String> initFindAssociatedEntityQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleContext tupleContext) {
-		if ( tupleContext != null ) {
-			Map<String, AssociatedEntityKeyMetadata> allAssociatedEntityKeyMetadata = tupleContext.getAllAssociatedEntityKeyMetadata();
+	private Map<String, String> initFindAssociatedEntityQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext != null ) {
+			Map<String, AssociatedEntityKeyMetadata> allAssociatedEntityKeyMetadata = tupleTypeContext.getAllAssociatedEntityKeyMetadata();
 			Map<String, String> queries = new HashMap<>( allAssociatedEntityKeyMetadata.size() );
 			for ( Entry<String, AssociatedEntityKeyMetadata> entry : allAssociatedEntityKeyMetadata.entrySet() ) {
-				String associationRole = tupleContext.getRole( entry.getKey() );
+				String associationRole = tupleTypeContext.getRole( entry.getKey() );
 				StringBuilder queryBuilder = new StringBuilder( "MATCH " );
 				appendEntityNode( ENTITY_ALIAS, ownerEntityKeyMetadata, queryBuilder );
 				queryBuilder.append( " -[r:" );
@@ -268,10 +276,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return Collections.emptyMap();
 	}
 
-	private Map<String, String> initFindEmbeddedNodeQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleContext tupleContext) {
-		if ( tupleContext != null ) {
+	private Map<String, String> initFindEmbeddedNodeQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext != null ) {
 			Map<String, String> queries = new HashMap<>();
-			List<String> selectableColumns = tupleContext.getSelectableColumns();
+			List<String> selectableColumns = tupleTypeContext.getSelectableColumns();
 			for ( String column : selectableColumns ) {
 				if ( isPartOfEmbedded( column ) ) {
 					String embeddedPath = column.substring( 0, column.lastIndexOf( "." ) );
@@ -416,6 +424,15 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return queryBuilder.toString();
 	}
 
+	private static String initFindEntityQueryWithEmbeddedEndNode(EntityKeyMetadata entityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder();
+		appendMatchOwnerEntityNode( queryBuilder, entityKeyMetadata );
+		appendGetEmbeddedNodesIfNeeded( true, queryBuilder );
+		queryBuilder.append( ", " );
+		queryBuilder.append( EMBEDDED_ALIAS );
+		return queryBuilder.toString();
+	}
+
 	private static void appendGetEmbeddedNodesIfNeeded(boolean includeEmbedded, StringBuilder queryBuilder) {
 		if ( includeEmbedded ) {
 			appendOptionalMatchOwnerEmbeddedNodes( queryBuilder );
@@ -432,7 +449,9 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	private static void appendOptionalMatchOwnerEmbeddedNodes(StringBuilder queryBuilder) {
 		queryBuilder.append( " OPTIONAL MATCH (" );
 		queryBuilder.append( ENTITY_ALIAS );
-		queryBuilder.append( ") -[r*]->(:" );
+		queryBuilder.append( ") -[r*]->(" );
+		queryBuilder.append( EMBEDDED_ALIAS );
+		queryBuilder.append( ":" );
 		queryBuilder.append( NodeLabel.EMBEDDED );
 		queryBuilder.append( ")" );
 	}
@@ -653,6 +672,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 
 	public String getFindEntityQuery() {
 		return findEntityQuery;
+	}
+
+	public String getFindEntityWithEmbeddedEndNodeQuery() {
+		return findEntityWithEmbeddedEndNodeQuery;
 	}
 
 	public String getFindEntitiesQuery() {

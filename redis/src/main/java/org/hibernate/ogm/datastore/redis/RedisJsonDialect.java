@@ -11,24 +11,32 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
+import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
-import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociation;
 import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisAssociationSnapshot;
-import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisTupleSnapshot;
+import org.hibernate.ogm.datastore.redis.dialect.model.impl.RedisJsonTupleSnapshot;
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
 import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.redis.impl.json.JsonEntityStorageStrategy;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.Operation;
+import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -37,6 +45,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.type.spi.GridType;
@@ -54,8 +63,9 @@ import com.lambdaworks.redis.ScanArgs;
  * entity or external storage.
  *
  * @author Mark Paluch
+ * @author Guillaume Smet
  */
-public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGridDialect {
+public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGridDialect, GroupingByEntityDialect {
 
 	protected final JsonEntityStorageStrategy entityStorageStrategy;
 
@@ -70,11 +80,14 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		Entity entity = entityStorageStrategy.getEntity( entityId( key ) );
 
 		if ( entity != null ) {
-			return new Tuple( new RedisTupleSnapshot( entity.getProperties() ) );
+			return new Tuple( new RedisJsonTupleSnapshot( entity ), SnapshotType.UPDATE );
+		}
+		else if ( isInTheInsertionQueue( key, operationContext ) ) {
+			return createTuple( key, operationContext );
 		}
 		else {
 			return null;
@@ -82,10 +95,116 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Map<String, Object> map = ( (RedisTupleSnapshot) tuple.getSnapshot() ).getMap();
-		MapHelpers.applyTupleOpsOnMap( tuple, map );
-		storeEntity( key, map, tupleContext.getOptionsContext(), tuple.getOperations() );
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
+		return new Tuple( new RedisJsonTupleSnapshot( new Entity() ), SnapshotType.INSERT );
+	}
+
+	@Override
+	public void executeGroupedChangesToEntity(GroupedChangesToEntityOperation groupedOperation) {
+		Entity owningEntity = null;
+		List<AssociationKey> associationsToRemove = new ArrayList<>();
+		OptionsContext optionsContext = null;
+
+		for ( Operation operation : groupedOperation.getOperations() ) {
+			if ( operation instanceof InsertOrUpdateTupleOperation ) {
+				InsertOrUpdateTupleOperation insertOrUpdateTupleOperation = (InsertOrUpdateTupleOperation) operation;
+				EntityKey key = insertOrUpdateTupleOperation.getEntityKey();
+				Tuple tuple = insertOrUpdateTupleOperation.getTuplePointer().getTuple();
+				TupleContext tupleContext = insertOrUpdateTupleOperation.getTupleContext();
+
+				if (owningEntity == null) {
+					owningEntity = getEntityFromTuple( tuple );
+				}
+
+				EmbeddableStateFinder embeddableStateFinder = new EmbeddableStateFinder( tuple, tupleContext );
+
+				for ( TupleOperation tupleOperation : tuple.getOperations() ) {
+					String column = tupleOperation.getColumn();
+					if ( key.getMetadata().isKeyColumn( column ) ) {
+						continue;
+					}
+					switch ( tupleOperation.getType() ) {
+					case PUT:
+						owningEntity.set( column, tupleOperation.getValue() );
+						break;
+					case PUT_NULL:
+					case REMOVE:
+						// try and find if this column is within an embeddable and if that embeddable is null
+						// if true, unset the full embeddable
+						String nullEmbeddable = embeddableStateFinder.getOuterMostNullEmbeddableIfAny( column );
+						if ( nullEmbeddable != null ) {
+							// we have a null embeddable
+							owningEntity.unset( nullEmbeddable );
+						}
+						else {
+							// simply unset the column
+							owningEntity.unset( column );
+						}
+						break;
+					}
+				}
+
+				tuple.setSnapshotType( SnapshotType.UPDATE );
+
+				optionsContext = tupleContext.getTupleTypeContext().getOptionsContext();
+			}
+			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+				InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+				AssociationKey associationKey = insertOrUpdateAssociationOperation.getAssociationKey();
+				org.hibernate.ogm.model.spi.Association association = insertOrUpdateAssociationOperation.getAssociation();
+				AssociationContext associationContext = insertOrUpdateAssociationOperation.getContext();
+
+				RedisAssociation redisAssociation = ( (RedisAssociationSnapshot) association.getSnapshot() ).getRedisAssociation();
+				Object rows = getAssociationRows( association, associationKey, associationContext );
+
+				redisAssociation.setRows( rows );
+
+				if ( isStoredInEntityStructure( associationKey.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
+					if ( owningEntity == null ) {
+						owningEntity = (Entity) redisAssociation.getOwningDocument();
+						optionsContext = associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext();
+					}
+				}
+				else {
+					// We don't want to remove the association anymore as it's superseded by an update
+					associationsToRemove.remove( associationKey );
+
+					String associationId = associationId( associationKey );
+					Long ttl = getObjectTTL( associationId, associationContext.getAssociationTypeContext().getOptionsContext() );
+					storeAssociation( associationKey, (Association) redisAssociation.getOwningDocument() );
+					setObjectTTL( associationId, ttl );
+				}
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
+				AssociationContext associationContext = removeAssociationOperation.getContext();
+
+				if ( isStoredInEntityStructure( associationKey.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
+					if ( owningEntity == null ) {
+						TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( associationKey, associationContext );
+						owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
+					}
+					if ( owningEntity != null ) {
+						owningEntity.unset( associationKey.getMetadata().getCollectionRole() );
+						optionsContext = associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext();
+					}
+				}
+				else {
+					associationsToRemove.add( associationKey );
+				}
+			}
+			else {
+				throw new IllegalStateException( operation.getClass().getSimpleName() + " not supported here" );
+			}
+		}
+
+		if ( owningEntity != null ) {
+			storeEntity( groupedOperation.getEntityKey(), owningEntity, optionsContext );
+		}
+		if ( associationsToRemove.size() > 0 ) {
+			removeAssociations( associationsToRemove );
+		}
 	}
 
 	@Override
@@ -109,24 +228,26 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public org.hibernate.ogm.model.spi.Association getAssociation(
-			AssociationKey key,
-			AssociationContext associationContext) {
+	public org.hibernate.ogm.model.spi.Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		RedisAssociation redisAssociation = null;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Entity owningEntity = getEmbeddingEntity( key );
+			TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( key, associationContext );
+			if ( tuplePointer == null ) {
+				// The entity associated with this association has already been removed
+				// see ManyToOneTest#testRemovalOfTransientEntityWithAssociation
+				return null;
+			}
+			Entity owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
 
 			if ( owningEntity != null && DotPatternMapHelpers.hasField(
 					owningEntity.getPropertiesAsHierarchy(),
-					key.getMetadata()
-							.getCollectionRole()
+					key.getMetadata().getCollectionRole()
 			) ) {
-				redisAssociation = RedisAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
+				redisAssociation = RedisAssociation.fromEmbeddedAssociation( tuplePointer, key.getMetadata() );
 			}
 		}
 		else {
-
 			Association association = getAssociation( key );
 			if ( association != null ) {
 				redisAssociation = RedisAssociation.fromAssociationDocument( association );
@@ -147,62 +268,35 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		RedisAssociation redisAssociation;
 
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Entity owningEntity = getEmbeddingEntity( key );
+			TuplePointer tuplePointer = getEmbeddingEntityTuplePointer( key, associationContext );
+			Entity owningEntity = getEntityFromTuple( tuplePointer.getTuple() );
 
 			if ( owningEntity == null ) {
 				owningEntity = new Entity();
-				storeEntity( key.getEntityKey(), new Entity(), associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
+				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
+				tuplePointer.setTuple( new Tuple( new RedisJsonTupleSnapshot( owningEntity ), SnapshotType.UPDATE ) );
 			}
 
-			redisAssociation = RedisAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
+			redisAssociation = RedisAssociation.fromEmbeddedAssociation( tuplePointer, key.getMetadata() );
 		}
 		else {
-			Association association = new Association();
-			redisAssociation = RedisAssociation.fromAssociationDocument( association );
+			redisAssociation = RedisAssociation.fromAssociationDocument( new Association() );
 		}
 
-		return new org.hibernate.ogm.model.spi.Association(
+		org.hibernate.ogm.model.spi.Association association = new org.hibernate.ogm.model.spi.Association(
 				new RedisAssociationSnapshot(
 						redisAssociation,
 						key
 				)
 		);
-	}
 
-	// Retrieve entity that contains the association, do not enhance with entity key
-	private Entity getEmbeddingEntity(AssociationKey key) {
-		return entityStorageStrategy.getEntity( entityId( key.getEntityKey() ) );
-	}
-
-	@Override
-	public void insertOrUpdateAssociation(
-			AssociationKey associationKey, org.hibernate.ogm.model.spi.Association association,
-			AssociationContext associationContext) {
-		Object rows = getAssociationRows( association, associationKey, associationContext );
-
-		RedisAssociation redisAssociation = ( (RedisAssociationSnapshot) association.getSnapshot() ).getRedisAssociation();
-		redisAssociation.setRows( rows );
-
-		if ( isStoredInEntityStructure(
-				associationKey.getMetadata(),
-				associationContext.getAssociationTypeContext()
-		) ) {
-
-			storeEntity(
-					associationKey.getEntityKey(),
-					(Entity) redisAssociation.getOwningDocument(),
-					associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext()
-			);
+		// in the case of an association stored in the entity structure, we might end up with rows present in the current snapshot of the entity
+		// while we want an empty association here. So, in this case, we clear the snapshot to be sure the association created is empty.
+		if ( !association.isEmpty() ) {
+			association.clear();
 		}
-		else {
-			Long currentTtl = getCurrentTtl( entityId( associationKey.getEntityKey() ) );
-			storeAssociation( associationKey, (Association) redisAssociation.getOwningDocument() );
-			setAssociationTTL( associationKey, associationContext, currentTtl );
-		}
-	}
 
-	private Long getCurrentTtl(String objectKey) {
-		return connection.pttl( objectKey );
+		return association;
 	}
 
 	/**
@@ -220,7 +314,6 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			AssociationKey key,
 			AssociationContext associationContext) {
 
-
 		boolean organizeByRowKey = DotPatternMapHelpers.organizeAssociationMapByRowKey(
 				association,
 				key,
@@ -232,7 +325,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 				key.getMetadata(),
 				associationContext.getAssociationTypeContext()
 		) && organizeByRowKey ) {
-			String rowKeyColumn = organizeByRowKey ? key.getMetadata().getRowKeyIndexColumnNames()[0] : null;
+			String rowKeyColumn = key.getMetadata().getRowKeyIndexColumnNames()[0];
 			Map<String, Object> rows = new HashMap<>();
 
 			for ( RowKey rowKey : association.getKeys() ) {
@@ -261,22 +354,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
-			Entity owningEntity = getEmbeddingEntity( key );
-
-			if ( owningEntity != null ) {
-				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
-				storeEntity( key.getEntityKey(), owningEntity, associationContext.getAssociationTypeContext().getOwnerEntityOptionsContext() );
-			}
-		}
-		else {
-			removeAssociation( key );
-		}
-	}
-
-	@Override
-	public void forEachTuple(final ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(final ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		KeyScanCursor<String> cursor = null;
 		String prefix = entityKeyMetadata.getTable() + ":";
 
@@ -289,44 +367,32 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 
 				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
 
-				consumer.consume( new Tuple( new RedisTupleSnapshot( document.getProperties() ) ) );
+				consumer.consume( new Tuple( new RedisJsonTupleSnapshot( document ), SnapshotType.UPDATE ) );
 			}
 
 		} while ( !cursor.isFinished() );
 	}
 
-	private void storeEntity(
-			EntityKey key,
-			Map<String, Object> map,
-			OptionsContext optionsContext,
-			Set<TupleOperation> operations) {
-		Entity entityDocument = new Entity();
+	private void storeEntity(EntityKey key, Entity entity, OptionsContext optionsContext) {
+		String entityId = entityId( key );
+		Long currentTtl = getObjectTTL( entityId, optionsContext );
 
-		for ( Map.Entry<String, Object> entry : map.entrySet() ) {
-			if ( key.getMetadata().isKeyColumn( entry.getKey() ) ) {
-				continue;
-			}
-			entityDocument.set( entry.getKey(), entry.getValue() );
-		}
+		entityStorageStrategy.storeEntity( entityId, entity );
 
-		storeEntity( key, entityDocument, optionsContext );
-	}
-
-	private void storeEntity(
-			EntityKey key,
-			Entity document,
-			OptionsContext optionsContext) {
-
-		Long currentTtl = getCurrentTtl( entityId( key ) );
-
-		entityStorageStrategy.storeEntity( entityId( key ), document );
-
-		setEntityTTL( key, currentTtl, getTTL( optionsContext ) );
+		setObjectTTL( entityId, currentTtl );
 	}
 
 	public JsonEntityStorageStrategy getEntityStorageStrategy() {
 		return entityStorageStrategy;
 	}
+
+	private Entity getEntityFromTuple(Tuple tuple) {
+		if ( tuple == null ) {
+			return null;
+		}
+		return ( (RedisJsonTupleSnapshot) tuple.getSnapshot() ).getEntity();
+	}
+
 
 	// MultigetGridDialect
 
@@ -350,7 +416,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 			if ( entity != null ) {
 				EntityKey key = keys[i];
 				addIdToEntity( entity, key.getColumnNames(), key.getColumnValues() );
-				tuples.add( new Tuple( new RedisTupleSnapshot( entity.getProperties() ) ) );
+				tuples.add( new Tuple( new RedisJsonTupleSnapshot( entity ), SnapshotType.UPDATE ) );
 			}
 			else {
 				tuples.add( null );

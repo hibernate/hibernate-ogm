@@ -20,28 +20,18 @@ import com.mongodb.DBObject;
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Christopher Auston
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
-	/**
-	 * Identifies the purpose a {@link MongoDBTupleSnapshot}.
-	 *
-	 * @author Davide D'Alto &lt;davide@hibernate.org&gt;
-	 */
-	public enum SnapshotType {
-		INSERT, UPDATE
-	}
-
 	private final DBObject dbObject;
 	private final EntityKeyMetadata keyMetadata;
-	private SnapshotType snapshotType;
 
-	public MongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata meta, SnapshotType snapshotType) {
+	public MongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata meta) {
 		this.dbObject = dbObject;
 		this.keyMetadata = meta;
-		this.snapshotType = snapshotType;
 	}
 
 	public DBObject getDbObject() {
@@ -51,14 +41,6 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return dbObject.keySet();
-	}
-
-	public SnapshotType getSnapshotType() {
-		return snapshotType;
-	}
-
-	public void setSnapshotType(SnapshotType snapshotType) {
-		this.snapshotType = snapshotType;
 	}
 
 	@Override

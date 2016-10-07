@@ -31,7 +31,7 @@ public class EmbeddableStateFinder {
 
 	public EmbeddableStateFinder(Tuple tuple, TupleContext tupleContext) {
 		this.tuple = tuple;
-		this.columns = tupleContext.getSelectableColumns();
+		this.columns = tupleContext.getTupleTypeContext().getSelectableColumns();
 	}
 
 	/**

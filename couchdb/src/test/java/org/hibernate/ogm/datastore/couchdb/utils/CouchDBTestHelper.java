@@ -186,7 +186,7 @@ public class CouchDBTestHelper implements GridDialectTestHelper {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( session.getSessionFactory() );
 		EntityDocument entity = dataStore.getEntity( Identifier.createEntityId( key ) );
-		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
+		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity );
 		Set<String> columnNames = snapshot.getColumnNames();
 		for ( String columnName : columnNames ) {
 			tupleMap.put( columnName, snapshot.get( columnName ) );

@@ -14,6 +14,7 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
@@ -29,8 +30,11 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -56,10 +60,11 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect, GroupingByEntityDialect {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
+	private final GroupingByEntityDialect groupingByEntityGridDialect;
 	private final QueryableGridDialect<T> queryableGridDialect;
 	private final SessionFactoryLifecycleAwareDialect sessionFactoryAwareDialect;
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
@@ -72,6 +77,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		this.gridDialect = gridDialect;
 		this.batchableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, BatchableGridDialect.class );
+		this.groupingByEntityGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, GroupingByEntityDialect.class );
 		this.queryableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, QueryableGridDialect.class );
 		this.sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryLifecycleAwareDialect.class );
 		this.identityColumnAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
@@ -98,18 +104,18 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		return gridDialect.getTuple( key, tupleContext );
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		return gridDialect.getTuple( key, operationContext );
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return gridDialect.createTuple( key, tupleContext );
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
+		return gridDialect.createTuple( key, operationContext );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		gridDialect.insertOrUpdateTuple( key, tuple, tupleContext );
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		gridDialect.insertOrUpdateTuple( key, tuplePointer, tupleContext );
 	}
 
 	@Override
@@ -158,8 +164,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
-		gridDialect.forEachTuple( consumer, tupleContext, entityKeyMetadata );
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+		gridDialect.forEachTuple( consumer, tupleTypeContext, entityKeyMetadata );
 	}
 
 	@Override
@@ -169,11 +175,17 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 	/*
 	 * @see org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect
+	 * @see org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect
 	 */
 
 	@Override
 	public void executeBatch(OperationsQueue queue) {
-		batchableGridDialect.executeBatch( queue );
+		if ( batchableGridDialect != null ) {
+			batchableGridDialect.executeBatch( queue );
+		}
+		else if ( groupingByEntityGridDialect != null ) {
+			groupingByEntityGridDialect.executeBatch( queue );
+		}
 	}
 
 	/*
@@ -228,8 +240,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	 */
 
 	@Override
-	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		return identityColumnAwareGridDialect.createTuple( entityKeyMetadata, tupleContext );
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
+		return identityColumnAwareGridDialect.createTuple( entityKeyMetadata, operationContext );
 	}
 
 	@Override
@@ -285,4 +297,15 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
+
+	@Override
+	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
+		groupingByEntityGridDialect.flushPendingOperations( entityKey, tupleContext );
+	}
+
+	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return gridDialect.usesNavigationalInformationForInverseSideOfAssociations();
+	}
+
 }

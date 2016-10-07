@@ -21,15 +21,15 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTypeConverter;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jMapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jEntityQueries;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jMapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jNodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleSnapshot;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jNodesTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
@@ -40,8 +40,11 @@ import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -53,6 +56,7 @@ import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -143,7 +147,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext context) {
+	public Tuple getTuple(EntityKey key, OperationContext context) {
 		Node entityNode = entityQueries.get( key.getMetadata() ).findEntity( dataBase, key.getColumnValues() );
 		if ( entityNode == null ) {
 			return null;
@@ -152,10 +156,10 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		return new Tuple(
 				EmbeddedNeo4jTupleSnapshot.fromNode(
 						entityNode,
-						context.getAllAssociatedEntityKeyMetadata(),
-						context.getAllRoles(),
+						context.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+						context.getTupleTypeContext().getAllRoles(),
 						key.getMetadata()
-				)
+				), SnapshotType.UPDATE
 		);
 	}
 
@@ -188,8 +192,10 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			Node node = nodes.next();
 			for ( int i = 0; i < keys.length; i++ ) {
 				if ( matches( node, keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
-					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
-							keys[i].getMetadata() ) );
+					tuples[i] = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
+							tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(),
+							tupleContext.getTupleTypeContext().getAllRoles(),
+							keys[i].getMetadata() ), SnapshotType.UPDATE );
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -211,12 +217,13 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( EmbeddedNeo4jTupleSnapshot.emptySnapshot( key.getMetadata() ) );
+	public Tuple createTuple(EntityKey key, OperationContext tupleContext) {
+		return new Tuple( EmbeddedNeo4jTupleSnapshot.emptySnapshot( key.getMetadata() ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		EmbeddedNeo4jTupleSnapshot snapshot = (EmbeddedNeo4jTupleSnapshot) tuple.getSnapshot();
 
 		// insert
@@ -242,7 +249,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			if ( CONSTRAINT_VIOLATION_CODE.equals( qee.getStatusCode() ) ) {
 				Throwable cause = findRecognizableCause( qee );
 				if ( cause instanceof UniquePropertyConstraintViolationKernelException ) {
-					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, qee );
+					throw new TupleAlreadyExistsException( key, qee );
 				}
 			}
 			throw qee;
@@ -339,7 +346,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 				AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
 				EmbeddedNeo4jTupleAssociationSnapshot snapshot = new EmbeddedNeo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
 				RowKey rowKey = convert( associationKey, snapshot );
-				tuples.put( rowKey, new Tuple( snapshot ) );
+				tuples.put( rowKey, new Tuple( snapshot, SnapshotType.UPDATE ) );
 			}
 			return tuples;
 		}
@@ -443,7 +450,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void removeTupleOperation(EntityKey entityKey, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( !tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
 				String[] split = split( operation.getColumn() );
@@ -455,7 +462,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		}
 		// if the column represents a to-one association, remove the relationship
 		else {
-			String associationRole = tupleContext.getRole( operation.getColumn() );
+			String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 
 				Iterator<Relationship> relationships = node.getRelationships( withName( associationRole ) ).iterator();
@@ -505,7 +512,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+		if ( tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			// the column represents a to-one association, map it as relationship
 			putOneToOneAssociation( tuple, node, operation, tupleContext, processedAssociationRoles );
 		}
@@ -533,12 +540,12 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void putOneToOneAssociation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		String associationRole = tupleContext.getRole( operation.getColumn() );
+		String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 
 		if ( !processedAssociationRoles.contains( associationRole ) ) {
 			processedAssociationRoles.add( associationRole );
 
-			EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+			EntityKey targetKey = getEntityKey( tuple, tupleContext.getTupleTypeContext().getAssociatedEntityKeyMetadata( operation.getColumn() ) );
 
 			// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
 			// properties, so the type is uniquely identifying it
@@ -554,14 +561,14 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
 		try {
 			while ( queryNodes.hasNext() ) {
 				Node next = queryNodes.next();
 				Tuple tuple = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( next,
-						tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles(),
-						entityKeyMetadata ) );
+						tupleTypeContext.getAllAssociatedEntityKeyMetadata(), tupleTypeContext.getAllRoles(),
+						entityKeyMetadata ), SnapshotType.UPDATE );
 				consumer.consume( tuple );
 			}
 		}

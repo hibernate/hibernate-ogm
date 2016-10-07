@@ -128,6 +128,8 @@ class EntityAssociationUpdater {
 
 		for ( int propertyIndex = 0; propertyIndex < persister.getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
+
+
 				AssociationKeyMetadata associationKeyMetadata = getInverseAssociationKeyMetadata( propertyIndex );
 
 				// there is no inverse association for the given property
@@ -159,7 +161,7 @@ class EntityAssociationUpdater {
 		}
 		associationPersister.getAssociation().put( rowKey, associationRow );
 
-		if ( associationPersister.getAssociationContext().getEntityTuple() == null ) {
+		if ( associationPersister.getAssociationContext().getEntityTuplePointer().getTuple() == null ) {
 			throw log.entityTupleNotFound( associationKeyMetadata.getCollectionRole(), associationPersister.getAssociationKey().getEntityKey() );
 		}
 
@@ -171,7 +173,11 @@ class EntityAssociationUpdater {
 
 		Association association = associationPersister.getAssociationOrNull();
 
-		if ( association != null ) {
+		// The association might be empty if the navigation information have already been removed.
+		// This typically happens when the entity owning the inverse association has already been deleted prior to
+		// deleting the entity owning the association and a {@code @NotFound(action = NotFoundAction.IGNORE)} is
+		// involved.
+		if ( association != null && !association.isEmpty() ) {
 			RowKey rowKey = getInverseRowKey( associationKeyMetadata, oldColumnValue );
 			association.remove( rowKey );
 			associationPersister.flushToDatastore();
@@ -189,6 +195,7 @@ class EntityAssociationUpdater {
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( entityType, associationKeyMetadata.getCollectionRole() ),
 				serviceContext.getEntityOptions( entityType ),
+				persister.getTupleTypeContext(),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				persister.getPropertyNames()[propertyIndex]
 		);

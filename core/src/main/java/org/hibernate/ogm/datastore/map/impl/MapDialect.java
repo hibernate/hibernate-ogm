@@ -22,7 +22,10 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -30,6 +33,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -67,13 +71,13 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		Map<String, Object> entityMap = provider.getEntityTuple( key );
 		if ( entityMap == null ) {
 			return null;
 		}
 		else {
-			return new Tuple( new MapTupleSnapshot( entityMap ) );
+			return new Tuple( new MapTupleSnapshot( entityMap ), SnapshotType.UPDATE );
 		}
 	}
 
@@ -83,22 +87,22 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 		List<Tuple> results = new ArrayList<>( mapResults.size() );
 		// should be done with a lambda for the tuple creation but that's for demo purposes
 		for ( Map<String, Object> entry : mapResults ) {
-			results.add( entry != null ? new Tuple( new MapTupleSnapshot( entry ) ) : null );
+			results.add( entry != null ? new Tuple( new MapTupleSnapshot( entry ), SnapshotType.UPDATE ) : null );
 		}
 		return results;
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		HashMap<String,Object> tuple = new HashMap<String,Object>();
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
+		HashMap<String,Object> tuple = new HashMap<String, Object>();
 		provider.putEntity( key, tuple );
-		return new Tuple( new MapTupleSnapshot( tuple ) );
+		return new Tuple( new MapTupleSnapshot( tuple ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Map<String,Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
-		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Map<String,Object> entityRecord = ( (MapTupleSnapshot) tuplePointer.getTuple().getSnapshot() ).getMap();
+		MapHelpers.applyTupleOpsOnMap( tuplePointer.getTuple(), entityRecord );
 	}
 
 	@Override
@@ -122,6 +126,8 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		MapHelpers.updateAssociation( association );
+		// the association might have been removed prior to the update so we need to be sure it is present in the Map
+		provider.putAssociation( key, ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap() );
 	}
 
 	@Override
@@ -140,11 +146,11 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata metadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata metadata) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
 		for ( EntityKey key : entityMap.keySet() ) {
 			if ( key.getTable().equals( metadata.getTable() ) ) {
-				consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ) ) );
+				consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ), SnapshotType.UPDATE ) );
 			}
 		}
 	}

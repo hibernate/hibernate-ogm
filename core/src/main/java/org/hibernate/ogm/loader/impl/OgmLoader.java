@@ -1203,7 +1203,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				session
 			);
 
-		OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
+		OgmEntityEntryState.getStateFor( session, object ).getTuplePointer().setTuple( resultset );
 	}
 
 	/**

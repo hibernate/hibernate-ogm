@@ -29,7 +29,10 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -37,6 +40,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -94,7 +98,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		EK cacheKey = getKeyProvider().getEntityCacheKey( key );
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
 		return getTupleFromCacheKey( cacheKey, cache );
@@ -110,22 +114,23 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 			return null;
 		}
 		else {
-			return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
+			return new Tuple( new InfinispanTupleSnapshot( atomicMap ), SnapshotType.UPDATE );
 		}
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
 		EK cacheKey = getKeyProvider().getEntityCacheKey( key );
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, true );
-		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
+		return new Tuple( new InfinispanTupleSnapshot( atomicMap ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, atomicMap );
 	}
@@ -209,7 +214,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor(
 				entityKeyMetadata
 		);

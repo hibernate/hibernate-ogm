@@ -8,7 +8,9 @@ package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -41,7 +43,17 @@ public abstract class BaseGridDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
+		return true;
+	}
+
+	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
+	}
+
+	protected static boolean isInTheInsertionQueue(EntityKey key, OperationContext tupleContext) {
+		OperationsQueue queue = tupleContext.getOperationsQueue();
+		return queue != null && queue.isInTheInsertionQueue( key );
 	}
 }

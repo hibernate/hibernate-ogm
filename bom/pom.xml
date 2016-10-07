@@ -61,11 +61,12 @@
         <fongodbVersion>2.0.7</fongodbVersion>
 
         <!-- Neo4j -->
-        <neo4jVersion>3.0.4</neo4jVersion>
+        <neo4jVersion>3.0.6</neo4jVersion>
+        <neo4jJavaDriverVersion>1.0.4</neo4jJavaDriverVersion>
         <!-- Update dependency versions accordingly when updating Neo4j  -->
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
-        <neo4jCypherCompiler23Version>2.3.5</neo4jCypherCompiler23Version>
+        <neo4jCypherCompiler23Version>2.3.7</neo4jCypherCompiler23Version>
         <neo4jScalaLibraryVersion>2.11.8</neo4jScalaLibraryVersion>
         <neo4jCommonsLang3Version>3.3.2</neo4jCommonsLang3Version>
         <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
@@ -548,6 +549,12 @@
                         <groupId>net.sf.opencsv</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.neo4j.driver</groupId>
+                <artifactId>neo4j-java-driver</artifactId>
+                <version>${neo4jJavaDriverVersion}</version>
             </dependency>
 
             <dependency>

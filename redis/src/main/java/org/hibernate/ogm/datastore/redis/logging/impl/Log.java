@@ -56,4 +56,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1709, value = "The connection is configured for standalone mode but Redis runs in '%s' mode")
 	HibernateException redisModeMismatchStandaloneModeConfigured(String redisMode);
+
+	@Message(id = 1710, value = "Redis Hash dialect does not support *ToMany associations embedded in the entity %1$s#%2$s")
+	HibernateException embeddedToManyAssociationsNotSupportByRedisHash(String entityName, String collectionRole);
 }

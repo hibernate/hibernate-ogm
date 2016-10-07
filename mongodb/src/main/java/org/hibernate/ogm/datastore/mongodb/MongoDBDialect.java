@@ -8,8 +8,6 @@ package org.hibernate.ogm.datastore.mongodb;
 
 import static java.lang.Boolean.FALSE;
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 import java.util.ArrayList;
@@ -40,7 +38,6 @@ import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -56,6 +53,7 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
@@ -77,8 +75,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -89,6 +90,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
@@ -141,6 +143,7 @@ import com.mongodb.WriteResult;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Thorsten Möller &lt;thorsten.moeller@sbi.ch&gt;
+ * @author Guillaume Smet
  */
 public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect {
 
@@ -170,9 +173,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		DBObject found = this.getObject( key, tupleContext );
-		return createTuple( key, tupleContext, found );
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		DBObject found = this.getObject( key, operationContext );
+		return createTuple( key, operationContext, found );
 	}
 
 	@Override
@@ -216,40 +219,36 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return Arrays.asList( tuples );
 	}
 
-	private static Tuple createTuple(EntityKey key, TupleContext tupleContext, DBObject found) {
+	private static Tuple createTuple(EntityKey key, OperationContext operationContext, DBObject found) {
 		if ( found != null ) {
-			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
+			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata() ), SnapshotType.UPDATE );
 		}
-		else if ( isInTheQueue( key, tupleContext ) ) {
+		else if ( isInTheInsertionQueue( key, operationContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
-			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata(), INSERT ) );
+			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata() ), SnapshotType.INSERT );
 		}
 		else {
 			return null;
 		}
 	}
 
-	private static boolean isInTheQueue(EntityKey key, TupleContext tupleContext) {
-		OperationsQueue queue = tupleContext.getOperationsQueue();
-		return queue != null && queue.contains( key );
+	@Override
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
+		return new Tuple( new MongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		return new Tuple( new MongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata, SnapshotType.INSERT ) );
-	}
-
-	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext OperationContext) {
 		DBObject toSave = prepareIdObject( key );
-		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getMetadata(), SnapshotType.INSERT ) );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getMetadata() ), SnapshotType.INSERT );
 	}
 
 	/**
 	 * Returns a {@link DBObject} representing the entity which embeds the specified association.
 	 */
 	private DBObject getEmbeddingEntity(AssociationKey key, AssociationContext associationContext) {
-		DBObject embeddingEntityDocument = associationContext.getEntityTuple() != null ? ( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject() : null;
+		DBObject embeddingEntityDocument = associationContext.getEntityTuplePointer().getTuple() != null ?
+				( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject() : null;
 
 		if ( embeddingEntityDocument != null ) {
 			return embeddingEntityDocument;
@@ -265,12 +264,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
-		ReadPreference readPreference = getReadPreference( tupleContext );
+	private DBObject getObject(EntityKey key, OperationContext operationContext) {
+		ReadPreference readPreference = getReadPreference( operationContext );
 
 		DBCollection collection = getCollection( key );
 		DBObject searchObject = prepareIdObject( key );
-		BasicDBObject projection = getProjection( tupleContext );
+		BasicDBObject projection = getProjection( operationContext );
 
 		return collection.findOne( searchObject, projection, readPreference );
 	}
@@ -288,8 +287,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collection.find( query, projection );
 	}
 
-	private static BasicDBObject getProjection(TupleContext tupleContext) {
-		return getProjection( tupleContext.getSelectableColumns() );
+	private static BasicDBObject getProjection(OperationContext operationContext) {
+		return getProjection( operationContext.getTupleTypeContext().getSelectableColumns() );
 	}
 
 	/**
@@ -387,26 +386,27 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		query.append( operator, subQuery.append( column, value ) );
 	}
 
+	private static void addSetToQuery(BasicDBObject query, String column, Object value) {
+		removeSubQuery( "$unset", query, column );
+		addSubQuery( "$set", query, column, value );
+	}
+
+	private static void addUnsetToQuery(BasicDBObject query, String column) {
+		removeSubQuery( "$set", query, column );
+		addSubQuery( "$unset", query, column, Integer.valueOf( 1 ) );
+	}
+
+	private static void removeSubQuery(String operator, BasicDBObject query, String column) {
+		BasicDBObject subQuery = getSubQuery( operator, query );
+		subQuery.removeField( column );
+		if ( subQuery.isEmpty() ) {
+			query.removeField( operator );
+		}
+	}
+
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		BasicDBObject idObject = prepareIdObject( key );
-
-		DBObject updater = objectForUpdate( tuple, idObject, tupleContext );
-		WriteConcern writeConcern = getWriteConcern( tupleContext );
-
-		try {
-			getCollection( key ).update( idObject, updater, true, false, writeConcern );
-		}
-		catch ( DuplicateKeyException dke ) {
-			// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
-			// so we determine if it concerns the primary key by matching on the message
-			if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
-				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, dke );
-			}
-			else {
-				throw log.constraintViolationForEntity( key, dke.getMessage(), dke );
-			}
-		}
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	@Override
@@ -418,7 +418,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			idObject.put( versionColumn, oldLockState.get( versionColumn ) );
 		}
 
-		DBObject updater = objectForUpdate( tuple, idObject, tupleContext );
+		BasicDBObject updater = objectForUpdate( tuple, tupleContext );
+		if ( updater.isEmpty() ) {
+			return false;
+		}
+
 		DBObject doc = getCollection( entityKey ).findAndModify( idObject, updater );
 
 		return doc != null;
@@ -463,18 +467,21 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return dbObject;
 	}
 
-	private static DBObject objectForUpdate(Tuple tuple, DBObject idObject, TupleContext tupleContext) {
+	private static BasicDBObject objectForUpdate(Tuple tuple, TupleContext tupleContext) {
+		return objectForUpdate( tuple, tupleContext, new BasicDBObject() );
+	}
+
+	private static BasicDBObject objectForUpdate(Tuple tuple, TupleContext tupleContext, BasicDBObject updateStatement) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 		EmbeddableStateFinder embeddableStateFinder = new EmbeddableStateFinder( tuple, tupleContext );
-		Set<String> nullEmbeddables = new HashSet<String>();
+		Set<String> nullEmbeddables = new HashSet<>();
 
-		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
 			if ( notInIdField( snapshot, column ) ) {
 				switch ( operation.getType() ) {
 				case PUT:
-					addSubQuery( "$set", updater, column, operation.getValue() );
+					addSetToQuery( updateStatement, column, operation.getValue() );
 					break;
 				case PUT_NULL:
 				case REMOVE:
@@ -485,30 +492,20 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 						// we have a null embeddable
 						if ( ! nullEmbeddables.contains( nullEmbeddable ) ) {
 							// we have not processed it yet
-							addSubQuery( "$unset", updater, nullEmbeddable, Integer.valueOf( 1 ) );
+							addUnsetToQuery( updateStatement, nullEmbeddable );
 							nullEmbeddables.add( nullEmbeddable );
 						}
 					}
 					else {
 						// simply unset the column
-						addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
+						addUnsetToQuery( updateStatement, column );
 					}
 					break;
 				}
 			}
 		}
-		/*
-		* Needed because in case of an object with only an ID field
-		* the "_id" won't be persisted properly.
-		* With this adjustment, it will work like this:
-		*	if the object (from snapshot) doesn't exist, create the one represented by updater
-		*	so if at this moment the "_id" is not enforced properly, an ObjectID will be created by the server instead
-		*	of the custom id
-		 */
-		if ( updater.size() == 0 ) {
-			return idObject;
-		}
-		return updater;
+
+		return updateStatement;
 	}
 
 	private static boolean notInIdField(MongoDBTupleSnapshot snapshot, String column) {
@@ -555,16 +552,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private static boolean isInTheQueue(EntityKey key, AssociationContext associationContext) {
+	private static boolean isInTheInsertionQueue(EntityKey key, AssociationContext associationContext) {
 		OperationsQueue queue = associationContext.getOperationsQueue();
-		return queue != null && queue.contains( key );
+		return queue != null && queue.isInTheInsertionQueue( key );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
-		if ( isEmbeddedAssociation( key ) && isInTheQueue( key.getEntityKey(), associationContext ) ) {
+		if ( isEmbeddedAssociation( key ) && isInTheInsertionQueue( key.getEntityKey(), associationContext ) ) {
 			// The association is embedded and the owner of the association is in the insertion queue
 			DBObject idObject = prepareIdObject( key.getEntityKey() );
 			return new Association( new MongoDBAssociationSnapshot( idObject, key, storageStrategy ) );
@@ -604,7 +601,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				? getEmbeddingEntity( key, associationContext )
 				: associationKeyToObject( key, storageStrategy );
 
-		return new Association( new MongoDBAssociationSnapshot( document, key, storageStrategy ) );
+		Association association = new Association( new MongoDBAssociationSnapshot( document, key, storageStrategy ) );
+		// in the case of an association stored in the entity structure, we might end up with rows present in the
+		// current snapshot of the entity while we want an empty association here. So, in this case, we clear the
+		// snapshot to be sure the association created is empty.
+		if ( !association.isEmpty() ) {
+			association.clear();
+		}
+
+		return association;
 	}
 
 	/**
@@ -687,60 +692,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
-		DBCollection collection;
-		DBObject query;
-		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-		String associationField;
-
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
-		WriteConcern writeConcern = getWriteConcern( associationContext );
-
-		Object rows = getAssociationRows( association, key, associationContext );
-		Object toStore = key.getMetadata().getAssociationType() == AssociationType.ONE_TO_ONE ? ( (List<?>) rows ).get( 0 ) : rows;
-
-		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			collection = this.getCollection( key.getEntityKey() );
-			query = prepareIdObject( key.getEntityKey() );
-			associationField = key.getMetadata().getCollectionRole();
-
-			//TODO would that fail if getCollectionRole has dots?
-			( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().put( key.getMetadata().getCollectionRole(), toStore );
-		}
-		else {
-			collection = getAssociationCollection( key, storageStrategy );
-			query = assocSnapshot.getQueryObject();
-			associationField = ROWS_FIELDNAME;
-		}
-
-		DBObject update = new BasicDBObject( "$set", new BasicDBObject( associationField, toStore ) );
-
-		collection.update( query, update, true, false, writeConcern );
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
-		WriteConcern writeConcern = getWriteConcern( associationContext );
-
-		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			DBObject entity = prepareIdObject( key.getEntityKey() );
-			if ( entity != null ) {
-				BasicDBObject updater = new BasicDBObject();
-				addSubQuery( "$unset", updater, key.getMetadata().getCollectionRole(), Integer.valueOf( 1 ) );
-				DBObject dbObject = getEmbeddingEntity( key, associationContext );
-				if ( dbObject != null ) {
-					dbObject.removeField( key.getMetadata().getCollectionRole() );
-					getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
-				}
-			}
-		}
-		else {
-			DBCollection collection = getAssociationCollection( key, storageStrategy );
-			DBObject query = associationKeyToObject( key, storageStrategy );
-
-			int nAffected = collection.remove( query, writeConcern ).getN();
-			log.removedAssociation( nAffected );
-		}
+		throw new UnsupportedOperationException( "Method not supported in GridDialect anymore" );
 	}
 
 	@Override
@@ -806,11 +763,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		DB db = provider.getDatabase();
 		DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
 		for ( DBObject dbObject : collection.find() ) {
-			consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata, UPDATE ) ) );
+			consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata ), SnapshotType.UPDATE ) );
 		}
 	}
 
@@ -1134,13 +1091,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static ClosableIterator<Tuple> doCount(MongoDBQueryDescriptor query, DBCollection collection) {
 		long count = collection.count( query.getCriteria() );
 		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", count ) );
-		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot ) ) );
+		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot, SnapshotType.UNKNOWN ) ) );
 	}
 
 	/**
 	 * @param obj A JSON object representing a write concern.
 	 * @return The parsed write concern or <code>null</code> if <code>obj</code> is <code>null</code>.
 	 */
+	@SuppressWarnings("deprecation")
 	private static WriteConcern getWriteConcern(DBObject obj) {
 		WriteConcern wc = null;
 		if ( obj != null ) {
@@ -1234,39 +1192,28 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			Operation operation = queue.poll();
 			Map<DBCollection, BatchInsertionTask> inserts = new HashMap<DBCollection, BatchInsertionTask>();
 
-			List<MongoDBTupleSnapshot> insertSnapshots = new ArrayList<MongoDBTupleSnapshot>();
+			List<Tuple> insertTuples = new ArrayList<Tuple>();
 
 			while ( operation != null ) {
-				if ( operation instanceof InsertOrUpdateTupleOperation ) {
-					InsertOrUpdateTupleOperation update = (InsertOrUpdateTupleOperation) operation;
-					executeBatchUpdate( inserts, update );
-					MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) update.getTuple().getSnapshot();
-					if ( snapshot.getSnapshotType() == INSERT ) {
-						insertSnapshots.add( snapshot );
-					}
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					GroupedChangesToEntityOperation entityOperation = (GroupedChangesToEntityOperation) operation;
+					executeBatchUpdate( inserts, insertTuples, entityOperation );
 				}
 				else if ( operation instanceof RemoveTupleOperation ) {
-					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
-					executeBatchRemove( inserts, tupleOp );
-				}
-				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
-					InsertOrUpdateAssociationOperation update = (InsertOrUpdateAssociationOperation) operation;
-					executeBatchUpdateAssociation( inserts, update );
-				}
-				else if ( operation instanceof RemoveAssociationOperation ) {
-					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
-					removeAssociation( remove.getAssociationKey(), remove.getContext() );
+					RemoveTupleOperation removeTupleOperation = (RemoveTupleOperation) operation;
+					executeBatchRemove( inserts, removeTupleOperation );
 				}
 				else {
-					throw new UnsupportedOperationException( "Operation not supported on MongoDB: " + operation.getClass().getName() );
+					throw new UnsupportedOperationException( "Operation not supported: " + operation.getClass().getSimpleName() );
 				}
 				operation = queue.poll();
 			}
-			flushInserts( inserts );
 
-			for ( MongoDBTupleSnapshot insertSnapshot : insertSnapshots ) {
-				insertSnapshot.setSnapshotType( UPDATE );
+			flushInserts( inserts );
+			for ( Tuple insertTuple : insertTuples ) {
+				insertTuple.setSnapshotType( SnapshotType.UPDATE );
 			}
+
 			queue.clear();
 		}
 	}
@@ -1284,42 +1231,99 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private void executeBatchUpdate(Map<DBCollection, BatchInsertionTask> inserts, InsertOrUpdateTupleOperation tupleOperation) {
-		EntityKey entityKey = tupleOperation.getEntityKey();
-		Tuple tuple = tupleOperation.getTuple();
-		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
-		WriteConcern writeConcern = getWriteConcern( tupleOperation.getTupleContext() );
+	private void executeBatchUpdate(Map<DBCollection, BatchInsertionTask> inserts, List<Tuple> insertTuples,
+			GroupedChangesToEntityOperation groupedOperation) {
+		EntityKey entityKey = groupedOperation.getEntityKey();
+		DBCollection collection = getCollection( entityKey );
+		DBObject insertStatement = null;
+		BasicDBObject updateStatement = new BasicDBObject();
+		WriteConcern writeConcern = null;
 
-		if ( INSERT == snapshot.getSnapshotType() ) {
-			prepareForInsert( inserts, snapshot, entityKey, tuple, writeConcern );
-		}
-		else {
-			// Object already exists in the db or has invalid fields:
-			insertOrUpdateTuple( entityKey, tuple, tupleOperation.getTupleContext() );
-		}
-	}
+		for ( Operation operation : groupedOperation.getOperations() ) {
+			if ( operation instanceof InsertOrUpdateTupleOperation ) {
+				InsertOrUpdateTupleOperation tupleOperation = (InsertOrUpdateTupleOperation) operation;
+				Tuple tuple = tupleOperation.getTuplePointer().getTuple();
+				MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+				writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( tupleOperation.getTupleContext() ) );
 
-	private void executeBatchUpdateAssociation(Map<DBCollection, BatchInsertionTask> inserts, InsertOrUpdateAssociationOperation updateOp) {
-		AssociationKey associationKey = updateOp.getAssociationKey();
-		if ( isEmbeddedAssociation( associationKey ) ) {
-			DBCollection collection = getCollection( associationKey.getEntityKey() );
-			BatchInsertionTask batchInserts = inserts.get( collection );
-			if ( batchInserts != null && batchInserts.containsKey( associationKey.getEntityKey() ) ) {
-				// The owner of the association is in the insertion queue,
-				// we are going to update it with the collection of elements
-				WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
-				BatchInsertionTask insertTask = getOrCreateBatchInsertionTask( inserts, associationKey.getEntityKey().getMetadata(), collection, writeConcern );
-				DBObject documentForInsertion = insertTask.get( associationKey.getEntityKey() );
-				Object embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey(), updateOp.getContext() );
+				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
+					DBObject document = getCurrentDocument( snapshot, insertStatement, entityKey );
+					insertStatement = objectForInsert( tuple, document );
+
+					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection, writeConcern )
+							.put( entityKey, insertStatement );
+					insertTuples.add( tuple );
+				}
+				else {
+					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
+				}
+			}
+			else if ( operation instanceof InsertOrUpdateAssociationOperation) {
+				InsertOrUpdateAssociationOperation updateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+				Association association = updateAssociationOperation.getAssociation();
+				AssociationKey associationKey = updateAssociationOperation.getAssociationKey();
+				AssociationContext associationContext = updateAssociationOperation.getContext();
+				AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( associationKey, associationContext );
 				String collectionRole = associationKey.getMetadata().getCollectionRole();
-				MongoHelpers.setValue( documentForInsertion, collectionRole, embeddedElements );
+
+				Object rows = getAssociationRows( association, associationKey, associationContext );
+				Object toStore = associationKey.getMetadata().getAssociationType() == AssociationType.ONE_TO_ONE ? ( (List<?>) rows ).get( 0 ) : rows;
+
+				if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
+					writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( associationContext ) );
+					if ( insertStatement != null ) {
+						MongoHelpers.setValue( insertStatement, collectionRole, rows );
+					}
+					else {
+						MongoHelpers.setValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject(),
+								associationKey.getMetadata().getCollectionRole(), toStore );
+						addSetToQuery( updateStatement, collectionRole, toStore );
+					}
+				}
+				else {
+					MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
+					DBCollection associationCollection = getAssociationCollection( associationKey, storageStrategy );
+					DBObject query = associationSnapshot.getQueryObject();
+					DBObject update = new BasicDBObject( "$set", new BasicDBObject( ROWS_FIELDNAME, toStore ) );
+					associationCollection.update( query, update, true, false, getWriteConcern( associationContext ) );
+				}
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				if ( insertStatement != null ) {
+					throw new IllegalStateException( "RemoveAssociationOperation not supported in the INSERT case" );
+				}
+
+				RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
+				AssociationContext associationContext = removeAssociationOperation.getContext();
+
+				AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( associationKey, associationContext );
+
+				if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
+					writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( associationContext ) );
+					String collectionRole = associationKey.getMetadata().getCollectionRole();
+
+					if ( associationContext.getEntityTuplePointer().getTuple() != null ) {
+						MongoHelpers.resetValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject(),
+								collectionRole );
+					}
+					addUnsetToQuery( updateStatement, collectionRole );
+				}
+				else {
+					DBCollection associationCollection = getAssociationCollection( associationKey, storageStrategy );
+					DBObject query = associationKeyToObject( associationKey, storageStrategy );
+
+					int nAffected = associationCollection.remove( query, getWriteConcern( associationContext ) ).getN();
+					log.removedAssociation( nAffected );
+				}
 			}
 			else {
-				insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+				throw new IllegalStateException( operation.getClass().getSimpleName() + " not supported here" );
 			}
 		}
-		else {
-			insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+
+		if ( updateStatement != null && !updateStatement.isEmpty() ) {
+			collection.update( prepareIdObject( entityKey ), updateStatement, true, false, writeConcern );
 		}
 	}
 
@@ -1328,17 +1332,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 
-	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
-		DBCollection collection = getCollection( entityKey );
-		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection, writeConcern );
-		DBObject document = getCurrentDocument( snapshot, batchInsertion, entityKey );
-		DBObject newDocument = objectForInsert( tuple, document );
-		inserts.get( collection ).put( entityKey, newDocument );
-	}
-
-	private static DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, BatchInsertionTask batchInsert, EntityKey entityKey) {
-		DBObject fromBatchInsertion = batchInsert.get( entityKey );
-		return fromBatchInsertion != null ? fromBatchInsertion : snapshot.getDbObject();
+	private static DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, DBObject insertStatement, EntityKey entityKey) {
+		return insertStatement != null ? insertStatement : snapshot.getDbObject();
 	}
 
 	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, EntityKeyMetadata entityKeyMetadata, DBCollection collection, WriteConcern writeConcern) {
@@ -1367,7 +1362,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
 				// so we determine if it concerns the primary key by matching on the message
 				if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
-					throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+					throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), dke );
 				}
 				else {
 					throw log.constraintViolationOnFlush( dke.getMessage(), dke );
@@ -1378,15 +1373,70 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static WriteConcern getWriteConcern(TupleContext tupleContext) {
-		return tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
 	private static WriteConcern getWriteConcern(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
-	private static ReadPreference getReadPreference(TupleContext tupleContext) {
-		return tupleContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
+	/**
+	 * As we merge several operations into one operation, we need to be sure the write concern applied to the aggregated
+	 * operation respects all the requirements expressed for each separate operation.
+	 *
+	 * Thus, for each parameter of the write concern, we keep the stricter one for the resulting merged write concern.
+	 */
+	@SuppressWarnings("deprecation")
+	private static WriteConcern mergeWriteConcern(WriteConcern original, WriteConcern writeConcern) {
+		if ( original == null ) {
+			return writeConcern;
+		}
+		else if ( writeConcern == null ) {
+			return original;
+		}
+		else if ( original.equals( writeConcern ) ) {
+			return original;
+		}
+
+		Object wObject;
+		int wTimeoutMS;
+		boolean fsync;
+		Boolean journal;
+
+		if ( original.getWObject() instanceof String ) {
+			wObject = original.getWString();
+		}
+		else if ( writeConcern.getWObject() instanceof String ) {
+			wObject = writeConcern.getWString();
+		}
+		else {
+			wObject = Math.max( original.getW(), writeConcern.getW() );
+		}
+
+		wTimeoutMS = Math.min( original.getWtimeout(), writeConcern.getWtimeout() );
+
+		fsync = original.getFsync() || writeConcern.getFsync();
+
+		if ( original.getJournal() == null ) {
+			journal = writeConcern.getJournal();
+		}
+		else if ( writeConcern.getJournal() == null ) {
+			journal = original.getJournal();
+		}
+		else {
+			journal = original.getJournal() || writeConcern.getJournal();
+		}
+
+		if ( wObject instanceof String ) {
+			return new WriteConcern( (String) wObject, wTimeoutMS, fsync, journal );
+		}
+		else {
+			return new WriteConcern( (int) wObject, wTimeoutMS, fsync, journal );
+		}
+	}
+
+	private static ReadPreference getReadPreference(OperationContext operationContext) {
+		return operationContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {
@@ -1411,7 +1461,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		@Override
 		public Tuple next() {
 			DBObject dbObject = results.next();
-			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata, UPDATE ) );
+			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata ), SnapshotType.UPDATE );
 		}
 
 		@Override
@@ -1443,7 +1493,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		@Override
 		public Tuple next() {
 			DBObject dbObject = cursor.next();
-			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata, UPDATE ) );
+			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata ), SnapshotType.UPDATE );
 		}
 
 		@Override
@@ -1479,7 +1529,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				throw new NoSuchElementException(); // Seemingly a programming error if this line is ever reached.
 			}
 
-			Tuple t = new Tuple( new MongoDBTupleSnapshot( theOne, metadata, UPDATE ) );
+			Tuple t = new Tuple( new MongoDBTupleSnapshot( theOne, metadata ), SnapshotType.UPDATE );
 			theOne = null;
 			return t;
 		}

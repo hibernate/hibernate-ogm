@@ -6,16 +6,12 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
-import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 
 /**
@@ -66,42 +62,12 @@ public class TupleContextHelper {
 		}
 
 		@Override
-		public boolean isPartOfAssociation(String column) {
-			throw LOG.tupleContextNotAvailable();
-		}
-
-		@Override
-		public List<String> getSelectableColumns() {
-			throw LOG.tupleContextNotAvailable();
-		}
-
-		@Override
-		public String getRole(String column) {
-			throw LOG.tupleContextNotAvailable();
-		}
-
-		@Override
-		public OptionsContext getOptionsContext() {
+		public TupleTypeContext getTupleTypeContext() {
 			throw LOG.tupleContextNotAvailable();
 		}
 
 		@Override
 		public OperationsQueue getOperationsQueue() {
-			throw LOG.tupleContextNotAvailable();
-		}
-
-		@Override
-		public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata(String column) {
-			throw LOG.tupleContextNotAvailable();
-		}
-
-		@Override
-		public Map<String, String> getAllRoles() {
-			throw LOG.tupleContextNotAvailable();
-		}
-
-		@Override
-		public Map<String, AssociatedEntityKeyMetadata> getAllAssociatedEntityKeyMetadata() {
 			throw LOG.tupleContextNotAvailable();
 		}
 	}

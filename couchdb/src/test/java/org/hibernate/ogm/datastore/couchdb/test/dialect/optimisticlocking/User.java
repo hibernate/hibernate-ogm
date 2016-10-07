@@ -74,7 +74,7 @@ public class User {
 			projectIds.add( project.getId() );
 		}
 
-		return "Contributor [id=" + id + ", name=" + name + ", revision=" + revision +
+		return "User [id=" + id + ", name=" + name + ", revision=" + revision +
 				", projects=[" + StringHelper.join( projectIds, ", " ) + "]]";
 	}
 }

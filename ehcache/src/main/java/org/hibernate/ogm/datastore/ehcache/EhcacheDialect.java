@@ -9,8 +9,6 @@ package org.hibernate.ogm.datastore.ehcache;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.ehcache.Element;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
@@ -31,8 +29,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -40,7 +41,10 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
+
+import net.sf.ehcache.Element;
 
 /**
  * Persists domain models in the Ehcache key/value store.
@@ -84,7 +88,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		final Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 		final Element element = entityCache.get( getKeyProvider().getEntityCacheKey( key ) );
 		if ( element != null ) {
@@ -97,16 +101,17 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 
 	@SuppressWarnings("unchecked")
 	private Tuple createTuple(final Element element) {
-		return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getObjectValue() ) );
+		return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getObjectValue() ), SnapshotType.UPDATE );
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple( new MapTupleSnapshot( new HashMap<String, Object>() ) );
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
+		return new Tuple( new MapTupleSnapshot( new HashMap<String, Object>() ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
@@ -115,7 +120,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 			Element previous = entityCache.putIfAbsent( new Element( getKeyProvider().getEntityCacheKey( key ), entityRecord ) );
 			if ( previous != null ) {
-				throw new TupleAlreadyExistsException( key.getMetadata(), tuple );
+				throw new TupleAlreadyExistsException( key );
 			}
 		}
 		else {
@@ -170,6 +175,8 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			}
 		}
 
+		association.reset();
+
 		final Cache<AK> associationCache = getCacheManager().getAssociationCache( key.getMetadata() );
 		associationCache.put( new Element( getKeyProvider().getAssociationCacheKey( key ), associationRows ) );
 	}
@@ -206,7 +213,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleContext tupleContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		getCacheManager().forEachTuple( new EntityKeyProcessor( consumer ), entityKeyMetadata );
 	}
 

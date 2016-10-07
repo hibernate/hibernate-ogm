@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
@@ -31,7 +32,9 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -82,8 +85,8 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		Tuple tuple = super.getTuple( key, tupleContext );
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
+		Tuple tuple = super.getTuple( key, operationContext );
 		log( "getTuple", key.toString(), tuple != null ? tuple.toString() : "null" );
 		return tuple;
 	}
@@ -96,16 +99,16 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		Tuple tuple = super.createTuple( key, tupleContext );
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
+		Tuple tuple = super.createTuple( key, operationContext );
 		log( "createTuple", key.toString(), tuple != null ? tuple.toString() : "null" );
 		return tuple;
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		super.insertOrUpdateTuple( key, tuple, tupleContext );
-		log( "insertOrUpdateTuple", key.toString() + ", " + tuple.toString(), "VOID" );
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		super.insertOrUpdateTuple( key, tuplePointer, tupleContext );
+		log( "insertOrUpdateTuple", key.toString() + ", " + tuplePointer.toString(), "VOID" );
 	}
 
 	@Override
@@ -155,8 +158,8 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		return super.createTuple( entityKeyMetadata, tupleContext );
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
+		return super.createTuple( entityKeyMetadata, operationContext );
 	}
 
 	@Override
@@ -183,21 +186,20 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 			while ( operation != null ) {
 				newQueue.add( operation );
 
-				if ( operation instanceof InsertOrUpdateTupleOperation ) {
-					sb.append( "InsertOrUpdateTuple(" ).append( ( (InsertOrUpdateTupleOperation) operation ).getEntityKey() ).append( " )" );
-					subOperations.add( "insertOrUpdateTuple" );
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					List<String> groupedOperations = new ArrayList<String>();
+					sb.append( "group[" );
+					for ( Operation groupedOperation : ( (GroupedChangesToEntityOperation) operation ).getOperations() ) {
+						if ( !groupedOperations.isEmpty() ) {
+							sb.append( ", " );
+						}
+						appendSimpleOperation( sb, groupedOperations, groupedOperation );
+					}
+					sb.append( "]" );
+					subOperations.add( "group[" + StringHelper.join( groupedOperations, "," ) + "]" );
 				}
-				else if ( operation instanceof RemoveTupleOperation ) {
-					sb.append( "RemoveTuple(" ).append( ( (RemoveTupleOperation) operation ).getEntityKey() ).append( " )" );
-					subOperations.add( "removeTuple" );
-				}
-				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
-					sb.append( "InsertOrUpdateAssociation(" ).append( ( (InsertOrUpdateAssociationOperation) operation ).getAssociationKey() ).append( " )" );
-					subOperations.add( "insertOrUpdateAssociation" );
-				}
-				else if ( operation instanceof RemoveAssociationOperation ) {
-					sb.append( "RemoveAssociation(" ).append( ( (RemoveAssociationOperation) operation ).getAssociationKey() ).append( " )" );
-					subOperations.add( "removeAssociation" );
+				else {
+					appendSimpleOperation( sb, subOperations, operation );
 				}
 
 				operation = queue.poll();
@@ -211,6 +213,25 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 		super.executeBatch( newQueue );
 
 		log( "executeBatch[" + StringHelper.join( subOperations, "," ) + "]", sb.toString(), "VOID" );
+	}
+
+	private void appendSimpleOperation(StringBuilder log, List<String> subOperations, Operation operation) {
+		if ( operation instanceof InsertOrUpdateTupleOperation ) {
+			log.append( "InsertOrUpdateTuple(" ).append( ( (InsertOrUpdateTupleOperation) operation ).getEntityKey() ).append( " )" );
+			subOperations.add( "insertOrUpdateTuple" );
+		}
+		else if ( operation instanceof RemoveTupleOperation ) {
+			log.append( "RemoveTuple(" ).append( ( (RemoveTupleOperation) operation ).getEntityKey() ).append( " )" );
+			subOperations.add( "removeTuple" );
+		}
+		else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+			log.append( "InsertOrUpdateAssociation(" ).append( ( (InsertOrUpdateAssociationOperation) operation ).getAssociationKey() ).append( " )" );
+			subOperations.add( "insertOrUpdateAssociation" );
+		}
+		else if ( operation instanceof RemoveAssociationOperation ) {
+			log.append( "RemoveAssociation(" ).append( ( (RemoveAssociationOperation) operation ).getAssociationKey() ).append( " )" );
+			subOperations.add( "removeAssociation" );
+		}
 	}
 
 	private void log(String operation, String parameters, String returnValue) {

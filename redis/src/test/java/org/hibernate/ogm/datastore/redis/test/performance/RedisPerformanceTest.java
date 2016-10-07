@@ -43,12 +43,7 @@ public class RedisPerformanceTest extends RedisOgmTestCase {
 					targetMethod = "getEntity(java.lang.String)",
 					helper = "org.hibernate.ogm.utils.BytemanHelper",
 					action = "countInvocation(\"getEntity\")",
-					name = "countGetEntity"),
-			@BMRule(targetClass = "org.hibernate.ogm.datastore.redis.RedisJsonDialect",
-					targetMethod = "getCurrentTtl(java.lang.String)",
-					helper = "org.hibernate.ogm.utils.BytemanHelper",
-					action = "countInvocation(\"getTtl\")",
-					name = "countGetTtl")
+					name = "countGetEntity")
 	})
 	public void testNumberOfCallsToDatastore() throws Exception {
 		//insert entity with embedded collection
@@ -68,20 +63,16 @@ public class RedisPerformanceTest extends RedisOgmTestCase {
 
 		int getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getEntity" );
 		int storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "storeEntity" );
-		int pttlInvocationCount = BytemanHelper.getAndResetInvocationCount( "getTtl" );
-		assertThat( getEntityInvocationCount ).isEqualTo( 3 );
-		assertThat( storeEntityInvocationCount ).isEqualTo( 2 );
-		assertThat( pttlInvocationCount ).isEqualTo( 2 );
+		assertThat( getEntityInvocationCount ).isEqualTo( 1 );
+		assertThat( storeEntityInvocationCount ).isEqualTo( 1 );
 
 		// Check that all the counters have been reset to 0
 		getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getEntity" );
 		storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "storeEntity" );
-		pttlInvocationCount = BytemanHelper.getAndResetInvocationCount( "getTtl" );
 		assertThat( getEntityInvocationCount ).isEqualTo( 0 );
 		assertThat( storeEntityInvocationCount ).isEqualTo( 0 );
-		assertThat( pttlInvocationCount ).isEqualTo( 0 );
 
-		//remove one of the elements and add a new one
+		// Remove one of the elements
 		tx = session.beginTransaction();
 		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
 		grandMother.getGrandChildren().remove( 0 );
@@ -90,12 +81,10 @@ public class RedisPerformanceTest extends RedisOgmTestCase {
 
 		getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getEntity" );
 		storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "storeEntity" );
-		pttlInvocationCount = BytemanHelper.getAndResetInvocationCount( "getTtl" );
-		assertThat( getEntityInvocationCount ).isEqualTo( 5 );
-		assertThat( storeEntityInvocationCount ).isEqualTo( 3 );
-		assertThat( pttlInvocationCount ).isEqualTo( 3 );
+		assertThat( getEntityInvocationCount ).isEqualTo( 1 );
+		assertThat( storeEntityInvocationCount ).isEqualTo( 1 );
 
-		//assert removal has been propagated
+		// Assert removal has been propagated
 		tx = session.beginTransaction();
 		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
 		assertThat( grandMother.getGrandChildren() ).onProperty( "name" ).containsExactly( "Leia" );
