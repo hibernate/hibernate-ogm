@@ -39,6 +39,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceException;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
@@ -159,7 +160,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				gridName = cacheManager.name();
 			}
 			else {
-				gridName = createGridName();
+				gridName = config.getOrCreateGridName();
 				try {
 					if (gridName != null) {
 						cacheManager = (IgniteEx) Ignition.ignite( gridName );
@@ -170,7 +171,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				}
 				catch (IgniteIllegalStateException iise) {
 					//not found, then start
-					IgniteConfiguration conf = IgnitionEx.loadConfiguration( config.getUrl() ).get1();
+					IgniteConfiguration conf = config.getOrCreateIgniteConfiguration();
 					conf.setGridName( gridName );
 					if (!(jtaPlatform instanceof NoJtaPlatform)) {
 						conf.getTransactionConfiguration().setTxManagerFactory( new IgniteTransactionManagerFactory( jtaPlatform ) );
@@ -179,8 +180,11 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				}
 			}
 		}
-		catch (Exception e) {
-			throw log.unableToStartDatastoreProvider( e );
+		catch (ServiceException ex) {
+			throw ex;
+		}
+		catch (Exception ex) {
+			throw log.unableToStartDatastoreProvider( ex );
 		}
 	}
 

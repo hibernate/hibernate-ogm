@@ -47,7 +47,6 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
-import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -58,6 +57,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.AssociationOperationType;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.type.spi.GridType;
@@ -99,20 +99,46 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect {
 	@Override
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
-		if ( entityCache == null ) {
+		if (entityCache == null) {
 			throw log.cacheNotFound( key.getMetadata().getTable() );
 		}
-		else {
-			Object po = entityCache.get( provider.getKeyProvider().getEntityKeyString( key ) );
-			if ( po != null ) {
-				return new Tuple( new IgnitePortableTupleSnapshot( po ), SnapshotType.UPDATE );
-			}
-			else {
-				return null;
-			}
-		}
+
+		BinaryObject po = entityCache.get( provider.getKeyProvider().getKeyString( key ) );
+		return createTuple( key, operationContext, po );
 	}
 
+	
+//	@Override
+//	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+//		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
+//		if (entityCache == null) {
+//			throw new IgniteHibernateException("Cache " + key.getMetadata().getTable() + " is not found");
+//		}
+//		else {
+//			Object po = entityCache.get( provider.getKeyProvider().getKeyString( key ) );
+//			if (po != null) {
+//				return new Tuple(new IgnitePortableTupleSnapshot( po ));
+//			}
+//			else {
+//				return null;
+//			}
+//		}
+//	}
+	
+	private static Tuple createTuple(EntityKey key, OperationContext operationContext, BinaryObject found) {
+		if ( found != null ) {
+			return new Tuple( new IgnitePortableTupleSnapshot( found ), SnapshotType.UPDATE );
+		}
+		else if ( isInTheInsertionQueue( key, operationContext ) ) {
+			// The key has not been inserted in the db but it is in the queue
+			//return new Tuple( new IgnitePortableTupleSnapshot( prepareIdObject( key ), key.getMetadata() ), SnapshotType.INSERT );
+			return new Tuple();
+		}
+		else {
+			return null;
+		}
+	}
+	
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		return new Tuple();
@@ -122,7 +148,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect {
 	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
 		Tuple tuple = tuplePointer.getTuple();
 		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
-
+		Tuple tuple = tuplePointer.getTuple();
+		
 		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
 		for ( String columnName : tuple.getColumnNames() ) {
 			Object value = tuple.get( columnName );
