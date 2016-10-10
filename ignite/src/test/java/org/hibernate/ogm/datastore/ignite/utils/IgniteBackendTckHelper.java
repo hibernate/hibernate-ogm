@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.ignite.test;
+package org.hibernate.ogm.datastore.ignite.utils;
 
 import org.junit.extensions.cpsuite.ClasspathSuite;
 import org.junit.runner.RunWith;
@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @ClasspathSuite.ClassnameFilters({
 
-
 	// failed
 
 //	"org.hibernate.ogm.backendtck.associations.collection.types.ListTest", 				// passed -testOrderedListAndCompositeId
@@ -29,7 +28,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
-	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest"
 
 
@@ -38,9 +37,10 @@ import org.junit.runner.RunWith;
 
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest",    			// -testDefaultBiDirManyToOneCompositeKeyTest
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest",
-//	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
+	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
+//	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.HibernateCoreAPIWrappingTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.JNDIReferenceTest",
 //	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorTest",
