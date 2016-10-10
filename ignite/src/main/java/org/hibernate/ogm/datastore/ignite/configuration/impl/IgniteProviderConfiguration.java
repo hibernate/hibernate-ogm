@@ -9,6 +9,10 @@ package org.hibernate.ogm.datastore.ignite.configuration.impl;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ignite.IgniteCheckedException;
+import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.internal.IgnitionEx;
 import org.hibernate.ogm.datastore.ignite.IgniteProperties;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
@@ -26,9 +30,10 @@ public class IgniteProviderConfiguration {
 	/**
 	 * Name of the default Ignite configuration file
 	 */
-	private static final String DEFAULT_CONFIG = "org/hibernate/ogm/datastore/ignite/config.xml";
+	private static final String DEFAULT_CONFIG = "ignite-config.xml";
 
-	protected URL url;
+	private URL url;
+	private String instanceName;
 
 	/**
 	 * Initialize the internal values from the given {@link Map}.
@@ -50,12 +55,50 @@ public class IgniteProviderConfiguration {
 //					}
 //			)
 			.getValue();
+
+		this.instanceName = new ConfigurationPropertyReader( configurationMap )
+				.property( IgniteProperties.IGNITE_INSTANCE_NAME, String.class )
+				.getValue();
 	}
+
 	/**
 	 * @see IgniteProperties#CONFIGURATION_RESOURCE_NAME
-	 * @return An URL to an XML file
+	 * @return An URL to Ignite configuration file
 	 */
 	public URL getUrl() {
 		return url;
 	}
+
+	/**
+	 * @see IgniteProperties#IGNITE_INSTANCE_NAME
+	 * @return the name of existing Ignite instance
+	 */
+	public String getInstanceName() {
+		return instanceName;
+	}
+
+	public IgniteConfiguration getOrCreateIgniteConfiguration() {
+		IgniteConfiguration conf;
+		try	{
+			conf = IgnitionEx.loadConfiguration( url ).get1();
+		}
+		catch (IgniteCheckedException ex) {
+			throw log.unableToStartDatastoreProvider(ex);
+		}
+		conf.setGridName( getOrCreateGridName() );
+		return conf;
+	}
+
+	public String getOrCreateGridName() {
+		String result = null;
+		if ( StringUtils.isNotEmpty( instanceName ) ) {
+			result = instanceName;
+		}
+		else if ( url != null ) {
+			result = url.getPath();
+			result = result.replaceAll( "[\\,\\\",:,\\*,\\/,\\\\]", "_" );
+		}
+		return result;
+	}
+	
 }
