@@ -16,6 +16,7 @@ import org.apache.ignite.binary.BinaryObject;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
 /**
  * @author Victor Kadachigov
@@ -41,7 +42,7 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey rowKey) {
 		BinaryObject object = associationMap.get( rowKey );
-		return object != null ? new Tuple( new IgnitePortableTupleSnapshot( object ) ) : null;
+		return object != null ? new Tuple( new IgnitePortableTupleSnapshot( object ), SnapshotType.UPDATE ) : null;
 	}
 
 	@Override

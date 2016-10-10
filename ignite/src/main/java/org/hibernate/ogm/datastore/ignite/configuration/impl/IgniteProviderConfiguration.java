@@ -9,6 +9,10 @@ package org.hibernate.ogm.datastore.ignite.configuration.impl;
 import java.net.URL;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ignite.IgniteCheckedException;
+import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.internal.IgnitionEx;
 import org.hibernate.ogm.datastore.ignite.IgniteProperties;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
@@ -72,4 +76,29 @@ public class IgniteProviderConfiguration {
 	public String getInstanceName() {
 		return instanceName;
 	}
+
+	public IgniteConfiguration getOrCreateIgniteConfiguration() {
+		IgniteConfiguration conf;
+		try	{
+			conf = IgnitionEx.loadConfiguration( url ).get1();
+		}
+		catch (IgniteCheckedException ex) {
+			throw log.unableToStartDatastoreProvider(ex);
+		}
+		conf.setGridName( getOrCreateGridName() );
+		return conf;
+	}
+
+	public String getOrCreateGridName() {
+		String result = null;
+		if ( StringUtils.isNotEmpty( instanceName ) ) {
+			result = instanceName;
+		}
+		else if ( url != null ) {
+			result = url.getPath();
+			result = result.replaceAll( "[\\,\\\",:,\\*,\\/,\\\\]", "_" );
+		}
+		return result;
+	}
+	
 }
