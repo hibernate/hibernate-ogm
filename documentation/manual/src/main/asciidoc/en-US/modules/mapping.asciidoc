@@ -21,13 +21,19 @@ check out <<ogm-gettingstarted>> or the documentation of Hibernate ORM.
 Let's concentrate of the features that differ
 or are simply not supported by Hibernate OGM.
 
-The various inheritance strategies are not supported by Hibernate OGM,
-only the table per concrete class strategy is used.
-This is not so much a limitation
-but rather an acknowledgment of the dynamic nature of NoSQL schemas.
+Hibernate OGM supports the following inheritance strategies:
+* [classname]`InheritanceType.TABLE_PER_CLASS`
+* [classname]`InheritanceType.SINGLE_TABLE`
+
 If you feel the need to support other strategies,
 let us know (see <<ogm-howtocontribute-contribute>>).
-Simply do not use [classname]`@Inheritance` nor [classname]`@DiscriminatorColumn`.
+
+JPA annotations refer to tables but the kind of abstraction the database will use depends on the
+nature of the NoSQL datastore you are dealing with. For example, in MongoDB a table is mapped as
+a document.
+
+You can find more details about the way entities are stored in the corresponding
+mapping section of the datastore you are using.
 
 Secondary tables are not supported by Hibernate OGM at the moment.
 If you have needs for this feature, let us know (see <<ogm-howtocontribute-contribute>>).
