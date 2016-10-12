@@ -67,7 +67,7 @@ public class Breed {
 
 === Supported Types
 
-Most Java built-in types as supported at this stage.
+Most Java built-in types are supported at this stage.
 However, custom types ([classname]`@Type`) are not supported.
 
 Here is a list of supported Java types:
