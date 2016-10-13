@@ -356,7 +356,7 @@
                                 <configuration>
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
-                                        <include>**/neo4j/remote/*IT.java</include>
+                                        <include>**/neo4j/remote/**/*IT.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
