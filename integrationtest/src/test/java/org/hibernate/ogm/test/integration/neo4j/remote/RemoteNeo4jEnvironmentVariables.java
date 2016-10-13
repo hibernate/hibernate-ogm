@@ -48,6 +48,10 @@ public class RemoteNeo4jEnvironmentVariables {
 		return neo4jHostName + ":" + neo4jPortNumber;
 	}
 
+	public static String getNeo4jHostWithPort(int port) {
+		return neo4jHostName + ":" + port;
+	}
+
 	public static String getNeo4jUsername() {
 		return System.getenv( USERNAME );
 	}

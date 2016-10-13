@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.test.integration.neo4j.remote.bolt;
 
-import static org.hibernate.ogm.test.integration.neo4j.remote.RemoteNeo4jEnvironmentVariables.getNeo4jHost;
+import static org.hibernate.ogm.test.integration.neo4j.remote.RemoteNeo4jEnvironmentVariables.getNeo4jHostWithPort;
 import static org.hibernate.ogm.test.integration.neo4j.remote.RemoteNeo4jEnvironmentVariables.getNeo4jPassword;
 import static org.hibernate.ogm.test.integration.neo4j.remote.RemoteNeo4jEnvironmentVariables.getNeo4jUsername;
 import static org.junit.Assert.assertEquals;
@@ -58,8 +58,7 @@ public class BoltNeo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistra
 				.getOrCreateProperties();
 		PersistenceDescriptor persistenceDescriptor = propertiesContext
 				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.BOLT_DATASTORE_PROVIDER_NAME ).up()
-				.createProperty().name( Neo4jProperties.PORT ).value( String.valueOf( RemoteNeo4jConfiguration.DEFAULT_BOLT_PORT ) ).up()
-				.createProperty().name( Neo4jProperties.HOST ).value( getNeo4jHost() ).up()
+				.createProperty().name( Neo4jProperties.HOST ).value( getNeo4jHostWithPort( RemoteNeo4jConfiguration.DEFAULT_BOLT_PORT ) ).up()
 				.createProperty().name( Neo4jProperties.USERNAME ).value( getNeo4jUsername() ).up()
 				.createProperty().name( Neo4jProperties.PASSWORD ).value( getNeo4jPassword() ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
