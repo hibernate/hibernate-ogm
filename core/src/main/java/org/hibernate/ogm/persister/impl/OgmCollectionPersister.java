@@ -13,10 +13,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.Session;
-import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
 import org.hibernate.collection.spi.PersistentCollection;
