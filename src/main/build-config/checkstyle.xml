@@ -90,6 +90,9 @@
 
             <!-- Dom4J is still being used internally by Hibernate ORM but we're getting rid of it. Avoid it in OGM -->
             <property name="illegalPkgs" value="org.dom4j"/>
+
+            <!-- Avoid org.hibernate.annotations.common.AssertionFailure. Check OGM-1157 -->
+            <property name="illegalPkgs" value="org.hibernate.annotations.common"/>
         </module>
     </module>
 

@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
+import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
-import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
