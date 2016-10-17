@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import org.hibernate.annotations.common.AssertionFailure;
+import org.hibernate.AssertionFailure;
 
 /**
  * Utility for simple consistency checks of objects and parameters.
