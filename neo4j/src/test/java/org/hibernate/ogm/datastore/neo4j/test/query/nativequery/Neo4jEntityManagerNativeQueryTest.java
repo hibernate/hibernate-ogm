@@ -16,8 +16,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.hibernate.ogm.backendtck.jpa.Poem;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestForIssue;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +32,12 @@ import org.junit.Test;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
+
+	/*
+	 *  The only purpose of this constant is to keep track of the nodes created using a native query via the
+	 *	executeUpdate method. This is just a Label (not a table or entity).
+	 */
+	private static final String UPDATE_LABEL = "UPDATE";
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
@@ -143,6 +151,33 @@ public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 		assertThat( poem.getCritic() ).isNotNull();
 		assertThat( poem.getCritic().getName() ).as( "Wrong critic name" ).isEqualTo( "Roger" );
+
+		em.getTransaction().commit();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testNativeQueryExecuteUpdate() throws Exception {
+		em.getTransaction().begin();
+
+		String findQueryString = "MATCH (n:" + UPDATE_LABEL + ") RETURN n";
+		Query findQuery = em.createNativeQuery( findQueryString );
+
+		String createQuery = "CREATE (n:" + UPDATE_LABEL + " { author:'Giorgio Faletti' })";
+		int updates = em.createNativeQuery( createQuery ).executeUpdate();
+		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+			assertThat( updates ).isEqualTo( 3 ); // 1 node + 1 label + 1 property set
+		}
+		List<Object> createdNode = (List<Object>) findQuery.getResultList();
+		assertThat( createdNode ).hasSize( 1 );
+
+		String deleteQuery = "MATCH (n:" + UPDATE_LABEL + ") DELETE n ";
+		int deletes = em.createNativeQuery( deleteQuery ).executeUpdate();
+		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+			assertThat( deletes ).isEqualTo( 1 ); // 1 node
+		}
+		List<Object> uniqueResult = (List<Object>) findQuery.getResultList();
+		assertThat( uniqueResult ).isEmpty();
 
 		em.getTransaction().commit();
 	}
