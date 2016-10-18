@@ -141,7 +141,7 @@ public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	 */
 	public ResourceIterator<Node> findEntities(GraphDatabaseService executionEngine) {
 		Result result = executionEngine.execute( getFindEntitiesQuery() );
-		return result.columnAs( "n" );
+		return result.columnAs( BaseNeo4jEntityQueries.ENTITY_ALIAS );
 	}
 
 	/**
