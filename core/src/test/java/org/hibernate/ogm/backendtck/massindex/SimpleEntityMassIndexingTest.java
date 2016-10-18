@@ -8,7 +8,6 @@ package org.hibernate.ogm.backendtck.massindex;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,7 +34,6 @@ import org.junit.Test;
 public class SimpleEntityMassIndexingTest extends OgmTestCase {
 
 	@Test
-	@SkipByGridDialect(value = { NEO4J_REMOTE }, comment = "Neo4j is not compatible with HSEARCH 5")
 	public void testSimpleEntityMassIndexing() throws Exception {
 		{
 			Session session = openSession();
@@ -67,7 +65,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_REMOTE }, comment = "Uses embedded key which is currently not supported by the db query parsers")
+	@SkipByGridDialect(value = { MONGODB }, comment = "Uses embedded key which is currently not supported by the db query parsers")
 	public void testEntityWithCompositeIdMassIndexing() throws Exception {
 		{
 			Session session = openSession();
