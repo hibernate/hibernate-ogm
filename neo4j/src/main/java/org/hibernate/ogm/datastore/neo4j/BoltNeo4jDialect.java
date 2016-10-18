@@ -69,6 +69,7 @@ import org.neo4j.driver.v1.Statement;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.exceptions.ClientException;
+import org.neo4j.driver.v1.summary.ResultSummary;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Relationship;
 
@@ -171,6 +172,35 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 			StatementResult statementResult = transaction.run( statement );
 			return new BoltNeo4jMapsTupleIterator( statementResult );
 		}
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		Map<String, Object> parameters = getParameters( queryParameters );
+		String nativeQuery = buildNativeQuery( query, queryParameters );
+		Statement statement = new Statement( nativeQuery, parameters );
+		Transaction transaction = transaction( tupleContext );
+		StatementResult statementResult = transaction.run( statement );
+		ResultSummary summary = statementResult.consume();
+		return updatesCount( summary );
+	}
+
+	private int updatesCount(ResultSummary summary) {
+		int updates = 0;
+		if ( summary.counters().containsUpdates() ) {
+			updates += summary.counters().constraintsAdded();
+			updates += summary.counters().constraintsRemoved();
+			updates += summary.counters().nodesCreated();
+			updates += summary.counters().nodesDeleted();
+			updates += summary.counters().relationshipsCreated();
+			updates += summary.counters().relationshipsDeleted();
+			updates += summary.counters().labelsAdded();
+			updates += summary.counters().labelsRemoved();
+			updates += summary.counters().indexesAdded();
+			updates += summary.counters().indexesRemoved();
+			updates += summary.counters().propertiesSet();
+		}
+		return updates;
 	}
 
 	private Transaction transaction(OperationContext operationContext) {

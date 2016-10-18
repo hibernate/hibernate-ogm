@@ -87,6 +87,9 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	private static final Log log = LoggerFactory.getLogger();
 
+	// The API does not return the number of updates
+	private static final int UNKNOWN_UPDATES = -1;
+
 	private final HttpNeo4jClient client;
 
 	private final HttpNeo4jSequenceGenerator sequenceGenerator;
@@ -556,6 +559,22 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 			response = client.executeQueriesInOpenTransaction( txId, statements );
 			return new HttpNeo4jMapsTupleIterator( response.getResults().get( 0 ) );
 		}
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		Map<String, Object> parameters = getParameters( queryParameters );
+		String nativeQuery = buildNativeQuery( query, queryParameters );
+
+		Statement statement = new Statement( nativeQuery, parameters );
+		statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
+
+		Statements statements = new Statements();
+		statements.addStatement( statement );
+
+		Long txId = transactionId( tupleContext.getTransactionContext() );
+		StatementsResponse response = client.executeQueriesInOpenTransaction( txId, statements );
+		return UNKNOWN_UPDATES;
 	}
 
 	private Object[] columnValues(Node node, EntityKeyMetadata metadata) {
