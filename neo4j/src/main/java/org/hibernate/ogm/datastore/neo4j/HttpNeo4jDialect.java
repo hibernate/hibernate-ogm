@@ -541,6 +541,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		StatementsResponse response = null;
 		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
 			response = client.executeQueriesInOpenTransaction( txId, statements );
+			validate( response, nativeQuery );
 			EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
 			HttpNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
 			List<StatementResult> results = response.getResults();
@@ -557,6 +558,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		else {
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			response = client.executeQueriesInOpenTransaction( txId, statements );
+			validate( response, nativeQuery );
 			return new HttpNeo4jMapsTupleIterator( response.getResults().get( 0 ) );
 		}
 	}
@@ -574,7 +576,15 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 		Long txId = transactionId( tupleContext.getTransactionContext() );
 		StatementsResponse response = client.executeQueriesInOpenTransaction( txId, statements );
+		validate( response, nativeQuery );
 		return UNKNOWN_UPDATES;
+	}
+
+	private void validate(StatementsResponse response, String nativeQuery) {
+		if ( !response.getErrors().isEmpty() ) {
+			ErrorResponse errorResponse = response.getErrors().get( 0 );
+			throw log.nativeQueryException( errorResponse.getCode(), errorResponse.getMessage(), null );
+		}
 	}
 
 	private Object[] columnValues(Node node, EntityKeyMetadata metadata) {

@@ -156,6 +156,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 				BoltNeo4jEntityQueries queries = entitiesQueries.get( entityKeyMetadata );
 				Transaction transaction = transaction( tupleContext );
 				StatementResult result = transaction.run( statement );
+				validateNativeQuery( result );
 				List<EntityKey> entityKeys = new ArrayList<>();
 				while ( result.hasNext() ) {
 					Record record = result.next();
@@ -170,6 +171,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		else {
 			Transaction transaction = transaction( tupleContext );
 			StatementResult statementResult = transaction.run( statement );
+			validateNativeQuery( statementResult );
 			return new BoltNeo4jMapsTupleIterator( statementResult );
 		}
 	}
@@ -181,8 +183,19 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		Statement statement = new Statement( nativeQuery, parameters );
 		Transaction transaction = transaction( tupleContext );
 		StatementResult statementResult = transaction.run( statement );
+		validateNativeQuery( statementResult );
 		ResultSummary summary = statementResult.consume();
 		return updatesCount( summary );
+	}
+
+	private void validateNativeQuery(StatementResult result) {
+		try {
+			result.hasNext();
+		}
+		catch (ClientException e) {
+			throw log.nativeQueryException( e.neo4jErrorCode(), e.getMessage(), null );
+		}
+
 	}
 
 	private int updatesCount(ResultSummary summary) {

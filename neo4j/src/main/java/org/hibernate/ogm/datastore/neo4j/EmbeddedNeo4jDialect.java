@@ -586,21 +586,31 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		Map<String, Object> parameters = getParameters( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
-		Result result = dataBase.execute( nativeQuery, parameters );
+		try {
+			Result result = dataBase.execute( nativeQuery, parameters );
 
-		EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
-		if ( entityMetadataInformation != null ) {
-			return new EmbeddedNeo4jNodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
+			EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
+			if ( entityMetadataInformation != null ) {
+				return new EmbeddedNeo4jNodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
+			}
+			return new EmbeddedNeo4jMapsTupleIterator( result );
 		}
-		return new EmbeddedNeo4jMapsTupleIterator( result );
+		catch (QueryExecutionException qe) {
+			throw log.nativeQueryException( qe.getStatusCode(), qe.getMessage(), qe );
+		}
 	}
 
 	@Override
 	public int executeBackendUpdateQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		Map<String, Object> parameters = getParameters( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
-		Result result = dataBase.execute( nativeQuery, parameters );
-		return summaryUpdates( result );
+		try {
+			Result result = dataBase.execute( nativeQuery, parameters );
+			return summaryUpdates( result );
+		}
+		catch (QueryExecutionException qe) {
+			throw log.nativeQueryException( qe.getStatusCode(), qe.getMessage(), qe );
+		}
 	}
 
 	private int summaryUpdates(Result result) {
