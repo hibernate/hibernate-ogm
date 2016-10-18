@@ -31,23 +31,26 @@ import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jTuple
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.NodeWithEmbeddedNodes;
+import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.common.util.impl.RemoteNeo4jHelper;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumerWithSupplier;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
-import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -65,6 +68,7 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Statement;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
@@ -599,6 +603,44 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		throw new NotSupportedException( "OGM-1111", "This is not supported yet for Neo4j remote" );
+		DatastoreProvider datastoreProvider = getServiceRegistry().getService( DatastoreProvider.class );
+		BoltNeo4jDatastoreProvider neo4jProvider = (BoltNeo4jDatastoreProvider) datastoreProvider;
+		BoltNeo4jClient client = neo4jProvider.getClient();
+		BoltTupleSupplier tupleSupplier = new BoltTupleSupplier( entitiesQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
+		( (ModelConsumerWithSupplier) consumer ).consume( tupleSupplier );
+	}
+
+	private static class BoltTupleSupplier implements TupleSupplier {
+
+		private final BoltNeo4jEntityQueries entityQueries;
+		private final EntityKeyMetadata entityKeyMetadata;
+		private final TupleTypeContext tupleTypeContext;
+		private final BoltNeo4jClient boltClient;
+
+		public BoltTupleSupplier(
+				BoltNeo4jEntityQueries entityQueries,
+				EntityKeyMetadata entityKeyMetadata,
+				TupleTypeContext tupleTypeContext,
+				BoltNeo4jClient boltClient) {
+			this.entityQueries = entityQueries;
+			this.entityKeyMetadata = entityKeyMetadata;
+			this.tupleTypeContext = tupleTypeContext;
+			this.boltClient = boltClient;
+		}
+
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			boolean shouldCloseTransaction = transactionContext == null;
+			Transaction tx = transaction( transactionContext );
+			ClosableIterator<NodeWithEmbeddedNodes> entities = entityQueries.findEntitiesWithEmbedded( tx );
+			return new BoltNeo4jNodesTupleIterator( tx, entityQueries, entityKeyMetadata, tupleTypeContext, entities, shouldCloseTransaction );
+		}
+
+		private Transaction transaction(TransactionContext transactionContext) {
+			if ( transactionContext == null ) {
+				Session session = boltClient.getDriver().session();
+				return session.beginTransaction();
+			}
+			return (Transaction) transactionContext.getTransactionId();
+		}
 	}
 }

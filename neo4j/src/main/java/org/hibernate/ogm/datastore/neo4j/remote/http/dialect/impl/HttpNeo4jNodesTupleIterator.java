@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Graph.Node;
-import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.StatementsResponse;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -36,7 +35,6 @@ public class HttpNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 			HttpNeo4jClient client,
 			Long txId,
 			HttpNeo4jEntityQueries entityQueries,
-			StatementsResponse response,
 			EntityKeyMetadata entityKeyMetadata,
 			TupleTypeContext tupleTypeContext,
 			ClosableIterator<NodeWithEmbeddedNodes> entities) {

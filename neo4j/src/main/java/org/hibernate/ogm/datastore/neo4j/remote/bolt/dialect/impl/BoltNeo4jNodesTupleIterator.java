@@ -29,6 +29,7 @@ public class BoltNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 	private final TupleTypeContext tupleTypeContext;
 	private final ClosableIterator<NodeWithEmbeddedNodes> entities;
 	private final Transaction tx;
+	private final boolean closeTransaction;
 
 	public BoltNeo4jNodesTupleIterator(
 			Transaction tx,
@@ -36,11 +37,22 @@ public class BoltNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 			EntityKeyMetadata entityKeyMetadata,
 			TupleTypeContext tupleTypeContext,
 			ClosableIterator<NodeWithEmbeddedNodes> entities) {
+		this( tx, entityQueries, entityKeyMetadata, tupleTypeContext, entities, false );
+	}
+
+	public BoltNeo4jNodesTupleIterator(
+			Transaction tx,
+			BoltNeo4jEntityQueries entityQueries,
+			EntityKeyMetadata entityKeyMetadata,
+			TupleTypeContext tupleTypeContext,
+			ClosableIterator<NodeWithEmbeddedNodes> entities,
+			boolean closeTransaction) {
 		this.tx = tx;
 		this.entityQueries = entityQueries;
 		this.entityKeyMetadata = entityKeyMetadata;
 		this.tupleTypeContext = tupleTypeContext;
 		this.entities = entities;
+		this.closeTransaction = closeTransaction;
 	}
 
 	private Tuple createTuple(NodeWithEmbeddedNodes node) {
@@ -66,6 +78,16 @@ public class BoltNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 
 	@Override
 	public void close() {
-		entities.close();
+		try {
+			entities.close();
+			if ( closeTransaction ) {
+				tx.success();
+			}
+		}
+		finally {
+			if ( closeTransaction ) {
+				tx.close();
+			}
+		}
 	}
 }

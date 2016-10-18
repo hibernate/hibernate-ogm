@@ -48,11 +48,13 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumerWithSupplier;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -513,18 +515,31 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		// TODO OGM-1111 we don't have a transaction context here as we are not in a session yet.
-		// This is now clear thanks to the new TupleTypeContext contract.
-		// Long txId = transactionId( tupleContext.getTransactionContext() );
-		Long txId = null;
-		HttpNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
-		ClosableIterator<NodeWithEmbeddedNodes> queryNodes = entityQueries.get( entityKeyMetadata ).findEntitiesWithEmbedded( client, txId );
-		while ( queryNodes.hasNext() ) {
-			NodeWithEmbeddedNodes next = queryNodes.next();
-			Map<String, Node> associatedEntities = HttpNeo4jAssociatedNodesHelper.findAssociatedNodes( client, txId, next, entityKeyMetadata, tupleTypeContext,
-					queries );
-			Tuple tuple = new Tuple( new HttpNeo4jTupleSnapshot( next, entityKeyMetadata, associatedEntities, tupleTypeContext ), SnapshotType.UPDATE );
-			consumer.consume( tuple );
+		HttpTupleSupplier tupleSupplier = new HttpTupleSupplier( entityQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
+		( (ModelConsumerWithSupplier) consumer ).consume( tupleSupplier );
+	}
+
+	private static class HttpTupleSupplier implements TupleSupplier {
+
+		private final HttpNeo4jEntityQueries entityQueries;
+		private final EntityKeyMetadata entityKeyMetadata;
+		private final TupleTypeContext tupleTypeContext;
+		private final HttpNeo4jClient httpClient;
+
+		public HttpTupleSupplier(HttpNeo4jEntityQueries entityQueries,
+				EntityKeyMetadata entityKeyMetadata,
+				TupleTypeContext tupleTypeContext,
+				HttpNeo4jClient httpClient) {
+			this.entityQueries = entityQueries;
+			this.entityKeyMetadata = entityKeyMetadata;
+			this.tupleTypeContext = tupleTypeContext;
+			this.httpClient = httpClient;
+		}
+
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			Long txId = transactionContext == null ? null : (Long) transactionContext.getTransactionId();
+			ClosableIterator<NodeWithEmbeddedNodes> entities = entityQueries.findEntitiesWithEmbedded( httpClient, txId );
+			return new HttpNeo4jNodesTupleIterator( httpClient, txId, entityQueries, entityKeyMetadata, tupleTypeContext, entities );
 		}
 	}
 
@@ -553,7 +568,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 				keys[i] = new EntityKey( entityKeyMetadata, values );
 			}
 			ClosableIterator<NodeWithEmbeddedNodes> entities = entityQueries.get( entityKeyMetadata ).findEntities( client, keys, txId );
-			return new HttpNeo4jNodesTupleIterator( client, txId, queries, response, entityKeyMetadata, tupleContext.getTupleTypeContext(), entities );
+			return new HttpNeo4jNodesTupleIterator( client, txId, queries, entityKeyMetadata, tupleContext.getTupleTypeContext(), entities );
 		}
 		else {
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );

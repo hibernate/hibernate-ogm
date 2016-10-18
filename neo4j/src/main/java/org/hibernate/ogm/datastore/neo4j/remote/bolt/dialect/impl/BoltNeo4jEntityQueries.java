@@ -73,6 +73,11 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		}
 	}
 
+	public ClosableIterator<NodeWithEmbeddedNodes> findEntitiesWithEmbedded(Transaction tx) {
+		StatementResult results = tx.run( getFindEntitiesQuery() );
+		return closableIterator( results );
+	}
+
 	public ClosableIterator<NodeWithEmbeddedNodes> findEntities(EntityKey[] keys, Transaction tx) {
 		if ( singlePropertyKey ) {
 			return singlePropertyIdFindEntities( keys, tx );

@@ -314,7 +314,9 @@ public class HttpNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	}
 
 	private List<StatementResult> executeQuery(HttpNeo4jClient executionEngine, Long txId, Statements statements) {
-		StatementsResponse statementsResponse = executionEngine.executeQueriesInOpenTransaction( txId, statements );
+		StatementsResponse statementsResponse = txId == null
+				? executionEngine.executeQueriesInNewTransaction( statements )
+				: executionEngine.executeQueriesInOpenTransaction( txId, statements );
 		validate( statementsResponse );
 		List<StatementResult> results = statementsResponse.getResults();
 		if ( results == null || results.isEmpty() ) {
