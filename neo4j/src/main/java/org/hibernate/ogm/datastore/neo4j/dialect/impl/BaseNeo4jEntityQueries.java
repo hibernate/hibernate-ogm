@@ -467,6 +467,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
+		queryBuilder.append( ")" );
 		appendOptionalMatchOwnerEmbeddedNodes( queryBuilder );
 		appendGetEmbeddedNodesIfNeeded( includeEmbedded, queryBuilder );
 		return queryBuilder.toString();
