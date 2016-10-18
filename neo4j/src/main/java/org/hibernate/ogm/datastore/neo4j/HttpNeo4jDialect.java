@@ -87,6 +87,9 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	private static final Log log = LoggerFactory.getLogger();
 
+	// The API does not return the number of updates
+	private static final int UNKNOWN_UPDATES = -1;
+
 	private final HttpNeo4jClient client;
 
 	private final HttpNeo4jSequenceGenerator sequenceGenerator;
@@ -538,6 +541,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		StatementsResponse response = null;
 		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
 			response = client.executeQueriesInOpenTransaction( txId, statements );
+			validate( response, nativeQuery );
 			EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
 			HttpNeo4jEntityQueries queries = entityQueries.get( entityKeyMetadata );
 			List<StatementResult> results = response.getResults();
@@ -554,7 +558,32 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		else {
 			statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
 			response = client.executeQueriesInOpenTransaction( txId, statements );
+			validate( response, nativeQuery );
 			return new HttpNeo4jMapsTupleIterator( response.getResults().get( 0 ) );
+		}
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		Map<String, Object> parameters = getParameters( queryParameters );
+		String nativeQuery = buildNativeQuery( query, queryParameters );
+
+		Statement statement = new Statement( nativeQuery, parameters );
+		statement.setResultDataContents( Arrays.asList( Statement.AS_ROW ) );
+
+		Statements statements = new Statements();
+		statements.addStatement( statement );
+
+		Long txId = transactionId( tupleContext.getTransactionContext() );
+		StatementsResponse response = client.executeQueriesInOpenTransaction( txId, statements );
+		validate( response, nativeQuery );
+		return UNKNOWN_UPDATES;
+	}
+
+	private void validate(StatementsResponse response, String nativeQuery) {
+		if (!response.getErrors().isEmpty() ) {
+			ErrorResponse errorResponse = response.getErrors().get( 0 );
+			throw log.nativeQueryException( errorResponse.getCode(), errorResponse.getMessage(), null );
 		}
 	}
 

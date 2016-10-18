@@ -55,8 +55,8 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -586,13 +586,45 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		Map<String, Object> parameters = getParameters( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
-		Result result = dataBase.execute( nativeQuery, parameters );
+		try {
+			Result result = dataBase.execute( nativeQuery, parameters );
 
-		EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
-		if ( entityMetadataInformation != null ) {
-			return new EmbeddedNeo4jNodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
+			EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
+			if ( entityMetadataInformation != null ) {
+				return new EmbeddedNeo4jNodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
+			}
+			return new EmbeddedNeo4jMapsTupleIterator( result );
 		}
-		return new EmbeddedNeo4jMapsTupleIterator( result );
+		catch (QueryExecutionException qe) {
+			throw log.nativeQueryException( qe.getStatusCode(), qe.getMessage(), qe );
+		}
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
+		Map<String, Object> parameters = getParameters( queryParameters );
+		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
+		try {
+			Result result = dataBase.execute( nativeQuery, parameters );
+			return summaryUpdates( result );
+		}
+		catch (QueryExecutionException qe) {
+			throw log.nativeQueryException( qe.getStatusCode(), qe.getMessage(), qe );
+		}
+	}
+
+	private int summaryUpdates(Result result) {
+		int updates = 0;
+		updates += result.getQueryStatistics().getConstraintsAdded();
+		updates += result.getQueryStatistics().getConstraintsRemoved();
+		updates += result.getQueryStatistics().getNodesCreated();
+		updates += result.getQueryStatistics().getNodesDeleted();
+		updates += result.getQueryStatistics().getRelationshipsCreated();
+		updates += result.getQueryStatistics().getRelationshipsDeleted();
+		updates += result.getQueryStatistics().getLabelsAdded();
+		updates += result.getQueryStatistics().getLabelsRemoved();
+		updates += result.getQueryStatistics().getPropertiesSet();
+		return updates;
 	}
 
 	@Override

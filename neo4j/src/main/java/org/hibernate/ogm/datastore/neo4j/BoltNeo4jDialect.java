@@ -69,6 +69,7 @@ import org.neo4j.driver.v1.Statement;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.exceptions.ClientException;
+import org.neo4j.driver.v1.summary.ResultSummary;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Relationship;
 
@@ -155,6 +156,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 				BoltNeo4jEntityQueries queries = entitiesQueries.get( entityKeyMetadata );
 				Transaction transaction = transaction( tupleContext );
 				StatementResult result = transaction.run( statement );
+				validateNativeQuery( result );
 				List<EntityKey> entityKeys = new ArrayList<>();
 				while ( result.hasNext() ) {
 					Record record = result.next();
@@ -169,8 +171,49 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		else {
 			Transaction transaction = transaction( tupleContext );
 			StatementResult statementResult = transaction.run( statement );
+			validateNativeQuery( statementResult );
 			return new BoltNeo4jMapsTupleIterator( statementResult );
 		}
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		Map<String, Object> parameters = getParameters( queryParameters );
+		String nativeQuery = buildNativeQuery( query, queryParameters );
+		Statement statement = new Statement( nativeQuery, parameters );
+		Transaction transaction = transaction( tupleContext );
+		StatementResult statementResult = transaction.run( statement );
+		validateNativeQuery( statementResult );
+		ResultSummary summary = statementResult.consume();
+		return updatesCount( summary );
+	}
+
+	private void validateNativeQuery(StatementResult result) {
+		try {
+			result.hasNext();
+		}
+		catch (ClientException e) {
+			throw log.nativeQueryException( e.neo4jErrorCode(), e.getMessage(), null );
+		}
+
+	}
+
+	private int updatesCount(ResultSummary summary) {
+		int updates = 0;
+		if ( summary.counters().containsUpdates() ) {
+			updates += summary.counters().constraintsAdded();
+			updates += summary.counters().constraintsRemoved();
+			updates += summary.counters().nodesCreated();
+			updates += summary.counters().nodesDeleted();
+			updates += summary.counters().relationshipsCreated();
+			updates += summary.counters().relationshipsDeleted();
+			updates += summary.counters().labelsAdded();
+			updates += summary.counters().labelsRemoved();
+			updates += summary.counters().indexesAdded();
+			updates += summary.counters().indexesRemoved();
+			updates += summary.counters().propertiesSet();
+		}
+		return updates;
 	}
 
 	private Transaction transaction(OperationContext operationContext) {
