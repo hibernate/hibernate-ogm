@@ -781,6 +781,23 @@ The following summary will help you to keep track of the labels assigned to a ne
       | GenerationType.TABLE         | TABLE_BASED_SEQUENCE, <Table name>
 |===
 
+==== Labels summary
+
+The maximum number of labels the database can contain is roughly 2 billion.
+
+The following summary will help you to keep track of the labels assigned to a new node:
+
+.Summary of the labels assigned to a new node
+[cols="2*", options="header"]
+|===
+     ^| NODE TYPE                   ^| LABELS
+
+      | Entity                       | ENTITY, <Entity class name>
+      | Embeddable                   | EMBEDDED, <Embeddable class name>
+      | GenerationType.SEQUENCE      | SEQUENCE
+      | GenerationType.TABLE         | TABLE_BASED_SEQUENCE, <Table name>
+|===
+
 [[ogm-neo4j-transactions]]
 === Transactions
 
