@@ -6,17 +6,13 @@
  */
 package org.hibernate.ogm.test.integration.neo4j.embedded;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.InputStream;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
-import org.hibernate.ogm.test.integration.testcase.ModuleMemberRegistrationScenario;
-import org.hibernate.ogm.test.integration.testcase.model.Member;
+import org.hibernate.ogm.test.integration.neo4j.Neo4jModuleMemberRegistrationScenario;
 import org.hibernate.ogm.test.integration.testcase.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -26,7 +22,6 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnitTransactionType;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -36,12 +31,13 @@ import org.junit.runner.RunWith;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
-public class EmbeddedNeo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
+public class EmbeddedNeo4jJtaModuleMemberRegistrationIT extends Neo4jModuleMemberRegistrationScenario {
 
 	@Deployment
 	public static Archive<?> createTestArchive() throws Exception {
 		return new ModuleMemberRegistrationDeployment
 				.Builder( EmbeddedNeo4jJtaModuleMemberRegistrationIT.class )
+				.addClasses( Neo4jModuleMemberRegistrationScenario.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.neo4j:${hibernate-ogm.module.slot} services" )
 				.createDeployment();
@@ -74,22 +70,5 @@ public class EmbeddedNeo4jJtaModuleMemberRegistrationIT extends ModuleMemberRegi
 		}
 		String buildDirectory = properties.getProperty( "build.directory" );
 		return buildDirectory + File.separator + "NEO4J_DB" + File.separator + System.currentTimeMillis();
-	}
-
-	@Override
-	public void shouldBeAbleToFindMemberByEmail() throws Exception {
-	}
-
-	@Test
-	public void shouldFindPersistedMemberByIdWithNativeQuery() throws Exception {
-		Member newMember = memberRegistration.getNewMember();
-		newMember.setName( "Giovanni Doe" );
-		memberRegistration.register();
-
-		String nativeQuery = "MATCH (n:Member {id: " + newMember.getId() + "}) RETURN n";
-		Member found = memberRegistration.findWithNativeQuery( nativeQuery );
-
-		assertNotNull( "Expected at least one result using a native query", found );
-		assertEquals( "Native query hasn't found a new member", newMember.getName(), found.getName() );
 	}
 }
