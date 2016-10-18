@@ -12,6 +12,7 @@ import static org.hibernate.ogm.datastore.neo4j.test.query.nativequery.OscarWild
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -21,6 +22,7 @@ import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,12 +56,10 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 	}
 
 	@After
-	public void tearDown() {
+	public void deleteAll() {
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();
-		delete( session, portia );
-		delete( session, athanasia );
-		delete( session, ballade );
+		session.createSQLQuery( "MATCH (n) DETACH DELETE n" ).executeUpdate();
 		tx.commit();
 		session.clear();
 		session.close();
@@ -238,6 +238,29 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		transaction.commit();
 		session.clear();
 		session.close();
+	}
+
+	@Test
+	public void testNativeQueryExecuteUpdateValidation() throws Exception {
+		Transaction transaction = null;
+		try ( OgmSession session = (OgmSession) openSession() ) {
+			transaction = session.beginTransaction();
+			String createQuery = "CREATE (n:" + TABLE_NAME + " { id:'2387642528', author:'Giorgio Faletti' })";
+			session.createNativeQuery( createQuery ).executeUpdate();
+			session.createNativeQuery( createQuery ).executeUpdate();
+			transaction.commit();
+			Assert.fail( "Expected exception" );
+		}
+		catch (HibernateException he) {
+			try {
+				transaction.rollback();
+			}
+			catch (Exception e) {
+				// Nothing to do
+			}
+			assertThat( he ).isInstanceOf( HibernateException.class );
+			assertThat( he.getMessage() ).startsWith( "OGM001416" );
+		}
 	}
 
 	@Test
