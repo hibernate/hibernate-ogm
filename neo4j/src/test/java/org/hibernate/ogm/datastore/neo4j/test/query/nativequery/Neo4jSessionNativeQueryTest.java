@@ -17,7 +17,9 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +30,12 @@ import org.junit.Test;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jSessionNativeQueryTest extends OgmTestCase {
+
+	/*
+	 *  The only purpose of this constant is to keep track of the nodes created using a native query via the
+	 *	executeUpdate method. This is just a Label (not a table or entity).
+	 */
+	private static final String UPDATE_LABEL = "UPDATE";
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L	, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
@@ -197,6 +205,35 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		List<OscarWildePoem> result = query.list();
 
 		assertThat( result ).containsExactly( athanasia, ballade );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testNativeQueryExecuteUpdate() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String findQueryString = "MATCH (n:" + UPDATE_LABEL + ") RETURN n";
+		Query findQuery = session.createNativeQuery( findQueryString );
+
+		String createQuery = "CREATE (n:" + UPDATE_LABEL + " { author:'Giorgio Faletti' })";
+		int updates = session.createNativeQuery( createQuery ).executeUpdate();
+		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+			assertThat( updates ).isEqualTo( 3 ); // 1 node + 1 labels + 1 property set
+		}
+		Object createdNode = findQuery.uniqueResult();
+		assertThat( createdNode ).isNotNull();
+
+		String deleteQuery = "MATCH (n:" + UPDATE_LABEL + ") DELETE n ";
+		int deletes = session.createNativeQuery( deleteQuery ).executeUpdate();
+		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+			assertThat( deletes ).isEqualTo( 1 ); // 1 node
+		}
+		Object uniqueResult = findQuery.uniqueResult();
+		assertThat( uniqueResult ).isNull();
 
 		transaction.commit();
 		session.clear();
