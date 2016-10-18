@@ -289,6 +289,14 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 			return false;
 		}
 
+		if ( collectionRole == null && that.collectionRole != null ) {
+			return false;
+		}
+
+		if ( !collectionRole.equals( that.collectionRole ) ) {
+			return false;
+		}
+
 		return true;
 	}
 

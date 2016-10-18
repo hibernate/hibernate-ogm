@@ -19,9 +19,12 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.associations.collection.types.PhoneNumber.PhoneNumberId;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
 
 /**
@@ -32,6 +35,20 @@ import org.junit.Test;
 		comment = "hibernate core doesn't supply required primary key metadata for collections"
 )
 public class MapTest extends OgmTestCase {
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-969")
+	public void testDefaultAssociationKeyMetadataEquals() throws Exception {
+		OgmCollectionPersister collection1 = (OgmCollectionPersister) sfi().getCollectionPersister( User.class.getName() + ".phoneNumbersByPriority" );
+		AssociationKeyMetadata byPriority = collection1.getAssociationKeyMetadata();
+
+		OgmCollectionPersister collection2 = (OgmCollectionPersister) sfi().getCollectionPersister( User.class.getName() + ".alternativePhoneNumbers" );
+		AssociationKeyMetadata alternatvePhoneNumbers = collection2.getAssociationKeyMetadata();
+
+		assertThat( byPriority ).as( "Missing required association for testing" ).isNotNull();
+		assertThat( alternatvePhoneNumbers ).as( "Missing required association for testing" ).isNotNull();
+		assertThat( byPriority ).isNotEqualTo( alternatvePhoneNumbers );
+	}
 
 	@Test
 	public void testMapOfEntity() throws Exception {
