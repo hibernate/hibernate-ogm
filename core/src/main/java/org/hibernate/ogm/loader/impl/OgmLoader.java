@@ -491,7 +491,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		registerNonExists( keys, persisters, session );
 
 		//it's a non existing object: cut short
-		if (resultset == null) {
+		if ( resultset == null ) {
 			return null;
 		}
 
@@ -535,11 +535,11 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
 		//we do not handle multiple Loaders but that's OK for now
-		if (keys.length == 0) {
+		if ( keys.length == 0 ) {
 			//do nothing, this is a collection
 		}
 		else {
-			if (optionalId == null) {
+			if ( optionalId == null ) {
 				final OgmEntityPersister currentPersister = entityPersisters[0];
 				GridType gridIdentifierType = currentPersister.getGridIdentifierType();
 				optionalId = (Serializable) gridIdentifierType.nullSafeGet( tuple, currentPersister.getIdentifierColumnNames(), session, null );
@@ -1010,7 +1010,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			// we don't need to worry about existing version being uninitialized
 			// because this block isn't called by a re-entrant load (re-entrant
 			// loads _always_ have lock mode NONE)
-			if (isVersionCheckNeeded) {
+			if ( isVersionCheckNeeded ) {
 				//we only check the version when _upgrading_ lock modes
 				Object oldVersion = session.getPersistenceContext().getEntry( object ).getVersion();
 				persister.checkVersionAndRaiseSOSE( key.getIdentifier(), oldVersion, session, resultset );
@@ -1165,7 +1165,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			);
 
 		if ( persister.hasRowId() ) {
-			throw new HibernateException( "Hibernate OGM does not support row id");
+			throw new HibernateException( "Hibernate OGM does not support row id" );
 		}
 		final Object rowId = null;
 

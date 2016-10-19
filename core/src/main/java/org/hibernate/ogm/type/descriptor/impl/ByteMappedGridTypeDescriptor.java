@@ -22,7 +22,7 @@ public class ByteMappedGridTypeDescriptor implements GridTypeDescriptor {
 
 	@Override
 	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new BasicGridBinder<X>( javaTypeDescriptor, this) {
+		return new BasicGridBinder<X>( javaTypeDescriptor, this ) {
 
 			@Override
 			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {

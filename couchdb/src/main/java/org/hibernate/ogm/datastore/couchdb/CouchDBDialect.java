@@ -127,7 +127,7 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 					snapshotType = SnapshotType.INSERT;
 				}
 
-				if (owningEntity == null) {
+				if ( owningEntity == null ) {
 					owningEntity = getEntityFromTuple( tuple );
 				}
 

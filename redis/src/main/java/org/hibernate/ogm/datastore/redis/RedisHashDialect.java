@@ -243,7 +243,7 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 				Tuple tuple = insertOrUpdateTupleOperation.getTuplePointer().getTuple();
 				TupleContext tupleContext = insertOrUpdateTupleOperation.getTupleContext();
 
-				if (owningEntity == null) {
+				if ( owningEntity == null ) {
 					owningEntity = getEntityFromTuple( tuple );
 				}
 

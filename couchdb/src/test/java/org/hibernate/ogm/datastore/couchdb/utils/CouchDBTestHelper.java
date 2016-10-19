@@ -283,7 +283,7 @@ public class CouchDBTestHelper implements GridDialectTestHelper {
 			);
 
 			if ( result.failed() ) {
-				throw new AssertionError(result.getMessage() + "; Actual: " + actualJson);
+				throw new AssertionError( result.getMessage() + "; Actual: " + actualJson );
 			}
 		}
 		catch (JSONException e) {

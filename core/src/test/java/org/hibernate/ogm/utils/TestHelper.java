@@ -242,7 +242,7 @@ public class TestHelper {
 	private static MetadataSources getMetadataSources(Class<?>... entityTypes) {
 		MetadataSources sources = new MetadataSources();
 
-		for (Class<?> entityType : entityTypes) {
+		for ( Class<?> entityType : entityTypes ) {
 			sources.addAnnotatedClass( entityType );
 		}
 

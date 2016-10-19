@@ -179,7 +179,7 @@ public abstract class BaseNeo4jDialect extends BaseGridDialect implements Querya
 	@Override
 	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
 		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
-		throw new UnsupportedOperationException("Not yet implemented.");
+		throw new UnsupportedOperationException( "Not yet implemented." );
 	}
 
 	protected Map<String, Object> getParameters(QueryParameters queryParameters) {

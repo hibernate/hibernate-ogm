@@ -24,7 +24,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 public class EmbeddedNeo4jGraphDatabaseServiceFactoryProvider {
 
 	public GraphDatabaseServiceFactory load(Map<?, ?> properties, ClassLoaderService classLoaderService) {
-		GraphDatabaseServiceFactory factory = new ConfigurationPropertyReader(properties, classLoaderService )
+		GraphDatabaseServiceFactory factory = new ConfigurationPropertyReader( properties, classLoaderService )
 			.property( EmbeddedNeo4jInternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
 			.instantiate()
 			.withDefaultImplementation( EmbeddedNeo4jGraphDatabaseFactory.class )

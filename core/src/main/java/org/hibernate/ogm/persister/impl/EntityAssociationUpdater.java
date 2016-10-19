@@ -255,7 +255,7 @@ class EntityAssociationUpdater {
 		Tuple rowKeyValues = new Tuple();
 
 		// add the fk column
-		for (int index = 0 ; index < associationKeyMetadata.getColumnNames().length ; index++) {
+		for ( int index = 0; index < associationKeyMetadata.getColumnNames().length; index++ ) {
 			rowKeyValues.put( associationKeyMetadata.getColumnNames()[index], associationColumnValues[index] );
 		}
 

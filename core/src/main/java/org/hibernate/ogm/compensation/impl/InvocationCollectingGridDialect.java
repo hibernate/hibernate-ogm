@@ -104,7 +104,7 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 
 				if ( operation instanceof GroupedChangesToEntityOperation ) {
 					GroupedChangesToEntityOperation groupedChangesOnEntity = (GroupedChangesToEntityOperation) operation;
-					for (Operation groupedOperation : groupedChangesOnEntity.getOperations()) {
+					for ( Operation groupedOperation : groupedChangesOnEntity.getOperations() ) {
 						operations.add( getSimpleGridDialectOperations( groupedOperation ) );
 					}
 				}
@@ -142,7 +142,7 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 
 				if ( operation instanceof GroupedChangesToEntityOperation ) {
 					GroupedChangesToEntityOperation groupedChangesOnEntity = (GroupedChangesToEntityOperation) operation;
-					for (Operation groupedOperation : groupedChangesOnEntity.getOperations()) {
+					for ( Operation groupedOperation : groupedChangesOnEntity.getOperations() ) {
 						operations.add( getSimpleGridDialectOperations( groupedOperation ) );
 					}
 				}

@@ -74,7 +74,7 @@ public class NativeApiInsertBenchmark extends NativeApiBenchmarkBase {
 
 	private void doInsertEntitiesUsingBulking(ClientHolder stateHolder) {
 		DBCollection authorCollection = stateHolder.db.getCollection( "Author" );
-		List<DBObject> authors = new ArrayList<DBObject>(OPERATIONS_PER_INVOCATION);
+		List<DBObject> authors = new ArrayList<DBObject>( OPERATIONS_PER_INVOCATION );
 
 		for ( int i = 0; i < OPERATIONS_PER_INVOCATION; i++ ) {
 			DBObject author = new BasicDBObject( 5 );
@@ -95,7 +95,7 @@ public class NativeApiInsertBenchmark extends NativeApiBenchmarkBase {
 	@OperationsPerInvocation(OPERATIONS_PER_INVOCATION)
 	public void insertEntitiesWithElementCollection(ClientHolder stateHolder) throws Exception {
 		DBCollection scientistCollection = stateHolder.db.getCollection( "Scientist" );
-		List<DBObject> scientists = new ArrayList<DBObject>(OPERATIONS_PER_INVOCATION);
+		List<DBObject> scientists = new ArrayList<DBObject>( OPERATIONS_PER_INVOCATION );
 
 		for ( int i = 0; i < OPERATIONS_PER_INVOCATION; i++ ) {
 			DBObject scientist = new BasicDBObject( 5 );
@@ -107,7 +107,7 @@ public class NativeApiInsertBenchmark extends NativeApiBenchmarkBase {
 			List<DBObject> papers = new ArrayList<DBObject>( 20 );
 
 			for ( int j = 0; j < 20; j++ ) {
-				DBObject paper = new BasicDBObject(3);
+				DBObject paper = new BasicDBObject( 3 );
 
 				paper.put( "title", "Highly academic vol. " + stateHolder.rand.nextLong() );
 				paper.put( "Published", new Date() );

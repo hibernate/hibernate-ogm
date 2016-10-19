@@ -122,7 +122,7 @@ public class MongoDBIndexSpec {
 	}
 
 	private void addIndexKeys(Iterator<Column> columnIterator, Map<Column, String> columnOrderMap) {
-		while (columnIterator.hasNext()) {
+		while ( columnIterator.hasNext() ) {
 			Column column = columnIterator.next();
 			Object mongoDBOrder;
 			if ( isTextIndex ) {

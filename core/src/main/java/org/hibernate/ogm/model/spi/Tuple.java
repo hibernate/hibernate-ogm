@@ -143,7 +143,7 @@ public class Tuple {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder( "Tuple[");
+		StringBuilder sb = new StringBuilder( "Tuple[" );
 		int i = 0;
 		for ( String column : getColumnNames() ) {
 			sb.append( column ).append( "=" ).append( get( column ) );

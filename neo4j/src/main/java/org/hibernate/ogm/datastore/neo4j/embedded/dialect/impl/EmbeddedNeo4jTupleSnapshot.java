@@ -45,7 +45,8 @@ public final class EmbeddedNeo4jTupleSnapshot implements TupleSnapshot {
 	}
 
 	public static EmbeddedNeo4jTupleSnapshot emptySnapshot(EntityKeyMetadata entityKeyMetadata) {
-		return new EmbeddedNeo4jTupleSnapshot(null, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata);
+		return new EmbeddedNeo4jTupleSnapshot( null, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(),
+				entityKeyMetadata );
 	}
 
 	public static EmbeddedNeo4jTupleSnapshot fromNode(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {

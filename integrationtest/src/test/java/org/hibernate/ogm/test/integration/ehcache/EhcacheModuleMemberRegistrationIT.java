@@ -26,7 +26,7 @@ public class EhcacheModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 	@Deployment
 	public static Archive<?> createTestArchive() {
 		return new ModuleMemberRegistrationDeployment
-				.Builder( EhcacheModuleMemberRegistrationIT.class)
+				.Builder( EhcacheModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.ehcache:${hibernate-ogm.module.slot} services" )
 				.createDeployment();

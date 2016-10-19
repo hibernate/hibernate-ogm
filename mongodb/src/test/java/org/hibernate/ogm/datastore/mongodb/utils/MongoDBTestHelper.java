@@ -242,7 +242,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		//read variables from the System properties set in the static initializer
-		Map<String,String> envProps = new HashMap<String, String>(2);
+		Map<String, String> envProps = new HashMap<String, String>( 4 );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
@@ -292,7 +292,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		List<DBObject> indexes = provider.getDatabase().getCollection( collection ).getIndexInfo();
 		Map<String, DBObject> indexMap = new HashMap<>();
-		for (DBObject index : indexes) {
+		for ( DBObject index : indexes ) {
 			indexMap.put( index.get( "name" ).toString(), index );
 		}
 		return indexMap;
@@ -308,7 +308,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 			JSONCompareResult result = JSONCompare.compareJSON( expectedJson, actualJson, JSONCompareMode.NON_EXTENSIBLE );
 
 			if ( result.failed() ) {
-				throw new AssertionError(result.getMessage() + "; Actual: " + actualJson);
+				throw new AssertionError( result.getMessage() + "; Actual: " + actualJson );
 			}
 		}
 		catch (JSONException e) {

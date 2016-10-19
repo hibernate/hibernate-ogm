@@ -154,7 +154,7 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 				}
 				EntityType rootReturn = (EntityType) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getName() );
-				metadataInformation = new EntityMetadataInformation(persister.getEntityKeyMetadata(), rootReturn.getReturnedClass().getName() );
+				metadataInformation = new EntityMetadataInformation( persister.getEntityKeyMetadata(), rootReturn.getReturnedClass().getName() );
 			}
 		}
 

@@ -325,7 +325,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		final Type[] types = getPropertyTypes();
 		final int length = types.length;
 		gridPropertyTypes = new GridType[length];
-		for (int index = 0 ; index < length ; index++) {
+		for ( int index = 0; index < length; index++ ) {
 			try {
 				gridPropertyTypes[index] = typeTranslator.getType( types[index] );
 			}
@@ -713,7 +713,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 		final Tuple resultset = getFreshTuple( EntityKeyBuilder.fromPersister( this, id, session ), session );
 
-		if (resultset == null) {
+		if ( resultset == null ) {
 			return null;
 		}
 		else {
@@ -759,7 +759,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	public FilterAliasGenerator getFilterAliasGenerator(String rootAlias) {
-		return new DynamicFilterAliasGenerator(new String[] {tableName}, rootAlias);
+		return new DynamicFilterAliasGenerator( new String[]{ tableName }, rootAlias );
 	}
 
 	//TODO move that code to the EntityLoader as it is in AbstractEntityPersister?
@@ -805,10 +805,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		final Association ids = associationPersister.getAssociationOrNull();
 
-		if (ids == null || ids.size() == 0 ) {
+		if ( ids == null || ids.size() == 0 ) {
 			return null;
 		}
-		else if (ids.size() == 1) {
+		else if ( ids.size() == 1 ) {
 			//EntityLoader#loadByUniqueKey uses a null object and LockMode.NONE
 			//there is only one element in the list, so get the first
 			Tuple tuple = ids.get( ids.getKeys().iterator().next() );
@@ -1483,7 +1483,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Tuple resultset,
 			Serializable id,
 			SessionImplementor session) {
-		if (resultset == null) {
+		if ( resultset == null ) {
 			resultset = gridDialect.createTuple( key, getTupleContext( session ) );
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
@@ -1505,7 +1505,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			throws HibernateException {
 		final int span = getTableSpan();
 		if ( span > 1 ) {
-			throw new HibernateException( "Hibernate OGM does not yet support entities spanning multiple tables");
+			throw new HibernateException( "Hibernate OGM does not yet support entities spanning multiple tables" );
 		}
 
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
@@ -1849,7 +1849,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	@Override
 	public void processInsertGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
 		if ( !hasInsertGeneratedProperties() ) {
-			throw new AssertionFailure("no insert-generated properties");
+			throw new AssertionFailure( "no insert-generated properties" );
 		}
 		processGeneratedProperties( id, entity, state, session, GenerationTiming.INSERT );
 	}
@@ -1857,7 +1857,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	@Override
 	public void processUpdateGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
 		if ( !hasUpdateGeneratedProperties() ) {
-			throw new AssertionFailure("no update-generated properties");
+			throw new AssertionFailure( "no update-generated properties" );
 		}
 		processGeneratedProperties( id, entity, state, session, GenerationTiming.ALWAYS );
 	}

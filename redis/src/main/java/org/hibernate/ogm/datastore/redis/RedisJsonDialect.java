@@ -112,7 +112,7 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 				Tuple tuple = insertOrUpdateTupleOperation.getTuplePointer().getTuple();
 				TupleContext tupleContext = insertOrUpdateTupleOperation.getTupleContext();
 
-				if (owningEntity == null) {
+				if ( owningEntity == null ) {
 					owningEntity = getEntityFromTuple( tuple );
 				}
 

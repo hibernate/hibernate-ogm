@@ -127,7 +127,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		Map<EntityKeyMetadata, HttpNeo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, HttpNeo4jEntityQueries>();
 		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
 		for ( EntityPersister entityPersister : entityPersisters ) {
-			if (entityPersister instanceof OgmEntityPersister ) {
+			if ( entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
 				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new HttpNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(),
 						ogmEntityPersister.getTupleTypeContext() ) );
@@ -257,7 +257,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	private void validate(StatementsResponse readEntity, EntityKey key) {
-		if (!readEntity.getErrors().isEmpty() ) {
+		if ( !readEntity.getErrors().isEmpty() ) {
 			ErrorResponse errorResponse = readEntity.getErrors().get( 0 );
 			switch ( errorResponse.getCode() ) {
 				case BaseNeo4jDialect.CONSTRAINT_VIOLATION_CODE:

@@ -55,7 +55,7 @@ public class CustomDateType extends AbstractGenericBasicType<Date> {
 
 		@Override
 		public <Date> GridValueBinder<Date> getBinder(final JavaTypeDescriptor<Date> javaTypeDescriptor) {
-			return new BasicGridBinder<Date>(javaTypeDescriptor, this) {
+			return new BasicGridBinder<Date>( javaTypeDescriptor, this ) {
 
 				@Override
 				protected void doBind(Tuple resultset, Date value, String[] names, WrapperOptions options) {

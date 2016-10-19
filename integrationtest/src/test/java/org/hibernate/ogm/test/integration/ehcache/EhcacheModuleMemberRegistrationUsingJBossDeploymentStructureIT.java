@@ -28,7 +28,7 @@ public class EhcacheModuleMemberRegistrationUsingJBossDeploymentStructureIT exte
 	@Deployment
 	public static Archive<?> createTestArchive() {
 		return new ModuleMemberRegistrationDeployment
-				.Builder( EhcacheModuleMemberRegistrationUsingJBossDeploymentStructureIT.class)
+				.Builder( EhcacheModuleMemberRegistrationUsingJBossDeploymentStructureIT.class )
 				.persistenceXml( persistenceXml() )
 				.addAsWebInfResource( "jboss-deployment-structure-ehcache.xml", "jboss-deployment-structure.xml" )
 				.createDeployment();

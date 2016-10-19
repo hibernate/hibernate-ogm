@@ -37,14 +37,14 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 
 	@Override
 	protected DBObject getSingleColumnRow(String columnName, Object value) {
-		DBObject dbObjectAsRow = new BasicDBObject(1);
+		DBObject dbObjectAsRow = new BasicDBObject( 1 );
 		MongoHelpers.setValue( dbObjectAsRow, columnName, value );
 		return dbObjectAsRow;
 	}
 
 	@Override
 	protected AssociationRowAccessor<DBObject> getAssociationRowAccessor(String[] prefixedColumns, String prefix) {
-		return prefix != null ? new MongoDBAssociationRowAccessor(prefixedColumns, prefix) : MongoDBAssociationRowAccessor.INSTANCE;
+		return prefix != null ? new MongoDBAssociationRowAccessor( prefixedColumns, prefix ) : MongoDBAssociationRowAccessor.INSTANCE;
 	}
 
 	private static class MongoDBAssociationRowAccessor implements AssociationRow.AssociationRowAccessor<DBObject> {

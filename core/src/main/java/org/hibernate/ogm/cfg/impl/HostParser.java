@@ -60,7 +60,7 @@ public class HostParser {
 		}
 		// for each element between commas
 		String[] splits = hostString.split( "," );
-		for (String rawSplit : splits) {
+		for ( String rawSplit : splits ) {
 			// remove whitespaces
 			String split = rawSplit.trim();
 			//
@@ -73,7 +73,7 @@ public class HostParser {
 				throw LOG.unableToParseHost( hostString );
 			}
 		}
-		return new Hosts(hosts, ports);
+		return new Hosts( hosts, ports );
 	}
 
 	private static void setPort(List<Integer> ports, Matcher matcher, Integer globalPort, String[] splits, Integer defaultPort) {

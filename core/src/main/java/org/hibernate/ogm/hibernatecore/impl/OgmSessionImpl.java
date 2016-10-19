@@ -317,7 +317,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 		NamedQueryDefinition namedQuery = factory.getNamedQuery( name );
 		//ORM looks for native queries when no HQL definition is found, we do the same here.
-		if (namedQuery == null) {
+		if ( namedQuery == null ) {
 			return getNamedSQLQuery( name );
 		}
 

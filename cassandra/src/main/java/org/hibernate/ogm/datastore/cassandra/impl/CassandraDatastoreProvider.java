@@ -127,7 +127,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 
 				session.execute( "USE " + config.getDatabaseName() );
 
-				sequenceHandler = new CassandraSequenceHandler(this);
+				sequenceHandler = new CassandraSequenceHandler( this );
 			}
 			catch (RuntimeException e) {
 				throw log.unableToInitializeCassandra( e );

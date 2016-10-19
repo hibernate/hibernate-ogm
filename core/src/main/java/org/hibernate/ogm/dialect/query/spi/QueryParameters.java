@@ -38,12 +38,12 @@ public class QueryParameters {
 		RowSelection selection = RowSelection.fromOrmRowSelection( parameters.getRowSelection() );
 		Map<String, TypedGridValue> namedParameters = createNamedParameters( sessionFactoryImplementor, parameters, typeTranslator );
 		List<TypedGridValue> positionalParameters = createPositionalParameters( parameters, typeTranslator );
-		return new QueryParameters( selection, namedParameters, positionalParameters);
+		return new QueryParameters( selection, namedParameters, positionalParameters );
 	}
 
 	private static List<TypedGridValue> createPositionalParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
 		List<TypedGridValue> positionalParameters = new ArrayList<>( parameters.getPositionalParameterTypes().length );
-		for ( int i = 0; i < parameters.getPositionalParameterTypes().length; i++) {
+		for ( int i = 0; i < parameters.getPositionalParameterTypes().length; i++ ) {
 			positionalParameters.add(
 					new TypedGridValue(
 							typeTranslator.getType( parameters.getPositionalParameterTypes()[i] ),

@@ -77,7 +77,7 @@ public class NoopConnection implements Connection {
 
 	@Override
 	public DatabaseMetaData getMetaData() throws SQLException {
-		return new NoopDatabaseMetaData(this);
+		return new NoopDatabaseMetaData( this );
 	}
 
 	@Override

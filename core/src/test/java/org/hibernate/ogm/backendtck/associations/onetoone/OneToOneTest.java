@@ -127,7 +127,7 @@ public class OneToOneTest extends OgmTestCase {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 		PatchCable patchCable = new PatchCable( new MediaId( "Belkin", "cat7" ) );
-		NetworkSwitch networkSwitch = new NetworkSwitch( new MediaId( "Frisco", "AS500" ));
+		NetworkSwitch networkSwitch = new NetworkSwitch( new MediaId( "Frisco", "AS500" ) );
 		patchCable.setNetworkSwitch( networkSwitch );
 		networkSwitch.setPatchCable( patchCable );
 		session.persist( patchCable );

@@ -312,7 +312,7 @@ public class OgmEntityManager implements EntityManager {
 				throw new HibernateException( "Result set mapping '" + sqlDefinition.getResultSetRef() + "' referenced by query '" + sqlDefinition.getName() + "' does not exist." );
 			}
 
-			for (NativeSQLQueryReturn queryReturn : resultSetMapping.getQueryReturns() ) {
+			for ( NativeSQLQueryReturn queryReturn : resultSetMapping.getQueryReturns() ) {
 				if ( queryReturn instanceof NativeSQLQueryScalarReturn ) {
 					noSqlQuery.addScalar( ( (NativeSQLQueryScalarReturn) queryReturn ).getColumnAlias() );
 				}
@@ -340,7 +340,7 @@ public class OgmEntityManager implements EntityManager {
 			queryReturns = rsMapping.getQueryReturns();
 		}
 		else {
-			throw new AssertionFailure( "Unsupported named query model. Please report the bug in Hibernate EntityManager");
+			throw new AssertionFailure( "Unsupported named query model. Please report the bug in Hibernate EntityManager" );
 		}
 
 		if ( queryReturns.length > 1 ) {

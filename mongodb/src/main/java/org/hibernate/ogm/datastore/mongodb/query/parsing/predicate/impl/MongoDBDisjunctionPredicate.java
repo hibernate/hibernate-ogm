@@ -31,7 +31,7 @@ public class MongoDBDisjunctionPredicate extends DisjunctionPredicate<DBObject> 
 			elements.add( child.getQuery() );
 		}
 
-		return new BasicDBObject("$or", elements);
+		return new BasicDBObject( "$or", elements );
 	}
 
 	@Override
@@ -42,6 +42,6 @@ public class MongoDBDisjunctionPredicate extends DisjunctionPredicate<DBObject> 
 			elements.add( ( (NegatablePredicate<DBObject>) child ).getNegatedQuery() );
 		}
 
-		return new BasicDBObject("$and", elements);
+		return new BasicDBObject( "$and", elements );
 	}
 }

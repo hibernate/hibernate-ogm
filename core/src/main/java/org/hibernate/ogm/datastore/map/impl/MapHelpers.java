@@ -41,7 +41,7 @@ public final class MapHelpers {
 	}
 
 	public static Map<String, Object> associationRowToMap(Tuple associationRow) {
-		if (associationRow == null) {
+		if ( associationRow == null ) {
 			return null;
 		}
 		Map<String, Object> snapshot;

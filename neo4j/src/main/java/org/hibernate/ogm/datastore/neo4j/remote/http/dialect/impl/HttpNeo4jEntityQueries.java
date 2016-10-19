@@ -121,7 +121,7 @@ public class HttpNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 	private void saveEmbeddedNode(Map<String, Collection<Node>> embeddedNodesMap, String path, Node embeddedNode) {
 		if ( !embeddedNode.getProperties().isEmpty() ) {
-			if (embeddedNodesMap.containsKey( path ) ) {
+			if ( embeddedNodesMap.containsKey( path ) ) {
 				embeddedNodesMap.get( path ).add( embeddedNode );
 			}
 			else {

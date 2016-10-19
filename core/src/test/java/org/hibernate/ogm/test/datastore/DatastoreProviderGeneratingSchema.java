@@ -54,7 +54,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 		@Override
 		public void initializeSchema(SchemaDefinitionContext context) {
 			for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
-				for (Table table : namespace.getTables() ) {
+				for ( Table table : namespace.getTables() ) {
 					if ( table.isPhysicalTable() ) {
 						String tableName = table.getQuotedName();
 						// do something with table
@@ -69,7 +69,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 				}
 			}
 
-			throw new RuntimeException("STARTED!");
+			throw new RuntimeException( "STARTED!" );
 		}
 	}
 

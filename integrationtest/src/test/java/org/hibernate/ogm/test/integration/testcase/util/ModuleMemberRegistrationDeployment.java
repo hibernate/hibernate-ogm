@@ -73,7 +73,7 @@ public class ModuleMemberRegistrationDeployment {
 		}
 
 		public WebArchive createDeployment() {
-			if (resourceLocal) {
+			if ( resourceLocal ) {
 				archive.addClasses( MemberRegistrationWithResourceLocal.class );
 			}
 			else {

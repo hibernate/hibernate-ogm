@@ -818,7 +818,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 
 		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
-			throw new UnsupportedOperationException("Positional parameters are not yet supported for MongoDB native queries.");
+			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
 		}
 
 		switch ( queryDescriptor.getOperation() ) {
@@ -844,7 +844,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
 				.run( nativeQuery );
-		if (parseResult.hasErrors() ) {
+		if ( parseResult.hasErrors() ) {
 			throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
 		}
 
@@ -984,7 +984,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			final EntityKeyMetadata entityKeyMetadata) {
 
 		final DBObject theOne = collection.findOne( query.getCriteria(), query.getProjection() );
-		return new SingleTupleIterator(theOne, collection, entityKeyMetadata);
+		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 
 	private static ClosableIterator<Tuple> doFindAndModify(final MongoDBQueryDescriptor queryDesc, final DBCollection collection,
@@ -1142,7 +1142,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static DBObject associationKeyToObject(AssociationKey key, AssociationStorageStrategy storageStrategy) {
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			throw new AssertionFailure( MongoHelpers.class.getName()
-					+ ".associationKeyToObject should not be called for associations embedded in entity documents");
+					+ ".associationKeyToObject should not be called for associations embedded in entity documents" );
 		}
 		Object[] columnValues = key.getColumnValues();
 		DBObject columns = new BasicDBObject( columnValues.length );
@@ -1258,7 +1258,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
 				}
 			}
-			else if ( operation instanceof InsertOrUpdateAssociationOperation) {
+			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
 				InsertOrUpdateAssociationOperation updateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
 				Association association = updateAssociationOperation.getAssociation();
 				AssociationKey associationKey = updateAssociationOperation.getAssociationKey();

@@ -897,12 +897,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	private TuplePointer getSharedTuplePointer(EntityKey key, Object entity, TupleContext tupleContext, SessionImplementor session) {
-		if (entity == null) {
+		if ( entity == null ) {
 			return new TuplePointer( gridDialect.getTuple( key, tupleContext ) );
 		}
 
 		TuplePointer tuplePointer = OgmEntityEntryState.getStateFor( session, entity ).getTuplePointer();
-		if (tuplePointer.getTuple() == null) {
+		if ( tuplePointer.getTuple() == null ) {
 			tuplePointer.setTuple( gridDialect.getTuple( key, tupleContext ) );
 		}
 

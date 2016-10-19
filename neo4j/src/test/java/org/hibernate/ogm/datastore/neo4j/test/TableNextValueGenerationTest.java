@@ -52,7 +52,7 @@ public class TableNextValueGenerationTest extends OgmJpaTestCase {
 	@Test
 	public void testFirstValueIsInitialValue() {
 		final IdSourceKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
-		Number sequenceValue = dialect.nextValue( new NextValueRequest( generatorKey, 1, INITIAL_VALUE_TEST_FIRST_VALUE) );
+		Number sequenceValue = dialect.nextValue( new NextValueRequest( generatorKey, 1, INITIAL_VALUE_TEST_FIRST_VALUE ) );
 		assertThat( sequenceValue ).isEqualTo( Long.valueOf( INITIAL_VALUE_TEST_FIRST_VALUE ) );
 	}
 

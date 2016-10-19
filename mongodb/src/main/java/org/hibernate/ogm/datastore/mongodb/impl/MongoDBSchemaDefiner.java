@@ -293,7 +293,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 	private Map<String, DBObject> getIndexes(DBCollection collection) {
 		List<DBObject> indexes = collection.getIndexInfo();
 		Map<String, DBObject> indexMap = new HashMap<>();
-		for (DBObject index : indexes) {
+		for ( DBObject index : indexes ) {
 			indexMap.put( index.get( "name" ).toString(), index );
 		}
 		return indexMap;

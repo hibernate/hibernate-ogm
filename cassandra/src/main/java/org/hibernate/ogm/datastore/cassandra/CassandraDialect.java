@@ -527,7 +527,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 	@Override
 	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
 		// TODO implement. org.hibernate.ogm.datastore.mongodb.MongoDBDialect.executeBackendUpdateQuery(BackendQuery<MongoDBQueryDescriptor>, QueryParameters) might be helpful as a reference.
-		throw new UnsupportedOperationException("Not yet implemented.");
+		throw new UnsupportedOperationException( "Not yet implemented." );
 	}
 
 	@Override

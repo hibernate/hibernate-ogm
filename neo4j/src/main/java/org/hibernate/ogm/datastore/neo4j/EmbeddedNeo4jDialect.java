@@ -124,7 +124,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, EmbeddedNeo4jEntityQueries>();
 		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
 		for ( EntityPersister entityPersister : entityPersisters ) {
-			if (entityPersister instanceof OgmEntityPersister ) {
+			if ( entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
 				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new EmbeddedNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
 			}
@@ -206,7 +206,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 
 	private boolean matches(Node node, String[] properties, Object[] values) {
 		for ( int i = 0; i < properties.length; i++ ) {
-			if ( node.hasProperty( properties[i] ) && !node.getProperty( properties[i] ).equals( values[i] )) {
+			if ( node.hasProperty( properties[i] ) && !node.getProperty( properties[i] ).equals( values[i] ) ) {
 				return false;
 			}
 			else if ( !node.hasProperty( properties[i] ) && values[i] != null ) {
@@ -395,7 +395,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		Relationship relationship = associationQueries.get( associationKey.getMetadata() ).findRelationship( dataBase, associationKey, action.getKey() );
 
-		if (relationship != null) {
+		if ( relationship != null ) {
 			for ( String relationshipProperty : associationKey.getMetadata().getRowKeyIndexColumnNames() ) {
 				relationship.setProperty( relationshipProperty, action.getValue().get( relationshipProperty ) );
 			}

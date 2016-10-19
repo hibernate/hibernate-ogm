@@ -99,7 +99,7 @@ public class TupleAsMapResultSet implements ResultSet {
 		if ( iface == this.getClass() ) {
 			return (T) this;
 		}
-		throw new SQLException("Cannot convert to " + iface);
+		throw new SQLException( "Cannot convert to " + iface );
 	}
 
 	@Override

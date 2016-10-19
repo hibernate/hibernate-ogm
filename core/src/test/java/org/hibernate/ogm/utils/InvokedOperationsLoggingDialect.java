@@ -257,7 +257,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 			return null;
 		}
 
-		StringBuilder sb = new StringBuilder( "Association[");
+		StringBuilder sb = new StringBuilder( "Association[" );
 
 		Iterator<RowKey> rowKeys = association.getKeys().iterator();
 
@@ -290,7 +290,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 	}
 
 	private String toShortString(Tuple tuple) {
-		StringBuilder sb = new StringBuilder( "(");
+		StringBuilder sb = new StringBuilder( "(" );
 		int i = 0;
 		for ( String column : tuple.getColumnNames() ) {
 			sb.append( column ).append( "=" ).append( tuple.get( column ) );

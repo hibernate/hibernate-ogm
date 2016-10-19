@@ -49,7 +49,7 @@ public class NativeApiFindBenchmark extends NativeApiBenchmarkBase {
 
 			DBCollection authorCollection = clientHolder.db.getCollection( "Author" );
 
-			List<DBObject> authors = new ArrayList<DBObject>(1000);
+			List<DBObject> authors = new ArrayList<DBObject>( 1000 );
 			for ( long i = 0; i <= NUMBER_OF_TEST_ENTITIES; i++ ) {
 				DBObject author = new BasicDBObject( 5 );
 
