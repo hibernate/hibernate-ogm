@@ -18,7 +18,6 @@ import org.apache.ignite.cache.CachePeekMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.ignite.Ignite;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
@@ -41,21 +40,6 @@ import org.hibernate.persister.entity.EntityPersister;
  * @author Dmitriy Kozlov
  */
 public class IgniteTestHelper implements GridDialectTestHelper {
-	
-//	static {
-//		// Read host and port from environment variable
-//		// Maven's surefire plugin set it to the string 'null'
-//		String mongoHostName = System.getenv( "MONGODB_HOSTNAME" );
-//		if ( isNotNull( mongoHostName ) ) {
-//			System.getProperties().setProperty( OgmProperties.HOST, mongoHostName );
-//		}
-//		String mongoPort = System.getenv( "MONGODB_PORT" );
-//		if ( isNotNull( mongoPort ) ) {
-//			System.getProperties().setProperty( OgmProperties.PORT, mongoPort );
-//		}
-//	}
-
-
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -114,7 +98,6 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		System.out.println("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
 	}
 
 	@Override

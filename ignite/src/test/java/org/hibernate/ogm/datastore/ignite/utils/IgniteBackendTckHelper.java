@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
-//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest"
 
 
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest",    			// -testDefaultBiDirManyToOneCompositeKeyTest
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest",
-	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
+//	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",
