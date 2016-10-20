@@ -122,6 +122,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private static final int DEFAULT_MULTIGET_BATCH_SIZE = 50;
 	private static final Log log = LoggerFactory.make();
 
+	// Copy from AbstractEntityPersister
+	// TODO remove final in superclass or make init method to override
+	protected final int batchSize;
+
 	private final EntityDiscriminator discriminator;
 
 	private final String tableName;
@@ -133,11 +137,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
-
-	// Copy from AbstractEntityPersister
-	// TODO increase visibility in superclass?
-	private final int batchSize;
-
 
 	//service references
 	private final GridDialect gridDialect;
