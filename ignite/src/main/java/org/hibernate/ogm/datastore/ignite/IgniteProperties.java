@@ -20,6 +20,14 @@ public final class IgniteProperties implements KeyValueStoreProperties {
 	 * Configuration property for specifying the name of the Ignite configuration file
 	 */
 	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.ignite.configuration_resource_name";
+	/**
+	 * Configuration property for specifying class name. Class must implements {@link IgniteConfigurationBuilder}
+	 */
+	public static final String CONFIGURATION_CLASS_NAME = "hibernate.ogm.ignite.configuration_class_name";
+	/**
+	 * Configuration property for specifying the name existing Ignite instance
+	 */
+	public static final String IGNITE_INSTANCE_NAME = "hibernate.ogm.ignite.instance_name";
 
 	private IgniteProperties() {
 

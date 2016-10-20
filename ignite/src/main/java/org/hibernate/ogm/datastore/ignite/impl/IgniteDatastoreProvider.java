@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.ignite.impl;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
@@ -22,7 +21,6 @@ import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgniteEx;
-import org.apache.ignite.internal.IgnitionEx;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.thread.IgniteThread;
@@ -69,6 +67,8 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	private String gridName;
 	/** true - if we run inside the server node (for distributed tasks) */
 	private boolean localNode = false;
+	/** true - if we start node and we have to stop it */
+	private boolean stopOnExit = false;
 
 	public IgniteCache<String, BinaryObject> getEntityCache(String entityName) {
 		String entityCacheName = getKeyProvider().getEntityCache( entityName );
@@ -143,7 +143,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	@Override
 	public void stop() {
-		if (cacheManager != null && !localNode) {
+		if (cacheManager != null && stopOnExit) {
 			Ignition.stop( cacheManager.name(), true );
 		}
 	}
@@ -174,6 +174,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 						conf.getTransactionConfiguration().setTxManagerFactory( new IgniteTransactionManagerFactory( jtaPlatform ) );
 					}
 					cacheManager = (IgniteEx) Ignition.start( conf );
+					stopOnExit = true;
 				}
 			}
 		}

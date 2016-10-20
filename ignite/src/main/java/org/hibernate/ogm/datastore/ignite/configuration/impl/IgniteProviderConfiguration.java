@@ -13,19 +13,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
+import org.hibernate.ogm.datastore.ignite.IgniteConfigurationBuilder;
 import org.hibernate.ogm.datastore.ignite.IgniteProperties;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
+import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
+import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Configuration for {@link IgniteDatastoreProvider}.
  * @author Dmitriy Kozlov
+ * @author Victor Kadachigov
  */
 public class IgniteProviderConfiguration {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.getLogger();
 
 	/**
 	 * Name of the default Ignite configuration file
@@ -34,6 +36,7 @@ public class IgniteProviderConfiguration {
 
 	private URL url;
 	private String instanceName;
+	private Class<IgniteConfigurationBuilder> configBuilderClass;
 
 	/**
 	 * Initialize the internal values from the given {@link Map}.
@@ -44,17 +47,19 @@ public class IgniteProviderConfiguration {
 		this.url = new ConfigurationPropertyReader( configurationMap )
 			.property( IgniteProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
 			.withDefault( IgniteProviderConfiguration.class.getClassLoader().getResource( DEFAULT_CONFIG ) )
-//			.withValidator(
-//					new PropertyValidator<URL>() {
-//						@Override
-//						public void validate( URL value ) throws HibernateException {
-//							if ( value == null ) {
-//								throw log.missingConfigurationProperty( IgniteProperties.CONFIGURATION_RESOURCE_NAME );
-//							}
-//						}
-//					}
-//			)
 			.getValue();
+
+		String className = new ConfigurationPropertyReader( configurationMap )
+				.property( IgniteProperties.CONFIGURATION_CLASS_NAME, String.class )
+				.getValue();
+		if ( StringUtils.isNotEmpty( className ) ) {
+			try {
+				this.configBuilderClass = (Class<IgniteConfigurationBuilder>) Class.forName( className );
+			}
+			catch (ClassNotFoundException ex) {
+				throw log.invalidPropertyValue( IgniteProperties.CONFIGURATION_CLASS_NAME, ex.getMessage(), ex );
+			}
+		}
 
 		this.instanceName = new ConfigurationPropertyReader( configurationMap )
 				.property( IgniteProperties.IGNITE_INSTANCE_NAME, String.class )
@@ -78,14 +83,26 @@ public class IgniteProviderConfiguration {
 	}
 
 	public IgniteConfiguration getOrCreateIgniteConfiguration() {
-		IgniteConfiguration conf;
-		try	{
-			conf = IgnitionEx.loadConfiguration( url ).get1();
+		IgniteConfiguration conf = null;
+		if ( configBuilderClass != null ) {
+			try {
+				IgniteConfigurationBuilder configBuilder = configBuilderClass.newInstance();
+			}
+			catch (InstantiationException | IllegalAccessException ex) {
+				throw log.unableToStartDatastoreProvider( ex );
+			}
 		}
-		catch (IgniteCheckedException ex) {
-			throw log.unableToStartDatastoreProvider(ex);
+		if ( url != null && conf == null ) {
+			try	{
+				conf = IgnitionEx.loadConfiguration( url ).get1();
+			}
+			catch (IgniteCheckedException ex) {
+				throw log.unableToStartDatastoreProvider( ex );
+			}
 		}
-		conf.setGridName( getOrCreateGridName() );
+		if ( conf != null ) {
+			conf.setGridName( getOrCreateGridName() );
+		}
 		return conf;
 	}
 
@@ -100,5 +117,4 @@ public class IgniteProviderConfiguration {
 		}
 		return result;
 	}
-	
 }

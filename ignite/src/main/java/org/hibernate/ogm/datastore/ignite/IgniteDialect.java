@@ -117,7 +117,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		return createTuple( key, operationContext, po );
 	}
 
-	
+
 //	@Override
 //	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 //		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
@@ -134,7 +134,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 //			}
 //		}
 //	}
-	
+
 	private static Tuple createTuple(EntityKey key, OperationContext operationContext, BinaryObject found) {
 		if ( found != null ) {
 			return new Tuple( new IgnitePortableTupleSnapshot( found ), SnapshotType.UPDATE );
@@ -148,7 +148,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			return null;
 		}
 	}
-	
+
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		return new Tuple();
@@ -158,7 +158,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
 		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 		Tuple tuple = tuplePointer.getTuple();
-		
+
 		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
 		for ( String columnName : tuple.getColumnNames() ) {
 			Object value = tuple.get( columnName );

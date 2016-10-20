@@ -120,26 +120,6 @@
 					<dependenciesToScan>
 						<dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
 					</dependenciesToScan>
-<!--  					
-					<includes>
-						<include>org/hibernate/ogm/backendtck/id/AutoIdGeneratorTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/AutoIdGeneratorWithSessionTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/DuplicateIdDetectionTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/IdentityIdGeneratorTest.java</include>
-						<include>org/hibernate/ogm/backendtck/id/SequenceIdGeneratorTest.java</include>
-					</includes>
-					<excludes>
-						<exclude>org/hibernate/ogm/backendtck/massindex/*</exclude>
-						<exclude>org/hibernate/ogm/backendtck/optimisticlocking/*</exclude>
-						<exclude>org/hibernate/ogm/backendtck/perf/*</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedCollectionTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/CompositeIdQueriesTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/QueriesWithEmbeddedTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/SimpleQueriesTest.java</exclude>
-						<exclude>org/hibernate/ogm/backendtck/queries/JpaQueriesTest.java</exclude> 
-					</excludes>
--->
 					<argLine> -Dtest=IgniteBackendTckHelper</argLine>
 				</configuration>
 			</plugin>
