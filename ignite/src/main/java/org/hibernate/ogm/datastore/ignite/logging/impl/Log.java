@@ -6,7 +6,11 @@
  */
 package org.hibernate.ogm.datastore.ignite.logging.impl;
 
+import org.apache.ignite.IgniteException;
 import org.hibernate.HibernateException;
+import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -17,13 +21,23 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 			+ " Expecting version %3$s but found version %2$s.")
 	HibernateException unexpectedKeyVersion(Class<?> clazz, int version, int supportedVersion);
 
-	@Message(id = 1702, value = "Invalid entity name: %1$s")
-	HibernateException invalidEntityName(String entityType);
+	@LogMessage(level = Level.WARN)
+	@Message(id = 1702, value = "Unknown cache '%s'. Creating new with default settings.")
+	void unknownCache(String cacheName);
 
-	@Message(id = 1703, value = "Cache '%1$s' not found")
-	HibernateException cacheNotFound(String table);
+	@LogMessage(level = Level.INFO)
+	@Message(id = 1703, value = "Ignite instance is stopped. Trying to restart" )
+	void stoppedIgnite();
 
-	@Message(id = 1704, value = "Exception acquiring lock on obejct '%1$s'")
-	HibernateException exceptionAcquiringLock(String object, @Cause Exception exception);
+	@Message(id = 1704, value = "Cache '%s' not found")
+	IgniteException cacheNotFound(String cacheName);
 
+	@Message(id = 1705, value = "Invalid entity name '%s'")
+	HibernateException invalidEntityName(String entityName);
+
+	@Message(id = 1706, value = "Unsupported application server")
+	UnsupportedOperationException unsupportedApplicationServer();
+
+	@Message(id = 1707, value = "Invalid value for property '%1$s'. %2$s")
+	HibernateException invalidPropertyValue(String propertyName, String message, @Cause Exception cause);
 }
