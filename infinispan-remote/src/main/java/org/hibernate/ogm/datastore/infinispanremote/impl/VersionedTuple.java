@@ -12,16 +12,12 @@ import org.hibernate.ogm.model.spi.TupleSnapshot;
 public final class VersionedTuple extends Tuple {
 
 	private long version;
-	private final boolean beingInserted;
 
-	public VersionedTuple(boolean beingInserted) {
-		super();
-		this.beingInserted = beingInserted;
+	public VersionedTuple() {
 	}
 
 	public VersionedTuple(TupleSnapshot snapshot, SnapshotType snapshotType) {
 		super( snapshot, snapshotType );
-		this.beingInserted = false;
 	}
 
 	public long getVersion() {
@@ -31,9 +27,4 @@ public final class VersionedTuple extends Tuple {
 	public void setVersion(long version) {
 		this.version = version;
 	}
-
-	public boolean isBeingInserted() {
-		return beingInserted;
-	}
-
 }

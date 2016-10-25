@@ -109,7 +109,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends BaseGridDialect implemen
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
-		return new VersionedTuple( true );
+		return new VersionedTuple();
 	}
 
 	@Override
