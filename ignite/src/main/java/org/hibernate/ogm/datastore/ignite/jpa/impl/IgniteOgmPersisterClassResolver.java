@@ -15,8 +15,8 @@ import org.hibernate.persister.entity.EntityPersister;
 
 /**
  * Returns persistance for Ignite data-objects
- * @author Dmitriy Kozlov
  *
+ * @author Dmitriy Kozlov
  */
 public class IgniteOgmPersisterClassResolver extends OgmPersisterClassResolver {
 

@@ -36,6 +36,11 @@
         <property name="includeEventTypes">
             <util:constant static-field="org.apache.ignite.events.EventType.EVTS_CACHE"/>
         </property>
+        
+		<property name="gridLogger">
+			<bean class="org.apache.ignite.logger.slf4j.Slf4jLogger">
+			</bean>
+		</property>
 
         <property name="publicThreadPoolSize" value="2"/>
         
@@ -146,6 +151,18 @@
 				</bean>
 				<bean id="Race_Runners" parent="cache-template">
 					<property name="name" value="Race_Runners" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType" value="Race_Runners" />
+								<property name="ascendingFields">
+									<map>
+										<entry key="Race_raceId" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
 				</bean>
 <!-- For test ManyToManyExtraTest -->
 				<bean id="Student" parent="cache-template">
@@ -680,6 +697,28 @@
 								<property name="ascendingFields">
 									<map>
 										<entry key="ID" value="java.lang.String" />
+									</map>
+								</property>
+							</bean>
+						</list>
+					</property>
+				</bean>
+				<bean id="Address1" parent="cache-template">
+					<property name="name" value="Address1" />
+					<property name="typeMetadata">
+						<list>
+							<bean class="org.apache.ignite.cache.CacheTypeMetadata">
+								<property name="valueType"			value="Address1" />
+								<property name="keyType" 			value="java.lang.String" />
+								<property name="queryFields">
+									<map>
+										<entry key="ADDRESS"		value="java.lang.String" />
+									</map>
+								</property>
+								<property name="ascendingFields">
+									<map>
+										<entry key="ID"				value="java.lang.String" />
+										<entry key="CLIENT_ID"		value="java.lang.String" />
 									</map>
 								</property>
 							</bean>

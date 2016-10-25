@@ -8,8 +8,6 @@ package org.hibernate.ogm.datastore.ignite.query.parsing.impl;
 
 import java.util.Map;
 
-import org.hibernate.engine.jdbc.spi.JdbcServices;
-import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
 import org.hibernate.ogm.query.spi.BaseQueryParserService;

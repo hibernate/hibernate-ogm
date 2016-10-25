@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ~ Hibernate OGM, Domain model persistence for NoSQL datastores ~ ~ License: 
-    GNU Lesser General Public License (LGPL), version 2.1 or later ~ See the 
-    lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.hibernate.ogm</groupId>
@@ -19,26 +21,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- compile/runtime dependency versions, managed in the BOM -->
-        <classmateVersion>1.0.0</classmateVersion>
-        <ehcacheVersion>2.6.9</ehcacheVersion>
-        <infinispanVersion>8.0.2.Final</infinispanVersion>
-        <mongodbVersion>3.0.3</mongodbVersion>
-        <fongodbVersion>2.0.2</fongodbVersion>
-        <neo4jVersion>2.3.2</neo4jVersion>
-        <igniteVersion>1.5.0.final</igniteVersion>
-        <!-- Update dependency versions accordingly when updating C*  -->
-        <cassandraVersion>2.2.0-rc3</cassandraVersion>
-        <!-- Update dependency versions accordingly when updating lettuce  -->
-        <lettuceVersion>4.0.2.Final</lettuceVersion>
-        <!-- Neo4j supports different versions of Cypher -->
-        <neo4jCypherCompiler19Version>2.0.5</neo4jCypherCompiler19Version>
-        <neo4jCypherCompiler22Version>2.2.6</neo4jCypherCompiler22Version>
-        <!-- Neo4j does not support Lucene 4 currently-->
-        <neo4jLuceneVersion>3.6.2</neo4jLuceneVersion>
-        <hibernateVersion>5.0.5.Final</hibernateVersion>
-        <hibernateSearchVersion>5.5.1.Final</hibernateSearchVersion>
-        <hibernateParserVersion>1.2.0.Final</hibernateParserVersion>
+        <!--
+            These dependencies should be aligned with the ones from the WildFly version we support
+            See the version.wildfly property in the hibernate-ogm-parent pom
+            See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
+        -->
+        <hibernateSearchVersion>5.5.4.Final</hibernateSearchVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
@@ -53,8 +41,7 @@
         <!-- Hibernate ORM -->
         <hibernateVersion>5.1.1.Final</hibernateVersion>
 
-        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan 
-            and Hibernate Search -->
+        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
         <luceneVersion>5.5.2</luceneVersion>
 
         <!-- Various dependencies -->
@@ -89,10 +76,11 @@
         <!-- Cassandra -->
         <cassandraVersion>3.1.0</cassandraVersion>
         <!-- Update dependency versions accordingly when updating C* -->
-        <!-- The following versions are required for the Cassandra driver; 
-            We don't expose a managed versions of these libraries through this BOM, these 
-            versions are for internal usage to make sure the right JARs end up in the 
-            C* driver WildFly module -->
+        <!--
+             The following versions are required for the Cassandra driver; We don't expose a managed versions
+             of these libraries through this BOM, these versions are for internal usage to make sure the right
+             JARs end up in the C* driver WildFly module
+        -->
         <cassandraCodahaleMetricsVersion>3.1.2</cassandraCodahaleMetricsVersion>
         <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
 
@@ -104,8 +92,8 @@
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 
         <!-- Ignite -->
-        <igniteVersion>1.5.0.final</igniteVersion>
-        <igniteCommonsLang3Version>3.3.2</igniteCommonsLang3Version>
+        <igniteVersion>1.7.0</igniteVersion>
+
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -622,39 +610,29 @@
             <artifactId>ignite-spring</artifactId>
             <version>${igniteVersion}</version>
             <scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>${commonsLang3Version}</version>
-		</dependency>
-
-            <!-- Ignite -->
-            <dependency>
-                <groupId>org.apache.ignite</groupId>
-                <artifactId>ignite-core</artifactId>
-                <version>${igniteVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.ignite</groupId>
-                <artifactId>ignite-jta</artifactId>
-                <version>${igniteVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.ignite</groupId>
-                <artifactId>ignite-indexing</artifactId>
-                <version>${igniteVersion}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.lucene</groupId>
-                        <artifactId>lucene-core</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${igniteCommonsLang3Version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+	        <dependency>
+	            <groupId>org.apache.ignite</groupId>
+	            <artifactId>ignite-slf4j</artifactId>
+	            <version>${igniteVersion}</version>
+	            <scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${neo4jCommonsLang3Version}</version>
+			</dependency>
+	        <dependency>
+	            <groupId>org.slf4j</groupId>
+	            <artifactId>jcl-over-slf4j</artifactId>
+				<version>${slf4jVersion}</version>
+	            <scope>test</scope>
             </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
@@ -663,8 +641,7 @@
                 <artifactId>resteasy-client</artifactId>
                 <version>${resteasyVersion}</version>
                 <exclusions>
-                    <!-- Javassist changed its group id and is already pulled 
-                        in with the new id -->
+                    <!-- Javassist changed its group id and is already pulled in with the new id -->
                     <exclusion>
                         <groupId>javassist</groupId>
                         <artifactId>javassist</artifactId>
