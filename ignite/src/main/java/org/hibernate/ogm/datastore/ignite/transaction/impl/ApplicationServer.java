@@ -6,6 +6,10 @@
  */
 package org.hibernate.ogm.datastore.ignite.transaction.impl;
 
+/**
+ * JTA support
+ * @author Victor Kadachigov
+ */
 public enum ApplicationServer {
 	WEBSPHERE, JBOSS, DEFAULT;
 

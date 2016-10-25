@@ -15,8 +15,7 @@ import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
 
 /**
- * Ignite calendar type for DataGrid
- * org.hibernate.ogm.type.impl.BigIntegerType maps BigInteger to String
+ * Maps BigInteger to BigInteger because default implementation maps BigInteger to String
  * @author Victor Kadachigov
  */
 public class IgniteBigIntegerType extends AbstractGenericBasicType<BigInteger> {

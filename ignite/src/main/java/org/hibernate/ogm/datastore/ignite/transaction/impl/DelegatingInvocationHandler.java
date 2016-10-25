@@ -9,6 +9,10 @@ package org.hibernate.ogm.datastore.ignite.transaction.impl;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+/**
+ * JTA support
+ * @author Victor Kadachigov
+ */
 public class DelegatingInvocationHandler implements InvocationHandler {
 	private final Object delegate;
 

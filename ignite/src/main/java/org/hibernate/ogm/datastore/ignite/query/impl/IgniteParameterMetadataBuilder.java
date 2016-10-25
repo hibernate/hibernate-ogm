@@ -12,6 +12,9 @@ import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.query.spi.RecognizerBasedParameterMetadataBuilder;
 
+/**
+ * @author Victor Kadachigov
+ */
 public class IgniteParameterMetadataBuilder extends	RecognizerBasedParameterMetadataBuilder {
 
 	public static final IgniteParameterMetadataBuilder INSTANCE = new IgniteParameterMetadataBuilder();

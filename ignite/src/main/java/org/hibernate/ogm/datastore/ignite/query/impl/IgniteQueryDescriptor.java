@@ -18,6 +18,10 @@ import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.ScalarReturn;
 import org.hibernate.type.Type;
 
+/**
+ * Describes a Ignite SQL query
+ * @author Victor Kadachigov
+ */
 public class IgniteQueryDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 8197979441369153954L;
