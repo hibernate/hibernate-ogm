@@ -84,11 +84,26 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
-                <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan:jar</include>
 
                 <!-- Optional dependencies for infinispan -->
                 <include>org.infinispan:infinispan-lucene-directory</include>
                 <include>org.infinispan:infinispan-directory-provider</include>
+            </includes>
+        </dependencySet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-infinispan-remote
+        #######################################################################
+         -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>dist/lib/infinispan-remote</outputDirectory>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-remote</include>
             </includes>
         </dependencySet>
 
