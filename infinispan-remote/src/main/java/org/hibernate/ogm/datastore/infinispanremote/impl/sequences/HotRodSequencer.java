@@ -84,7 +84,7 @@ public final class HotRodSequencer {
 			//Side effects: initialize fields with first known values from remote
 			getRemoteVersion();
 			if ( previous == null ) {
-				//if the putIfAbsent CAS was successfull, we can return already
+				//if the putIfAbsent CAS was successful, we can return already
 				return lastKnownRemoteValue;
 			}
 		}
