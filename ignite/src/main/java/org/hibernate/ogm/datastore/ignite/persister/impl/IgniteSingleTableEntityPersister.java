@@ -23,6 +23,10 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
 import org.hibernate.persister.spi.PersisterCreationContext;
 
+/**
+ *
+ * @author Victor Kadachigov
+ */
 public class IgniteSingleTableEntityPersister extends SingleTableOgmEntityPersister {
 
 	public IgniteSingleTableEntityPersister(

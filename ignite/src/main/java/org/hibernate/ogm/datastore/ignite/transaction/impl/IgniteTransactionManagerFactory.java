@@ -11,6 +11,10 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 
+/**
+ * JTA support
+ * @author Victor Kadachigov
+ */
 public class IgniteTransactionManagerFactory implements Factory<TransactionManager> {
 
 	private static final long serialVersionUID = -4649196379875889970L;

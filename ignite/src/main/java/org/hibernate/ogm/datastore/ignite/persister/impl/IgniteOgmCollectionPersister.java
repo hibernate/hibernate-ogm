@@ -19,6 +19,11 @@ import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.entity.OuterJoinLoadable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 
+/**
+ * CollectionPersister storing the collection in a grid
+ *
+ * @author Victor Kadachigov
+ */
 public class IgniteOgmCollectionPersister extends OgmCollectionPersister {
 
 	public IgniteOgmCollectionPersister(Collection collection,

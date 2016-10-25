@@ -16,6 +16,10 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 
+/**
+ * JTA support
+ * @author Victor Kadachigov
+ */
 public class WebSphereTransaction implements Transaction {
 	private static final String ONE_PHASE_XA_RESOURCE_CLASS_NAME = "com.ibm.tx.jta.OnePhaseXAResource";
 	private static volatile Class<?> onePhaseXAResourceClass;

@@ -15,8 +15,7 @@ import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
 
 /**
- * Ignite calendar type for DataGrid
- * org.hibernate.ogm.type.impl.BigDecimalType maps BigDecimal to String
+ * Maps BigDecimal to BigDecimal because default implementation maps BigDecimal to String
  * @author Victor Kadachigov
  */
 public class IgniteBigDecimalType extends AbstractGenericBasicType<BigDecimal> {

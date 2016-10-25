@@ -24,6 +24,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 
+/**
+ * JTA support
+ * @author Victor Kadachigov
+ */
 public class DelegatingTransactionManager implements TransactionManager {
 
 	private static final Log log = LoggerFactory.getLogger();
