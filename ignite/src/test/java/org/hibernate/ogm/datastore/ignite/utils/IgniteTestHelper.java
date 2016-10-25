@@ -60,8 +60,7 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 		int associationCount = 0;
 		Set<IgniteCache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<?, ?>, Boolean>() );
 		for ( CollectionPersister colleactionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
-			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory,
-					( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
+			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
 			if ( !processedCaches.contains( associationCache ) ) {
 				associationCount += associationCache.size( CachePeekMode.ALL );
 				processedCaches.add( associationCache );
@@ -72,19 +71,32 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		return 0;
+		int asscociationCount = 0;
+		Set<IgniteCache<String, BinaryObject>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<String, BinaryObject>, Boolean>() );
+
+		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
+			IgniteCache<String, BinaryObject> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
+			if ( !processedCaches.contains( associationCache ) ) {
+				asscociationCount += associationCache.size();
+				processedCaches.add( associationCache );
+			}
+		}
+
+		return asscociationCount;
 	}
 
 	@Override
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
-		IgniteCache<String, BinaryObject> cache = getEntityCache( session.getSessionFactory(), key.getMetadata() );
-		String cacheKey = getProvider( session.getSessionFactory() ).getKeyProvider().getEntityKeyString( key );
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) session.getSessionFactory();
+		IgniteCache<String, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
+		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getKeyString( key );
 
 		Map<String, Object> result = new HashMap<>();
 		Object po = cache.get( cacheKey );
 
+		IgniteDialect igniteDialect = (IgniteDialect) sessionFactory.getServiceRegistry().getService( GridDialect.class );
 		TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( po );
-		for ( String fieldName : snapshot.getColumnNames() ) {
+		for (String fieldName : snapshot.getColumnNames()) {
 			result.put( fieldName, snapshot.get( fieldName ) );
 		}
 
@@ -102,12 +114,13 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
+		// TODO and here?
 		return null;
 	}
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new IgniteDialect( (IgniteDatastoreProvider) datastoreProvider );
+		return new IgniteDialect((IgniteDatastoreProvider) datastoreProvider);
 	}
 
 	public static IgniteCache<String, BinaryObject> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
@@ -143,4 +156,5 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	public long getNumberOfAssociations(Session session) {
 		return getNumberOfAssociations( session.getSessionFactory() );
 	}
+
 }

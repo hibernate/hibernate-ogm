@@ -18,6 +18,10 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @ClasspathSuite.ClassnameFilters({
 
+	// todo
+//	"org.hibernate.ogm.backendtck.id.*",
+//	"org.hibernate.ogm.backendtck.associations.*"
+	
 	// failed
 
 //	"org.hibernate.ogm.backendtck.associations.collection.types.ListTest", 				// passed -testOrderedListAndCompositeId
@@ -28,7 +32,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
-	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest"
 
 
@@ -63,13 +67,8 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
 //	"org.hibernate.ogm.backendtck.type.BuiltInTypeTest",
 //	"org.hibernate.ogm.backendtck.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptorTest",
-//	"org.hibernate.ogm.backendtck.simpleentity.InheritanceTest",
-//	"org.hibernate.ogm.backendtck.simpleentity.NullableFieldValueTest",
-//	"org.hibernate.ogm.backendtck.simpleentity.CRUDTest",
+//	"org.hibernate.ogm.backendtck.simpleentity.*",
 
-	// not checked
-
-//	"org.hibernate.ogm.datastore.ignite.test.IgniteTest",
 })
 public class IgniteBackendTckHelper {
 }

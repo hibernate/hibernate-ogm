@@ -17,10 +17,12 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
  * Converting specific types for inserting to Ignite DataGrid
- *
  * @author Dmitriy Kozlov
+ *
  */
 public class IgniteGridTypeDescriptor implements GridTypeDescriptor {
+
+	private static final long serialVersionUID = -7987036362000007230L;
 
 	private final Class targetClass;
 
@@ -30,8 +32,7 @@ public class IgniteGridTypeDescriptor implements GridTypeDescriptor {
 
 	@Override
 	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new BasicGridBinder<X>( javaTypeDescriptor, this ) {
-
+		return new BasicGridBinder<X>(javaTypeDescriptor, this) {
 			@Override
 			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
 				resultset.put( names[0], javaTypeDescriptor.unwrap( value, targetClass, options ) );

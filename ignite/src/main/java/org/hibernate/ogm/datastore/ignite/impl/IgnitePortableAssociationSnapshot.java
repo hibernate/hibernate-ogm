@@ -11,16 +11,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.ignite.binary.BinaryObject;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
+/**
+ * @author Victor Kadachigov
+ */
 public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, BinaryObject> associationMap;
-	private final String rowKeyIndexColumnNames[];
 
 	public IgnitePortableAssociationSnapshot(String rowKeyIndexColumnNames[]) {
 		if ( rowKeyIndexColumnNames != null && rowKeyIndexColumnNames.length > 0 ) {
@@ -34,13 +37,6 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
 	public IgnitePortableAssociationSnapshot(Map<RowKey, BinaryObject> associationMap, String rowKeyIndexColumnNames[]) {
 		this( rowKeyIndexColumnNames );
 		this.associationMap.putAll( associationMap );
-	}
-
-	private Comparator<RowKey> createMapComparator() {
-		Comparator<RowKey> result = null;
-		if ( rowKeyIndexColumnNames != null && rowKeyIndexColumnNames.length > 0 ) {
-		}
-		return result;
 	}
 
 	@Override

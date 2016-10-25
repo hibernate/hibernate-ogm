@@ -31,12 +31,16 @@ import org.hibernate.ogm.datastore.ignite.IgniteDialect;
 import org.hibernate.ogm.datastore.ignite.configuration.impl.IgniteProviderConfiguration;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.ignite.query.impl.QueryHints;
+import org.hibernate.ogm.datastore.ignite.query.parsing.impl.IgniteQueryParserService;
 import org.hibernate.ogm.datastore.ignite.transaction.impl.IgniteTransactionManagerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceException;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -52,6 +56,7 @@ import org.hibernate.service.spi.Stoppable;
 public class IgniteDatastoreProvider extends BaseDatastoreProvider
 							implements Startable, Stoppable, ServiceRegistryAwareService, Configurable {
 
+	private static final long serialVersionUID = 2278253954737494852L;
 	private static final Log log = LoggerFactory.getLogger();
 
 	private JtaPlatform jtaPlatform;
@@ -82,7 +87,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		}
 		catch (IllegalStateException ex) {
 			if ( Ignition.state( gridName ) == IgniteState.STOPPED ) {
-				log.info( "Cache stopped.Trying to restart" );
+				log.stoppedIgnite();
 				restart();
 				cache = cacheManager.cache( entityCacheName );
 			}
@@ -98,7 +103,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			cache = cacheManager.getOrCreateCache( config );
 		}
 		if ( keepBinary ) {
-			cache = ( (IgniteCacheProxy<String, T>) cache ).keepBinary();
+			cache = cache.withKeepBinary();
 		}
 		return cache;
 	}
@@ -117,7 +122,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		return getCache( entityCacheName, true );
 	}
 
-	public IgniteCache<String, Object> getIdSourceCache(IdSourceKeyMetadata keyMetaData) {
+	public IgniteCache<String, Long> getIdSourceCache(IdSourceKeyMetadata keyMetaData) {
 		String idSourceCacheName = getKeyProvider().getIdSourceCache( keyMetaData );
 		return getCache( idSourceCacheName, false );
 	}
@@ -141,15 +146,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		if (cacheManager != null && stopOnExit) {
 			Ignition.stop( cacheManager.name(), true );
 		}
-	}
-
-	private String createGridName() {
-		String result = null;
-		if (config.getUrl() != null) {
-			result = config.getUrl().getPath();
-			result = result.replaceAll( "[\\,\\\",:,\\*,\\/,\\\\]", "_" );
-		}
-		return result;
 	}
 
 	@Override
@@ -196,6 +192,11 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		this.jdbcServices = serviceRegistryImplementor.getService( JdbcServices.class );
 	}
 
+	@Override
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return IgniteCacheInitializer.class;
+	}
+
 	public IgniteKeyProvider getKeyProvider() {
 		return IgniteKeyProvider.INSTANCE;
 	}
@@ -206,6 +207,11 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	public boolean isClientMode() {
 		return cacheManager.configuration().isClientMode();
+	}
+
+	@Override
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
+		return IgniteQueryParserService.class;
 	}
 
 	public String getGridName() {
@@ -224,7 +230,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	private static class ComputeForLocalQueries<T> implements IgniteCallable<List<T>> {
 
-		private static final Log LOG = LoggerFactory.getLogger();
 		private final String cacheName;
 		private final SqlFieldsQuery query;
 		@IgniteInstanceResource
@@ -242,14 +247,14 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			if ( cache == null ) {
 				throw log.cacheNotFound( cacheName );
 			}
-			cache = ( (IgniteCacheProxy<String, BinaryObject>) cache ).keepBinary();
+			cache = cache.withKeepBinary();
 			return (List<T>) cache.query( query ).getAll();
 		}
 	}
 
-	public SqlFieldsQuery createSqlFieldsQueryWithLog(String sql, Object... args) {
-
-		jdbcServices.getSqlStatementLogger().logStatement( sql );
+	public SqlFieldsQuery createSqlFieldsQueryWithLog(String sql, QueryHints hints, Object... args) {
+		String comment = hints != null ? hints.toComment() : "";
+		jdbcServices.getSqlStatementLogger().logStatement( comment + sql );
 
 		SqlFieldsQuery query = new SqlFieldsQuery( sql );
 		if ( args != null ) {
