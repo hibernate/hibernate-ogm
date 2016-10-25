@@ -54,7 +54,7 @@ public class SchemaDefinitions {
 		final String generatedProtoschema = schemaOverrideService == null ? generateProtoschema() : schemaOverrideService.createProtobufSchema();
 		try {
 			protobufCache.put( generatedProtobufName, generatedProtoschema );
-			LOG.successfullSchemaDeploy( generatedProtobufName );
+			LOG.successfulSchemaDeploy( generatedProtobufName );
 		}
 		catch (HotRodClientException hrce) {
 			throw LOG.errorAtSchemaDeploy( generatedProtobufName, hrce );

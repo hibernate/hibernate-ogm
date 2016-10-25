@@ -34,7 +34,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1703, value = "Protobuf schema '%s' successfully deployed")
 	@LogMessage(level = INFO)
-	void successfullSchemaDeploy(String protobufName);
+	void successfulSchemaDeploy(String protobufName);
 
 	@Message(id = 1704, value = "Error deploying Protobuf schema '%s' to the server")
 	HibernateException errorAtSchemaDeploy(String generatedProtobufName, @Cause Exception schemaDeployError);
