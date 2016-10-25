@@ -98,6 +98,10 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-infinispan-remote</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-ehcache</artifactId>
         </dependency>
         <dependency>
