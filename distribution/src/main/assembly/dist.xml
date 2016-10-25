@@ -94,6 +94,21 @@
 
         <!--
         #######################################################################
+        #  hibernate-ogm-infinispan-remote
+        #######################################################################
+         -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>dist/lib/infinispan-remote</outputDirectory>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-remote</include>
+            </includes>
+        </dependencySet>
+
+        <!--
+        #######################################################################
         #  hibernate-ogm-ehcache
         #######################################################################
          -->
