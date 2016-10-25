@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 	// todo
 //	"org.hibernate.ogm.backendtck.id.*",
 //	"org.hibernate.ogm.backendtck.associations.*"
-	
+
 	// failed
 
 //	"org.hibernate.ogm.backendtck.associations.collection.types.ListTest", 				// passed -testOrderedListAndCompositeId
