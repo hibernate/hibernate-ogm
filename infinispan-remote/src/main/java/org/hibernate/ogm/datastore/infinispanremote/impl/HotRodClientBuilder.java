@@ -6,11 +6,6 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Properties;
-
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
@@ -44,29 +39,8 @@ public class HotRodClientBuilder {
 		return new RemoteCacheManager(
 				new ConfigurationBuilder()
 					.classLoader( HotRodClientBuilder.class.getClassLoader() )
-					.withProperties( getHotRodConfigurationProperties() )
+					.withProperties( config.getClientProperties() )
 					.marshaller( marshaller )
 					.build() );
 	}
-
-	private Properties getHotRodConfigurationProperties() {
-		if ( config != null ) {
-			URL configurationResourceUrl = config.getConfigurationResourceUrl();
-			if ( configurationResourceUrl == null ) {
-				throw log.hotrodClientConfigurationMissing();
-			}
-			Properties p = new Properties();
-			try ( InputStream openStream = configurationResourceUrl.openStream() ) {
-				p.load( openStream );
-			}
-			catch (IOException e) {
-				throw log.failedLoadingHotRodConfigurationProperties( e );
-			}
-			return p;
-		}
-		else {
-			throw log.hotrodClientConfigurationMissing();
-		}
-	}
-
 }

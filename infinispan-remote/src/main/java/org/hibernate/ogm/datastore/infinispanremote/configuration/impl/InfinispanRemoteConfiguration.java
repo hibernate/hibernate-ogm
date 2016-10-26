@@ -6,24 +6,80 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.configuration.impl;
 
+import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.HOT_ROD_CLIENT_PREFIX;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
+import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
+import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 
 /**
  * Configuration for {@link InfinispanRemoteProperties}.
+ * <p>
+ * This class also keep track of the configuration for the Hot Rod client.
+ * There are two ways to configure the client:
+ * <ul>
+ *   <li>Using an external Hot Rod properties file; see {@link InfinispanRemoteProperties#CONFIGURATION_RESOURCE_NAME}
+ *   <li>Defining the properties of the client using {@value InfinispanRemoteProperties#HOT_ROD_CLIENT_PREFIX}
+ * </ul>
+ * <p>
+ * When a property of the Hot Rod client is set in the hibernate configuration, it should be prefixed
+ * with {@value InfinispanRemoteProperties#HOT_ROD_CLIENT_PREFIX}.
+ * For example, the property {@code infinispan.client.hotrod.server_list}
+ * becomes {@code hibernate.ogm.infinispan_remote.client.server_list}.
+ * <p>
+ * Currently, some properties in the Hot Rod client don't have a prefix, in this case it must be added
+ * in the hibernate configuration.
+ * For example, the property {@code maxActive} becomes {@code hibernate.ogm.infinispan_remote.client.maxActive}
+ * <p>
+ * Properties with the Hibernate OGM prefix ({@value InfinispanRemoteProperties#HOT_ROD_CLIENT_PREFIX}) will
+ * override corresponding properties defined in the external Hot Rod configuration file.
+ *
+ * @see InfinispanRemoteProperties
+ * @see ConfigurationProperties
+ *
+ * @author Davide D'Alto
  */
 public class InfinispanRemoteConfiguration {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.getLogger();
+
+	/**
+	 * The prefix used by many configuration properties for Hot Rod
+	 */
+	private static final String HOT_ROD_ORIGINAL_PREFIX = "infinispan.client.hotrod.";
+
+	/*
+	 * Currently, some properties in Hot Rod are without a prefix
+	 */
+	private static String[] noPrefixProperties = {
+		"exhaustedAction",
+		"maxActive",
+		"maxTotal",
+		"maxWait",
+		"maxIdle",
+		"minIdle",
+		"numTestsPerEvictionRun",
+		"minEvictableIdleTimeMillis",
+		"timeBetweenEvictionRunsMillis",
+		"lifo",
+		"testOnBorrow",
+		"testOnReturn",
+		"testWhileIdle"
+	};
 
 	private URL configurationResource;
 
@@ -33,6 +89,8 @@ public class InfinispanRemoteConfiguration {
 
 	private String schemaPackageName;
 
+	private Properties clientProperties;
+
 	/**
 	 * The location of the configuration file.
 	 *
@@ -41,6 +99,15 @@ public class InfinispanRemoteConfiguration {
 	 */
 	public URL getConfigurationResourceUrl() {
 		return configurationResource;
+	}
+
+	/**
+	 * Extract from the configuration the properties to apply to the Hot Rod (Infinispan remote) client.
+	 *
+	 * @return the clientProperties Hot Rod client properties
+	 */
+	public Properties getClientProperties() {
+		return clientProperties;
 	}
 
 	public SchemaCapture getSchemaCaptureService() {
@@ -70,6 +137,8 @@ public class InfinispanRemoteConfiguration {
 				.property( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
 				.getValue();
 
+		this.clientProperties = getHotRodConfiguration( configurationMap, propertyReader, this.configurationResource );
+
 		this.schemaCaptureService = propertyReader
 				.property( InfinispanRemoteProperties.SCHEMA_CAPTURE_SERVICE, SchemaCapture.class )
 				.instantiate()
@@ -86,5 +155,58 @@ public class InfinispanRemoteConfiguration {
 				.getValue();
 
 		log.tracef( "Initializing Infinispan Hot Rod client from configuration file at '%1$s'", configurationResource );
+	}
+
+	/**
+	 * Extract from the configuration the Hot Rod client properties: the one prefixed with
+	 * {@link InfinispanRemoteProperties#HOT_ROD_CLIENT_PREFIX} or defined in the resource file via
+	 * {@link InfinispanRemoteProperties#CONFIGURATION_RESOURCE_NAME}.
+	 * <p>
+	 * Note that the properties with the prefix will override the same properties in the resource file.
+	 */
+	private Properties getHotRodConfiguration(Map<?, ?> configurationMap, ConfigurationPropertyReader propertyReader, URL configurationResourceUrl) {
+		Properties hotRodConfiguration = new Properties();
+		loadResourceFile( configurationResourceUrl, hotRodConfiguration );
+		setAdditionalProperties( configurationMap, propertyReader, hotRodConfiguration );
+		if ( hotRodConfiguration.isEmpty() ) {
+			throw log.hotrodClientConfigurationMissing();
+		}
+		return hotRodConfiguration;
+	}
+
+	/**
+	 * Load the properties from the resource file if one is specified
+	 */
+	private void loadResourceFile(URL configurationResourceUrl, Properties hotRodConfiguration) {
+		if ( configurationResourceUrl != null ) {
+			try ( InputStream openStream = configurationResourceUrl.openStream() ) {
+				hotRodConfiguration.load( openStream );
+			}
+			catch (IOException e) {
+				throw log.failedLoadingHotRodConfigurationProperties( e );
+			}
+		}
+	}
+
+	/**
+	 * Set the properties defined using the prefix {@link InfinispanRemoteProperties#HOT_ROD_CLIENT_PREFIX}
+	 *
+	 * @param configurationMap contains all the properties defined for OGM
+	 * @param propertyReader read the value of a property
+	 * @param hotRodConfiguration the Hot Rod configuration to update
+	 */
+	private void setAdditionalProperties(Map<?, ?> configurationMap, ConfigurationPropertyReader propertyReader, Properties hotRodConfiguration) {
+		// Programmatic properties override the resource file
+		for ( Entry<?, ?> property : configurationMap.entrySet() ) {
+			String key = (String) property.getKey();
+			if ( key.startsWith( HOT_ROD_CLIENT_PREFIX ) ) {
+				String hotRodProperty = key.substring( HOT_ROD_CLIENT_PREFIX.length() );
+				String value = propertyReader.property( key, String.class ).getValue();
+				if ( !ArrayHelper.contains( noPrefixProperties, hotRodProperty ) ) {
+					hotRodProperty = HOT_ROD_ORIGINAL_PREFIX + hotRodProperty;
+				}
+				hotRodConfiguration.setProperty( hotRodProperty, value );
+			}
+		}
 	}
 }
