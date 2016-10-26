@@ -180,10 +180,6 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 
 	// Various static helpers below:
 
-	private static SessionFactoryImplementor getSessionFactoryImplementor(Session session) {
-		return getSessionFactoryImplementor( session.getSessionFactory() );
-	}
-
 	private static SessionFactoryImplementor getSessionFactoryImplementor(SessionFactory sessionFactory) {
 		return ( (SessionFactoryImplementor) sessionFactory );
 	}
