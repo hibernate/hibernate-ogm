@@ -53,7 +53,7 @@
 				<bean id="Actor" parent="cache-template">
 					<property name="name" value="Actor" />
 				</bean>
-				<!-- For test JPAResourceLocalTest -->
+<!-- For test JPAResourceLocalTest -->
 				<bean id="Poem" parent="cache-template">
 					<property name="name" value="Poem" />
 				</bean>
@@ -734,7 +734,7 @@
 		<property name="atomicityMode"	value="TRANSACTIONAL"/>
 		<property name="cacheMode"		value="PARTITIONED" />
 		<property name="startSize"		value="10" />
-		<property name="backups" value="1"/>
+		<property name="backups"		value="0"/>
 <!-- 
 		<property name="memoryMode"		value="OFFHEAP_TIERED" />
 		<property name="offHeapMaxMemory"		value="1000000" /> 
