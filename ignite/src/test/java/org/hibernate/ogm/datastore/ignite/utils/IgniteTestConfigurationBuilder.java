@@ -90,11 +90,57 @@ public class IgniteTestConfigurationBuilder {
 		cacheConfig.add( createCacheConfig( "ClassRoom" ) );
 		cacheConfig.add( createCacheConfig( "ClassRoom_Student" ) );
 // MapTest
+		cacheConfig.add( createCacheConfig( "PhoneNumber" ) );
+		cacheConfig.add( createCacheConfig( "Enterprise" ) );
+		cacheConfig.add( createCacheConfig( "Enterprise_revenueByDepartment", "Enterprise_revenueByDepartment" ) );
+		cacheConfig.add( createCacheConfig( "Enterprise_departments", "Enterprise_revenueByDepartment" ) );
+		cacheConfig.add( createCacheConfig( "Department" ) );
+		cacheConfig.add( createCacheConfig( "User" ) );
+		CacheConfiguration cc = createCacheConfig( "Address", "id" );
+		QueryEntity queryEntity = (QueryEntity)cc.getQueryEntities().iterator();
+		queryEntity.addQueryField("street", String.class.getName(), null);
+		queryEntity.addQueryField("city", String.class.getName(), null);
+		cacheConfig.add( cc );
+		cacheConfig.add( createCacheConfig( "User_Address", "User_id" ) );
+		cacheConfig.add( createCacheConfig( "User_PhoneNumber", "User_id" ) );
+		cacheConfig.add( createCacheConfig( "Nicks", "user_id" ) );
+// CollectionUnidirectionalTest
+		cacheConfig.add( createCacheConfig( "Cloud" ) );
+		cacheConfig.add( createCacheConfig( "SnowFlake" ) );
+		cacheConfig.add( createCacheConfig( "joinProducedSnowflakes", "Cloud_id" ) );
+		cacheConfig.add( createCacheConfig( "joinBackupSnowflakes" ) );
+// ReferencedCompositeIdTest
+		cacheConfig.add( createCacheConfig( "Director" ) );
+		cacheConfig.add( createCacheConfig( "Tournament" ) );
+		cacheConfig.add( createCacheConfig( "Director_Tournament" ) );
+// ManyToOneExtraTest
+		cacheConfig.add( createCacheConfig( "Basket" ) );
+		cacheConfig.add( createCacheConfig( "Product" ) );
+		cacheConfig.add( createCacheConfig( "Basket_Product", "Basket_id" ) );
+// ManyToOneTest	
+		cacheConfig.add( createCacheConfig( "JUG" ) );
+		cacheConfig.add( createCacheConfig( "Member" ) );
+		cacheConfig.add( createCacheConfig( "SalesForce" ) );
+		cacheConfig.add( createCacheConfig( "SalesGuy", "salesForce_id" ) );
+		cacheConfig.add( createCacheConfig( "Beer", "brewery_id" ) );
+		cacheConfig.add( createCacheConfig( "Brewery" ) );
+		cacheConfig.add( createCacheConfig( "Game" ) );
+		cacheConfig.add( createCacheConfig( "Court" ) );
+// OneToOneTest
+		cacheConfig.add( createCacheConfig( "Horse" ) );
+		cacheConfig.add( createCacheConfig( "Cavalier" ) );
+		cacheConfig.add( createCacheConfig( "Vehicule" ) );
+		cacheConfig.add( createCacheConfig( "Wheel" ) );
+		cacheConfig.add( createCacheConfig( "Husband", "wife" ) );
+		cacheConfig.add( createCacheConfig( "Wife" ) );
+// CompositeIdTest
 		
 		config.setCacheConfiguration(cacheConfig.toArray( new CacheConfiguration[cacheConfig.size()] ));
 		
 		return config;
 	}
+	
+//	private CacheConfiguration addQueryFields( CacheConfiguration cacheConfig, Query ) 
 	
 	private CacheConfiguration createCacheConfig( String name, String... indexedFields ) {
 		CacheConfiguration<String, BinaryObject> result = new CacheConfiguration<>();
