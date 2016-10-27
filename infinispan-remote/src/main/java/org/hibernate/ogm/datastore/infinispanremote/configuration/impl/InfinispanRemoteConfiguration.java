@@ -179,9 +179,7 @@ public class InfinispanRemoteConfiguration {
 		Properties hotRodConfiguration = new Properties();
 		loadResourceFile( configurationResourceUrl, hotRodConfiguration );
 		setAdditionalProperties( configurationMap, propertyReader, hotRodConfiguration );
-		if ( hotRodConfiguration.isEmpty() ) {
-			throw log.hotrodClientConfigurationMissing();
-		}
+		setExpectedPropertiesIfNull( hotRodConfiguration );
 		validate( hotRodConfiguration );
 		return hotRodConfiguration;
 	}
@@ -218,6 +216,19 @@ public class InfinispanRemoteConfiguration {
 					hotRodProperty = HOT_ROD_ORIGINAL_PREFIX + hotRodProperty;
 				}
 				hotRodConfiguration.setProperty( hotRodProperty, value );
+			}
+		}
+	}
+
+	/*
+	 * We provide some default values in case some properties are not set
+	 */
+	private void setExpectedPropertiesIfNull(Properties hotRodConfiguration) {
+		for ( int i = 0; i < expectedValuesForHotRod.length; i++ ) {
+			String property = expectedValuesForHotRod[i][0];
+			String expectedValue = expectedValuesForHotRod[i][1];
+			if ( !hotRodConfiguration.containsKey( property ) ) {
+				hotRodConfiguration.setProperty( property, expectedValue );
 			}
 		}
 	}
