@@ -7,6 +7,8 @@
 package org.hibernate.ogm.datastore.infinispanremote.configuration.impl;
 
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.HOT_ROD_CLIENT_PREFIX;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.FORCE_RETURN_VALUES;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.MARSHALLER;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +20,7 @@ import java.util.Properties;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
@@ -79,6 +82,14 @@ public class InfinispanRemoteConfiguration {
 		"testOnBorrow",
 		"testOnReturn",
 		"testWhileIdle"
+	};
+
+	/*
+	 * The expected configuration value for some properties, an exception is thrown if the value is changed.
+	 */
+	private static final String[][] expectedValuesForHotRod = {
+			{ FORCE_RETURN_VALUES, "true" },
+			{ MARSHALLER, OgmProtoStreamMarshaller.class.getName() }
 	};
 
 	private URL configurationResource;
@@ -171,6 +182,7 @@ public class InfinispanRemoteConfiguration {
 		if ( hotRodConfiguration.isEmpty() ) {
 			throw log.hotrodClientConfigurationMissing();
 		}
+		validate( hotRodConfiguration );
 		return hotRodConfiguration;
 	}
 
@@ -208,5 +220,23 @@ public class InfinispanRemoteConfiguration {
 				hotRodConfiguration.setProperty( hotRodProperty, value );
 			}
 		}
+	}
+
+	private void validate(Properties hotRodConfiguration) {
+		for ( int i = 0; i < expectedValuesForHotRod.length; i++ ) {
+			String property = expectedValuesForHotRod[i][0];
+			String expectedValue = expectedValuesForHotRod[i][1];
+			String actualValue = trim( hotRodConfiguration.getProperty( property ) );
+			if ( !expectedValue.equals( actualValue ) && !expectedValue.equalsIgnoreCase( actualValue ) ) {
+				throw log.invalidConfigurationValue( property, expectedValue, actualValue );
+			}
+		}
+	}
+
+	private String trim(String property) {
+		if ( property == null ) {
+			return null;
+		}
+		return property.trim();
 	}
 }

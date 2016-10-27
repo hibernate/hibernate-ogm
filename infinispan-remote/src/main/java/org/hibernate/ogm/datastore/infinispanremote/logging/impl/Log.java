@@ -74,4 +74,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1714, value = "A remote read returned null while this entry was definitely initialized before. Possible data loss on the Infinispan server?" )
 	HibernateException criticalDataLossDetected();
 
+	@Message(id = 1715, value = "Property <%s> has to be set to <%s> but it's set to <%s>" )
+	HibernateException invalidConfigurationValue(String property, String expectedValue, String actualValue);
 }
