@@ -82,6 +82,18 @@ public class InfinispanRemoteConfigurationTest {
 	}
 
 	@Test
+	public void shouldSetDefaultValues() {
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, GridDialectType.INFINISPAN_REMOTE.name() );
+
+		Properties clientProperties = extractClientConfiguration( settings );
+
+		assertThat( clientProperties ).isNotEmpty();
+		assertThat( clientProperties.getProperty( MARSHALLER ) ).isEqualTo( OgmProtoStreamMarshaller.class.getName() );
+		assertThat( clientProperties.getProperty( FORCE_RETURN_VALUES ) ).isEqualTo( "true" );
+	}
+
+	@Test
 	public void shouldNormalizeTheValueBeforeValidation() {
 		Map<String, Object> settings = new HashMap<>();
 		settings.put( OgmProperties.DATASTORE_PROVIDER, GridDialectType.INFINISPAN_REMOTE.name() );
