@@ -9,20 +9,26 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME;
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.HOT_ROD_CLIENT_PREFIX;
 import static org.infinispan.client.hotrod.impl.ConfigurationProperties.DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.FORCE_RETURN_VALUES;
+import static org.infinispan.client.hotrod.impl.ConfigurationProperties.MARSHALLER;
 import static org.infinispan.client.hotrod.impl.ConfigurationProperties.TCP_NO_DELAY;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.fest.assertions.Fail;
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.utils.RemoteHotRodServerRule;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -38,6 +44,8 @@ public class InfinispanRemoteConfigurationTest {
 	/**
 	 * Properties name to use in the hibernate configuration (when no resource file is used).
 	 */
+	private static final String OGM_FORCE_RETURN_VALUES_PROPERTY = HOT_ROD_CLIENT_PREFIX + "force_return_values";
+	private static final String OGM_MARSHALLER_PROPERTY = HOT_ROD_CLIENT_PREFIX + "marshaller";
 	private static final String OGM_EVICTION_MILLIS_PROPERTY = HOT_ROD_CLIENT_PREFIX + "timeBetweenEvictionRunsMillis";
 	private static final String OGM_DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE_PROPERTY = HOT_ROD_CLIENT_PREFIX + "default_executor_factory.queue_size";
 
@@ -46,6 +54,45 @@ public class InfinispanRemoteConfigurationTest {
 
 	@Rule
 	public RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
+
+	@Test
+	public void shouldThrowExceptionWhenForceReturnValuesIsFalse() {
+		assertExceptionIsThrown( OGM_FORCE_RETURN_VALUES_PROPERTY, "true", "false" );
+	}
+
+	@Test
+	public void shouldThrowExceptionWhenAnotherMarshallerIsUsed() {
+		assertExceptionIsThrown( OGM_MARSHALLER_PROPERTY, OgmProtoStreamMarshaller.class.getName(), ProtoStreamMarshaller.class.getName() );
+	}
+
+	private void assertExceptionIsThrown(String property, String expectedValue, String actualValue) {
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, GridDialectType.INFINISPAN_REMOTE.name() );
+		settings.put( CONFIGURATION_RESOURCE_NAME, RESOURCE_NAME );
+		settings.put( property, actualValue );
+
+		try {
+			extractClientConfiguration( settings );
+			Fail.fail( "There should be an exception because of the wrong configuration value" );
+		}
+		catch (org.hibernate.service.spi.ServiceException ex) {
+			assertThat( ex.getCause() ).isInstanceOf( HibernateException.class );
+			assertThat( ex.getCause().getMessage() ).isEqualTo( "OGM001715: Property <" + property.replace( HOT_ROD_CLIENT_PREFIX, "infinispan.client.hotrod." ) + "> has to be set to <" + expectedValue + "> but it's set to <" + actualValue + ">" );
+		}
+	}
+
+	@Test
+	public void shouldNormalizeTheValueBeforeValidation() {
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, GridDialectType.INFINISPAN_REMOTE.name() );
+		settings.put( CONFIGURATION_RESOURCE_NAME, RESOURCE_NAME );
+		settings.put( OGM_FORCE_RETURN_VALUES_PROPERTY, "  TRUE " );
+
+		Properties clientProperties = extractClientConfiguration( settings );
+
+		assertThat( clientProperties ).isNotEmpty();
+		assertThat( clientProperties.getProperty( FORCE_RETURN_VALUES ) ).isEqualTo( "TRUE" );
+	}
 
 	@Test
 	public void shouldBeAbleToReadTheResourceFile() {
