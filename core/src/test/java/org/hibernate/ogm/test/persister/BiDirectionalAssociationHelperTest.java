@@ -73,6 +73,25 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	}
 
 	@Test
+	public void canHandleSeveralAssociationsOnInverseSideWithTheSameEntity() {
+		OgmEntityPersister entityPersister = getEntityPersister( Muffin.class.getName() );
+		{
+			AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "eater" ) );
+			assertThat( inverseAssociationKeyMetadata ).isNotNull();
+			assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Muffin" );
+			assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "eater_id" } );
+			assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "eater_id", "id" } );
+		}
+		{
+			AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "standinEater" ) );
+			assertThat( inverseAssociationKeyMetadata ).isNotNull();
+			assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Muffin" );
+			assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "standinEater_id" } );
+			assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "standinEater_id", "id" } );
+		}
+	}
+
+	@Test
 	public void canHandleSeveralAssociationsOnInverseSide() {
 		// obtain inverse collection from the main side
 		OgmEntityPersister entityPersister = getEntityPersister( Pancake.class.getName() );
