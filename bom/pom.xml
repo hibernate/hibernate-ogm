@@ -91,7 +91,7 @@
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 
-        <!-- Ignite -->
+		<!-- Ignite -->
         <igniteVersion>1.7.0</igniteVersion>
 
     </properties>
@@ -584,32 +584,32 @@
             </dependency>
             
             <!-- Ignite -->
-        <dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-core</artifactId>
-			<version>${igniteVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-jta</artifactId>
-			<version>${igniteVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.ignite</groupId>
-			<artifactId>ignite-indexing</artifactId>
-			<version>${igniteVersion}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-        <dependency>
-            <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-spring</artifactId>
-            <version>${igniteVersion}</version>
-            <scope>test</scope>
+	        <dependency>
+				<groupId>org.apache.ignite</groupId>
+				<artifactId>ignite-core</artifactId>
+				<version>${igniteVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.ignite</groupId>
+				<artifactId>ignite-jta</artifactId>
+				<version>${igniteVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.ignite</groupId>
+				<artifactId>ignite-indexing</artifactId>
+				<version>${igniteVersion}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.lucene</groupId>
+						<artifactId>lucene-core</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+	        <dependency>
+	            <groupId>org.apache.ignite</groupId>
+	            <artifactId>ignite-spring</artifactId>
+	            <version>${igniteVersion}</version>
+	            <scope>test</scope>
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
@@ -633,7 +633,7 @@
 	            <artifactId>jcl-over-slf4j</artifactId>
 				<version>${slf4jVersion}</version>
 	            <scope>test</scope>
-            </dependency>
+	        </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>
