@@ -6,9 +6,12 @@
  */
 package org.hibernate.ogm.datastore.ignite.utils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.ignite.IgniteCheckedException;
@@ -23,14 +26,16 @@ import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
 import org.apache.ignite.internal.binary.BinaryMarshaller;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
+import org.hibernate.ogm.datastore.ignite.IgniteConfigurationBuilder;
 
 /**
- *
+ * Ignite cache configuration for tests
  * @author Victor Kadachigov
  */
-public class IgniteTestConfigurationBuilder {
+public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilder {
 
 
+	@Override
 	public IgniteConfiguration build() {
 
 		IgniteConfiguration config = null;
@@ -96,11 +101,12 @@ public class IgniteTestConfigurationBuilder {
 		cacheConfig.add( createCacheConfig( "Enterprise_departments", "Enterprise_revenueByDepartment" ) );
 		cacheConfig.add( createCacheConfig( "Department" ) );
 		cacheConfig.add( createCacheConfig( "User" ) );
-		CacheConfiguration cc = createCacheConfig( "Address", "id" );
-		QueryEntity queryEntity = (QueryEntity)cc.getQueryEntities().iterator();
-		queryEntity.addQueryField("street", String.class.getName(), null);
-		queryEntity.addQueryField("city", String.class.getName(), null);
-		cacheConfig.add( cc );
+		cacheConfig.add(
+			addQueryField( addQueryField(
+				createCacheConfig( "Address", "id" ),
+					"street", String.class ),
+					"city", String.class)
+		);
 		cacheConfig.add( createCacheConfig( "User_Address", "User_id" ) );
 		cacheConfig.add( createCacheConfig( "User_PhoneNumber", "User_id" ) );
 		cacheConfig.add( createCacheConfig( "Nicks", "user_id" ) );
@@ -134,13 +140,109 @@ public class IgniteTestConfigurationBuilder {
 		cacheConfig.add( createCacheConfig( "Husband", "wife" ) );
 		cacheConfig.add( createCacheConfig( "Wife" ) );
 // CompositeIdTest
+		cacheConfig.add(
+			addQueryField(
+				createCacheConfig( "News", "id" ),
+				"content", String.class
+			)
+		);
+		cacheConfig.add( createCacheConfig( "Label" ) );
+		cacheConfig.add( createCacheConfig( "News_Label" ) );
+// AutoIdGeneratorWithSessionTest
+		cacheConfig.add( createCacheConfig( "DistributedRevisionControl" ) );
+// TableIdGeneratorTest
+		cacheConfig.add( createCacheConfig( "Music" ) );
+		cacheConfig.add( createCacheConfig( "Video" ) );
+		cacheConfig.add( createCacheConfig( "Composer" ) );
+// EmbeddableExtraTest
+		cacheConfig.add( createCacheConfig( "MultiAddressAccount" ) );
+		cacheConfig.add( createCacheConfig( "AccountWithPhone" ) );
+		cacheConfig.add( createCacheConfig( "Order" ) );
+		cacheConfig.add( createCacheConfig( "AccountWithPhone_phoneNumber" ) );
+		cacheConfig.add( createCacheConfig( "MultiAddressAccount_addresses" ) );
+		cacheConfig.add( createCacheConfig( "Order_shippingAddress" ) );
+// SharedPrimaryKeyTest
+		cacheConfig.add( createCacheConfig( "CoffeeMug" ) );
+		cacheConfig.add( createCacheConfig( "Lid" ) );
+// JPAPolymorphicCollectionTest
+		cacheConfig.add( createCacheConfig( "Hero" ) );
+		cacheConfig.add( createCacheConfig( "SuperHero" ) );
+		cacheConfig.add( createCacheConfig( "HeroClub" ) );
+		cacheConfig.add( createCacheConfig( "HeroClub_Hero" ) );
+// JPATablePerClassFindTest
+		cacheConfig.add( createCacheConfig( "CommunityMember" ) );
+		cacheConfig.add( createCacheConfig( "Employee", "EmployerID" ) );
+// InnerClassFindTest
+		cacheConfig.add( createCacheConfig( "employee" ) );
+// SimpleQueriesTest
+		cacheConfig.add( 
+			addQueryField( addQueryField( addQueryField( addQueryField(	
+				createCacheConfig( "Hypothesis", "id" ),
+					"description", String.class ),
+					"pos", Integer.class ),
+					"date", Date.class ),
+					"author_id", Long.class )
+		);
+		cacheConfig.add( 
+			addQueryField( addQueryField( 
+				createCacheConfig( "Helicopter", "uuid" ),
+					"helicopterName", String.class ),
+					"make", String.class )
+		);
+		cacheConfig.add( 
+			addQueryField(
+				createCacheConfig( "Author", "id" ),
+					"address_id", String.class )
+		);
+// QueriesWithEmbeddedTest
+		cacheConfig.add( 
+			addQueryField( addQueryField( addQueryField( addQueryField(	addQueryField(
+				createCacheConfig( "StoryGame", "id" ),
+					"storyText", String.class ),
+					"evilText", String.class ),
+					"goodText", String.class ),
+					"text", String.class ),
+					"score", Integer.class )
+		);
+// QueryWithParametersTest
+		cacheConfig.add( 
+			addQueryField( addQueryField( addQueryField( addQueryField(	addQueryField(
+				createCacheConfig( "Movie", "id" ),
+					"genre", Integer.class ),
+					"title", String.class ),
+					"suitableForKids", String.class ),
+					"releaseDate", Date.class ),
+					"viewerRating", Byte.class )
+		);
+// BuiltInTypeTest
+		cacheConfig.add( 
+			addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField(
+				createCacheConfig( "Movie", "id" ),
+					"isPrivate", String.class ),
+					"isRead", String.class ),
+					"isShared", Integer.class ),
+					"classifier", String.class ),
+					"classifierAsOrdinal", Byte.class ),
+					"creationDate", Date.class ),
+					"destructionDate", Date.class ),
+					"creationCalendar", Date.class ),
+					"destructionCalendar", Date.class ),
+					"siteWeight", BigDecimal.class ),
+					"visitCount", BigInteger.class )
+		);
+		
+		
 		
 		config.setCacheConfiguration(cacheConfig.toArray( new CacheConfiguration[cacheConfig.size()] ));
 		
 		return config;
 	}
 	
-//	private CacheConfiguration addQueryFields( CacheConfiguration cacheConfig, Query ) 
+	private CacheConfiguration addQueryField( CacheConfiguration cacheConfig, String fullName, Class<?> type ) {
+		QueryEntity queryEntity = (QueryEntity)cacheConfig.getQueryEntities().iterator();
+		queryEntity.addQueryField(fullName, type.getName(), null);
+		return cacheConfig;
+	}
 	
 	private CacheConfiguration createCacheConfig( String name, String... indexedFields ) {
 		CacheConfiguration<String, BinaryObject> result = new CacheConfiguration<>();
