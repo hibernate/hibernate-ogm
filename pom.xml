@@ -31,7 +31,6 @@
         <module>couchdb</module>
         <module>cassandra</module>
         <module>redis</module>
-        <module>ignite</module>
         <module>jipijapa</module>
         <module>ignite</module>
         <!-- <module>modules</module> The modules require all of the above modules to be enabled -->
