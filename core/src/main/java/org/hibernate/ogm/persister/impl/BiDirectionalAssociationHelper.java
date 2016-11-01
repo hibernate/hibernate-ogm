@@ -11,7 +11,6 @@ import java.util.Arrays;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.entity.Loadable;
@@ -78,7 +77,7 @@ public class BiDirectionalAssociationHelper {
 			if ( type.isCollectionType() ) {
 				OgmCollectionPersister inverseCollectionPersister = getPersister( factory, (CollectionType) type );
 				String mappedByProperty = inverseCollectionPersister.getMappedByProperty();
-				if ( StringHelper.isEmpty( mappedByProperty ) || mainSideProperty.equals( mappedByProperty ) ) {
+				if ( mainSideProperty.equals( mappedByProperty ) ) {
 					if ( isCollectionMatching( mainSideJoinable, inverseCollectionPersister ) ) {
 						return inverseCollectionPersister.getAssociationKeyMetadata();
 					}

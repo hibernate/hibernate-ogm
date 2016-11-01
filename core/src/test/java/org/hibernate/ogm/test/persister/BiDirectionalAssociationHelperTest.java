@@ -63,13 +63,10 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 		assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "bankAccounts_id" } );
 		assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "bankAccounts_id", "owners_id" } );
 
-		// obtain main side collection from the inverse side
+		// return null from the inverse side
 		entityPersister = getEntityPersister( BankAccount.class.getName() );
 		AssociationKeyMetadata mainSideAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "owners" ) );
-		assertThat( mainSideAssociationKeyMetadata ).isNotNull();
-		assertThat( mainSideAssociationKeyMetadata.getTable() ).isEqualTo( "AccountOwner_BankAccount" );
-		assertThat( mainSideAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "owners_id" } );
-		assertThat( mainSideAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "owners_id", "bankAccounts_id" } );
+		assertThat( mainSideAssociationKeyMetadata ).isNull();
 	}
 
 	@Test
