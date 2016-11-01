@@ -12,13 +12,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.QueryEntity;
+import org.apache.ignite.cache.QueryIndex;
 import org.apache.ignite.cache.QueryIndexType;
 import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
 import org.apache.ignite.configuration.CacheConfiguration;
@@ -34,7 +37,6 @@ import org.hibernate.ogm.datastore.ignite.IgniteConfigurationBuilder;
  */
 public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilder {
 
-
 	@Override
 	public IgniteConfiguration build() {
 
@@ -45,7 +47,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 			config = createConfig();
 		}
 		catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new RuntimeException( ex );
 		}
 
 		return config;
@@ -58,7 +60,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 
 	private IgniteConfiguration createConfig() {
 		IgniteConfiguration config = new IgniteConfiguration();
-		
+
 		config.setGridName( "OgmTestGrid" );
 		config.setLocalHost( "127.0.0.1" );
 		config.setPeerClassLoadingEnabled( true );
@@ -66,202 +68,228 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		config.setMarshaller( new BinaryMarshaller() );
 		config.setGridLogger( new Slf4jLogger() );
 		config.setPublicThreadPoolSize( 2 );
-		
-		List<CacheConfiguration> cacheConfig = new ArrayList<>(); 
+
+		List<CacheConfiguration> cacheConfig = new ArrayList<>();
 // SequenceIdGeneratorTest
-		cacheConfig.add( createCacheConfig( "Song" ) );
-		cacheConfig.add( createCacheConfig( "Actor" ) );
+		cacheConfig.add( simpleCacheConfig( "Song" ) );
+		cacheConfig.add( simpleCacheConfig( "Actor" ) );
 // JPAResourceLocalTest
-		cacheConfig.add( createCacheConfig( "Poem" ) );
-// ManyToManyTest		
-		cacheConfig.add( createCacheConfig( "Car" ) );
-		cacheConfig.add( createCacheConfig( "Tire" ) );
-		cacheConfig.add( createCacheConfig( "Car_Tire" ) );
-		cacheConfig.add( createCacheConfig( "AccountOwner" ) );
-		cacheConfig.add( createCacheConfig( "BankAccount" ) );
-		cacheConfig.add( createCacheConfig( "AccountOwner_BankAccount" ) );
+		cacheConfig.add( simpleCacheConfig( "Poem" ) );
+// ManyToManyTest
+		cacheConfig.add( simpleCacheConfig( "Car" ) );
+		cacheConfig.add( simpleCacheConfig( "Tire" ) );
+		cacheConfig.add( simpleCacheConfig( "Car_Tire" ) );
+		cacheConfig.add( simpleCacheConfig( "AccountOwner" ) );
+		cacheConfig.add( simpleCacheConfig( "BankAccount" ) );
+		cacheConfig.add( simpleCacheConfig( "AccountOwner_BankAccount" ) );
 // ListTest
-		cacheConfig.add( createCacheConfig( "Child", "Father_id" ) ); 
-		cacheConfig.add( createCacheConfig( "Father" ) );
-		cacheConfig.add( createCacheConfig( "Father_child", "Father_id" ) );
-		cacheConfig.add( createCacheConfig( "GrandChild" ) );
-		cacheConfig.add( createCacheConfig( "GrandMother", "id" ) );
-		cacheConfig.add( createCacheConfig( "GrandMother_grandChildren", "GrandMother_id" ) );
-		cacheConfig.add( createCacheConfig( "Race" ) );
-		cacheConfig.add( createCacheConfig( "Runner" ) );
-		cacheConfig.add( createCacheConfig( "Race_Runners", "Race_raceId" ) );
+		cacheConfig.add( createCacheConfig( "Child" ).appendIndex( "Father_id", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "Father" ) );
+		cacheConfig.add( createCacheConfig( "Father_child" ).appendIndex( "Father_id", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "GrandChild" ) );
+		cacheConfig.add( createCacheConfig( "GrandMother" ).appendIndex( "id", String.class ).build() );
+		cacheConfig.add( createCacheConfig( "GrandMother_grandChildren" ).appendIndex( "GrandMother_id", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "Race" ) );
+		cacheConfig.add( simpleCacheConfig( "Runner" ) );
+		cacheConfig.add( createCacheConfig( "Race_Runners" ).appendIndex( "Race_raceId", String.class ).build() );
 // ManyToManyExtraTest
-		cacheConfig.add( createCacheConfig( "Student" ) );
-		cacheConfig.add( createCacheConfig( "ClassRoom" ) );
-		cacheConfig.add( createCacheConfig( "ClassRoom_Student" ) );
+		cacheConfig.add( simpleCacheConfig( "Student" ) );
+		cacheConfig.add( simpleCacheConfig( "ClassRoom" ) );
+		cacheConfig.add( simpleCacheConfig( "ClassRoom_Student" ) );
 // MapTest
-		cacheConfig.add( createCacheConfig( "PhoneNumber" ) );
-		cacheConfig.add( createCacheConfig( "Enterprise" ) );
-		cacheConfig.add( createCacheConfig( "Enterprise_revenueByDepartment", "Enterprise_revenueByDepartment" ) );
-		cacheConfig.add( createCacheConfig( "Enterprise_departments", "Enterprise_revenueByDepartment" ) );
-		cacheConfig.add( createCacheConfig( "Department" ) );
-		cacheConfig.add( createCacheConfig( "User" ) );
+		cacheConfig.add( simpleCacheConfig( "PhoneNumber" ) );
+		cacheConfig.add( simpleCacheConfig( "Enterprise" ) );
+		cacheConfig.add( createCacheConfig( "Enterprise_revenueByDepartment" ).appendIndex( "Enterprise_id", String.class ).build() );
+		cacheConfig.add( createCacheConfig( "Enterprise_departments" ).appendIndex( "Enterprise_id", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "Department" ) );
+		cacheConfig.add( simpleCacheConfig( "User" ) );
 		cacheConfig.add(
-			addQueryField( addQueryField(
-				createCacheConfig( "Address", "id" ),
-					"street", String.class ),
-					"city", String.class)
+				createCacheConfig( "Address" )
+						.appendIndex( "id", String.class )
+						.appendField( "street", String.class )
+						.appendField( "city", String.class )
+						.build()
 		);
-		cacheConfig.add( createCacheConfig( "User_Address", "User_id" ) );
-		cacheConfig.add( createCacheConfig( "User_PhoneNumber", "User_id" ) );
-		cacheConfig.add( createCacheConfig( "Nicks", "user_id" ) );
+		cacheConfig.add( createCacheConfig( "User_Address" ).appendIndex( "User_id", String.class ).build() );
+		cacheConfig.add( createCacheConfig( "User_PhoneNumber" ).appendIndex( "User_id", String.class ).build() );
+		cacheConfig.add( createCacheConfig( "Nicks" ).appendIndex( "user_id", String.class ).build() );
 // CollectionUnidirectionalTest
-		cacheConfig.add( createCacheConfig( "Cloud" ) );
-		cacheConfig.add( createCacheConfig( "SnowFlake" ) );
-		cacheConfig.add( createCacheConfig( "joinProducedSnowflakes", "Cloud_id" ) );
-		cacheConfig.add( createCacheConfig( "joinBackupSnowflakes" ) );
+		cacheConfig.add( simpleCacheConfig( "Cloud" ) );
+		cacheConfig.add( simpleCacheConfig( "SnowFlake" ) );
+		cacheConfig.add( createCacheConfig( "joinProducedSnowflakes" ).appendIndex( "Cloud_id", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "joinBackupSnowflakes" ) );
 // ReferencedCompositeIdTest
-		cacheConfig.add( createCacheConfig( "Director" ) );
-		cacheConfig.add( createCacheConfig( "Tournament" ) );
-		cacheConfig.add( createCacheConfig( "Director_Tournament" ) );
+		cacheConfig.add( simpleCacheConfig( "Director" ) );
+		cacheConfig.add( simpleCacheConfig( "Tournament" ) );
+		cacheConfig.add( simpleCacheConfig( "Director_Tournament" ) );
 // ManyToOneExtraTest
-		cacheConfig.add( createCacheConfig( "Basket" ) );
-		cacheConfig.add( createCacheConfig( "Product" ) );
-		cacheConfig.add( createCacheConfig( "Basket_Product", "Basket_id" ) );
-// ManyToOneTest	
-		cacheConfig.add( createCacheConfig( "JUG" ) );
-		cacheConfig.add( createCacheConfig( "Member" ) );
-		cacheConfig.add( createCacheConfig( "SalesForce" ) );
-		cacheConfig.add( createCacheConfig( "SalesGuy", "salesForce_id" ) );
-		cacheConfig.add( createCacheConfig( "Beer", "brewery_id" ) );
-		cacheConfig.add( createCacheConfig( "Brewery" ) );
-		cacheConfig.add( createCacheConfig( "Game" ) );
-		cacheConfig.add( createCacheConfig( "Court" ) );
+		cacheConfig.add( simpleCacheConfig( "Basket" ) );
+		cacheConfig.add( simpleCacheConfig( "Product" ) );
+		cacheConfig.add( createCacheConfig( "Basket_Product" ).appendIndex( "Basket_id", String.class ).build() );
+// ManyToOneTest
+		cacheConfig.add( simpleCacheConfig( "JUG" ) );
+		cacheConfig.add( simpleCacheConfig( "Member" ) );
+		cacheConfig.add( simpleCacheConfig( "SalesForce" ) );
+		cacheConfig.add( createCacheConfig( "SalesGuy" ).appendIndex( "salesForce_id", String.class ).build() );
+		cacheConfig.add( createCacheConfig( "Beer" ).appendIndex( "brewery_id", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "Brewery" ) );
+		cacheConfig.add( simpleCacheConfig( "Game" ) );
+		cacheConfig.add( simpleCacheConfig( "Court" ) );
 // OneToOneTest
-		cacheConfig.add( createCacheConfig( "Horse" ) );
-		cacheConfig.add( createCacheConfig( "Cavalier" ) );
-		cacheConfig.add( createCacheConfig( "Vehicule" ) );
-		cacheConfig.add( createCacheConfig( "Wheel" ) );
-		cacheConfig.add( createCacheConfig( "Husband", "wife" ) );
-		cacheConfig.add( createCacheConfig( "Wife" ) );
+		cacheConfig.add( simpleCacheConfig( "Horse" ) );
+		cacheConfig.add( simpleCacheConfig( "Cavalier" ) );
+		cacheConfig.add( simpleCacheConfig( "Vehicule" ) );
+		cacheConfig.add( simpleCacheConfig( "Wheel" ) );
+		cacheConfig.add( createCacheConfig( "Husband" ).appendIndex( "wife", String.class ).build() );
+		cacheConfig.add( simpleCacheConfig( "Wife" ) );
 // CompositeIdTest
 		cacheConfig.add(
-			addQueryField(
-				createCacheConfig( "News", "id" ),
-				"content", String.class
-			)
+				createCacheConfig( "News" )
+						.appendIndex( "newsId", Object.class )
+						.appendField( "content", String.class )
+						.build()
 		);
-		cacheConfig.add( createCacheConfig( "Label" ) );
-		cacheConfig.add( createCacheConfig( "News_Label" ) );
+		cacheConfig.add( simpleCacheConfig( "Label" ) );
+		cacheConfig.add( simpleCacheConfig( "News_Label" ) );
 // AutoIdGeneratorWithSessionTest
-		cacheConfig.add( createCacheConfig( "DistributedRevisionControl" ) );
+		cacheConfig.add( simpleCacheConfig( "DistributedRevisionControl" ) );
 // TableIdGeneratorTest
-		cacheConfig.add( createCacheConfig( "Music" ) );
-		cacheConfig.add( createCacheConfig( "Video" ) );
-		cacheConfig.add( createCacheConfig( "Composer" ) );
+		cacheConfig.add( simpleCacheConfig( "Music" ) );
+		cacheConfig.add( simpleCacheConfig( "Video" ) );
+		cacheConfig.add( simpleCacheConfig( "Composer" ) );
 // EmbeddableExtraTest
-		cacheConfig.add( createCacheConfig( "MultiAddressAccount" ) );
-		cacheConfig.add( createCacheConfig( "AccountWithPhone" ) );
-		cacheConfig.add( createCacheConfig( "Order" ) );
-		cacheConfig.add( createCacheConfig( "AccountWithPhone_phoneNumber" ) );
-		cacheConfig.add( createCacheConfig( "MultiAddressAccount_addresses" ) );
-		cacheConfig.add( createCacheConfig( "Order_shippingAddress" ) );
+		cacheConfig.add( simpleCacheConfig( "MultiAddressAccount" ) );
+		cacheConfig.add( simpleCacheConfig( "AccountWithPhone" ) );
+		cacheConfig.add( simpleCacheConfig( "Order" ) );
+		cacheConfig.add( simpleCacheConfig( "AccountWithPhone_phoneNumber" ) );
+		cacheConfig.add( simpleCacheConfig( "MultiAddressAccount_addresses" ) );
+		cacheConfig.add( simpleCacheConfig( "Order_shippingAddress" ) );
 // SharedPrimaryKeyTest
-		cacheConfig.add( createCacheConfig( "CoffeeMug" ) );
-		cacheConfig.add( createCacheConfig( "Lid" ) );
+		cacheConfig.add( simpleCacheConfig( "CoffeeMug" ) );
+		cacheConfig.add( simpleCacheConfig( "Lid" ) );
 // JPAPolymorphicCollectionTest
-		cacheConfig.add( createCacheConfig( "Hero" ) );
-		cacheConfig.add( createCacheConfig( "SuperHero" ) );
-		cacheConfig.add( createCacheConfig( "HeroClub" ) );
-		cacheConfig.add( createCacheConfig( "HeroClub_Hero" ) );
+		cacheConfig.add( simpleCacheConfig( "Hero" ) );
+		cacheConfig.add( simpleCacheConfig( "SuperHero" ) );
+		cacheConfig.add( simpleCacheConfig( "HeroClub" ) );
+		cacheConfig.add( simpleCacheConfig( "HeroClub_Hero" ) );
 // JPATablePerClassFindTest
-		cacheConfig.add( createCacheConfig( "CommunityMember" ) );
-		cacheConfig.add( createCacheConfig( "Employee", "EmployerID" ) );
+		cacheConfig.add( simpleCacheConfig( "CommunityMember" ) );
+		cacheConfig.add( createCacheConfig( "Employee" ).appendIndex( "EmployerID", String.class ).build() );
 // InnerClassFindTest
-		cacheConfig.add( createCacheConfig( "employee" ) );
+		cacheConfig.add( simpleCacheConfig( "employee" ) );
 // SimpleQueriesTest
-		cacheConfig.add( 
-			addQueryField( addQueryField( addQueryField( addQueryField(	
-				createCacheConfig( "Hypothesis", "id" ),
-					"description", String.class ),
-					"pos", Integer.class ),
-					"date", Date.class ),
-					"author_id", Long.class )
+		cacheConfig.add(
+				createCacheConfig( "Hypothesis" )
+						.appendIndex( "id", String.class )
+						.appendField( "description", String.class )
+						.appendField( "pos", Integer.class )
+						.appendField( "date", Date.class )
+						.appendField( "author_id", Long.class )
+						.build()
 		);
-		cacheConfig.add( 
-			addQueryField( addQueryField( 
-				createCacheConfig( "Helicopter", "uuid" ),
-					"helicopterName", String.class ),
-					"make", String.class )
+		cacheConfig.add(
+				createCacheConfig( "Helicopter" )
+						.appendIndex( "uuid", String.class )
+						.appendField( "helicopterName", String.class )
+						.appendField( "make", String.class )
+						.build()
 		);
-		cacheConfig.add( 
-			addQueryField(
-				createCacheConfig( "Author", "id" ),
-					"address_id", String.class )
+		cacheConfig.add(
+				createCacheConfig( "Author" )
+						.appendIndex( "id", Long.class )
+						.appendIndex( "address_id", Long.class )
+						.build()
 		);
 // QueriesWithEmbeddedTest
-		cacheConfig.add( 
-			addQueryField( addQueryField( addQueryField( addQueryField(	addQueryField(
-				createCacheConfig( "StoryGame", "id" ),
-					"storyText", String.class ),
-					"evilText", String.class ),
-					"goodText", String.class ),
-					"text", String.class ),
-					"score", Integer.class )
+		cacheConfig.add(
+				createCacheConfig( "StoryGame" )
+						.appendIndex( "id", Long.class )
+						.appendField( "storyText", String.class )
+						.appendField( "evilText", String.class )
+						.appendField( "goodText", String.class )
+						.appendField( "text", String.class )
+						.appendField( "score", Integer.class )
+						.build()
 		);
 // QueryWithParametersTest
-		cacheConfig.add( 
-			addQueryField( addQueryField( addQueryField( addQueryField(	addQueryField(
-				createCacheConfig( "Movie", "id" ),
-					"genre", Integer.class ),
-					"title", String.class ),
-					"suitableForKids", String.class ),
-					"releaseDate", Date.class ),
-					"viewerRating", Byte.class )
+		cacheConfig.add(
+				createCacheConfig( "Movie" )
+						.appendIndex( "id", String.class )
+						.appendField( "genre", Integer.class )
+						.appendField( "title", String.class )
+						.appendField( "suitableForKids", String.class )
+						.appendField( "releaseDate", Date.class )
+						.appendField( "viewerRating", Byte.class )
+						.build()
 		);
 // BuiltInTypeTest
-		cacheConfig.add( 
-			addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField( addQueryField(
-				createCacheConfig( "Movie", "id" ),
-					"isPrivate", String.class ),
-					"isRead", String.class ),
-					"isShared", Integer.class ),
-					"classifier", String.class ),
-					"classifierAsOrdinal", Byte.class ),
-					"creationDate", Date.class ),
-					"destructionDate", Date.class ),
-					"creationCalendar", Date.class ),
-					"destructionCalendar", Date.class ),
-					"siteWeight", BigDecimal.class ),
-					"visitCount", BigInteger.class )
+		cacheConfig.add(
+				createCacheConfig( "Bookmark" )
+						.appendIndex( "id", String.class )
+						.appendField( "isPrivate", String.class )
+						.appendField( "isRead", String.class )
+						.appendField( "isShared", Integer.class )
+						.appendField( "classifier", String.class )
+						.appendField( "classifierAsOrdinal", Byte.class )
+						.appendField( "creationDate", Date.class )
+						.appendField( "destructionDate", Date.class )
+						.appendField( "creationCalendar", Date.class )
+						.appendField( "destructionCalendar", Date.class )
+						.appendField( "siteWeight", BigDecimal.class )
+						.appendField( "visitCount", BigInteger.class )
+						.build()
 		);
-		
-		
-		
-		config.setCacheConfiguration(cacheConfig.toArray( new CacheConfiguration[cacheConfig.size()] ));
-		
+
+		config.setCacheConfiguration( cacheConfig.toArray( new CacheConfiguration[ cacheConfig.size() ] ) );
+
 		return config;
 	}
-	
-	private CacheConfiguration addQueryField( CacheConfiguration cacheConfig, String fullName, Class<?> type ) {
-		QueryEntity queryEntity = (QueryEntity)cacheConfig.getQueryEntities().iterator();
-		queryEntity.addQueryField(fullName, type.getName(), null);
-		return cacheConfig;
-	}
-	
-	private CacheConfiguration createCacheConfig( String name, String... indexedFields ) {
-		CacheConfiguration<String, BinaryObject> result = new CacheConfiguration<>();
-		
-		result.setAtomicityMode( CacheAtomicityMode.TRANSACTIONAL );
-		result.setCacheMode( CacheMode.PARTITIONED );
-		result.setStartSize( 10 );
-		result.setBackups( 0 );
-		result.setAffinity( new RendezvousAffinityFunction( false, 10 ) );
-		result.setName(name);
-		QueryEntity queryEntity = new QueryEntity( String.class.getName(), name );
-		if ( indexedFields != null ) {
-			for (String field : indexedFields) {
-				queryEntity.ensureIndex( field, QueryIndexType.SORTED );
-			}
-		}
-		result.setQueryEntities( Arrays.asList( queryEntity ) );
-		
-		return result;
+
+	private CacheConfiguration simpleCacheConfig( String name ) {
+		return new TestCacheConfigBuilder( name ).build();
 	}
 
+	private TestCacheConfigBuilder createCacheConfig( String name ) {
+		return new TestCacheConfigBuilder( name );
+	}
+
+	private class TestCacheConfigBuilder {
+
+		private CacheConfiguration<String, BinaryObject> cacheConfig;
+		private QueryEntity queryEntity;
+		private Map<String, QueryIndex> indexes;
+
+		public TestCacheConfigBuilder(String name) {
+			cacheConfig = new CacheConfiguration<>();
+			cacheConfig.setAtomicityMode( CacheAtomicityMode.TRANSACTIONAL );
+			cacheConfig.setCacheMode( CacheMode.PARTITIONED );
+			cacheConfig.setStartSize( 10 );
+			cacheConfig.setBackups( 0 );
+			cacheConfig.setAffinity( new RendezvousAffinityFunction( false, 10 ) );
+			cacheConfig.setName( name );
+
+			queryEntity = new QueryEntity( String.class.getName(), name );
+
+			indexes = new HashMap<>();
+		}
+
+		public TestCacheConfigBuilder appendField( String fieldName, Class<?> fieldType ) {
+			queryEntity.addQueryField( fieldName, fieldType.getName(), null );
+			return this;
+		}
+
+		public TestCacheConfigBuilder appendIndex( String fieldName, Class<?> fieldType ) {
+			queryEntity.addQueryField( fieldName, fieldType.getName(), null );
+			indexes.put( fieldName, new QueryIndex( fieldName, QueryIndexType.SORTED ) );
+			return this;
+		}
+
+		public CacheConfiguration<String, BinaryObject> build() {
+			if ( !indexes.isEmpty() || !queryEntity.getFields().isEmpty() ) {
+				queryEntity.setIndexes( indexes.values() );
+				cacheConfig.setQueryEntities( Arrays.asList( queryEntity ) );
+			}
+			return cacheConfig;
+		}
+	}
 }

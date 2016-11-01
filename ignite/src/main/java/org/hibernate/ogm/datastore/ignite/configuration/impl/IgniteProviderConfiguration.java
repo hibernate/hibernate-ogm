@@ -87,6 +87,7 @@ public class IgniteProviderConfiguration {
 		if ( configBuilderClass != null ) {
 			try {
 				IgniteConfigurationBuilder configBuilder = configBuilderClass.newInstance();
+				conf = configBuilder.build();
 			}
 			catch (InstantiationException | IllegalAccessException ex) {
 				throw log.unableToStartDatastoreProvider( ex );

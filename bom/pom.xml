@@ -607,18 +607,6 @@
 			</dependency>
 	        <dependency>
 	            <groupId>org.apache.ignite</groupId>
-	            <artifactId>ignite-spring</artifactId>
-	            <version>${igniteVersion}</version>
-	            <scope>test</scope>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-	        <dependency>
-	            <groupId>org.apache.ignite</groupId>
 	            <artifactId>ignite-slf4j</artifactId>
 	            <version>${igniteVersion}</version>
 	            <scope>test</scope>
