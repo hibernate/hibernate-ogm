@@ -12,6 +12,13 @@ import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
 /**
  * Properties for configuring the Infinispan Remote datastore via {@code persistence.xml} or
  * {@link StandardServiceRegistryBuilder}.
+ * <p>
+ * It is possible to configure the Hot Rod (Infinispan remote) client prefixing them with 'hibernate.ogm.infinispan_remote.client.'.
+ * For example, the property 'infinispan.client.hotrod.tcp_no_delay' can be set in the hibernate.properties file
+ * using 'hibernate.ogm.infinispan_remote.client.infinispan.client.hotrod.tcp_no_delay'.
+ * <p>
+ * Properties expressed with the prefix 'hibernate.ogm.infinispan_remote.client.' will override the same properties
+ * expressed in the configuration file.
  */
 public final class InfinispanRemoteProperties implements KeyValueStoreProperties {
 
@@ -20,6 +27,11 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	 * for the Hot Rod (Infinispan remote) client.
 	 */
 	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.infinispan_remote.configuration_resource_name";
+
+	/**
+	 * Prefix for the Hot Rod (Infinispan remote) client properties.
+	 */
+	public static final String HOT_ROD_CLIENT_PREFIX = "hibernate.ogm.infinispan_remote.client.";
 
 	/**
 	 * You can inject an instance of {@link org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture} into
