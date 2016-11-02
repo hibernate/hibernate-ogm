@@ -134,7 +134,7 @@ public class InfinispanRemoteConfiguration {
 	}
 
 	/**
-	 * Initialize the internal values form the given {@link Map}.
+	 * Initialize the internal values from the given {@link Map}.
 	 *
 	 * @param configurationMap
 	 *            The values to use as configuration
