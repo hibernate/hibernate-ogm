@@ -14,7 +14,7 @@ after all Hibernate OGM _is_ Hibernate ORM.
 
 Pretty much all entity related constructs should work out of the box in Hibernate OGM.
 [classname]`@Entity`, [classname]`@Table`, [classname]`@Column`,
-[classname]`@Enumarated`, [classname]`@Temporal`, [classname]`@Cacheable`
+[classname]`@Enumerated`, [classname]`@Temporal`, [classname]`@Cacheable`
 and the like will work as expected.
 If you want an example,
 check out <<ogm-gettingstarted>> or the documentation of Hibernate ORM.
@@ -111,8 +111,12 @@ than the traditional RDBMS representation.
 Each chapter dedicated to a datastore describes how associations are persisted,
 make sure to check them out.
 
-Keep in mind that collections with many entries won't perform very well
-in Hibernate OGM (at least today)
-as all of the association navigation for a given entity is stored in a single key.
-If your collection is made of 1 million elements,
-Hibernate OGM stores 1 million tuples in the association key.
+Not all types of associations can be mapped efficiently on all datastores:
+this will depend on the specific capabilities of the NoSQL technology being used.
+For example the key/value stores will have all of the association navigation for
+a given entity stored in a single key.
+If your collection is made of 1 million elements, Hibernate OGM will have to
+store 1 million tuples in the association key.
+For example the Infinispan Embedded dialect suffers from this limitation as it's
+treated as a pure key/value store, while the Infinispan Remote dialect does not
+as it is more similar to a document store.

@@ -51,8 +51,8 @@ by the notion of a [classname]`DatastoreProvider` and a [classname]`GridDialect`
 
 * [classname]`DatastoreProvider` abstracts how to start
   and maintain a connection between Hibernate OGM and the datastore.
-* [classname]`GridDialect` abstracts how data itself including association
-  is persisted.
+* [classname]`GridDialect` abstracts how data itself including associations
+  are persisted.
 
 
 Think of them as the JDBC layer for our NoSQL stores.
@@ -64,7 +64,8 @@ are implemented by the Hibernate ORM engine
 As of today, we have implemented the following datastore providers:
 
 * a HashMap based datastore provider (for testing)
-* an Infinispan based datastore provider to persist your entities in Infinispan
+* an Infinispan Embedded datastore provider to persist your entities in an Infinispan instance running within the same JVM
+* an Infinispan Remote datastore provider to persist your entities in Infinispan over a remote Hot Rod client
 * an Ehcache based datastore provider to persist your entities in Ehcache
 * a MongoDB based datastore provider to persist data in a MongoDB database
 * a Neo4j based datastore provider to persist data in the Neo4j graph database
@@ -74,8 +75,8 @@ As of today, we have implemented the following datastore providers:
 
 To implement JP-QL queries, Hibernate OGM parses the JP-QL string
 and calls the appropriate translator functions to build a native query.
-If the underlying engine does not have any query support,
-we use Hibernate Search as an external query engine.
+Since not all NoSQL technologies support querying, when lacking we can
+use Hibernate Search as an external query engine.
 
 We will discuss the subject of querying
 in more details in <<ogm-architecture-dataqueried>>.

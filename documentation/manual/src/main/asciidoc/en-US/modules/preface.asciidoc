@@ -95,7 +95,7 @@ to a particular NoSQL solution which better fits the typical use case.
 Today, Hibernate OGM does not support all of these goals.
 Here is a list of what we have:
 
-* store data in key/value stores (Infinispan's datagrid and Ehcache)
+* store data in key/value stores (Infinispan and Ehcache)
 * store data in document stores (MongoDB and CouchDB - the latter in preview)
 * store data in graph databases (Neo4J)
 * Create, Read, Update and Delete operations (CRUD) for entities

@@ -9,7 +9,7 @@ This makes its configuration quite simple by default.
 
 Hibernate OGM can be used via the Hibernate native APIs ([classname]`Session`)
 or via the JPA APIs ([classname]`EntityManager`).
-Depending of your choice, the bootstrapping strategy is slightly different.
+Depending on your choice, the bootstrapping strategy is slightly different.
 
 ==== Using JPA
 
@@ -57,10 +57,12 @@ You also need to configure which NoSQL datastore you want to use
 and how to connect to it.
 We will detail how to do that later in <<ogm-datastore-providers>>.
 
-In this case, we have used the defaults settings for Infinispan:
+In this case, we have used the default settings for Infinispan:
 this will start a local, in-memory Infinispan instance which is useful for testing
 but the stored data will be lost on shutdown.
-You might think of this configuration as similar to storing your data in an hashmap.
+You might think of this configuration as similar to storing your data in an hashmap,
+but you could of course change the Infinispan configuration to enable clustering
+(for both scalability and failover) and to enable permanent persistence strategies.
 
 From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 
@@ -116,7 +118,7 @@ OgmSessionFactory sessionFactory = new MetadataSources( registry )
 There are a couple of things to notice:
 
 * there is no DDL schema generation options (`hbm2ddl`)
-  as Infinispan does not require schemas
+  as Infinispan does not require schemas when running in embedded mode
 * you need to set the right transaction strategy
   and the right transaction manager lookup strategy
   if you use a JTA based transaction strategy

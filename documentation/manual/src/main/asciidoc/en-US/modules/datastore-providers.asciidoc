@@ -6,7 +6,9 @@ Currently Hibernate OGM supports the following NoSQL datastores:
 
 * Map: stores data in an in-memory Java map to store data.
   Use it only for unit tests.
-* Infinispan: stores data into http://infinispan.org/[Infinispan] (data grid)
+* Infinispan Embedded: stores data into http://infinispan.org/[Infinispan] (data grid) participating directly in the cluster
+* Infinispan Remote: (also called Hot Rod, the name of the Infinispan client) stores data into http://infinispan.org/[Infinispan] by connecting as an Hot Rod client
+  - at this stage, this datastore is experimental
 * Ehcache: stores data into http://ehcache.org/[Ehcache] (cache)
 * MongoDB: stores data into http://www.mongodb.org/[MongoDB] (document store)
 * Neo4j: stores data into http://www.neo4j.org/[Neo4j] (graph database)
@@ -58,7 +60,7 @@ This is done via the `hibernate.ogm.datastore.provider` option.
 Possible values are:
 
 * specific shortcuts (preferable): `map` (only to be used for unit tests),
-  `infinispan`, `ehcache`, `mongodb`, `neo4j_embedded`, `couchdb_experimental` or `redis_experimental`
+  `infinispan_embedded`, `infinispan_remote`, `ehcache`, `mongodb`, `neo4j_embedded`, `couchdb_experimental` or `redis_experimental`
 * the fully qualified class name of a [classname]`DatastoreProvider` implementation
 
 [NOTE]

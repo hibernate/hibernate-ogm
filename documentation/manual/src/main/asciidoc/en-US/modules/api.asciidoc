@@ -161,7 +161,7 @@ transactionManager.commit(); // will flush changes to the datastore
 
 [NOTE]
 ====
-The error compensation API described in the following is an experimental feature.
+The error compensation API described in the following section is an experimental feature.
 It will be enriched with additional features over time.
 This might require changes to existing method signatures
 and thus may break code using a previous version of the API.
