@@ -1,6 +1,39 @@
 Hibernate OGM Changelog
 =======================
 
+5.1.0.Beta1 (08-11-2016)
+-------------------------
+
+** Bug
+    * OGM-1198 - core                      - Incorrect mapping of multiple associations with the same entity
+    * OGM-1187 - neo4j, tests              - Integration tests with Bolt are not executed during the build
+    * OGM-1157 -                           - Make sure that all AssertionFailures being thrown are not the one from HCANN
+
+** Improvement
+    * OGM-1200 - neo4j                     - Upgrade Neo4j to version 3.0.7
+    * OGM-1192 - build                     - Checkstyle: stricter ParenPad rule
+    * OGM-1185 - documentation             - Improve documentation about inheritance
+    * OGM-1006 - neo4j                     - Support the MassIndexer for Neo4j embedded on Wildfly
+
+** New Feature
+    * OGM-1189 - neo4j                     - Support execution of Native update queries for Neo4j
+    * OGM-353 - infinispan                - Create a Hot Rod (remote Infinispan) GridDialect
+
+** Sub-task
+    * OGM-1194 - build, infinispan         - Include the Hot Rod Dialect in the release distribution
+    * OGM-1173 - infinispan                - Pass-through of configuration properties to the client configuration
+    * OGM-1169 -                           - Deprecate DatastoreProviderType.INFINISPAN and migrate to DatastoreProviderType.INFINISPAN_EMBEDDED
+    * OGM-1164 - infinispan                - The Hot Rod Dialect sequence generator needs stress tests
+    * OGM-1163 - infinispan                - OgmProtoStreamMarshaller should not use a static ThreadLocal
+    * OGM-1162 - infinispan                - Strict validation of the Hot Rod client configuration
+    * OGM-1161 - infinispan                - Define an exit strategy from excessive spinning in HotRodSequencer
+    * OGM-1160 - build, infinispan         - Bundle the Hot Rod Dialect with the WildFly modules
+    * OGM-1159 - documentation, infinispan - Document the Infinispan Remote (Hot Rod) dialect
+
+** Task
+    * OGM-1203 - documentation             - Add neo4j_http and neo4j_bolt to the list of available datastore provider shortcuts
+    * OGM-1201 - mongodb                   - Update embedded mongodb for tests to version 3.2.10
+
 5.1.0.Alpha1 (07-10-2016)
 -------------------------
 
