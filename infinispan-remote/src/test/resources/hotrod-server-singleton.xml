@@ -38,6 +38,7 @@
         <local-cache name="Insurance" />
         <local-cache name="Song" />
         <local-cache name="Actor" />
+        <local-cache name="SequencedActor" />
         <local-cache name="CondominiumBuilding" />
         <local-cache name="CondominiumBuilding_Condominium" />
         <local-cache name="Tower" />
