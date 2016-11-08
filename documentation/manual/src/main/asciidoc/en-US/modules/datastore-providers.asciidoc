@@ -52,7 +52,9 @@ Adding the relevant Hibernate OGM module in your classpath looks like this in Ma
 ----
 
 The module names are
-`hibernate-ogm-infinispan`, `hibernate-ogm-ehcache`, `hibernate-ogm-mongodb`, `hibernate-ogm-neo4j`, `hibernate-ogm-couchdb`, `hibernate-ogm-redis` and `hibernate-ogm-cassandra`.
+`hibernate-ogm-infinispan`, `hibernate-ogm-infinispan-remote`, `hibernate-ogm-ehcache`,
+`hibernate-ogm-mongodb`, `hibernate-ogm-neo4j`, `hibernate-ogm-couchdb`, `hibernate-ogm-redis`
+and `hibernate-ogm-cassandra`.
 The map datastore is included in the Hibernate OGM engine module.
 
 Next, configure which datastore provider you want to use.
