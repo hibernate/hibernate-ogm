@@ -62,7 +62,8 @@ This is done via the `hibernate.ogm.datastore.provider` option.
 Possible values are:
 
 * specific shortcuts (preferable): `map` (only to be used for unit tests),
-  `infinispan_embedded`, `infinispan_remote`, `ehcache`, `mongodb`, `neo4j_embedded`, `couchdb_experimental` or `redis_experimental`
+  `infinispan_embedded`, `infinispan_remote`, `ehcache`, `mongodb`, `neo4j_embedded`,
+  `neo4j_http`, `neo4j_bolt`, `couchdb_experimental` or `redis_experimental`
 * the fully qualified class name of a [classname]`DatastoreProvider` implementation
 
 [NOTE]
