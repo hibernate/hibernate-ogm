@@ -1,6 +1,16 @@
 Hibernate OGM Changelog
 =======================
 
+5.0.3.Final (08-11-2016)
+-------------------------
+
+** Bug
+    * OGM-1198 - core          - Incorrect mapping of multiple associations with the same entity
+    * OGM-1157 -               - Make sure that all AssertionFailures being thrown are not the one from HCANN
+
+** Improvement
+    * OGM-1185 - documentation - Improve documentation about inheritance
+
 5.0.2.Final (07-10-2016)
 -------------------------
 
