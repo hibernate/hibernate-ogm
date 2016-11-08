@@ -131,7 +131,7 @@ other Infinispan nodes running in your network: the default is automatic discove
 
 ==== Adding Infinispan dependencies
 
-To add the dependencies for the Hibernate OGM extensions forInfinispan Embedded via Maven, add the following module:
+To add the dependencies for the Hibernate OGM extensions for Infinispan Embedded via Maven, add the following module:
 
 
 [source, XML]
@@ -2119,6 +2119,9 @@ prefix `hibernate.ogm.infinispan_remote.client.`.
 Some of the Hot Rod client configuration properties don't normally use a prefix - specifically
 all properties relating to connection pooling as in the previous example - these will also
 need to use the `hibernate.ogm.infinispan_remote.client.` prefix.
+
+Properties set with the `hibernate.ogm.infinispan_remote.client.` prefix will override the same
+properties configured using an external reosurce file.
 
 .Embedding the Hot Rod client configuration properties in the Hibernate configuration
 ====
