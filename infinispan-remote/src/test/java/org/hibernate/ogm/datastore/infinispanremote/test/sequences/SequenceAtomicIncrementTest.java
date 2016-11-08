@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.util.FixedBitSet;
-import org.hibernate.ogm.backendtck.id.Actor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
 import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
@@ -48,7 +47,7 @@ public class SequenceAtomicIncrementTest {
 	private static int NUMBER_OF_TASKS = PARALLEL_THREADS * 3;
 	private static int INCREASES_PER_TASK = RUN_FULL_TESTS ? 100_000 : 50;
 
-	private static OgmSessionFactoryRule sessionFactoryHolder = new OgmSessionFactoryRule( Actor.class )
+	private static OgmSessionFactoryRule sessionFactoryHolder = new OgmSessionFactoryRule( SequencedActor.class )
 			.setConfigurationProperty( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" )
 			.setConfigurationProperty( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
 
@@ -60,7 +59,7 @@ public class SequenceAtomicIncrementTest {
 	@Test
 	public void sequencerDoesNotGenerateDuplicates() throws InterruptedException {
 		DefaultIdSourceKeyMetadata meta = DefaultIdSourceKeyMetadata.forSequence( "hibernate_sequences" );
-		IdSourceKey idKey = IdSourceKey.forTable( meta, "actor_sequence_name" );
+		IdSourceKey idKey = IdSourceKey.forTable( meta, "seqactor_sequence_name" );
 		NextValueRequest nextValueRequest = new NextValueRequest( idKey, 1, 0 );
 		InfinispanRemoteDatastoreProvider provider = getProvider();
 		HotRodSequenceHandler sequenceHandler = provider.getSequenceHandler();
