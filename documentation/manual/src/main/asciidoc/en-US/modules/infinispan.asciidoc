@@ -2316,6 +2316,40 @@ message Hypothesis {
 The above example shows how a Protobuf schema looks like, as automatically generated from a mapped entity.
 Any property type supported by Hibernate ORM will be converted to a matching Protobuf type.
 
+===== Each Table requires a Cache with the same name
+
+In a relational database world, when Hibernate defines the schema this implicitly creates the tables;
+this is not the case on Infinispan.
+
+With Infinispan, the _Protobuf Schema_ just unlocks the capability to transmit messages with
+such payloads (read/write), and allows the remote servers to process the fields, for example
+to execute queries and extract projections out of the stored entries.
+So this establishes a transmission and storage encoding contract, but doesn't actually
+start or allocate any storing Cache.
+
+Hibernate OGM by convention will write to several named ``Cache``s, mapping each "table name"
+to a "cache name". In the above example, when having an `Hypothesis` entity this will
+write to a Cache named `Hypothesis`.
+
+The benefit is that you can tune each cache (each "table") independently; for example you could
+configure the caches for the most important data to have a synchronous CacheStore which replicates
+data to a relational database, and have less important entries use an asynchronous CacheStore,
+or none at all, to favour performance over redundancy.
+
+The drawback of this design choice is that each named cache must be pre-defined in the Infinispan
+Server configuration: at this point, the Hot Rod protocol is not allowed to start missing caches
+so Hibernate OGM can not define the missing tables automatically.
+It generates the encoding protobuf, but you have to list the Cache names in the server configuration.
+
+[WARNING]
+====
+For each "table name" your model would generate on a relational database, you have to define
+a matching Cache on the Infinispan Server.
+
+If any Cache is missing, Hibernate OGM will fail to start and list which table names were
+expected, but not found. We plan to automate the creation of missing caches in the future.
+====
+
 
 ==== Known Limitations & Future improvements
 
@@ -2348,8 +2382,13 @@ probably via a novel mapping annotation.
 Hibernate OGM supports the native protobuf Encoding but the JPA metadata will always
 force the ordinal or string representations.
 
-Nesting and embedding:
+Nesting and embedding::
 The Protobuf schema could allow us to embed objects, including series of objects,
 as nested elements. This could allow mappings similar to the document based NoSQL
 stores, such as our MongoDB dialect, but is not supported yet.
+
+Automatic creating of ``Cache``s::
+When deploying the _Protobuf Schema_, we should also automatically define and start
+the needed Caches if they are not defined.
+This is currently not allowed over the Hot Rod protocol.
 
