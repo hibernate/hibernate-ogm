@@ -106,14 +106,10 @@ public abstract class AbstractRedisDialect extends BaseGridDialect {
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		String key = identifierId( request.getKey() );
-		String value = connection.get( key );
-
-		if ( value == null ) {
-			connection.set( key, Long.toString( request.getInitialValue() ) );
-			return request.getInitialValue();
-		}
-
-		return connection.incrby( key, request.getIncrement() );
+		Number value = connection.incrby( key, request.getIncrement() );
+		// We should probably initialize the value during the creation of the schema
+		Long nextValue = value.longValue() - request.getIncrement() + request.getInitialValue();
+		return nextValue;
 	}
 
 	@Override
