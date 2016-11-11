@@ -150,6 +150,11 @@
         <local-cache name="Printer" />
         <local-cache name="MagicCard" />
 
+        <local-cache name="INITIAL_VALUE_GENERATOR_TABLE" />
+        <local-cache name="THREAD_SAFETY_GENERATOR_TABLE" />
+        <local-cache name="INITIAL_VALUE_GENERATOR_SEQUENCE" />
+        <local-cache name="THREAD_SAFETY_GENERATOR_SEQUENCE" />
+
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
 
