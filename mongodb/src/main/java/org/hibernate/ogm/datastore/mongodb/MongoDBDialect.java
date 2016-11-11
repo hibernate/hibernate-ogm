@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
-import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
@@ -722,38 +721,30 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		DBCollection currentCollection = getCollection( request.getKey().getTable() );
-		DBObject query = prepareIdObject( request.getKey() );
-		//all columns should match to find the value
-
 		String valueColumnName = request.getKey().getMetadata().getValueColumnName();
+		DBCollection sequenceCollection = getCollection( request.getKey().getTable() );
 
-		BasicDBObject update = new BasicDBObject();
-		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
-		Integer incrementObject = Integer.valueOf( request.getIncrement() );
-		addSubQuery( "$inc", update, valueColumnName, incrementObject );
-		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
-		Object idFromDB;
-		idFromDB = result == null ? null : result.get( valueColumnName );
-		if ( idFromDB == null ) {
-			//not inserted yet so we need to add initial value to increment to have the right next value in the DB
-			//FIXME that means there is a small hole as when there was not value in the DB, we do add initial value in a non atomic way
-			BasicDBObject updateForInitial = new BasicDBObject();
-			addSubQuery( "$inc", updateForInitial, valueColumnName, request.getInitialValue() );
-			currentCollection.findAndModify( query, null, null, false, updateForInitial, false, true );
-			idFromDB = request.getInitialValue(); //first time we ask this value
+		DBObject sequenceId = prepareIdObject( request.getKey() );
+
+		BasicDBObject setInitialValueOnInsert = new BasicDBObject();
+		addSubQuery( "$setOnInsert", setInitialValueOnInsert, valueColumnName, request.getInitialValue() + request.getIncrement() );
+		DBObject originalDocument = sequenceCollection.findAndModify( sequenceId, null, null, false, setInitialValueOnInsert, false, true );
+
+		Object nextValue = null;
+		if ( originalDocument == null ) {
+			return request.getInitialValue(); // first time we ask this value
 		}
 		else {
-			idFromDB = result.get( valueColumnName );
+			// all columns should match to find the value
+			BasicDBObject incrementUpdate = new BasicDBObject();
+			Integer increment = Integer.valueOf( request.getIncrement() );
+
+			addSubQuery( "$inc", incrementUpdate, valueColumnName, increment );
+
+			DBObject beforeUpdateDoc = sequenceCollection.findAndModify( sequenceId, null, null, false, incrementUpdate, false, true );
+			nextValue = beforeUpdateDoc.get( valueColumnName );
 		}
-		if ( idFromDB.getClass().equals( Integer.class ) || idFromDB.getClass().equals( Long.class ) ) {
-			Number id = (Number) idFromDB;
-			//idFromDB is the one used and the BD contains the next available value to use
-			return id;
-		}
-		else {
-			throw new HibernateException( "Cannot increment a non numeric field" );
-		}
+		return (Number) nextValue;
 	}
 
 	@Override
