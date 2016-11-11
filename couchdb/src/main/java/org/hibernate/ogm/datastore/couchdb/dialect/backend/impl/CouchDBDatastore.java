@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.dialect.backend.impl;
 
 import java.util.List;
 
+import javax.persistence.OptimisticLockException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 
@@ -275,16 +276,20 @@ public class CouchDBDatastore {
 	}
 
 	public long nextValue(IdSourceKey key, int increment, int initialValue) {
-		long value;
-		try {
-			SequenceDocument sequence = getSequence( key, initialValue );
-			value = sequence.getValue();
-			incrementValueAndSave( increment, sequence );
+		while ( true ) {
+			try {
+				SequenceDocument sequence = getSequence( key, initialValue );
+				long value = sequence.getValue();
+				incrementValueAndSave( increment, sequence );
+				return value;
+			}
+			catch (ResteasyClientException crf) {
+				throw logger.errorCalculatingNextValue( crf );
+			}
+			catch (OptimisticLockException oe) {
+				// Nothing to do, we will try again until we have a valid a value
+			}
 		}
-		catch (ResteasyClientException crf) {
-			throw logger.errorCalculatingNextValue( crf );
-		}
-		return value;
 	}
 
 	/**
