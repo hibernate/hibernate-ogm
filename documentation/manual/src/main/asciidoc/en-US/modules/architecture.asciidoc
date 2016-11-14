@@ -233,6 +233,28 @@ when the schema is changed as the schema is right in front of the developers' ey
 This is an intermediary model between the strictly typed relational model
 and the totally schema-less approach pushed by some NoSQL families.
 
+[[ogm-architecture-sequences]]
+
+=== Id generation using sequences
+
+You can use sequences with the following annotations:
+
+* [classname]`@SequenceGenerator`:
+  it will use native sequences if available
+* [classname]`@TableGenerator`:
+  it will emulate sequences storing the value in the most appropriate data structure;
+  for example a document in MongoDB or a node in Neo4j.
+
+Here's some things to keep in mind when dealing with sequence generation:
+
+* [classname]`@TableGenerator` is the fallback approach used when the underlying datastore does not
+  support native sequences generation.
+* If the datastore does not support atomic operations and does not support native sequences,
+  Hibernate OGM will throw an exception at bootstrap and suggest alternatives.
+* The mapping of the sequence might change based on the annotation used, you should check the
+  mapping paragraph in the documentation related to the dialect you are using.
+* The value saved in the the datastore might not be the next value in the sequence. 
+
 [[ogm-architecture-dataqueried]]
 
 === How is data queried
