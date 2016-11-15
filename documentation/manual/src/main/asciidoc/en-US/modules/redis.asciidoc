@@ -2296,6 +2296,14 @@ Value: 21
 ----
 ====
 
+
+[NOTE]
+====
+The value stored in Redis for the sequence is not the one the dialect will return as next number
+in the sequence. Instead, Hibernate OGM will use it as seed to generate the correct value
+in the sequence.
+====
+
 === Transactions
 
 The Redis dialect does not support transactions for now.
