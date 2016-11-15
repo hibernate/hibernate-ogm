@@ -142,6 +142,10 @@ public class EmbeddedNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate 
 		try {
 			ResourceIterator<Object> nodes = engine.execute( query, node.getParams() ).columnAs( node.getAlias() );
 
+			if ( !nodes.hasNext() ) {
+				return null;
+			}
+
 			PropertyContainer propertyContainer = (PropertyContainer) nodes.next();
 			if ( nodes.hasNext() ) {
 				throw new NotUniqueException();
