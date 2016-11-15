@@ -56,7 +56,7 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 				id,
 				session );
 
-		IgniteCache<String, BinaryObject> cache = provider.getEntityCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> cache = provider.getEntityCache( key.getMetadata() );
 		if ( cache == null ) {
 			throw new IgniteHibernateException( "Cache " + key.getMetadata().getTable() + " is not found" );
 		}

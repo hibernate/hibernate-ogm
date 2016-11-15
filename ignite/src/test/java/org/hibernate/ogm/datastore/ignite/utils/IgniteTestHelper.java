@@ -73,10 +73,10 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
 		int asscociationCount = 0;
-		Set<IgniteCache<String, BinaryObject>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<String, BinaryObject>, Boolean>() );
+		Set<IgniteCache<Object, BinaryObject>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<Object, BinaryObject>, Boolean>() );
 
 		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
-			IgniteCache<String, BinaryObject> associationCache = getAssociationCache( sessionFactory,
+			IgniteCache<Object, BinaryObject> associationCache = getAssociationCache( sessionFactory,
 					( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
 			if ( !processedCaches.contains( associationCache ) ) {
 				asscociationCount += associationCache.size();
@@ -90,7 +90,7 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	@Override
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) session.getSessionFactory();
-		IgniteCache<String, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
+		IgniteCache<Object, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
 		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getKeyString( key );
 
 		Map<String, Object> result = new HashMap<>();
@@ -125,12 +125,12 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 		return new IgniteDialect( (IgniteDatastoreProvider) datastoreProvider );
 	}
 
-	public static IgniteCache<String, BinaryObject> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
+	public static IgniteCache<Object, BinaryObject> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
 		IgniteDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getEntityCache( entityKeyMetadata );
 	}
 
-	public static IgniteCache<String, BinaryObject> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
+	public static IgniteCache<Object, BinaryObject> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
 		IgniteDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getAssociationCache( associationKeyMetadata );
 	}

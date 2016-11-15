@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-	"org.hibernate.ogm.backendtck.id.CompositeIdTest"
+//	"org.hibernate.ogm.backendtck.id.CompositeIdTest"
 //	"org.hibernate.ogm.backendtck.id.*",
 //	"org.hibernate.ogm.backendtck.associations.*"
 

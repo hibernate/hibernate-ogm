@@ -108,7 +108,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
-		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 		if ( entityCache == null ) {
 			throw log.cacheNotFound( key.getMetadata().getTable() );
 		}
@@ -156,7 +156,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) throws TupleAlreadyExistsException {
-		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 		Tuple tuple = tuplePointer.getTuple();
 
 		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
@@ -172,7 +172,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 		entityCache.remove( provider.getKeyProvider().getKeyString( key ) );
 	}
 
@@ -180,7 +180,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 
 		Association result = null;
-		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
 
 		if ( associationCache == null ) {
 			throw new IgniteHibernateException( "Cache " + key.getMetadata().getTable() + " is not found" );
@@ -264,7 +264,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			return;
 		}
 
-		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
 		Map<String, BinaryObject> changedObjects = new HashMap<>();
 		Set<String> removedObjects = new HashSet<>();
 
@@ -346,7 +346,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			throw new IgniteHibernateException( "Composite keys are not supported yet." );
 		}
 
-		IgniteCache<String, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
+		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
 
 		QueryHints.Builder hintsBuilder = new QueryHints.Builder();
 		Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
@@ -456,7 +456,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<IgniteQueryDescriptor> backendQuery, QueryParameters queryParameters,
 			TupleContext tupleContext) {
-		IgniteCache<String, BinaryObject> cache;
+		IgniteCache<Object, BinaryObject> cache;
 		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
 			cache = provider.getEntityCache( backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata() );
 		}
@@ -481,7 +481,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 	}
 
-	private Iterable<List<?>> executeWithHints(IgniteCache<String, BinaryObject> cache, SqlFieldsQuery sqlQuery, QueryHints hints) {
+	private Iterable<List<?>> executeWithHints(IgniteCache<Object, BinaryObject> cache, SqlFieldsQuery sqlQuery, QueryHints hints) {
 		Iterable<List<?>> result;
 
 		if ( hints.isLocal() ) {
@@ -494,11 +494,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		else {
 			result = cache.query( sqlQuery );
-
-			// //vk: For Slava and Igor only.
-			// List<List<?>> list = cache.query( sqlQuery ).getAll();
-			// log.info( "Query result: " + list.size() + " items" );
-			// result = list;
 		}
 
 		return result;

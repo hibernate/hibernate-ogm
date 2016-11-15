@@ -70,18 +70,18 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	/** true - if we start node and we have to stop it */
 	private boolean stopOnExit = false;
 
-	public IgniteCache<String, BinaryObject> getEntityCache(String entityName) {
+	public IgniteCache<Object, BinaryObject> getEntityCache(String entityName) {
 		String entityCacheName = getKeyProvider().getEntityCache( entityName );
 		return getCache( entityCacheName, true );
 	}
 
-	public IgniteCache<String, BinaryObject> getEntityCache(EntityKeyMetadata keyMetaData) {
+	public IgniteCache<Object, BinaryObject> getEntityCache(EntityKeyMetadata keyMetaData) {
 		String entityCacheName = getKeyProvider().getEntityCache( keyMetaData );
 		return getCache( entityCacheName, true );
 	}
 
-	private <T> IgniteCache<String, T> getCache(String entityCacheName, boolean keepBinary) {
-		IgniteCache<String, T> cache = null;
+	private <K, T> IgniteCache<K, T> getCache(String entityCacheName, boolean keepBinary) {
+		IgniteCache<K, T> cache = null;
 		try {
 			cache = cacheManager.cache( entityCacheName );
 		}
@@ -98,7 +98,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		}
 		if ( cache == null ) {
 			log.unknownCache( entityCacheName );
-			CacheConfiguration<String, T> config = new CacheConfiguration<>();
+			CacheConfiguration<K, T> config = new CacheConfiguration<>();
 			config.setName( entityCacheName );
 			cache = cacheManager.getOrCreateCache( config );
 		}
@@ -117,7 +117,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		}
 	}
 
-	public IgniteCache<String, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetadata) {
+	public IgniteCache<Object, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetadata) {
 		String entityCacheName = getKeyProvider().getEntityCache( keyMetadata.getTable() );
 		return getCache( entityCacheName, true );
 	}
@@ -243,7 +243,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		@SuppressWarnings("unchecked")
 		@Override
 		public List<T> call() throws Exception {
-			IgniteCache<String, BinaryObject> cache = ignite.cache( cacheName );
+			IgniteCache<Object, BinaryObject> cache = ignite.cache( cacheName );
 			if ( cache == null ) {
 				throw log.cacheNotFound( cacheName );
 			}
