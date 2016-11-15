@@ -42,7 +42,6 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
-import org.hibernate.ogm.dialect.spi.ModelConsumerWithSupplier;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
@@ -607,7 +606,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		BoltNeo4jDatastoreProvider neo4jProvider = (BoltNeo4jDatastoreProvider) datastoreProvider;
 		BoltNeo4jClient client = neo4jProvider.getClient();
 		BoltTupleSupplier tupleSupplier = new BoltTupleSupplier( entitiesQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
-		( (ModelConsumerWithSupplier) consumer ).consume( tupleSupplier );
+		consumer.consume( tupleSupplier );
 	}
 
 	private static class BoltTupleSupplier implements TupleSupplier {

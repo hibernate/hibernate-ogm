@@ -48,7 +48,6 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
-import org.hibernate.ogm.dialect.spi.ModelConsumerWithSupplier;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
@@ -516,7 +515,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		HttpTupleSupplier tupleSupplier = new HttpTupleSupplier( entityQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
-		( (ModelConsumerWithSupplier) consumer ).consume( tupleSupplier );
+		consumer.consume( tupleSupplier );
 	}
 
 	private static class HttpTupleSupplier implements TupleSupplier {

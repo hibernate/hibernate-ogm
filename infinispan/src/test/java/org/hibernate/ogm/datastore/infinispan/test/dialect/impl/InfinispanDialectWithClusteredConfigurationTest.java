@@ -27,6 +27,7 @@ import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastorePr
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -175,6 +176,10 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		@Override
 		public void consume(Tuple tuple) {
 			consumedTuple = tuple;
+		}
+
+		@Override
+		public void consume(TupleSupplier supplier) {
 		}
 	}
 

@@ -22,4 +22,10 @@ public interface ModelConsumer {
 	 */
 	void consume(Tuple tuple);
 
+	/**
+	 * Consume a model element on all the tuples provided by a {@link TupleSupplier}.
+	 *
+	 * @param supplier provides the tuples the model will consume
+	 */
+	void consume(TupleSupplier supplier);
 }

@@ -15,7 +15,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.spi.ModelConsumerWithSupplier;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -34,7 +34,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
  *
  * @author Emmanuel Bernard
  */
-public class OptionallyWrapInJTATransaction implements ModelConsumerWithSupplier {
+public class OptionallyWrapInJTATransaction implements ModelConsumer {
 
 	private static final Log log = LoggerFactory.make();
 
