@@ -187,9 +187,9 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		else {
 
-			if ( key.getColumnNames().length > 1 ) {
-				throw new IgniteHibernateException( "Composite keys are not supported yet." );
-			}
+//			if ( key.getColumnNames().length > 1 ) {
+//				throw new IgniteHibernateException( "Composite keys are not supported yet." );
+//			}
 
 			QueryHints.Builder hintsBuilder = new QueryHints.Builder();
 			Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );

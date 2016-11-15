@@ -70,6 +70,9 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		config.setPublicThreadPoolSize( 2 );
 
 		List<CacheConfiguration> cacheConfig = new ArrayList<>();
+		
+// EmbeddableIdTest		
+		cacheConfig.add( createCacheConfig( "SingleBoardComputer" ).withForceQueryEntity().build() );
 // SequenceIdGeneratorTest
 		cacheConfig.add( simpleCacheConfig( "Song" ) );
 		cacheConfig.add( simpleCacheConfig( "Actor" ) );
@@ -258,6 +261,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		private CacheConfiguration<String, BinaryObject> cacheConfig;
 		private QueryEntity queryEntity;
 		private Map<String, QueryIndex> indexes;
+		private boolean forceQueryEntity = false;
 
 		public TestCacheConfigBuilder(String name) {
 			cacheConfig = new CacheConfiguration<>();
@@ -284,9 +288,14 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 			indexes.put( fieldName, new QueryIndex( fieldName, QueryIndexType.SORTED ) );
 			return this;
 		}
+		
+		public TestCacheConfigBuilder withForceQueryEntity() {
+			forceQueryEntity = true;
+			return this;
+		}
 
 		public CacheConfiguration<String, BinaryObject> build() {
-			if ( !indexes.isEmpty() || !queryEntity.getFields().isEmpty() ) {
+			if ( forceQueryEntity || !indexes.isEmpty() || !queryEntity.getFields().isEmpty() ) {
 				queryEntity.setIndexes( indexes.values() );
 				cacheConfig.setQueryEntities( Arrays.asList( queryEntity ) );
 			}
