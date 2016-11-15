@@ -152,7 +152,12 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendField( "content", String.class )
 						.build()
 		);
-		cacheConfig.add( simpleCacheConfig( "Label" ) );
+		cacheConfig.add( 
+				createCacheConfig( "Label" )
+						.appendIndex("news_author_fk", String.class)
+						.appendIndex("news_topic_fk", String.class)
+						.build()
+		);
 		cacheConfig.add( simpleCacheConfig( "News_Label" ) );
 // AutoIdGeneratorWithSessionTest
 		cacheConfig.add( simpleCacheConfig( "DistributedRevisionControl" ) );
