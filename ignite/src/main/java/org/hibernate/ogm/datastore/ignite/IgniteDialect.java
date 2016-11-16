@@ -142,7 +142,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		IgniteCache<Object, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 		Tuple tuple = tuplePointer.getTuple();
 
-		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
+		BinaryObjectBuilder builder = provider.createBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
 		for ( String columnName : tuple.getColumnNames() ) {
 			Object value = tuple.get( columnName );
 			if ( value != null ) {
@@ -267,7 +267,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 					|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
 				BinaryObject clearBo = associationCache.get( id );
 				if ( clearBo != null ) {
-					BinaryObjectBuilder clearBoBuilder = provider.getBinaryObjectBuilder( clearBo );
+					BinaryObjectBuilder clearBoBuilder = provider.createBinaryObjectBuilder( clearBo );
 					// vk: I'm not sure
 					for ( String columnName : key.getColumnNames() ) {
 						clearBoBuilder.removeField( columnName );
@@ -282,10 +282,10 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 				BinaryObject putBo = associationCache.get( id );
 				BinaryObjectBuilder putBoBuilder = null;
 				if ( putBo != null ) {
-					putBoBuilder = provider.getBinaryObjectBuilder( putBo );
+					putBoBuilder = provider.createBinaryObjectBuilder( putBo );
 				}
 				else {
-					putBoBuilder = provider.getBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
+					putBoBuilder = provider.createBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
 				}
 				for ( String columnName : currentStateTuple.getColumnNames() ) {
 					Object value = currentStateTuple.get( columnName );
@@ -350,7 +350,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 				String id = item.get( 0 ).toString();
 				BinaryObject clearBo = (BinaryObject) item.get( 1 );
 				if ( clearBo != null ) {
-					BinaryObjectBuilder clearBoBuilder = provider.getBinaryObjectBuilder( clearBo );
+					BinaryObjectBuilder clearBoBuilder = provider.createBinaryObjectBuilder( clearBo );
 					// vk: I'm not sure
 					for ( String columnName : key.getColumnNames() ) {
 						clearBoBuilder.removeField( columnName );

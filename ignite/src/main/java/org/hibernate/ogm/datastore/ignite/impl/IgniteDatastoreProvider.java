@@ -7,9 +7,11 @@
 package org.hibernate.ogm.datastore.ignite.impl;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
@@ -18,6 +20,7 @@ import org.apache.ignite.IgniteState;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
+import org.apache.ignite.cache.CacheTypeMetadata;
 import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.configuration.CacheConfiguration;
@@ -62,7 +65,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	private static final long serialVersionUID = 2278253954737494852L;
 	private static final Log log = LoggerFactory.getLogger();
-
+	
 	private JtaPlatform jtaPlatform;
 	private JdbcServices jdbcServices;
 	private IgniteEx cacheManager;
@@ -73,6 +76,8 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	private boolean localNode = false;
 	/** true - if we start node and we have to stop it */
 	private boolean stopOnExit = false;
+	/** Associate entity name with cache key type for entities with composite id. */
+	private Map<String, String> compositeIdTypes = new HashMap<>();
 
 	public IgniteCache<Object, BinaryObject> getEntityCache(String entityName) {
 		String entityCacheName = getEntityCacheName( entityName );
@@ -131,11 +136,11 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		return getCache( idSourceCacheName, false );
 	}
 
-	public BinaryObjectBuilder getBinaryObjectBuilder(String type) {
+	public BinaryObjectBuilder createBinaryObjectBuilder(String type) {
 		return cacheManager.binary().builder( type );
 	}
 
-	public BinaryObjectBuilder getBinaryObjectBuilder(BinaryObject binaryObject) {
+	public BinaryObjectBuilder createBinaryObjectBuilder(BinaryObject binaryObject) {
 		return cacheManager.binary().builder( binaryObject );
 	}
 
@@ -276,26 +281,12 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			result = key.getColumnValues()[0];
 		}
 		else {
-			throw new UnsupportedOperationException("Not implemented yet");
+			BinaryObjectBuilder builder = createBinaryObjectBuilder( findKeyType( key.getMetadata() ) );
+			for (int i = 0; i < key.getColumnNames().length; i++ ) {
+				builder.setField( stringAfterPoint( key.getColumnNames()[i] ), key.getColumnValues()[i] );
+			}
+			result = builder.build();
 		}
-		return result;
-	}
-	
-	/**
-	 * Finds key type name for cache for entities with composite id
-	 * @param keyMetadata
-	 * @return
-	 */
-	private String findKeyType(EntityKeyMetadata keyMetadata) {
-		String result = null;
-		String cacheType = getEntityTypeName( keyMetadata.getTable() ); 
-		IgniteCache<Object, BinaryObject> cache = getEntityCache( keyMetadata );
-		CacheConfiguration cacheConfig = cache.getConfiguration( CacheConfiguration.class );
-		Collection<QueryEntity> queryEntities = cacheConfig.getQueryEntities();
-		for (QueryEntity qe : queryEntities) {
-			 qe.getValueType()
-		}
-		
 		return result;
 	}
 
@@ -315,6 +306,59 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		}
 		return result;
 	}
+	
+	/**
+	 * Finds key type name for cache for entities with composite id
+	 * @param keyMetadata
+	 * @return
+	 */
+	private String findKeyType(EntityKeyMetadata keyMetadata) {
+		String result = compositeIdTypes.get( keyMetadata.getTable() );
+		if ( result == null ) {
+			String cacheType = getEntityTypeName( keyMetadata.getTable() ); 
+			IgniteCache<Object, BinaryObject> cache = getEntityCache( keyMetadata );
+			CacheConfiguration cacheConfig = cache.getConfiguration( CacheConfiguration.class );
+			for ( QueryEntity qe : (Collection<QueryEntity>) cacheConfig.getQueryEntities() ) {
+				 if ( qe.getValueType() != null && cacheType.equalsIgnoreCase( qe.getValueType() ) ) {
+					 result = qe.getKeyType();
+					 break;
+				 }
+			}
+			if ( result == null ) {
+				for ( CacheTypeMetadata ctm : (Collection<CacheTypeMetadata>) cacheConfig.getTypeMetadata() ) {
+					 if ( ctm.getValueType() != null && cacheType.equalsIgnoreCase( ctm.getValueType() ) ) {
+						 result = ctm.getKeyType();
+						 break;
+					 }
+				}
+				if ( result == null ) {
+					//if nothing found use id field name
+					result = stringBeforePoint( keyMetadata.getColumnNames()[0] );
+					result = StringUtils.capitalize( result );
+				}
+			}
+			compositeIdTypes.put( keyMetadata.getTable(), result );
+		}		
+		return result;
+	}
+	
+	private static String stringBeforePoint(String value) {
+		String result = value;
+		int index = result.indexOf( '.' );
+		if ( index >= 0 ) {
+			result = result.substring( 0, index );
+		}
+		return result;
+	}
+
+	private static String stringAfterPoint(String value) {
+		String result = value;
+		int index = result.indexOf( '.' );
+		if ( index >= 0 ) {
+			result = result.substring( index + 1 );
+		}
+		return result;
+	}
 
 	/**
 	 * Get the entity type from the metadata
@@ -323,14 +367,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	 * @return type
 	 */
 	public String getEntityTypeName(String entity) {
-		if ( entity.indexOf( "." ) >= 0 ) {
-			String[] arr = entity.split( "\\." );
-			if ( arr.length != 2 ) {
-				throw log.invalidEntityName( entity );
-			}
-			return arr[1];
-		}
-		return entity;
+		return stringAfterPoint( entity ) ;
 	}
 
 	/**
@@ -340,13 +377,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	 * @return cache name
 	 */
 	private String getEntityCacheName(String entity) {
-		if ( entity.indexOf( "." ) >= 0 ) {
-			String[] arr = entity.split( "\\." );
-			if ( arr.length != 2 ) {
-				throw log.invalidEntityName( entity );
-			}
-			return arr[0];
-		}
-		return entity;
+		return stringBeforePoint( entity ) ;
 	}
 }

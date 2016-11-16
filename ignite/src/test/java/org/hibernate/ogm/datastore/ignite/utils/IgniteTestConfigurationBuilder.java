@@ -148,7 +148,8 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 // CompositeIdTest
 		cacheConfig.add(
 				createCacheConfig( "News" )
-						.appendIndex( "newsId", Object.class )
+						.withKeyType( "NewsID" )
+						//.appendIndex( "newsId", Object.class )
 						.appendField( "content", String.class )
 						.build()
 		);
@@ -275,7 +276,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		private CacheConfiguration<String, BinaryObject> cacheConfig;
 		private QueryEntity queryEntity;
 		private Map<String, QueryIndex> indexes;
-		private Class<?> keyType = String.class;
+		private String keyType = String.class.getName();
 		private boolean forceQueryEntity = false;
 
 		public TestCacheConfigBuilder(String name) {
@@ -308,15 +309,19 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 			return this;
 		}
 		
-		public TestCacheConfigBuilder withKeyType(Class<?> keyType) {
+		public TestCacheConfigBuilder withKeyType(Class<?> keyClass) {
+			this.keyType = keyClass.getName();
+			return this;
+		}
+		
+		public TestCacheConfigBuilder withKeyType(String keyType) {
 			this.keyType = keyType;
 			return this;
 		}
 		
-
 		public CacheConfiguration<String, BinaryObject> build() {
 			if ( forceQueryEntity || !indexes.isEmpty() || !queryEntity.getFields().isEmpty() ) {
-				queryEntity.setKeyType( keyType.getName() );
+				queryEntity.setKeyType( keyType );
 				queryEntity.setIndexes( indexes.values() );
 				cacheConfig.setQueryEntities( Arrays.asList( queryEntity ) );
 			}
