@@ -113,26 +113,9 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			throw log.cacheNotFound( key.getMetadata().getTable() );
 		}
 
-		BinaryObject po = entityCache.get( provider.getKeyProvider().getKeyString( key ) );
+		BinaryObject po = entityCache.get( provider.createKeyObject( key ) );
 		return createTuple( key, operationContext, po );
 	}
-
-	// @Override
-	// public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-	// IgniteCache<String, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
-	// if (entityCache == null) {
-	// throw new IgniteHibernateException("Cache " + key.getMetadata().getTable() + " is not found");
-	// }
-	// else {
-	// Object po = entityCache.get( provider.getKeyProvider().getKeyString( key ) );
-	// if (po != null) {
-	// return new Tuple(new IgnitePortableTupleSnapshot( po ));
-	// }
-	// else {
-	// return null;
-	// }
-	// }
-	// }
 
 	private static Tuple createTuple(EntityKey key, OperationContext operationContext, BinaryObject found) {
 		if ( found != null ) {
@@ -159,21 +142,21 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		IgniteCache<Object, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
 		Tuple tuple = tuplePointer.getTuple();
 
-		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
+		BinaryObjectBuilder builder = provider.getBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
 		for ( String columnName : tuple.getColumnNames() ) {
 			Object value = tuple.get( columnName );
 			if ( value != null ) {
 				builder.setField( columnName, value );
 			}
 		}
-		String keyStr = provider.getKeyProvider().getKeyString( key );
-		entityCache.put( keyStr, builder.build() );
+		Object keyObject = provider.createKeyObject( key );
+		entityCache.put( keyObject, builder.build() );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		IgniteCache<Object, BinaryObject> entityCache = provider.getEntityCache( key.getMetadata() );
-		entityCache.remove( provider.getKeyProvider().getKeyString( key ) );
+		entityCache.remove( provider.createKeyObject( key ) );
 	}
 
 	@Override
@@ -195,12 +178,12 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
 			if ( isCollocated ) {
 				hintsBuilder.setAffinityRun( true );
-				hintsBuilder.setAffinityKey( provider.getKeyProvider().getKeyString( key ) );
+				hintsBuilder.setAffinityKey( provider.createKeyObject( key ) );
 			}
 			QueryHints hints = hintsBuilder.build();
 
-			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints,
-					provider.getKeyProvider().getKeyString( key ) );
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints, key.getColumnValues() );
+			//		provider.getKeyProvider().getKeyString( key ) );
 			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 
 			Iterator<List<?>> iterator = list.iterator();
@@ -302,7 +285,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 					putBoBuilder = provider.getBinaryObjectBuilder( putBo );
 				}
 				else {
-					putBoBuilder = provider.getBinaryObjectBuilder( provider.getKeyProvider().getEntityType( key.getMetadata().getTable() ) );
+					putBoBuilder = provider.getBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
 				}
 				for ( String columnName : currentStateTuple.getColumnNames() ) {
 					Object value = currentStateTuple.get( columnName );
@@ -352,7 +335,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
 		if ( isCollocated ) {
 			hintsBuilder.setAffinityRun( true );
-			hintsBuilder.setAffinityKey( provider.getKeyProvider().getKeyString( key ) );
+			hintsBuilder.setAffinityKey( provider.createKeyObject( key ) );
 		}
 		QueryHints hints = hintsBuilder.build();
 
@@ -360,8 +343,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			// clear reference
 			Map<String, BinaryObject> changedObjects = new HashMap<>();
 
-			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints,
-					provider.getKeyProvider().getKeyString( key ) );
+			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints, key.getColumnValues() );
+					//provider.getKeyProvider().getKeyString( key ) );
 			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 			for ( List<?> item : list ) {
 				String id = item.get( 0 ).toString();

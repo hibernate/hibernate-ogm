@@ -60,7 +60,7 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 		if ( cache == null ) {
 			throw new IgniteHibernateException( "Cache " + key.getMetadata().getTable() + " is not found" );
 		}
-		Lock lock = cache.lock( provider.getKeyProvider().getKeyString( key ) );
+		Lock lock = cache.lock( provider.createKeyObject( key ) );
 		try {
 			lock.tryLock( timeout, TimeUnit.MILLISECONDS );
 		}

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import org.apache.ignite.IgniteState;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
+import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
@@ -37,7 +39,9 @@ import org.hibernate.ogm.datastore.ignite.transaction.impl.IgniteTransactionMana
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.query.spi.QueryParserService;
@@ -71,12 +75,12 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	private boolean stopOnExit = false;
 
 	public IgniteCache<Object, BinaryObject> getEntityCache(String entityName) {
-		String entityCacheName = getKeyProvider().getEntityCache( entityName );
+		String entityCacheName = getEntityCacheName( entityName );
 		return getCache( entityCacheName, true );
 	}
 
-	public IgniteCache<Object, BinaryObject> getEntityCache(EntityKeyMetadata keyMetaData) {
-		String entityCacheName = getKeyProvider().getEntityCache( keyMetaData );
+	public IgniteCache<Object, BinaryObject> getEntityCache(EntityKeyMetadata keyMetadata) {
+		String entityCacheName = getEntityCacheName( keyMetadata.getTable() );
 		return getCache( entityCacheName, true );
 	}
 
@@ -118,12 +122,12 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	}
 
 	public IgniteCache<Object, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetadata) {
-		String entityCacheName = getKeyProvider().getEntityCache( keyMetadata.getTable() );
+		String entityCacheName = getEntityCacheName( keyMetadata.getTable() );
 		return getCache( entityCacheName, true );
 	}
 
-	public IgniteCache<String, Long> getIdSourceCache(IdSourceKeyMetadata keyMetaData) {
-		String idSourceCacheName = getKeyProvider().getIdSourceCache( keyMetaData );
+	public IgniteCache<String, Long> getIdSourceCache(IdSourceKeyMetadata keyMetadata) {
+		String idSourceCacheName = getEntityCacheName( keyMetadata.getName() );
 		return getCache( idSourceCacheName, false );
 	}
 
@@ -197,10 +201,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		return IgniteCacheInitializer.class;
 	}
 
-	public IgniteKeyProvider getKeyProvider() {
-		return IgniteKeyProvider.INSTANCE;
-	}
-
 	public IgniteAtomicSequence atomicSequence(String name, int initialValue, boolean create) {
 		return cacheManager.atomicSequence( name, initialValue, create );
 	}
@@ -264,4 +264,89 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		return query;
 	}
 
+	/**
+	 * Converting entity key to cache key
+	 *
+	 * @param key entity key
+	 * @return string key
+	 */
+	public Object createKeyObject(EntityKey key) {
+		Object result = null;
+		if ( key.getColumnValues().length == 1 ) {
+			result = key.getColumnValues()[0];
+		}
+		else {
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
+		return result;
+	}
+	
+	/**
+	 * Finds key type name for cache for entities with composite id
+	 * @param keyMetadata
+	 * @return
+	 */
+	private String findKeyType(EntityKeyMetadata keyMetadata) {
+		String result = null;
+		String cacheType = getEntityTypeName( keyMetadata.getTable() ); 
+		IgniteCache<Object, BinaryObject> cache = getEntityCache( keyMetadata );
+		CacheConfiguration cacheConfig = cache.getConfiguration( CacheConfiguration.class );
+		Collection<QueryEntity> queryEntities = cacheConfig.getQueryEntities();
+		for (QueryEntity qe : queryEntities) {
+			 qe.getValueType()
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Converting association key to cache key
+	 *
+	 * @param key - association key
+	 * @return string key
+	 */
+	public Object createKeyObject(AssociationKey key) {
+		Object result = null;
+		if ( key.getColumnValues().length == 1 ) {
+			result = key.getColumnValues()[0];
+		}
+		else {
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
+		return result;
+	}
+
+	/**
+	 * Get the entity type from the metadata
+	 *
+	 * @param keyMetadata metadata
+	 * @return type
+	 */
+	public String getEntityTypeName(String entity) {
+		if ( entity.indexOf( "." ) >= 0 ) {
+			String[] arr = entity.split( "\\." );
+			if ( arr.length != 2 ) {
+				throw log.invalidEntityName( entity );
+			}
+			return arr[1];
+		}
+		return entity;
+	}
+
+	/**
+	 * Get name of cache from full entity name
+	 * 
+	 * @param entity
+	 * @return cache name
+	 */
+	private String getEntityCacheName(String entity) {
+		if ( entity.indexOf( "." ) >= 0 ) {
+			String[] arr = entity.split( "\\." );
+			if ( arr.length != 2 ) {
+				throw log.invalidEntityName( entity );
+			}
+			return arr[0];
+		}
+		return entity;
+	}
 }

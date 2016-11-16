@@ -19,8 +19,7 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-//	"org.hibernate.ogm.backendtck.id.CompositeIdTest"
-//	"org.hibernate.ogm.backendtck.id.*",
+	"org.hibernate.ogm.backendtck.id.CompositeIdTest"
 //	"org.hibernate.ogm.backendtck.associations.*"
 
 	// failed
@@ -40,6 +39,8 @@ import org.junit.runner.RunWith;
 
 	// passed
 
+//	"org.hibernate.ogm.backendtck.id.*",												// -CompositeIdTest
+//	"org.hibernate.ogm.backendtck.simpleentity.*",
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest",    			// -testDefaultBiDirManyToOneCompositeKeyTest
 //	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest",
 //	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
@@ -48,13 +49,6 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.HibernateCoreAPIWrappingTest",
 //	"org.hibernate.ogm.backendtck.hibernatecore.JNDIReferenceTest",
-//	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorTest",
-//	"org.hibernate.ogm.backendtck.id.AutoIdGeneratorWithSessionTest",
-//	"org.hibernate.ogm.backendtck.id.DuplicateIdDetectionTest",
-//	"org.hibernate.ogm.backendtck.id.IdentityIdGeneratorTest",
-//	"org.hibernate.ogm.backendtck.id.SequenceIdGeneratorTest",
-//	"org.hibernate.ogm.backendtck.id.TableIdGeneratorTest",
-//	"org.hibernate.ogm.backendtck.id.sharedpk.SharedPrimaryKeyTest",
 //	"org.hibernate.ogm.backendtck.inheritance.JPAPolymorphicFindTest",
 //	"org.hibernate.ogm.backendtck.inheritance.JPATablePerClassFindTest",
 //	"org.hibernate.ogm.backendtck.innertypes.InnerClassFindTest",
@@ -68,7 +62,6 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
 //	"org.hibernate.ogm.backendtck.type.BuiltInTypeTest",
 //	"org.hibernate.ogm.backendtck.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptorTest",
-//	"org.hibernate.ogm.backendtck.simpleentity.*",
 
 })
 public class IgniteBackendTckHelper {

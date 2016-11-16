@@ -91,7 +91,7 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) session.getSessionFactory();
 		IgniteCache<Object, BinaryObject> cache = getEntityCache( sessionFactory, key.getMetadata() );
-		String cacheKey = getProvider( sessionFactory ).getKeyProvider().getKeyString( key );
+		Object cacheKey = getProvider( sessionFactory ).createKeyObject( key );
 
 		Map<String, Object> result = new HashMap<>();
 		Object po = cache.get( cacheKey );
