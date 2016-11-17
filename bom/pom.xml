@@ -36,7 +36,7 @@
         <slf4jVersion>1.7.7</slf4jVersion> <!-- Note: Wildfly 10.1.0.CR1 uses a custom jboss version -->
         <netty4Version>4.0.33.Final</netty4Version>
         <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
-        <narayanaVersion>5.3.3.Final</narayanaVersion>
+        <narayanaVersion>5.4.0.Final</narayanaVersion>
 
         <!-- Hibernate ORM -->
         <hibernateVersion>5.1.1.Final</hibernateVersion>
