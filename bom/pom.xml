@@ -50,8 +50,8 @@
         <asmVersion>5.0.3</asmVersion> <!-- used for Parboiled and Neo4j -->
 
         <!-- Infinispan -->
-        <infinispanVersion>8.2.4.Final</infinispanVersion>
-        <protostreamVersion>3.0.5.Final</protostreamVersion>
+        <infinispanVersion>8.2.5.Final</infinispanVersion>
+        <protostreamVersion>3.0.7.Final</protostreamVersion>
 
         <!-- Ehcache -->
         <ehcacheVersion>2.6.11</ehcacheVersion>
