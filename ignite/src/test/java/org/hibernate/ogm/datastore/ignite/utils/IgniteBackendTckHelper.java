@@ -19,8 +19,7 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-	"org.hibernate.ogm.backendtck.id.CompositeIdTest"
-//	"org.hibernate.ogm.backendtck.associations.*"
+//	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest"
 
 	// failed
 
@@ -28,7 +27,6 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.collection.types.MapContentsStoredInSeparateDocumentTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.types.MapTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.CollectionUnidirectionalTest",
-//	"org.hibernate.ogm.backendtck.id.CompositeIdTest", //vk: ManyToOne
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
@@ -39,11 +37,10 @@ import org.junit.runner.RunWith;
 
 	// passed
 
-//	"org.hibernate.ogm.backendtck.id.*",												// -CompositeIdTest
+//	"org.hibernate.ogm.backendtck.id.*",
 //	"org.hibernate.ogm.backendtck.simpleentity.*",
-//	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneTest",    			// -testDefaultBiDirManyToOneCompositeKeyTest
-//	"org.hibernate.ogm.backendtck.associations.manytoone.ManyToOneExtraTest",
-//	"org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest",
+//	"org.hibernate.ogm.backendtck.associations.manytoone.*",								// - ManyToOneTest.testDefaultBiDirManyToOneCompositeKeyTest
+//	"org.hibernate.ogm.backendtck.associations.onetoone.*",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",

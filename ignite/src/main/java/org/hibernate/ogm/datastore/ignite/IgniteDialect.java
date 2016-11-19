@@ -248,8 +248,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 
 		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
-		Map<String, BinaryObject> changedObjects = new HashMap<>();
-		Set<String> removedObjects = new HashSet<>();
+		Map<Object, BinaryObject> changedObjects = new HashMap<>();
+		Set<Object> removedObjects = new HashSet<>();
 
 		String associationKeyColumns[] = key.getMetadata().getAssociatedEntityKeyMetadata().getAssociationKeyColumns();
 		if ( associationKeyColumns.length > 1 ) {
@@ -262,7 +262,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			Tuple currentStateTuple = op.getType() != AssociationOperationType.REMOVE
 					? op.getValue()
 					: association.getSnapshot().get( op.getKey() );
-			String id = currentStateTuple.get( idColumnName ).toString();
+			Object id = currentStateTuple.get( idColumnName );
 			if ( op.getType() == AssociationOperationType.CLEAR
 					|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
 				BinaryObject clearBo = associationCache.get( id );
@@ -325,10 +325,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			return;
 		}
 
-		if ( key.getColumnNames().length > 1 ) {
-			throw new IgniteHibernateException( "Composite keys are not supported yet." );
-		}
-
 		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
 
 		QueryHints.Builder hintsBuilder = new QueryHints.Builder();
@@ -341,13 +337,13 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 		if ( clearAssociation( key ) ) {
 			// clear reference
-			Map<String, BinaryObject> changedObjects = new HashMap<>();
+			Map<Object, BinaryObject> changedObjects = new HashMap<>();
 
 			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints, key.getColumnValues() );
 					//provider.getKeyProvider().getKeyString( key ) );
 			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 			for ( List<?> item : list ) {
-				String id = item.get( 0 ).toString();
+				Object id = item.get( 0 );
 				BinaryObject clearBo = (BinaryObject) item.get( 1 );
 				if ( clearBo != null ) {
 					BinaryObjectBuilder clearBoBuilder = provider.createBinaryObjectBuilder( clearBo );
@@ -368,12 +364,12 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		else {
 			// remove objects
-			Set<String> removedObjects = new HashSet<>();
+			Set<Object> removedObjects = new HashSet<>();
 
 			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, false ), hints, key.getColumnValues() );
 			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 			for ( List<?> item : list ) {
-				removedObjects.add( item.get( 0 ).toString() );
+				removedObjects.add( item.get( 0 ) );
 			}
 
 			if ( !removedObjects.isEmpty() ) {

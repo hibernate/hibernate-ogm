@@ -318,21 +318,25 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			String cacheType = getEntityTypeName( keyMetadata.getTable() ); 
 			IgniteCache<Object, BinaryObject> cache = getEntityCache( keyMetadata );
 			CacheConfiguration cacheConfig = cache.getConfiguration( CacheConfiguration.class );
-			for ( QueryEntity qe : (Collection<QueryEntity>) cacheConfig.getQueryEntities() ) {
-				 if ( qe.getValueType() != null && cacheType.equalsIgnoreCase( qe.getValueType() ) ) {
-					 result = qe.getKeyType();
-					 break;
-				 }
-			}
-			if ( result == null ) {
-				for ( CacheTypeMetadata ctm : (Collection<CacheTypeMetadata>) cacheConfig.getTypeMetadata() ) {
-					 if ( ctm.getValueType() != null && cacheType.equalsIgnoreCase( ctm.getValueType() ) ) {
-						 result = ctm.getKeyType();
+			if (cacheConfig.getQueryEntities() != null) {
+				for ( QueryEntity qe : (Collection<QueryEntity>) cacheConfig.getQueryEntities() ) {
+					 if ( qe.getValueType() != null && cacheType.equalsIgnoreCase( qe.getValueType() ) ) {
+						 result = qe.getKeyType();
 						 break;
 					 }
 				}
+			}
+			if ( result == null ) {
+				if (cacheConfig.getTypeMetadata() != null) {
+					for ( CacheTypeMetadata ctm : (Collection<CacheTypeMetadata>) cacheConfig.getTypeMetadata() ) {
+						 if ( ctm.getValueType() != null && cacheType.equalsIgnoreCase( ctm.getValueType() ) ) {
+							 result = ctm.getKeyType();
+							 break;
+						 }
+					}
+				}
 				if ( result == null ) {
-					//if nothing found use id field name
+					//if nothing found we use id field name
 					result = stringBeforePoint( keyMetadata.getColumnNames()[0] );
 					result = StringUtils.capitalize( result );
 				}
