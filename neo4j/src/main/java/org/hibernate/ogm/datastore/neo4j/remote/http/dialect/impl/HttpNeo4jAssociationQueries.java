@@ -15,11 +15,12 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQuerie
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.ErrorResponse;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Graph;
+import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Graph.Relationship;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Row;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.StatementResult;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.StatementsResponse;
-import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Graph.Relationship;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -32,8 +33,8 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
  */
 public class HttpNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 
-	public HttpNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		super( ownerEntityKeyMetadata, associationKeyMetadata );
+	public HttpNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext ownerTupleTypeContext, AssociationKeyMetadata associationKeyMetadata) {
+		super( ownerEntityKeyMetadata, ownerTupleTypeContext, associationKeyMetadata );
 	}
 
 	public void removeAssociation(HttpNeo4jClient dataBase, Long txId, AssociationKey associationKey) {

@@ -29,10 +29,6 @@ import org.neo4j.graphdb.Result;
  */
 public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
-	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
-		this( entityKeyMetadata, null );
-	}
-
 	public EmbeddedNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
 		super( entityKeyMetadata, tupleTypeContext, false );
 	}

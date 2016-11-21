@@ -12,6 +12,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.neo4j.graphdb.Result;
 
@@ -64,9 +65,9 @@ class BaseNeo4jQueries {
 	 *
 	 * MATCH (owner:ENTITY:table {id: {0}})
 	 */
-	protected static void appendMatchOwnerEntityNode(StringBuilder queryBuilder, EntityKeyMetadata ownerEntityKeyMetadata) {
+	protected static void appendMatchOwnerEntityNode(StringBuilder queryBuilder, EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext) {
 		queryBuilder.append( "MATCH " );
-		appendEntityNode( "owner", ownerEntityKeyMetadata, queryBuilder );
+		appendEntityNode( "owner", ownerEntityKeyMetadata, tupleTypeContext, queryBuilder );
 	}
 
 	/*
@@ -74,19 +75,39 @@ class BaseNeo4jQueries {
 	 *
 	 * (owner:ENTITY:table {id: {0}})
 	 */
-	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
-		appendEntityNode( alias, entityKeyMetadata, queryBuilder, 0 );
+	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext, StringBuilder queryBuilder) {
+		appendEntityNode( alias, entityKeyMetadata, tupleTypeContext, queryBuilder, 0, false );
 	}
 
-	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder, int offset) {
+	/*
+	 * At the moment, we want to add the discriminator value as a label in Neo4j, but we still want to keep compatibility with the old mapping.
+	 * For this reason we don't to consider the discriminator label when executing a select.
+	 * <p>
+	 * We are going to change the mapping in the next major release.
+	 */
+	protected static void appendEntityNodeWithDiscriminatorLabel(String alias, EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext, StringBuilder queryBuilder) {
+		appendEntityNode( alias, entityKeyMetadata, tupleTypeContext, queryBuilder, 0, true );
+	}
+
+	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext, StringBuilder queryBuilder, int offset, boolean addDiscriminatorLabel) {
 		queryBuilder.append( "(" );
 		queryBuilder.append( alias );
 		queryBuilder.append( ":" );
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
+		if ( addDiscriminatorLabel ) {
+			appendDiscriminatorLabels( tupleTypeContext, queryBuilder );
+		}
 		appendProperties( queryBuilder, entityKeyMetadata.getColumnNames(), offset );
 		queryBuilder.append( ")" );
+	}
+
+	public static void appendDiscriminatorLabels(TupleTypeContext tupleTypeContext, StringBuilder queryBuilder) {
+		if ( tupleTypeContext != null && tupleTypeContext.getDiscriminatorValue() != null ) {
+			queryBuilder.append( ":" );
+			escapeIdentifier( queryBuilder, tupleTypeContext.getDiscriminatorValue().toString() );
+		}
 	}
 
 	protected static void appendRelationshipType(StringBuilder queryBuilder, String relationshipType) {

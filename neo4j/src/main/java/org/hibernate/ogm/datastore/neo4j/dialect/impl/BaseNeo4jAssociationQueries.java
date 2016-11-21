@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -47,21 +48,21 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 	protected final String removeAssociationQuery;
 	protected final String removeAssociationRowQuery;
 
-	public BaseNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	public BaseNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext ownerTupleTypeContext, AssociationKeyMetadata associationKeyMetadata) {
 		this.ownerEntityKeyMetadata = ownerEntityKeyMetadata;
 		this.removeAssociationQuery = initRemoveAssociationQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.removeAssociationRowQuery = initRemoveAssociationRowQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.findRelationshipQuery = initFindRelationshipQuery( ownerEntityKeyMetadata, associationKeyMetadata );
-		this.createRelationshipQuery = initCreateRelationshipQuery( ownerEntityKeyMetadata, associationKeyMetadata );
-		this.matchOwnerEntityNode = initMatchOwnerEntityNode( ownerEntityKeyMetadata );
+		this.createRelationshipQuery = initCreateRelationshipQuery( ownerEntityKeyMetadata, ownerTupleTypeContext, associationKeyMetadata );
+		this.matchOwnerEntityNode = initMatchOwnerEntityNode( ownerEntityKeyMetadata, ownerTupleTypeContext );
 	}
 
 	/*
 	 * Example: MATCH (owner:ENTITY:table {id: {0}})
 	 */
-	private static String initMatchOwnerEntityNode(EntityKeyMetadata ownerEntityKeyMetadata) {
+	private static String initMatchOwnerEntityNode(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext) {
 		StringBuilder queryBuilder = new StringBuilder();
-		appendMatchOwnerEntityNode( queryBuilder, ownerEntityKeyMetadata );
+		appendMatchOwnerEntityNode( queryBuilder, ownerEntityKeyMetadata, tupleTypeContext );
 		return queryBuilder.toString();
 	}
 
@@ -107,14 +108,14 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 	 * CREATE UNIQUE (o) -[r:role {props}]-> (t)
 	 * RETURN r
 	 */
-	private static String initCreateRelationshipQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	private static String initCreateRelationshipQuery(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext, AssociationKeyMetadata associationKeyMetadata) {
 		EntityKeyMetadata targetEntityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
 		int offset = 0;
 		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		appendEntityNode( "n", ownerEntityKeyMetadata, queryBuilder );
+		appendEntityNode( "n", ownerEntityKeyMetadata, tupleTypeContext, queryBuilder );
 		queryBuilder.append( ", " );
 		offset += ownerEntityKeyMetadata.getColumnNames().length;
-		appendEntityNode( "t", targetEntityKeyMetadata, queryBuilder, offset );
+		appendEntityNode( "t", targetEntityKeyMetadata, tupleTypeContext, queryBuilder, offset, false );
 		queryBuilder.append( " CREATE UNIQUE (n)" );
 		queryBuilder.append( " -[r" );
 		queryBuilder.append( ":" );
