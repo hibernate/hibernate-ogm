@@ -18,6 +18,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
  *
+ * @author Davide D'Alto
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
@@ -25,6 +26,7 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 
 	private final List<String> selectableColumns;
 	private final OptionsContext optionsContext;
+	private final Object discriminatorValue;
 
 	/**
 	 * Information of the associated entity stored per foreign key column names
@@ -34,6 +36,7 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 	private final Map<String, String> roles;
 
 	public TupleTypeContextImpl(List<String> selectableColumns,
+			Object discriminatorValue,
 			Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata,
 			Map<String, String> roles,
 			OptionsContext optionsContext) {
@@ -42,11 +45,17 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 		this.associatedEntityMetadata = Collections.unmodifiableMap( associatedEntityMetadata );
 		this.roles = Collections.unmodifiableMap( roles );
 		this.optionsContext = optionsContext;
+		this.discriminatorValue = discriminatorValue;
 	}
 
 	@Override
 	public List<String> getSelectableColumns() {
 		return selectableColumns;
+	}
+
+	@Override
+	public Object getDiscriminatorValue() {
+		return discriminatorValue;
 	}
 
 	@Override

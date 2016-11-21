@@ -79,4 +79,11 @@ public interface TupleTypeContext {
 	 */
 	Map<String, String> getAllRoles();
 
+	/**
+	 * The value used to discriminate an entity in a hierarchy.
+	 *
+	 * @return the value used to discriminate the entity or {@code null}
+	 */
+	Object getDiscriminatorValue();
+
 }
