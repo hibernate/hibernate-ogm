@@ -167,38 +167,50 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		OgmEntityPersister entityPersister = getEntityPersister( targetType );
 		String discriminatorColumnName = entityPersister.getDiscriminatorColumnName();
 		if ( discriminatorColumnName != null ) {
-			if ( whereCondition != null ) {
-				queryBuilder.append( " AND " );
-			}
-			else {
-				queryBuilder.append( " WHERE " );
-			}
+			// InheritanceType.SINGLE_TABLE
+			addConditionOnDiscriminatorValue( queryBuilder, targetAlias, whereCondition, entityPersister, discriminatorColumnName );
+		}
+		else if ( entityPersister.hasSubclasses() ) {
+			// InheritanceType.TABLE_PER_CLASS
 			@SuppressWarnings("unchecked")
 			Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
-			identifier( queryBuilder, targetAlias );
-			queryBuilder.append( "." );
-			identifier( queryBuilder, discriminatorColumnName );
+			throw LOG.queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( "Neo4j", subclassEntityNames );
+		}
+	}
 
-			org.hibernate.type.Type discriminatorType = entityPersister.getDiscriminatorType();
-			if ( subclassEntityNames.size() == 1 ) {
-				queryBuilder.append( " = " );
-				appendDiscriminatorValue( queryBuilder, discriminatorType, entityPersister.getDiscriminatorValue() );
-			}
-			else {
-				queryBuilder.append( " IN [" );
-				Set<Object> discrimiantorValues = new HashSet<>();
-				discrimiantorValues.add( entityPersister.getDiscriminatorValue() );
+	private void addConditionOnDiscriminatorValue(StringBuilder queryBuilder, String targetAlias, StringBuilder whereCondition, OgmEntityPersister entityPersister,
+			String discriminatorColumnName) {
+		if ( whereCondition != null ) {
+			queryBuilder.append( " AND " );
+		}
+		else {
+			queryBuilder.append( " WHERE " );
+		}
+		@SuppressWarnings("unchecked")
+		Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
+		identifier( queryBuilder, targetAlias );
+		queryBuilder.append( "." );
+		identifier( queryBuilder, discriminatorColumnName );
 
-				String separator = "";
-				for ( String subclass : subclassEntityNames ) {
-					OgmEntityPersister subclassPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( subclass );
-					Object discriminatorValue = subclassPersister.getDiscriminatorValue();
-					queryBuilder.append( separator );
-					appendDiscriminatorValue( queryBuilder, discriminatorType, discriminatorValue );
-					separator = ", ";
-				}
-				queryBuilder.append( "]" );
+		org.hibernate.type.Type discriminatorType = entityPersister.getDiscriminatorType();
+		if ( subclassEntityNames.size() == 1 ) {
+			queryBuilder.append( " = " );
+			appendDiscriminatorValue( queryBuilder, discriminatorType, entityPersister.getDiscriminatorValue() );
+		}
+		else {
+			queryBuilder.append( " IN [" );
+			Set<Object> discrimiantorValues = new HashSet<>();
+			discrimiantorValues.add( entityPersister.getDiscriminatorValue() );
+
+			String separator = "";
+			for ( String subclass : subclassEntityNames ) {
+				OgmEntityPersister subclassPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( subclass );
+				Object discriminatorValue = subclassPersister.getDiscriminatorValue();
+				queryBuilder.append( separator );
+				appendDiscriminatorValue( queryBuilder, discriminatorType, discriminatorValue );
+				separator = ", ";
 			}
+			queryBuilder.append( "]" );
 		}
 	}
 
@@ -209,7 +221,6 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 
 	private Object convertToBackendType(org.hibernate.type.Type discriminatorType, Object discriminatorValue) {
 		GridType ogmType = sessionFactory.getServiceRegistry().getService( TypeTranslator.class ).getType( discriminatorType );
-
 		return ogmType.convertToBackendType( discriminatorValue, sessionFactory );
 	}
 

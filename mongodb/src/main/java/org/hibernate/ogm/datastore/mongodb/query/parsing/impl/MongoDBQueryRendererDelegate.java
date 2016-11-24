@@ -18,6 +18,8 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.StringHelper;
 
@@ -30,6 +32,8 @@ import com.mongodb.DBObject;
  * @author Gunnar Morling
  */
 public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQueryParsingResult> {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
@@ -68,7 +72,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	private DBObject appendDiscriminatorClause(OgmEntityPersister entityPersister, DBObject query) {
 		String discriminatorColumnName = entityPersister.getDiscriminatorColumnName();
 		if ( discriminatorColumnName != null ) {
-
+			// InheritanceType.SINGLE_TABLE
 			BasicDBObject discriminatorFilter = createDiscriminatorFilter( entityPersister, discriminatorColumnName );
 
 			if ( query.keySet().isEmpty() ) {
@@ -77,6 +81,12 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 			else {
 				return new BasicDBObject( "$and", Arrays.asList( query, discriminatorFilter ) );
 			}
+		}
+		else if ( entityPersister.hasSubclasses() ) {
+			// InheritanceType.TABLE_PER_CLASS
+			@SuppressWarnings("unchecked")
+			Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
+			throw log.queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( "MongoDB", subclassEntityNames );
 		}
 		return query;
 	}
