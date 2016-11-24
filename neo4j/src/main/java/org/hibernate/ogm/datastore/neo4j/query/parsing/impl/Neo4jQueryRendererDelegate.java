@@ -11,8 +11,10 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.relationship;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.antlr.runtime.tree.Tree;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -24,9 +26,12 @@ import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 
 /**
  * Parser delegate which creates Neo4j queries in form of {@link StringBuilder}s.
@@ -63,8 +68,12 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	}
 
 	private EntityKeyMetadata getKeyMetaData(Class<?> entityType) {
+		return getEntityPersister( entityType ).getEntityKeyMetadata();
+	}
+
+	private OgmEntityPersister getEntityPersister(Class<?> entityType) {
 		OgmEntityPersister persister = (OgmEntityPersister) ( sessionFactory ).getEntityPersister( entityType.getName() );
-		return persister.getEntityKeyMetadata();
+		return persister;
 	}
 
 	@Override
@@ -73,7 +82,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		String label = getKeyMetaData( targetType ).getTable();
 		StringBuilder queryBuilder = new StringBuilder();
 		match( queryBuilder, targetAlias, label );
-		where( queryBuilder );
+		where( queryBuilder, targetAlias );
 		optionalMatch( queryBuilder, targetAlias );
 		returns( queryBuilder, targetAlias );
 		orderBy( queryBuilder );
@@ -143,12 +152,65 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		}
 	}
 
-	private void where(StringBuilder queryBuilder) {
+	private void where(StringBuilder queryBuilder, String targetAlias) {
 		StringBuilder whereCondition = builder.build();
+
 		if ( whereCondition != null ) {
 			queryBuilder.append( " WHERE " );
 			queryBuilder.append( whereCondition );
 		}
+
+		appendDiscriminatorClause( queryBuilder, targetAlias, whereCondition );
+	}
+
+	private void appendDiscriminatorClause(StringBuilder queryBuilder, String targetAlias, StringBuilder whereCondition) {
+		OgmEntityPersister entityPersister = getEntityPersister( targetType );
+		String discriminatorColumnName = entityPersister.getDiscriminatorColumnName();
+		if ( discriminatorColumnName != null ) {
+			if ( whereCondition != null ) {
+				queryBuilder.append( " AND " );
+			}
+			else {
+				queryBuilder.append( " WHERE " );
+			}
+			@SuppressWarnings("unchecked")
+			Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
+			identifier( queryBuilder, targetAlias );
+			queryBuilder.append( "." );
+			identifier( queryBuilder, discriminatorColumnName );
+
+			org.hibernate.type.Type discriminatorType = entityPersister.getDiscriminatorType();
+			if ( subclassEntityNames.size() == 1 ) {
+				queryBuilder.append( " = " );
+				appendDiscriminatorValue( queryBuilder, discriminatorType, entityPersister.getDiscriminatorValue() );
+			}
+			else {
+				queryBuilder.append( " IN [" );
+				Set<Object> discrimiantorValues = new HashSet<>();
+				discrimiantorValues.add( entityPersister.getDiscriminatorValue() );
+
+				String separator = "";
+				for ( String subclass : subclassEntityNames ) {
+					OgmEntityPersister subclassPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( subclass );
+					Object discriminatorValue = subclassPersister.getDiscriminatorValue();
+					queryBuilder.append( separator );
+					appendDiscriminatorValue( queryBuilder, discriminatorType, discriminatorValue );
+					separator = ", ";
+				}
+				queryBuilder.append( "]" );
+			}
+		}
+	}
+
+	private void appendDiscriminatorValue(StringBuilder queryBuilder, org.hibernate.type.Type discriminatorType, Object discriminatorValue) {
+		Object value = convertToBackendType( discriminatorType, discriminatorValue );
+		CypherDSL.literal( queryBuilder, value );
+	}
+
+	private Object convertToBackendType(org.hibernate.type.Type discriminatorType, Object discriminatorValue) {
+		GridType ogmType = sessionFactory.getServiceRegistry().getService( TypeTranslator.class ).getType( discriminatorType );
+
+		return ogmType.convertToBackendType( discriminatorValue, sessionFactory );
 	}
 
 	private void orderBy(StringBuilder queryBuilder) {
