@@ -13,6 +13,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
+import java.util.Collection;
 
 import javax.persistence.PersistenceException;
 import javax.transaction.SystemException;
@@ -301,4 +302,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 88, value = "Configuration is referring to deprecated datastore provider name '%1$s'. Please use the new form '%2$s' instead.")
 	void usingDeprecatedDatastoreProviderName(String deprecatedName, String newName);
 
+	@Message(id = 89, value = "%1$s does not support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy. You should try using SINGLE_TABLE instead. Entities: %2$s")
+	HibernateException queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( String datastore, Collection<String> subclassEntityNames );
 }
