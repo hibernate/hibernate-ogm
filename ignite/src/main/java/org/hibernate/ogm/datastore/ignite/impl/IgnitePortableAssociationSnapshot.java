@@ -6,79 +6,67 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
 
-import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.ignite.binary.BinaryObject;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 
 /**
+ *
  * @author Victor Kadachigov
  */
-public class IgnitePortableAssociationSnapshot implements AssociationSnapshot {
+public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { // extends AssociationRows {
 
-	private final Map<RowKey, BinaryObject> associationMap;
+	private final Map<RowKey, TupleSnapshot> rows;
 
-	public IgnitePortableAssociationSnapshot(String rowKeyIndexColumnNames[]) {
-		if ( rowKeyIndexColumnNames != null && rowKeyIndexColumnNames.length > 0 ) {
-			this.associationMap = new TreeMap<RowKey, BinaryObject>( new RawKeyComparator( rowKeyIndexColumnNames ) );
-		}
-		else {
-			this.associationMap = new HashMap<RowKey, BinaryObject>();
-		}
+	public IgnitePortableAssociationSnapshot(AssociationKey associationKey) {
+//		super( associationKey, Collections.emptySet(), IgniteAssociationRowFactory.INSTANCE );
+		rows = Collections.emptyMap();
 	}
 
-	public IgnitePortableAssociationSnapshot(Map<RowKey, BinaryObject> associationMap, String rowKeyIndexColumnNames[]) {
-		this( rowKeyIndexColumnNames );
-		this.associationMap.putAll( associationMap );
+	public IgnitePortableAssociationSnapshot(AssociationKey associationKey, Map<Object, BinaryObject> associationMap) {
+//		super( associationKey, associationMap.entrySet(), IgniteAssociationRowFactory.INSTANCE );
+		this.rows = CollectionHelper.newHashMap( associationMap.size() );
+		for ( Map.Entry<Object, BinaryObject> entry : associationMap.entrySet() ) {
+			TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( entry.getKey(), entry.getValue(), associationKey.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata() );
+			String rowKeyColumnNames[] = associationKey.getMetadata().getRowKeyColumnNames();
+			Object rowKeyColumnValues[] = new Object[rowKeyColumnNames.length];
+			for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
+				String columnName = rowKeyColumnNames[i];
+				rowKeyColumnValues[i] = snapshot.get( columnName );
+			}
+			RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
+			this.rows.put( rowKey, snapshot );
+		}
 	}
 
 	@Override
 	public Tuple get(RowKey rowKey) {
-		BinaryObject object = associationMap.get( rowKey );
-		return object != null ? new Tuple( new IgnitePortableTupleSnapshot( object ), SnapshotType.UPDATE ) : null;
+		TupleSnapshot row = rows.get( rowKey );
+		return row != null ? new Tuple( row, SnapshotType.UPDATE ) : null;
 	}
 
 	@Override
 	public boolean containsKey(RowKey rowKey) {
-		return associationMap.containsKey( rowKey );
+		return rows.containsKey( rowKey );
+	}
+
+	@Override
+	public Set<RowKey> getRowKeys() {
+		return rows.keySet();
 	}
 
 	@Override
 	public int size() {
-		return associationMap.size();
+		return rows.size();
 	}
 
-	@Override
-	public Iterable<RowKey> getRowKeys() {
-		return associationMap.keySet();
-	}
-
-	public BinaryObject getBinary(RowKey rowKey) {
-		return associationMap.get( rowKey );
-	}
-
-	private class RawKeyComparator implements Comparator<RowKey> {
-
-		private final String sortFields[];
-
-		public RawKeyComparator(String[] sortFields) {
-			this.sortFields = sortFields != null ? sortFields : new String[0];
-		}
-
-		@Override
-		public int compare(RowKey key1, RowKey key2) {
-			CompareToBuilder builder = new CompareToBuilder();
-			for ( String name : sortFields ) {
-				builder.append( key1.getColumnValue( name ), key2.getColumnValue( name ) );
-			}
-			return builder.toComparison();
-		}
-	}
 }

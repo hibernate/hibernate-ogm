@@ -94,10 +94,10 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 		Object cacheKey = getProvider( sessionFactory ).createKeyObject( key );
 
 		Map<String, Object> result = new HashMap<>();
-		Object po = cache.get( cacheKey );
+		BinaryObject po = cache.get( cacheKey );
 
 		IgniteDialect igniteDialect = (IgniteDialect) sessionFactory.getServiceRegistry().getService( GridDialect.class );
-		TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( po );
+		TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( cacheKey, po, key.getMetadata() );
 		for ( String fieldName : snapshot.getColumnNames() ) {
 			result.put( fieldName, snapshot.get( fieldName ) );
 		}

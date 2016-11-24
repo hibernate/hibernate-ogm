@@ -33,6 +33,7 @@ import org.hibernate.ogm.datastore.ignite.IgniteConfigurationBuilder;
 
 /**
  * Ignite cache configuration for tests
+ *
  * @author Victor Kadachigov
  */
 public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilder {
@@ -70,8 +71,8 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		config.setPublicThreadPoolSize( 2 );
 
 		List<CacheConfiguration> cacheConfig = new ArrayList<>();
-		
-// EmbeddableIdTest		
+
+// EmbeddableIdTest
 		cacheConfig.add( createCacheConfig( "SingleBoardComputer" ).withForceQueryEntity().build() );
 // SequenceIdGeneratorTest
 		cacheConfig.add( simpleCacheConfig( "Song", Long.class ) );
@@ -122,9 +123,21 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add( createCacheConfig( "joinProducedSnowflakes" ).appendIndex( "Cloud_id", String.class ).build() );
 		cacheConfig.add( simpleCacheConfig( "joinBackupSnowflakes" ) );
 // ReferencedCompositeIdTest
-		cacheConfig.add( simpleCacheConfig( "Director" ) );
-		cacheConfig.add( simpleCacheConfig( "Tournament" ) );
-		cacheConfig.add( simpleCacheConfig( "Director_Tournament" ) );
+		cacheConfig.add(
+				createCacheConfig( "Director" )
+						.build()
+		);
+		cacheConfig.add(
+				createCacheConfig( "Tournament" )
+						.withKeyType( "TournamentId" )
+						.build()
+		);
+		cacheConfig.add(
+				createCacheConfig( "Director_Tournament" )
+						.withForceQueryEntity()
+						.appendIndex( "Director_id", String.class )
+						.build()
+		);
 // ManyToOneExtraTest
 		cacheConfig.add( simpleCacheConfig( "Basket" ) );
 		cacheConfig.add( simpleCacheConfig( "Product" ) );
@@ -136,8 +149,18 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add( createCacheConfig( "SalesGuy" ).appendIndex( "salesForce_id", String.class ).build() );
 		cacheConfig.add( createCacheConfig( "Beer" ).appendIndex( "brewery_id", String.class ).build() );
 		cacheConfig.add( simpleCacheConfig( "Brewery" ) );
-		cacheConfig.add( simpleCacheConfig( "Game", Integer.class ) );
-		cacheConfig.add( simpleCacheConfig( "Court" ) );
+		cacheConfig.add(
+				createCacheConfig( "Game" )
+						.withKeyType( "GameId" )
+						.appendIndex( "playedOn_id_countryCode", String.class )
+						.appendIndex( "playedOn_id_sequenceNo", Integer.class )
+						.build()
+		);
+		cacheConfig.add(
+				createCacheConfig( "Court" )
+					.withKeyType( "CourtId" )
+					.build()
+		);
 // OneToOneTest
 		cacheConfig.add( simpleCacheConfig( "Horse" ) );
 		cacheConfig.add( simpleCacheConfig( "Cavalier" ) );
@@ -149,15 +172,14 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add(
 				createCacheConfig( "News" )
 						.withKeyType( "NewsID" )
-						//.appendIndex( "newsId", Object.class )
 						.appendField( "content", String.class )
 						.build()
 		);
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "Label" )
 						.withKeyType( Long.class )
-						.appendIndex("news_author_fk", String.class)
-						.appendIndex("news_topic_fk", String.class)
+						.appendIndex( "news_author_fk", String.class )
+						.appendIndex( "news_topic_fk", String.class )
 						.build()
 		);
 		cacheConfig.add( simpleCacheConfig( "News_Label" ) );
@@ -259,7 +281,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 
 	private CacheConfiguration simpleCacheConfig( String name, Class<?> keyType ) {
 		return new TestCacheConfigBuilder( name )
-						.withKeyType(keyType)
+						.withKeyType( keyType )
 						.build();
 	}
 
@@ -285,7 +307,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 			cacheConfig.setCacheMode( CacheMode.PARTITIONED );
 			cacheConfig.setStartSize( 10 );
 			cacheConfig.setBackups( 0 );
-			cacheConfig.setAffinity( new RendezvousAffinityFunction( false, 10 ) );
+			cacheConfig.setAffinity( new RendezvousAffinityFunction( false, 2 ) );
 			cacheConfig.setName( name );
 
 			queryEntity = new QueryEntity();
@@ -303,22 +325,24 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 			indexes.put( fieldName, new QueryIndex( fieldName, QueryIndexType.SORTED ) );
 			return this;
 		}
-		
+
 		public TestCacheConfigBuilder withForceQueryEntity() {
 			forceQueryEntity = true;
 			return this;
 		}
-		
+
 		public TestCacheConfigBuilder withKeyType(Class<?> keyClass) {
 			this.keyType = keyClass.getName();
+			forceQueryEntity = true;
 			return this;
 		}
-		
+
 		public TestCacheConfigBuilder withKeyType(String keyType) {
 			this.keyType = keyType;
+			forceQueryEntity = true;
 			return this;
 		}
-		
+
 		public CacheConfiguration<String, BinaryObject> build() {
 			if ( forceQueryEntity || !indexes.isEmpty() || !queryEntity.getFields().isEmpty() ) {
 				queryEntity.setKeyType( keyType );

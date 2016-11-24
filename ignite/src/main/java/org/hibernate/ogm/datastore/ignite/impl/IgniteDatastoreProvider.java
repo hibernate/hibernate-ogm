@@ -39,6 +39,7 @@ import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.query.impl.QueryHints;
 import org.hibernate.ogm.datastore.ignite.query.parsing.impl.IgniteQueryParserService;
 import org.hibernate.ogm.datastore.ignite.transaction.impl.IgniteTransactionManagerFactory;
+import org.hibernate.ogm.datastore.ignite.util.StringHelper;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -65,7 +66,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 	private static final long serialVersionUID = 2278253954737494852L;
 	private static final Log log = LoggerFactory.getLogger();
-	
+
 	private JtaPlatform jtaPlatform;
 	private JdbcServices jdbcServices;
 	private IgniteEx cacheManager;
@@ -261,6 +262,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		String comment = hints != null ? hints.toComment() : "";
 		jdbcServices.getSqlStatementLogger().logStatement( comment + sql );
 
+//		sql = "SELECT _KEY, _VAL FROM Game WHERE playedOn_id_countryCode='DE' AND playedOn_id_sequenceNo=123";
 		SqlFieldsQuery query = new SqlFieldsQuery( sql );
 		if ( args != null ) {
 			query.setArgs( args );
@@ -282,8 +284,8 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		}
 		else {
 			BinaryObjectBuilder builder = createBinaryObjectBuilder( findKeyType( key.getMetadata() ) );
-			for (int i = 0; i < key.getColumnNames().length; i++ ) {
-				builder.setField( stringAfterPoint( key.getColumnNames()[i] ), key.getColumnValues()[i] );
+			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+				builder.setField( StringHelper.stringAfterPoint( key.getColumnNames()[i] ), key.getColumnValues()[i] );
 			}
 			result = builder.build();
 		}
@@ -302,11 +304,11 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			result = key.getColumnValues()[0];
 		}
 		else {
-			throw new UnsupportedOperationException("Not implemented yet");
+			throw new UnsupportedOperationException( "Not implemented yet" );
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Finds key type name for cache for entities with composite id
 	 * @param keyMetadata
@@ -315,51 +317,33 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	private String findKeyType(EntityKeyMetadata keyMetadata) {
 		String result = compositeIdTypes.get( keyMetadata.getTable() );
 		if ( result == null ) {
-			String cacheType = getEntityTypeName( keyMetadata.getTable() ); 
+			String cacheType = getEntityTypeName( keyMetadata.getTable() );
 			IgniteCache<Object, BinaryObject> cache = getEntityCache( keyMetadata );
 			CacheConfiguration cacheConfig = cache.getConfiguration( CacheConfiguration.class );
-			if (cacheConfig.getQueryEntities() != null) {
+			if ( cacheConfig.getQueryEntities() != null ) {
 				for ( QueryEntity qe : (Collection<QueryEntity>) cacheConfig.getQueryEntities() ) {
-					 if ( qe.getValueType() != null && cacheType.equalsIgnoreCase( qe.getValueType() ) ) {
-						 result = qe.getKeyType();
-						 break;
-					 }
+					if ( qe.getValueType() != null && cacheType.equalsIgnoreCase( qe.getValueType() ) ) {
+						result = qe.getKeyType();
+						break;
+					}
 				}
 			}
 			if ( result == null ) {
-				if (cacheConfig.getTypeMetadata() != null) {
+				if ( cacheConfig.getTypeMetadata() != null ) {
 					for ( CacheTypeMetadata ctm : (Collection<CacheTypeMetadata>) cacheConfig.getTypeMetadata() ) {
-						 if ( ctm.getValueType() != null && cacheType.equalsIgnoreCase( ctm.getValueType() ) ) {
-							 result = ctm.getKeyType();
-							 break;
-						 }
+						if ( ctm.getValueType() != null && cacheType.equalsIgnoreCase( ctm.getValueType() ) ) {
+							result = ctm.getKeyType();
+							break;
+						}
 					}
 				}
 				if ( result == null ) {
 					//if nothing found we use id field name
-					result = stringBeforePoint( keyMetadata.getColumnNames()[0] );
+					result = StringHelper.stringBeforePoint( keyMetadata.getColumnNames()[0] );
 					result = StringUtils.capitalize( result );
 				}
 			}
 			compositeIdTypes.put( keyMetadata.getTable(), result );
-		}		
-		return result;
-	}
-	
-	private static String stringBeforePoint(String value) {
-		String result = value;
-		int index = result.indexOf( '.' );
-		if ( index >= 0 ) {
-			result = result.substring( 0, index );
-		}
-		return result;
-	}
-
-	private static String stringAfterPoint(String value) {
-		String result = value;
-		int index = result.indexOf( '.' );
-		if ( index >= 0 ) {
-			result = result.substring( index + 1 );
 		}
 		return result;
 	}
@@ -371,16 +355,16 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	 * @return type
 	 */
 	public String getEntityTypeName(String entity) {
-		return stringAfterPoint( entity ) ;
+		return StringHelper.stringAfterPoint( entity ) ;
 	}
 
 	/**
 	 * Get name of cache from full entity name
-	 * 
+	 *
 	 * @param entity
 	 * @return cache name
 	 */
 	private String getEntityCacheName(String entity) {
-		return stringBeforePoint( entity ) ;
+		return StringHelper.stringBeforePoint( entity ) ;
 	}
 }
