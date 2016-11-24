@@ -13,6 +13,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
+import java.util.Collection;
 
 import javax.persistence.PersistenceException;
 import javax.transaction.SystemException;
@@ -289,4 +290,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 85, value = "Unable to find an entity entry for the entity '%1$s'")
 	PersistenceException cannotFindEntityEntryForEntity(Object entity);
+
+	@Message(id = 89, value = "%1$s does not support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy. You should try using SINGLE_TABLE instead. Entities: %2$s")
+	HibernateException queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( String datastore, Collection<String> subclassEntityNames );
 }
