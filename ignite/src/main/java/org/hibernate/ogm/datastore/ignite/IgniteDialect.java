@@ -66,6 +66,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.AssociationOperationType;
+import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
@@ -149,8 +150,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		BinaryObjectBuilder builder = null;
 		if ( tuple.getSnapshotType() == SnapshotType.UPDATE ) {
 			IgnitePortableTupleSnapshot tupleSnapshot = (IgnitePortableTupleSnapshot) tuple.getSnapshot();
-			keyObject = tupleSnapshot.getKey();
-			builder = provider.createBinaryObjectBuilder( tupleSnapshot.getValue() );
+			keyObject = tupleSnapshot.getCacheKey();
+			builder = provider.createBinaryObjectBuilder( tupleSnapshot.getCacheValue() );
 		}
 		else {
 			keyObject = provider.createKeyObject( key );
@@ -316,13 +317,14 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		boolean clearInsteadOfRemove = clearAssociation( key );
 
 		for ( AssociationOperation op : association.getOperations() ) {
-			Tuple currentStateTuple = op.getType() != AssociationOperationType.REMOVE
-					? op.getValue()
-					: association.getSnapshot().get( op.getKey() );
-			Object id = currentStateTuple.get( idColumnName );
+			AssociationSnapshot snapshot = association.getSnapshot();
+			Tuple previousStateTuple = snapshot.get( op.getKey() );
+			Tuple currentStateTuple = op.getValue();
+			Object previousId = previousStateTuple != null ? previousStateTuple.get( idColumnName ) : null;
+			Object currentId = op.getType() != AssociationOperationType.REMOVE ? currentStateTuple.get( idColumnName ) : null;
 			if ( op.getType() == AssociationOperationType.CLEAR
 					|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
-				BinaryObject clearBo = associationCache.get( id );
+				BinaryObject clearBo = associationCache.get( previousId );
 				if ( clearBo != null ) {
 					BinaryObjectBuilder clearBoBuilder = provider.createBinaryObjectBuilder( clearBo );
 					for ( String columnName : key.getColumnNames() ) {
@@ -331,11 +333,11 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 					for ( String columnName : key.getMetadata().getRowKeyIndexColumnNames() ) {
 						clearBoBuilder.removeField( columnName );
 					}
-					changedObjects.put( id, clearBoBuilder.build() );
+					changedObjects.put( previousId, clearBoBuilder.build() );
 				}
 			}
 			else if ( op.getType() == AssociationOperationType.PUT ) {
-				BinaryObject putBo = associationCache.get( id );
+				BinaryObject putBo = previousId != null ? associationCache.get( previousId ) : null;
 				BinaryObjectBuilder putBoBuilder = null;
 				if ( putBo != null ) {
 					putBoBuilder = provider.createBinaryObjectBuilder( putBo );
@@ -345,6 +347,9 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 				}
 				for ( String columnName : currentStateTuple.getColumnNames() ) {
 					Object value = currentStateTuple.get( columnName );
+					if ( key.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata().isKeyColumn( columnName ) ) {
+						continue;
+					}
 					if ( value != null ) {
 						putBoBuilder.setField( columnName, value );
 					}
@@ -352,10 +357,13 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 						putBoBuilder.removeField( columnName );
 					}
 				}
-				changedObjects.put( id, putBoBuilder.build() );
+				if ( previousId != null && !previousId.equals( currentId ) ) {
+					removedObjects.add( previousId );
+				}
+				changedObjects.put( currentId, putBoBuilder.build() );
 			}
 			else if ( op.getType() == AssociationOperationType.REMOVE ) {
-				removedObjects.add( id );
+				removedObjects.add( previousId );
 			}
 			else {
 				throw new HibernateException( "AssociationOperation not supported: " + op.getType() );
@@ -368,6 +376,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		if ( !removedObjects.isEmpty() ) {
 			associationCache.removeAll( removedObjects );
 		}
+
+		association.reset();
 	}
 
 	private boolean clearAssociation(AssociationKey key) {

@@ -93,9 +93,22 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add( simpleCacheConfig( "GrandChild" ) );
 		cacheConfig.add( createCacheConfig( "GrandMother" ).appendIndex( "id", String.class ).build() );
 		cacheConfig.add( createCacheConfig( "GrandMother_grandChildren" ).appendIndex( "GrandMother_id", String.class ).build() );
-		cacheConfig.add( simpleCacheConfig( "Race" ) );
-		cacheConfig.add( simpleCacheConfig( "Runner" ) );
-		cacheConfig.add( createCacheConfig( "Race_Runners" ).appendIndex( "Race_raceId", String.class ).build() );
+		cacheConfig.add(
+				createCacheConfig( "Race" )
+						.withKeyType( "RaceId" )
+						.build()
+		);
+		cacheConfig.add(
+				createCacheConfig( "Runner" )
+						.withKeyType( "RunnerId" )
+						.build()
+		);
+		cacheConfig.add(
+				createCacheConfig( "Race_Runners" )
+						.appendIndex( "Race_raceId_federationDepartment", Integer.class )
+						.appendIndex( "Race_raceId_federationSequence", Integer.class )
+						.build()
+		);
 // ManyToManyExtraTest
 		cacheConfig.add( simpleCacheConfig( "Student" ) );
 		cacheConfig.add( simpleCacheConfig( "ClassRoom", Long.class ) );

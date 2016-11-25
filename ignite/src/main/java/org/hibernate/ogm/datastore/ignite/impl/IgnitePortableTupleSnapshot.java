@@ -70,11 +70,17 @@ public class IgnitePortableTupleSnapshot implements TupleSnapshot {
 		return columnNames;
 	}
 
-	public Object getKey() {
+	/**
+	 * @return key object in underlaying cache
+	 */
+	public Object getCacheKey() {
 		return id;
 	}
 
-	public BinaryObject getValue() {
+	/**
+	 * @return value object in underlaying cache
+	 */
+	public BinaryObject getCacheValue() {
 		return binaryObject;
 	}
 }

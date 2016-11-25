@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.CollectionHelper;
  */
 public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { // extends AssociationRows {
 
-	private final Map<RowKey, TupleSnapshot> rows;
+	private final Map<RowKey, IgnitePortableTupleSnapshot> rows;
 
 	public IgnitePortableAssociationSnapshot(AssociationKey associationKey) {
 //		super( associationKey, Collections.emptySet(), IgniteAssociationRowFactory.INSTANCE );
@@ -36,7 +36,7 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { 
 //		super( associationKey, associationMap.entrySet(), IgniteAssociationRowFactory.INSTANCE );
 		this.rows = CollectionHelper.newHashMap( associationMap.size() );
 		for ( Map.Entry<Object, BinaryObject> entry : associationMap.entrySet() ) {
-			TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( entry.getKey(), entry.getValue(), associationKey.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata() );
+			IgnitePortableTupleSnapshot snapshot = new IgnitePortableTupleSnapshot( entry.getKey(), entry.getValue(), associationKey.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata() );
 			String rowKeyColumnNames[] = associationKey.getMetadata().getRowKeyColumnNames();
 			Object rowKeyColumnValues[] = new Object[rowKeyColumnNames.length];
 			for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
@@ -69,4 +69,19 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { 
 		return rows.size();
 	}
 
+	/**
+	 * @return key object in underlaying cache
+	 */
+	public Object getCacheKey(RowKey rowKey) {
+		IgnitePortableTupleSnapshot row = rows.get( rowKey );
+		return row != null ? row.getCacheKey() : null;
+	}
+
+	/**
+	 * @return value object in underlaying cache
+	 */
+	public BinaryObject getCacheValue(RowKey rowKey) {
+		IgnitePortableTupleSnapshot row = rows.get( rowKey );
+		return row != null ? row.getCacheValue() : null;
+	}
 }

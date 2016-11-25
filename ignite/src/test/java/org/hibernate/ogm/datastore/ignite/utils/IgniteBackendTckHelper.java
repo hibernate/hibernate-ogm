@@ -19,8 +19,14 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-//	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest"
-//	"org.hibernate.ogm.backendtck.associations.collection.manytomany.*",
+//	"org.hibernate.ogm.backendtck.associations.collection.types.*"
+	"org.hibernate.ogm.backendtck.associations.collection.types.ListTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.types.MapTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.types.MapContentsStoredInSeparateDocumentTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.*"
+//	"org.hibernate.ogm.backendtck.associations.compositeid.*"
 
 	// failed
 
@@ -28,6 +34,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.*",
 //	"org.hibernate.ogm.backendtck.associations.collection.types.*",
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
+//	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest"
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
 //	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
