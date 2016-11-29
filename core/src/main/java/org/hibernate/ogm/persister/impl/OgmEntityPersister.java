@@ -92,7 +92,6 @@ import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.ComponentType;
 import org.hibernate.type.EntityType;
-import org.hibernate.type.IntegerType;
 import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
 /**
@@ -1725,7 +1724,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	public Type getDiscriminatorType() {
-		return IntegerType.INSTANCE;
+		return discriminator.getType();
 	}
 
 	@Override
