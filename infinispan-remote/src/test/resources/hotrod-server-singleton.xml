@@ -155,6 +155,10 @@
         <local-cache name="INITIAL_VALUE_GENERATOR_SEQUENCE" />
         <local-cache name="THREAD_SAFETY_GENERATOR_SEQUENCE" />
 
+        <local-cache name="Person" />
+        <local-cache name="CommunityMember" />
+        <local-cache name="Employee" />
+
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
 

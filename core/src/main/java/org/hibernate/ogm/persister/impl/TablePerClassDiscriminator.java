@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 /**
@@ -20,6 +21,8 @@ import org.hibernate.type.Type;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class TablePerClassDiscriminator implements EntityDiscriminator {
+
+	private static final String DISCRIMINATOR_ALIAS = "clazz_";
 
 	private final Integer subclassId;
 	private final Map<Object, String> subclassesByValue;
@@ -71,12 +74,12 @@ public class TablePerClassDiscriminator implements EntityDiscriminator {
 
 	@Override
 	public String getAlias() {
-		return null;
+		return DISCRIMINATOR_ALIAS;
 	}
 
 	@Override
 	public Type getType() {
-		return null;
+		return StandardBasicTypes.INTEGER;
 	}
 
 	@Override
