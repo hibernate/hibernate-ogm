@@ -122,6 +122,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private static final Log log = LoggerFactory.make();
 
 	private final EntityDiscriminator discriminator;
+	private final Object discriminatorValue;
 
 	private final String tableName;
 	private final String[] constraintOrderedTableNames;
@@ -246,6 +247,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		);
 
 		this.discriminator = discriminator;
+		this.discriminatorValue = discriminatorValue( persistentClass, discriminator );
 
 		// TODO batch logic copied from AbstractEntityPersister
 		// remove copy by increasing visibility in super class
@@ -594,10 +596,19 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		return new TupleTypeContextImpl(
 				selectableColumnNames( discriminator ),
+				discriminatorValue,
 				associatedEntityKeyMetadata,
 				roles,
 				optionsService.context().getEntityOptions( getMappedClass() )
 		);
+	}
+
+	private static Object discriminatorValue(final PersistentClass persistentClass, final EntityDiscriminator discriminator) {
+		if ( discriminator.isNeeded() ) {
+			return ColumnBasedDiscriminator.value( persistentClass, discriminator.getType() );
+		}
+
+		return null;
 	}
 
 	public GridType getGridIdentifierType() {

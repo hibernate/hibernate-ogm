@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -37,8 +38,8 @@ import org.neo4j.graphdb.Result;
  */
 public class EmbeddedNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 
-	public EmbeddedNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		super( ownerEntityKeyMetadata, associationKeyMetadata );
+	public EmbeddedNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext tupleTypeContext, AssociationKeyMetadata associationKeyMetadata) {
+		super( ownerEntityKeyMetadata, tupleTypeContext, associationKeyMetadata );
 	}
 
 	/**

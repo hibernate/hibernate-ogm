@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -25,8 +26,8 @@ import org.neo4j.driver.v1.types.Relationship;
  */
 public class BoltNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 
-	public BoltNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		super( ownerEntityKeyMetadata, associationKeyMetadata );
+	public BoltNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext ownerTupleTypeContext, AssociationKeyMetadata associationKeyMetadata) {
+		super( ownerEntityKeyMetadata, ownerTupleTypeContext, associationKeyMetadata );
 	}
 
 	public void removeAssociation(Transaction tx, AssociationKey associationKey) {

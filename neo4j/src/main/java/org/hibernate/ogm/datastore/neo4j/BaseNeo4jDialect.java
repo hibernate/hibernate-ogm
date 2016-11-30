@@ -10,11 +10,17 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.EntityKeyMetadataWithDiscriminator;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -29,6 +35,7 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -38,8 +45,12 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
@@ -47,7 +58,8 @@ import org.hibernate.type.Type;
 /**
  * @author Davide D'Alto
  */
-public abstract class BaseNeo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect, MultigetGridDialect {
+public abstract class BaseNeo4jDialect<EQ extends BaseNeo4jEntityQueries, AQ extends BaseNeo4jAssociationQueries> extends BaseGridDialect
+		implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect, MultigetGridDialect {
 
 	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintValidationFailed";
 
@@ -55,17 +67,99 @@ public abstract class BaseNeo4jDialect extends BaseGridDialect implements Querya
 
 	private final BaseNeo4jTypeConverter typeConverter;
 
+	private Map<EntityKeyMetadata, EQ> entityQueries;
+
+	private Map<AssociationKeyMetadata, AQ> associationQueries;
+
 	public BaseNeo4jDialect(BaseNeo4jTypeConverter converter) {
 		this.typeConverter = converter;
 	}
 
 	@Override
+	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
+		this.associationQueries =  Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
+		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
+	}
+
+	private Map<EntityKeyMetadata, EQ> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor, Map<AssociationKeyMetadata, AQ> associationQueries) {
+		Map<EntityKeyMetadata, EQ> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
+		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
+			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
+			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
+				// Embeddables metadata
+				entityQueries.put( entityKeyMetadata, createEntityQueries( entityKeyMetadata, null ) );
+			}
+		}
+		return entityQueries;
+	}
+
+	private Map<EntityKeyMetadata, EQ> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, EQ> queryMap = new HashMap<EntityKeyMetadata, EQ>();
+		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
+		for ( EntityPersister entityPersister : entityPersisters ) {
+			if ( entityPersister instanceof OgmEntityPersister ) {
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
+				TupleTypeContext tupleTypeContext = ogmEntityPersister.getTupleTypeContext();
+				EntityKeyMetadata entityKeyMetadata = entityKeyMetadata( ogmEntityPersister );
+				queryMap.put( entityKeyMetadata, createEntityQueries( entityKeyMetadata, tupleTypeContext ) );
+			}
+		}
+		return queryMap;
+	}
+
+	private Map<AssociationKeyMetadata, AQ> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<AssociationKeyMetadata, AQ> queryMap = new HashMap<AssociationKeyMetadata, AQ>();
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		for ( CollectionPersister collectionPersister : collectionPersisters ) {
+			if ( collectionPersister instanceof OgmCollectionPersister ) {
+				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
+				OgmEntityPersister ownerOgmEntityPersister = (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() );
+				TupleTypeContext tupleTypeContext = ownerOgmEntityPersister.getTupleTypeContext();
+				EntityKeyMetadata ownerEntityKeyMetadata = entityKeyMetadata( ownerOgmEntityPersister );
+				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
+				queryMap.put( associationKeyMetadata, createAssociationQueries( ownerEntityKeyMetadata, tupleTypeContext, associationKeyMetadata ) );
+			}
+		}
+		return queryMap;
+	}
+
+	protected abstract EQ createEntityQueries( EntityKeyMetadata keyMetadata, TupleTypeContext tupleTypeContext );
+
+	protected abstract AQ createAssociationQueries( EntityKeyMetadata ownerEntityKeyMetadata, TupleTypeContext ownerTupleTypeContext, AssociationKeyMetadata associationKeyMetadata );
+
+	protected EQ entityQueries(EntityKeyMetadata metadata, TupleTypeContext tupleTypeContext) {
+		return entityQueries.get( entityKeyMetadata( metadata, tupleTypeContext ) );
+	}
+
+	protected AQ associationQueries(AssociationKeyMetadata associationKeyMetadata) {
+		return associationQueries.get( associationKeyMetadata );
+	}
+
+	protected EntityKeyMetadata entityKeyMetadata(OgmEntityPersister ogmEntityPersister) {
+		EntityKeyMetadata entityKeyMetadata = ogmEntityPersister.getEntityKeyMetadata();
+		if ( ogmEntityPersister.getTupleTypeContext().getDiscriminatorValue() == null ) {
+			return entityKeyMetadata;
+		}
+		return new EntityKeyMetadataWithDiscriminator( entityKeyMetadata, ogmEntityPersister.getDiscriminatorValue() );
+	}
+
+	protected EntityKeyMetadata entityKeyMetadata(EntityKeyMetadata metadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext.getDiscriminatorValue() == null ) {
+			return metadata;
+		}
+		return new EntityKeyMetadataWithDiscriminator( metadata, tupleTypeContext.getDiscriminatorValue() );
+	}
+
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
 	}
 
 	public ServiceRegistryImplementor getServiceRegistry() {
 		return serviceRegistry;
+	}
+
+	public Map<EntityKeyMetadata, EQ> entityQueries() {
+		return entityQueries;
 	}
 
 	@Override

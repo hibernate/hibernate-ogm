@@ -6,8 +6,12 @@
  */
 package org.hibernate.ogm.utils;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
+
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -55,9 +59,9 @@ public class GridDialectOperationContexts {
 	public static class TupleTypeContextBuilder {
 
 		private OptionsContext optionsContext = EmptyOptionsContext.INSTANCE;
-		private List<String> selectableColumns = Collections.<String>emptyList();
-		private Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata = Collections.<String, AssociatedEntityKeyMetadata>emptyMap();
-		private Map<String, String> roles = Collections.<String, String>emptyMap();
+		private List<String> selectableColumns = emptyList();
+		private Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata = emptyMap();
+		private Map<String, String> roles = emptyMap();
 
 		public TupleTypeContextBuilder selectableColumns(String... columns) {
 			this.selectableColumns = Arrays.asList( columns );
@@ -80,8 +84,8 @@ public class GridDialectOperationContexts {
 		}
 
 		public TupleTypeContext buildTupleTypeContext() {
-			return new TupleTypeContextImpl( Collections.unmodifiableList( selectableColumns ), Collections.unmodifiableMap( associatedEntityMetadata ),
-					Collections.unmodifiableMap( roles ), optionsContext );
+			return new TupleTypeContextImpl( unmodifiableList( selectableColumns ), null, unmodifiableMap( associatedEntityMetadata ),
+					unmodifiableMap( roles ), optionsContext );
 		}
 	}
 

@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.test.query;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries.ENTITY_ALIAS;
+import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleTypeContext;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -33,7 +34,7 @@ public class Neo4jEntityQueriesTest {
 
 		EntityKeyMetadata metadata = metadata( "Example", "id.name", "id.surname" );
 		GraphDatabaseService executionEngine = createExecutionEngine();
-		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata );
+		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata, emptyTupleTypeContext() );
 		entityQueries.insertEntity( executionEngine, new String[] { "Davide", "D'Alto" } );
 
 		verify( executionEngine ).execute( eq( expected ), anyMap() );
@@ -49,7 +50,7 @@ public class Neo4jEntityQueriesTest {
 
 		EntityKeyMetadata metadata = metadata( "Example", "id" );
 		GraphDatabaseService executionEngine = mock( GraphDatabaseService.class );
-		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata );
+		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata, emptyTupleTypeContext() );
 		entityQueries.updateEmbeddedColumn( executionEngine, metadata.getColumnNames(), embeddedColumn, "" );
 
 		verify( executionEngine ).execute( eq( expected ), anyMap() );
@@ -66,7 +67,7 @@ public class Neo4jEntityQueriesTest {
 
 		EntityKeyMetadata metadata = metadata( "Example", compositeIdColumns );
 		GraphDatabaseService executionEngine = mock( GraphDatabaseService.class );
-		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata );
+		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata, emptyTupleTypeContext() );
 		entityQueries.updateEmbeddedColumn( executionEngine, metadata.getColumnNames(), embeddedColumn, "" );
 
 		verify( executionEngine ).execute( eq( expected ), anyMap() );
@@ -83,7 +84,7 @@ public class Neo4jEntityQueriesTest {
 
 		GraphDatabaseService executionEngine = createExecutionEngine();
 		EntityKeyMetadata metadata = metadata( "Example", "id" );
-		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata );
+		EmbeddedNeo4jEntityQueries entityQueries = new EmbeddedNeo4jEntityQueries( metadata, emptyTupleTypeContext() );
 		entityQueries.updateEmbeddedColumn( executionEngine, metadata.getColumnNames(), embeddedColumn, "" );
 
 		verify( executionEngine ).execute( eq( expected ), anyMap() );
