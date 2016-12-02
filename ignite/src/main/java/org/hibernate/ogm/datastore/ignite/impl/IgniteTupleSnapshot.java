@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ import org.hibernate.ogm.util.impl.CollectionHelper;
 /**
  * @author Victor Kadachigov
  */
-public class IgnitePortableTupleSnapshot implements TupleSnapshot {
+public class IgniteTupleSnapshot implements TupleSnapshot {
 
 	private final EntityKeyMetadata keyMetadata;
 	private final Object id;
@@ -26,9 +27,10 @@ public class IgnitePortableTupleSnapshot implements TupleSnapshot {
 
 	private final boolean isSimpleId;
 	private final Set<String> columnNames;
-//	private final String idPrefix;
+	
+//	private Set<String> embeddedCollectionsColumns;
 
-	public IgnitePortableTupleSnapshot(Object id, BinaryObject binaryObject, EntityKeyMetadata keyMetadata) {
+	public IgniteTupleSnapshot(Object id, BinaryObject binaryObject, EntityKeyMetadata keyMetadata) {
 		this.id = id;
 		this.binaryObject = binaryObject;
 		this.keyMetadata = keyMetadata;
@@ -39,21 +41,22 @@ public class IgnitePortableTupleSnapshot implements TupleSnapshot {
 			}
 		}
 		if ( idColumnNames.isEmpty() ) {
-			throw new UnsupportedOperationException( "There is not id column in entity " + keyMetadata.getTable() + ". Hmm..." );
+			throw new UnsupportedOperationException( "There is no id column in entity " + keyMetadata.getTable() + ". Hmm..." );
 		}
-//		this.idPrefix = DocumentHelpers.getColumnSharedPrefix( idColumnNames.toArray( new String[ idColumnNames.size() ] ) );
 		this.isSimpleId = idColumnNames.size() == 1;
-		this.columnNames = CollectionHelper.asSet( keyMetadata.getColumnNames() );
+		this.columnNames = CollectionHelper.asSet( keyMetadata.getColumnNames() ); 
+//		this.columnNames = new HashSet<>(); 
+//		Collections.addAll( this.columnNames, keyMetadata.getColumnNames() );
 	}
 
 	@Override
 	public Object get(String column) {
 		Object result = null;
 		if ( !isEmpty() ) {
-			if ( keyMetadata.isKeyColumn( column ) ) {
+			if ( id != null /* not embedded collection item */  && keyMetadata.isKeyColumn( column ) ) {
 				result = isSimpleId ? id : ( (BinaryObject) id ).field( StringHelper.stringAfterPoint( column ) );
 			}
-			else {
+			else if ( binaryObject != null ) {
 				result = binaryObject.field( StringHelper.realColumnName( column ) );
 			}
 		}
@@ -83,4 +86,12 @@ public class IgnitePortableTupleSnapshot implements TupleSnapshot {
 	public BinaryObject getCacheValue() {
 		return binaryObject;
 	}
+	
+//	public void addEmbeddedCollectionColumn(String columnName) {
+//		if ( embeddedCollectionsColumns == null ) {
+//			embeddedCollectionsColumns = new HashSet<>();
+//		}
+//		embeddedCollectionsColumns.add( columnName );
+//		columnNames.add( columnName );
+//	}
 }

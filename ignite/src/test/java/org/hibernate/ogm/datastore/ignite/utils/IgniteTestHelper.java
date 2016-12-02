@@ -22,7 +22,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.ignite.Ignite;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
-import org.hibernate.ogm.datastore.ignite.impl.IgnitePortableTupleSnapshot;
+import org.hibernate.ogm.datastore.ignite.impl.IgniteTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -97,7 +97,7 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 		BinaryObject po = cache.get( cacheKey );
 
 		IgniteDialect igniteDialect = (IgniteDialect) sessionFactory.getServiceRegistry().getService( GridDialect.class );
-		TupleSnapshot snapshot = new IgnitePortableTupleSnapshot( cacheKey, po, key.getMetadata() );
+		TupleSnapshot snapshot = new IgniteTupleSnapshot( cacheKey, po, key.getMetadata() );
 		for ( String fieldName : snapshot.getColumnNames() ) {
 			result.put( fieldName, snapshot.get( fieldName ) );
 		}

@@ -23,20 +23,18 @@ import org.hibernate.ogm.util.impl.CollectionHelper;
  *
  * @author Victor Kadachigov
  */
-public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { // extends AssociationRows {
+public class IgniteAssociationSnapshot implements AssociationSnapshot {
 
-	private final Map<RowKey, IgnitePortableTupleSnapshot> rows;
+	private final Map<RowKey, IgniteAssociationRowSnapshot> rows;
 
-	public IgnitePortableAssociationSnapshot(AssociationKey associationKey) {
-//		super( associationKey, Collections.emptySet(), IgniteAssociationRowFactory.INSTANCE );
+	public IgniteAssociationSnapshot(AssociationKey associationKey) {
 		rows = Collections.emptyMap();
 	}
 
-	public IgnitePortableAssociationSnapshot(AssociationKey associationKey, Map<Object, BinaryObject> associationMap) {
-//		super( associationKey, associationMap.entrySet(), IgniteAssociationRowFactory.INSTANCE );
+	public IgniteAssociationSnapshot(AssociationKey associationKey, Map<Object, BinaryObject> associationMap) {
 		this.rows = CollectionHelper.newHashMap( associationMap.size() );
 		for ( Map.Entry<Object, BinaryObject> entry : associationMap.entrySet() ) {
-			IgnitePortableTupleSnapshot snapshot = new IgnitePortableTupleSnapshot( entry.getKey(), entry.getValue(), associationKey.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata() );
+			IgniteAssociationRowSnapshot snapshot = new IgniteAssociationRowSnapshot( entry.getKey(), entry.getValue(), associationKey.getMetadata() );
 			String rowKeyColumnNames[] = associationKey.getMetadata().getRowKeyColumnNames();
 			Object rowKeyColumnValues[] = new Object[rowKeyColumnNames.length];
 			for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
@@ -73,7 +71,7 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { 
 	 * @return key object in underlaying cache
 	 */
 	public Object getCacheKey(RowKey rowKey) {
-		IgnitePortableTupleSnapshot row = rows.get( rowKey );
+		IgniteAssociationRowSnapshot row = rows.get( rowKey );
 		return row != null ? row.getCacheKey() : null;
 	}
 
@@ -81,7 +79,7 @@ public class IgnitePortableAssociationSnapshot implements AssociationSnapshot { 
 	 * @return value object in underlaying cache
 	 */
 	public BinaryObject getCacheValue(RowKey rowKey) {
-		IgnitePortableTupleSnapshot row = rows.get( rowKey );
+		IgniteAssociationRowSnapshot row = rows.get( rowKey );
 		return row != null ? row.getCacheValue() : null;
 	}
 }

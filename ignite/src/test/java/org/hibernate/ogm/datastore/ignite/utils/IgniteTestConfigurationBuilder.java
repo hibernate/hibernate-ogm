@@ -24,6 +24,7 @@ import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.QueryIndex;
 import org.apache.ignite.cache.QueryIndexType;
 import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
+import org.apache.ignite.configuration.BinaryConfiguration;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
@@ -66,7 +67,10 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		config.setLocalHost( "127.0.0.1" );
 		config.setPeerClassLoadingEnabled( true );
 		config.setClientMode( false );
-		config.setMarshaller( new BinaryMarshaller() );
+		config.setMarshaller( new BinaryMarshaller() ) ;
+		BinaryConfiguration binaryConfiguration = new BinaryConfiguration();
+		binaryConfiguration.setCompactFooter( false );		// it is necessary only for embedded collections (@ElementCollection)
+		config.setBinaryConfiguration( binaryConfiguration );
 		config.setGridLogger( new Slf4jLogger() );
 		config.setPublicThreadPoolSize( 2 );
 
@@ -80,19 +84,51 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 // JPAResourceLocalTest
 		cacheConfig.add( simpleCacheConfig( "Poem" ) );
 // ManyToManyTest
-		cacheConfig.add( simpleCacheConfig( "Car" ) );
-		cacheConfig.add( simpleCacheConfig( "Tire" ) );
-		cacheConfig.add( simpleCacheConfig( "Car_Tire" ) );
+		cacheConfig.add( 
+				createCacheConfig( "Car" )
+					.withKeyType( "CarId" )
+					.build()
+		);
+		cacheConfig.add( 
+				createCacheConfig( "Tire" )
+					.withKeyType( "TireId" )
+					.build()
+		);
+		cacheConfig.add( 
+				createCacheConfig( "Car_Tire" )
+					.appendIndex( "cars_carId_maker", String.class )
+					.appendIndex( "cars_carId_model", String.class )
+					.appendIndex( "tires_tireId_maker", String.class )
+					.appendIndex( "tires_tireId_model", String.class )
+					.build()
+		);
 		cacheConfig.add( simpleCacheConfig( "AccountOwner" ) );
 		cacheConfig.add( simpleCacheConfig( "BankAccount" ) );
-		cacheConfig.add( simpleCacheConfig( "AccountOwner_BankAccount" ) );
+		cacheConfig.add( 
+				createCacheConfig( "AccountOwner_BankAccount" )
+					.appendIndex( "owners_id", String.class )
+					.appendIndex( "bankAccounts_id", String.class )
+					.build()
+		);
+// ManyToManyExtraTest
+		cacheConfig.add( simpleCacheConfig( "Student" ) );
+		cacheConfig.add( simpleCacheConfig( "ClassRoom", Long.class ) );
+		cacheConfig.add( 
+				createCacheConfig( "ClassRoom_Student" )
+					.appendIndex( "ClassRoom_id", Long.class )
+					.build()
+		);
 // ListTest
-		cacheConfig.add( createCacheConfig( "Child" ).appendIndex( "Father_id", String.class ).build() );
+		cacheConfig.add(
+				createCacheConfig( "Child" )
+						.appendIndex( "Father_id", String.class )
+						.build()
+		);
 		cacheConfig.add( simpleCacheConfig( "Father" ) );
 		cacheConfig.add( createCacheConfig( "Father_child" ).appendIndex( "Father_id", String.class ).build() );
 		cacheConfig.add( simpleCacheConfig( "GrandChild" ) );
 		cacheConfig.add( createCacheConfig( "GrandMother" ).appendIndex( "id", String.class ).build() );
-		cacheConfig.add( createCacheConfig( "GrandMother_grandChildren" ).appendIndex( "GrandMother_id", String.class ).build() );
+//		cacheConfig.add( createCacheConfig( "GrandMother_grandChildren" ).appendIndex( "GrandMother_id", String.class ).build() );
 		cacheConfig.add(
 				createCacheConfig( "Race" )
 						.withKeyType( "RaceId" )
@@ -109,17 +145,33 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendIndex( "Race_raceId_federationSequence", Integer.class )
 						.build()
 		);
-// ManyToManyExtraTest
-		cacheConfig.add( simpleCacheConfig( "Student" ) );
-		cacheConfig.add( simpleCacheConfig( "ClassRoom", Long.class ) );
-		cacheConfig.add( simpleCacheConfig( "ClassRoom_Student" ) );
 // MapTest
 		cacheConfig.add( simpleCacheConfig( "PhoneNumber" ) );
 		cacheConfig.add( simpleCacheConfig( "Enterprise" ) );
-		cacheConfig.add( createCacheConfig( "Enterprise_revenueByDepartment" ).appendIndex( "Enterprise_id", String.class ).build() );
-		cacheConfig.add( createCacheConfig( "Enterprise_departments" ).appendIndex( "Enterprise_id", String.class ).build() );
+//		cacheConfig.add( createCacheConfig( "Enterprise_revenueByDepartment" ).appendIndex( "Enterprise_id", String.class ).build() );
+//		cacheConfig.add( createCacheConfig( "Enterprise_departments" ).appendIndex( "Enterprise_id", String.class ).build() );
 		cacheConfig.add( simpleCacheConfig( "Department" ) );
 		cacheConfig.add( simpleCacheConfig( "User" ) );
+		cacheConfig.add( 
+				createCacheConfig( "User_PhoneNumber" )
+						.appendIndex( "User_id", String.class )
+						.build()
+		);
+		cacheConfig.add( 
+				createCacheConfig( "User_Address" )
+						.appendIndex( "User_id", String.class )
+						.build()
+		);
+		cacheConfig.add( 
+				createCacheConfig( "AlTERNATIVE_PHONE_NUMBER" )
+						.appendIndex( "User_id", String.class )
+						.build()
+		);
+		cacheConfig.add( 
+				createCacheConfig( "AlTERNATIVE_PRIORITY" )
+						.appendIndex( "User_id", String.class )
+						.build()
+		);
 		cacheConfig.add(
 				createCacheConfig( "Address" )
 						.appendIndex( "id", String.class )
@@ -127,9 +179,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendField( "city", String.class )
 						.build()
 		);
-		cacheConfig.add( createCacheConfig( "User_Address" ).appendIndex( "User_id", String.class ).build() );
-		cacheConfig.add( createCacheConfig( "User_PhoneNumber" ).appendIndex( "User_id", String.class ).build() );
-		cacheConfig.add( createCacheConfig( "Nicks" ).appendIndex( "user_id", String.class ).build() );
+//		cacheConfig.add( createCacheConfig( "Nicks" ).appendIndex( "user_id", String.class ).build() );
 // CollectionUnidirectionalTest
 		cacheConfig.add( simpleCacheConfig( "Cloud" ) );
 		cacheConfig.add( simpleCacheConfig( "SnowFlake" ) );
@@ -206,9 +256,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add( simpleCacheConfig( "MultiAddressAccount" ) );
 		cacheConfig.add( simpleCacheConfig( "AccountWithPhone" ) );
 		cacheConfig.add( simpleCacheConfig( "Order" ) );
-		cacheConfig.add( simpleCacheConfig( "AccountWithPhone_phoneNumber" ) );
-		cacheConfig.add( simpleCacheConfig( "MultiAddressAccount_addresses" ) );
-		cacheConfig.add( simpleCacheConfig( "Order_shippingAddress" ) );
 // SharedPrimaryKeyTest
 		cacheConfig.add( simpleCacheConfig( "CoffeeMug" ) );
 		cacheConfig.add( simpleCacheConfig( "Lid" ) );
@@ -321,6 +368,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 			cacheConfig.setStartSize( 10 );
 			cacheConfig.setBackups( 0 );
 			cacheConfig.setAffinity( new RendezvousAffinityFunction( false, 2 ) );
+			cacheConfig.setCopyOnRead( false );
 			cacheConfig.setName( name );
 
 			queryEntity = new QueryEntity();

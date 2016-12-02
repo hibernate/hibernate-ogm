@@ -45,6 +45,7 @@ import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -128,8 +129,9 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	}
 
 	public IgniteCache<Object, BinaryObject> getAssociationCache(AssociationKeyMetadata keyMetadata) {
-		String entityCacheName = getEntityCacheName( keyMetadata.getTable() );
-		return getCache( entityCacheName, true );
+		return keyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION
+					? getEntityCache( keyMetadata.getEntityKeyMetadata() )
+					: getEntityCache( keyMetadata.getTable() );
 	}
 
 	public IgniteCache<String, Long> getIdSourceCache(IdSourceKeyMetadata keyMetadata) {
@@ -298,7 +300,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	 * @param key - association key
 	 * @return string key
 	 */
-	public Object createKeyObject(AssociationKey key) {
+	public Object createParentKeyObject(AssociationKey key) {
 		Object result = null;
 		if ( key.getColumnValues().length == 1 ) {
 			result = key.getColumnValues()[0];
