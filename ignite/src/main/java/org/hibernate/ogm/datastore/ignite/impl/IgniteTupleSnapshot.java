@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ public class IgniteTupleSnapshot implements TupleSnapshot {
 
 	private final boolean isSimpleId;
 	private final Set<String> columnNames;
-	
+
 //	private Set<String> embeddedCollectionsColumns;
 
 	public IgniteTupleSnapshot(Object id, BinaryObject binaryObject, EntityKeyMetadata keyMetadata) {
@@ -44,8 +43,8 @@ public class IgniteTupleSnapshot implements TupleSnapshot {
 			throw new UnsupportedOperationException( "There is no id column in entity " + keyMetadata.getTable() + ". Hmm..." );
 		}
 		this.isSimpleId = idColumnNames.size() == 1;
-		this.columnNames = CollectionHelper.asSet( keyMetadata.getColumnNames() ); 
-//		this.columnNames = new HashSet<>(); 
+		this.columnNames = CollectionHelper.asSet( keyMetadata.getColumnNames() );
+//		this.columnNames = new HashSet<>();
 //		Collections.addAll( this.columnNames, keyMetadata.getColumnNames() );
 	}
 
@@ -86,7 +85,7 @@ public class IgniteTupleSnapshot implements TupleSnapshot {
 	public BinaryObject getCacheValue() {
 		return binaryObject;
 	}
-	
+
 //	public void addEmbeddedCollectionColumn(String columnName) {
 //		if ( embeddedCollectionsColumns == null ) {
 //			embeddedCollectionsColumns = new HashSet<>();

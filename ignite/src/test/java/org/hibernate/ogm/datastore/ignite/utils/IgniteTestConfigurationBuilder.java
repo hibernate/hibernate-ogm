@@ -84,17 +84,17 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 // JPAResourceLocalTest
 		cacheConfig.add( simpleCacheConfig( "Poem" ) );
 // ManyToManyTest
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "Car" )
 					.withKeyType( "CarId" )
 					.build()
 		);
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "Tire" )
 					.withKeyType( "TireId" )
 					.build()
 		);
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "Car_Tire" )
 					.appendIndex( "cars_carId_maker", String.class )
 					.appendIndex( "cars_carId_model", String.class )
@@ -104,7 +104,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		);
 		cacheConfig.add( simpleCacheConfig( "AccountOwner" ) );
 		cacheConfig.add( simpleCacheConfig( "BankAccount" ) );
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "AccountOwner_BankAccount" )
 					.appendIndex( "owners_id", String.class )
 					.appendIndex( "bankAccounts_id", String.class )
@@ -113,7 +113,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 // ManyToManyExtraTest
 		cacheConfig.add( simpleCacheConfig( "Student" ) );
 		cacheConfig.add( simpleCacheConfig( "ClassRoom", Long.class ) );
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "ClassRoom_Student" )
 					.appendIndex( "ClassRoom_id", Long.class )
 					.build()
@@ -152,22 +152,22 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 //		cacheConfig.add( createCacheConfig( "Enterprise_departments" ).appendIndex( "Enterprise_id", String.class ).build() );
 		cacheConfig.add( simpleCacheConfig( "Department" ) );
 		cacheConfig.add( simpleCacheConfig( "User" ) );
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "User_PhoneNumber" )
 						.appendIndex( "User_id", String.class )
 						.build()
 		);
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "User_Address" )
 						.appendIndex( "User_id", String.class )
 						.build()
 		);
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "AlTERNATIVE_PHONE_NUMBER" )
 						.appendIndex( "User_id", String.class )
 						.build()
 		);
-		cacheConfig.add( 
+		cacheConfig.add(
 				createCacheConfig( "AlTERNATIVE_PRIORITY" )
 						.appendIndex( "User_id", String.class )
 						.build()

@@ -34,8 +34,8 @@ public class IgniteAssociationRowSnapshot implements TupleSnapshot {
 		this.id = id;
 		this.binaryObject = binaryObject;
 		this.associationMetadata = associationMetadata;
-		this.thirdTableLink = !associationMetadata.getTable().equals(associationMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable());
-		if (this.thirdTableLink) {
+		this.thirdTableLink = !associationMetadata.getTable().equals( associationMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable() );
+		if ( this.thirdTableLink ) {
 			Set<String> cn = new HashSet<>();
 			Collections.addAll( cn, associationMetadata.getRowKeyColumnNames() );
 			Collections.addAll( cn, associationMetadata.getAssociatedEntityKeyMetadata().getAssociationKeyColumns() );
@@ -57,7 +57,7 @@ public class IgniteAssociationRowSnapshot implements TupleSnapshot {
 			this.isSimpleId = idColumnNames.size() == 1;
 		}
 	}
-	
+
 	@Override
 	public Object get(String column) {
 		Object result = null;

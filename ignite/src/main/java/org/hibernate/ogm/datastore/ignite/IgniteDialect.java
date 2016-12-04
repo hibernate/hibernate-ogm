@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.ignite;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,11 +29,11 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.ScalarReturn;
 import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
+import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationRowSnapshot;
+import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationSnapshot;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteEmbeddedAssociationSnapshot;
-import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationSnapshot;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteTupleSnapshot;
-import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationRowSnapshot;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.options.impl.CollocatedAssociationOption;
@@ -149,7 +148,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			throw log.cacheNotFound( key.getMetadata().getTable() );
 		}
 		Object id = provider.createKeyObject( key );
-		return new Tuple( new IgniteTupleSnapshot( id, null, key.getMetadata()), SnapshotType.INSERT );
+		return new Tuple( new IgniteTupleSnapshot( id, null, key.getMetadata() ), SnapshotType.INSERT );
 	}
 
 	@Override
@@ -330,9 +329,9 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		if ( key.getMetadata().isInverse() ) {
 			return;
 		}
-		
+
 		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
-		
+
 		if ( key.getMetadata().getAssociationKind() == AssociationKind.ASSOCIATION ) {
 			Map<Object, BinaryObject> changedObjects = new HashMap<>();
 			Set<Object> removedObjects = new HashSet<>();
@@ -343,8 +342,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 				AssociationSnapshot snapshot = association.getSnapshot();
 				Tuple previousStateTuple = snapshot.get( op.getKey() );
 				Tuple currentStateTuple = op.getValue();
-				Object previousId = previousStateTuple != null 
-										? ((IgniteAssociationRowSnapshot) previousStateTuple.getSnapshot()).getCacheKey() 
+				Object previousId = previousStateTuple != null
+										? ( (IgniteAssociationRowSnapshot) previousStateTuple.getSnapshot() ).getCacheKey()
 										: null;
 				if ( op.getType() == AssociationOperationType.CLEAR
 						|| op.getType() == AssociationOperationType.REMOVE && clearInsteadOfRemove ) {
@@ -361,9 +360,9 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 					}
 				}
 				else if ( op.getType() == AssociationOperationType.PUT ) {
-					Object currentId = currentStateTuple.getSnapshot().isEmpty() 
-										? UUID.randomUUID().toString() 
-										: ((IgniteAssociationRowSnapshot) currentStateTuple.getSnapshot()).getCacheKey();
+					Object currentId = currentStateTuple.getSnapshot().isEmpty()
+										? UUID.randomUUID().toString()
+										: ( (IgniteAssociationRowSnapshot) currentStateTuple.getSnapshot() ).getCacheKey();
 					BinaryObject putBo = previousId != null ? associationCache.get( previousId ) : null;
 					BinaryObjectBuilder putBoBuilder = null;
 					if ( putBo != null ) {
@@ -406,22 +405,29 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		else if ( key.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			String indexColumnName = IgniteEmbeddedAssociationSnapshot.findIndexColumnName( key.getMetadata() );
-			Object id = ((IgniteTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot()).getCacheKey();
+			Object id = ( (IgniteTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getCacheKey();
 			BinaryObject binaryObject = associationCache.get( id );
 			Contracts.assertNotNull( binaryObject, "binaryObject" );
-			String column = key.getMetadata().getCollectionRole();
+			String column = StringHelper.realColumnName( key.getMetadata().getCollectionRole() );
 
 			Object binaryObjects[] = binaryObject.field( column );
-			Map<Object, BinaryObject> associationObjects = new HashMap<>();
-			if (binaryObjects != null) {
-				for (int i = 0; i < binaryObjects.length; i++) {
-					associationObjects.put( ((BinaryObject)binaryObjects[i]).field( indexColumnName ), (BinaryObject)binaryObjects[i] );
-				}
+			List<BinaryObject> associationObjects = new ArrayList<>();
+			if ( binaryObjects != null ) {
+			for ( int i = 0; i < binaryObjects.length; i++ ) {
+				associationObjects.add( (BinaryObject) binaryObjects[i] );
 			}
-			
+		}
+//			Map<Object, BinaryObject> associationObjects = new HashMap<>();
+//			if (binaryObjects != null) {
+//				for (int i = 0; i < binaryObjects.length; i++) {
+//					associationObjects.put( ((BinaryObject)binaryObjects[i]).field( indexColumnName ), (BinaryObject)binaryObjects[i] );
+//				}
+//			}
+
 			EntityKeyMetadata itemMetadata = key.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
 			for ( AssociationOperation op : association.getOperations() ) {
-				Object index = op.getKey().getColumnValue( indexColumnName );
+				Object indexColumnValue = op.getKey().getColumnValue( indexColumnName );
+				int index = findIndexByField( associationObjects, indexColumnName, indexColumnValue );
 				switch ( op.getType() ) {
 					case PUT:
 						Tuple currentStateTuple = op.getValue();
@@ -441,24 +447,45 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 							}
 						}
 						BinaryObject itemObject = putBoBuilder.build();
-						associationObjects.put( index, itemObject );
-						
+						if ( index >= 0 ) {
+							associationObjects.set( index, itemObject );
+						}
+						else {
+							associationObjects.add( itemObject );
+						}
+						//associationObjects.put( index, itemObject );
+
 						break;
 					case REMOVE:
-						associationObjects.remove( index );
+						if ( index >= 0 ) {
+							associationObjects.remove( index );
+						}
 						break;
 					default:
 						throw new HibernateException( "AssociationOperation not supported: " + op.getType() );
 				}
 			}
-			
+
 			BinaryObjectBuilder binaryObjectBuilder = provider.createBinaryObjectBuilder( binaryObject );
-			binaryObjectBuilder.setField( column, associationObjects.values().toArray( new BinaryObject[ associationObjects.size() ] ) );
-			binaryObject = binaryObjectBuilder.build(); 
+			binaryObjectBuilder.setField( column, associationObjects.toArray( new BinaryObject[ associationObjects.size() ] ) );
+			binaryObject = binaryObjectBuilder.build();
 			associationCache.put( id, binaryObject );
 		}
 
 		association.reset();
+	}
+
+	private int findIndexByField(List<BinaryObject> objects, String field, Object value) {
+		int result = -1;
+		for ( int i = 0; i < objects.size(); i++ ) {
+			BinaryObject object = objects.get( i );
+			Object fieldValue = object.field( field );
+			if ( fieldValue != null && fieldValue.equals( value ) ) {
+				result = i;
+				break;
+			}
+		}
+		return result;
 	}
 
 	private boolean clearAssociationInsteadOfRemove(AssociationKey key) {
@@ -481,11 +508,11 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 //				hintsBuilder.setAffinityKey( provider.createKeyObject( key ) );
 //			}
 			QueryHints hints = hintsBuilder.build();
-	
+
 			if ( clearAssociationInsteadOfRemove( key ) ) {
 				// clear reference
 				Map<Object, BinaryObject> changedObjects = new HashMap<>();
-	
+
 				SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints, key.getColumnValues() );
 				Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 				for ( List<?> item : list ) {
@@ -499,7 +526,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 						changedObjects.put( id, clearBoBuilder.build() );
 					}
 				}
-	
+
 				if ( !changedObjects.isEmpty() ) {
 					associationCache.putAll( changedObjects );
 				}
@@ -507,25 +534,25 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			else {
 				// remove objects
 				Set<Object> removedObjects = new HashSet<>();
-	
+
 				SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, false ), hints, key.getColumnValues() );
 				Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
 				for ( List<?> item : list ) {
 					removedObjects.add( /* _KEY */ item.get( 0 ) );
 				}
-	
+
 				if ( !removedObjects.isEmpty() ) {
 					associationCache.removeAll( removedObjects );
 				}
 			}
 		}
 		else if ( key.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			Object id = ((IgniteTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot()).getCacheKey();
+			Object id = ( (IgniteTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getCacheKey();
 			BinaryObject binaryObject = associationCache.get( id );
 			Contracts.assertNotNull( binaryObject, "binaryObject" );
 			BinaryObjectBuilder binaryObjectBuilder = provider.createBinaryObjectBuilder( binaryObject );
 			binaryObjectBuilder.removeField( key.getMetadata().getCollectionRole() );
-			binaryObject = binaryObjectBuilder.build(); 
+			binaryObject = binaryObjectBuilder.build();
 			associationCache.put( id, binaryObject );
 		}
 	}

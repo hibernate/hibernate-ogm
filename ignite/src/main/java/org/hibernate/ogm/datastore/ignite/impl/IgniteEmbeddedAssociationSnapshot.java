@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.ignite.impl;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +20,6 @@ import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
-import org.hibernate.ogm.util.impl.CollectionHelper;
 
 /**
  *
@@ -36,14 +34,14 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 	public IgniteEmbeddedAssociationSnapshot(AssociationKey associationKey, Tuple tuple) {
 		this.associationMetadata = associationKey.getMetadata();
 		this.tuple = tuple;
-		BinaryObject obj = ((IgniteTupleSnapshot) tuple.getSnapshot()).getCacheValue();
-		Object objects[] = obj != null ? (Object[])obj.field( associationMetadata.getCollectionRole() ) : null;
+		BinaryObject obj = ( (IgniteTupleSnapshot) tuple.getSnapshot() ).getCacheValue();
+		Object objects[] = obj != null ? (Object[]) obj.field( associationMetadata.getCollectionRole() ) : null;
 		rows = new HashMap<>();
-		if (objects != null) {
+		if ( objects != null ) {
 			String indexColumnName = findIndexColumnName( associationMetadata );
 			String rowKeyColumnNames[] = associationMetadata.getRowKeyColumnNames();
-			for (int i = 0; i < objects.length; i++) {
-				BinaryObject itemObject = (BinaryObject)objects[i];
+			for ( int i = 0; i < objects.length; i++ ) {
+				BinaryObject itemObject = (BinaryObject) objects[i];
 				Object rowKeyColumnValues[] = new Object[rowKeyColumnNames.length];
 				for ( int j = 0; j < rowKeyColumnNames.length; j++ ) {
 					rowKeyColumnValues[j] = itemObject.field( rowKeyColumnNames[j] );
@@ -53,18 +51,19 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 			}
 		}
 	}
-	
+
 	/**
 	 * @param associationMetadata
 	 * @return index column name for embedded collections
 	 */
 	public static String findIndexColumnName(AssociationKeyMetadata associationMetadata) {
 		String indexColumnName = null;
-		if (associationMetadata.getAssociationType() == AssociationType.SET) {
+		if ( associationMetadata.getAssociationType() == AssociationType.SET
+				|| associationMetadata.getAssociationType() == AssociationType.BAG ) {
 			String cols[] =  associationMetadata.getColumnsWithoutKeyColumns(
-									Arrays.asList( associationMetadata.getRowKeyColumnNames() ) 
+									Arrays.asList( associationMetadata.getRowKeyColumnNames() )
 							);
-			if ( cols.length > 1) {
+			if ( cols.length > 1 ) {
 				throw new UnsupportedOperationException( "Multiple index columns not implemented yet" );
 			}
 			indexColumnName = cols[0];
@@ -75,7 +74,7 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 			}
 			indexColumnName = associationMetadata.getRowKeyIndexColumnNames()[0];
 		}
-		
+
 		return indexColumnName;
 	}
 

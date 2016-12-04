@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 	// todo
 	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.types.*"
 
 	// failed
 
