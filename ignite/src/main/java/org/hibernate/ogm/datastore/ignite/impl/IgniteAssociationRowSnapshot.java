@@ -34,7 +34,7 @@ public class IgniteAssociationRowSnapshot implements TupleSnapshot {
 		this.id = id;
 		this.binaryObject = binaryObject;
 		this.associationMetadata = associationMetadata;
-		this.thirdTableLink = !associationMetadata.getTable().equals( associationMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable() );
+		this.thirdTableLink = IgniteAssociationSnapshot.isThirdTableAssociation( associationMetadata );
 		if ( this.thirdTableLink ) {
 			Set<String> cn = new HashSet<>();
 			Collections.addAll( cn, associationMetadata.getRowKeyColumnNames() );

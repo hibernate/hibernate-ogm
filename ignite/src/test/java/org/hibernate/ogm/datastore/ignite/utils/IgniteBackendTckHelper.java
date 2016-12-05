@@ -19,8 +19,7 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
-//	"org.hibernate.ogm.backendtck.associations.collection.types.*"
+//	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 
 	// failed
 
@@ -39,7 +38,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.manytoone.*",
 //	"org.hibernate.ogm.backendtck.associations.onetoone.*",
 //	"org.hibernate.ogm.backendtck.associations.compositeid.*",
-//	"org.hibernate.ogm.backendtck.associations.collection.types.*"						// -MapContentsStoredInSeparateDocumentTest
+//	"org.hibernate.ogm.backendtck.associations.collection.types.*",						// -MapContentsStoredInSeparateDocumentTest
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 //	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",

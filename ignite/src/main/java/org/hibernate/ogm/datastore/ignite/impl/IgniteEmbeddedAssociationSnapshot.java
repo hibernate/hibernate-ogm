@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -14,7 +13,6 @@ import java.util.Set;
 import org.apache.ignite.binary.BinaryObject;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -38,7 +36,7 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 		Object objects[] = obj != null ? (Object[]) obj.field( associationMetadata.getCollectionRole() ) : null;
 		rows = new HashMap<>();
 		if ( objects != null ) {
-			String indexColumnName = findIndexColumnName( associationMetadata );
+			String indexColumnName = IgniteAssociationSnapshot.findIndexColumnName( associationMetadata );
 			String rowKeyColumnNames[] = associationMetadata.getRowKeyColumnNames();
 			for ( int i = 0; i < objects.length; i++ ) {
 				BinaryObject itemObject = (BinaryObject) objects[i];
@@ -50,32 +48,6 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 				this.rows.put( rowKey, new IgniteTupleSnapshot( null, itemObject, associationMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata() ) );
 			}
 		}
-	}
-
-	/**
-	 * @param associationMetadata
-	 * @return index column name for embedded collections
-	 */
-	public static String findIndexColumnName(AssociationKeyMetadata associationMetadata) {
-		String indexColumnName = null;
-		if ( associationMetadata.getAssociationType() == AssociationType.SET
-				|| associationMetadata.getAssociationType() == AssociationType.BAG ) {
-			String cols[] =  associationMetadata.getColumnsWithoutKeyColumns(
-									Arrays.asList( associationMetadata.getRowKeyColumnNames() )
-							);
-			if ( cols.length > 1 ) {
-				throw new UnsupportedOperationException( "Multiple index columns not implemented yet" );
-			}
-			indexColumnName = cols[0];
-		}
-		else {
-			if ( associationMetadata.getRowKeyIndexColumnNames().length > 1 ) {
-				throw new UnsupportedOperationException( "Multiple index columns not implemented yet" );
-			}
-			indexColumnName = associationMetadata.getRowKeyIndexColumnNames()[0];
-		}
-
-		return indexColumnName;
 	}
 
 	@Override

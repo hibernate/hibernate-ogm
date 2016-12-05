@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
@@ -49,6 +50,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceException;
@@ -290,6 +292,27 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				builder.setField( StringHelper.stringAfterPoint( key.getColumnNames()[i] ), key.getColumnValues()[i] );
 			}
 			result = builder.build();
+		}
+		return result;
+	}
+
+	public Object createAssociationKeyObject( RowKey rowKey, AssociationKeyMetadata keyMetadata ) {
+		Object result = null;
+		if ( IgniteAssociationSnapshot.isThirdTableAssociation( keyMetadata ) ) {
+			result = UUID.randomUUID().toString();
+		}
+		else {
+			String associationKeyColumns[] = keyMetadata.getAssociatedEntityKeyMetadata().getAssociationKeyColumns();
+			if ( associationKeyColumns.length == 1 ) {
+				result = rowKey.getColumnValue( associationKeyColumns[0] );
+			}
+			else {
+				BinaryObjectBuilder builder = createBinaryObjectBuilder( findKeyType( keyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata() ) );
+				for ( int i = 0; i < associationKeyColumns.length; i++ ) {
+					builder.setField( StringHelper.stringAfterPoint( associationKeyColumns[i] ), rowKey.getColumnValue( associationKeyColumns[i] ) );
+				}
+				result = builder.build();
+			}
 		}
 		return result;
 	}
