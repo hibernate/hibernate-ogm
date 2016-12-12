@@ -48,7 +48,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
  * corresponding entity.
  *
  * @author Sanne Grinovero
- * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ * @author Davide D'Alto
  */
 public class TupleIndexer implements SessionAwareRunnable {
 
@@ -167,10 +167,14 @@ public class TupleIndexer implements SessionAwareRunnable {
 		if ( upperSession == null ) {
 			session = sessionFactory.openSession();
 		}
+		initSession( session );
+		return session;
+	}
+
+	private void initSession(Session session) {
 		session.setFlushMode( FlushMode.MANUAL );
 		session.setCacheMode( cacheMode );
 		session.setDefaultReadOnly( true );
-		return session;
 	}
 
 	private void close(Session upperSession, Session session) {
@@ -181,6 +185,31 @@ public class TupleIndexer implements SessionAwareRunnable {
 
 	@Override
 	public void run(Session upperSession, Tuple tuple) {
+		if ( upperSession == null ) {
+			runInNewTransaction( upperSession, tuple );
+		}
+		else {
+			runIndexing( upperSession, tuple );
+		}
+	}
+
+	/*
+	 * Index using the existing session without opening new transactions
+	 */
+	private void runIndexing(Session upperSession, Tuple tuple) {
+		initSession( upperSession );
+		try {
+			index( upperSession, entity( upperSession, tuple ) );
+		}
+		catch (Throwable e) {
+			errorHandler.handleException( log.massIndexerUnexpectedErrorMessage(), e );
+		}
+		finally {
+			log.debug( "finished" );
+		}
+	}
+
+	private void runInNewTransaction(Session upperSession, Tuple tuple) {
 		Session session = openSession( upperSession );
 		try {
 			Transaction transaction = beginTransaction( session );

@@ -20,7 +20,6 @@ import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.common.impl.SerializableRowKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager;
-import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager.KeyProcessor;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
@@ -214,7 +213,7 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		getCacheManager().forEachTuple( new EntityKeyProcessor( consumer ), entityKeyMetadata );
+		getCacheManager().forEachTuple( consumer, entityKeyMetadata );
 	}
 
 	@Override
@@ -230,20 +229,5 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 	@SuppressWarnings("unchecked")
 	private KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return (KeyProvider<EK, AK, ISK>) datastoreProvider.getKeyProvider();
-	}
-
-	private class EntityKeyProcessor implements KeyProcessor<EK> {
-
-		private final ModelConsumer consumer;
-
-		private EntityKeyProcessor(ModelConsumer consumer) {
-			this.consumer = consumer;
-		}
-
-		@Override
-		public void processKey(EK key, Cache<EK> cache) {
-			Element element = cache.get( key );
-			consumer.consume( createTuple( element ) );
-		}
 	}
 }

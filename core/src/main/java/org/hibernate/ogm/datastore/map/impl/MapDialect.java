@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.map.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -17,13 +18,16 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -148,10 +152,81 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata metadata) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
-		for ( EntityKey key : entityMap.keySet() ) {
-			if ( key.getTable().equals( metadata.getTable() ) ) {
-				consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ), SnapshotType.UPDATE ) );
-			}
+		consumer.consume( new MapTupleSupplier( entityMap, metadata ) );
+	}
+
+	private static class MapTupleSupplier implements TupleSupplier {
+
+		private final Map<EntityKey, Map<String, Object>> entityMap;
+		private final EntityKeyMetadata metadata;
+
+		public MapTupleSupplier(Map<EntityKey, Map<String, Object>> entityMap, EntityKeyMetadata metadata) {
+			this.entityMap = entityMap;
+			this.metadata = metadata;
 		}
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			return new MapTupleIterator( entityMap, metadata );
+		}
+	}
+
+	private static class MapTupleIterator implements ClosableIterator<Tuple> {
+
+		private final EntityKeyMetadata metadata;
+		private final Map<EntityKey, Map<String, Object>> entityMap;
+		private final Iterator<EntityKey> iterator;
+		private EntityKey next;
+		private boolean hasNext = false;
+
+		public MapTupleIterator(Map<EntityKey, Map<String, Object>> entityMap, EntityKeyMetadata metadata) {
+			this.entityMap = entityMap;
+			this.metadata = metadata;
+			this.iterator = entityMap.keySet().iterator();
+			this.next = next( this.iterator );
+		}
+
+		private EntityKey next(Iterator<EntityKey> iterator) {
+			EntityKey next = null;
+			hasNext = false;
+			while ( iterator.hasNext() ) {
+				next = iterator.next();
+				if ( isValidKey( next ) ) {
+					hasNext = true;
+					break;
+				}
+			}
+			if ( hasNext ) {
+				return next;
+			}
+			return null;
+		}
+
+		public boolean isValidKey(EntityKey key) {
+			return key.getTable().equals( metadata.getTable() );
+		}
+
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		@Override
+		public Tuple next() {
+			if ( hasNext ) {
+				Tuple current = createTuple( entityMap, next );
+				next = next( iterator );
+				return current;
+			}
+			return null;
+		}
+
+		@Override
+		public void close() {
+		}
+	}
+
+	private static Tuple createTuple(Map<EntityKey, Map<String, Object>> entityMap, EntityKey key) {
+		return new Tuple( new MapTupleSnapshot( entityMap.get( key ) ), SnapshotType.UPDATE );
 	}
 }

@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.redis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +31,14 @@ import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -361,16 +365,64 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 		do {
 			cursor = scan( cursor, scanArgs );
-
-			for ( String key : cursor.getKeys() ) {
-				Entity document = entityStorageStrategy.getEntity( key );
-
-				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
-
-				consumer.consume( new Tuple( new RedisJsonTupleSnapshot( document ), SnapshotType.UPDATE ) );
-			}
-
+			consumer.consume( new RedisJsonDialectTupleSupplier( cursor, entityStorageStrategy, prefix, entityKeyMetadata ) );
 		} while ( !cursor.isFinished() );
+	}
+
+	private class RedisJsonDialectTupleSupplier implements TupleSupplier {
+
+		private final KeyScanCursor<String> cursor;
+		private final String prefix;
+		private final EntityKeyMetadata entityKeyMetadata;
+		private final JsonEntityStorageStrategy storageStrategy;
+
+		public RedisJsonDialectTupleSupplier(KeyScanCursor<String> cursor, JsonEntityStorageStrategy storageStrategy, String prefix, EntityKeyMetadata entityKeyMetadata) {
+			this.cursor = cursor;
+			this.storageStrategy = storageStrategy;
+			this.prefix = prefix;
+			this.entityKeyMetadata = entityKeyMetadata;
+		}
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			return new RedisJsonTupleIterator( cursor, storageStrategy, prefix, entityKeyMetadata );
+		}
+	}
+
+	private class RedisJsonTupleIterator implements ClosableIterator<Tuple> {
+
+		private final Iterator<String> iterator;
+		private final EntityKeyMetadata entityKeyMetadata;
+		private final String prefix;
+		private final JsonEntityStorageStrategy storageStrategy;
+
+		public RedisJsonTupleIterator(KeyScanCursor<String> cursor, JsonEntityStorageStrategy storageStrategy, String prefix, EntityKeyMetadata entityKeyMetadata) {
+			this.storageStrategy = storageStrategy;
+			this.prefix = prefix;
+			this.entityKeyMetadata = entityKeyMetadata;
+			this.iterator = cursor.getKeys().iterator();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			String key = iterator.next();
+			Entity document = storageStrategy.getEntity( key );
+			addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, document );
+			return createTuple( document );
+		}
+
+		private Tuple createTuple(Entity document) {
+			return new Tuple( new RedisJsonTupleSnapshot( document ), SnapshotType.UPDATE );
+		}
+
+		@Override
+		public void close() {
+		}
 	}
 
 	private void storeEntity(EntityKey key, Entity entity, OptionsContext optionsContext) {

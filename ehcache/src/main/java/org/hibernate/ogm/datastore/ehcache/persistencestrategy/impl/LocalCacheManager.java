@@ -6,12 +6,17 @@
  */
 package org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl;
 
-import net.sf.ehcache.CacheManager;
-
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
+import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 
 /**
  * Provides access to the Ehcache caches used for storing entities, associations and id sources. The number of caches
@@ -55,17 +60,13 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 	 * Determines the caches storing the entities of the given key families, fetches the keys of these families and
 	 * invokes the given processor for each key.
 	 *
-	 * @param processor the processor that will be invoked on the keys of the given families
+	 * @param consumer process the keys of the given families
 	 * @param entityKeyMetadatas the meta-data of the keys to process
 	 */
-	public abstract void forEachTuple(KeyProcessor<EK> processor, EntityKeyMetadata... entityKeyMetadatas);
+	public abstract void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas);
 
-	/**
-	 * Processes keys obtained from a cache.
-	 *
-	 * @param <EK> the type of the keys
-	 */
-	public interface KeyProcessor<EK> {
-		void processKey(EK key, Cache<EK> cache);
+	@SuppressWarnings("unchecked")
+	protected static Tuple createTuple(final Element element) {
+		return new Tuple( new MapTupleSnapshot( (java.util.Map<String, Object>) element.getObjectValue() ), SnapshotType.UPDATE );
 	}
 }
