@@ -19,6 +19,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+import org.hibernate.ogm.datastore.couchdb.dialect.impl.CouchDBTupleSupplier;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBAssociation;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
@@ -422,9 +423,7 @@ public class CouchDBDialect extends AbstractGroupingByEntityDialect implements G
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		List<Tuple> tuples = getDataStore().getTuples( entityKeyMetadata );
-		for ( Tuple tuple : tuples ) {
-			consumer.consume( tuple );
-		}
+		consumer.consume( new CouchDBTupleSupplier( tuples ) );
 	}
 
 	@Override

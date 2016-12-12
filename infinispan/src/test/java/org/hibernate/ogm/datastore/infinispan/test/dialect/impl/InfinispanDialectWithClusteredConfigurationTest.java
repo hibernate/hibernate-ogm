@@ -174,12 +174,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		private Tuple consumedTuple;
 
 		@Override
-		public void consume(Tuple tuple) {
-			consumedTuple = tuple;
-		}
-
-		@Override
 		public void consume(TupleSupplier supplier) {
+			consumedTuple = supplier.get( null ).next();
 		}
 	}
 

@@ -16,17 +16,18 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hibernate.AssertionFailure;
+import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispanremote.impl.ProtoStreamMappingAdapter;
 import org.hibernate.ogm.datastore.infinispanremote.impl.ProtostreamAssociationMappingAdapter;
 import org.hibernate.ogm.datastore.infinispanremote.impl.VersionedTuple;
-import org.hibernate.AssertionFailure;
-import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamId;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamPayload;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -34,8 +35,10 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -50,6 +53,7 @@ import org.hibernate.ogm.model.spi.AssociationOperationType;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.infinispan.client.hotrod.MetadataValue;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.VersionedValue;
 import org.infinispan.commons.util.CloseableIterator;
@@ -320,19 +324,9 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends BaseGridDialect implemen
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		final String cacheName = entityKeyMetadata.getTable();
 		ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
+
 		VersionedValue<ProtostreamPayload> v = mapper.withinCacheEncodingContext( c -> {
-			//TODO extract the batch constant to an option?
-			try ( CloseableIterator<Entry<Object,MetadataValue<Object>>> iterator
-					= c.retrieveEntriesWithMetadata( null, 100 ) ) {
-				while ( iterator.hasNext() ) {
-					Entry<Object, MetadataValue<Object>> next = iterator.next();
-					ProtostreamPayload obj = (ProtostreamPayload) next.getValue().getValue();
-					long version = next.getValue().getVersion();
-					VersionedTuple tuple = obj.toVersionedTuple( SnapshotType.UPDATE );
-					tuple.setVersion( version );
-					consumer.consume( tuple );
-				}
-			}
+			consumer.consume( new InfinispanRemoteTupleSupplier( c, cacheName ) );
 			return null;
 		} );
 	}
@@ -408,4 +402,52 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends BaseGridDialect implemen
 		return cacheName.equals( entityTableName ) && ! key.getMetadata().getAssociationKind().equals( AssociationKind.EMBEDDED_COLLECTION );
 	}
 
+	private static class InfinispanRemoteTupleSupplier implements TupleSupplier {
+
+		private final RemoteCache<ProtostreamId, ProtostreamPayload> remoteCache;
+
+		public InfinispanRemoteTupleSupplier(RemoteCache<ProtostreamId, ProtostreamPayload> remoteCache, String cacheName) {
+			this.remoteCache = remoteCache;
+		}
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			CloseableIterator<Entry<Object, MetadataValue<Object>>> iterator = remoteCache.retrieveEntriesWithMetadata( null, 100 );
+			return new InfinispanRemoteTupleIterator( iterator );
+		}
+	}
+
+	private static class InfinispanRemoteTupleIterator implements ClosableIterator<Tuple> {
+
+		private final CloseableIterator<Entry<Object, MetadataValue<Object>>> iterator;
+
+		public InfinispanRemoteTupleIterator(CloseableIterator<Entry<Object, MetadataValue<Object>>> iterator) {
+			this.iterator = iterator;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			Entry<Object, MetadataValue<Object>> next = iterator.next();
+			VersionedTuple tuple = createTuple( next );
+			return tuple;
+		}
+
+		private VersionedTuple createTuple(Entry<Object, MetadataValue<Object>> next) {
+			ProtostreamPayload obj = (ProtostreamPayload) next.getValue().getValue();
+			long version = next.getValue().getVersion();
+			VersionedTuple tuple = obj.toVersionedTuple( SnapshotType.UPDATE );
+			tuple.setVersion( version );
+			return tuple;
+		}
+
+		@Override
+		public void close() {
+			iterator.close();
+		}
+	}
 }

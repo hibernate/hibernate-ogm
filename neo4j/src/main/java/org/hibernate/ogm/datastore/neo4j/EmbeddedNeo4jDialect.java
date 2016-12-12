@@ -23,8 +23,8 @@ import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jBackendQueryResultIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jEntityQueries;
-import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jMapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jNodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jTupleAssociationSnapshot;
@@ -41,8 +41,10 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -563,17 +565,24 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
-		try {
-			while ( queryNodes.hasNext() ) {
-				Node next = queryNodes.next();
-				Tuple tuple = new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( next,
-						tupleTypeContext.getAllAssociatedEntityKeyMetadata(), tupleTypeContext.getAllRoles(),
-						entityKeyMetadata ), SnapshotType.UPDATE );
-				consumer.consume( tuple );
-			}
+		consumer.consume( new EmbeddedNeo4jTupleSupplier( queryNodes, tupleTypeContext, entityKeyMetadata ) );
+	}
+
+	private static class EmbeddedNeo4jTupleSupplier implements TupleSupplier {
+
+		private final ResourceIterator<Node> nodes;
+		private final TupleTypeContext tupleTypeContext;
+		private final EntityKeyMetadata entityKeyMetadata;
+
+		public EmbeddedNeo4jTupleSupplier(ResourceIterator<Node> nodes, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+			this.nodes = nodes;
+			this.tupleTypeContext = tupleTypeContext;
+			this.entityKeyMetadata = entityKeyMetadata;
 		}
-		finally {
-			queryNodes.close();
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			return new EmbeddedNeo4jNodesTupleIterator( nodes, entityKeyMetadata, tupleTypeContext );
 		}
 	}
 
@@ -590,10 +599,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			Result result = dataBase.execute( nativeQuery, parameters );
 
 			EntityMetadataInformation entityMetadataInformation = backendQuery.getSingleEntityMetadataInformationOrNull();
-			if ( entityMetadataInformation != null ) {
-				return new EmbeddedNeo4jNodesTupleIterator( result, entityMetadataInformation.getEntityKeyMetadata(), tupleContext );
-			}
-			return new EmbeddedNeo4jMapsTupleIterator( result );
+			return new EmbeddedNeo4jBackendQueryResultIterator( result, entityMetadataInformation, tupleContext );
 		}
 		catch (QueryExecutionException qe) {
 			throw log.nativeQueryException( qe.getStatusCode(), qe.getMessage(), qe );

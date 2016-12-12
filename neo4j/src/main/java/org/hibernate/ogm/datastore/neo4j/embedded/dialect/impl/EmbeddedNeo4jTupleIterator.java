@@ -6,25 +6,20 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
-import java.util.Map;
-
-import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Result;
 
 /**
- * Iterates over the results of a native query when each result is not mapped by an entity
+ * Super class for the iterators used by the embedded dialect in Nero4j.
  *
  * @author Davide D'Alto
  */
-public class EmbeddedNeo4jMapsTupleIterator implements ClosableIterator<Tuple> {
+public abstract class EmbeddedNeo4jTupleIterator<T> implements ClosableIterator<Tuple> {
 
-	private final ResourceIterator<Map<String, Object>> iterator;
+	private final ResourceIterator<T> iterator;
 
-	public EmbeddedNeo4jMapsTupleIterator(Result result) {
+	public EmbeddedNeo4jTupleIterator(ResourceIterator<T> result) {
 		this.iterator = result;
 	}
 
@@ -38,9 +33,7 @@ public class EmbeddedNeo4jMapsTupleIterator implements ClosableIterator<Tuple> {
 		return convert( iterator.next() );
 	}
 
-	protected Tuple convert(Map<String, Object> next) {
-		return new Tuple( new MapTupleSnapshot( next ), SnapshotType.UPDATE );
-	}
+	protected abstract Tuple convert(T next);
 
 	@Override
 	public void remove() {

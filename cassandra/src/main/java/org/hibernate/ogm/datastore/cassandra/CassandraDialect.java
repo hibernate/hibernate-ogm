@@ -46,8 +46,10 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -166,7 +168,7 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		}
 
 		Row row = resultSet.one();
-		Tuple tuple = new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE );
+		Tuple tuple = createTuple( row );
 		return tuple;
 	}
 
@@ -460,11 +462,50 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 		catch (DriverException e) {
 			throw e;
 		}
-		Iterator<Row> iter = resultSet.iterator();
-		while ( iter.hasNext() ) {
-			Row row = iter.next();
-			consumer.consume( new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE ) );
+
+		TupleSupplier supplier = new CassandraTupleSupplier( resultSet );
+		consumer.consume( supplier );
+	}
+
+	private static class CassandraTupleSupplier implements TupleSupplier {
+
+		private final ResultSet resultSet;
+
+		public CassandraTupleSupplier(ResultSet resultSet) {
+			this.resultSet = resultSet;
 		}
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			return new CassandraTupleIterator( resultSet.iterator() );
+		}
+	}
+
+	private static class CassandraTupleIterator implements ClosableIterator<Tuple> {
+
+		private final Iterator<Row> iterator;
+
+		public CassandraTupleIterator(Iterator<Row> iterator) {
+			this.iterator = iterator;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			return createTuple( iterator.next() );
+		}
+
+		@Override
+		public void close() {
+		}
+	}
+
+	private static Tuple createTuple(Row row) {
+		return new Tuple( new MapTupleSnapshot( tupleFromRow( row ) ), SnapshotType.UPDATE );
 	}
 
 	public static Map<String, Object> tupleFromRow(Row row) {

@@ -90,22 +90,6 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 	}
 
 	@Override
-	public void consume(Tuple tuple) {
-		try {
-			final boolean wrapInTransaction = wrapInTransaction();
-			if ( wrapInTransaction ) {
-				consumeInTransaction( tuple );
-			}
-			else {
-				delegate.run( null, tuple );
-			}
-		}
-		catch ( Throwable e ) {
-			errorHandler.handleException( log.massIndexerUnexpectedErrorMessage(), e );
-		}
-	}
-
-	@Override
 	public void consume(TupleSupplier supplier) {
 		try {
 			final boolean wrapInTransaction = wrapInTransaction();
@@ -130,21 +114,6 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 		}
 	}
 
-	private void consumeInTransaction(Tuple tuple) {
-		TransactionManager transactionManager = getTransactionManager();
-		try {
-			final Session session = factory.openSession();
-			transactionManager.begin();
-			delegate.run( session, tuple );
-			transactionManager.commit();
-			session.close();
-		}
-		catch ( Throwable e ) {
-			errorHandler.handleException( log.massIndexerUnexpectedErrorMessage(), e );
-			rollback( transactionManager, e );
-		}
-	}
-
 	private void consumeInTransaction(TupleSupplier supplier) {
 		TransactionManager transactionManager = getTransactionManager();
 		try {
@@ -153,11 +122,16 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 			try {
 				TransactionContext transactionContext = TransactionContextHelper.transactionContext( session );
 				ClosableIterator<Tuple> tuples = supplier.get( transactionContext );
-				while ( tuples.hasNext() ) {
-					Tuple tuple = tuples.next();
-					delegate.run( session, tuple );
+				try {
+					while ( tuples.hasNext() ) {
+						Tuple tuple = tuples.next();
+						delegate.run( session, tuple );
+					}
+					transactionManager.commit();
 				}
-				transactionManager.commit();
+				finally {
+					tuples.close();
+				}
 			}
 			finally {
 				session.close();

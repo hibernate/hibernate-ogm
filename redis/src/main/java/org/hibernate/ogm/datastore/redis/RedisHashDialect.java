@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.redis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,11 +24,14 @@ import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -46,6 +50,7 @@ import org.hibernate.type.Type;
 
 import com.lambdaworks.redis.KeyScanCursor;
 import com.lambdaworks.redis.ScanArgs;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
 /**
  * Stores tuples and associations inside Redis using hash data structures.
@@ -83,7 +88,7 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 			objects = toEntity( operationContext.getTupleTypeContext(), hmget );
 		}
 
-		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( objects ) ), SnapshotType.UPDATE );
+		return createTuple( objects );
 	}
 
 	@Override
@@ -199,17 +204,12 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 		do {
 			cursor = scan( cursor, scanArgs );
-
-			for ( String key : cursor.getKeys() ) {
-				Map<String, String> hgetall = connection.hgetall( key );
-				Map<String, String> properties = new HashMap<>();
-
-				properties.putAll( hgetall );
-				addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, properties );
-				consumer.consume( new Tuple( new RedisHashTupleSnapshot( new HashEntity( properties ) ), SnapshotType.UPDATE ) );
-			}
-
+			consumer.consume( new RedisHashDialectTupleSupplier( cursor, connection, prefix, entityKeyMetadata ) );
 		} while ( !cursor.isFinished() );
+	}
+
+	private static Tuple createTuple(Map<String, String> properties) {
+		return new Tuple( new RedisHashTupleSnapshot( new HashEntity( properties ) ), SnapshotType.UPDATE );
 	}
 
 	protected void addKeyValuesFromKeyName(
@@ -357,4 +357,57 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 		}
 	}
 
+	private class RedisHashDialectTupleSupplier implements TupleSupplier {
+
+		private final KeyScanCursor<String> cursor;
+		private final RedisClusterCommands<String, String> connection;
+		private final String prefix;
+		private final EntityKeyMetadata entityKeyMetadata;
+
+		public RedisHashDialectTupleSupplier(KeyScanCursor<String> cursor, RedisClusterCommands<String, String> connection, String prefix, EntityKeyMetadata entityKeyMetadata) {
+			this.cursor = cursor;
+			this.connection = connection;
+			this.prefix = prefix;
+			this.entityKeyMetadata = entityKeyMetadata;
+		}
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			return new RedisHashTupleIterator( cursor, connection, prefix, entityKeyMetadata );
+		}
+	}
+
+	private class RedisHashTupleIterator implements ClosableIterator<Tuple> {
+
+		private final Iterator<String> iterator;
+		private final EntityKeyMetadata entityKeyMetadata;
+		private final RedisClusterCommands<String, String> connection;
+		private final String prefix;
+
+		public RedisHashTupleIterator(KeyScanCursor<String> cursor, RedisClusterCommands<String, String> connection, String prefix, EntityKeyMetadata entityKeyMetadata) {
+			this.connection = connection;
+			this.prefix = prefix;
+			this.entityKeyMetadata = entityKeyMetadata;
+			this.iterator = cursor.getKeys().iterator();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			String key = iterator.next();
+			Map<String, String> hgetall = connection.hgetall( key );
+			Map<String, String> properties = new HashMap<>();
+			properties.putAll( hgetall );
+			addKeyValuesFromKeyName( entityKeyMetadata, prefix, key, properties );
+			return createTuple( properties );
+		}
+
+		@Override
+		public void close() {
+		}
+	}
 }

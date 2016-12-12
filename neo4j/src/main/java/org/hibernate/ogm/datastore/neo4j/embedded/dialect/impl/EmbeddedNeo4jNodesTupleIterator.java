@@ -6,40 +6,31 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
-import java.util.Map;
-
-import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.ResourceIterator;
 
 /**
- * Iterates over the result of a native query when each result is a neo4j node.
- * This is the case when the result of native query is mapped by an entity type.
- *
  * @author Davide D'Alto
  */
-public class EmbeddedNeo4jNodesTupleIterator extends EmbeddedNeo4jMapsTupleIterator {
+public class EmbeddedNeo4jNodesTupleIterator extends EmbeddedNeo4jTupleIterator<Node> {
 
 	private final EntityKeyMetadata entityKeyMetadata;
-	private final TupleContext tupleContext;
+	private final TupleTypeContext tupleTypeContext;
 
-	public EmbeddedNeo4jNodesTupleIterator(Result result, EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public EmbeddedNeo4jNodesTupleIterator(ResourceIterator<Node> result, EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
 		super( result );
 		this.entityKeyMetadata = entityKeyMetadata;
-		this.tupleContext = tupleContext;
+		this.tupleTypeContext = tupleTypeContext;
 	}
 
 	@Override
-	protected Tuple convert(Map<String, Object> next) {
-		return createTuple( (Node) next.values().iterator().next() );
-	}
-
-	private Tuple createTuple(Node node) {
+	protected Tuple convert(Node node) {
 		return new Tuple( EmbeddedNeo4jTupleSnapshot.fromNode( node,
-				tupleContext.getTupleTypeContext().getAllAssociatedEntityKeyMetadata(), tupleContext.getTupleTypeContext().getAllRoles(),
+				tupleTypeContext.getAllAssociatedEntityKeyMetadata(), tupleTypeContext.getAllRoles(),
 				entityKeyMetadata ), SnapshotType.UPDATE );
 	}
 }
