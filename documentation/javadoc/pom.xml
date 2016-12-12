@@ -98,6 +98,11 @@
                             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                             <version>${jbossJtaAPIVersion}</version>
                         </dependency>
+                        <dependency>
+                            <groupId>com.google.guava</groupId>
+                            <artifactId>guava</artifactId>
+                            <version>${cassandraGuavaVersion}</version>
+                        </dependency>
                     </additionalDependencies>
                     <sourcepath>
                         ${basedir}/../../core/src/main/java;
