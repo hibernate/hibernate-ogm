@@ -28,7 +28,6 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.ScalarReturn;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationRowSnapshot;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteAssociationSnapshot;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
@@ -634,7 +633,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			cache = provider.getEntityCache( backendQuery.getQuery().getQuerySpaces().iterator().next() );
 		}
 		else {
-			throw new IgniteHibernateException( "Can't find cache name" );
+			throw new UnsupportedOperationException( "Not implemented. Can't find cache name" );
 		}
 		QueryHints hints = ( new QueryHints.Builder( queryParameters.getQueryHints() ) ).build();
 		SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(

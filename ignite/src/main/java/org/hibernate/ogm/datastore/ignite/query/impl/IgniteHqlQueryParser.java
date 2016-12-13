@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hibernate.HibernateException;
 import org.hibernate.QueryException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.internal.antlr.HqlTokenTypes;
@@ -32,7 +33,6 @@ import org.hibernate.hql.internal.ast.tree.QueryNode;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.hql.internal.ast.util.ASTPrinter;
 import org.hibernate.hql.internal.ast.util.NodeTraverser;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
@@ -107,7 +107,7 @@ public class IgniteHqlQueryParser {
 		if ( selectClause.isScalarSelect() ) {
 			for ( Type type : selectClause.getQueryReturnTypes() ) {
 				if ( type.isEntityType() || type.isAssociationType() || type.isCollectionType() || type.isComponentType() ) {
-					throw new IgniteHibernateException( "Query with entity in projections are not supported" );
+					throw new UnsupportedOperationException( "Query with entity in projections are not supported" );
 				}
 			}
 		}
@@ -155,7 +155,7 @@ public class IgniteHqlQueryParser {
 		}
 		catch (Exception e) {
 			log.error( "Error while parsing HQL query. ", e );
-			throw new IgniteHibernateException( e );
+			throw new HibernateException( e );
 		}
 	}
 

@@ -17,8 +17,6 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteHibernateException;
-import org.hibernate.ogm.datastore.ignite.exception.IgniteLockingStrategyException;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
@@ -51,15 +49,14 @@ public class IgnitePessimisticReadLockingStrategy implements LockingStrategy {
 
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
 		GridType idGridType = typeTranslator.getType( lockable.getIdentifierType() );
-		EntityKey key = EntityKeyBuilder.fromData( ( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
-				idGridType,
-				id,
-				session );
+		EntityKey key = EntityKeyBuilder.fromData(
+								( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
+								idGridType,
+								id,
+								session
+						);
 
 		IgniteCache<Object, BinaryObject> cache = provider.getEntityCache( key.getMetadata() );
-		if ( cache == null ) {
-			throw new IgniteHibernateException( "Cache " + key.getMetadata().getTable() + " is not found" );
-		}
 		Lock lock = cache.lock( provider.createKeyObject( key ) );
 		try {
 			lock.tryLock( timeout, TimeUnit.MILLISECONDS );
