@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 import org.hibernate.HibernateException;
 import org.hibernate.QueryException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.hql.internal.antlr.HqlTokenTypes;
 import org.hibernate.hql.internal.antlr.SqlTokenTypes;
 import org.hibernate.hql.internal.ast.HqlParser;
 import org.hibernate.hql.internal.ast.HqlSqlWalker;
@@ -123,14 +122,6 @@ public class IgniteHqlQueryParser {
 			final SqlGenerator gen = new SqlGenerator( factory );
 			gen.statement( walker.getAST() );
 			String sql = gen.getSQL();
-			// final SqlGenerator genFrom = new SqlGenerator(factory);
-			// genFrom.from(((QueryNode)walker.getAST()).getFromClause());
-			// AST whereClause = ((QueryNode)walker.getAST()).getWhereClause();
-			// if (whereClause.getNumberOfChildren() > 0)
-			// genFrom.whereClause(whereClause);
-			// String fromSql = genFrom.getSQL();
-			// final SqlGenerator orderGen = new SqlGenerator(factory);
-
 			String resultSql = sql;
 
 			if ( !selectClause.isScalarSelect() ) {
@@ -177,31 +168,6 @@ public class IgniteHqlQueryParser {
 		return result;
 	}
 
-	// /**
-	// * Appends "OR Field IS NULL" to "Field NOT LIKE..."
-	// * @author Victor Kadachigov
-	// */
-	// private class NotLikeProcessor implements NodeTraverser.VisitationStrategy {
-	// private final ASTFactory astFactory;
-	//
-	// public NotLikeProcessor(ASTFactory astFactory) {
-	// this.astFactory = astFactory;
-	// }
-	//
-	// @Override
-	// public void visit(AST node) {
-	// AST notLikeNode = node.getFirstChild();
-	// if (notLikeNode != null && notLikeNode.getType() == HqlTokenTypes.NOT_LIKE) {
-	// AST leftPartNode = notLikeNode.getFirstChild();
-	// Node rightPartNode = (Node)notLikeNode.getFirstChild().getNextSibling();
-	// AST orNode = ASTUtil.createParent(astFactory, HqlTokenTypes.OR, "or", notLikeNode);
-	// log.info("!!!!!!!!!!!!!!!!!!!!! NOT_LIKE");
-	// }
-	//
-	// }
-	//
-	// }
-
 	private HqlParser parse(String hql, SessionFactoryImplementor sessionFactory) throws TokenStreamException, RecognitionException {
 		// Parse the query string into an HQL AST.
 		final HqlParser parser = HqlParser.getInstance( hql );
@@ -214,11 +180,8 @@ public class IgniteHqlQueryParser {
 		final NodeTraverser walker = new NodeTraverser( new JavaConstantConverter( sessionFactory ) );
 		walker.traverseDepthFirst( hqlAst );
 
-		// final NodeTraverser walker2 = new NodeTraverser( new NotLikeProcessor( parser.getASTFactory() ) );
-		// walker2.traverseDepthFirst( hqlAst );
-
-		ASTPrinter HQL_TOKEN_PRINTER = new ASTPrinter( HqlTokenTypes.class );
-		log.info( HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ) );
+//		ASTPrinter HQL_TOKEN_PRINTER = new ASTPrinter( HqlTokenTypes.class );
+//		log.info( HQL_TOKEN_PRINTER.showAsString( hqlAst, "--- HQL AST ---" ) );
 
 		parser.getParseErrorHandler().throwQueryException();
 		return parser;

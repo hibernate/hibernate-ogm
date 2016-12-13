@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
+import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteIllegalStateException;
 import org.apache.ignite.IgniteState;
 import org.apache.ignite.Ignition;
@@ -238,6 +239,9 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		return cacheManager.compute().affinityCall( cacheName, affinityKey, call );
 	}
 
+	/**
+	 * this task runs inside server node and we shouldn't use any Hibernate classes here.
+	 */
 	private static class ComputeForLocalQueries<T> implements IgniteCallable<List<T>> {
 
 		private final String cacheName;
@@ -255,7 +259,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		public List<T> call() throws Exception {
 			IgniteCache<Object, BinaryObject> cache = ignite.cache( cacheName );
 			if ( cache == null ) {
-				throw log.cacheNotFound( cacheName );
+				throw new IgniteException( "Cache '" + cacheName + "' not found" );
 			}
 			cache = cache.withKeepBinary();
 			return (List<T>) cache.query( query ).getAll();

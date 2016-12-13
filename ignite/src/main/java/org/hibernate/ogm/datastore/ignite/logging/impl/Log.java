@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.ignite.logging.impl;
 
-import org.apache.ignite.IgniteException;
 import org.hibernate.HibernateException;
 import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
@@ -30,7 +29,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void stoppedIgnite();
 
 	@Message(id = 1704, value = "Cache '%s' not found")
-	IgniteException cacheNotFound(String cacheName);
+	HibernateException cacheNotFound(String cacheName);
 
 	@Message(id = 1705, value = "Invalid entity name '%s'")
 	HibernateException invalidEntityName(String entityName);
