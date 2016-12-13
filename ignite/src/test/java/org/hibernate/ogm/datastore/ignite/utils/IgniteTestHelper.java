@@ -116,7 +116,6 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
-		// TODO and here?
 		return null;
 	}
 

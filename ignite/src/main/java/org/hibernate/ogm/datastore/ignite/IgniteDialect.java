@@ -22,6 +22,7 @@ import org.apache.ignite.binary.BinaryObjectBuilder;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
@@ -119,7 +120,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		Object id = provider.createKeyObject( key );
 		BinaryObject po = entityCache.get( id );
-//		return createTuple( key, operationContext, id, po );
 		if ( po != null ) {
 			return new Tuple( new IgniteTupleSnapshot( id, po, key.getMetadata() ), SnapshotType.UPDATE );
 		}
@@ -127,18 +127,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			return null;
 		}
 	}
-
-//	private Tuple createTuple(EntityKey key, OperationContext operationContext, Object id, BinaryObject found) {
-//		if ( found != null ) {
-//			return new Tuple( new IgnitePortableTupleSnapshot( id, found, key.getMetadata() ), SnapshotType.UPDATE );
-//		}
-//		else if ( isInTheInsertionQueue( key, operationContext ) ) {
-//			return new Tuple( new IgnitePortableTupleSnapshot( id, found, key.getMetadata() ), SnapshotType.INSERT );
-//		}
-//		else {
-//			return null;
-//		}
-//	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
@@ -231,61 +219,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 		return result;
 	}
-
-
-//	@Override
-//	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-//
-//		Association result = null;
-//		IgniteCache<Object, BinaryObject> associationCache = provider.getAssociationCache( key.getMetadata() );
-//
-//		if ( associationCache == null ) {
-//			throw new IgniteHibernateException( "Cache " + key.getMetadata().getTable() + " is not found" );
-//		}
-//		else {
-//
-////			if ( key.getColumnNames().length > 1 ) {
-////				throw new IgniteHibernateException( "Composite keys are not supported yet." );
-////			}
-//
-//			QueryHints.Builder hintsBuilder = new QueryHints.Builder();
-//			Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
-//			if ( isCollocated ) {
-//				hintsBuilder.setAffinityRun( true );
-//				hintsBuilder.setAffinityKey( provider.createKeyObject( key ) );
-//			}
-//			QueryHints hints = hintsBuilder.build();
-//
-//			SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog( createAssociationQuery( key, true ), hints, key.getColumnValues() );
-//			//		provider.getKeyProvider().getKeyString( key ) );
-//			Iterable<List<?>> list = executeWithHints( associationCache, sqlQuery, hints );
-//
-//			Iterator<List<?>> iterator = list.iterator();
-//			if ( iterator.hasNext() ) {
-//				Map<RowKey, BinaryObject> associationMap = new HashMap<>();
-//				while ( iterator.hasNext() ) {
-//					List<?> item = iterator.next();
-//					BinaryObject bo = (BinaryObject) item.get( 1 );
-//					String rowKeyColumnNames[] = key.getMetadata().getRowKeyColumnNames();
-//					Object rowKeyColumnValues[] = new Object[rowKeyColumnNames.length];
-//					for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
-//						String columnName = rowKeyColumnNames[i];
-//						rowKeyColumnValues[i] = bo.field( columnName );
-//						// if ( !key.getMetadata().isKeyColumn( columnName ) ) {
-//						// rowKeyColumnValues[i] = item.get( 0 ); // _KEY - primary ID in association cache
-//						// } else {
-//						// rowKeyColumnValues[i] = bo.field( columnName );
-//						// }
-//					}
-//					RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
-//					associationMap.put( rowKey, bo );
-//				}
-//				result = new Association( new IgnitePortableAssociationSnapshot( associationMap, key.getMetadata().getRowKeyIndexColumnNames() ) );
-//			}
-//		}
-//
-//		return result;
-//	}
 
 	private String createAssociationQuery(AssociationKey key, boolean selectObjects) {
 		StringBuilder sb = new StringBuilder();
@@ -428,16 +361,10 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			Object binaryObjects[] = binaryObject.field( column );
 			List<BinaryObject> associationObjects = new ArrayList<>();
 			if ( binaryObjects != null ) {
-			for ( int i = 0; i < binaryObjects.length; i++ ) {
-				associationObjects.add( (BinaryObject) binaryObjects[i] );
+				for ( int i = 0; i < binaryObjects.length; i++ ) {
+					associationObjects.add( (BinaryObject) binaryObjects[i] );
+				}
 			}
-		}
-//			Map<Object, BinaryObject> associationObjects = new HashMap<>();
-//			if (binaryObjects != null) {
-//				for (int i = 0; i < binaryObjects.length; i++) {
-//					associationObjects.put( ((BinaryObject)binaryObjects[i]).field( indexColumnName ), (BinaryObject)binaryObjects[i] );
-//				}
-//			}
 
 			EntityKeyMetadata itemMetadata = key.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
 			for ( AssociationOperation op : association.getOperations() ) {
@@ -468,8 +395,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 						else {
 							associationObjects.add( itemObject );
 						}
-						//associationObjects.put( index, itemObject );
-
 						break;
 					case REMOVE:
 						if ( index >= 0 ) {
@@ -513,11 +438,12 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 		if ( key.getMetadata().getAssociationKind() == AssociationKind.ASSOCIATION ) {
 			QueryHints.Builder hintsBuilder = new QueryHints.Builder();
-//			Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
-//			if ( isCollocated ) {
+			Boolean isCollocated = associationContext.getAssociationTypeContext().getOptionsContext().getUnique( CollocatedAssociationOption.class );
+			if ( isCollocated ) {
+				throw new NotYetImplementedException();
 //				hintsBuilder.setAffinityRun( true );
 //				hintsBuilder.setAffinityKey( provider.createKeyObject( key ) );
-//			}
+			}
 			QueryHints hints = hintsBuilder.build();
 
 			if ( !IgniteAssociationSnapshot.isThirdTableAssociation( key.getMetadata() ) ) {
@@ -693,12 +619,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 	public GridType overrideType(Type type) {
 		return IgniteGridTypeMapper.INSTANCE.overrideType( type );
 	}
-
-	// public void loadCache(Set<EntityKeyMetadata> cachesInfo) {
-	// for (EntityKeyMetadata ci : cachesInfo) {
-	// provider.getEntityCache( ci );
-	// }
-	// }
 
 	private abstract class BaseResultCursor<T> implements ClosableIterator<Tuple> {
 

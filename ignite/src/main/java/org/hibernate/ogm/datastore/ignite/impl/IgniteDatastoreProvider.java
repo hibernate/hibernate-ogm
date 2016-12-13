@@ -266,7 +266,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		String comment = hints != null ? hints.toComment() : "";
 		jdbcServices.getSqlStatementLogger().logStatement( comment + sql );
 
-//		sql = "SELECT _KEY, _VAL FROM Game WHERE playedOn_id_countryCode='DE' AND playedOn_id_sequenceNo=123";
 		SqlFieldsQuery query = new SqlFieldsQuery( sql );
 		if ( args != null ) {
 			query.setArgs( args );
