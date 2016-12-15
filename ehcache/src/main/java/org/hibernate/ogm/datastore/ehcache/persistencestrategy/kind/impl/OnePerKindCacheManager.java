@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.common.impl.CacheNames;
@@ -128,9 +129,13 @@ public class OnePerKindCacheManager extends LocalCacheManager<SerializableEntity
 
 		@Override
 		public Tuple next() {
-			Tuple current = createTuple( entityCache.get( this.next ) );
-			this.next = next( this.iterator );
-			return current;
+			if ( hasNext ) {
+				Tuple current = createTuple( entityCache.get( this.next ) );
+				this.next = next( this.iterator );
+				return current;
+			}
+
+			throw new NoSuchElementException();
 		}
 
 		@Override

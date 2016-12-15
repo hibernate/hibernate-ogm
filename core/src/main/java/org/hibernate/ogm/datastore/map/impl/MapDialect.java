@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -218,7 +219,8 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 				next = next( iterator );
 				return current;
 			}
-			return null;
+
+			throw new NoSuchElementException();
 		}
 
 		@Override
