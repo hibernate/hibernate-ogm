@@ -14,7 +14,7 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Davide D'Alto
  */
-public interface TupleSupplier {
+public interface TuplesSupplier {
 
 	/**
 	 * @param transactionContext the current {@link TransactionContext}, can be {@code null}

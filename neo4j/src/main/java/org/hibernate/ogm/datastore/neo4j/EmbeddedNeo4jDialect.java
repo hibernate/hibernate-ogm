@@ -44,7 +44,7 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -565,16 +565,16 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
-		consumer.consume( new EmbeddedNeo4jTupleSupplier( queryNodes, tupleTypeContext, entityKeyMetadata ) );
+		consumer.consume( new EmbeddedNeo4jTuplesSupplier( queryNodes, tupleTypeContext, entityKeyMetadata ) );
 	}
 
-	private static class EmbeddedNeo4jTupleSupplier implements TupleSupplier {
+	private static class EmbeddedNeo4jTuplesSupplier implements TuplesSupplier {
 
 		private final ResourceIterator<Node> nodes;
 		private final TupleTypeContext tupleTypeContext;
 		private final EntityKeyMetadata entityKeyMetadata;
 
-		public EmbeddedNeo4jTupleSupplier(ResourceIterator<Node> nodes, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+		public EmbeddedNeo4jTuplesSupplier(ResourceIterator<Node> nodes, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 			this.nodes = nodes;
 			this.tupleTypeContext = tupleTypeContext;
 			this.entityKeyMetadata = entityKeyMetadata;

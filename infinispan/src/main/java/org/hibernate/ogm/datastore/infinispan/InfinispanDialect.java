@@ -33,7 +33,7 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -221,7 +221,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor( entityKeyMetadata );
 		for ( Bucket<EK> bucket : buckets ) {
 			Map<EK, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
-			InfinispanTupleSupplier<EK> supplier = new InfinispanTupleSupplier( bucket.getCache(), queryResult );
+			InfinispanTuplesSupplier<EK> supplier = new InfinispanTuplesSupplier( bucket.getCache(), queryResult );
 			consumer.consume( supplier );
 		}
 	}
@@ -251,12 +251,12 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 	}
 
-	private class InfinispanTupleSupplier<SEK> implements TupleSupplier {
+	private class InfinispanTuplesSupplier<SEK> implements TuplesSupplier {
 
 		private final Map<SEK, Map<String, Object>> queryResult;
 		private final Cache<SEK, Map<String, Object>> cache;
 
-		public InfinispanTupleSupplier(Cache<SEK, Map<String, Object>> cache, Map<SEK, Map<String, Object>> queryResult) {
+		public InfinispanTuplesSupplier(Cache<SEK, Map<String, Object>> cache, Map<SEK, Map<String, Object>> queryResult) {
 			this.cache = cache;
 			this.queryResult = queryResult;
 		}

@@ -49,7 +49,7 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -463,15 +463,15 @@ public class CassandraDialect extends BaseGridDialect implements GridDialect, Qu
 			throw e;
 		}
 
-		TupleSupplier supplier = new CassandraTupleSupplier( resultSet );
+		TuplesSupplier supplier = new CassandraTuplesSupplier( resultSet );
 		consumer.consume( supplier );
 	}
 
-	private static class CassandraTupleSupplier implements TupleSupplier {
+	private static class CassandraTuplesSupplier implements TuplesSupplier {
 
 		private final ResultSet resultSet;
 
-		public CassandraTupleSupplier(ResultSet resultSet) {
+		public CassandraTuplesSupplier(ResultSet resultSet) {
 			this.resultSet = resultSet;
 		}
 

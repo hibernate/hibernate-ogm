@@ -53,7 +53,7 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -514,18 +514,18 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		HttpTupleSupplier tupleSupplier = new HttpTupleSupplier( entityQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
+		HttpTuplesSupplier tupleSupplier = new HttpTuplesSupplier( entityQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
 		consumer.consume( tupleSupplier );
 	}
 
-	private static class HttpTupleSupplier implements TupleSupplier {
+	private static class HttpTuplesSupplier implements TuplesSupplier {
 
 		private final HttpNeo4jEntityQueries entityQueries;
 		private final EntityKeyMetadata entityKeyMetadata;
 		private final TupleTypeContext tupleTypeContext;
 		private final HttpNeo4jClient httpClient;
 
-		public HttpTupleSupplier(HttpNeo4jEntityQueries entityQueries,
+		public HttpTuplesSupplier(HttpNeo4jEntityQueries entityQueries,
 				EntityKeyMetadata entityKeyMetadata,
 				TupleTypeContext tupleTypeContext,
 				HttpNeo4jClient httpClient) {

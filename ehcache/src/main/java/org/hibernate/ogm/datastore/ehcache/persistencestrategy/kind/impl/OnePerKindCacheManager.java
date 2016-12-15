@@ -15,7 +15,7 @@ import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheMa
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -61,16 +61,16 @@ public class OnePerKindCacheManager extends LocalCacheManager<SerializableEntity
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		consumer.consume( new OnePerKindTupleSupplier( entityCache, entityKeyMetadatas ) );
+		consumer.consume( new OnePerKindTuplesSupplier( entityCache, entityKeyMetadatas ) );
 	}
 
-	private static class OnePerKindTupleSupplier implements TupleSupplier {
+	private static class OnePerKindTuplesSupplier implements TuplesSupplier {
 
 		private final EntityKeyMetadata[] entityKeyMetadatas;
 		private final Cache<SerializableEntityKey> entityCache;
 		private final Iterator<SerializableEntityKey> keys;
 
-		public OnePerKindTupleSupplier(Cache<SerializableEntityKey> entityCache, EntityKeyMetadata... entityKeyMetadatas) {
+		public OnePerKindTuplesSupplier(Cache<SerializableEntityKey> entityCache, EntityKeyMetadata... entityKeyMetadatas) {
 			this.entityCache = entityCache;
 			this.entityKeyMetadatas = entityKeyMetadatas;
 			this.keys = entityCache.getKeys().iterator();

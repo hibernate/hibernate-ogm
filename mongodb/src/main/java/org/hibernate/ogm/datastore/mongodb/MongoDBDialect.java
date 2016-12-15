@@ -78,7 +78,7 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -759,7 +759,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		DB db = provider.getDatabase();
 		DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
-		consumer.consume( new MongoDBTupleSupplier( collection, entityKeyMetadata ) );
+		consumer.consume( new MongoDBTuplesSupplier( collection, entityKeyMetadata ) );
 	}
 
 	@Override
@@ -1466,12 +1466,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private static class MongoDBTupleSupplier implements TupleSupplier {
+	private static class MongoDBTuplesSupplier implements TuplesSupplier {
 
 		private final DBCollection collection;
 		private final EntityKeyMetadata entityKeyMetadata;
 
-		public MongoDBTupleSupplier(DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
+		public MongoDBTuplesSupplier(DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
 			this.collection = collection;
 			this.entityKeyMetadata = entityKeyMetadata;
 		}

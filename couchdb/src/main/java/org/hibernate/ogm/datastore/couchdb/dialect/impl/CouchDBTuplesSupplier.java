@@ -11,18 +11,18 @@ import java.util.List;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.model.spi.Tuple;
 
 
 /**
  * @author Davide D'Alto
  */
-public class CouchDBTupleSupplier implements TupleSupplier {
+public class CouchDBTuplesSupplier implements TuplesSupplier {
 
 	private final List<Tuple> tuples;
 
-	public CouchDBTupleSupplier(List<Tuple> tuples) {
+	public CouchDBTuplesSupplier(List<Tuple> tuples) {
 		this.tuples = tuples;
 	}
 

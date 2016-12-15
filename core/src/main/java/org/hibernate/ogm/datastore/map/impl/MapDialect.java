@@ -28,7 +28,7 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -153,15 +153,15 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata metadata) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
-		consumer.consume( new MapTupleSupplier( entityMap, metadata ) );
+		consumer.consume( new MapTuplesSupplier( entityMap, metadata ) );
 	}
 
-	private static class MapTupleSupplier implements TupleSupplier {
+	private static class MapTuplesSupplier implements TuplesSupplier {
 
 		private final Map<EntityKey, Map<String, Object>> entityMap;
 		private final EntityKeyMetadata metadata;
 
-		public MapTupleSupplier(Map<EntityKey, Map<String, Object>> entityMap, EntityKeyMetadata metadata) {
+		public MapTuplesSupplier(Map<EntityKey, Map<String, Object>> entityMap, EntityKeyMetadata metadata) {
 			this.entityMap = entityMap;
 			this.metadata = metadata;
 		}
