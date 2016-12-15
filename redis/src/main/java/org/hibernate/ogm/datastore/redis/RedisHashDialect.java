@@ -31,7 +31,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -204,7 +204,7 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 		do {
 			cursor = scan( cursor, scanArgs );
-			consumer.consume( new RedisHashDialectTupleSupplier( cursor, connection, prefix, entityKeyMetadata ) );
+			consumer.consume( new RedisHashDialectTuplesSupplier( cursor, connection, prefix, entityKeyMetadata ) );
 		} while ( !cursor.isFinished() );
 	}
 
@@ -357,14 +357,14 @@ public class RedisHashDialect extends AbstractRedisDialect implements GroupingBy
 		}
 	}
 
-	private class RedisHashDialectTupleSupplier implements TupleSupplier {
+	private class RedisHashDialectTuplesSupplier implements TuplesSupplier {
 
 		private final KeyScanCursor<String> cursor;
 		private final RedisClusterCommands<String, String> connection;
 		private final String prefix;
 		private final EntityKeyMetadata entityKeyMetadata;
 
-		public RedisHashDialectTupleSupplier(KeyScanCursor<String> cursor, RedisClusterCommands<String, String> connection, String prefix, EntityKeyMetadata entityKeyMetadata) {
+		public RedisHashDialectTuplesSupplier(KeyScanCursor<String> cursor, RedisClusterCommands<String, String> connection, String prefix, EntityKeyMetadata entityKeyMetadata) {
 			this.cursor = cursor;
 			this.connection = connection;
 			this.prefix = prefix;

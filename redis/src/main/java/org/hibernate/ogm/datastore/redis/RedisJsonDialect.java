@@ -38,7 +38,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -365,18 +365,18 @@ public class RedisJsonDialect extends AbstractRedisDialect implements MultigetGr
 		ScanArgs scanArgs = ScanArgs.Builder.matches( prefix + "*" );
 		do {
 			cursor = scan( cursor, scanArgs );
-			consumer.consume( new RedisJsonDialectTupleSupplier( cursor, entityStorageStrategy, prefix, entityKeyMetadata ) );
+			consumer.consume( new RedisJsonDialectTuplesSupplier( cursor, entityStorageStrategy, prefix, entityKeyMetadata ) );
 		} while ( !cursor.isFinished() );
 	}
 
-	private class RedisJsonDialectTupleSupplier implements TupleSupplier {
+	private class RedisJsonDialectTuplesSupplier implements TuplesSupplier {
 
 		private final KeyScanCursor<String> cursor;
 		private final String prefix;
 		private final EntityKeyMetadata entityKeyMetadata;
 		private final JsonEntityStorageStrategy storageStrategy;
 
-		public RedisJsonDialectTupleSupplier(KeyScanCursor<String> cursor, JsonEntityStorageStrategy storageStrategy, String prefix, EntityKeyMetadata entityKeyMetadata) {
+		public RedisJsonDialectTuplesSupplier(KeyScanCursor<String> cursor, JsonEntityStorageStrategy storageStrategy, String prefix, EntityKeyMetadata entityKeyMetadata) {
 			this.cursor = cursor;
 			this.storageStrategy = storageStrategy;
 			this.prefix = prefix;

@@ -17,7 +17,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.TransactionContextHelper;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
@@ -90,7 +90,7 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 	}
 
 	@Override
-	public void consume(TupleSupplier supplier) {
+	public void consume(TuplesSupplier supplier) {
 		try {
 			final boolean wrapInTransaction = wrapInTransaction();
 			if ( wrapInTransaction ) {
@@ -114,7 +114,7 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 		}
 	}
 
-	private void consumeInTransaction(TupleSupplier supplier) {
+	private void consumeInTransaction(TuplesSupplier supplier) {
 		TransactionManager transactionManager = getTransactionManager();
 		try {
 			transactionManager.begin();

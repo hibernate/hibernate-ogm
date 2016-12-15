@@ -19,7 +19,7 @@ import org.hibernate.ogm.datastore.redis.test.options.ttl.Song;
 import org.hibernate.ogm.datastore.redis.utils.RedisTestHelper;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 
@@ -71,7 +71,7 @@ public class RedisDialectClusterForEachTest extends RedisOgmTestCase {
 
 		dialect.forEachTuple( new ModelConsumer() {
 			@Override
-			public void consume(TupleSupplier supplier) {
+			public void consume(TuplesSupplier supplier) {
 				try ( ClosableIterator<Tuple> closableIterator = supplier.get( null ) ) {
 					while ( closableIterator.hasNext() ) {
 						counter.incrementAndGet();

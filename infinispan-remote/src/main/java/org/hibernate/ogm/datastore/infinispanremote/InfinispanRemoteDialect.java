@@ -38,7 +38,7 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -326,7 +326,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends BaseGridDialect implemen
 		ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
 
 		VersionedValue<ProtostreamPayload> v = mapper.withinCacheEncodingContext( c -> {
-			consumer.consume( new InfinispanRemoteTupleSupplier( c, cacheName ) );
+			consumer.consume( new InfinispanRemoteTuplesSupplier( c, cacheName ) );
 			return null;
 		} );
 	}
@@ -402,11 +402,11 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends BaseGridDialect implemen
 		return cacheName.equals( entityTableName ) && ! key.getMetadata().getAssociationKind().equals( AssociationKind.EMBEDDED_COLLECTION );
 	}
 
-	private static class InfinispanRemoteTupleSupplier implements TupleSupplier {
+	private static class InfinispanRemoteTuplesSupplier implements TuplesSupplier {
 
 		private final RemoteCache<ProtostreamId, ProtostreamPayload> remoteCache;
 
-		public InfinispanRemoteTupleSupplier(RemoteCache<ProtostreamId, ProtostreamPayload> remoteCache, String cacheName) {
+		public InfinispanRemoteTuplesSupplier(RemoteCache<ProtostreamId, ProtostreamPayload> remoteCache, String cacheName) {
 			this.remoteCache = remoteCache;
 		}
 

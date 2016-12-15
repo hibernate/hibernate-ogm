@@ -19,7 +19,7 @@ import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheMa
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
-import org.hibernate.ogm.dialect.spi.TupleSupplier;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -137,15 +137,15 @@ public class PerTableCacheManager
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			Cache<PerTableSerializableEntityKey> entityCache = getEntityCache( entityKeyMetadata );
-			consumer.consume( new PerTableTupleSupplier( entityCache ) );
+			consumer.consume( new PerTableTuplesSupplier( entityCache ) );
 		}
 	}
 
-	private static class PerTableTupleSupplier implements TupleSupplier {
+	private static class PerTableTuplesSupplier implements TuplesSupplier {
 
 		private final Cache<PerTableSerializableEntityKey> entityCache;
 
-		public PerTableTupleSupplier(Cache<PerTableSerializableEntityKey> entityCache) {
+		public PerTableTuplesSupplier(Cache<PerTableSerializableEntityKey> entityCache) {
 			this.entityCache = entityCache;
 		}
 
