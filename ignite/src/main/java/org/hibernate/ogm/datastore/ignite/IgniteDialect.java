@@ -379,13 +379,13 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 						for ( String columnName : op.getKey().getColumnNames() ) {
 							Object value = op.getKey().getColumnValue( columnName );
 							if ( value != null ) {
-								putBoBuilder.setField( columnName, value );
+								putBoBuilder.setField( StringHelper.stringAfterPoint( columnName ), value );
 							}
 						}
 						for ( String columnName : itemMetadata.getColumnNames() ) {
 							Object value = currentStateTuple.get( columnName );
 							if ( value != null ) {
-								putBoBuilder.setField( columnName, value );
+								putBoBuilder.setField( StringHelper.stringAfterPoint( columnName ), value );
 							}
 						}
 						BinaryObject itemObject = putBoBuilder.build();

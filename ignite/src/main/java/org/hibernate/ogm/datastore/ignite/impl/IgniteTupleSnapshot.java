@@ -44,19 +44,21 @@ public class IgniteTupleSnapshot implements TupleSnapshot {
 		}
 		this.isSimpleId = idColumnNames.size() == 1;
 		this.columnNames = CollectionHelper.asSet( keyMetadata.getColumnNames() );
-//		this.columnNames = new HashSet<>();
-//		Collections.addAll( this.columnNames, keyMetadata.getColumnNames() );
+	}
+
+	private boolean isEmbeddedItem() {
+		return id == null;
 	}
 
 	@Override
 	public Object get(String column) {
 		Object result = null;
 		if ( !isEmpty() ) {
-			if ( id != null /* not embedded collection item */  && keyMetadata.isKeyColumn( column ) ) {
+			if ( !isEmbeddedItem() && keyMetadata.isKeyColumn( column ) ) {
 				result = isSimpleId ? id : ( (BinaryObject) id ).field( StringHelper.stringAfterPoint( column ) );
 			}
 			else if ( binaryObject != null ) {
-				result = binaryObject.field( StringHelper.realColumnName( column ) );
+				result = binaryObject.field( isEmbeddedItem() ? StringHelper.stringAfterPoint( column ) : StringHelper.realColumnName( column ) );
 			}
 		}
 		return result;

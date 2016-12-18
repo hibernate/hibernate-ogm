@@ -19,7 +19,9 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-//	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
+	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
+//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
 
 	// failed
 

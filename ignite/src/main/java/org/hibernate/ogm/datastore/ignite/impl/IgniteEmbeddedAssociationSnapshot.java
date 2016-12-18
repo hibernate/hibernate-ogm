@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.ignite.binary.BinaryObject;
+import org.hibernate.ogm.datastore.ignite.util.StringHelper;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -33,18 +34,21 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 		this.associationMetadata = associationKey.getMetadata();
 		this.tuple = tuple;
 		BinaryObject obj = ( (IgniteTupleSnapshot) tuple.getSnapshot() ).getCacheValue();
-		Object objects[] = obj != null ? (Object[]) obj.field( associationMetadata.getCollectionRole() ) : null;
+		Object objects[] = obj != null ? (Object[]) obj.field( StringHelper.realColumnName( associationMetadata.getCollectionRole() ) ) : null;
 		rows = new HashMap<>();
 		if ( objects != null ) {
 			String indexColumnName = IgniteAssociationSnapshot.findIndexColumnName( associationMetadata );
-			String rowKeyColumnNames[] = associationMetadata.getRowKeyColumnNames();
+			String rowKeyColumnNames[] = new String[ associationMetadata.getRowKeyColumnNames().length ];
+			for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
+				rowKeyColumnNames[i] = StringHelper.stringAfterPoint( associationMetadata.getRowKeyColumnNames()[i] );
+			}
 			for ( int i = 0; i < objects.length; i++ ) {
 				BinaryObject itemObject = (BinaryObject) objects[i];
 				Object rowKeyColumnValues[] = new Object[rowKeyColumnNames.length];
 				for ( int j = 0; j < rowKeyColumnNames.length; j++ ) {
 					rowKeyColumnValues[j] = itemObject.field( rowKeyColumnNames[j] );
 				}
-				RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
+				RowKey rowKey = new RowKey( associationMetadata.getRowKeyColumnNames(), rowKeyColumnValues );
 				this.rows.put( rowKey, new IgniteTupleSnapshot( null, itemObject, associationMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata() ) );
 			}
 		}
