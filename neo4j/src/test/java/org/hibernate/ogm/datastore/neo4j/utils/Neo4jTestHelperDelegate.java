@@ -28,7 +28,7 @@ public interface Neo4jTestHelperDelegate {
 	String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name()
 			+ " RETURN COUNT(n) as count";
 
-	String ASSOCIATION_COUNT_QUERY = "MATCH (n) -[r]-> () RETURN COUNT(DISTINCT type(r)) as count";
+	String ASSOCIATION_COUNT_QUERY = "MATCH (n) -[r]-> () WITH n as e, count(distinct(type(r))) as c RETURN count(*) as count";
 
 	String DELETE_ALL = "MATCH (n) OPTIONAL MATCH (n) -[r]-> () DELETE n,r";
 
