@@ -124,20 +124,6 @@ public class ManyToManyTest extends OgmTestCase {
 		session.close();
 	}
 
-	private void persist(Session session, Object... entities) {
-		for ( Object entity : entities ) {
-			session.persist( entity );
-		}
-	}
-
-	private void delete(Session session, Object... entities) {
-		Transaction transaction = session.beginTransaction();
-		for ( Object entity : entities ) {
-			session.delete( entity );
-		}
-		transaction.commit();
-	}
-
 	private int expectedAssociationNumber() {
 		if ( EnumSet.of( NEO4J_EMBEDDED, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
 			// In Neo4j relationships are bidirectional
