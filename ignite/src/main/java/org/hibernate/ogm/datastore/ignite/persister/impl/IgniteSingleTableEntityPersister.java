@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.ignite.persister.impl;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
@@ -28,10 +27,9 @@ public class IgniteSingleTableEntityPersister extends SingleTableOgmEntityPersis
 			final PersisterCreationContext creationContext) throws HibernateException {
 		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext );
 	}
-	
+
 	@Override
-	protected String filterFragment(String alias, Set<String> treatAsDeclarations)
-	{
+	protected String filterFragment(String alias, Set<String> treatAsDeclarations) {
 		//vk: wrong implementation in base class
 		return "";
 	}
