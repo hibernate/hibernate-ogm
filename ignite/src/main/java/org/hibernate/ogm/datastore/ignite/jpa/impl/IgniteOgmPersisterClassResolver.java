@@ -6,11 +6,8 @@
  */
 package org.hibernate.ogm.datastore.ignite.jpa.impl;
 
-import org.hibernate.mapping.Collection;
-import org.hibernate.ogm.datastore.ignite.persister.impl.IgniteOgmCollectionPersister;
 import org.hibernate.ogm.datastore.ignite.persister.impl.IgniteSingleTableEntityPersister;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
-import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
@@ -26,10 +23,4 @@ public class IgniteOgmPersisterClassResolver extends OgmPersisterClassResolver {
 	public Class<? extends EntityPersister> singleTableEntityPersister() {
 		return IgniteSingleTableEntityPersister.class;
 	}
-
-	@Override
-	public Class<? extends CollectionPersister> getCollectionPersisterClass(Collection metadata) {
-		return IgniteOgmCollectionPersister.class;
-	}
-
 }

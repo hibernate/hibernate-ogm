@@ -25,12 +25,12 @@ import org.junit.runner.RunWith;
 
 	// failed
 
-//	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.*",
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest"
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
 //	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+//	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
 
 	// passed
 
@@ -53,7 +53,6 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.jpa.JPAResourceLocalTest",
 //	"org.hibernate.ogm.backendtck.jpa.JPAAPIWrappingTest",
 //	"org.hibernate.ogm.backendtck.jpa.JPAStandaloneORMAndOGMTest",
-//	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
 //	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
 //	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
