@@ -120,23 +120,9 @@ public class ManyToManyTest extends OgmTestCase {
 		session.close();
 	}
 
-	private void persist(Session session, Object... entities) {
-		for ( Object entity : entities ) {
-			session.persist( entity );
-		}
-	}
-
-	private void delete(Session session, Object... entities) {
-		Transaction transaction = session.beginTransaction();
-		for ( Object entity : entities ) {
-			session.delete( entity );
-		}
-		transaction.commit();
-	}
-
 	private int expectedAssociationNumber() {
 		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
-			// In Neo4j relationships are bidirectional
+			// Neo4j map an association as one relationship either if it's a bidirectional or an unidirectional one.
 			return 1;
 		}
 		else {
