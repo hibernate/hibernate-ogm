@@ -11,8 +11,8 @@ import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.node;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.backendtck.associations.collection.manytomany.AccountOwner;
-import org.hibernate.ogm.backendtck.associations.collection.manytomany.BankAccount;
+import org.hibernate.ogm.backendtck.associations.collection.manytomany.ClassRoom;
+import org.hibernate.ogm.backendtck.associations.collection.manytomany.Student;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.junit.Before;
@@ -22,57 +22,77 @@ import org.junit.Test;
  * @author Davide D'Alto
  */
 public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
-	private AccountOwner owner;
-	private BankAccount soge;
-	private BankAccount barclays;
+
+	private Student john;
+	private Student kate;
+	private Student mario;
+
+	private ClassRoom math;
+	private ClassRoom english;
 
 	@Before
 	public void prepareDb() throws Exception {
 		final EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
 
-		owner = new AccountOwner( "owner_1" );
-		owner.setSSN( "0123456" );
+		john = new Student( "john", "John Doe" );
+		kate = new Student( "kate", "Kate Doe" );
+		mario = new Student( "mario", "Mario Rossi" );
 
-		soge = new BankAccount( "account_1" );
-		soge.setAccountNumber( "X2345000" );
-		soge.getOwners().add( owner );
-		owner.getBankAccounts().add( soge );
+		math = new ClassRoom( 1L, "Math" );
+		math.getStudents().add( john );
+		math.getStudents().add( mario );
 
-		barclays = new BankAccount( "account_2" );
-		barclays.setAccountNumber( "ZZZ-009" );
-		barclays.getOwners().add( owner );
-		owner.getBankAccounts().add( barclays );
+		english = new ClassRoom( 2L, "English" );
+		english.getStudents().add( kate );
+		english.getStudents().add( mario );
 
-		em.persist( owner );
+		persist( em, john, kate, mario, english, math );
 		em.getTransaction().commit();
 		em.close();
 	}
 
+	private void persist(EntityManager em, Object... entities) {
+		for ( Object entity : entities ) {
+			em.persist( entity );
+		}
+	}
+
 	@Test
 	public void testMapping() throws Exception {
-		NodeForGraphAssertions ownerNode = node( "o", AccountOwner.class.getSimpleName(), ENTITY.name() )
-				.property( "id", owner.getId() )
-				.property( "SSN", owner.getSSN() );
+		NodeForGraphAssertions johnNode = node( "john", Student.class.getSimpleName(), ENTITY.name() )
+				.property( "id", john.getId() )
+				.property( "name", john.getName() );
 
-		NodeForGraphAssertions barclaysNode = node( "b", BankAccount.class.getSimpleName(), ENTITY.name() )
-				.property( "id", barclays.getId() )
-				.property( "accountNumber", barclays.getAccountNumber() );
+		NodeForGraphAssertions marioNode = node( "mario", Student.class.getSimpleName(), ENTITY.name() )
+				.property( "id", mario.getId() )
+				.property( "name", mario.getName() );
 
-		NodeForGraphAssertions sogeNode = node( "s", BankAccount.class.getSimpleName(), ENTITY.name() )
-				.property( "id", soge.getId() )
-				.property( "accountNumber", soge.getAccountNumber() );
+		NodeForGraphAssertions kateNode = node( "kate", Student.class.getSimpleName(), ENTITY.name() )
+				.property( "id", kate.getId() )
+				.property( "name", kate.getName() );
 
-		RelationshipsChainForGraphAssertions relationship1 = ownerNode.relationshipTo( barclaysNode, "bankAccounts" );
-		RelationshipsChainForGraphAssertions relationship2 = ownerNode.relationshipTo( sogeNode, "bankAccounts" );
+		NodeForGraphAssertions mathNode = node( "math", ClassRoom.class.getSimpleName(), ENTITY.name() )
+				.property( "id", math.getId() )
+				.property( "name", math.getName() );
 
-		assertThatOnlyTheseNodesExist( ownerNode, barclaysNode, sogeNode );
-		assertThatOnlyTheseRelationshipsExist( relationship1, relationship2 );
+		NodeForGraphAssertions englishNode = node( "english", ClassRoom.class.getSimpleName(), ENTITY.name() )
+				.property( "id", english.getId() )
+				.property( "name", english.getName() );
+
+		RelationshipsChainForGraphAssertions englishToMario = englishNode.relationshipTo( marioNode, "students" );
+		RelationshipsChainForGraphAssertions englishToKate = englishNode.relationshipTo( kateNode, "students" );
+
+		RelationshipsChainForGraphAssertions mathToMario = mathNode.relationshipTo( marioNode, "students" );
+		RelationshipsChainForGraphAssertions mathToJohn = mathNode.relationshipTo( johnNode, "students" );
+
+		assertThatOnlyTheseNodesExist( johnNode, kateNode, marioNode, mathNode, englishNode );
+		assertThatOnlyTheseRelationshipsExist( englishToMario, englishToKate, mathToJohn, mathToMario );
 	}
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class[] { AccountOwner.class, BankAccount.class };
+		return new Class[] { Student.class, ClassRoom.class };
 	}
 
 }
