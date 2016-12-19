@@ -45,7 +45,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	 */
 	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " RETURN COUNT(n) as count";
 
-	private static final String ASSOCIATION_COUNT_QUERY = "MATCH (n) -[r]-> () RETURN COUNT(DISTINCT type(r)) as count";
+	private static final String ASSOCIATION_COUNT_QUERY = "MATCH (n) -[r]-> () WITH n as e, count(distinct(type(r))) as c RETURN count(*) as count";
 
 	private static final String ROOT_FOLDER = hibProperties.get( Neo4jProperties.DATABASE_PATH ) + File.separator + "NEO4J";
 
