@@ -63,7 +63,7 @@
 
         <!-- Neo4j -->
         <neo4jVersion>3.0.7</neo4jVersion>
-        <neo4jJavaDriverVersion>1.0.6</neo4jJavaDriverVersion>
+        <neo4jJavaDriverVersion>1.1.0</neo4jJavaDriverVersion>
         <!-- Update dependency versions accordingly when updating Neo4j  -->
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>
