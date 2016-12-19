@@ -126,7 +126,7 @@ public class ManyToManyTest extends OgmTestCase {
 
 	private int expectedAssociationNumber() {
 		if ( EnumSet.of( NEO4J_EMBEDDED, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
-			// In Neo4j relationships are bidirectional
+			// Neo4j map an association as one relationship either if it's a bidirectional or an unidirectional one.
 			return 1;
 		}
 		else {
