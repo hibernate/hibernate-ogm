@@ -57,8 +57,8 @@
         <ehcacheVersion>2.6.11</ehcacheVersion>
 
         <!-- MongoDB -->
-        <mongodbDriverVersion>3.3.0</mongodbDriverVersion>
-        <mongodbVersion>3.2.10</mongodbVersion>
+        <mongodbDriverVersion>3.4.0</mongodbDriverVersion>
+        <mongodbVersion>3.4.0</mongodbVersion>
         <fongodbVersion>2.0.7</fongodbVersion>
 
         <!-- Neo4j -->
