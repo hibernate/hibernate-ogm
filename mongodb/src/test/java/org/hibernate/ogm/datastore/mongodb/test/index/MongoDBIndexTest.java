@@ -16,6 +16,7 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByDatastoreProvider;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 import com.mongodb.DBObject;
@@ -30,6 +31,9 @@ public class MongoDBIndexTest extends OgmTestCase {
 
 	private static final String COLLECTION_NAME = "T_POEM";
 
+	// Fongo behaves differently
+	private static final String VERSION = TestHelper.getCurrentDatastoreProviderType() == DatastoreProviderType.FONGO ? "1" : "2";
+
 	@Test
 	public void testSuccessfulIndexCreation() throws Exception {
 		OgmSession session = openSession();
@@ -37,14 +41,14 @@ public class MongoDBIndexTest extends OgmTestCase {
 		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
 
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
+		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
 				indexMap.get( "author_idx" ).toString() );
 		// TODO OGM-1080: the order should be -1 but we are waiting for ORM 5.2 which exposes this value and allows us to retrieve it
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'name' : 1} , 'name' : 'name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'expireAfterSeconds' : 10}",
+		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { 'name' : 1} , 'name' : 'name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'expireAfterSeconds' : 10}",
 				indexMap.get( "name_idx" ).toString() );
-		assertJsonEquals( "{ 'v' : 1 , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'sparse' : true}",
+		assertJsonEquals( "{ 'v' : " + VERSION + " , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'sparse' : true}",
 				indexMap.get( "author_name_idx" ).toString() );
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { 'name' : 1 , 'author' : 1} , 'name' : 'IDXjo3qu8pkq9vsofgrq58pacxfq' , 'ns' : 'ogm_test_database.T_POEM' }",
+		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { 'name' : 1 , 'author' : 1} , 'name' : 'IDXjo3qu8pkq9vsofgrq58pacxfq' , 'ns' : 'ogm_test_database.T_POEM' }",
 				indexMap.get( "IDXjo3qu8pkq9vsofgrq58pacxfq" ).toString() );
 
 		session.close();
@@ -58,7 +62,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
 
-		assertJsonEquals( "{ 'v' : 1 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
+		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
 				indexMap.get( "author_name_text_idx" ).toString() );
 
 		session.close();
