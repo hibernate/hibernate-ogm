@@ -121,8 +121,8 @@ public class ManyToOneTest extends OgmTestCase {
 
 	private Long expectedAssociations() {
 		if ( EnumSet.of( NEO4J_EMBEDDED, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
-			// A relationship is created in Neo4j that will result in the count
-			return 1L;
+			// *-to-one associations are mapped with a relationship in Neo4j that will result in the count
+			return 2L;
 		}
 		return 0L;
 	}
