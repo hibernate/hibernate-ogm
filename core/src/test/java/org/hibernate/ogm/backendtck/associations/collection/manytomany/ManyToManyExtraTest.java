@@ -42,7 +42,7 @@ public class ManyToManyExtraTest extends OgmTestCase {
 		math.getStudents().add( mario );
 		ClassRoom english = new ClassRoom( 2L, "English" );
 		english.getStudents().add( kate );
-		math.getStudents().add( mario );
+		english.getStudents().add( mario );
 
 		persist( session, math, english, john, mario, kate );
 		tx.commit();
