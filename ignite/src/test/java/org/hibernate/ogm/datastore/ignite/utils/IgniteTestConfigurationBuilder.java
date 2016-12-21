@@ -263,7 +263,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add( simpleCacheConfig( "Hero" ) );
 		cacheConfig.add( simpleCacheConfig( "SuperHero" ) );
 		cacheConfig.add( simpleCacheConfig( "HeroClub" ) );
-		cacheConfig.add( simpleCacheConfig( "HeroClub_Hero" ) );
+		cacheConfig.add( createCacheConfig( "HeroClub_Hero" ).appendIndex( "HeroClub_name", String.class ).build() );
 // JPATablePerClassFindTest
 		cacheConfig.add( simpleCacheConfig( "CommunityMember" ) );
 		cacheConfig.add( createCacheConfig( "Employee" ).appendIndex( "EmployerID", String.class ).build() );
