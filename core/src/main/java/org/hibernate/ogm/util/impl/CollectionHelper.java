@@ -20,6 +20,7 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
  * Provides commonly used functionality around collections.
  *
  * @author Gunnar Morling
+ * @author Guillaume Smet
  */
 public class CollectionHelper {
 
@@ -34,6 +35,7 @@ public class CollectionHelper {
 	 * @return an unmodifiable set containing the given elements or {@code null} in case the given element array is
 	 * {@code null}.
 	 */
+	@SafeVarargs
 	public static <T> Set<T> asSet(T... ts) {
 		if ( ts == null ) {
 			return null;
@@ -42,7 +44,7 @@ public class CollectionHelper {
 			return Collections.emptySet();
 		}
 		else {
-			Set<T> set = new HashSet<T>( ts.length );
+			Set<T> set = new HashSet<T>( getInitialCapacityFromExpectedSize( ts.length ) );
 			Collections.addAll( set, ts );
 			return Collections.unmodifiableSet( set );
 		}
@@ -52,8 +54,8 @@ public class CollectionHelper {
 		return new HashMap<K, V>();
 	}
 
-	public static <K, V> HashMap<K, V> newHashMap(int initialCapacity) {
-		return new HashMap<K, V>( initialCapacity );
+	public static <K, V> HashMap<K, V> newHashMap(int expectedSize) {
+		return new HashMap<K, V>( getInitialCapacityFromExpectedSize( expectedSize ) );
 	}
 
 	public static <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> other) {
@@ -64,8 +66,8 @@ public class CollectionHelper {
 		return new ConcurrentHashMap<K, V>();
 	}
 
-	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
-		return new ConcurrentHashMap<K, V>( initialCapacity );
+	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int expectedSize) {
+		return new ConcurrentHashMap<K, V>( getInitialCapacityFromExpectedSize( expectedSize ) );
 	}
 
 	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> other) {
@@ -83,6 +85,21 @@ public class CollectionHelper {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * As the default loadFactor is of 0.75, we need to calculate the initial capacity from the expected size
+	 * to avoid resizing the Map when we populate the Map with all the initial elements. We use a calculation
+	 * similar to what is done in {@link HashMap#putAll(Map)}.
+	 *
+	 * @param expectedSize the expected size of the Map
+	 * @return the initial capacity of the Map
+	 */
+	private static int getInitialCapacityFromExpectedSize(int expectedSize) {
+		if ( expectedSize < 3 ) {
+			return expectedSize + 1;
+		}
+		return (int) ( (float) expectedSize / 0.75f + 1.0f );
 	}
 
 	private static class ClosableIteratorWrapper<T> implements ClosableIterator<T> {
