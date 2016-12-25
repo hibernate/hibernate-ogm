@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ignite.IgniteCheckedException;
+import org.apache.ignite.IgniteSystemProperties;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
@@ -41,7 +42,9 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 
 	@Override
 	public IgniteConfiguration build() {
-
+		//disable check for new versions
+		System.setProperty( IgniteSystemProperties.IGNITE_UPDATE_NOTIFIER, Boolean.FALSE.toString() );
+		
 		IgniteConfiguration config = null;
 
 		try {
@@ -148,8 +151,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 // MapTest
 		cacheConfig.add( simpleCacheConfig( "PhoneNumber" ) );
 		cacheConfig.add( simpleCacheConfig( "Enterprise" ) );
-//		cacheConfig.add( createCacheConfig( "Enterprise_revenueByDepartment" ).appendIndex( "Enterprise_id", String.class ).build() );
-//		cacheConfig.add( createCacheConfig( "Enterprise_departments" ).appendIndex( "Enterprise_id", String.class ).build() );
 		cacheConfig.add( simpleCacheConfig( "Department" ) );
 		cacheConfig.add( simpleCacheConfig( "User" ) );
 		cacheConfig.add(
@@ -174,12 +175,11 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		);
 		cacheConfig.add(
 				createCacheConfig( "Address" )
-						.appendIndex( "id", String.class )
+						.withKeyType( Long.class )
 						.appendField( "street", String.class )
 						.appendField( "city", String.class )
 						.build()
 		);
-//		cacheConfig.add( createCacheConfig( "Nicks" ).appendIndex( "user_id", String.class ).build() );
 // CollectionUnidirectionalTest
 		cacheConfig.add( simpleCacheConfig( "Cloud" ) );
 		cacheConfig.add( simpleCacheConfig( "SnowFlake" ) );
