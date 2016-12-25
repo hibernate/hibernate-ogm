@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-	"org.hibernate.ogm.backendtck.embeddable.EmbeddableExtraTest",
 //	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
 
@@ -31,6 +30,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
 //	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
+//	"org.hibernate.ogm.backendtck.type.converter.JpaAttributeConverterTest"
 
 	// passed
 
@@ -43,16 +43,11 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.collection.types.*",						// -MapContentsStoredInSeparateDocumentTest
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
-//	"org.hibernate.ogm.backendtck.embeddable.EmbeddableTest",
-//	"org.hibernate.ogm.backendtck.hibernatecore.HibernateCoreAPIWrappingTest",
-//	"org.hibernate.ogm.backendtck.hibernatecore.JNDIReferenceTest",
-//	"org.hibernate.ogm.backendtck.inheritance.JPAPolymorphicFindTest",
-//	"org.hibernate.ogm.backendtck.inheritance.JPATablePerClassFindTest",
-//	"org.hibernate.ogm.backendtck.innertypes.InnerClassFindTest",
-//	"org.hibernate.ogm.backendtck.jpa.JPAJTATest",
-//	"org.hibernate.ogm.backendtck.jpa.JPAResourceLocalTest",
-//	"org.hibernate.ogm.backendtck.jpa.JPAAPIWrappingTest",
-//	"org.hibernate.ogm.backendtck.jpa.JPAStandaloneORMAndOGMTest",
+//	"org.hibernate.ogm.backendtck.embeddable.*",
+//	"org.hibernate.ogm.backendtck.hibernatecore.*",
+//	"org.hibernate.ogm.backendtck.inheritance.*",
+//	"org.hibernate.ogm.backendtck.innertypes.*",
+//	"org.hibernate.ogm.backendtck.jpa.*",
 //	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
 //	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",

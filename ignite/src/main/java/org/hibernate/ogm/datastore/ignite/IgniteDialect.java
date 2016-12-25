@@ -65,8 +65,10 @@ import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
+import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.AssociationOperationType;
@@ -352,7 +354,8 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			}
 		}
 		else if ( key.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			String indexColumnName = IgniteAssociationSnapshot.findIndexColumnName( key.getMetadata() );
+			String indexColumnName = findIndexColumnName( key.getMetadata() );
+			boolean searchByValue = indexColumnName == null;
 			Object id = ( (IgniteTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getCacheKey();
 			BinaryObject binaryObject = associationCache.get( id );
 			Contracts.assertNotNull( binaryObject, "binaryObject" );
@@ -368,8 +371,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 
 			EntityKeyMetadata itemMetadata = key.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
 			for ( AssociationOperation op : association.getOperations() ) {
-				Object indexColumnValue = op.getKey().getColumnValue( indexColumnName );
-				int index = findIndexByField( associationObjects, indexColumnName, indexColumnValue );
+				int index = findIndexByRowKey( associationObjects, op.getKey(), indexColumnName );
 				switch ( op.getType() ) {
 					case PUT:
 						Tuple currentStateTuple = op.getValue();
@@ -415,17 +417,54 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		association.reset();
 	}
 
-	private int findIndexByField(List<BinaryObject> objects, String field, Object value) {
+	private int findIndexByRowKey(List<BinaryObject> objects, RowKey rowKey, String indexColumnName) {
 		int result = -1;
-		for ( int i = 0; i < objects.size(); i++ ) {
-			BinaryObject object = objects.get( i );
-			Object fieldValue = object.field( field );
-			if ( fieldValue != null && fieldValue.equals( value ) ) {
-				result = i;
-				break;
+
+		if ( !objects.isEmpty() ) {
+			String columnNames[] = indexColumnName == null ? rowKey.getColumnNames() : new String[] { indexColumnName };
+			String fieldNames[] = new String[columnNames.length];
+			for ( int i = 0; i < columnNames.length; i++ ) {
+				fieldNames[i] = StringHelper.stringAfterPoint( columnNames[i] );
+			}
+
+			for ( int i = 0; i < objects.size() && result < 0; i++ ) {
+				BinaryObject bo = objects.get( i );
+				boolean thisIsIt = true;
+				for ( int j = 0; j < columnNames.length; j++ ) {
+					if ( !Objects.equals( rowKey.getColumnValue( columnNames[j] ), bo.field( fieldNames[j] ) ) ) {
+						thisIsIt = false;
+						break;
+					}
+				}
+				if ( thisIsIt ) {
+					result = i;
+				}
 			}
 		}
+
 		return result;
+	}
+
+	/**
+	 * @param associationMetadata
+	 * @return index column name for indexed embedded collections or null for collections without index
+	 */
+	private String findIndexColumnName(AssociationKeyMetadata associationMetadata) {
+		String indexColumnName = null;
+		if ( associationMetadata.getAssociationType() == AssociationType.SET
+				|| associationMetadata.getAssociationType() == AssociationType.BAG ) {
+//			String cols[] =  associationMetadata.getColumnsWithoutKeyColumns(
+//									Arrays.asList( associationMetadata.getRowKeyColumnNames() )
+//							);
+		}
+		else {
+			if ( associationMetadata.getRowKeyIndexColumnNames().length > 1 ) {
+				throw new UnsupportedOperationException( "Multiple index columns not implemented yet" );
+			}
+			indexColumnName = associationMetadata.getRowKeyIndexColumnNames()[0];
+		}
+
+		return indexColumnName;
 	}
 
 	@Override

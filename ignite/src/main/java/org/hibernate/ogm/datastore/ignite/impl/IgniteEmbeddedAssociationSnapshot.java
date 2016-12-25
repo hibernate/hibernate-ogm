@@ -37,7 +37,6 @@ public class IgniteEmbeddedAssociationSnapshot implements AssociationSnapshot {
 		Object objects[] = obj != null ? (Object[]) obj.field( StringHelper.realColumnName( associationMetadata.getCollectionRole() ) ) : null;
 		rows = new HashMap<>();
 		if ( objects != null ) {
-			String indexColumnName = IgniteAssociationSnapshot.findIndexColumnName( associationMetadata );
 			String rowKeyColumnNames[] = new String[ associationMetadata.getRowKeyColumnNames().length ];
 			for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
 				rowKeyColumnNames[i] = StringHelper.stringAfterPoint( associationMetadata.getRowKeyColumnNames()[i] );
