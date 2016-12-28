@@ -240,10 +240,10 @@ public interface Log extends BasicLogger {
 	@Message(id = 70, value = "'%1$s' is no valid datastore provider short name. Valid values are: %2$s")
 	void noValidDatastoreProviderShortName(String providerName, String validProviderNames);
 
-	@Message(id = 71, value = "Unable to start datatore provider")
+	@Message(id = 71, value = "Unable to start datastore provider")
 	ServiceException unableToStartDatastoreProvider(@Cause Exception e);
 
-	@Message(id = 72, value = "Unable to configure datatore provider")
+	@Message(id = 72, value = "Unable to configure datastore provider")
 	ServiceException unableToConfigureDatastoreProvider(@Cause Exception e);
 
 	@Message(id = 73, value = "Couldn't load the Lucene-based query parser backend. Make sure the dependency "
