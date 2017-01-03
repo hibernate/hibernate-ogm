@@ -64,7 +64,7 @@ Possible values are:
 * specific shortcuts (preferable): `map` (only to be used for unit tests),
   `infinispan_embedded`, `infinispan_remote`, `ehcache`, `mongodb`, `neo4j_embedded`,
   `neo4j_http`, `neo4j_bolt`, `couchdb_experimental` or `redis_experimental`
-* the fully qualified class name of a [classname]`DatastoreProvider` implementation
+* the fully qualified class name of a `DatastoreProvider` implementation
 
 [NOTE]
 ====
@@ -90,7 +90,7 @@ EntityManagerFactory emf = Persistence.createEntityManagerFactory( "my-pu", prop
 
 By default, a datastore provider chooses the grid dialect transparently
 but you can override this setting with the `hibernate.ogm.datastore.grid_dialect` option.
-Use the fully qualified class name of the [classname]`GridDialect` implementation.
+Use the fully qualified class name of the `GridDialect` implementation.
 Most users should ignore this setting entirely.
 
 Let's now look at the specifics of each datastore provider.

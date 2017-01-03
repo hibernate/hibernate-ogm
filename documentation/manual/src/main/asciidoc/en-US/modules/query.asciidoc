@@ -372,7 +372,7 @@ List<Hypothesis> resultList = ftQuery.getResultList();
 ----
 ====
 
-Assuming our database contains an [classname]`Hypothesis` instance
+Assuming our database contains an `Hypothesis` instance
 having description "Sometimes tomorrow we release",
 that instance will be returned by our full-text query.
 

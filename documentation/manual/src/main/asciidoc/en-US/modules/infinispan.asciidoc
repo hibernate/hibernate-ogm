@@ -168,7 +168,7 @@ which is a good starting point for new users - you don't have to set any propert
 `hibernate.ogm.datastore.provider`::
 Set it to `infinispan_embedded` to use Infinispan as the datastore provider in embedded mode.
 `hibernate.ogm.infinispan.cachemanager_jndi_name`::
-If you have an Infinispan [classname]`EmbeddedCacheManager` registered in JNDI,
+If you have an Infinispan `EmbeddedCacheManager` registered in JNDI,
 provide the JNDI name and Hibernate OGM will use this instance
 instead of starting a new `CacheManager`.
 This will ignore any further configuration properties
@@ -510,24 +510,24 @@ the key being the column name.
 
 Hibernate OGM support by default the following property types:
 
-* [classname]`java.lang.String`
-* [classname]`java.lang.Character` (or char primitive)
-* [classname]`java.lang.Boolean` (or boolean primitive); Optionally the annotations `@Type(type = "true_false")`, `@Type(type = "yes_no")` and `@Type(type = "numeric_boolean")` can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
-* [classname]`java.lang.Byte` (or byte primitive)
-* [classname]`java.lang.Short` (or short primitive)
-* [classname]`java.lang.Integer` (or integer primitive)
-* [classname]`java.lang.Long` (or long primitive)
-* [classname]`java.lang.Integer` (or integer primitive)
-* [classname]`java.lang.Float` (or float primitive)
-* [classname]`java.lang.Double` (or double primitive)
+* `java.lang.String`
+* `java.lang.Character` (or char primitive)
+* `java.lang.Boolean` (or boolean primitive); Optionally the annotations `@Type(type = "true_false")`, `@Type(type = "yes_no")` and `@Type(type = "numeric_boolean")` can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
+* `java.lang.Byte` (or byte primitive)
+* `java.lang.Short` (or short primitive)
+* `java.lang.Integer` (or integer primitive)
+* `java.lang.Long` (or long primitive)
+* `java.lang.Integer` (or integer primitive)
+* `java.lang.Float` (or float primitive)
+* `java.lang.Double` (or double primitive)
 
-* [classname]`java.math.BigDecimal`
-* [classname]`java.math.BigInteger`
+* `java.math.BigDecimal`
+* `java.math.BigInteger`
 
-* [classname]`java.util.Calendar`
-* [classname]`java.util.Date`
-* [classname]`java.util.UUID`
-* [classname]`java.util.URL`
+* `java.util.Calendar`
+* `java.util.Date`
+* `java.util.UUID`
+* `java.util.URL`
 
 [NOTE]
 ====
@@ -784,7 +784,7 @@ The key is comprised of the following information:
 In `CACHE_PER_TABLE`, the table name is inferred from the cache name.
 In `CACHE_PER_KIND`, the table name is necessary to identify the entity in the generic cache.
 
-The entry value is an instance of [classname]`org.infinispan.atomic.FineGrainedMap` 
+The entry value is an instance of `org.infinispan.atomic.FineGrainedMap` 
 which contains all the entity properties -
 or to be specific columns.
 Each column name and value is stored as a key / value pair in the map.
@@ -1915,12 +1915,12 @@ This capability is only available to Infinispan Embedded users: the transactiona
 capabilities are not exposed to the Hot Rod clients.
 
 If you're having Hibernate OGM start and manage Infinispan,
-you can skip this as it will inject the same [classname]`TransactionManager` instance
+you can skip this as it will inject the same `TransactionManager` instance
 which you already have set up in the Hibernate / JPA configuration.
 
 If you are providing an already started Infinispan CacheManager instance
 by using the [acronym]`JNDI` lookup approach,
-then you have to make sure the CacheManager is using the same [classname]`TransactionManager`
+then you have to make sure the CacheManager is using the same `TransactionManager`
 as Hibernate:
 
 .Configuring a JBoss Standalone TransactionManager lookup in Infinispan configuration
@@ -1991,7 +1991,7 @@ This configuration is simple and will work fine in most scenarios, but keep in m
 For high performance, high concurrency or production use please refer to the
 http://infinispan.org/documentation/[Infinispan documentation] for more advanced configuration options and tuning.
 
-The referenced Infinispan configuration should define a [classname]`CacheStore`
+The referenced Infinispan configuration should define a `CacheStore`
 to load/store the index in the NoSQL engine of choice.
 It should also define three cache names:
 
@@ -2014,7 +2014,7 @@ https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/r
 
 Some NoSQL support storage of Lucene indexes directly,
 in which case you might skip the Infinispan Lucene integration
-by implementing a custom [classname]`DirectoryProvider` for Hibernate Search.
+by implementing a custom `DirectoryProvider` for Hibernate Search.
 You're very welcome to share the code
 and have it merged in Hibernate Search for others to use, inspect, improve and maintain.
 

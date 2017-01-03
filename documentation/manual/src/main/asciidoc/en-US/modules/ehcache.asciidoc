@@ -127,24 +127,24 @@ the key being the column name.
 
 Hibernate OGM supports by default the following property types:
 
-* [classname]`java.lang.String`
-* [classname]`java.lang.Character` (or char primitive)
-* [classname]`java.lang.Boolean` (or boolean primitive); Optionally the annotations `@Type(type = "true_false")`, `@Type(type = "yes_no")` and `@Type(type = "numeric_boolean")` can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
-* [classname]`java.lang.Byte` (or byte primitive)
-* [classname]`java.lang.Short` (or short primitive)
-* [classname]`java.lang.Integer` (or integer primitive)
-* [classname]`java.lang.Long` (or long primitive)
-* [classname]`java.lang.Integer` (or integer primitive)
-* [classname]`java.lang.Float` (or float primitive)
-* [classname]`java.lang.Double` (or double primitive)
+* `java.lang.String`
+* `java.lang.Character` (or char primitive)
+* `java.lang.Boolean` (or boolean primitive); Optionally the annotations `@Type(type = "true_false")`, `@Type(type = "yes_no")` and `@Type(type = "numeric_boolean")` can be used to map boolean properties to the characters 'T'/'F', 'Y'/'N' or the int values 0/1, respectively.
+* `java.lang.Byte` (or byte primitive)
+* `java.lang.Short` (or short primitive)
+* `java.lang.Integer` (or integer primitive)
+* `java.lang.Long` (or long primitive)
+* `java.lang.Integer` (or integer primitive)
+* `java.lang.Float` (or float primitive)
+* `java.lang.Double` (or double primitive)
 
-* [classname]`java.math.BigDecimal`
-* [classname]`java.math.BigInteger`
+* `java.math.BigDecimal`
+* `java.math.BigInteger`
 
-* [classname]`java.util.Calendar`
-* [classname]`java.util.Date`
-* [classname]`java.util.UUID`
-* [classname]`java.util.URL`
+* `java.util.Calendar`
+* `java.util.Date`
+* `java.util.UUID`
+* `java.util.URL`
 
 [NOTE]
 ====
