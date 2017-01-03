@@ -1,6 +1,32 @@
 Hibernate OGM Changelog
 =======================
 
+5.1.0.Beta2 (03-01-2017)
+-------------------------
+
+** Bug
+    * OGM-1213 - mongodb           - MongoDBDialect.nextValue is not thread safe
+    * OGM-1208 - couchdb           - Generation of values for sequence causes Optimistic locking exception
+    * OGM-1207 - redis             - Value generation for sequences is not thread safe
+    * OGM-732 - query             - Make queries work with InheritanceType#SINGLE_TABLE
+
+** Improvement
+    * OGM-1214 - neo4j             - Upgrade neo4j-java-driver to version 1.0.6
+    * OGM-1111 - neo4j             - Support the MassIndexer for Neo4j remote
+
+** New Feature
+    * OGM-1227 - mongodb           - Upgrade Mongo java driver to version 3.4.1
+    * OGM-1226 - neo4j             - Update Neo4j and MongoDB
+    * OGM-1225 - core, neo4j       - Fix Neo4j tests
+
+** Task
+    * OGM-1220 - build, core       - Upgrade Hibernate ORM to 5.1.2.Final
+    * OGM-1219 - build, tests      - Upgrade Narayana to version 5.4.0.Final
+    * OGM-1218 - build, tests      - Upgrade to Hibernate Search 5.5.5.Final
+    * OGM-1217 - infinispan        - Upgrade to Infinispan 8.2.5.Final
+    * OGM-1205 - infinispan, tests - Occasional failures of SequenceIdGeneratorTest for the Hot Rod dialect
+    * OGM-1193 - tests             - Neo4J SequenceNextValueGenerationTest needs to verify generation of unique ids
+
 5.1.0.Beta1 (08-11-2016)
 -------------------------
 
