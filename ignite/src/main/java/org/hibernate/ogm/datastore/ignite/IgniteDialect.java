@@ -37,7 +37,6 @@ import org.hibernate.ogm.datastore.ignite.impl.IgniteTupleSnapshot;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ignite.options.impl.CollocatedAssociationOption;
-import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteQueryDescriptor;
 import org.hibernate.ogm.datastore.ignite.query.impl.IgniteSqlQueryParser;
@@ -594,34 +593,34 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
 			cache = provider.getEntityCache( backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata() );
 		}
-		else if ( backendQuery.getQuery().getQuerySpaces().size() > 0 ) {
-			cache = provider.getEntityCache( backendQuery.getQuery().getQuerySpaces().iterator().next() );
-		}
+//		else if ( backendQuery.getQuery().getQuerySpaces().size() > 0 ) {
+//			cache = provider.getEntityCache( backendQuery.getQuery().getQuerySpaces().iterator().next() );
+//		}
 		else {
 			throw new UnsupportedOperationException( "Not implemented. Can't find cache name" );
 		}
+
 		QueryHints hints = ( new QueryHints.Builder( queryParameters.getQueryHints() ) ).build();
 		SqlFieldsQuery sqlQuery = provider.createSqlFieldsQueryWithLog(
 				backendQuery.getQuery().getSql(),
 				hints,
-				IgniteHqlQueryParser.createParameterList( backendQuery.getQuery().getOriginalSql(), queryParameters.getNamedParameters() ).toArray() );
+				backendQuery.getQuery().getIndexedParameters() != null ? backendQuery.getQuery().getIndexedParameters().toArray() : null
+		);
 		Iterable<List<?>> result = executeWithHints( cache, sqlQuery, hints );
 
-		if ( backendQuery.getQuery().isHasScalar() ) {
-			return new IgniteProjectionResultCursor( result, backendQuery.getQuery().getCustomQueryReturns(), queryParameters.getRowSelection() );
+		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
+			return new IgnitePortableFromProjectionResultCursor(
+							result,
+							queryParameters.getRowSelection(),
+							backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata()
+						);
+		}
+		else if ( backendQuery.getQuery().isHasScalar() ) {
+			throw new NotYetImplementedException();
+//			return new IgniteProjectionResultCursor( result, backendQuery.getQuery().getCustomQueryReturns(), queryParameters.getRowSelection() );
 		}
 		else {
-			if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
-				return new IgnitePortableFromProjectionResultCursor(
-								result,
-								queryParameters.getRowSelection(),
-								backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata()
-							);
-			}
-			else {
-				throw new UnsupportedOperationException( "Not implemented yet" );
-			}
-
+			throw new UnsupportedOperationException( "Not implemented yet" );
 		}
 	}
 

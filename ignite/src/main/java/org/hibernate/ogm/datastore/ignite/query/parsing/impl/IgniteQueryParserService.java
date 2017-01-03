@@ -8,22 +8,25 @@ package org.hibernate.ogm.datastore.ignite.query.parsing.impl;
 
 import java.util.Map;
 
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.ignite.query.impl.IgniteHqlQueryParser;
+import org.hibernate.hql.QueryParser;
+import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.query.spi.BaseQueryParserService;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.query.spi.QueryParsingResult;
+import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 
 /**
  * Ignite-specific implementation of {@link QueryParserService}
  *
- * @author Dmitriy Kozlov
+ * @author Victor Kadachigov
  */
 public class IgniteQueryParserService extends BaseQueryParserService {
 
 	public static final IgniteQueryParserService INSTANCE = new IgniteQueryParserService();
 
-	private static final long serialVersionUID = -2756348489684702772L;
+	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
 	@Override
 	public boolean supportsParameters() {
@@ -32,8 +35,10 @@ public class IgniteQueryParserService extends BaseQueryParserService {
 
 	@Override
 	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
-		IgniteHqlQueryParser parser = new IgniteHqlQueryParser( queryString, sessionFactory );
-		IgniteQueryParsingResult result = new IgniteQueryParsingResult( parser.buildQueryDescriptor(), parser.getColumnNames() );
+		QueryParser queryParser = new QueryParser();
+		IgniteProcessingChain processingChain = new IgniteProcessingChain( sessionFactory, getDefinedEntityNames( sessionFactory ), namedParameters );
+		IgniteQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
+
 		return result;
 	}
 
@@ -42,4 +47,10 @@ public class IgniteQueryParserService extends BaseQueryParserService {
 		return null;
 	}
 
+	private EntityNamesResolver getDefinedEntityNames(SessionFactory sessionFactory) {
+		if ( entityNamesResolver == null ) {
+			entityNamesResolver = new SessionFactoryEntityNamesResolver( sessionFactory );
+		}
+		return entityNamesResolver;
+	}
 }

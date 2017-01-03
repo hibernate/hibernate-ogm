@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+//	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
 
 	// failed
@@ -28,31 +28,31 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest"
 //	"org.hibernate.ogm.backendtck.queries.CompositeIdQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueriesWithEmbeddedTest",
-//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",   // e:12, f:1
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
 //	"org.hibernate.ogm.backendtck.type.converter.JpaAttributeConverterTest"
 
 	// passed
 
-//	"org.hibernate.ogm.backendtck.id.*",
-//	"org.hibernate.ogm.backendtck.simpleentity.*",
-//	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest",
-//	"org.hibernate.ogm.backendtck.associations.manytoone.*",
-//	"org.hibernate.ogm.backendtck.associations.onetoone.*",
-//	"org.hibernate.ogm.backendtck.associations.compositeid.*",
-//	"org.hibernate.ogm.backendtck.associations.collection.types.*",						// -MapContentsStoredInSeparateDocumentTest
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
-//	"org.hibernate.ogm.backendtck.embeddable.*",
-//	"org.hibernate.ogm.backendtck.hibernatecore.*",
-//	"org.hibernate.ogm.backendtck.inheritance.*",
-//	"org.hibernate.ogm.backendtck.innertypes.*",
-//	"org.hibernate.ogm.backendtck.jpa.*",
-//	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
-//	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
-//	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
-//	"org.hibernate.ogm.backendtck.type.BuiltInTypeTest",
-//	"org.hibernate.ogm.backendtck.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptorTest",
+	"org.hibernate.ogm.backendtck.id.*",
+	"org.hibernate.ogm.backendtck.simpleentity.*",
+	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyTest",
+	"org.hibernate.ogm.backendtck.associations.manytoone.*",
+	"org.hibernate.ogm.backendtck.associations.onetoone.*",
+	"org.hibernate.ogm.backendtck.associations.compositeid.*",
+	"org.hibernate.ogm.backendtck.associations.collection.types.*",						// -MapContentsStoredInSeparateDocumentTest
+	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
+	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
+	"org.hibernate.ogm.backendtck.embeddable.*",
+	"org.hibernate.ogm.backendtck.hibernatecore.*",
+	"org.hibernate.ogm.backendtck.inheritance.*",
+	"org.hibernate.ogm.backendtck.innertypes.*",
+	"org.hibernate.ogm.backendtck.jpa.*",
+	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
+	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
+	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
+	"org.hibernate.ogm.backendtck.type.BuiltInTypeTest",
+	"org.hibernate.ogm.backendtck.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptorTest",
 
 })
 public class IgniteBackendTckHelper {

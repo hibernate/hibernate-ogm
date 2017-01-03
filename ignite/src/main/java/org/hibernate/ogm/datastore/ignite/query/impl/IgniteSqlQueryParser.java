@@ -76,7 +76,7 @@ public class IgniteSqlQueryParser {
 	}
 
 	public IgniteQueryDescriptor buildQueryDescriptor() {
-		return new IgniteQueryDescriptor( originalQuery, process() );
+		return new IgniteQueryDescriptor( process(), null, true /* SQL queries working only for scalars queries */ );
 	}
 
 	private String substituteBrackets(String sqlQuery) throws QueryException {

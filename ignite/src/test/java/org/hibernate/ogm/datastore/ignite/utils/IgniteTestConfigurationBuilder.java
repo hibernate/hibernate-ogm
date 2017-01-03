@@ -21,6 +21,7 @@ import org.apache.ignite.IgniteSystemProperties;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
+import org.apache.ignite.cache.CacheWriteSynchronizationMode;
 import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.QueryIndex;
 import org.apache.ignite.cache.QueryIndexType;
@@ -44,7 +45,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 	public IgniteConfiguration build() {
 		//disable check for new versions
 		System.setProperty( IgniteSystemProperties.IGNITE_UPDATE_NOTIFIER, Boolean.FALSE.toString() );
-		
+
 		IgniteConfiguration config = null;
 
 		try {
@@ -175,7 +176,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		);
 		cacheConfig.add(
 				createCacheConfig( "Address" )
-						.withKeyType( Long.class )
+						//.withKeyType( Long.class )
 						.appendField( "street", String.class )
 						.appendField( "city", String.class )
 						.build()
@@ -355,16 +356,18 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 
 	private class TestCacheConfigBuilder {
 
-		private CacheConfiguration<String, BinaryObject> cacheConfig;
+		private CacheConfiguration cacheConfig;
 		private QueryEntity queryEntity;
 		private Map<String, QueryIndex> indexes;
-		private String keyType = String.class.getName();
+		private Class<?> keyType = String.class;
+		private String keyTypeName = null;
 		private boolean forceQueryEntity = false;
 
 		public TestCacheConfigBuilder(String name) {
-			cacheConfig = new CacheConfiguration<>();
+			cacheConfig = new CacheConfiguration();
 			cacheConfig.setAtomicityMode( CacheAtomicityMode.TRANSACTIONAL );
 			cacheConfig.setCacheMode( CacheMode.PARTITIONED );
+			cacheConfig.setWriteSynchronizationMode( CacheWriteSynchronizationMode.FULL_SYNC );
 			cacheConfig.setStartSize( 10 );
 			cacheConfig.setBackups( 0 );
 			cacheConfig.setAffinity( new RendezvousAffinityFunction( false, 2 ) );
@@ -393,22 +396,25 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		}
 
 		public TestCacheConfigBuilder withKeyType(Class<?> keyClass) {
-			this.keyType = keyClass.getName();
+			this.keyType = keyClass;
 			forceQueryEntity = true;
 			return this;
 		}
 
 		public TestCacheConfigBuilder withKeyType(String keyType) {
-			this.keyType = keyType;
+			this.keyTypeName = keyType;
 			forceQueryEntity = true;
 			return this;
 		}
 
 		public CacheConfiguration<String, BinaryObject> build() {
 			if ( forceQueryEntity || !indexes.isEmpty() || !queryEntity.getFields().isEmpty() ) {
-				queryEntity.setKeyType( keyType );
+				queryEntity.setKeyType( keyTypeName != null ? keyTypeName : keyType.getName() );
 				queryEntity.setIndexes( indexes.values() );
 				cacheConfig.setQueryEntities( Arrays.asList( queryEntity ) );
+			}
+			if ( keyTypeName == null ) {
+				cacheConfig.setTypes( keyType, Object.class );
 			}
 			return cacheConfig;
 		}

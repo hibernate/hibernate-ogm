@@ -287,7 +287,9 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	public Object createKeyObject(EntityKey key) {
 		Object result = null;
 		if ( key.getColumnValues().length == 1 ) {
-			result = key.getColumnValues()[0];
+			IgniteCache<Object, BinaryObject> entityCache = getEntityCache( key.getMetadata() );
+			CacheConfiguration cacheConfig = entityCache.getConfiguration( CacheConfiguration.class );
+			result = toValidKeyObject( key.getColumnValues()[0], cacheConfig.getKeyType() );
 		}
 		else {
 			BinaryObjectBuilder builder = createBinaryObjectBuilder( findKeyType( key.getMetadata() ) );
@@ -295,6 +297,22 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				builder.setField( StringHelper.stringAfterPoint( key.getColumnNames()[i] ), key.getColumnValues()[i] );
 			}
 			result = builder.build();
+		}
+		return result;
+	}
+
+	private Object toValidKeyObject(Object value, Class<?> keyType) {
+		Object result = null;
+		if ( keyType == value.getClass() || keyType.isAssignableFrom( value.getClass() ) ) {
+			result = value;
+		}
+		else {
+			if ( keyType == String.class ) {
+				result = value.toString();
+			}
+		}
+		if ( result == null ) {
+			throw log.unableToCreateKeyObject( keyType.getName(), value.getClass().getName() );
 		}
 		return result;
 	}

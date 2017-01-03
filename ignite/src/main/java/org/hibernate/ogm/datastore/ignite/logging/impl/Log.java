@@ -39,4 +39,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1707, value = "Invalid value for property '%1$s'. %2$s")
 	HibernateException invalidPropertyValue(String propertyName, String message, @Cause Exception cause);
+
+	@Message(id = 1708, value = "Unable to create key object of class %1$s from %2$s value")
+	HibernateException unableToCreateKeyObject(String keyClassName, String keyValueClassName);
 }
