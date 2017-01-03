@@ -113,7 +113,7 @@ CQL3 does not have a Calendar type, so these are converted to Dates, which are s
 ===== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]`@GeneratedValue` annotation.
+`@GeneratedValue` annotation.
 
 The preferred identifier approach in Cassandra is to use UUIDs.
 
@@ -127,7 +127,7 @@ Cassandra does not distinguish between update and insert operations and will not
 
 === Native queries
 
-Native queries are supported: you can execute native CQL queries using the [classname]`EntityManager` infrastructure.
+Native queries are supported: you can execute native CQL queries using the `EntityManager` infrastructure.
 
 Currently, only ordinal parameters are supported, named parameters do not work.
 

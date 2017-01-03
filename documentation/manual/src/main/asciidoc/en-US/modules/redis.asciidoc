@@ -208,21 +208,21 @@ in the corresponding object in the db.
 
 Hibernate OGM supports by default the following types:
 
-* [classname]`java.lang.String`
+* `java.lang.String`
 
 [source, JSON]
 ----
   { "text" : "Hello world!" }
 ----
 
-* [classname]`java.lang.Character` (or char primitive)
+* `java.lang.Character` (or char primitive)
 
 [source, JSON]
 ----
   { "delimiter" : "/" }
 ----
 
-* [classname]`java.lang.Boolean` (or boolean primitive)
+* `java.lang.Boolean` (or boolean primitive)
 
 [source, JSON]
 ----
@@ -232,84 +232,84 @@ Hibernate OGM supports by default the following types:
   { "favorite" : 1 } # if @Type(type = "numeric_boolean") is given
 ----
 
-* [classname]`java.lang.Byte` (or byte primitive)
+* `java.lang.Byte` (or byte primitive)
 
 [source, JSON]
 ----
   { "display_mask" : "70" }
 ----
 
-* [classname]`java.lang.Short` (or short primitive)
+* `java.lang.Short` (or short primitive)
 
 [source, JSON]
 ----
   { "urlPort" : 80 }
 ----
 
-* [classname]`java.lang.Integer` (or int primitive)
+* `java.lang.Integer` (or int primitive)
 
 [source, JSON]
 ----
   { "stockCount" : 12309 }
 ----
 
-* [classname]`java.lang.Long` (or long primitive)
+* `java.lang.Long` (or long primitive)
 
 [source, JSON]
 ----
   { "userId" : -6718902786625749549 }
 ----
 
-* [classname]`java.lang.Float` (or float primitive)
+* `java.lang.Float` (or float primitive)
 
 [source, JSON]
 ----
   { "visitRatio" : 10.4 }
 ----
 
-* [classname]`java.lang.Double` (or double primitive)
+* `java.lang.Double` (or double primitive)
 
 [source, JSON]
 ----
   { "tax_percentage" : 12.34 }
 ----
 
-* [classname]`java.math.BigDecimal`
+* `java.math.BigDecimal`
 
 [source, JSON]
 ----
   { "site_weight" : "21.77" }
 ----
 
-* [classname]`java.math.BigInteger`
+* `java.math.BigInteger`
 
 [source, JSON]
 ----
   { "site_weight" : "444" }
 ----
 
-* [classname]`java.util.Calendar`
+* `java.util.Calendar`
 
 [source, JSON]
 ----
   { "creation" : "2014-11-18T15:51:26.252Z" }
 ----
 
-* [classname]`java.util.Date`
+* `java.util.Date`
 
 [source, JSON]
 ----
   { "last_update" : "2014-11-18T15:51:26.252Z" }
 ----
 
-* [classname]`java.util.UUID`
+* `java.util.UUID`
 
 [source, JSON]
 ----
   { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
 ----
 
-* [classname]`java.util.URL`
+* `java.util.URL`
 
 [source, JSON]
 ----
@@ -320,7 +320,7 @@ Hibernate OGM supports by default the following types:
 
 Entities are stored as JSON documents and not as BLOBs
 which means each entity property will be translated into a document field.
-You can use the name property of the [classname]`@Table` and [classname]`@Column` annotations
+You can use the name property of the `@Table` and `@Column` annotations
 to rename the collections and the document's fields if you need to.
 
 Redis has no built-in mechanism for detecting concurrent updates to one and the same document.
@@ -401,8 +401,8 @@ public class News {
 
 ===== Embedded objects and collections
 
-Hibernate OGM stores elements annotated with [classname]`@Embedded`
-or [classname]`@ElementCollection` as nested documents of the owning entity.
+Hibernate OGM stores elements annotated with `@Embedded`
+or `@ElementCollection` as nested documents of the owning entity.
 
 .Embedded object
 ====
@@ -509,7 +509,7 @@ Key: GrandMother:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 ----
 ====
 
-The class [classname]`GrandChild` has only one attribute `name`,
+The class `GrandChild` has only one attribute `name`,
 this means that Hibernate OGM doesn't need to store the name of the attribute.
 
 If the nested document has two or more fields, like in the following example,
@@ -580,21 +580,21 @@ in the corresponding object in the db.
 
 Hibernate OGM supports by default the following types:
 
-* [classname]`java.lang.String`
+* `java.lang.String`
 
 [source, JSON]
 ----
 text=Hello world!
 ----
 
-* [classname]`java.lang.Character` (or char primitive)
+* `java.lang.Character` (or char primitive)
 
 [source, JSON]
 ----
 delimiter=/
 ----
 
-* [classname]`java.lang.Boolean` (or boolean primitive)
+* `java.lang.Boolean` (or boolean primitive)
 
 [source, JSON]
 ----
@@ -604,7 +604,7 @@ favorite=Y     # if @Type(type = "yes_no") is given
 favorite=1     # if @Type(type = "numeric_boolean") is given
 ----
 
-* [classname]`java.lang.Byte` (or byte primitive)
+* `java.lang.Byte` (or byte primitive)
 
 [source, JSON]
 ----
@@ -612,77 +612,77 @@ favorite=1     # if @Type(type = "numeric_boolean") is given
 ----
 _Redis Hash stores byte data as base64-encoded string_
 
-* [classname]`java.lang.Short` (or short primitive)
+* `java.lang.Short` (or short primitive)
 
 [source, JSON]
 ----
 urlPort=80
 ----
 
-* [classname]`java.lang.Integer` (or int primitive)
+* `java.lang.Integer` (or int primitive)
 
 [source, JSON]
 ----
 stockCount=12309
 ----
 
-* [classname]`java.lang.Long` (or long primitive)
+* `java.lang.Long` (or long primitive)
 
 [source, JSON]
 ----
 userId=-6718902786625749549
 ----
 
-* [classname]`java.lang.Float` (or float primitive)
+* `java.lang.Float` (or float primitive)
 
 [source, JSON]
 ----
 visitRatio=10.4
 ----
 
-* [classname]`java.lang.Double` (or double primitive)
+* `java.lang.Double` (or double primitive)
 
 [source, JSON]
 ----
 tax_percentage=12.34
 ----
 
-* [classname]`java.math.BigDecimal`
+* `java.math.BigDecimal`
 
 [source, JSON]
 ----
 site_weight=21.77
 ----
 
-* [classname]`java.math.BigInteger`
+* `java.math.BigInteger`
 
 [source, JSON]
 ----
 site_weight=444
 ----
 
-* [classname]`java.util.Calendar`
+* `java.util.Calendar`
 
 [source, JSON]
 ----
 creation=2014-11-18T15:51:26.252Z
 ----
 
-* [classname]`java.util.Date`
+* `java.util.Date`
 
 [source, JSON]
 ----
 last_update=2014-11-18T15:51:26.252Z
 ----
 
-* [classname]`java.util.UUID`
+* `java.util.UUID`
 
 [source, JSON]
 ----
 serialNumber=71f5713d-69c4-4b62-ad15-aed8ce8d10e0
 ----
 
-* [classname]`java.util.URL`
+* `java.util.URL`
 
 [source, JSON]
 ----
@@ -695,7 +695,7 @@ Entities are stored as key-value pairs within Redis hashes.
 Each entity property will be translated into a hash field and is represented as `java.lang.String`.
 The Redis hash dialect supports only flat data structures hence nested entities and associations
 are represented as JSON documents within the association documents in Redis lists/sets.
-You can use the name property of the [classname]`@Table` and [classname]`@Column` annotations
+You can use the name property of the `@Table` and `@Column` annotations
 to rename the collections and the document's fields if you need to.
 
 Redis has no built-in mechanism for detecting concurrent updates to one and the same document.
@@ -771,8 +771,8 @@ desc=This paper discuss why NoSQL will save the world for good
 
 ===== Embedded objects and collections
 
-Hibernate OGM stores elements annotated with [classname]`@Embedded`
-or [classname]`@ElementCollection` as nested documents of the owning entity.
+Hibernate OGM stores elements annotated with `@Embedded`
+or `@ElementCollection` as nested documents of the owning entity.
 
 .Embedded object
 ====
@@ -874,7 +874,7 @@ Key: Associations:GrandMother_grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 ----
 ====
 
-The class [classname]`GrandChild` has only one attribute `name`,
+The class `GrandChild` has only one attribute `name`,
 this means that Hibernate OGM doesn't need to store the name of the attribute.
 
 If the nested document has two or more fields, like in the following example,
@@ -2139,7 +2139,7 @@ News:{"newsId.author": "Guillaume, "newsId.title": "How to use Hibernate OGM ?"}
 ==== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]`@GeneratedValue` annotation.
+`@GeneratedValue` annotation.
 
 Two main strategies are supported:
 

@@ -13,8 +13,8 @@ after all Hibernate OGM _is_ Hibernate ORM.
 === Supported entity mapping
 
 Pretty much all entity related constructs should work out of the box in Hibernate OGM.
-[classname]`@Entity`, [classname]`@Table`, [classname]`@Column`,
-[classname]`@Enumerated`, [classname]`@Temporal`, [classname]`@Cacheable`
+`@Entity`, `@Table`, `@Column`,
+`@Enumerated`, `@Temporal`, `@Cacheable`
 and the like will work as expected.
 If you want an example,
 check out <<ogm-gettingstarted>> or the documentation of Hibernate ORM.
@@ -22,8 +22,8 @@ Let's concentrate of the features that differ
 or are simply not supported by Hibernate OGM.
 
 Hibernate OGM supports the following inheritance strategies:
-* [classname]`InheritanceType.TABLE_PER_CLASS`
-* [classname]`InheritanceType.SINGLE_TABLE`
+* `InheritanceType.TABLE_PER_CLASS`
+* `InheritanceType.SINGLE_TABLE`
 
 If you feel the need to support other strategies,
 let us know (see <<ogm-howtocontribute-contribute>>).
@@ -74,7 +74,7 @@ public class Breed {
 === Supported Types
 
 Most Java built-in types are supported at this stage.
-However, custom types ([classname]`@Type`) are not supported.
+However, custom types (`@Type`) are not supported.
 
 Here is a list of supported Java types:
 
@@ -102,10 +102,10 @@ Let us know if you need more type support <<ogm-howtocontribute-contribute>>
 
 === Supported association mapping
 
-All association types are supported ([classname]`@OneToOne`,
-[classname]`@OneToMany`, [classname]`@ManyToOne`, [classname]`@ManyToMany`).
-Likewise, all collection types are supported ([classname]`Set`, [classname]`Map`,
-[classname]`List`).
+All association types are supported (`@OneToOne`,
+`@OneToMany`, `@ManyToOne`, `@ManyToMany`).
+Likewise, all collection types are supported (`Set`, `Map`,
+`List`).
 The way Hibernate OGM stores association information is however quite different
 than the traditional RDBMS representation.
 Each chapter dedicated to a datastore describes how associations are persisted,

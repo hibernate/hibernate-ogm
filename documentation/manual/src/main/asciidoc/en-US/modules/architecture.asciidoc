@@ -7,7 +7,7 @@
 [NOTE]
 ====
 Hibernate OGM defines an abstraction layer
-represented by [classname]`DatastoreProvider` and [classname]`GridDialect`
+represented by `DatastoreProvider` and `GridDialect`
 to separate the OGM engine from the datastores interaction.
 It has successfully abstracted various key/value stores, document stores and graph databases.
 We are working on testing it on other NoSQL families.
@@ -40,18 +40,18 @@ image::ogm-architecture.png[align="center", depth="", scalefit="1", width="15cm"
 
 Hibernate OGM reuses as much as possible from the Hibernate ORM infrastructure.
 There is no need to rewrite a new JPA engine.
-The [classname]``Persister``s and the [classname]``Loader``s
+The ``Persister``s and the ``Loader``s
 (two interfaces used by Hibernate ORM)
 have been rewritten to persist data in the NoSQL store.
 These implementations are the core of Hibernate OGM.
 We will see in <<ogm-architecture-datapersisted>> how the data is structured.
 
 The particularities between NoSQL stores are abstracted
-by the notion of a [classname]`DatastoreProvider` and a [classname]`GridDialect`.
+by the notion of a `DatastoreProvider` and a `GridDialect`.
 
-* [classname]`DatastoreProvider` abstracts how to start
+* `DatastoreProvider` abstracts how to start
   and maintain a connection between Hibernate OGM and the datastore.
-* [classname]`GridDialect` abstracts how data itself including associations
+* `GridDialect` abstracts how data itself including associations
   are persisted.
 
 
@@ -83,7 +83,7 @@ in more details in <<ogm-architecture-dataqueried>>.
 
 Hibernate OGM best works in a JTA environment.
 The easiest solution is to deploy it on a Java EE container.
-Alternatively, you can use a standalone JTA [classname]`TransactionManager`.
+Alternatively, you can use a standalone JTA `TransactionManager`.
 We explain how to in <<ogm-configuration-environments-standalonejta>>.
 
 Let's now see how and in which structure data is persisted in the NoSQL data store.
@@ -221,12 +221,12 @@ to find the specificities.
 
 Many NoSQL stores have no notion of schema.
 Likewise, the tuple stored by Hibernate OGM is not tied to a particular schema:
-the tuple is represented by a [classname]`Map`,
-not a typed [classname]`Map` specific to a given entity type.
+the tuple is represented by a `Map`,
+not a typed `Map` specific to a given entity type.
 Nevertheless, JPA does describe a schema thanks to:
 
 * the class schema
-* the JPA physical annotations like [classname]`@Table` and [classname]`@Column`.
+* the JPA physical annotations like `@Table` and `@Column`.
 
 
 While tied to the application, it offers some robustness and explicit understanding
@@ -240,15 +240,15 @@ and the totally schema-less approach pushed by some NoSQL families.
 
 You can use sequences with the following annotations:
 
-* [classname]`@SequenceGenerator`:
+* `@SequenceGenerator`:
   it will use native sequences if available
-* [classname]`@TableGenerator`:
+* `@TableGenerator`:
   it will emulate sequences storing the value in the most appropriate data structure;
   for example a document in MongoDB or a node in Neo4j.
 
 Here's some things to keep in mind when dealing with sequence generation:
 
-* [classname]`@TableGenerator` is the fallback approach used when the underlying datastore does not
+* `@TableGenerator` is the fallback approach used when the underlying datastore does not
   support native sequences generation.
 * If the datastore does not support atomic operations and does not support native sequences,
   Hibernate OGM will throw an exception at bootstrap and suggest alternatives.

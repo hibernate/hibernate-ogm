@@ -359,21 +359,21 @@ the field name being the column name.
 
 Hibernate OGM supports by default the following property types:
 
-* [classname]`java.lang.String`
+* `java.lang.String`
 
 [source, JSON]
 ----
   { "text" : "Hello world!" }
 ----
 
-* [classname]`java.lang.Character` (or char primitive)
+* `java.lang.Character` (or char primitive)
 
 [source, JSON]
 ----
   { "delimiter" : "/" }
 ----
 
-* [classname]`java.lang.Boolean` (or boolean primitive)
+* `java.lang.Boolean` (or boolean primitive)
 
 [source, JSON]
 ----
@@ -383,98 +383,98 @@ Hibernate OGM supports by default the following property types:
   { "favorite" : 1 } # if @Type(type = "numeric_boolean") is given
 ----
 
-* [classname]`java.lang.Byte` (or byte primitive)
+* `java.lang.Byte` (or byte primitive)
 
 [source, JSON]
 ----
   { "display_mask" : "70" }
 ----
 
-* [classname]`java.lang.Byte[]` (or byte[])
+* `java.lang.Byte[]` (or byte[])
 
 [source, JSON]
 ----
   { "pdfAsBytes" : BinData(0,"MTIzNDU=") }
 ----
 
-* [classname]`java.lang.Short` (or short primitive)
+* `java.lang.Short` (or short primitive)
 
 [source, JSON]
 ----
   { "urlPort" : 80 }
 ----
 
-* [classname]`java.lang.Integer` (or integer primitive)
+* `java.lang.Integer` (or integer primitive)
 
 [source, JSON]
 ----
   { "stockCount" : 12309 }
 ----
 
-* [classname]`java.lang.Long` (or long primitive)
+* `java.lang.Long` (or long primitive)
 
 [source, JSON]
 ----
   { "userId" : NumberLong("-6718902786625749549") }
 ----
 
-* [classname]`java.lang.Float` (or float primitive)
+* `java.lang.Float` (or float primitive)
 
 [source, JSON]
 ----
   { "visitRatio" : 10.39 }
 ----
 
-* [classname]`java.lang.Double` (or double primitive)
+* `java.lang.Double` (or double primitive)
 
 [source, JSON]
 ----
   { "tax_percentage" : 12.34 }
 ----
 
-* [classname]`java.math.BigDecimal`
+* `java.math.BigDecimal`
 
 [source, JSON]
 ----
   { "site_weight" : "21.77" }
 ----
 
-* [classname]`java.math.BigInteger`
+* `java.math.BigInteger`
 
 [source, JSON]
 ----
   { "site_weight" : "444" }
 ----
 
-* [classname]`java.util.Calendar`
+* `java.util.Calendar`
 
 [source, JSON]
 ----
   { "creation" : "2014/11/03 16:19:49:283 +0000" }
 ----
 
-* [classname]`java.util.Date`
+* `java.util.Date`
 
 [source, JSON]
 ----
   { "last_update" : ISODate("2014-11-03T16:19:49.283Z") }
 ----
 
-* [classname]`java.util.UUID`
+* `java.util.UUID`
 
 [source, JSON]
 ----
   { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
 ----
 
-* [classname]`java.util.URL`
+* `java.util.URL`
 
 [source, JSON]
 ----
   { "url" : "http://www.hibernate.org/" }
 ----
 
-* [classname]`org.bson.types.ObjectId`
+* `org.bson.types.ObjectId`
 
 [source, JSON]
 ----
@@ -494,7 +494,7 @@ This can have consequences when it comes to queries on null value.
 
 Entities are stored as MongoDB documents and not as BLOBs:
 each entity property will be translated into a document field.
-You can use [classname]`@Table` and [classname]`@Column` annotations
+You can use `@Table` and `@Column` annotations
 to rename respectively the collection the document is stored in
 and the document's field a property is persisted in.
 
@@ -681,7 +681,7 @@ public class News {
 ===== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
-[classname]`@GeneratedValue` annotation.
+`@GeneratedValue` annotation.
 
 There are 4 different strategies:
 
@@ -697,7 +697,7 @@ The preferable strategy, Hibernate OGM will create the identifier upon insertion
 To apply this strategy the id must be one of the following:
 
 * annotated with `@Type(type="objectid")`
-* [classname]`org.bson.types.ObjectId`
+* `org.bson.types.ObjectId`
 
 like in the following examples:
 
@@ -1037,7 +1037,7 @@ Rendered as JSON in MongoDB
 
 ===== Embedded objects and collections
 
-Hibernate OGM stores elements annotated with [classname]`@Embedded` or [classname]`@ElementCollection` as nested documents of the owning entity.
+Hibernate OGM stores elements annotated with `@Embedded` or `@ElementCollection` as nested documents of the owning entity.
 
 .Embedded object
 ====
@@ -1141,7 +1141,7 @@ public class GrandChild {
 ----
 ====
 
-The class [classname]`GrandChild` has only one attribute `name`,
+The class `GrandChild` has only one attribute `name`,
 this means that Hibernate OGM doesn't need to store the name of the attribute.
 
 If the nested document has two or more fields, like in the following example,
@@ -2208,7 +2208,7 @@ This is the strategy closest to the relational model.
 If an entity A is related to B and C, 2 collections will be created.
 The name of this collection is made of the association table concatenated with `associations_`.
 
-For example, if the [classname]`BankAccount` and [classname]`Owner` are related,
+For example, if the `BankAccount` and `Owner` are related,
 the collection used to store will be named `associations_Owner_BankAccount`. You can rename
 The prefix is useful to quickly identify the association collections from the entity collections.
 You can also decide to rename the collection representing the association using `@JoinTable`
@@ -3111,7 +3111,7 @@ MongoDB does not provide a built-in mechanism for detecting concurrent updates t
 but it provides a way to execute atomic find and update operations.
 By exploiting this commands Hibernate OGM can detect concurrent modifications to the same document.
 
-You can enable optimistic locking detection using the annotation [classname]`@Version`:
+You can enable optimistic locking detection using the annotation `@Version`:
 
 .Optimistic locking detection via `@Version`
 ====
@@ -3142,9 +3142,9 @@ public class Planet implements Nameable {
 
 The `@Version` annotation define which attribute will keep track of the version of the document,
 Hibernate OGM will update the field when required and if two changes from two different sessions (for example)
-are applied to the same document a [classname]`org.hibernate.StaleObjectStateException` is thrown.
+are applied to the same document a `org.hibernate.StaleObjectStateException` is thrown.
 
-You can use [classname]`@Column` to change the name of the field created on MongoDB:
+You can use `@Column` to change the name of the field created on MongoDB:
 
 .Optimistic locking detection via `@Version` using `@Column`
 ====

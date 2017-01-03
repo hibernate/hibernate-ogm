@@ -7,8 +7,8 @@ This makes its configuration quite simple by default.
 
 === Bootstrapping Hibernate OGM
 
-Hibernate OGM can be used via the Hibernate native APIs ([classname]`Session`)
-or via the JPA APIs ([classname]`EntityManager`).
+Hibernate OGM can be used via the Hibernate native APIs (`Session`)
+or via the JPA APIs (`EntityManager`).
 Depending on your choice, the bootstrapping strategy is slightly different.
 
 ==== Using JPA
@@ -17,7 +17,7 @@ If you use JPA as your primary API, the configuration is extremely simple.
 Hibernate OGM is seen as a persistence provider
 which you need to configure in your [filename]`persistence.xml`.
 That's it!
-The provider name is [classname]`org.hibernate.ogm.jpa.HibernateOgmPersistence`.
+The provider name is `org.hibernate.ogm.jpa.HibernateOgmPersistence`.
 
 .persistence.xml file
 ====
@@ -66,8 +66,8 @@ but you could of course change the Infinispan configuration to enable clustering
 
 From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
 
-* via [classname]`Persistence.createEntityManagerFactory`
-* by injecting the [classname]`EntityManager` / [classname]`EntityManagerFactory` in a Java EE container
+* via `Persistence.createEntityManagerFactory`
+* by injecting the `EntityManager` / `EntityManagerFactory` in a Java EE container
 * by using your favorite injection framework (CDI - Weld, Spring, Guice)
 
 [NOTE]
@@ -209,7 +209,7 @@ In Hibernate OGM, make sure to set the following properties:
 
 * `transaction-type` to `JTA` in your persistence.xml if you use JPA
 * or `hibernate.transaction.coordinator_class` to "jta"
-  if you use [classname]`StandardServiceRegistryBuilder`/[classname]`OgmConfiguration` to bootstrap Hibernate OGM.
+  if you use `StandardServiceRegistryBuilder`/`OgmConfiguration` to bootstrap Hibernate OGM.
 * `hibernate.transaction.jta.platform` to `JBossTS` in both cases.
 
 
