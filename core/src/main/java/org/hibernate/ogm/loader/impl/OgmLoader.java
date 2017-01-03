@@ -490,11 +490,6 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 		registerNonExists( keys, persisters, session );
 
-		//it's a non existing object: cut short
-		if ( resultset == null ) {
-			return null;
-		}
-
 		final Object[] row = getRow(
 				tuple,
 				persisters,
