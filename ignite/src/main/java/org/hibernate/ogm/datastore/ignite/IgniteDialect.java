@@ -412,8 +412,6 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			binaryObject = binaryObjectBuilder.build();
 			associationCache.put( id, binaryObject );
 		}
-
-		association.reset();
 	}
 
 	private int findIndexByRowKey(List<BinaryObject> objects, RowKey rowKey, String indexColumnName) {
