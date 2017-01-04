@@ -1,6 +1,14 @@
 Hibernate OGM Changelog
 =======================
 
+5.1.0.Beta3 (04-01-2017)
+-------------------------
+
+** Improvement
+    * OGM-1215 - documentation - Remove [classname] from the documentation
+    * OGM-1195 - build         - Update checkstyle ParenPad rule to include RESOURCE_SPECIFICATION
+    * OGM-1191 - core          - Dead code warning in OgmLoader
+
 5.1.0.Beta2 (03-01-2017)
 -------------------------
 
