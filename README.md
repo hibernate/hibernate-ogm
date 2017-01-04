@@ -1,6 +1,8 @@
 # DON'T MERGE IN MASTER
 
 I'm just testing the build with Jenkins
+I'm just testing the build with Jenkins
+I'm just testing the build with Jenkins
 
 # Hibernate OGM
 
