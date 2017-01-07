@@ -27,9 +27,12 @@ import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
 import org.apache.ignite.configuration.BinaryConfiguration;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.configuration.TransactionConfiguration;
 import org.apache.ignite.internal.IgnitionEx;
 import org.apache.ignite.internal.binary.BinaryMarshaller;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
+import org.apache.ignite.transactions.TransactionConcurrency;
+import org.apache.ignite.transactions.TransactionIsolation;
 import org.hibernate.ogm.datastore.ignite.IgniteConfigurationBuilder;
 
 /**
@@ -75,6 +78,10 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		config.setBinaryConfiguration( binaryConfiguration );
 		config.setGridLogger( new Slf4jLogger() );
 		config.setPublicThreadPoolSize( 2 );
+		TransactionConfiguration transactionConfiguration = new TransactionConfiguration();
+		transactionConfiguration.setDefaultTxConcurrency( TransactionConcurrency.OPTIMISTIC );
+		transactionConfiguration.setDefaultTxIsolation( TransactionIsolation.SERIALIZABLE );
+		config.setTransactionConfiguration( transactionConfiguration );
 
 		List<CacheConfiguration> cacheConfig = new ArrayList<>();
 
