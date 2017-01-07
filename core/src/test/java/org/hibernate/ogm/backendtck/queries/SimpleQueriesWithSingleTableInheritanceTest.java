@@ -20,7 +20,9 @@ import javax.persistence.Table;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.hibernate.search.annotations.Analyze;
@@ -36,6 +38,7 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Davide D'Alto
  */
+@SkipByGridDialect(value = { GridDialectType.IGNITE }, comment = "Not yet implemented")
 public class SimpleQueriesWithSingleTableInheritanceTest extends OgmTestCase {
 
 	@TestSessionFactory

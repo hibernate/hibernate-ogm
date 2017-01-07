@@ -21,6 +21,7 @@ import javax.persistence.Table;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
@@ -35,6 +36,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto
  */
+@SkipByGridDialect(value = { GridDialectType.IGNITE }, comment = "Not yet implemented")
 public class SimpleQueriesWithTablePerClassInheritanceTest extends OgmTestCase {
 
 	private Person joe = new Person( "Joe" );
