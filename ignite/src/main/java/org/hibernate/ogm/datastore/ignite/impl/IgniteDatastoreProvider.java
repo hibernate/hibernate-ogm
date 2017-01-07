@@ -111,15 +111,16 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 
 		}
 		if ( cache == null ) {
-			log.unknownCache( entityCacheName );
-			CacheConfiguration<K, T> config = new CacheConfiguration<>();
-			config.setName( entityCacheName );
-			cache = cacheManager.getOrCreateCache( config );
+			throw log.cacheNotFound( entityCacheName );
 		}
 		if ( keepBinary ) {
 			cache = cache.withKeepBinary();
 		}
 		return cache;
+	}
+
+	<K, T> IgniteCache<K, T> initializeCache(CacheConfiguration<K, T> config) {
+		return cacheManager.getOrCreateCache( config );
 	}
 
 	private void restart() {

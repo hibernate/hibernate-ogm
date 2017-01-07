@@ -19,8 +19,9 @@ import org.junit.runner.RunWith;
 @ClasspathSuite.ClassnameFilters({
 
 	// todo
-//	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",
+//	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.CollectionUnidirectionalTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
+//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 
 	// failed
 
@@ -31,6 +32,7 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",   // e:12, f:1
 //	"org.hibernate.ogm.backendtck.loader.LoaderFromTupleTest",
 //	"org.hibernate.ogm.backendtck.type.converter.JpaAttributeConverterTest"
+//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 
 	// passed
 
@@ -41,10 +43,11 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.onetoone.*",
 //	"org.hibernate.ogm.backendtck.associations.compositeid.*",
 //	"org.hibernate.ogm.backendtck.associations.collection.types.*",						// -MapContentsStoredInSeparateDocumentTest
+//	"org.hibernate.ogm.backendtck.batchfetching.*",
 //	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 //	"org.hibernate.ogm.backendtck.embeddable.*",
 //	"org.hibernate.ogm.backendtck.hibernatecore.*",
+//	"org.hibernate.ogm.backendtck.hsearch.*"
 //	"org.hibernate.ogm.backendtck.inheritance.*",
 //	"org.hibernate.ogm.backendtck.innertypes.*",
 //	"org.hibernate.ogm.backendtck.jpa.*",

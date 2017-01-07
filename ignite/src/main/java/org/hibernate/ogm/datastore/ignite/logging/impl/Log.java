@@ -42,4 +42,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1708, value = "Unable to create key object of class %1$s from %2$s value")
 	HibernateException unableToCreateKeyObject(String keyClassName, String keyValueClassName);
+
+	@Message(id = 1709, value = "Unable initialize cache '%s'")
+	HibernateException unableToInitializeCache(String cacheName);
 }
