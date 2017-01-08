@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 	// todo
 //	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.CollectionUnidirectionalTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiTest",					// -appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction
 
 	// failed
 
@@ -44,13 +43,14 @@ import org.junit.runner.RunWith;
 //	"org.hibernate.ogm.backendtck.associations.compositeid.*",
 //	"org.hibernate.ogm.backendtck.associations.collection.types.*",						// -MapContentsStoredInSeparateDocumentTest
 //	"org.hibernate.ogm.backendtck.batchfetching.*",
-//	"org.hibernate.ogm.backendtck.compensation.CompensationSpiJpaTest",
+//	"org.hibernate.ogm.backendtck.compensation.*",
 //	"org.hibernate.ogm.backendtck.embeddable.*",
 //	"org.hibernate.ogm.backendtck.hibernatecore.*",
-//	"org.hibernate.ogm.backendtck.hsearch.*"
+//	"org.hibernate.ogm.backendtck.hsearch.*",
 //	"org.hibernate.ogm.backendtck.inheritance.*",
 //	"org.hibernate.ogm.backendtck.innertypes.*",
 //	"org.hibernate.ogm.backendtck.jpa.*",
+//	"org.hibernate.ogm.backendtck.optimisticlocking.*",
 //	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
 //	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
 //	"org.hibernate.ogm.backendtck.queries.parameters.QueryWithParametersTest",

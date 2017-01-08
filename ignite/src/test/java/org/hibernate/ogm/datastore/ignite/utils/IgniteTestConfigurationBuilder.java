@@ -79,8 +79,8 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		config.setGridLogger( new Slf4jLogger() );
 		config.setPublicThreadPoolSize( 2 );
 		TransactionConfiguration transactionConfiguration = new TransactionConfiguration();
-		transactionConfiguration.setDefaultTxConcurrency( TransactionConcurrency.OPTIMISTIC );
-		transactionConfiguration.setDefaultTxIsolation( TransactionIsolation.SERIALIZABLE );
+		transactionConfiguration.setDefaultTxConcurrency( TransactionConcurrency.PESSIMISTIC );
+		transactionConfiguration.setDefaultTxIsolation( TransactionIsolation.READ_COMMITTED );
 		config.setTransactionConfiguration( transactionConfiguration );
 
 		List<CacheConfiguration> cacheConfig = new ArrayList<>();

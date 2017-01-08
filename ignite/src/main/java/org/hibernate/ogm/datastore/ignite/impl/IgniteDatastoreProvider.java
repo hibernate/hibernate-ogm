@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
@@ -293,10 +294,13 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			result = toValidKeyObject( key.getColumnValues()[0], cacheConfig.getKeyType() );
 		}
 		else {
+			HashCodeBuilder hashBuilder = new HashCodeBuilder();
 			BinaryObjectBuilder builder = createBinaryObjectBuilder( findKeyType( key.getMetadata() ) );
 			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
 				builder.setField( StringHelper.stringAfterPoint( key.getColumnNames()[i] ), key.getColumnValues()[i] );
+				hashBuilder.append( key.getColumnValues()[i] );
 			}
+			builder.hashCode( hashBuilder.toHashCode() );
 			result = builder.build();
 		}
 		return result;
@@ -329,10 +333,13 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				result = rowKey.getColumnValue( associationKeyColumns[0] );
 			}
 			else {
+				HashCodeBuilder hashBuilder = new HashCodeBuilder();
 				BinaryObjectBuilder builder = createBinaryObjectBuilder( findKeyType( keyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata() ) );
 				for ( int i = 0; i < associationKeyColumns.length; i++ ) {
 					builder.setField( StringHelper.stringAfterPoint( associationKeyColumns[i] ), rowKey.getColumnValue( associationKeyColumns[i] ) );
+					hashBuilder.append( rowKey.getColumnValue( associationKeyColumns[i] ) );
 				}
+				builder.hashCode( hashBuilder.toHashCode() );
 				result = builder.build();
 			}
 		}
