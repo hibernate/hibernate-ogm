@@ -275,15 +275,15 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 //// InnerClassFindTest
 //		cacheConfig.add( simpleCacheConfig( "employee" ) );
 // SimpleQueriesTest
-//		cacheConfig.add(
-//				createCacheConfig( "Hypothesis" )
-//						.appendIndex( "id", String.class )
-//						.appendField( "description", String.class )
-//						.appendField( "pos", Integer.class )
-//						.appendField( "date", Date.class )
-//						.appendField( "author_id", Long.class )
-//						.build()
-//		);
+		cacheConfig.add(
+				createCacheConfig( "Hypothesis" )
+						.appendIndex( "id", String.class )
+						.appendField( "description", String.class )
+						.appendField( "pos", Integer.class )
+						.appendField( "date", Date.class )
+						.appendField( "author_id", Long.class )
+						.build()
+		);
 		cacheConfig.add(
 				createCacheConfig( "Helicopter" )
 						.appendIndex( "uuid", String.class )
@@ -299,18 +299,18 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendField( "name", String.class )
 						.build()
 		);
-//// QueriesWithEmbeddedTest
-//		cacheConfig.add(
-//				createCacheConfig( "StoryGame" )
-//						.withKeyType( Long.class )
-//						.appendIndex( "id", Long.class )
-//						.appendField( "storyText", String.class )
-//						.appendField( "evilText", String.class )
-//						.appendField( "goodText", String.class )
-//						.appendField( "text", String.class )
-//						.appendField( "score", Integer.class )
-//						.build()
-//		);
+// QueriesWithEmbeddedTest
+		cacheConfig.add(
+				createCacheConfig( "StoryGame" )
+						.withKeyType( Long.class )
+						.appendIndex( "id", Long.class )
+						.appendField( "storyText", String.class )
+						.appendField( "evilText", String.class )
+						.appendField( "goodText", String.class )
+						.appendField( "text", String.class )
+						.appendField( "score", Integer.class )
+						.build()
+		);
 // QueryWithParametersTest
 		cacheConfig.add(
 				createCacheConfig( "Movie" )
