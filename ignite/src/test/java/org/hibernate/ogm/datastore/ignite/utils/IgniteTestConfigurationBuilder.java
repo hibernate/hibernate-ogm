@@ -277,7 +277,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 // SimpleQueriesTest
 		cacheConfig.add(
 				createCacheConfig( "Hypothesis" )
-						.appendIndex( "id", String.class )
 						.appendField( "description", String.class )
 						.appendField( "pos", Integer.class )
 						.appendField( "date", Date.class )
@@ -286,7 +285,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		);
 		cacheConfig.add(
 				createCacheConfig( "Helicopter" )
-						.appendIndex( "uuid", String.class )
 						.appendField( "helicopterName", String.class )
 						.appendField( "make", String.class )
 						.build()
@@ -294,7 +292,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 		cacheConfig.add(
 				createCacheConfig( "Author" )
 						.withKeyType( Long.class )
-						.appendIndex( "id", Long.class )
 						.appendIndex( "address_id", Long.class )
 						.appendField( "name", String.class )
 						.build()

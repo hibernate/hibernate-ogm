@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
@@ -105,33 +106,35 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = { IGNITE }, comment = "not yet implemented.")
 	public void testUnqualifiedProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select id, description from Hypothesis h where id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "16", "stuff works" ) );
 	}
 
 	@Test
+	@SkipByGridDialect(value = { IGNITE }, comment = "not yet implemented.")
 	public void testQualifiedProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.id, h.description from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "16", "stuff works" ) );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associations is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Selecting from associations is not yet implemented.")
 	public void testSelectingAttributeFromAssociatedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.name from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "alfred" ) );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associations is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Selecting from associations is not yet implemented.")
 	public void testSelectingAttributeFromIndirectlyAssociatedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.address.street from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "Main Street" ) );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Projecting complete entity is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Projecting complete entity is not yet implemented.")
 	public void testSelectingCompleteEntityInProjectionQuery() throws Exception {
 		List<?> projectionResult = session.createQuery( "select h, h.id from Hypothesis h where h.id = 16" ).list();
 		assertThat( projectionResult ).hasSize( 1 );
@@ -141,7 +144,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Doesn't apply to MongoDB or Neo4j queries.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Doesn't apply to MongoDB or Neo4j queries.")
 	public void testSelectingCompleteIndexedEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
 		thrown.expect( ParsingException.class );
 		thrown.expectMessage( "HQL100005" );
@@ -180,7 +183,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associations is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Selecting from associations is not yet implemented.")
 	public void testQueryWithPropertyFromAssociatedEntityInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name = 'alfred'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -295,7 +298,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Selecting from associated entities is not yet implemented.")
 	public void testInQueryOnAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IN ('alma', 'alfred')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16" );
@@ -364,7 +367,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Querying on associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Querying on associated entities is not yet implemented.")
 	public void testLikeQueryWithSingleCharacterWildCard() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name LIKE 'al_red'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -420,7 +423,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Querying on associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Querying on associated entities is not yet implemented.")
 	public void testIsNullQueryOnPropertyOfAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IS null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
@@ -433,7 +436,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Querying on associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, IGNITE }, comment = "Querying on associated entities is not yet implemented.")
 	public void testIsNotNullQueryOnAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author IS NOT null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "19" );
@@ -505,6 +508,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = { IGNITE }, comment = "not yet implemented.")
 	public void testProjectionWithNullValue() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select name, make from Helicopter" );
 		assertThat( projectionResult ).containsOnly(
