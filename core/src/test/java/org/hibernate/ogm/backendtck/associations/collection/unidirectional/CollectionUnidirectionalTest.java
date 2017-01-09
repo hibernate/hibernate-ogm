@@ -22,7 +22,6 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard
  */
-@SkipByGridDialect(value = { IGNITE }, comment = "not yet implemented.")
 public class CollectionUnidirectionalTest extends OgmTestCase {
 
 	@Test

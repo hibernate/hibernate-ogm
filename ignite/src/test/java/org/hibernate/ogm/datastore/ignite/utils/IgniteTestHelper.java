@@ -8,13 +8,16 @@ package org.hibernate.ogm.datastore.ignite.utils;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CachePeekMode;
+import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -23,10 +26,12 @@ import org.hibernate.ogm.datastore.ignite.Ignite;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteTupleSnapshot;
+import org.hibernate.ogm.datastore.ignite.util.StringHelper;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
@@ -58,13 +63,24 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		int associationCount = 0;
-		Set<IgniteCache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<?, ?>, Boolean>() );
-		for ( CollectionPersister colleactionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
-			IgniteCache<?, ?> associationCache = getAssociationCache( sessionFactory,
-					( (OgmCollectionPersister) colleactionPersister ).getAssociationKeyMetadata() );
-			if ( !processedCaches.contains( associationCache ) ) {
-				associationCount += associationCache.size( CachePeekMode.ALL );
-				processedCaches.add( associationCache );
+		IgniteDatastoreProvider datastoreProvider = (IgniteDatastoreProvider)( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
+		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
+			AssociationKeyMetadata associationKeyMetadata = ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata();
+			if ( associationKeyMetadata.getAssociationKind() == AssociationKind.ASSOCIATION ) {
+				IgniteCache<Object, BinaryObject> associationCache = getAssociationCache( sessionFactory, associationKeyMetadata );
+				StringBuilder query = new StringBuilder( "SELECT " )
+											.append( StringHelper.realColumnName( associationKeyMetadata.getColumnNames()[0] ) )
+											.append( " FROM " ).append( associationKeyMetadata.getTable() );
+				SqlFieldsQuery sqlQuery = datastoreProvider.createSqlFieldsQueryWithLog( query.toString(), null );
+				Iterable<List<?>> queryResult = associationCache.query( sqlQuery );			
+				Set<Object> uniqs = new HashSet<>();
+				for ( List<?> row : queryResult ) {
+					Object value = row.get( 0 );
+					if ( value != null ) {
+						uniqs.add( value );
+					}
+				}
+				associationCount += uniqs.size();
 			}
 		}
 		return associationCount;
@@ -76,8 +92,8 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 		Set<IgniteCache<Object, BinaryObject>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<IgniteCache<Object, BinaryObject>, Boolean>() );
 
 		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
-			IgniteCache<Object, BinaryObject> associationCache = getAssociationCache( sessionFactory,
-					( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
+			AssociationKeyMetadata associationKeyMetadata = ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata();
+			IgniteCache<Object, BinaryObject> associationCache = getAssociationCache( sessionFactory, associationKeyMetadata );
 			if ( !processedCaches.contains( associationCache ) ) {
 				asscociationCount += associationCache.size();
 				processedCaches.add( associationCache );
