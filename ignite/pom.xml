@@ -138,13 +138,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>once</forkMode>
+                    <forkCount>1</forkCount>
+					<reuseForks>true</reuseForks>
+					<threadCount>1</threadCount>
                     <skipExec>${skipUnitTests}</skipExec>
                     <enableAssertions>false</enableAssertions>
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
-                    <argLine> -Dtest=IgniteBackendTckHelper</argLine>
+                    <argLine> -Dtest=IgniteBackendTckHelper</argLine> <!-- -Xmx1300m -->
                 </configuration>
             </plugin>
             <plugin>

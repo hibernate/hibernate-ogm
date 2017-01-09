@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
+import org.apache.ignite.Ignition;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.CachePeekMode;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
@@ -22,7 +24,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.ignite.Ignite;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider;
 import org.hibernate.ogm.datastore.ignite.impl.IgniteTupleSnapshot;
@@ -63,7 +64,7 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		int associationCount = 0;
-		IgniteDatastoreProvider datastoreProvider = (IgniteDatastoreProvider)( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
+		IgniteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
 			AssociationKeyMetadata associationKeyMetadata = ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata();
 			if ( associationKeyMetadata.getAssociationKind() == AssociationKind.ASSOCIATION ) {
@@ -128,6 +129,11 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		Ignite ignite = Ignition.ignite( getProvider( sessionFactory ).getGridName() );
+		for ( String cacheName : ignite.cacheNames() ) {
+			IgniteCache cache = ignite.cache( cacheName );
+			cache.clear();
+		}
 	}
 
 	@Override
@@ -151,17 +157,16 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	}
 
 	private static IgniteDatastoreProvider getProvider(SessionFactory sessionFactory) {
-		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry()
-				.getService( DatastoreProvider.class );
-		if ( !( IgniteDatastoreProvider.class.isInstance( provider ) ) ) {
+		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
+		if ( !( provider instanceof IgniteDatastoreProvider ) ) {
 			throw new RuntimeException( "Not testing with Ignite, cannot extract underlying cache" );
 		}
-		return IgniteDatastoreProvider.class.cast( provider );
+		return (IgniteDatastoreProvider) provider;
 	}
 
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
-		return Ignite.class;
+		return org.hibernate.ogm.datastore.ignite.Ignite.class;
 	}
 
 	@Override
