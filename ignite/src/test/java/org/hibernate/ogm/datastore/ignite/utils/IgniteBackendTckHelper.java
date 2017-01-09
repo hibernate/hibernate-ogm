@@ -17,8 +17,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ClasspathSuite.class)
 @ClasspathSuite.ClassnameFilters({
-	 "org.hibernate.ogm.backendtck.*"
-	
+	"org.hibernate.ogm.backendtck.*"
+
+//	"org.hibernate.ogm.backendtck.queries.JpaQueriesTest",
+//	"org.hibernate.ogm.backendtck.queries.QueryUpdateTest",
+//	"org.hibernate.ogm.backendtck.queries.SimpleQueriesTest",
+
 	// todo
 //	"org.hibernate.ogm.backendtck.associations.collection.unidirectional.CollectionUnidirectionalTest",
 //	"org.hibernate.ogm.backendtck.associations.collection.manytomany.ManyToManyExtraTest",

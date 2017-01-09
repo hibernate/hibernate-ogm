@@ -73,7 +73,7 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 											.append( StringHelper.realColumnName( associationKeyMetadata.getColumnNames()[0] ) )
 											.append( " FROM " ).append( associationKeyMetadata.getTable() );
 				SqlFieldsQuery sqlQuery = datastoreProvider.createSqlFieldsQueryWithLog( query.toString(), null );
-				Iterable<List<?>> queryResult = associationCache.query( sqlQuery );			
+				Iterable<List<?>> queryResult = associationCache.query( sqlQuery );
 				Set<Object> uniqs = new HashSet<>();
 				for ( List<?> row : queryResult ) {
 					Object value = row.get( 0 );
