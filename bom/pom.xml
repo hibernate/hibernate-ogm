@@ -26,7 +26,7 @@
             See the version.wildfly property in the hibernate-ogm-parent pom
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
-        <hibernateSearchVersion>5.5.5.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>5.5.6.Final</hibernateSearchVersion>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
