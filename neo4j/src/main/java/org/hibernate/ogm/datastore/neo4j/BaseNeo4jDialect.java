@@ -10,11 +10,17 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.DiscriminatorAwareKeyMetadata;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -29,6 +35,7 @@ import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -38,8 +45,12 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
@@ -47,7 +58,8 @@ import org.hibernate.type.Type;
 /**
  * @author Davide D'Alto
  */
-public abstract class BaseNeo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect, MultigetGridDialect {
+public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A extends BaseNeo4jAssociationQueries> extends BaseGridDialect
+		implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect, MultigetGridDialect {
 
 	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintValidationFailed";
 
@@ -55,8 +67,30 @@ public abstract class BaseNeo4jDialect extends BaseGridDialect implements Querya
 
 	private final BaseNeo4jTypeConverter typeConverter;
 
+	private Map<EntityKeyMetadata, E> entitiesQueries;
+
+	private Map<AssociationKeyMetadata, A> associationQueries;
+
 	public BaseNeo4jDialect(BaseNeo4jTypeConverter converter) {
 		this.typeConverter = converter;
+	}
+
+	@Override
+	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
+		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
+		this.entitiesQueries = Collections.unmodifiableMap( initializeEntityWithEmbeddedQueries( sessionFactoryImplementor ) );
+	}
+
+	protected E getEntityQueries(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
+		return getEntityQueries( entityKeyMetadata, operationContext.getTupleTypeContext() );
+	}
+
+	protected E getEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		return entitiesQueries.get( entityKeyMetadata( entityKeyMetadata, tupleTypeContext ) );
+	}
+
+	protected A getAssociationQueries(AssociationKeyMetadata associationKeyMetadata) {
+		return associationQueries.get( associationKeyMetadata );
 	}
 
 	@Override
@@ -194,4 +228,70 @@ public abstract class BaseNeo4jDialect extends BaseGridDialect implements Querya
 	public boolean usesNavigationalInformationForInverseSideOfAssociations() {
 		return false;
 	}
+
+	protected EntityKeyMetadata entityKeyMetadata(OgmEntityPersister ogmEntityPersister) {
+		return entityKeyMetadata( ogmEntityPersister.getEntityKeyMetadata(), ogmEntityPersister.getTupleTypeContext() );
+	}
+
+	protected EntityKeyMetadata entityKeyMetadata(EntityKeyMetadata keyMetadata, TupleTypeContext tupleTypeContext) {
+		if ( tupleTypeContext.getDiscriminatorColumn() == null ) {
+			return keyMetadata;
+		}
+
+		// We only need it with column based discriminators
+		return new DiscriminatorAwareKeyMetadata( keyMetadata, tupleTypeContext.getDiscriminatorValue() );
+	}
+
+	private Map<EntityKeyMetadata, E> initializeEntityWithEmbeddedQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, E> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		for ( CollectionPersister collectionPersister : collectionPersisters ) {
+			if ( collectionPersister instanceof OgmCollectionPersister ) {
+				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() );
+				EntityKeyMetadata ownerEntityKeyMetadata = ogmEntityPersister.getEntityKeyMetadata();
+				ownerEntityKeyMetadata = entityKeyMetadata( ogmEntityPersister );
+				if ( !entityQueries.containsKey( ownerEntityKeyMetadata ) ) {
+					// Embeddables metadata
+					E createNeo4jEntityQueries = createNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), null );
+					entityQueries.put( ownerEntityKeyMetadata, createNeo4jEntityQueries );
+				}
+			}
+		}
+		return entityQueries;
+	}
+
+	private  Map<EntityKeyMetadata, E> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, E> queryMap = new HashMap<EntityKeyMetadata, E>();
+		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
+		for ( EntityPersister entityPersister : entityPersisters ) {
+			if ( entityPersister instanceof OgmEntityPersister ) {
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
+				E entityQueries = createNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), ogmEntityPersister.getTupleTypeContext() );
+				queryMap.put( entityKeyMetadata( ogmEntityPersister ), entityQueries );
+			}
+		}
+		return queryMap;
+	}
+
+	protected abstract E createNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext);
+
+	protected Map<AssociationKeyMetadata, A> initializeAssociationQueries( SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<AssociationKeyMetadata, A> queryMap = new HashMap<AssociationKeyMetadata, A>();
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		for ( CollectionPersister collectionPersister : collectionPersisters ) {
+			if ( collectionPersister instanceof OgmCollectionPersister ) {
+				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() );
+				EntityKeyMetadata ownerEntityKeyMetadata = ogmEntityPersister.getEntityKeyMetadata();
+				ownerEntityKeyMetadata = entityKeyMetadata( ogmEntityPersister );
+				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
+				A createNeo4jAssociationQueries = createNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata );
+				queryMap.put( associationKeyMetadata, createNeo4jAssociationQueries );
+			}
+		}
+		return queryMap;
+	}
+
+	protected abstract A createNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata);
 }
