@@ -68,7 +68,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 	private IgniteConfiguration createConfig() {
 		IgniteConfiguration config = new IgniteConfiguration();
 
-		config.setGridName( "OgmTestGrid" );
 		config.setLocalHost( "127.0.0.1" );
 		config.setPeerClassLoadingEnabled( true );
 		config.setClientMode( false );
@@ -85,24 +84,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 
 		List<CacheConfiguration> cacheConfig = new ArrayList<>();
 
-//// EmbeddableIdTest
-//		cacheConfig.add( createCacheConfig( "SingleBoardComputer" ).withForceQueryEntity().build() );
-//// SequenceIdGeneratorTest
-//		cacheConfig.add( simpleCacheConfig( "Song", Long.class ) );
-//		cacheConfig.add( simpleCacheConfig( "Actor", Long.class ) );
-//// JPAResourceLocalTest
-//		cacheConfig.add( simpleCacheConfig( "Poem" ) );
-//// ManyToManyTest
-//		cacheConfig.add(
-//				createCacheConfig( "Car" )
-//					.withKeyType( "CarId" )
-//					.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "Tire" )
-//					.withKeyType( "TireId" )
-//					.build()
-//		);
+// ManyToManyTest
 		cacheConfig.add(
 				createCacheConfig( "Car_Tire" )
 					.appendIndex( "cars_carId_maker", String.class )
@@ -111,112 +93,20 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 					.appendIndex( "tires_tireId_model", String.class )
 					.build()
 		);
-//		cacheConfig.add( simpleCacheConfig( "AccountOwner" ) );
-//		cacheConfig.add( simpleCacheConfig( "BankAccount" ) );
 		cacheConfig.add(
 				createCacheConfig( "AccountOwner_BankAccount" )
 					.appendIndex( "owners_id", String.class )
 					.appendIndex( "bankAccounts_id", String.class )
 					.build()
 		);
-//// ManyToManyExtraTest
-//		cacheConfig.add( simpleCacheConfig( "Student" ) );
-//		cacheConfig.add( simpleCacheConfig( "ClassRoom", Long.class ) );
-//		cacheConfig.add(
-//				createCacheConfig( "ClassRoom_Student" )
-//					.appendIndex( "ClassRoom_id", Long.class )
-//					.build()
-//		);
-//// ListTest
-//		cacheConfig.add(
-//				createCacheConfig( "Child" )
-//						.appendIndex( "Father_id", String.class )
-//						.build()
-//		);
-//		cacheConfig.add( simpleCacheConfig( "Father" ) );
-//		cacheConfig.add( createCacheConfig( "Father_child" ).appendIndex( "Father_id", String.class ).build() );
-//		cacheConfig.add( simpleCacheConfig( "GrandChild" ) );
-//		cacheConfig.add( createCacheConfig( "GrandMother" ).appendIndex( "id", String.class ).build() );
-//		cacheConfig.add(
-//				createCacheConfig( "Race" )
-//						.withKeyType( "RaceId" )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "Runner" )
-//						.withKeyType( "RunnerId" )
-//						.build()
-//		);
+// ListTest
 		cacheConfig.add(
 				createCacheConfig( "Race_Runners" )
 						.appendIndex( "Race_raceId_federationDepartment", Integer.class )
 						.appendIndex( "Race_raceId_federationSequence", Integer.class )
 						.build()
 		);
-//// MapTest
-//		cacheConfig.add( simpleCacheConfig( "PhoneNumber" ) );
-//		cacheConfig.add( simpleCacheConfig( "Enterprise" ) );
-//		cacheConfig.add( simpleCacheConfig( "Department" ) );
-//		cacheConfig.add( simpleCacheConfig( "User" ) );
-//		cacheConfig.add(
-//				createCacheConfig( "User_PhoneNumber" )
-//						.appendIndex( "User_id", String.class )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "User_Address" )
-//						.appendIndex( "User_id", String.class )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "AlTERNATIVE_PHONE_NUMBER" )
-//						.appendIndex( "User_id", String.class )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "AlTERNATIVE_PRIORITY" )
-//						.appendIndex( "User_id", String.class )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "Address" )
-//						//.withKeyType( Long.class )
-//						.appendField( "street", String.class )
-//						.appendField( "city", String.class )
-//						.build()
-//		);
-//// CollectionUnidirectionalTest
-//		cacheConfig.add( simpleCacheConfig( "Cloud" ) );
-//		cacheConfig.add( simpleCacheConfig( "SnowFlake" ) );
-//		cacheConfig.add( createCacheConfig( "joinProducedSnowflakes" ).appendIndex( "Cloud_id", String.class ).build() );
-//		cacheConfig.add( simpleCacheConfig( "joinBackupSnowflakes" ) );
-//// ReferencedCompositeIdTest
-//		cacheConfig.add(
-//				createCacheConfig( "Director" )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "Tournament" )
-//						.withKeyType( "TournamentId" )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "Director_Tournament" )
-//						.withForceQueryEntity()
-//						.appendIndex( "Director_id", String.class )
-//						.build()
-//		);
-//// ManyToOneExtraTest
-//		cacheConfig.add( simpleCacheConfig( "Basket" ) );
-//		cacheConfig.add( simpleCacheConfig( "Product" ) );
-//		cacheConfig.add( createCacheConfig( "Basket_Product" ).appendIndex( "Basket_id", String.class ).build() );
-//// ManyToOneTest
-//		cacheConfig.add( simpleCacheConfig( "JUG" ) );
-//		cacheConfig.add( simpleCacheConfig( "Member" ) );
-//		cacheConfig.add( simpleCacheConfig( "SalesForce" ) );
-//		cacheConfig.add( createCacheConfig( "SalesGuy" ).appendIndex( "salesForce_id", String.class ).build() );
-//		cacheConfig.add( createCacheConfig( "Beer" ).appendIndex( "brewery_id", String.class ).build() );
-//		cacheConfig.add( simpleCacheConfig( "Brewery" ) );
+// ManyToOneTest
 		cacheConfig.add(
 				createCacheConfig( "Game" )
 						.withKeyType( "GameId" )
@@ -224,25 +114,7 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendIndex( "playedOn_id_sequenceNo", Integer.class )
 						.build()
 		);
-//		cacheConfig.add(
-//				createCacheConfig( "Court" )
-//					.withKeyType( "CourtId" )
-//					.build()
-//		);
-//// OneToOneTest
-//		cacheConfig.add( simpleCacheConfig( "Horse" ) );
-//		cacheConfig.add( simpleCacheConfig( "Cavalier" ) );
-//		cacheConfig.add( simpleCacheConfig( "Vehicule" ) );
-//		cacheConfig.add( simpleCacheConfig( "Wheel" ) );
-//		cacheConfig.add( createCacheConfig( "Husband" ).appendIndex( "wife", String.class ).build() );
-//		cacheConfig.add( simpleCacheConfig( "Wife" ) );
-//// CompositeIdTest
-//		cacheConfig.add(
-//				createCacheConfig( "News" )
-//						.withKeyType( "NewsID" )
-//						.appendField( "content", String.class )
-//						.build()
-//		);
+// CompositeIdTest
 		cacheConfig.add(
 				createCacheConfig( "Label" )
 						.withKeyType( Long.class )
@@ -250,30 +122,8 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendIndex( "news_topic_fk", String.class )
 						.build()
 		);
-//		cacheConfig.add( simpleCacheConfig( "News_Label" ) );
-//// AutoIdGeneratorWithSessionTest
-//		cacheConfig.add( simpleCacheConfig( "DistributedRevisionControl", Long.class ) );
-//// TableIdGeneratorTest
-//		cacheConfig.add( simpleCacheConfig( "Music", Long.class ) );
-//		cacheConfig.add( simpleCacheConfig( "Video", Integer.class ) );
-//		cacheConfig.add( simpleCacheConfig( "Composer", Long.class ) );
-//// EmbeddableExtraTest
-//		cacheConfig.add( simpleCacheConfig( "MultiAddressAccount" ) );
-//		cacheConfig.add( simpleCacheConfig( "AccountWithPhone" ) );
+// EmbeddableExtraTest
 		cacheConfig.add( simpleCacheConfig( "Order" ) );  // Order is reserved word in SQL. Can't create QueryEntry class
-//// SharedPrimaryKeyTest
-//		cacheConfig.add( simpleCacheConfig( "CoffeeMug" ) );
-//		cacheConfig.add( simpleCacheConfig( "Lid" ) );
-//// JPAPolymorphicCollectionTest
-//		cacheConfig.add( simpleCacheConfig( "Hero" ) );
-//		cacheConfig.add( simpleCacheConfig( "SuperHero" ) );
-//		cacheConfig.add( simpleCacheConfig( "HeroClub" ) );
-//		cacheConfig.add( createCacheConfig( "HeroClub_Hero" ).appendIndex( "HeroClub_name", String.class ).build() );
-//// JPATablePerClassFindTest
-//		cacheConfig.add( simpleCacheConfig( "CommunityMember" ) );
-//		cacheConfig.add( createCacheConfig( "Employee" ).appendIndex( "EmployerID", String.class ).build() );
-//// InnerClassFindTest
-//		cacheConfig.add( simpleCacheConfig( "employee" ) );
 // SimpleQueriesTest
 		cacheConfig.add(
 				createCacheConfig( "Hypothesis" )
@@ -319,34 +169,6 @@ public class IgniteTestConfigurationBuilder implements IgniteConfigurationBuilde
 						.appendField( "viewerRating", Byte.class )
 						.build()
 		);
-//// BuiltInTypeTest
-//		cacheConfig.add(
-//				createCacheConfig( "Bookmark" )
-//						.appendIndex( "id", String.class )
-//						.appendField( "isPrivate", String.class )
-//						.appendField( "isRead", String.class )
-//						.appendField( "isShared", Integer.class )
-//						.appendField( "classifier", String.class )
-//						.appendField( "classifierAsOrdinal", Byte.class )
-//						.appendField( "creationDate", Date.class )
-//						.appendField( "destructionDate", Date.class )
-//						.appendField( "creationCalendar", Date.class )
-//						.appendField( "destructionCalendar", Date.class )
-//						.appendField( "siteWeight", BigDecimal.class )
-//						.appendField( "visitCount", BigInteger.class )
-//						.build()
-//		);
-// BatchFetchingTest
-//		cacheConfig.add(
-//				createCacheConfig( "tower_floor" )
-//						.appendIndex( "Tower_id", Long.class )
-//						.build()
-//		);
-//		cacheConfig.add(
-//				createCacheConfig( "CondominiumBuilding_Condominium" )
-//						.appendIndex( "CondominiumBuilding_id", String.class )
-//						.build()
-//		);
 
 		config.setCacheConfiguration( cacheConfig.toArray( new CacheConfiguration[ cacheConfig.size() ] ) );
 
