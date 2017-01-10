@@ -10,7 +10,6 @@ import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.AssertionFailure;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jBackendQueryResultIterator;
@@ -44,8 +42,8 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -59,10 +57,6 @@ import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
-import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
-import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -85,17 +79,13 @@ import org.neo4j.kernel.api.exceptions.schema.UniquePropertyConstraintViolationK
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
+public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQueries, EmbeddedNeo4jAssociationQueries> {
 
 	private static final Log log = LoggerFactory.getLogger();
 
 	private final GraphDatabaseService dataBase;
 
 	private final EmbeddedNeo4jSequenceGenerator sequenceGenerator;
-
-	private Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> entityQueries;
-
-	private Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> associationQueries;
 
 	public EmbeddedNeo4jDialect(EmbeddedNeo4jDatastoreProvider provider) {
 		super( EmbeddedNeo4jTypeConverter.INSTANCE );
@@ -104,53 +94,18 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	@Override
-	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
-		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
-		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
+	protected EmbeddedNeo4jAssociationQueries createNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+		return new EmbeddedNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata );
 	}
 
-	private Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
-			Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> associationQueries) {
-		Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
-		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
-			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
-			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
-				// Embeddables metadata
-				entityQueries.put( entityKeyMetadata, new EmbeddedNeo4jEntityQueries( entityKeyMetadata ) );
-			}
-		}
-		return entityQueries;
-	}
-
-	private Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<EntityKeyMetadata, EmbeddedNeo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, EmbeddedNeo4jEntityQueries>();
-		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
-		for ( EntityPersister entityPersister : entityPersisters ) {
-			if ( entityPersister instanceof OgmEntityPersister ) {
-				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
-				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new EmbeddedNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
-			}
-		}
-		return queryMap;
-	}
-
-	private Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries> queryMap = new HashMap<AssociationKeyMetadata, EmbeddedNeo4jAssociationQueries>();
-		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
-		for ( CollectionPersister collectionPersister : collectionPersisters ) {
-			if ( collectionPersister instanceof OgmCollectionPersister ) {
-				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
-				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
-				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
-				queryMap.put( associationKeyMetadata, new EmbeddedNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
-			}
-		}
-		return queryMap;
+	@Override
+	protected EmbeddedNeo4jEntityQueries createNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		return new EmbeddedNeo4jEntityQueries( entityKeyMetadata, tupleTypeContext );
 	}
 
 	@Override
 	public Tuple getTuple(EntityKey key, OperationContext context) {
-		Node entityNode = entityQueries.get( key.getMetadata() ).findEntity( dataBase, key.getColumnValues() );
+		Node entityNode = getEntityQueries( key.getMetadata(), context ).findEntity( dataBase, key.getColumnValues() );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -174,7 +129,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		// We only supports one metadata for now
 		EntityKeyMetadata metadata = keys[0].getMetadata();
 		// The result returned by the query might not be in the same order as the keys.
-		ResourceIterator<Node> nodes = entityQueries.get( metadata ).findEntities( dataBase, keys );
+		ResourceIterator<Node> nodes = getEntityQueries( metadata, tupleContext.getTupleTypeContext() ).findEntities( dataBase, keys );
 		try {
 			return tuplesResult( keys, tupleContext, nodes );
 		}
@@ -230,7 +185,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 
 		// insert
 		if ( snapshot.isNew() ) {
-			Node node = insertTuple( key, tuple );
+			Node node = insertTuple( key, tuple, tupleContext.getTupleTypeContext() );
 			snapshot.setNode( node );
 			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 			GraphLogger.log( "Inserted node: %1$s", node );
@@ -243,9 +198,9 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		}
 	}
 
-	private Node insertTuple(EntityKey key, Tuple tuple) {
+	private Node insertTuple(EntityKey key, Tuple tuple, TupleTypeContext tupleTypeContext) {
 		try {
-			return entityQueries.get( key.getMetadata() ).insertEntity( dataBase, key.getColumnValues() );
+			return getEntityQueries( key.getMetadata(), tupleTypeContext ).insertEntity( dataBase, key.getColumnValues() );
 		}
 		catch (QueryExecutionException qee) {
 			if ( CONSTRAINT_VIOLATION_CODE.equals( qee.getStatusCode() ) ) {
@@ -268,7 +223,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		entityQueries.get( key.getMetadata() ).removeEntity( dataBase, key.getColumnValues() );
+		getEntityQueries( key.getMetadata(), tupleContext ).removeEntity( dataBase, key.getColumnValues() );
 	}
 
 	/**
@@ -277,13 +232,14 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	 * the first time with the information related to the owner of the association and the {@link RowKey},
 	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
 	 * @param associatedEntityKeyMetadata
+	 * @param associationContext
 	 */
-	private Relationship createRelationship(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+	private Relationship createRelationship(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, AssociationContext associationContext) {
 		switch ( associationKey.getMetadata().getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
 				return createRelationshipWithEmbeddedNode( associationKey, associationRow, associatedEntityKeyMetadata );
 			case ASSOCIATION:
-				return findOrCreateRelationshipWithEntityNode( associationKey, associationRow, associatedEntityKeyMetadata );
+				return findOrCreateRelationshipWithEntityNode( associationKey, associationRow, associatedEntityKeyMetadata, associationContext.getTupleTypeContext() );
 			default:
 				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getMetadata().getAssociationKind() );
 		}
@@ -291,16 +247,23 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
-		Relationship relationship = associationQueries.get( associationKey.getMetadata() )
+		Relationship relationship = getAssociationQueries( associationKey.getMetadata() )
 				.createRelationshipForEmbeddedAssociation( dataBase, associationKey, embeddedKey );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}
 
-	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+	@Override
+	protected EntityKeyMetadata entityKeyMetadata(EntityKeyMetadata keyMetadata, TupleTypeContext tupleTypeContext) {
+		// This dialect use the programmatic API for the operations related to the associations and work with
+		// Single table and table per inheritance strategies without the need to keep track of the discriminator column.
+		return keyMetadata;
+	}
+
+	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, TupleTypeContext tupleTypeContext) {
 		EntityKey targetEntityKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
-		Node targetNode = entityQueries.get( targetEntityKey.getMetadata() ).findEntity( dataBase, targetEntityKey.getColumnValues() );
-		return createRelationshipWithTargetNode( associationKey, associationRow, targetNode );
+		Node targetNode = getEntityQueries( targetEntityKey.getMetadata(), (TupleTypeContext) null ).findEntity( dataBase, targetEntityKey.getColumnValues() );
+		return createRelationshipWithTargetNode( associationKey, associationRow, tupleTypeContext, targetNode );
 	}
 
 	/**
@@ -315,9 +278,9 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		}
 	}
 
-	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, Node targetNode) {
+	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, TupleTypeContext tupleTypeContext, Node targetNode) {
 		EntityKey entityKey = associationKey.getEntityKey();
-		Node ownerNode = entityQueries.get( entityKey.getMetadata() ).findEntity( dataBase, entityKey.getColumnValues() );
+		Node ownerNode = getEntityQueries( entityKey.getMetadata(), tupleTypeContext ).findEntity( dataBase, entityKey.getColumnValues() );
 		Relationship relationship = ownerNode.createRelationshipTo( targetNode, withName( associationKey.getMetadata().getCollectionRole() ) );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
@@ -326,7 +289,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
 		EntityKey entityKey = associationKey.getEntityKey();
-		Node entityNode = entityQueries.get( entityKey.getMetadata() ).findEntity( dataBase, entityKey.getColumnValues() );
+		Node entityNode = getEntityQueries( entityKey.getMetadata(), associationContext ).findEntity( dataBase, entityKey.getColumnValues() );
 		GraphLogger.log( "Found owner node: %1$s", entityNode );
 		if ( entityNode == null ) {
 			return null;
@@ -338,7 +301,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 
 	private Map<RowKey, Tuple> createAssociationMap(AssociationKey associationKey, AssociationContext associationContext, EntityKey entityKey) {
 		String relationshipType = associationContext.getAssociationTypeContext().getRoleOnMainSide();
-		ResourceIterator<Relationship> relationships = entityQueries.get( entityKey.getMetadata() )
+		ResourceIterator<Relationship> relationships = getEntityQueries( entityKey.getMetadata(), associationContext )
 				.findAssociation( dataBase, entityKey.getColumnValues(), relationshipType );
 
 		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
@@ -377,7 +340,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			return;
 		}
 
-		associationQueries.get( key.getMetadata() ).removeAssociation( dataBase, key );
+		getAssociationQueries( key.getMetadata() ).removeAssociation( dataBase, key );
 	}
 
 	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
@@ -386,7 +349,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			removeAssociation( key, associationContext );
 			break;
 		case PUT:
-			putAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
+			putAssociationOperation( association, key, operation, associationContext );
 			break;
 		case REMOVE:
 			removeAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
@@ -394,8 +357,9 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 		}
 	}
 
-	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Relationship relationship = associationQueries.get( associationKey.getMetadata() ).findRelationship( dataBase, associationKey, action.getKey() );
+	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
+		AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
+		Relationship relationship = getAssociationQueries( associationKey.getMetadata() ).findRelationship( dataBase, associationKey, action.getKey() );
 
 		if ( relationship != null ) {
 			for ( String relationshipProperty : associationKey.getMetadata().getRowKeyIndexColumnNames() ) {
@@ -411,7 +375,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			GraphLogger.log( "Updated relationship: %1$s", relationship );
 		}
 		else {
-			relationship = createRelationship( associationKey, action.getValue(), associatedEntityKeyMetadata );
+			relationship = createRelationship( associationKey, action.getValue(), associatedEntityKeyMetadata, associationContext );
 			GraphLogger.log( "Created relationship: %1$s", relationship );
 		}
 	}
@@ -428,7 +392,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 	}
 
 	private void removeAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		associationQueries.get( associationKey.getMetadata() ).removeAssociationRow( dataBase, associationKey, action.getKey() );
+		getAssociationQueries( associationKey.getMetadata() ).removeAssociationRow( dataBase, associationKey, action.getKey() );
 	}
 
 	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Node node, Set<TupleOperation> operations, TupleContext tupleContext) {
@@ -519,7 +483,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			putOneToOneAssociation( tuple, node, operation, tupleContext, processedAssociationRoles );
 		}
 		else if ( isPartOfRegularEmbedded( entityKey.getMetadata().getColumnNames(), operation.getColumn() ) ) {
-			entityQueries.get( entityKey.getMetadata() ).updateEmbeddedColumn( dataBase, entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
+			getEntityQueries( entityKey.getMetadata(), tupleContext ).updateEmbeddedColumn( dataBase, entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
 		}
 		else {
 			putProperty( entityKey, node, operation );
@@ -557,14 +521,14 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect {
 			}
 
 			// create a new relationship
-			Node targetNode = entityQueries.get( targetKey.getMetadata() ).findEntity( dataBase, targetKey.getColumnValues() );
+			Node targetNode = getEntityQueries( targetKey.getMetadata(), tupleContext ).findEntity( dataBase, targetKey.getColumnValues() );
 			node.createRelationshipTo( targetNode, withName( associationRole ) );
 		}
 	}
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( dataBase );
+		ResourceIterator<Node> queryNodes = getEntityQueries( entityKeyMetadata, tupleTypeContext ).findEntities( dataBase );
 		consumer.consume( new EmbeddedNeo4jTuplesSupplier( queryNodes, tupleTypeContext, entityKeyMetadata ) );
 	}
 

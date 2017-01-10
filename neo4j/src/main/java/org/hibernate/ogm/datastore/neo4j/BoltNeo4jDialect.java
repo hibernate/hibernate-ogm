@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.neo4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +17,6 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jAssociatedNodesHelper;
@@ -47,8 +45,8 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -62,10 +60,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
-import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
-import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Statement;
@@ -88,15 +82,11 @@ import org.neo4j.driver.v1.types.Relationship;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDialect {
+public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, BoltNeo4jAssociationQueries> implements RemoteNeo4jDialect {
 
 	public static final Log log = LoggerFactory.getLogger();
 
 	private final BoltNeo4jSequenceGenerator sequenceGenerator;
-
-	private Map<EntityKeyMetadata, BoltNeo4jEntityQueries> entitiesQueries;
-
-	private Map<AssociationKeyMetadata, BoltNeo4jAssociationQueries> associationQueries;
 
 	public BoltNeo4jDialect(BoltNeo4jDatastoreProvider provider) {
 		super( BoltNeo4jTypeConverter.INSTANCE );
@@ -104,49 +94,13 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	}
 
 	@Override
-	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
-		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
-		this.entitiesQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
+	protected BoltNeo4jAssociationQueries createNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+		return new BoltNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata );
 	}
 
-	private Map<EntityKeyMetadata, BoltNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
-			Map<AssociationKeyMetadata, BoltNeo4jAssociationQueries> associationQueries) {
-		Map<EntityKeyMetadata, BoltNeo4jEntityQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
-		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
-			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
-			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
-				// Embeddables metadata
-				entityQueries.put( entityKeyMetadata, new BoltNeo4jEntityQueries( entityKeyMetadata, null ) );
-			}
-		}
-		return entityQueries;
-	}
-
-	private Map<EntityKeyMetadata, BoltNeo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<EntityKeyMetadata, BoltNeo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, BoltNeo4jEntityQueries>();
-		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
-		for ( EntityPersister entityPersister : entityPersisters ) {
-			if ( entityPersister instanceof OgmEntityPersister ) {
-				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
-				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(),
-						new BoltNeo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata(), ogmEntityPersister.getTupleTypeContext() ) );
-			}
-		}
-		return queryMap;
-	}
-
-	private Map<AssociationKeyMetadata, BoltNeo4jAssociationQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<AssociationKeyMetadata, BoltNeo4jAssociationQueries> queryMap = new HashMap<AssociationKeyMetadata, BoltNeo4jAssociationQueries>();
-		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
-		for ( CollectionPersister collectionPersister : collectionPersisters ) {
-			if ( collectionPersister instanceof OgmCollectionPersister ) {
-				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
-				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
-				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
-				queryMap.put( associationKeyMetadata, new BoltNeo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
-			}
-		}
-		return queryMap;
+	@Override
+	protected BoltNeo4jEntityQueries createNeo4jEntityQueries(EntityKeyMetadata entityKeyMetadata, TupleTypeContext tupleTypeContext) {
+		return new BoltNeo4jEntityQueries( entityKeyMetadata, tupleTypeContext );
 	}
 
 	@Override
@@ -156,7 +110,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		Statement statement = new Statement( nativeQuery, parameters );
 		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
 				EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
-				BoltNeo4jEntityQueries queries = entitiesQueries.get( entityKeyMetadata );
+				BoltNeo4jEntityQueries queries = getEntityQueries( entityKeyMetadata, tupleContext );
 				Transaction transaction = transaction( tupleContext );
 				StatementResult result = transaction.run( statement );
 				validateNativeQuery( result );
@@ -168,7 +122,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 					entityKeys.add( new EntityKey( entityKeyMetadata, columnValues ) );
 				}
 				EntityKey[] keys = entityKeys.toArray( new EntityKey[entityKeys.size()] );
-				ClosableIterator<NodeWithEmbeddedNodes> entities = entitiesQueries.get( entityKeyMetadata ).findEntities( keys, transaction );
+				ClosableIterator<NodeWithEmbeddedNodes> entities = getEntityQueries( entityKeyMetadata, tupleContext ).findEntities( keys, transaction );
 				return new BoltNeo4jNodesTupleIterator( transaction, queries, entityKeyMetadata, tupleContext.getTupleTypeContext(), entities );
 		}
 		else {
@@ -238,7 +192,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 	@Override
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		Transaction tx = transaction( operationContext );
-		BoltNeo4jEntityQueries queries = entitiesQueries.get( key.getMetadata() );
+		BoltNeo4jEntityQueries queries = getEntityQueries( key.getMetadata(), operationContext );
 		NodeWithEmbeddedNodes owner = queries.findEntity( tx, key.getColumnValues() );
 		if ( owner == null ) {
 			return null;
@@ -265,7 +219,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		// We only support one metadata for now
 		EntityKeyMetadata metadata = keys[0].getMetadata();
 		// The result returned by the query might not be in the same order as the keys.
-		ClosableIterator<NodeWithEmbeddedNodes> nodes = entitiesQueries.get( metadata ).findEntities( keys, transaction( tupleContext ) );
+		ClosableIterator<NodeWithEmbeddedNodes> nodes = getEntityQueries( metadata, tupleContext ).findEntities( keys, transaction( tupleContext ) );
 		try {
 			return tuplesResult( keys, tupleContext, nodes );
 		}
@@ -288,7 +242,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 				if ( RemoteNeo4jHelper.matches( node.getOwner().asMap(), keys[i].getColumnNames(), keys[i].getColumnValues() ) ) {
 					EntityKeyMetadata metadata = keys[i].getMetadata();
 					EntityKey key = keys[i];
-					BoltNeo4jEntityQueries entityQueries = entitiesQueries.get( key.getMetadata() );
+					BoltNeo4jEntityQueries entityQueries = getEntityQueries( key.getMetadata(), tupleContext );
 					Map<String, Node> toOneEntities = BoltNeo4jAssociatedNodesHelper.findAssociatedNodes( tx, node, metadata,
 							tupleContext.getTupleTypeContext(), entityQueries );
 					tuples[i] = new Tuple(
@@ -315,13 +269,13 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		applyTupleOperations( key, tuple, properties, toOneAssociations, statements, tuple.getOperations(), tupleContext, tupleContext.getTransactionContext() );
 		if ( SnapshotType.INSERT.equals( tuple.getSnapshotType() ) ) {
 			// Insert new node
-			Statement statement = entitiesQueries.get( key.getMetadata() ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
+			Statement statement = getEntityQueries( key.getMetadata(), tupleContext ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
 			statements.add( 0, statement );
 		}
 		else {
-			updateTuple( key, statements, properties );
+			updateTuple( key, statements, properties, tupleContext );
 		}
-		saveToOneAssociations( statements, key, toOneAssociations );
+		saveToOneAssociations( statements, key, toOneAssociations, tupleContext );
 		try {
 			runAll( transaction( tupleContext ), statements );
 			tuple.setSnapshotType( SnapshotType.UPDATE );
@@ -357,9 +311,9 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		}
 	}
 
-	private void updateTuple(EntityKey key, List<Statement> statements, Map<String, Object> properties) {
+	private void updateTuple(EntityKey key, List<Statement> statements, Map<String, Object> properties, TupleContext tupleContext) {
 		if ( !properties.isEmpty() ) {
-			Statement statement = entitiesQueries.get( key.getMetadata() ).getUpdateEntityPropertiesStatement( key.getColumnValues(), properties );
+			Statement statement = getEntityQueries( key.getMetadata(), tupleContext ).getUpdateEntityPropertiesStatement( key.getColumnValues(), properties );
 			statements.add( statement );
 		}
 	}
@@ -384,9 +338,9 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		}
 	}
 
-	private void saveToOneAssociations(List<Statement> statements, EntityKey key, final Map<String, EntityKey> toOneAssociations) {
+	private void saveToOneAssociations(List<Statement> statements, EntityKey key, final Map<String, EntityKey> toOneAssociations, TupleContext tupleContext) {
 		for ( Map.Entry<String, EntityKey> entry : toOneAssociations.entrySet() ) {
-			Statement statement = entitiesQueries.get( key.getMetadata() ).getUpdateOneToOneAssociationStatement( entry.getKey(), key.getColumnValues(), entry.getValue().getColumnValues() );
+			Statement statement = getEntityQueries( key.getMetadata(), tupleContext ).getUpdateOneToOneAssociationStatement( entry.getKey(), key.getColumnValues(), entry.getValue().getColumnValues() );
 			statements.add( statement );
 		}
 	}
@@ -395,12 +349,11 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		if ( !tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
-				Statement statement = entitiesQueries.get( entityKey.getMetadata() ).removeEmbeddedColumnStatement( entityKey.getColumnValues(),
-						operation.getColumn(), transaction( tupleContext ) );
+				Statement statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).removeEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
 				statements.add( statement );
 			}
 			else {
-				Statement statement = entitiesQueries.get( entityKey.getMetadata() ).removeColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
+				Statement statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).removeColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
 				statements.add( statement );
 			}
 		}
@@ -408,18 +361,19 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 			String associationRole = tupleContext.getTupleTypeContext().getRole( operation.getColumn() );
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 				Transaction tx = (Transaction) transactionContext.getTransactionId();
-				entitiesQueries.get( entityKey.getMetadata() ).removeToOneAssociation( tx, entityKey.getColumnValues(), associationRole );
+				getEntityQueries( entityKey.getMetadata(), tupleContext.getTupleTypeContext() ).removeToOneAssociation( tx, entityKey.getColumnValues(), associationRole );
 			}
 		}
 	}
 
-	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, List<Statement> statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations,
+			List<Statement> statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		if ( tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			// the column represents a to-one association, map it as relationship
 			putOneToOneAssociation( entityKey, tuple, node, toOneAssociations, operation, tupleContext, processedAssociationRoles );
 		}
 		else if ( isPartOfRegularEmbedded( entityKey.getMetadata().getColumnNames(), operation.getColumn() ) ) {
-			Statement statement = entitiesQueries.get( entityKey.getMetadata() ).updateEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
+			Statement statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).updateEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
 			statements.add( statement );
 		}
 		else {
@@ -445,14 +399,14 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		entitiesQueries.get( key.getMetadata() ).removeEntity( transaction( tupleContext ), key.getColumnValues() );
+		getEntityQueries( key.getMetadata(), tupleContext ).removeEntity( transaction( tupleContext ), key.getColumnValues() );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
 		EntityKey entityKey = associationKey.getEntityKey();
 		Transaction tx = transaction( associationContext );
-		NodeWithEmbeddedNodes node = entitiesQueries.get( entityKey.getMetadata() ).findEntity( tx, entityKey.getColumnValues() );
+		NodeWithEmbeddedNodes node = getEntityQueries( entityKey.getMetadata(), associationContext ).findEntity( tx, entityKey.getColumnValues() );
 		if ( node == null ) {
 			return null;
 		}
@@ -466,7 +420,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
 		Transaction tx = transaction( associationContext );
-		ClosableIterator<RemoteNeo4jAssociationPropertiesRow> relationships = entitiesQueries.get( entityKey.getMetadata() )
+		ClosableIterator<RemoteNeo4jAssociationPropertiesRow> relationships = getEntityQueries( entityKey.getMetadata(), associationContext )
 				.findAssociation( tx, entityKey.getColumnValues(), relationshipType );
 		while ( relationships.hasNext() ) {
 			RemoteNeo4jAssociationPropertiesRow row = relationships.next();
@@ -519,7 +473,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 
 	private void removeAssociationOperation(AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
 		Transaction tx = transaction( associationContext );
-		associationQueries.get( associationKey.getMetadata() ).removeAssociationRow( tx, associationKey, action.getKey() );
+		getAssociationQueries( associationKey.getMetadata() ).removeAssociationRow( tx, associationKey, action.getKey() );
 	}
 
 	/**
@@ -548,7 +502,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata  );
 		Object[] relationshipProperties = relationshipProperties( associationKey, action );
 
-		Relationship relationship = associationQueries.get( associationKey.getMetadata() )
+		Relationship relationship = getAssociationQueries( associationKey.getMetadata() )
 				.createRelationshipForEmbeddedAssociation( tx, associationKey, embeddedKey, relationshipProperties );
 		return relationship;
 	}
@@ -561,7 +515,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		Object[] relationshipProperties = relationshipProperties( associationKey, associationRow );
 		Transaction txId = transaction( associationContext );
 
-		return associationQueries.get( associationKey.getMetadata() )
+		return getAssociationQueries( associationKey.getMetadata() )
 			.createRelationship(  txId, ownerKey.getColumnValues(), targetKey.getColumnValues(), relationshipProperties );
 	}
 
@@ -592,7 +546,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		}
 
 		Transaction tx = transaction( associationContext );
-		associationQueries.get( key.getMetadata() ).removeAssociation( tx, key );
+		getAssociationQueries( key.getMetadata() ).removeAssociation( tx, key );
 	}
 
 	@Override
@@ -605,7 +559,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect implements RemoteNeo4jDia
 		DatastoreProvider datastoreProvider = getServiceRegistry().getService( DatastoreProvider.class );
 		BoltNeo4jDatastoreProvider neo4jProvider = (BoltNeo4jDatastoreProvider) datastoreProvider;
 		BoltNeo4jClient client = neo4jProvider.getClient();
-		BoltTuplesSupplier tupleSupplier = new BoltTuplesSupplier( entitiesQueries.get( entityKeyMetadata ), entityKeyMetadata, tupleTypeContext, client );
+		BoltTuplesSupplier tupleSupplier = new BoltTuplesSupplier( getEntityQueries( entityKeyMetadata, tupleTypeContext ), entityKeyMetadata, tupleTypeContext, client );
 		consumer.consume( tupleSupplier );
 	}
 
