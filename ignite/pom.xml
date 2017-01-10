@@ -146,7 +146,9 @@
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
-                    <argLine> -Dtest=IgniteBackendTckHelper</argLine> <!-- -Xmx1300m -->
+<!--
+					<argLine> -Xmx1300m</argLine>
+-->
                 </configuration>
             </plugin>
             <plugin>
