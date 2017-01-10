@@ -159,6 +159,9 @@
         <local-cache name="CommunityMember" />
         <local-cache name="Employee" />
 
+        <local-cache name="Man" />
+        <local-cache name="Woman" />
+
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
 
