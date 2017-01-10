@@ -26,6 +26,9 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 	private final List<String> selectableColumns;
 	private final OptionsContext optionsContext;
 
+	private final String discriminatorColumn;
+	private final Object discriminatorValue;
+
 	/**
 	 * Information of the associated entity stored per foreign key column names
 	 */
@@ -36,12 +39,16 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 	public TupleTypeContextImpl(List<String> selectableColumns,
 			Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata,
 			Map<String, String> roles,
-			OptionsContext optionsContext) {
+			OptionsContext optionsContext,
+			String discriminatorColumn,
+			Object discriminatorValue) {
 
 		this.selectableColumns = Collections.unmodifiableList( selectableColumns );
 		this.associatedEntityMetadata = Collections.unmodifiableMap( associatedEntityMetadata );
 		this.roles = Collections.unmodifiableMap( roles );
 		this.optionsContext = optionsContext;
+		this.discriminatorColumn = discriminatorColumn;
+		this.discriminatorValue = discriminatorValue;
 	}
 
 	@Override
@@ -77,6 +84,16 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 	@Override
 	public Map<String, String> getAllRoles() {
 		return roles;
+	}
+
+	@Override
+	public String getDiscriminatorColumn() {
+		return discriminatorColumn;
+	}
+
+	@Override
+	public Object getDiscriminatorValue() {
+		return discriminatorValue;
 	}
 
 	@Override

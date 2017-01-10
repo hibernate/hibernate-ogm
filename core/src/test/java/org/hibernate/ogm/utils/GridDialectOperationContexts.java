@@ -81,7 +81,7 @@ public class GridDialectOperationContexts {
 
 		public TupleTypeContext buildTupleTypeContext() {
 			return new TupleTypeContextImpl( Collections.unmodifiableList( selectableColumns ), Collections.unmodifiableMap( associatedEntityMetadata ),
-					Collections.unmodifiableMap( roles ), optionsContext );
+					Collections.unmodifiableMap( roles ), optionsContext, null, null );
 		}
 	}
 

@@ -596,7 +596,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				selectableColumnNames( discriminator ),
 				associatedEntityKeyMetadata,
 				roles,
-				optionsService.context().getEntityOptions( getMappedClass() )
+				optionsService.context().getEntityOptions( getMappedClass() ),
+				getDiscriminatorColumnName(),
+				getDiscriminatorValue()
 		);
 	}
 

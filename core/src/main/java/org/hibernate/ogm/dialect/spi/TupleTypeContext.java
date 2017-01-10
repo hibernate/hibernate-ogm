@@ -79,4 +79,18 @@ public interface TupleTypeContext {
 	 */
 	Map<String, String> getAllRoles();
 
+	/**
+	 * Get the name of the column with the discriminator.
+	 *
+	 * @return the name of the column or null if the discriminator is not column based
+	 */
+	String getDiscriminatorColumn();
+
+	/**
+	 * The discriminator value for dealing with inheritance; it might be {@code null} because some strategies don't need
+	 * it.
+	 *
+	 * @return the value of the discriminator. It can return {@code null}.
+	 */
+	Object getDiscriminatorValue();
 }
