@@ -52,12 +52,6 @@ public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		em.close();
 	}
 
-	private void persist(EntityManager em, Object... entities) {
-		for ( Object entity : entities ) {
-			em.persist( entity );
-		}
-	}
-
 	@Test
 	public void testMapping() throws Exception {
 		NodeForGraphAssertions johnNode = node( "john", Student.class.getSimpleName(), ENTITY.name() )

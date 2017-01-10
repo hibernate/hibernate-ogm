@@ -11,6 +11,8 @@ import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.assertT
 
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
@@ -95,5 +97,11 @@ public abstract class Neo4jJpaTestCase extends OgmJpaTestCase {
 			expectedNumberOfRelationships += relationship.getSize();
 		}
 		assertNumberOfRelationships( expectedNumberOfRelationships );
+	}
+
+	protected void persist(EntityManager em, Object... entities) {
+		for ( Object entity : entities ) {
+			em.persist( entity );
+		}
 	}
 }
