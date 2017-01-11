@@ -5,6 +5,7 @@ addons:
   apt:
     packages:
       - oracle-java8-installer
+      - xmlstarlet
 # might be useful to push reports to an S3 bucket
 #  artifacts:
 #    paths:
@@ -21,7 +22,8 @@ env:
     - REDIS_HOSTNAME=127.0.0.1
     - COUCHDB_HOSTNAME=127.0.0.1
     - CASSANDRA_VERSION=3.0.7 CASSANDRA_HOSTNAME=127.0.0.1
-    - NEO4J_VERSION=3.0.8 NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
+    - NEO4J_VERSION=$(xmlstarlet sel -N maven=http://maven.apache.org/POM/4.0.0 -t -m '/maven:project/maven:properties' -v maven:neo4jVersion bom/pom.xml)
+    - NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
 install:
