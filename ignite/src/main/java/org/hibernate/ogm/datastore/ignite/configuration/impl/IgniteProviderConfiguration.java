@@ -82,40 +82,8 @@ public class IgniteProviderConfiguration {
 		return instanceName;
 	}
 
-	public IgniteConfiguration getOrCreateIgniteConfiguration() {
-		IgniteConfiguration conf = null;
-		if ( configBuilderClass != null ) {
-			try {
-				IgniteConfigurationBuilder configBuilder = configBuilderClass.newInstance();
-				conf = configBuilder.build();
-			}
-			catch (InstantiationException | IllegalAccessException ex) {
-				throw log.unableToStartDatastoreProvider( ex );
-			}
-		}
-		if ( url != null && conf == null ) {
-			try	{
-				conf = IgnitionEx.loadConfiguration( url ).get1();
-			}
-			catch (IgniteCheckedException ex) {
-				throw log.unableToStartDatastoreProvider( ex );
-			}
-		}
-		if ( conf != null ) {
-			conf.setGridName( getOrCreateGridName() );
-		}
-		return conf;
+	public Class<IgniteConfigurationBuilder> getConfigBuilderClass() {
+		return configBuilderClass;
 	}
 
-	public String getOrCreateGridName() {
-		String result = null;
-		if ( StringUtils.isNotEmpty( instanceName ) ) {
-			result = instanceName;
-		}
-		else if ( url != null ) {
-			result = url.getPath();
-			result = result.replaceAll( "[\\,\\\",:,\\*,\\/,\\\\]", "_" );
-		}
-		return result;
-	}
 }

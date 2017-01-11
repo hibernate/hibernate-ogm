@@ -17,6 +17,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicSequence;
 import org.apache.ignite.IgniteCache;
+import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteIllegalStateException;
 import org.apache.ignite.IgniteState;
@@ -29,13 +30,17 @@ import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.internal.IgniteEx;
+import org.apache.ignite.internal.IgnitionEx;
 import org.apache.ignite.lang.IgniteCallable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.thread.IgniteThread;
+import org.hibernate.HibernateException;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.datastore.ignite.IgniteConfigurationBuilder;
 import org.hibernate.ogm.datastore.ignite.IgniteDialect;
+import org.hibernate.ogm.datastore.ignite.IgniteProperties;
 import org.hibernate.ogm.datastore.ignite.configuration.impl.IgniteProviderConfiguration;
 import org.hibernate.ogm.datastore.ignite.logging.impl.Log;
 import org.hibernate.ogm.datastore.ignite.logging.impl.LoggerFactory;
@@ -174,22 +179,14 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 				gridName = cacheManager.name();
 			}
 			else {
-				gridName = config.getOrCreateGridName();
+				IgniteConfiguration conf = createIgniteConfiguration();
+				gridName = createGridName( conf );
 				try {
-					if ( gridName != null ) {
-						cacheManager = (IgniteEx) Ignition.ignite( gridName );
-					}
-					else {
-						cacheManager = (IgniteEx) Ignition.ignite();
-					}
+					cacheManager = (IgniteEx) Ignition.ignite( gridName );
 				}
 				catch (IgniteIllegalStateException iise) {
 					// not found, then start
-					IgniteConfiguration conf = config.getOrCreateIgniteConfiguration();
 					conf.setGridName( gridName );
-					if ( !( jtaPlatform instanceof NoJtaPlatform ) ) {
-						conf.getTransactionConfiguration().setTxManagerFactory( new IgniteTransactionManagerFactory( jtaPlatform ) );
-					}
 					cacheManager = (IgniteEx) Ignition.start( conf );
 					stopOnExit = true;
 				}
@@ -201,6 +198,65 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 		catch (Exception ex) {
 			throw log.unableToStartDatastoreProvider( ex );
 		}
+	}
+
+	private IgniteConfiguration createIgniteConfiguration() {
+		IgniteConfiguration conf = null;
+		if ( config.getConfigBuilderClass() != null ) {
+			try {
+				IgniteConfigurationBuilder configBuilder = config.getConfigBuilderClass().newInstance();
+				conf = configBuilder.build();
+			}
+			catch (InstantiationException | IllegalAccessException ex) {
+				throw log.unableToStartDatastoreProvider( ex );
+			}
+		}
+		if ( conf == null && config.getUrl() != null ) {
+			try	{
+				conf = IgnitionEx.loadConfiguration( config.getUrl() ).get1();
+			}
+			catch (IgniteCheckedException ex) {
+				throw log.unableToStartDatastoreProvider( ex );
+			}
+		}
+		if ( conf == null ) {
+			log.unableToStartDatastoreProvider(
+					new HibernateException(
+							"Neither " + IgniteProperties.CONFIGURATION_RESOURCE_NAME
+							+ " nor " + IgniteProperties.CONFIGURATION_CLASS_NAME 
+							+ " properties is not set"
+					)
+			);
+		}
+		if ( !( jtaPlatform instanceof NoJtaPlatform ) ) {
+			conf.getTransactionConfiguration().setTxManagerFactory( new IgniteTransactionManagerFactory( jtaPlatform ) );
+		}
+		return conf;
+	}
+
+	private String createGridName(IgniteConfiguration conf) {
+		String name = null;
+		if ( StringUtils.isNotEmpty( config.getInstanceName() ) ) {
+			name = config.getInstanceName();
+		}
+		else {
+			IgniteConfiguration igniteConfiguration = createIgniteConfiguration();
+			if ( StringUtils.isNotEmpty( igniteConfiguration.getGridName() ) ) {
+				name = igniteConfiguration.getGridName();
+			}
+			else if ( config.getUrl() != null ) {
+				name = config.getUrl().getPath();
+				name = name.replaceAll( "[\\,\\\",:,\\*,\\/,\\\\]", "_" );
+			}
+			else {
+				name = UUID.randomUUID().toString();
+			}
+		}
+		return name;
+	}
+
+	public String getGridName() {
+		return gridName;
 	}
 
 	@Override
@@ -225,10 +281,6 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	@Override
 	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 		return IgniteQueryParserService.class;
-	}
-
-	public String getGridName() {
-		return gridName;
 	}
 
 	@Override
