@@ -24,7 +24,7 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
-@SkipByGridDialect(value = GridDialectType.IGNITE, 
+@SkipByGridDialect(value = GridDialectType.IGNITE,
 		comment = "Ignite doesn't support IDENTITY column and createFactory() throws Exception. "
 						+ "As a result DatastoreProvider.start() is called but DatastoreProvider.stop() is not."
 						+ "I think it's not a correct behaviour of test.")

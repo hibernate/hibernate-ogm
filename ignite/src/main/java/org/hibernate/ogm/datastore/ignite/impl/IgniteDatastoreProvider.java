@@ -223,7 +223,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 			log.unableToStartDatastoreProvider(
 					new HibernateException(
 							"Neither " + IgniteProperties.CONFIGURATION_RESOURCE_NAME
-							+ " nor " + IgniteProperties.CONFIGURATION_CLASS_NAME 
+							+ " nor " + IgniteProperties.CONFIGURATION_CLASS_NAME
 							+ " properties is not set"
 					)
 			);
