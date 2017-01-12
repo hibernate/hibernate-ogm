@@ -149,8 +149,6 @@
 <!--
 					<argLine> -Xmx1300m</argLine>
 -->
-
-
                 </configuration>
             </plugin>
             <plugin>
