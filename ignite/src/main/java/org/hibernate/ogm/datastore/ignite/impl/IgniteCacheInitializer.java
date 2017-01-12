@@ -6,9 +6,7 @@
  */
 package org.hibernate.ogm.datastore.ignite.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.QueryEntity;
@@ -148,9 +146,7 @@ public class IgniteCacheInitializer extends BaseSchemaDefiner {
 		String idFieldName = associationKeyMetadata.getColumnNames()[0];
 		String idClassName = getEntityIdClassName( associationKeyMetadata.getEntityKeyMetadata().getTable(), context );
 		queryEntity.addQueryField( idFieldName, idClassName, null );
-		List<QueryIndex> indexes = new ArrayList<>( queryEntity.getIndexes() );
-		indexes.add( new QueryIndex( idFieldName, QueryIndexType.SORTED ) );
-		queryEntity.setIndexes( indexes );
+		queryEntity.setIndexes( Arrays.asList( new QueryIndex( idFieldName, QueryIndexType.SORTED ) ) );
 	}
 
 	private String getEntityIdClassName( String table, SchemaDefinitionContext context ) {
