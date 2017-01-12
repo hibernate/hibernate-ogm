@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.ignite.Ignite;
@@ -129,10 +130,13 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		Ignite ignite = Ignition.ignite( getProvider( sessionFactory ).getGridName() );
-		for ( String cacheName : ignite.cacheNames() ) {
-			IgniteCache cache = ignite.cache( cacheName );
-			cache.clear();
+		if ( Ignition.allGrids().size() > 1 ) { // some tests doesn't stop DatastareProvider
+			String currentGridName = getProvider( sessionFactory ).getGridName();
+			for ( Ignite grid : Ignition.allGrids() ) {
+				if ( !Objects.equals( currentGridName, grid.name() ) ) {
+					grid.close();
+				}
+			}
 		}
 	}
 
