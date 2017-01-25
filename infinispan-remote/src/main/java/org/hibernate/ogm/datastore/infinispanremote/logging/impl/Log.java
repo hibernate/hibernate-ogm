@@ -76,4 +76,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1715, value = "Property <%s> has to be set to <%s> but it's set to <%s>" )
 	HibernateException invalidConfigurationValue(String property, String expectedValue, String actualValue);
+
+	@Message(id = 1716, value = "Error deploying Protobuf schema '%s' to the server: '%s'")
+	HibernateException errorAtSchemaDeploy(String generatedProtobufName, String remoteErrorMessage);
+
 }
