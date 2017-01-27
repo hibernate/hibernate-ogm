@@ -11,9 +11,8 @@ import static org.hibernate.ogm.model.spi.AssociationOperationType.REMOVE;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +20,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.StringHelper;
 
@@ -42,7 +42,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 public class Association {
 	private final AssociationSnapshot snapshot;
-	private final Map<RowKey, AssociationOperation> currentState = new HashMap<RowKey, AssociationOperation>();
+	private final Map<RowKey, AssociationOperation> currentState = new LinkedHashMap<RowKey, AssociationOperation>();
 	private boolean cleared;
 
 	/**
@@ -184,7 +184,7 @@ public class Association {
 		}
 		else {
 			// It may be a bit too large in case of removals, but that's fine for now
-			Set<RowKey> keys = new HashSet<RowKey>( cleared ? currentState.size() : snapshot.size() + currentState.size() );
+			Set<RowKey> keys = CollectionHelper.newLinkedHashSet( cleared ? currentState.size() : snapshot.size() + currentState.size() );
 
 			if ( !cleared ) {
 				// we add the snapshot RowKeys only if the association has not been cleared
