@@ -50,7 +50,7 @@ public final class MapDatastoreProvider extends BaseDatastoreProvider implements
 
 	private static final Log log = LoggerFactory.make();
 
-	private final ConcurrentMap<EntityKey,Map<String, Object>> entitiesKeyValueStorage = newConcurrentHashMap();
+	private final ConcurrentMap<EntityKey, Map<String, Object>> entitiesKeyValueStorage = newConcurrentHashMap();
 	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = newConcurrentHashMap();
 	private final ConcurrentMap<IdSourceKey, AtomicInteger> sequencesStorage = newConcurrentHashMap();
 	private final ConcurrentMap<Object, ReadWriteLock> dataLocks = newConcurrentHashMap();
