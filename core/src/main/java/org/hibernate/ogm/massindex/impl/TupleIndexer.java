@@ -125,7 +125,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 
 	private String idInString(ConversionContext conversionContext, Serializable id, Class<?> clazz,
 			DocumentBuilderIndexedEntity docBuilder) {
-		conversionContext.pushProperty( docBuilder.getIdKeywordName() );
+		conversionContext.pushProperty( docBuilder.getIdPropertyName() );
 		try {
 			String idInString = conversionContext.setClass( clazz ).twoWayConversionContext( docBuilder.getIdBridge() )
 					.objectToString( id );

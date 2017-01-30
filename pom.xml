@@ -72,7 +72,7 @@
          So the property needs to be defined in the global parent pom -->
         <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
         <!-- Following might not match the slot, for example when 'main' is being used. Needed in docs URL rendering. -->
-        <hibernate-search-major-minor-version>5.5</hibernate-search-major-minor-version>
+        <hibernate-search-major-minor-version>5.6</hibernate-search-major-minor-version>
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>10.1.0.Final</version.wildfly>
