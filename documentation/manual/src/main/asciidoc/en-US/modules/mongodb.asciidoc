@@ -100,6 +100,9 @@ Define the authentication mechanism to use. Possible values are:
 * `GSSAPI`: The GSSAPI mechanism. See the http://tools.ietf.org/html/rfc4752[RFC]
 * `MONGODB_X509`: The MongoDB X.509
 * `PLAIN`: The PLAIN mechanism.  See the http://www.ietf.org/rfc/rfc4616.txt[RFC]
+hibernate.ogm.mongodb.authentication_database::
+Defines the name of the authentication database.
+The property default value is `admin`.
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in MongoDB.
 The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
