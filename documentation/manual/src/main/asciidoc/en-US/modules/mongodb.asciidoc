@@ -91,8 +91,10 @@ hibernate.ogm.mongodb.driver.*::
 Defines a prefix for all options which should be passed through to the MongoDB driver.
 For available options refer to the JavaDocs of link:http://api.mongodb.org/java/3.0/com/mongodb/MongoClientOptions.Builder.html[MongoClientOptions.Builder]. All `String`, `int` and `boolean` properties
 can be set, eg `hibernate.ogm.mongodb.driver.serverSelectionTimeout`.
+hibernate.ogm.mongodb.authentication_database::
+Defines the name of the authentication database, default value is _admin_.
 hibernate.ogm.mongodb.authentication_mechanism::
-Define the authentication mechanism to use. Possible values are:
+Defines the authentication mechanism to use. Possible values are:
 
 * `BEST`: Handshakes with the server to find the best authentication mechanism.
 * `SCRAM_SHA_1`: The SCRAM SHA 1 Challenge Response mechanism as described in this link:http://tools.ietf.org/html/rfc5802[RFC].
@@ -100,9 +102,6 @@ Define the authentication mechanism to use. Possible values are:
 * `GSSAPI`: The GSSAPI mechanism. See the http://tools.ietf.org/html/rfc4752[RFC]
 * `MONGODB_X509`: The MongoDB X.509
 * `PLAIN`: The PLAIN mechanism.  See the http://www.ietf.org/rfc/rfc4616.txt[RFC]
-hibernate.ogm.mongodb.authentication_database::
-Defines the name of the authentication database.
-The property default value is `admin`.
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in MongoDB.
 The following two strategies exist (values of the `org.hibernate.ogm.datastore.document.options.AssociationStorageType` enum):
