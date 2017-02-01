@@ -20,7 +20,9 @@ import org.jboss.shrinkwrap.api.Archive;
  */
 public class HotRodServerLifecycleManager implements org.jboss.arquillian.core.spi.LoadableExtension {
 
-	private final RemoteHotRodServerRule server = new RemoteHotRodServerRule();
+	//N.B. the "100" as port offset for the server so that it can boot together with a standard WildFly instance:
+	private final RemoteHotRodServerRule server = new RemoteHotRodServerRule( 100 );
+
 	private int startedContainers = 0;
 
 	public synchronized void startDatabase(@Observes BeforeDeploy event) {

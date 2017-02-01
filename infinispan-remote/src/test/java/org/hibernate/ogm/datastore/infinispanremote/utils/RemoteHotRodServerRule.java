@@ -44,10 +44,24 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 	 */
 	private static final AtomicBoolean running = new AtomicBoolean();
 
+	private final int portOffset;
+
 	/**
-	 * Reference to the Hot Rod Server process. Access protectedby synchronization on the static field "running".
+	 * Reference to the Hot Rod Server process. Access protected by synchronization on the static field "running".
 	 */
 	private Process hotRodServer;
+
+	public RemoteHotRodServerRule() {
+		this.portOffset = 0;
+	}
+
+	/**
+	 * @param portOffset Allows to specify a port offset, equivalent to: -Djboss.socket.binding.port-offset=X
+	 * This is needed when running multiple instances, or to run it in parallel with WildFly for integration tests.
+	 */
+	public RemoteHotRodServerRule(int portOffset) {
+		this.portOffset = portOffset;
+	}
 
 	@Override
 	public void before() throws Exception {
@@ -58,7 +72,11 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 				String InfinispanVersion = RemoteCache.class.getPackage().getImplementationVersion();
 				StandaloneCommandBuilder builder = StandaloneCommandBuilder
 						.of( "target/node1/infinispan-server-" + InfinispanVersion );
-				builder.setServerConfiguration( "wildfly-trimmed-config.xml" );
+				builder
+					.setServerReadOnlyConfiguration( "wildfly-trimmed-config.xml" );
+				if ( portOffset != 0 ) {
+					builder.addJavaOption( "-Djboss.socket.binding.port-offset=" + portOffset );
+				}
 				Launcher launcher = Launcher.of( builder );
 				hotRodServer = launcher.inherit().launch();
 				waitForRunning();
@@ -78,7 +96,7 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 	}
 
 	public void waitForRunning() throws Exception {
-		try ( ModelControllerClient client = ModelControllerClient.Factory.create( "localhost", 9990 ) ) {
+		try ( ModelControllerClient client = ModelControllerClient.Factory.create( "localhost", 9990 + portOffset ) ) {
 			waitForServerBoot( client );
 			waitForCacheManagerBoot( client );
 		}

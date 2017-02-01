@@ -553,6 +553,53 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-infinispan-server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.infinispan.server</groupId>
+                                            <artifactId>infinispan-server-build</artifactId>
+                                            <version>${infinispanVersion}</version>
+                                            <type>zip</type>
+                                            <outputDirectory>${project.build.directory}/node1</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <!-- Copy the WildFly configuration files so we can use our custom configurations -->
+                            <execution>
+                                <id>configure-infinispan-server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/node1/infinispan-server-${infinispanVersion}/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/infinispan-server-testconfig</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>

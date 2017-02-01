@@ -36,7 +36,7 @@ public class HotRodSearchIntegrationIT extends MagiccardsDatabaseScenario {
 				.addClasses( MagicCard.class, MagicCardsCollectionBean.class, HotRodSearchIntegrationIT.class, MagiccardsDatabaseScenario.class );
 		String persistenceXml = ModulesHelper.injectVariables( persistenceXml().exportAsString() );
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
-		webArchive.addAsResource( "hotrod-client-testingconfiguration.properties", "hotrod-client-configuration.properties" );
+		webArchive.addAsResource( "hotrod-client-testingconfiguration-offset100.properties", "hotrod-client-configuration.properties" );
 		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.infinispan-remote:${hibernate-ogm.module.slot} services" );
 		return webArchive;
 	}
