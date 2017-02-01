@@ -98,6 +98,24 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testAggregate() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': 'Oscar Wilde' } }, { '$sort': {'name': -1 } } ])";
+
+		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
 	public void testFindAndModify() throws Exception {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -302,6 +320,114 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		transaction.commit();
 		session.clear();
 		session.close();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithMatchAndSort() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author':'Oscar Wilde'}, {'name': 'Portia' }]}}, { '$sort' : { 'name' : -1 } }])";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithMatchSortAndRegex() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*', '$options': 'i'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithMatchSortAndRegexWithMaxResults() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : 1 } }])";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.setMaxResults( 2 ).list();
+
+			assertThat( result ).onProperty( "id" ).containsOnly( athanasia.getId(), imperatrix.getId() );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithMatchSortAndRegexWithFirstResult() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': { '$regex': '.*'  } }}, { '$sort' : { 'name' : -1 } }])";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.setFirstResult( 1 ).list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly( imperatrix.getId(), athanasia.getId() );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithMatchSortAndRegexWithFirstResultAndMaxResults() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.setMaxResults( 1 ).setFirstResult( 1 ).list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly( imperatrix.getId() );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithMatchSortAndRegexWithOptions() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$and': [ {'author': { '$regex': 'oscar.*', '$options': 'i' }}, {'name': { '$regex': 'po.*', '$options': 'i'} }]}}, { '$sort' : { 'name' : -1 } }])";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId() );
+
+			transaction.commit();
+			session.clear();
+		}
 	}
 
 	@Test

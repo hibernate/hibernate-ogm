@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
 import com.mongodb.BasicDBObject;
@@ -28,6 +29,57 @@ import com.mongodb.util.JSON;
  * @author Gunnar Morling
  */
 public class NativeQueryParserTest {
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void shouldParseSimplifiedAggregateQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		String match = "{ '$match': {'author' : 'Oscar Wilde' } }";
+		String sort = "{ '$sort': {'name' : -1 } }";
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.aggregate([" + match + ", " + sort + " ])" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
+		assertThat( queryDescriptor.getPipeline() )
+			.containsExactly(
+					JSON.parse( match ),
+					JSON.parse( sort )
+					);
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void shouldParseComplexAggregateQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		String match = "{ '$match': { 'NAME':{'$regex':'Bangalore', '$options': 'i'}}}";
+		String unwind = "{'$unwind': '$clicks'}";
+		String group = "{ '$group': {'_id' : '$_id' ,'clicks' : {'$push':'$clicks'} ,'token' : { '$push': '$TOKEN' } } }";
+		String sort = "{ '$sort': { '_id' : -1 } }";
+		String nativeQuery = "db.UserFactualContent.aggregate(["
+						+ match
+						+ "," + unwind
+						+ "," + group
+						+ "," + sort
+						+ "])";
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run( nativeQuery );
+
+		System.out.println( ParseTreeUtils.printNodeTree( run ) );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "UserFactualContent" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
+		assertThat( queryDescriptor.getPipeline() )
+			.containsExactly(
+					JSON.parse( match )
+					, JSON.parse( unwind )
+					, JSON.parse( group )
+					, JSON.parse( sort )
+					);
+	}
 
 	@Test
 	public void shouldParseSimplifiedFindQuery() {
