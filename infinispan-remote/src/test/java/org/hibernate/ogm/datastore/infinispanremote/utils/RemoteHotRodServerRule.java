@@ -6,18 +6,26 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.utils;
 
-import java.io.InputStream;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
+import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
+import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
+
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.infinispan.client.hotrod.test.HotRodClientTestingUtil;
-import org.infinispan.commons.util.FileLookupFactory;
-import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
-import org.infinispan.configuration.parsing.ParserRegistry;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.server.hotrod.HotRodServer;
-import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
-import org.infinispan.test.TestingUtil;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.core.launcher.Launcher;
+import org.wildfly.core.launcher.StandaloneCommandBuilder;
 
 /**
  * A JUnit rule which starts the Hot Rod server, and finally closes it.
@@ -26,35 +34,34 @@ import org.infinispan.test.TestingUtil;
  */
 public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResource {
 
-	public static final String CACHEMANAGER_CONFIGURATION_RESOURCE = "hotrod-server-singleton.xml";
-	public static final int HOTRODSERVER_PORT = 11222;
+	private static final int MAX_WAIT_MILLISECONDS = 120 * 1000;
+	private static final int STATE_REFRESH_MILLISECONDS = 50;
+	private static final int MAX_STATE_REFRESH_ATTEMPTS =  MAX_WAIT_MILLISECONDS / STATE_REFRESH_MILLISECONDS;
 
 	/**
-	 * An atomic static flag to make it possible to reuse this class
-	 * both as a global JUnit listener and as a Rule, and avoid
-	 * starting the server twice.
+	 * An atomic static flag to make it possible to reuse this class both as a global JUnit listener and as a Rule, and
+	 * avoid starting the server twice.
 	 */
 	private static final AtomicBoolean running = new AtomicBoolean();
 
-	private EmbeddedCacheManager manager;
-	private HotRodServer hotRodServer;
+	/**
+	 * Reference to the Hot Rod Server process. Access protectedby synchronization on the static field "running".
+	 */
+	private Process hotRodServer;
 
 	@Override
 	public void before() throws Exception {
-		//Synchronize on the static field to defend against concurrent launches,
-		//e.g. the usage as JUnit Rule concurrently with the usage as global test listener in Surefire.
+		// Synchronize on the static field to defend against concurrent launches,
+		// e.g. the usage as JUnit Rule concurrently with the usage as global test listener in Surefire.
 		synchronized ( running ) {
 			if ( running.compareAndSet( false, true ) ) {
-				ConfigurationBuilderHolder cfgBuilder;
-				try ( InputStream inputStream = FileLookupFactory.newInstance()
-						.lookupFileStrict( CACHEMANAGER_CONFIGURATION_RESOURCE, RemoteHotRodServerRule.class.getClassLoader() ) ) {
-					cfgBuilder = new ParserRegistry().parse( inputStream );
-				}
-				manager = new DefaultCacheManager( cfgBuilder, true );
-				HotRodServerConfigurationBuilder hotRodServerConfigurationBuilder = new HotRodServerConfigurationBuilder()
-						.port( HOTRODSERVER_PORT )
-						.host( "localhost" );
-				hotRodServer = HotRodClientTestingUtil.startHotRodServer( manager, HOTRODSERVER_PORT, hotRodServerConfigurationBuilder );
+				String InfinispanVersion = RemoteCache.class.getPackage().getImplementationVersion();
+				StandaloneCommandBuilder builder = StandaloneCommandBuilder
+						.of( "target/node1/infinispan-server-" + InfinispanVersion );
+				builder.setServerConfiguration( "wildfly-trimmed-config.xml" );
+				Launcher launcher = Launcher.of( builder );
+				hotRodServer = launcher.inherit().launch();
+				waitForRunning();
 			}
 		}
 	}
@@ -64,25 +71,103 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 		synchronized ( running ) {
 			if ( hotRodServer != null ) {
 				running.set( false );
-				hotRodServer.stop();
+				hotRodServer.destroyForcibly();
+				messageOut( "Server Killed" );
 			}
-			TestingUtil.killCacheManagers( manager );
 		}
 	}
 
-	/**
-	 * Clears the state of all caches in the Infinispan server.
-	 * Warning: this wipes out both the data and the Protobuf schema.
-	 */
-	public void resetHotRodServerState() throws Exception {
-		synchronized ( running ) {
-			final EmbeddedCacheManager cm = manager;
-			if ( cm != null ) {
-				cm.getCacheNames().forEach(
-						name -> cm.getCache( name ).clear()
-					);
-			}
+	public void waitForRunning() throws Exception {
+		try ( ModelControllerClient client = ModelControllerClient.Factory.create( "localhost", 9990 ) ) {
+			waitForServerBoot( client );
+			waitForCacheManagerBoot( client );
 		}
+	}
+
+	private void waitForServerBoot(ModelControllerClient client) {
+		for ( int attempts = 0; attempts < MAX_STATE_REFRESH_ATTEMPTS; attempts++ ) {
+			if ( isServerInRunningState( client ) ) {
+				messageOut( "Server is now running" );
+				return;
+			}
+			waitOrAbort();
+		}
+		timedOut();
+	}
+
+	private void waitForCacheManagerBoot(ModelControllerClient client) {
+		for ( int attempts = 0; attempts < MAX_STATE_REFRESH_ATTEMPTS; attempts++ ) {
+			if ( isCacheExists( client ) ) {
+				messageOut( "CacheManager is now running" );
+				return;
+			}
+			waitOrAbort();
+		}
+		timedOut();
+	}
+
+	private void waitOrAbort() {
+		try {
+			Thread.sleep( STATE_REFRESH_MILLISECONDS );
+		}
+		catch (InterruptedException e) {
+			throw new RuntimeException( "Interrupted while waiting for Hot Rod server to have booted successfully" );
+		}
+	}
+
+	private void timedOut() {
+		throw new RuntimeException( "Timed out while waiting for Hot Rod server to have booted successfully" );
+	}
+
+	private boolean isServerInRunningState(ModelControllerClient client) {
+		try {
+			ModelNode op = new ModelNode();
+			op.get( OP ).set( READ_ATTRIBUTE_OPERATION );
+			op.get( OP_ADDR ).setEmptyList();
+			op.get( NAME ).set( "server-state" );
+
+			ModelNode rsp = client.execute( op );
+			return SUCCESS.equals( rsp.get( OUTCOME ).asString() )
+					&& !CONTROLLER_PROCESS_STATE_STARTING.equals( rsp.get( RESULT ).asString() )
+					&& !CONTROLLER_PROCESS_STATE_STOPPING.equals( rsp.get( RESULT ).asString() );
+		}
+		catch (RuntimeException rte) {
+			throw rte;
+		}
+		catch (IOException ex) {
+			return false;
+		}
+	}
+
+	private boolean isCacheExists(ModelControllerClient client) {
+		try {
+			PathAddress pathAddress = PathAddress.pathAddress( SUBSYSTEM, "datagrid-infinispan" )
+					.append( "cache-container", "clustered" );
+
+			ModelNode op = new ModelNode();
+			op.get( OP ).set( READ_ATTRIBUTE_OPERATION );
+			op.get( OP_ADDR ).set( pathAddress.toModelNode() );
+			op.get( NAME ).set( "cache-manager-status" );
+
+			ModelNode resp = client.execute( op );
+			return SUCCESS.equals( resp.get( OUTCOME ).asString() ) && "RUNNING".equals( resp.get( RESULT ).asString() );
+		}
+		catch (RuntimeException rte) {
+			throw rte;
+		}
+		catch (IOException ex) {
+			return false;
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		RemoteHotRodServerRule rule = new RemoteHotRodServerRule();
+		rule.before();
+		rule.after();
+	}
+
+	private static void messageOut(String msg) {
+		System.out.println( "\n***\tTest client helper: " + msg + "\t***\n" );
 	}
 
 }

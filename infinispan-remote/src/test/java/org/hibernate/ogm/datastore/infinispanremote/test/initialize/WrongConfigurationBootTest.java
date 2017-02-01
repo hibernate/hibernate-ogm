@@ -16,6 +16,7 @@ import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteTestHelper;
 import org.hibernate.ogm.datastore.infinispanremote.utils.RemoteHotRodServerRule;
 import org.hibernate.ogm.utils.TestHelper;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,8 +28,8 @@ import org.junit.rules.ExpectedException;
  */
 public class WrongConfigurationBootTest {
 
-	@Rule
-	public RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
+	@ClassRule
+	public static RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

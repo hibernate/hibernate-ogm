@@ -24,6 +24,9 @@
 
     <properties>
         <jdkTargetForProcessor>1.8</jdkTargetForProcessor>
+        <!-- Skipping enforcer plug-in as WildFly / Infinispan Server artifact
+             causes several dependency convergence issues which are beyond our control -->
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <dependencies>
@@ -87,32 +90,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-server-hotrod</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-slf4j-impl</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-server-hotrod</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-remote-query-server</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -168,10 +145,88 @@
             <artifactId>byteman-install</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.infinispan.server</groupId>
+            <artifactId>infinispan-server-build</artifactId>
+            <version>${infinispanVersion}</version>
+            <type>zip</type>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller-client</artifactId>
+            <version>2.0.10.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-launcher</artifactId>
+            <version>2.0.10.Final</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <version>2.0.10.Final</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>unpack-infinispan-server</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.infinispan.server</groupId>
+                           <artifactId>infinispan-server-build</artifactId>
+                           <version>${infinispanVersion}</version>
+                           <type>zip</type>
+                           <outputDirectory>${project.build.directory}/node1</outputDirectory>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+                <!-- Copy the WildFly configuration files so we can use our custom configurations -->
+                <execution>
+                    <id>configure-infinispan-server</id>
+                    <phase>process-test-resources</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/node1/infinispan-server-${infinispanVersion}/standalone/configuration</outputDirectory>
+                        <overwrite>true</overwrite>
+                        <resources>
+                          <resource>
+                            <directory>${basedir}/infinispan-server-testconfig</directory>
+                          </resource>
+                        </resources>
+                    </configuration>
+                </execution>
+              </executions>
+            </plugin>
             <!-- Allow using Java8 code as Java8 is the requirement for Infinispan 8 -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

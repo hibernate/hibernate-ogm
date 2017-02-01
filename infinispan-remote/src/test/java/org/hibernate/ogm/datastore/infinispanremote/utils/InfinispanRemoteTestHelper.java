@@ -6,14 +6,11 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.utils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hibernate.Session;
@@ -37,10 +34,8 @@ import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.commons.util.concurrent.NotifyingFuture;
 import org.infinispan.query.dsl.Query;
 
 /**
@@ -78,27 +73,7 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		final Set<String> mappedCacheNames = datastoreProvider.getMappedCacheNames();
-		final List<NotifyingFuture<Void>> tasks = new ArrayList<>( mappedCacheNames.size() );
-		mappedCacheNames.forEach( cacheName -> {
-			RemoteCache<Object,Object> cache = datastoreProvider.getCache( cacheName );
-			if ( cache != null ) {
-				tasks.add( cache.clearAsync() );
-			}
-		}
-		);
-		//Now block and wait for all clear operation to be performed:
-		tasks.forEach( resetOperation -> {
-			try {
-				resetOperation.get();
-			}
-			catch (InterruptedException ie) {
-				Thread.currentThread().interrupt();
-				throw new RuntimeException( ie );
-			}
-			catch (ExecutionException ee) {
-				throw new RuntimeException( ee );
-			}
-		} );
+		mappedCacheNames.forEach( cacheName -> datastoreProvider.getCache( cacheName ).clear() );
 	}
 
 	@Override

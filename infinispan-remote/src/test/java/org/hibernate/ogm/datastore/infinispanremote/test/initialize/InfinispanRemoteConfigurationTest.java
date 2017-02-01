@@ -5,6 +5,7 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 package org.hibernate.ogm.datastore.infinispanremote.test.initialize;
+
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME;
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.HOT_ROD_CLIENT_PREFIX;
@@ -29,7 +30,7 @@ import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
@@ -41,6 +42,9 @@ import org.junit.Test;
  */
 public class InfinispanRemoteConfigurationTest {
 
+	@ClassRule
+	public static final RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
+
 	/**
 	 * Properties name to use in the hibernate configuration (when no resource file is used).
 	 */
@@ -51,9 +55,6 @@ public class InfinispanRemoteConfigurationTest {
 
 	private static final String EVICTION_MILLIS_PROPERTY = "timeBetweenEvictionRunsMillis";
 	private static final String RESOURCE_NAME = "hotrod-client-testingconfiguration.properties";
-
-	@Rule
-	public RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
 
 	@Test
 	public void shouldThrowExceptionWhenForceReturnValuesIsFalse() {

@@ -31,10 +31,13 @@ import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.datastore.infinispanremote.utils.RemoteHotRodServerRule;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Assert;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 public class ProtoBufSchemaTest {
+
+	@ClassRule
+	public static final RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
 
 	private static final String DEFAULT_SCHEMA_NAME = "Hibernate_OGM_Generated_schema.proto";
 
@@ -47,9 +50,6 @@ public class ProtoBufSchemaTest {
 	 * Name of UTF-8 Charset
 	 */
 	private static final String CHARSET_UTF8 = "UTF-8";
-
-	@Rule
-	public RemoteHotRodServerRule hotRodServer = new RemoteHotRodServerRule();
 
 	@Test
 	public void testingBasicCrudSchemaGeneration() throws IOException {

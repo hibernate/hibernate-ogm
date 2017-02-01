@@ -50,13 +50,6 @@ public class HotrodServerLifecycle extends RunListener {
 		}
 	}
 
-	private synchronized void resetServer() throws Exception {
-		if ( server != null ) {
-			server.resetHotRodServerState();
-			printEvent( "Hot Rod server has been reset" );
-		}
-	}
-
 	private synchronized void startHotRodServer() {
 		if ( server == null ) {
 			server = new RemoteHotRodServerRule();
