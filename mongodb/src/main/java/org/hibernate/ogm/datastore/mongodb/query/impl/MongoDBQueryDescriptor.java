@@ -12,6 +12,7 @@ import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescrip
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.UPDATE;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 import com.mongodb.DBObject;
@@ -33,7 +34,14 @@ public class MongoDBQueryDescriptor implements Serializable {
 		REMOVE,
 		UPDATE,
 		COUNT,
-		AGGREGATE;
+		/**
+		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
+		 */
+		AGGREGATE,
+		/**
+		 * This is used for native queries, when the user wants to execute a generic aggregation query.
+		 */
+		AGGREGATE_PIPELINE;
 	}
 
 	private final String collectionName;
@@ -57,6 +65,19 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 */
 	private final DBObject options;
 	private final List<String> unwinds;
+	private final List<DBObject> pipeline;
+
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, List<DBObject> pipeline) {
+		this.collectionName = collectionName;
+		this.operation = operation;
+		this.criteria = null;
+		this.projection = null;
+		this.orderBy = null;
+		this.options = null;
+		this.updateOrInsert = null;
+		this.unwinds = null;
+		this.pipeline = pipeline == null ? Collections.<DBObject>emptyList() : pipeline;
+	}
 
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject updateOrInsert, List<String> unwinds) {
 		this.collectionName = collectionName;
@@ -67,6 +88,11 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.options = options;
 		this.updateOrInsert = updateOrInsert;
 		this.unwinds = unwinds;
+		this.pipeline = Collections.<DBObject>emptyList();
+	}
+
+	public List<DBObject> getPipeline() {
+		return pipeline;
 	}
 
 	/**

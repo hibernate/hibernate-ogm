@@ -37,6 +37,7 @@ import com.mongodb.util.JSON;
  * <li>update(criteria, update, options)</li>
  * <li>count()</li>
  * <li>count(criteria)</li>
+ * <li>aggregate(criteria)</li>
  * </ul>
  * The parameter values must be given as JSON objects adhering to the <a
  * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
@@ -44,6 +45,7 @@ import com.mongodb.util.JSON;
  * specification in Java Strings.</li>
  * </ul>
  *
+ * @author Davide D'Alto
  * @author Gunnar Morling
  * @author Thorsten Möller
  * @author Guillaume Smet
@@ -92,8 +94,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count() );
-		//TODO There are many more query types than what we support.
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count(), Aggregate() );
+		// TODO There are many more query types than what we support.
 	}
 
 	public Rule Operation() {
@@ -104,7 +106,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
-				Sequence( Count(), builder.setOperation( Operation.COUNT ) )
+				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
+				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) )
 		);
 	}
 
@@ -177,6 +180,32 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
+	}
+
+	public Rule Aggregate() {
+		return Sequence( Separator(), "aggregate ", "( ", AggregateArray(), ") " );
+	}
+
+	public Rule AggregateArray() {
+		return Sequence(
+				"[ ",
+					Sequence(
+						AggregateObject(),
+						ZeroOrMore( Sequence( ", ", AggregateObject() ) ) ),
+				"] " );
+	}
+
+	public Rule AggregateObject() {
+		return Sequence(
+				ZeroOrMore( WhiteSpace() ).skipNode(),
+				"{ ", AggregatePair(), "} " );
+	}
+
+	public Rule AggregatePair() {
+		return Sequence(
+				JsonString(), builder.push( currentIndex(), match() ),
+				": ",
+				Value(), builder.addPipeline( builder.pop(), match() ) );
 	}
 
 	public Rule Count() {

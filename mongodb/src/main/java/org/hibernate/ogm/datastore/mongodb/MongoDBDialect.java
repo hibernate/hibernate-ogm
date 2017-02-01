@@ -78,8 +78,8 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -786,6 +786,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doFindAndModify( queryDescriptor, collection, entityKeyMetadata );
 			case AGGREGATE:
 				return doAggregate( queryDescriptor, queryParameters, collection, entityKeyMetadata );
+			case AGGREGATE_PIPELINE:
+				return doAggregatePipeline( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case COUNT:
 				return doCount( queryDescriptor, collection );
 			case INSERT:
@@ -823,6 +825,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case FINDONE:
 			case FINDANDMODIFY:
 			case AGGREGATE:
+			case AGGREGATE_PIPELINE:
 			case COUNT:
 				throw log.readQueryMustBeExecutedViaGetResultList( queryDescriptor );
 			default:
@@ -863,15 +866,30 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			pipeline.add( stage( "$sort", query.getOrderBy() ) );
 		}
 
-		// apply firstRow/maxRows if present
-		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
-			pipeline.add( stage( "$skip", queryParameters.getRowSelection().getFirstRow() ) );
-		}
+		applyFirstResult( queryParameters, pipeline );
 
+		applyMaxResults( queryParameters, pipeline );
+
+		AggregationOutput output = collection.aggregate( pipeline );
+		return new MongoDBAggregationOutput( output, entityKeyMetadata );
+	}
+
+	private static void applyMaxResults(QueryParameters queryParameters, List<DBObject> pipeline) {
 		if ( queryParameters.getRowSelection().getMaxRows() != null ) {
 			pipeline.add( stage( "$limit", queryParameters.getRowSelection().getMaxRows() ) );
 		}
+	}
 
+	private static void applyFirstResult(QueryParameters queryParameters, List<DBObject> pipeline) {
+		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
+			pipeline.add( stage( "$skip", queryParameters.getRowSelection().getFirstRow() ) );
+		}
+	}
+
+	private static ClosableIterator<Tuple> doAggregatePipeline(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection, EntityKeyMetadata entityKeyMetadata) {
+		List<DBObject> pipeline = query.getPipeline();
+		applyFirstResult( queryParameters, pipeline );
+		applyMaxResults( queryParameters, pipeline );
 		AggregationOutput output = collection.aggregate( pipeline );
 		return new MongoDBAggregationOutput( output, entityKeyMetadata );
 	}
