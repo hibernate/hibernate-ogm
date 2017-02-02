@@ -3391,6 +3391,8 @@ String valid = "db.Poem.find({ \"name\" : \"Athanasia\" })";
 
 String alsoValid = "db.Poem.find({ '$or' : [{'name': 'Athanasia' }, {'name': 'Portia' }]})";
 
+String validAggregation = "db.Poem.aggregate([{ '$match': {'author': { '$regex': 'oscar.*', '$options': 'i' } } }, { '$sort': {'name': -1 } } ])";
+
 // NOT Valid syntax, it will throw an exception: com.mongodb.util.JSONParseException
 String notValid =  "db.Poem.find({ name : \"Athanasia\" })";
 
