@@ -34,26 +34,24 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Before
 	public void init() {
-		Session session = openSession();
-		Transaction transaction = session.beginTransaction();
-		session.persist( portia );
-		session.persist( athanasia );
-		session.persist( imperatrix );
-		transaction.commit();
-		session.clear();
-		session.close();
+		try ( Session session = openSession() ) {
+			Transaction tx = session.beginTransaction();
+			session.persist( portia );
+			session.persist( athanasia );
+			session.persist( imperatrix );
+			tx.commit();
+		}
 	}
 
 	@After
-	public void tearDown() {
-		Session session = openSession();
-		Transaction tx = session.beginTransaction();
-		delete( session, portia );
-		delete( session, athanasia );
-		delete( session, imperatrix );
-		tx.commit();
-		session.clear();
-		session.close();
+	public void tearDown() throws InterruptedException {
+		try ( Session session = openSession() ) {
+			Transaction tx = session.beginTransaction();
+			delete( session, portia );
+			delete( session, athanasia );
+			delete( session, imperatrix );
+			tx.commit();
+		}
 	}
 
 	private void delete(final Session session, final OscarWildePoem poem) {
@@ -65,261 +63,249 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	public void testFindWithPair() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result ).onProperty( "id" ).containsOnly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+			assertThat( result ).onProperty( "id" ).containsOnly( portia.getId(), imperatrix.getId(), athanasia.getId() );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
 	public void testFindOneWithPair() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'author' : 'Oscar Wilde' })";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'author' : 'Oscar Wilde' })";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.size() ).isEqualTo( 1 );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
 	public void testAggregate() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': 'Oscar Wilde' } }, { '$sort': {'name': -1 } } ])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': 'Oscar Wilde' } }, { '$sort': {'name': -1 } } ])";
 
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
 	public void testFindAndModify() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
-				+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'author': 'Oscar Wilder' } }, 'new': true })";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'author': 'Oscar Wilder' } }, 'new': true })";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
 	public void testFindAndModifyNoMatch() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
-				+ ".findAndModify({ 'query': {'_id': 11}, 'update': { '$set': { 'author': 'Oscar Wilder' } }, 'new': true })";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".findAndModify({ 'query': {'_id': 11}, 'update': { '$set': { 'author': 'Oscar Wilder' } }, 'new': true })";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result.size() ).isEqualTo( 0 );
+			assertThat( result.size() ).isEqualTo( 0 );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testFindAndModifyNoMatchUpsertThenRemoveThenFindOne() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
-				+ ".findAndModify({ 'query': {'_id': { '$numberLong': '11' } }, 'update': { '$set': { 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } }, 'new': true, 'upsert': true })";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".findAndModify({ 'query': {'_id': { '$numberLong': '11' } }, 'update': { '$set': { 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } }, 'new': true, 'upsert': true })";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
-		assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
 
-		// Need to remove here because subsequent tests assume the initial dataset.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
-		query = session.createNativeQuery( nativeQuery );
-		int n = query.executeUpdate();
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
 
-		assertThat( n ).isEqualTo( 1 );
+			assertThat( n ).isEqualTo( 1 );
 
-		// And check that it is gone.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		result = query.list();
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
 
-		assertThat( result.size() ).isEqualTo( 0 );
+			assertThat( result.size() ).isEqualTo( 0 );
 
-		transaction.commit();
-
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testInsertThenRemove() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
-				+ ".insert({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
-		Query query = session.createNativeQuery( nativeQuery );
-		int n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 1 );
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
 
-		// Try again.
-		try {
+			// Try again.
+			try {
+				n = query.executeUpdate();
+				Fail.fail( "Unique key constraint violation exception expected." );
+			}
+			catch (Exception e) {
+				/* Expected */
+			}
+
+			// Check that it was inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
 			n = query.executeUpdate();
-			Fail.fail( "Unique key constraint violation exception expected." );
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
 		}
-		catch (Exception e) {
-			/* Expected */
-		}
-
-		// Check that it was inserted.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-
-		List<OscarWildePoem> result = query.list();
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
-		assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
-
-		// Need to remove here because subsequent tests assume the initial dataset.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
-		query = session.createNativeQuery( nativeQuery );
-		n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 1 );
-
-		// And check that it is gone.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 0 );
-
-		transaction.commit();
-
-		session.clear();
-		session.close();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testInsertMultipleThenRemove() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
-				+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
-		Query query = session.createNativeQuery( nativeQuery );
-		int n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 2 );
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
 
-		// Try again.
-		try {
+			// Try again.
+			try {
+				n = query.executeUpdate();
+				Fail.fail( "Unique key constraint violation exception expected." );
+			}
+			catch (Exception e) {
+				/* Expected */
+			}
+
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
+
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
 			n = query.executeUpdate();
-			Fail.fail( "Unique key constraint violation exception expected." );
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '12' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that they are gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '12' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
 		}
-		catch (Exception e) {
-			/* Expected */
-		}
-
-		// Check that all were inserted.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-
-		List<OscarWildePoem> result = query.list();
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
-		assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
-
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
-		assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
-
-		// Need to remove here because subsequent tests assume the initial dataset.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
-		query = session.createNativeQuery( nativeQuery );
-		n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 1 );
-
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '12' } })";
-		query = session.createNativeQuery( nativeQuery );
-		n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 1 );
-
-		// And check that they are gone.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 0 );
-
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '12' } })";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 0 );
-
-		transaction.commit();
-
-		session.clear();
-		session.close();
 	}
 
 	@Test
 	public void testFindWithAnd() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ '$and': [{ 'author': 'Oscar Wilde' }, { 'name': 'Portia' }]})";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ '$and': [{ 'author': 'Oscar Wilde' }, { 'name': 'Portia' }]})";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result ).onProperty( "id" ).containsOnly( portia.getId() );
+			assertThat( result ).onProperty( "id" ).containsOnly( portia.getId() );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+		}
 	}
 
 	@Test
@@ -336,7 +322,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
 
 			transaction.commit();
-			session.clear();
 		}
 	}
 
@@ -354,7 +339,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
 
 			transaction.commit();
-			session.clear();
 		}
 	}
 
@@ -372,7 +356,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result ).onProperty( "id" ).containsOnly( athanasia.getId(), imperatrix.getId() );
 
 			transaction.commit();
-			session.clear();
 		}
 	}
 
@@ -390,7 +373,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result ).onProperty( "id" ).containsExactly( imperatrix.getId(), athanasia.getId() );
 
 			transaction.commit();
-			session.clear();
 		}
 	}
 
@@ -408,7 +390,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result ).onProperty( "id" ).containsExactly( imperatrix.getId() );
 
 			transaction.commit();
-			session.clear();
 		}
 	}
 
@@ -432,153 +413,150 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	public void testFindWithNor() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find( { '$nor' : [ { 'name' : 'Athanasia'}, { 'name' : 'Portia' }]})";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find( { '$nor' : [ { 'name' : 'Athanasia'}, { 'name' : 'Portia' }]})";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result ).onProperty( "id" ).containsOnly( imperatrix.getId() );
+			assertThat( result ).onProperty( "id" ).containsOnly( imperatrix.getId() );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+			session.clear();
+		}
 	}
 
 	@Test
 	public void testFindWithNot() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find( { 'name' :  { '$not' : { '$eq' : 'Athanasia' }}})";
-		Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query.list();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find( { 'name' :  { '$not' : { '$eq' : 'Athanasia' }}})";
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
 
-		assertThat( result ).onProperty( "id" ).containsOnly( portia.getId(), imperatrix.getId() );
+			assertThat( result ).onProperty( "id" ).containsOnly( portia.getId(), imperatrix.getId() );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+			session.clear();
+		}
 	}
 
 	@Test
 	public void testCountEntitiesQuery() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".count({ 'author' : 'Oscar Wilde' })";
-		Object result = session.createNativeQuery( nativeQuery ).uniqueResult();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".count({ 'author' : 'Oscar Wilde' })";
+			Object result = session.createNativeQuery( nativeQuery ).uniqueResult();
 
-		assertThat( result ).isEqualTo( 3L );
+			assertThat( result ).isEqualTo( 3L );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+			session.clear();
+		}
 	}
 
 	@Test
 	public void testExceptionWhenReturnedEntityIsMissingAndUniqueResultIsExpected() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ '$and': [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] })";
-		try {
-			session.createNativeQuery( nativeQuery ).uniqueResult();
-			transaction.commit();
-		}
-		catch (Exception he) {
-			transaction.rollback();
-			String message = he.getMessage();
-			assertThat( message ).as( "The native query doesn't define a returned entity, there should be a specific exception" ).contains( "OGM001217" );
-		}
-		finally {
-			session.clear();
-			session.close();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ '$and': [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] })";
+			try {
+				session.createNativeQuery( nativeQuery ).uniqueResult();
+				transaction.commit();
+			}
+			catch (Exception he) {
+				transaction.rollback();
+				String message = he.getMessage();
+				assertThat( message ).as( "The native query doesn't define a returned entity, there should be a specific exception" ).contains( "OGM001217" );
+			}
 		}
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1027")
 	public void testNumberLongSupport() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".update({ '_id': 1}, { '$inc': { 'counter' : NumberLong(5) } })";
-		Object result = session.createNativeQuery( nativeQuery ).executeUpdate();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".update({ '_id': 1}, { '$inc': { 'counter' : NumberLong(5) } })";
+			Object result = session.createNativeQuery( nativeQuery ).executeUpdate();
 
-		assertThat( result ).isEqualTo( 1 );
+			assertThat( result ).isEqualTo( 1 );
 
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".update({ '_id': 1}, { '$inc': { 'counter' : new NumberLong(5) } })";
-		result = session.createNativeQuery( nativeQuery ).executeUpdate();
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".update({ '_id': 1}, { '$inc': { 'counter' : new NumberLong(5) } })";
+			result = session.createNativeQuery( nativeQuery ).executeUpdate();
 
-		assertThat( result ).isEqualTo( 1 );
+			assertThat( result ).isEqualTo( 1 );
 
-		transaction.commit();
-		session.clear();
-		session.close();
+			transaction.commit();
+			session.clear();
+		}
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	@TestForIssue(jiraKey = "OGM-1027")
 	public void testInsertMultipleWithNumberLongThenRemove() throws Exception {
-		OgmSession session = openSession();
-		Transaction transaction = session.beginTransaction();
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
-				+ ".insert( [ { '_id': NumberLong(11), 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': NumberLong(12), 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
-		Query query = session.createNativeQuery( nativeQuery );
-		int n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 2 );
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( [ { '_id': NumberLong(11), 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': NumberLong(12), 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
 
-		// Check that all were inserted.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 
-		List<OscarWildePoem> result = query.list();
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
-		assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
 
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 1 );
-		assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
-		assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
-		assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
 
-		// Need to remove here because subsequent tests assume the initial dataset.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': NumberLong(11) })";
-		query = session.createNativeQuery( nativeQuery );
-		n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 1 );
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': NumberLong(11) })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
 
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': NumberLong(12) })";
-		query = session.createNativeQuery( nativeQuery );
-		n = query.executeUpdate();
-		assertThat( n ).isEqualTo( 1 );
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': NumberLong(12) })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
 
-		// And check that they are gone.
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': NumberLong(11) })";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 0 );
+			// And check that they are gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': NumberLong(11) })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
 
-		nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': NumberLong(12) })";
-		query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-		result = query.list();
-		assertThat( result.size() ).isEqualTo( 0 );
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': NumberLong(12) })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
 
-		transaction.commit();
+			transaction.commit();
 
-		session.clear();
-		session.close();
+			session.clear();
+		}
 	}
 
 	@Override
