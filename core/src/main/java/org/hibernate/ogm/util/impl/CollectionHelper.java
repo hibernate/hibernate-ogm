@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +47,14 @@ public class CollectionHelper {
 			Collections.addAll( set, ts );
 			return Collections.unmodifiableSet( set );
 		}
+	}
+
+	public static <T> LinkedHashSet<T> newLinkedHashSet() {
+		return new LinkedHashSet<T>();
+	}
+
+	public static <T> LinkedHashSet<T> newLinkedHashSet(int initialCapacity) {
+		return new LinkedHashSet<T>( initialCapacity );
 	}
 
 	public static <K, V> HashMap<K, V> newHashMap() {
