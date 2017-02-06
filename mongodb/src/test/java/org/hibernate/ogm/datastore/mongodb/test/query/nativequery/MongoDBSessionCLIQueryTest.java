@@ -21,6 +21,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.mongodb.BasicDBList;
+
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
  *
@@ -29,8 +31,8 @@ import org.junit.Test;
 public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
-	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde" );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", "ebook" );
+	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde", "audible", "ebook", "paperback" );
 
 	@Before
 	public void init() {
@@ -337,6 +339,39 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			List<OscarWildePoem> result = query.list();
 
 			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithUnwindGroupAndSort() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String match = "{ '$match': { 'author':{'$regex':'o.*', '$options': 'i'}}}";
+			String unwind = "{'$unwind': '$mediums'}";
+			String group = "{ '$group': {'_id' : '$_id' ,'clicks' : {'$push':'$mediums'} } }";
+			String sort = "{ '$sort': { '_id' : -1 } }";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate(["
+					+ match
+					+ "," + unwind
+					+ "," + group
+					+ "," + sort
+					+ "])";
+
+			Query query = session.createNativeQuery( nativeQuery );
+			@SuppressWarnings("unchecked")
+			List<Object[]> result = query.list();
+			assertThat( result ).hasSize( 2 );
+
+			BasicDBList expectedImperatrix = new BasicDBList();
+			expectedImperatrix.addAll( imperatrix.getMediums() );
+			assertThat( result.get( 0 ) ).isEqualTo( new Object[]{ imperatrix.getId(), expectedImperatrix } );
+
+			BasicDBList expectedAthanasia = new BasicDBList();
+			expectedAthanasia.addAll( athanasia.getMediums() );
+			assertThat( result.get( 1 ) ).isEqualTo( new Object[]{ athanasia.getId(), expectedAthanasia } );
 
 			transaction.commit();
 		}
