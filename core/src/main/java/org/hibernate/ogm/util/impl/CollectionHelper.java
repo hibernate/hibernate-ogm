@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +50,14 @@ public class CollectionHelper {
 		}
 	}
 
+	public static <T> LinkedHashSet<T> newLinkedHashSet() {
+		return new LinkedHashSet<T>();
+	}
+
+	public static <T> LinkedHashSet<T> newLinkedHashSet(int initialCapacity) {
+		return new LinkedHashSet<T>( initialCapacity );
+	}
+
 	public static <K, V> HashMap<K, V> newHashMap() {
 		return new HashMap<K, V>();
 	}
@@ -58,6 +68,18 @@ public class CollectionHelper {
 
 	public static <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> other) {
 		return new HashMap<K, V>( other );
+	}
+
+	public static <K, V> HashMap<K, V> newLinkedHashMap() {
+		return new LinkedHashMap<K, V>();
+	}
+
+	public static <K, V> HashMap<K, V> newLinkedHashMap(int initialCapacity) {
+		return new LinkedHashMap<K, V>( initialCapacity );
+	}
+
+	public static <K, V> HashMap<K, V> newLinkedHashMap(Map<? extends K, ? extends V> other) {
+		return new LinkedHashMap<K, V>( other );
 	}
 
 	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
