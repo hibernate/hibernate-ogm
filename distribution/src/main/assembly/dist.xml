@@ -246,7 +246,7 @@
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>../documentation/manual/target/docbook/publish</directory>
+            <directory>../documentation/manual/target/asciidoctor</directory>
             <outputDirectory>docs/reference</outputDirectory>
         </fileSet>
         <fileSet>

@@ -1,7 +1,18 @@
-= Hibernate OGM Reference Guide
-:imagesdir: images
+= Hibernate OGM {hibernate-ogm-version}: Reference Guide
+Emmanuel Bernard; Sanne Grinovero; Gunnar Morling; Davide D'Alto; Guillaume Scheibel; Mark Paluch; Guillaume Smet
+:doctype: book
+:revdate: {docdate}
+:sectanchors:
+:anchor:
+:toc: left
+:toclevels: 3
+:docinfodir: {docinfodir}
+:docinfo:
+:title-logo-image: image:hibernate_ogm_600px.png[align=left,pdfwidth=33%]
 
 include::modules/preface.asciidoc[]
+
+:numbered:
 
 include::modules/how-to-contribute.asciidoc[]
 

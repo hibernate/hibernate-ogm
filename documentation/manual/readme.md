@@ -24,4 +24,4 @@ Diagrams are done in OmniGraffle and stored as XML files in `src/main/omnigraffl
 Export the omnigraffle files as `png` with a dot per inch of 72.
 This will create a file of the right size for the web.
 
-`png` files, should be placed under `src/main/docbook/en-US/images`.
+`png` files should be placed under `src/main/resources/images`.

@@ -52,9 +52,13 @@ The documentation is built by default as part of the project build. You can skip
 
 If you just want to build the documentation, run it from the _documentation/manual_ subdirectory.
 
-For rapid documentation testing, you can limit the generated format to html to speed up the process
+By default, the following command only builds the HTML version of the documentation:
 
-    mvn clean install -f documentation/manual/pom.xml -s settings-example.xml -Djdocbook.format=html_single
+    mvn clean install -f documentation/manual/pom.xml -s settings-example.xml
+
+If you also wish to generate the PDF version of the documentation, you need to use the `documentation-pdf` profile:
+
+    mvn clean install -f documentation/manual/pom.xml -s settings-example.xml -Pdocumentation-pdf
 
 ### Distribution
 

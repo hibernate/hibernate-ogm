@@ -68,10 +68,8 @@ NoSQL databases can be loosely classified in four families:
 * column based datastores
 
 
-// On native Asciidoctor, remove width=15cm to have it work
-
 .Various NoSQL families
-image::nosql.png[align="center", depth="", scalefit="1", width="15cm"]
+image::nosql.png[align="center", depth="", scalefit="1"]
 
 Each have different benefits and drawbacks
 and one solution might fit a use case better than an other.

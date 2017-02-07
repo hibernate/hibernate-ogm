@@ -200,13 +200,13 @@ The second one is adding FongoDB and SLF4J dependencies in your project.
 <dependency>
     <groupId>com.github.fakemongo</groupId>
     <artifactId>fongo</artifactId>
+    <version>{fongodb-version}</version>
     <scope>test</scope>
-    <version>${fongodbVersion}</version>
 </dependency>
 <dependency>
     <groupId>org.slf4j</groupId>
     <artifactId>slf4j-simple</artifactId>
-    <version>${slf4jVersion}</version>
+    <version>{slf4j-version}</version>
     <scope>test</scope>
 </dependency>
 ----

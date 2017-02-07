@@ -33,10 +33,8 @@ Hibernate OGM is made possible by the reuse of a few key components:
   or in many other NoSQL using Infinispan's write-through cachestores
 * Hibernate OGM itself
 
-// On native Asciidoctor, remove width=15cm to have it work
-
 .General architecture
-image::ogm-architecture.png[align="center", depth="", scalefit="1", width="15cm"]
+image::ogm-architecture.png[align="center", depth="", scalefit="1"]
 
 Hibernate OGM reuses as much as possible from the Hibernate ORM infrastructure.
 There is no need to rewrite a new JPA engine.
@@ -181,9 +179,8 @@ The key in which association data are stored is composed of:
 
 Using this approach, we favor fast read and (slightly) slower writes.
 
-// On native Asciidoctor, remove width=15cm to have it work
 .Storing associations
-image::data-association.png[align="center", depth="", scalefit="1", width="15cm"]
+image::data-association.png[align="center", depth="", scalefit="1"]
 
 Note that this approach has benefits and drawbacks:
 
@@ -198,9 +195,8 @@ the association information including the identifier to the associated entities
 can be stored in the entity owning the association.
 This is a more natural model for documents.
 
-// On native Asciidoctor, remove width=15cm to have it work
 .Storing associations in a document store
-image::data-association-document.png[align="center", depth="", scalefit="1", width="15cm"]
+image::data-association-document.png[align="center", depth="", scalefit="1"]
 
 Some identifiers require to store a seed in the datastore
 (like sequences for examples).
@@ -287,9 +283,8 @@ and an object oriented abstraction including an object oriented query DSL.
 Let's have a look at the architecture of Hibernate OGM
 when using Hibernate Search:
 
-// On native Asciidoctor, remove width=15cm to have it work
 .Using Hibernate Search as query engine - greyed areas are blocks already present in Hibernate OGM's architecture
-image::ogm-architecture-with-hsearch.png[align="center", depth="", scalefit="1", width="15cm"]
+image::ogm-architecture-with-hsearch.png[align="center", depth="", scalefit="1"]
 
 In this situation, Hibernate ORM Core pushes change events
 to Hibernate Search which will index entities accordingly
