@@ -37,7 +37,7 @@ public class MongoDBQueryDescriptorBuilder {
 	private String criteria;
 	private String projection;
 	private String orderBy;
-
+	private String fieldName;
 	/**
 	 * Document or array of documents to insert/update for an INSERT/UPDATE query.
 	 */
@@ -120,19 +120,30 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
+	public boolean setFieldName(String fieldName) {
+		this.fieldName = fieldName.trim();
+		return true;
+	}
+
 	public MongoDBQueryDescriptor build() {
-		if ( operation != Operation.AGGREGATE_PIPELINE ) {
-			return new MongoDBQueryDescriptor(
-				collection,
-				operation,
-				parse( criteria ),
-				parse( projection ),
-				parse( orderBy ),
-				parse( options ),
-				parse( updateOrInsert ),
-				null );
+		if ( operation == Operation.DISTINCT ) {
+			return new MongoDBQueryDescriptor( collection, operation,parse( criteria ), fieldName );
 		}
-		return new MongoDBQueryDescriptor( collection, operation, pipeline );
+		else if ( operation != Operation.AGGREGATE_PIPELINE ) {
+			return new MongoDBQueryDescriptor(
+					collection,
+					operation,
+					parse( criteria ),
+					parse( projection ),
+					parse( orderBy ),
+					parse( options ),
+					parse( updateOrInsert ),
+					null
+			);
+		}
+		else {
+			return new MongoDBQueryDescriptor( collection, operation, pipeline );
+		}
 	}
 
 	/**

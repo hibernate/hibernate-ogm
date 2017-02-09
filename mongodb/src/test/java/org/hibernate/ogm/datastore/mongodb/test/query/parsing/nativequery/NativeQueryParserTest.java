@@ -64,7 +64,9 @@ public class NativeQueryParserTest {
 						+ "," + group
 						+ "," + sort
 						+ "])";
-		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run( nativeQuery );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run(
+				nativeQuery
+		);
 
 		System.out.println( ParseTreeUtils.printNodeTree( run ) );
 
@@ -79,6 +81,23 @@ public class NativeQueryParserTest {
 					, JSON.parse( group )
 					, JSON.parse( sort )
 					);
+	}
+
+	@Test
+	@TestForIssue( jiraKey = "OGM-1247")
+	public void shouldParseDistinctQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.distinct('item',{\"orderId\":\"XYZ123\"})" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo("Order");
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"orderId\" : \"XYZ123\"}" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+		assertThat (queryDescriptor.getFieldName()).isEqualTo( "item" );
 	}
 
 	@Test

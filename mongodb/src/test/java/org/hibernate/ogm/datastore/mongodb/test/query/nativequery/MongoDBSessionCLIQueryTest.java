@@ -106,7 +106,11 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
-			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+			assertThat( result ).onProperty( "id" ).containsExactly(
+					portia.getId(),
+					imperatrix.getId(),
+					athanasia.getId()
+			);
 
 			transaction.commit();
 		}
@@ -321,7 +325,11 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
-			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+			assertThat( result ).onProperty( "id" ).containsExactly(
+					portia.getId(),
+					imperatrix.getId(),
+					athanasia.getId()
+			);
 
 			transaction.commit();
 		}
@@ -371,7 +379,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			BasicDBList expectedAthanasia = new BasicDBList();
 			expectedAthanasia.addAll( athanasia.getMediums() );
-			assertThat( result.get( 1 ) ).isEqualTo( new Object[]{ athanasia.getId(), expectedAthanasia } );
+			assertThat( result.get( 1 ) ).isEqualTo( new Object[] { athanasia.getId(), expectedAthanasia } );
 
 			transaction.commit();
 		}
@@ -597,5 +605,25 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class[] { OscarWildePoem.class };
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1247")
+	public void testDistinctQuery() throws Exception {
+		try (OgmSession session = openSession()) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".distinct(\"name\",{\"author\":\"Oscar Wilde\"})";
+
+			Query query = session.createNativeQuery( nativeQuery );
+
+			List result = (List) session.createNativeQuery( nativeQuery ).uniqueResult();
+
+
+			assertThat( result.size() ).isEqualTo( 3 );
+
+			transaction.commit();
+			session.clear();
+		}
 	}
 }

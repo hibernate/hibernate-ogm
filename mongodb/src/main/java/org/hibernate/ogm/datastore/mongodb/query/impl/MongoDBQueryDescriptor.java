@@ -41,14 +41,15 @@ public class MongoDBQueryDescriptor implements Serializable {
 		/**
 		 * This is used for native queries, when the user wants to execute a generic aggregation query.
 		 */
-		AGGREGATE_PIPELINE;
+		AGGREGATE_PIPELINE,
+		DISTINCT;
 	}
 
 	private final String collectionName;
 	private final Operation operation;
 	private final DBObject criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	private final DBObject projection;
-
+	private final String fieldName;
 	/**
 	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT query.
 	 */
@@ -67,6 +68,20 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final List<String> unwinds;
 	private final List<DBObject> pipeline;
 
+
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, String fieldName) {
+		this.collectionName = collectionName;
+		this.operation = operation;
+		this.criteria = criteria;
+		this.projection = null;
+		this.orderBy = null;
+		this.options = null;
+		this.updateOrInsert = null;
+		this.unwinds = null;
+		this.pipeline = Collections.<DBObject>emptyList();
+		this.fieldName = fieldName;
+	}
+
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, List<DBObject> pipeline) {
 		this.collectionName = collectionName;
 		this.operation = operation;
@@ -77,6 +92,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.updateOrInsert = null;
 		this.unwinds = null;
 		this.pipeline = pipeline == null ? Collections.<DBObject>emptyList() : pipeline;
+		this.fieldName = "";
 	}
 
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject updateOrInsert, List<String> unwinds) {
@@ -89,6 +105,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.updateOrInsert = updateOrInsert;
 		this.unwinds = unwinds;
 		this.pipeline = Collections.<DBObject>emptyList();
+		this.fieldName = "";
 	}
 
 	public List<DBObject> getPipeline() {
@@ -153,6 +170,13 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	public List<String> getUnwinds() {
 		return unwinds;
+	}
+
+	/**
+	 * Name of field on which distinct query will be performed
+	 */
+	public String getFieldName() {
+		return fieldName;
 	}
 
 	@Override

@@ -790,6 +790,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doAggregatePipeline( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case COUNT:
 				return doCount( queryDescriptor, collection );
+			case DISTINCT:
+				return doDistinct( queryDescriptor, collection );
 			case INSERT:
 			case REMOVE:
 			case UPDATE:
@@ -827,6 +829,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case AGGREGATE:
 			case AGGREGATE_PIPELINE:
 			case COUNT:
+			case DISTINCT:
 				throw log.readQueryMustBeExecutedViaGetResultList( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
@@ -900,6 +903,25 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return stage;
 	}
 
+	private static ClosableIterator<Tuple> doDistinct(
+			final MongoDBQueryDescriptor queryDescriptor, final DBCollection collection) {
+		List distinctFieldValues = collection.distinct( queryDescriptor.getFieldName(), queryDescriptor.getCriteria() );
+		MapTupleSnapshot snapshot = new MapTupleSnapshot(
+				Collections.<String, Object>singletonMap(
+						"n",
+						distinctFieldValues
+				)
+		);
+		return CollectionHelper.newClosableIterator(
+				Collections.singletonList(
+						new Tuple(
+								snapshot,
+								SnapshotType.UNKNOWN
+						)
+				)
+		);
+
+	}
 	private static ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
 			EntityKeyMetadata entityKeyMetadata) {
 		BasicDBObject criteria = (BasicDBObject) query.getCriteria();

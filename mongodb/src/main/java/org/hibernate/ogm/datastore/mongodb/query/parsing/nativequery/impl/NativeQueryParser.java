@@ -94,7 +94,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count(), Aggregate() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count(), Aggregate(), Distinct() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -107,7 +107,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
-				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) )
+				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
+				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) )
 		);
 	}
 
@@ -214,6 +215,17 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"count ",
 				"( ",
 				Optional( Sequence( JsonComposite(), builder.setCriteria( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule Distinct() {
+		return Sequence(
+				Separator(),
+				"distinct ",
+				"( ",
+				Sequence( JsonString(), builder.setFieldName( JSON.parse( match() ).toString() ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
 				") "
 		);
 	}
