@@ -19,6 +19,11 @@ import org.hibernate.ogm.util.impl.StringHelper;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.CollationAlternate;
+import com.mongodb.client.model.CollationCaseFirst;
+import com.mongodb.client.model.CollationMaxVariable;
+import com.mongodb.client.model.CollationStrength;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -37,6 +42,16 @@ public class MongoDBQueryDescriptorBuilder {
 	private String criteria;
 	private String projection;
 	private String orderBy;
+
+	/**
+	 * Distinct Operation will be performed on this field
+	 */
+	private String distinctFieldName;
+
+	/**
+	 * Collation document
+	 */
+	private String collation;
 
 	/**
 	 * Document or array of documents to insert/update for an INSERT/UPDATE query.
@@ -120,8 +135,21 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
+	public boolean setDistinctFieldName(String fieldName) {
+		this.distinctFieldName = fieldName.trim();
+		return true;
+	}
+
+	public boolean setCollation(String collation) {
+		this.collation = collation;
+		return true;
+	}
+
 	public MongoDBQueryDescriptor build() {
-		if ( operation != Operation.AGGREGATE_PIPELINE ) {
+		if ( operation == Operation.DISTINCT ) {
+			return new MongoDBQueryDescriptor( collection, operation, parse( criteria ), parseCollation( collation ), distinctFieldName );
+		}
+		else if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			return new MongoDBQueryDescriptor(
 				collection,
 				operation,
@@ -154,6 +182,50 @@ public class MongoDBQueryDescriptorBuilder {
 		}
 		BasicDBObject object = BasicDBObject.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
+	}
+
+	private static Collation parseCollation(String json) {
+		DBObject dbObject = ( (DBObject) parseAsObject( json ) );
+
+		if ( dbObject != null ) {
+			dbObject = (DBObject) dbObject.get( "collation" );
+			if ( dbObject != null ) {
+				Collation collation = Collation.builder()
+						.locale( (String) dbObject.get( "locale" ) )
+						.caseLevel( (Boolean) dbObject.get( "caseLevel" ) )
+						.numericOrdering( (Boolean) dbObject.get( "numericOrdering" ) )
+						.backwards( (Boolean) dbObject.get( "backwards" ) )
+						.collationCaseFirst( caseFirst( dbObject ) )
+						.collationStrength( strength( dbObject ) )
+						.collationAlternate( alternate( dbObject ) )
+						.collationMaxVariable( maxVariable( dbObject ) )
+						.build();
+
+				return collation;
+			}
+
+		}
+		return null;
+	}
+
+	private static CollationCaseFirst caseFirst(DBObject dbObject) {
+		String caseFirst = (String) dbObject.get( "caseFirst" );
+		return caseFirst == null ? null : CollationCaseFirst.fromString( caseFirst );
+	}
+
+	private static CollationStrength strength(DBObject dbObject) {
+		Integer strength = (Integer) dbObject.get( "strength" );
+		return strength == null ? null : CollationStrength.fromInt( strength );
+	}
+
+	private static CollationAlternate alternate(DBObject dbObject) {
+		String value = (String) dbObject.get( "alternate" );
+		return value == null ? null : CollationAlternate.fromString( value );
+	}
+
+	private static CollationMaxVariable maxVariable(DBObject dbObject) {
+		String value = (String) dbObject.get( "maxVariable" );
+		return value == null ? null : CollationMaxVariable.fromString( value );
 	}
 
 	private static DBObject operation(StackedOperation operation, String value) {
