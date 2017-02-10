@@ -346,7 +346,11 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
-			assertThat( result ).onProperty( "id" ).containsExactly( portia.getId(), imperatrix.getId(), athanasia.getId() );
+			assertThat( result ).onProperty( "id" ).containsExactly(
+					portia.getId(),
+					imperatrix.getId(),
+					athanasia.getId()
+			);
 
 			transaction.commit();
 		}
@@ -609,18 +613,56 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
-	public void testDistinctQuery() throws Exception {
-		try (OgmSession session = openSession()) {
+	public void testDistinctQueryWithCriteriaAndCollation() throws Exception {
+		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".distinct(\"name\",{\"author\":\"Oscar Wilde\"})";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".distinct('name',{'author':'Oscar Wilde'},{'collation': { 'locale' : 'en', 'caseLevel' : false, 'caseFirst' : 'upper'}})";
 
-			Query query = session.createNativeQuery( nativeQuery );
-
-			List result = (List) session.createNativeQuery( nativeQuery ).uniqueResult();
-
+			List<String> result = (List<String>) session.createNativeQuery( nativeQuery ).uniqueResult();
 
 			assertThat( result.size() ).isEqualTo( 3 );
+			assertThat( result.get(0) ).isEqualTo( "Portia"  );
+			assertThat( result.get(1) ).isEqualTo( "Ave Imperatrix" );
+			assertThat( result.get(2) ).isEqualTo( "Athanasia" );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1247")
+	public void testSimpleDistinctQuery() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".distinct('author')";
+
+			List<String> result = (List<String>) session.createNativeQuery( nativeQuery ).uniqueResult();
+
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ) ).isEqualTo( "Oscar Wilde" );
+
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1247")
+	public void testDistinctQueryWithCriteria() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".distinct('name',{'author':'Oscar Wilde'})";
+
+			List<String> result = (List<String>) session.createNativeQuery( nativeQuery ).uniqueResult();
+
+			assertThat( result.size() ).isEqualTo( 3 );
+			assertThat( result.get(0) ).isEqualTo( "Portia"  );
+			assertThat( result.get(1) ).isEqualTo( "Ave Imperatrix" );
+			assertThat( result.get(2) ).isEqualTo( "Athanasia" );
 
 			transaction.commit();
 			session.clear();

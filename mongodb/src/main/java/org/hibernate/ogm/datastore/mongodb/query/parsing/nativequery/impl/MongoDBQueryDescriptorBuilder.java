@@ -19,6 +19,11 @@ import org.hibernate.ogm.util.impl.StringHelper;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.CollationAlternate;
+import com.mongodb.client.model.CollationCaseFirst;
+import com.mongodb.client.model.CollationMaxVariable;
+import com.mongodb.client.model.CollationStrength;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -37,7 +42,17 @@ public class MongoDBQueryDescriptorBuilder {
 	private String criteria;
 	private String projection;
 	private String orderBy;
-	private String fieldName;
+
+	/**
+	 * Distinct Operation will be performed on this field
+	 */
+	private String distinctFieldName;
+
+	/**
+	 * Collation document
+	 */
+	private String collation;
+
 	/**
 	 * Document or array of documents to insert/update for an INSERT/UPDATE query.
 	 */
@@ -120,30 +135,32 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
-	public boolean setFieldName(String fieldName) {
-		this.fieldName = fieldName.trim();
+	public boolean setDistinctFieldName(String fieldName) {
+		this.distinctFieldName = fieldName.trim();
+		return true;
+	}
+
+	public boolean setCollation(String collation) {
+		this.collation = collation;
 		return true;
 	}
 
 	public MongoDBQueryDescriptor build() {
 		if ( operation == Operation.DISTINCT ) {
-			return new MongoDBQueryDescriptor( collection, operation,parse( criteria ), fieldName );
+			return new MongoDBQueryDescriptor( collection, operation,parse( criteria ), parseCollation( collation ), distinctFieldName );
 		}
 		else if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			return new MongoDBQueryDescriptor(
-					collection,
-					operation,
-					parse( criteria ),
-					parse( projection ),
-					parse( orderBy ),
-					parse( options ),
-					parse( updateOrInsert ),
-					null
-			);
+				collection,
+				operation,
+				parse( criteria ),
+				parse( projection ),
+				parse( orderBy ),
+				parse( options ),
+				parse( updateOrInsert ),
+				null );
 		}
-		else {
-			return new MongoDBQueryDescriptor( collection, operation, pipeline );
-		}
+		return new MongoDBQueryDescriptor( collection, operation, pipeline );
 	}
 
 	/**
@@ -165,6 +182,34 @@ public class MongoDBQueryDescriptorBuilder {
 		}
 		BasicDBObject object = BasicDBObject.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
+	}
+
+	/**
+	 * Collation document parser
+	 * @param json
+	 * @return
+	 */
+	private static Collation parseCollation(String json)  {
+		DBObject dbObject = ((DBObject) parseAsObject( json ));
+		Collation collation = null;
+
+		if(dbObject != null) {
+			dbObject = ( DBObject ) dbObject.get( "collation" );
+			if ( dbObject != null ) {
+				collation = Collation.builder()
+						.locale( (String) dbObject.get( "locale" ) )
+						.caseLevel( (Boolean) dbObject.get( "caseLevel" ) )
+						.numericOrdering( (Boolean) dbObject.get( "numericOrdering" ) )
+						.backwards( (Boolean) dbObject.get( "backwards" ) )
+						.collationCaseFirst( dbObject.get( "caseFirst" ) == null ? null : CollationCaseFirst.fromString( (String) dbObject.get( "caseFirst" ) ) )
+						.collationStrength( dbObject.get( "strength" ) == null ? null : CollationStrength.fromInt( (Integer) dbObject.get( "strength" ) ) )
+						.collationAlternate( dbObject.get( "alternate" ) == null ? null : CollationAlternate.fromString( (String) dbObject.get( "alternate" ) ) )
+						.collationMaxVariable( dbObject.get( "maxVariable" ) == null ? null : CollationMaxVariable.fromString( (String) dbObject.get( "maxVariable" ) ) )
+						.build();
+			}
+
+		}
+		return collation;
 	}
 
 	private static DBObject operation(StackedOperation operation, String value) {

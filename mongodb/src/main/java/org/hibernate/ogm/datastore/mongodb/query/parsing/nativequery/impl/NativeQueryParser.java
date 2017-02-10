@@ -38,6 +38,7 @@ import com.mongodb.util.JSON;
  * <li>count()</li>
  * <li>count(criteria)</li>
  * <li>aggregate(criteria)</li>
+ * <li>distinct(fieldName, criteria, options)</li>
  * </ul>
  * The parameter values must be given as JSON objects adhering to the <a
  * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
@@ -224,8 +225,9 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Separator(),
 				"distinct ",
 				"( ",
-				Sequence( JsonString(), builder.setFieldName( JSON.parse( match() ).toString() ) ),
+				Sequence( JsonString(), builder.setDistinctFieldName( JSON.parse( match() ).toString() ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setCollation( match() ) ) ),
 				") "
 		);
 	}

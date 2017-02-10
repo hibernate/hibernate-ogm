@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.mongodb.client.model.DBCollectionDistinctOptions;
 import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
@@ -903,25 +904,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return stage;
 	}
 
-	private static ClosableIterator<Tuple> doDistinct(
-			final MongoDBQueryDescriptor queryDescriptor, final DBCollection collection) {
-		List distinctFieldValues = collection.distinct( queryDescriptor.getFieldName(), queryDescriptor.getCriteria() );
-		MapTupleSnapshot snapshot = new MapTupleSnapshot(
-				Collections.<String, Object>singletonMap(
-						"n",
-						distinctFieldValues
-				)
-		);
-		return CollectionHelper.newClosableIterator(
-				Collections.singletonList(
-						new Tuple(
-								snapshot,
-								SnapshotType.UNKNOWN
-						)
-				)
-		);
-
+	private static ClosableIterator<Tuple> doDistinct(final MongoDBQueryDescriptor queryDescriptor, final DBCollection collection) {
+		DBCollectionDistinctOptions distinctOptions = new DBCollectionDistinctOptions().filter( queryDescriptor.getCriteria() ).collation( queryDescriptor.getCollation() );
+		List<?> distinctFieldValues = collection.distinct( queryDescriptor.getDistinctFieldName(), distinctOptions );
+		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", distinctFieldValues ) );
+		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot, SnapshotType.UNKNOWN ) ) );
 	}
+
 	private static ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
 			EntityKeyMetadata entityKeyMetadata) {
 		BasicDBObject criteria = (BasicDBObject) query.getCriteria();

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.mongodb.DBObject;
+import com.mongodb.client.model.Collation;
 
 /**
  * Describes a query to be executed against MongoDB.
@@ -49,7 +50,17 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final Operation operation;
 	private final DBObject criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	private final DBObject projection;
-	private final String fieldName;
+
+	/**
+	 * Distinct query will use this field name
+	 */
+	private final String distinctFieldName;
+
+	/**
+	 * Collation object will be used for Distinct Operation
+	 */
+	private final Collation collation; // As of now only applicable to distinct queries
+
 	/**
 	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT query.
 	 */
@@ -69,7 +80,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final List<DBObject> pipeline;
 
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, String fieldName) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, Collation collation, String distinctFieldName) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
@@ -79,7 +90,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.updateOrInsert = null;
 		this.unwinds = null;
 		this.pipeline = Collections.<DBObject>emptyList();
-		this.fieldName = fieldName;
+		this.distinctFieldName = distinctFieldName;
+		this.collation = collation;
 	}
 
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, List<DBObject> pipeline) {
@@ -92,7 +104,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.updateOrInsert = null;
 		this.unwinds = null;
 		this.pipeline = pipeline == null ? Collections.<DBObject>emptyList() : pipeline;
-		this.fieldName = "";
+		this.distinctFieldName = null;
+		this.collation = null;
 	}
 
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject updateOrInsert, List<String> unwinds) {
@@ -105,7 +118,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.updateOrInsert = updateOrInsert;
 		this.unwinds = unwinds;
 		this.pipeline = Collections.<DBObject>emptyList();
-		this.fieldName = "";
+		this.distinctFieldName = null;
+		this.collation = null;
 	}
 
 	public List<DBObject> getPipeline() {
@@ -175,8 +189,16 @@ public class MongoDBQueryDescriptor implements Serializable {
 	/**
 	 * Name of field on which distinct query will be performed
 	 */
-	public String getFieldName() {
-		return fieldName;
+	public String getDistinctFieldName() {
+		return distinctFieldName;
+	}
+
+	/**
+	 * Returns collation document which will be used in DISTINCT operation
+	 *
+	 */
+	public Collation getCollation() {
+		return collation;
 	}
 
 	@Override
