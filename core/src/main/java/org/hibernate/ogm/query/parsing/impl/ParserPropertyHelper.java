@@ -21,6 +21,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.ComponentType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
@@ -56,6 +57,14 @@ public class ParserPropertyHelper implements PropertyHelper {
 		else {
 			return value;
 		}
+	}
+
+	protected boolean isElementCollection(Type propertyType) {
+		if ( !propertyType.isCollectionType() ) {
+			return false;
+		}
+		Type elementType = ( (CollectionType) propertyType ).getElementType( sessionFactory );
+		return !elementType.isComponentType() && !elementType.isEntityType();
 	}
 
 	@Override
@@ -227,6 +236,12 @@ public class ParserPropertyHelper implements PropertyHelper {
 		String propertyName = pathIterator.next();
 		Type propertyType = persister.getPropertyType( propertyName );
 		if ( !pathIterator.hasNext() ) {
+			if ( isElementCollection( propertyType ) ) {
+				Joinable associatedJoinable = ( (AssociationType) propertyType ).getAssociatedJoinable( persister.getFactory() );
+				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) associatedJoinable;
+				// Collection of elements
+				return collectionPersister.getElementColumnNames()[0];
+			}
 			return persister.getPropertyColumnNames( propertyName )[0];
 		}
 		else if ( propertyType.isComponentType() ) {

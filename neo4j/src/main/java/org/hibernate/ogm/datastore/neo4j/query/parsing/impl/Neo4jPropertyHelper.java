@@ -17,10 +17,13 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.parsing.impl.ParserPropertyHelper;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 
 /**
@@ -31,12 +34,14 @@ import org.hibernate.type.Type;
  */
 public class Neo4jPropertyHelper extends ParserPropertyHelper implements PropertyHelper {
 
+	private final SessionFactoryImplementor sessionFactory;
 	private final Neo4jAliasResolver aliasResolver;
 
 	public Neo4jPropertyHelper(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames,
 			Neo4jAliasResolver aliasResolver) {
 		super( sessionFactory, entityNames );
 		this.aliasResolver = aliasResolver;
+		this.sessionFactory = sessionFactory;
 	}
 
 	@Override
@@ -45,7 +50,12 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 			return value;
 		}
 		else {
-			return super.convertToBackendType( entityType, propertyPath, value );
+			Type propertyType = getPropertyType( entityType, propertyPath );
+			if ( isElementCollection( propertyType ) ) {
+				propertyType = ( (CollectionType) propertyType ).getElementType( sessionFactory );
+			}
+			GridType ogmType = sessionFactory.getServiceRegistry().getService( TypeTranslator.class ).getType( propertyType );
+			return ogmType.convertToBackendType( value, sessionFactory );
 		}
 	}
 
@@ -85,7 +95,7 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 				AssociationType associationPropertyType = (AssociationType) currentPropertyType;
 				Joinable associatedJoinable = associationPropertyType.getAssociatedJoinable( getSessionFactory() );
 				if ( associatedJoinable.isCollection()
-						&& ( (OgmCollectionPersister) associatedJoinable ).getType().isComponentType() ) {
+						&& !( (OgmCollectionPersister) associatedJoinable ).getType().isEntityType() ) {
 					// we have a collection of embedded
 					propertyAlias = aliasResolver.createAliasForEmbedded( entityAlias, currentPropertyPath, optionalMatch );
 				}
