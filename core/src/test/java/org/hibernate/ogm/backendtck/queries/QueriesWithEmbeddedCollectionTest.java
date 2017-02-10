@@ -72,6 +72,15 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			comment = "The parser does not support this at the moment" )
+	public void testEqualOperatorWithCollectionOfElements() throws Exception {
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.dwarves d WHERE d = 'Dwalin' " ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 300L );
+	}
+
+	@Test
 	public void testEqualOperatorWithEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[ARTIFACT] Search for the evil artifact'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
@@ -82,7 +91,6 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 		List<?> result = session.createQuery( "from StoryGame story JOIN story.chaoticBranches c WHERE c.evilText IN ( '[ARTIFACT] Search for the evil artifact' )" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
-
 
 	@Test
 	public void testBetweenOperatorWithEmbeddedCollection() throws Exception {
@@ -287,6 +295,7 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 		StoryGame story3 = new StoryGame( 300L, new StoryBranch( "[DUNGEON] You go to the dungeon", null ) );
 		story3.setEvilBranch( new StoryBranch( "[DUNGEON] You become the dungeon keeper", null ) );
+		story3.setDwarves( Arrays.asList( "Dwalin", "Balin", "Kili", "Fili", "Dori", "Nori", "Ori", "Oin", "Gloin", "Bifur", "Bofur", "Bombur", "Thorin" ) );
 
 		persist( sessions, story1, story2, story3 );
 	}
