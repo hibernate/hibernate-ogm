@@ -317,7 +317,7 @@ with a synchronous replication to other Infinispan nodes.
     <persistence passivation="true">
         <file-store
            shared="false"
-           path="/var/infinispan/myapp/users"
+           path="/var/infinispan/myapp/users">
             <write-behind flush-lock-timeout="15000" thread-pool-size="5" />
         </file-store>
     </persistence>
