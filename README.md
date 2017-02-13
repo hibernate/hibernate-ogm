@@ -4,14 +4,31 @@
 
 ## Description
 
-Hibernate OGM is an attempt to store data in a NoSQL data grid using the Hibernate ORM engine rather than rewriting a JPA engine from scratch.
+Hibernate OGM stores data in a NoSQL data grid using the Hibernate ORM engine.
 
 The benefits are fairly obvious:
- - reimplementing the complex JPA specification is a lot of work
- - a new implementation would mature at a rather slow rate and risk of bugs would be high
+ - write your model once using well known JPA annotations and select the right NoSQL data grid for your project
  - Hibernate is familiar to many people
+ - you end up being able to use all the tools of the Hibernate ecosystem such as Hibernate Search or Hibernate Validator
 
-Checkout <http://ogm.hibernate.org> for more information.
+Checkout <http://hibernate.org/ogm/> for more information.
+
+## Useful pointers
+
+Latest Documentation:
+
+ * Reference guide: <https://docs.jboss.org/hibernate/stable/ogm/reference/en-US/html_single/>
+ * Additional content: <http://community.jboss.org/en/hibernate/ogm>
+
+Bug Reports:
+
+ * Hibernate JIRA (preferred): <https://hibernate.onjira.com/browse/OGM>
+ * Mailing list: <hibernate-dev@lists.jboss.org>
+
+Support:
+
+ * The hibernate-ogm tag on Stackoverflow: <http://stackoverflow.com/questions/tagged/hibernate-ogm>
+ * Our forum: <https://forum.hibernate.org/viewforum.php?f=31>
 
 ## Build instructions
 
@@ -165,21 +182,6 @@ prior to running the tests:
     export NEO4J_PORT=1234
     export NEO4J_USERNAME=someUsername
     export NEO4J_PASSWORD=someP@ssw0rd
-
-## Contact
-
-Latest Documentation:
-
-   <http://community.jboss.org/en/hibernate/ogm>
-
-Bug Reports:
-
-   Hibernate JIRA (preferred): <https://hibernate.onjira.com/browse/OGM>
-   <hibernate-dev@lists.jboss.org>
-
-Free Technical Support:
-
-   <https://forum.hibernate.org/viewforum.php?f=31>
 
 ## Notes
 
