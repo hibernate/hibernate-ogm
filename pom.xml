@@ -792,6 +792,8 @@
                 <module>infinispan</module>
                 <module>infinispan-remote</module>
                 <module>neo4j</module>
+				<module>orientdb</module>
+				<module>orientdb-remote</module>
                 <!-- The WildFly modules require the other modules to be enabled too -->
                 <module>modules</module>
             </modules>
