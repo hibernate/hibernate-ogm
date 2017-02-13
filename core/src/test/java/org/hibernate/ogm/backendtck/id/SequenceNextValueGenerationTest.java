@@ -37,6 +37,7 @@ public class SequenceNextValueGenerationTest extends TestNextValueGeneration {
 	private static final String THREAD_SAFETY_SEQUENCE = "ThreadSafetySequence";
 
 	private static final int INITIAL_VALUE_TEST_FIRST_VALUE = 5;
+	private static final int INITIAL_VALUE_INCREMENT = 1;
 
 	private static final int THREAD_SAFETY_FIRST_VALUE = 12;
 	private static final int THREAD_SAFETY_INCREMENT = 3;
@@ -98,7 +99,7 @@ public class SequenceNextValueGenerationTest extends TestNextValueGeneration {
 
 		@Id
 		@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen1")
-		@SequenceGenerator( name = "gen1", sequenceName = INITIAL_VALUE_SEQUENCE, initialValue = INITIAL_VALUE_TEST_FIRST_VALUE )
+		@SequenceGenerator( name = "gen1", sequenceName = INITIAL_VALUE_SEQUENCE, initialValue = INITIAL_VALUE_TEST_FIRST_VALUE, allocationSize = INITIAL_VALUE_INCREMENT )
 		Long id;
 	}
 
@@ -108,7 +109,7 @@ public class SequenceNextValueGenerationTest extends TestNextValueGeneration {
 
 		@Id
 		@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen2")
-		@SequenceGenerator( name = "gen2", sequenceName = THREAD_SAFETY_SEQUENCE, initialValue = THREAD_SAFETY_FIRST_VALUE )
+		@SequenceGenerator( name = "gen2", sequenceName = THREAD_SAFETY_SEQUENCE, initialValue = THREAD_SAFETY_FIRST_VALUE, allocationSize = THREAD_SAFETY_INCREMENT )
 		Long id;
 	}
 }
