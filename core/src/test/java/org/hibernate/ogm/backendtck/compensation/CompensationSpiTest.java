@@ -54,9 +54,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
-)
+		value = { GridDialectType.CASSANDRA,GridDialectType.ORIENTDB,GridDialectType.ORIENTDB_REMOTE },
+		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use, OrientDB has own version")
 public class CompensationSpiTest extends OgmTestCase {
 
 	private static ExecutorService executor;
@@ -222,7 +221,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			assertThat( appliedOperation ).isInstanceOf( UpdateTupleWithOptimisticLock.class );
 			UpdateTupleWithOptimisticLock updateTupleWithOptimisticLock = appliedOperation.as( UpdateTupleWithOptimisticLock.class );
 			assertThat( updateTupleWithOptimisticLock.getEntityKey().getTable() ).isEqualTo( "Shipment" );
-			assertThat( updateTupleWithOptimisticLock.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
+			assertThat( updateTupleWithOptimisticLock.getEntityKey().getColumnValues() ).isEqualTo( new Object[]{ "shipment-1" } );
 		}
 		else if ( currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			GridDialectOperation operation = appliedOperations.next();
@@ -231,7 +230,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
 			InsertOrUpdateTuple insertOrUpdate = batchedOperations.next().as( InsertOrUpdateTuple.class );
 			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
-			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
+			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[]{ "shipment-1" } );
 			assertThat( batchedOperations.hasNext() ).isFalse();
 		}
 		else {
@@ -239,17 +238,15 @@ public class CompensationSpiTest extends OgmTestCase {
 			assertThat( appliedOperation ).isInstanceOf( InsertOrUpdateTuple.class );
 			InsertOrUpdateTuple insertOrUpdate = appliedOperation.as( InsertOrUpdateTuple.class );
 			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
-			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
+			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[]{ "shipment-1" } );
 		}
 
 		assertThat( appliedOperations.hasNext() ).isFalse();
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN, GridDialectType.EHCACHE },
-			comment = "Can use parallel local TX not with JTA"
-	)
+	@SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN,
+			GridDialectType.EHCACHE }, comment = "Can use parallel local TX not with JTA")
 	public void appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction() throws Exception {
 		OgmSession session = openSession();
 		session.getTransaction().begin();
@@ -260,7 +257,6 @@ public class CompensationSpiTest extends OgmTestCase {
 
 		session.getTransaction().commit();
 		session.close();
-
 
 		OgmSession sessionA = openSession();
 		sessionA.getTransaction().begin();
@@ -299,7 +295,8 @@ public class CompensationSpiTest extends OgmTestCase {
 			sessionB.close();
 		}
 
-		// The update to shipment-1 is done by TX A, so only the update to shipment-2 is expected in the applied ops by TX B
+		// The update to shipment-1 is done by TX A, so only the update to shipment-2 is expected in the applied ops by
+		// TX B
 		// upon rollback due to the failure of the update to shipment-3
 		Iterator<RollbackContext> onRollbackInvocations = InvocationTrackingHandler.INSTANCE.getOnRollbackInvocations().iterator();
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
@@ -310,7 +307,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			assertThat( appliedOperation ).isInstanceOf( UpdateTupleWithOptimisticLock.class );
 			UpdateTupleWithOptimisticLock updateTupleWithOptimisticLock = appliedOperation.as( UpdateTupleWithOptimisticLock.class );
 			assertThat( updateTupleWithOptimisticLock.getEntityKey().getTable() ).isEqualTo( "Shipment" );
-			assertThat( updateTupleWithOptimisticLock.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
+			assertThat( updateTupleWithOptimisticLock.getEntityKey().getColumnValues() ).isEqualTo( new Object[]{ "shipment-2" } );
 		}
 		else if ( currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			GridDialectOperation operation = appliedOperations.next();
@@ -319,7 +316,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
 			InsertOrUpdateTuple insertOrUpdate = batchedOperations.next().as( InsertOrUpdateTuple.class );
 			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
-			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
+			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[]{ "shipment-2" } );
 			assertThat( batchedOperations.hasNext() ).isFalse();
 		}
 		else {
@@ -327,7 +324,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			assertThat( appliedOperation ).isInstanceOf( InsertOrUpdateTuple.class );
 			InsertOrUpdateTuple insertOrUpdate = appliedOperation.as( InsertOrUpdateTuple.class );
 			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
-			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
+			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[]{ "shipment-2" } );
 		}
 	}
 
@@ -352,12 +349,13 @@ public class CompensationSpiTest extends OgmTestCase {
 			rollbackTransactionIfActive( session.getTransaction() );
 		}
 
-		Iterator<FailedGridDialectOperationContext> onFailedOperationInvocations = InvocationTrackingHandler.INSTANCE.getOnFailedOperationInvocations().iterator();
+		Iterator<FailedGridDialectOperationContext> onFailedOperationInvocations = InvocationTrackingHandler.INSTANCE.getOnFailedOperationInvocations()
+				.iterator();
 		FailedGridDialectOperationContext invocation = onFailedOperationInvocations.next();
 		assertThat( onFailedOperationInvocations.hasNext() ).isFalse();
 
 		// then expect the failed op
-		if ( (currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class )) &&
+		if ( ( currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class ) ) &&
 				!currentDialectUsesLookupDuplicatePreventionStrategy() ) {
 			assertThat( invocation.getFailedOperation() ).isInstanceOf( ExecuteBatch.class );
 		}
@@ -402,15 +400,12 @@ public class CompensationSpiTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE },
-			comment = "Transaction cannot be committed when continuing after an exception "
-	)
+	@SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED,
+			GridDialectType.NEO4J_REMOTE }, comment = "Transaction cannot be committed when continuing after an exception ")
 	public void subsequentOperationsArePerformedForErrorHandlingStrategyContinue() {
 		OgmSessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
 				Collections.<String, Object>singletonMap( OgmProperties.ERROR_HANDLER, ContinuingErrorHandler.INSTANCE ),
-				getAnnotatedClasses()
-		);
+				getAnnotatedClasses() );
 
 		OgmSession session = sessionFactory.openSession();
 		session.getTransaction().begin();
@@ -426,7 +421,8 @@ public class CompensationSpiTest extends OgmTestCase {
 		// when provoking a duplicate-key exception
 		session.persist( new Shipment( "shipment-1", "INITIAL" ) );
 
-		// TODO without the flush we'll batch this and the next insert; we cannot continue with remaining elements of a batch
+		// TODO without the flush we'll batch this and the next insert; we cannot continue with remaining elements of a
+		// batch
 		session.flush();
 
 		session.persist( new Shipment( "shipment-3", "INITIAL" ) );
@@ -507,7 +503,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Shipment.class };
+		return new Class<?>[]{ Shipment.class };
 	}
 
 	private boolean currentDialectHasFacet(Class<? extends GridDialect> facet) {
@@ -517,7 +513,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	private boolean currentDialectUsesLookupDuplicatePreventionStrategy() {
 		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
-		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{"id"} );
+		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{ "id" } );
 
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
 	}

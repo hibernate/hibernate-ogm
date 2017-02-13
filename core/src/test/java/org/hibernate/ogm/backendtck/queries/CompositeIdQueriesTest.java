@@ -15,6 +15,8 @@ import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
+import static org.hibernate.ogm.utils.GridDialectType.ORIENTDB;
+import static org.hibernate.ogm.utils.GridDialectType.ORIENTDB_REMOTE;
 import static org.hibernate.ogm.utils.SessionHelper.asProjectionResults;
 import static org.hibernate.ogm.utils.SessionHelper.delete;
 import static org.hibernate.ogm.utils.SessionHelper.persist;
@@ -44,7 +46,7 @@ import org.junit.rules.ExpectedException;
  * @author Davide D'Alto
  */
 @SkipByGridDialect(
-	value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, INFINISPAN_REMOTE, REDIS_JSON, REDIS_HASH },
+	value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, INFINISPAN_REMOTE, REDIS_JSON, REDIS_HASH, ORIENTDB, ORIENTDB_REMOTE },
 	comment = "Hibernate Search does not store properties of the @EmbeddedId by default in the index, it requires the use of @FieldBridge."
 			+ "It is also not sufficient to add a custom field bridge because the properties of the embedded id won't be recognized as properties of the entity."
 			+ "There is a JIRA to keep track of this: OGM-849")
