@@ -26,6 +26,8 @@ bin/
 
 # NetBeans specific files/directories
 .nbattrs
+licenseheader.txt
+nb-configuration.xml
 
 #build
 target/
@@ -35,3 +37,5 @@ work/
 test-output/
 transaction.log
 infinispan.log
+
+#Netbeans
