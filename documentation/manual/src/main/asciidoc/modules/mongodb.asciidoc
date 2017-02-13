@@ -3400,7 +3400,8 @@ Currently `find()`, `findOne()`, `findAndModify()`, and `count()` queries are su
 types of write queries are supported via the CLI syntax: `insert()`, `remove()`, and `update()`. Other query
 types may be supported in future versions.
 
-As one would expect, `find()`, `findOne()`, `findAndModify()`, and `count()` can be executed using
+As one would expect, `find()`, `findOne()`, `findAndModify()`, `aggregate`,
+`distinct()`, and `count()` can be executed using
 `javax.persistence.Query.getSingleResult()` or `javax.persistence.Query.getResultList()`, while `insert()`,
 `remove()`, and `update()` require using `javax.persistence.Query.executeUpdate()`. Also note that,
 `javax.persistence.Query.executeUpdate()` may return `-1` in case execution of a query was not acknowledged
