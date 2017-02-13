@@ -92,6 +92,8 @@
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 
+        <!-- OrientDB -->
+        <orientdbVersion>2.2.16</orientdbVersion> 
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -434,6 +436,16 @@
                 <artifactId>hibernate-ogm-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-orientdb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-orientdb-remote</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -634,7 +646,20 @@
                 <version>${lettuceVersion}</version>
             </dependency>
 
-            <!-- RESTEasy for accessing CouchDB -->
+            <!-- OrientDB -->
+            <dependency>
+                <groupId>com.orientechnologies</groupId>
+                <artifactId>orientdb-core</artifactId>
+                <version>${orientdbVersion}</version>
+            </dependency>
+
+             <dependency>
+                <groupId>com.orientechnologies</groupId>
+                <artifactId>orientdb-client</artifactId>
+                <version>${orientdbVersion}</version>
+            </dependency>
+
+           <!-- RESTEasy for accessing CouchDB -->
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
