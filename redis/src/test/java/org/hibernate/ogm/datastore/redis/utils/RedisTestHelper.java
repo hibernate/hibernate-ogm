@@ -27,12 +27,9 @@ import org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.ogm.utils.GridDialectTestHelper;
-
-import com.lambdaworks.redis.api.sync.RedisKeyCommands;
-import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -40,6 +37,8 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lambdaworks.redis.api.sync.RedisKeyCommands;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 
 public class RedisTestHelper implements GridDialectTestHelper {
 
@@ -288,5 +287,9 @@ public class RedisTestHelper implements GridDialectTestHelper {
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return Redis.class;
+	}
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
 	}
 }

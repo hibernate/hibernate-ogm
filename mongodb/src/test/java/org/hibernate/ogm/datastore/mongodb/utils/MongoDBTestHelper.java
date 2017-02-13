@@ -320,4 +320,8 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return MongoDB.class;
 	}
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
 }

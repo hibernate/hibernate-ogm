@@ -303,4 +303,8 @@ public class CouchDBTestHelper implements GridDialectTestHelper {
 			throw new RuntimeException( e );
 		}
 	}
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
 }
