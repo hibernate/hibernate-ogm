@@ -22,7 +22,7 @@ Latest Documentation:
 
 Bug Reports:
 
- * Hibernate JIRA (preferred): <https://hibernate.onjira.com/browse/OGM>
+ * Hibernate JIRA (preferred): <https://hibernate.atlassian.net/projects/OGM/>
  * Mailing list: <hibernate-dev@lists.jboss.org>
 
 Support:
