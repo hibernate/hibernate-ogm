@@ -93,7 +93,7 @@
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 
         <!-- OrientDB -->
-        <orientdbVersion>2.2.16</orientdbVersion> 
+        <orientdbVersion>2.2.17</orientdbVersion> 
     </properties>
 
     <inceptionYear>2010</inceptionYear>
