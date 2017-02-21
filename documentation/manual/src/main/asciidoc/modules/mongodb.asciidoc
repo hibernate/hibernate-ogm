@@ -1194,6 +1194,52 @@ public class GrandChild {
 ----
 ====
 
+.@ElementCollection with Map of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+	private Integer number;
+	private String project;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+        "_id" : "Jane Doe",
+        "issues" : {
+                "issueWithNull" : {
+                },
+                "issue2" : {
+                    "number" : 2000,
+                    "project" : "OGM"
+                },
+                "issue1" : {
+                    "number" : 1253,
+                    "project" : "HSEARCH"
+                }
+        }
+}
+----
+====
+
 [NOTE]
 ====
 You can override the column name used for a property of an embedded object.
