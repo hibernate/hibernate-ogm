@@ -376,6 +376,42 @@ public class GrandChild {
 image::neo4j-@ElementCollection-@OrderColumn-example.png[align="center", depth="", scalefit="1"]
 ====
 
+It's also possible to use embeddeds in a Map like in the following example:
+
+.@ElementCollection with Map of Embedded
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+    private String project;
+
+    private Integer number;
+
+    // getters, setters ...
+}
+----
+
+image::neo4j-@ElementCollection-map-example.png[align="center", depth="", scalefit="1"]
+====
+
+This mapping has some problems, though. It will create an additional node for each element in the
+map and the embedded values will be store in a node with only the `EMBEDDED` label.
+We don't think this is a natural mapping and expect it to change in the upcoming relaseases. 
+
 ==== Associations
 
 An association, bidirectional or unidirectional, is always mapped using one relationship,
