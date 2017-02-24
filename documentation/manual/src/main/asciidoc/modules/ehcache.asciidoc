@@ -20,7 +20,7 @@ with this version of Hibernate OGM.
 
 === Configure Ehcache
 
-Two steps:
+Few steps:
 
 * Add the dependencies to classpath
 * And then choose one of:
@@ -28,6 +28,7 @@ Two steps:
 ** Use the default Ehcache configuration (no action needed)
 ** Point to your own configuration resource name
 
+* If you need JPQL or HQL queries, add Hibernate Search (<<ogm-query-using-hibernate-search>>)
 
 [[ogm-ehcache-adddepencies]]
 
