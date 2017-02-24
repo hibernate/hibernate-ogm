@@ -39,6 +39,8 @@ copy all the dependencies from the distribution in the directories:
 * `/lib/mongodb`
 * Optionally - depending on your container - you might need some of the jars from `/lib/provided`
 
+MongoDB does not require Hibernate Search for the execution of JPQL or HQL queries.
+
 ==== MongoDB specific configuration properties
 
 To get started quickly, pay attention to the following options:
@@ -1190,6 +1192,52 @@ public class GrandChild {
                 "birthorder" : 1
             }
         ]
+}
+----
+====
+
+.@ElementCollection with Map of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+	private Integer number;
+	private String project;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+        "_id" : "Jane Doe",
+        "issues" : {
+                "issueWithNull" : {
+                },
+                "issue2" : {
+                    "number" : 2000,
+                    "project" : "OGM"
+                },
+                "issue1" : {
+                    "number" : 1253,
+                    "project" : "HSEARCH"
+                }
+        }
 }
 ----
 ====
@@ -3188,6 +3236,8 @@ You can express queries in a few different ways:
 While you can use JP-QL for simple queries, you might hit limitations.
 The current recommended approach is to use native MongoQL
 if your query involves nested (list of) elements.
+
+MongoDB doesn't require Hibernate Search to run queries.
 
 [NOTE]
 ====

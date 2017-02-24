@@ -887,6 +887,54 @@ public class GrandChild {
 ----
 ====
 
+.@ElementCollection with Map of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+	private Integer number;
+	private String project;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ForumUser:id_:Jane Doe",
+   "_rev": "1-34bd62af46eebaf0550fd968ad7819f5",
+   "$type": "entity",
+   "$table": "ForumUser",
+   "id": "Jane Doe",
+   "issues": {
+       "issue2": {
+           "number" : 2000,
+           "project" : "OGM"
+       },
+       "issue1": {
+           "number" : 1253,
+           "project" : "HSEARCH"
+       }
+   }
+}
+----
+====
+
 ==== Associations
 
 Hibernate OGM CouchDB provides two strategies to store navigation information for associations:
@@ -2269,4 +2317,4 @@ The benefit of this approach is a nice integration at the JPA / Hibernate API le
 (managed entities are returned by the queries).
 The drawback is that you need to store the Lucene indexes somewhere
 (file system, Infinispan grid etc).
-Have a look at the Infinispan section for more info on how to use Hibernate Search.
+Have a look at the paragraph <<ogm-query-using-hibernate-search>> to have more details about it.

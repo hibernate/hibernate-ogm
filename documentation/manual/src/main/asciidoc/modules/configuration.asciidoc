@@ -326,6 +326,15 @@ https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/r
 In <<ogm-infinispan-indexstorage>> we'll discuss how to store your Lucene indexes in Infinispan.
 This is useful even if you don't plan to use Infinispan as your primary data store.
 
+[NOTE]
+====
+Hibernate OGM requires Hibernate Search on the classpath only when you need to run JPQL or HQL
+queries with some datastores. This is because some datastores don't have a query language or
+we don't support it yet. In this situation you need to index the entities that you want to query
+and Hibernate OGM will convert the queries in Lucene queries. Check the paragraph related
+to the datastore of your choice to see if it requires Hibernate Search or not.
+====
+
 [[ogm-configuration-jbossmodule]]
 
 === How to package Hibernate OGM applications for WildFly 10
