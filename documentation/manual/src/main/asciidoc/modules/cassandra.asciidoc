@@ -21,8 +21,9 @@ then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM 
 
 Configuring Hibernate OGM to use Cassandra is easy:
 
-* Add the Cassandra module and driver to the classpath
+* add the Cassandra module and driver to the classpath
 * provide the Cassandra connection information to Hibernate OGM
+* if you need to run JPQL or HQL queries, add Hibernate Search (<<ogm-query-using-hibernate-search>>)
 
 ==== Adding Cassandra dependencies
 

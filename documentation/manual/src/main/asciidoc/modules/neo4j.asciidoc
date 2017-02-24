@@ -77,6 +77,8 @@ hibernate.ogm.datastore.password = example_password
 ----
 ====
 
+The Neo4j dialects don't not require Hibernate Search to run JPQL or HQL queries.
+
 === Configuring Neo4j
 
 The following properties are available to configure Neo4j support:
@@ -868,17 +870,11 @@ You can express queries in a few different ways:
 * using JP-QL
 * using the Cypher query language
 
-[NOTE]
-====
-Neo4J makes use of a Lucene version which
-is not compatible with the most recent Hibernate Search version.
-This unfortunately makes it impossible to use the latest Hibernate Search version
-and Neo4J embedded in the same application.
-====
-
 While you can use JP-QL for simple queries, you might hit limitations.
 The current recommended approach is to use native Cypher queries
 if your query involves nested (list of) elements.
+
+You don't need Hibernate Search on the classpath to run queries.
 
 ==== JP-QL queries
 

@@ -316,6 +316,8 @@ Check out each individual datastore chapter for more info
 on the specifics of the native query language mapping.
 In particular <<ogm-neo4j-queries-native,Neo4J>> and <<ogm-mongodb-queries-native,MongoDB>>.
 
+[[ogm-query-using-hibernate-search]]
+
 === Using Hibernate Search
 
 Hibernate Search offers a way to index Java objects into Lucene indexes
@@ -329,6 +331,17 @@ you can do much more than a simple equality match.
 
 Hibernate Search natively integrates with Hibernate ORM.
 And Hibernate OGM of course!
+
+.Adding Hibernate Search artifact to your project via Maven
+====
+[source, XML]
+----
+<dependency>
+	<groupId>org.hibernate</groupId>
+	<artifactId>hibernate-search-orm</artifactId>
+</dependency>
+----
+====
 
 .Using Hibernate Search for full-text matching
 ====
