@@ -118,6 +118,9 @@ You configure Hibernate OGM and Infinispan in two steps basically:
 ** Point to your own configuration resource file
 ** Point to a [acronym]`JNDI` name of an existing instance of an Infinispan `CacheManager`
 
+* If you need to run JPQL or HQL queries, add Hibernate Search on the classpath
+  (<<ogm-query-using-hibernate-search>>)
+
 Note that, except when using [acronym]`JNDI`, Hibernate OGM will bootstrap and Infinispan Embedded node
 in your same JVM, and terminate it on shutdown of the Hibernate instance.
 

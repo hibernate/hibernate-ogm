@@ -121,6 +121,11 @@ you can see that there is nothing specific to Hibernate OGM in our mapping.
 
 In this tutorial, we will use JBoss Transactions for our JTA transaction manager.
 So let's add the JTA API and JBoss Transactions to our POM as well.
+
+We will also add Hibernate Search because the Infinispan dialect needs it to run
+JPQL queries, but we will leave the details for another time
+(<<ogm-query-using-hibernate-search>>).
+
 The final list of dependencies should look like this:
 
 [source, XML]
@@ -133,7 +138,13 @@ The final list of dependencies should look like this:
         <artifactId>hibernate-ogm-infinispan</artifactId>
     </dependency>
 
-    <!-- standard APIs dependencies - provided in a Java EE container -->
+    <1-- Optional, needed to run JPQL queries on some datastores -->
+    <dependency>
+        <groupId>org.hibernate.search</groupId>
+        <artifactId>hibernate-search-orm</artifactId>
+    </dependency>
+
+    <!-- Standard APIs dependencies - provided in a Java EE container -->
     <dependency>
         <groupId>org.hibernate.javax.persistence</groupId>
         <artifactId>hibernate-jpa-2.1-api</artifactId>

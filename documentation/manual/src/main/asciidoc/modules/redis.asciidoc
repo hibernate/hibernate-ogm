@@ -2405,7 +2405,8 @@ But do not consider rollback as a possibility, this won't work.
 Hibernate OGM is a work in progress
 and we are actively working on JP-QL query support.
 
-In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM.
+In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM
+(<<ogm-query-using-hibernate-search>>).
 
 === Redis Cluster
 

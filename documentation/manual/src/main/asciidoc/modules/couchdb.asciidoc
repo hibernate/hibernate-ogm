@@ -2317,4 +2317,4 @@ The benefit of this approach is a nice integration at the JPA / Hibernate API le
 (managed entities are returned by the queries).
 The drawback is that you need to store the Lucene indexes somewhere
 (file system, Infinispan grid etc).
-Have a look at the Infinispan section for more info on how to use Hibernate Search.
+Have a look at the paragraph <<ogm-query-using-hibernate-search>> to have more details about it.
