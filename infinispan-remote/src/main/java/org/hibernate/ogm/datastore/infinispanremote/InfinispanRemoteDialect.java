@@ -128,7 +128,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends BaseGridDialect implemen
 		if ( versionedTuple.getSnapshotType() == SnapshotType.INSERT ) {
 			optimisticLockFailed = null != mapper.withinCacheEncodingContext( c -> c.putIfAbsent( idBuffer, valuePayload ) );
 			if ( optimisticLockFailed ) {
-				throw new TupleAlreadyExistsException( key ); //TODO add a nicer message?
+				throw new TupleAlreadyExistsException( key );
 			}
 		}
 		else {
