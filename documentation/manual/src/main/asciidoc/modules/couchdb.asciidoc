@@ -24,6 +24,37 @@ Should you find any bugs or have feature requests for this dialect,
 then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM issue tracker].
 ====
 
+=== How to add CouchDB integration
+
+.1. Add the dependencies to your project
+
+If your project uses Maven you can add this to the pom.xml:
+
+====
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-couchdb</artifactId>
+    <version>{hibernate-ogm-version}</version>
+</dependency>
+----
+====
+
+Alternatively you can find the required libraries in the distribution package on
+https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-{hibernate-ogm-version}-dist.zip[SourceForge]
+
+.2. Use the following properties
+
+====
+[source, properties]
+[subs="verbatim,attributes"]
+----
+hibernate.ogm.datastore.provider = couchdb_experimental
+----
+====
+
 === Configuring CouchDB
 
 Hibernate OGM uses the excellent https://www.jboss.org/resteasy[RESTEasy] library to talk to CouchDB stores,
