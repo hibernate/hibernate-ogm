@@ -62,6 +62,13 @@ public class HttpNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 					// Embedded id
 					properties.put( associationColumn, targetNode.get( targetColumnName ) );
 				}
+				if ( targetColumnName.startsWith( collectionRole ) ) {
+					// Ex: @ElementCollection Map<String, Embedded> examples
+					targetColumnName = targetColumnName.substring( collectionRole.length() + 1 );
+					if ( targetNode.containsKey( targetColumnName ) ) {
+						properties.put( associationColumn, targetNode.get( targetColumnName ) );
+					}
+				}
 				else {
 					// Ex: @ElementCollection List<Embedded> examples
 
