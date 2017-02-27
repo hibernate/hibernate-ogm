@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.infinispan.test.dialect.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleContext;
+import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleTypeContext;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,10 +23,12 @@ import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJta
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
@@ -53,7 +56,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Integration test which makes sure that {@link InfinispanDialect} and {@link InfinispanDatastoreProvider} can operate
+ * Integration test which makes sure that {@link InfinispanDialect} and {@link InfinispanEmbeddedDatastoreProvider} can operate
  * in clustered mode, in particular that objects can be serialized and de-serialized when being written into and read
  * from the data grid.
  * <p>
@@ -62,8 +65,8 @@ import org.junit.Test;
  */
 public class InfinispanDialectWithClusteredConfigurationTest {
 
-	private static InfinispanDatastoreProvider provider1;
-	private static InfinispanDatastoreProvider provider2;
+	private static InfinispanEmbeddedDatastoreProvider provider1;
+	private static InfinispanEmbeddedDatastoreProvider provider2;
 	private static InfinispanDialect dialect1;
 	private static InfinispanDialect dialect2;
 
@@ -71,8 +74,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public static void setupProvidersAndDialects() throws Exception {
 		SessionFactoryImplementor sessionFactory1 = getSessionFactory();
 		SessionFactoryImplementor sessionFactory2 = getSessionFactory();
-		provider1 = (InfinispanDatastoreProvider) sessionFactory1.getServiceRegistry().getService( DatastoreProvider.class );
-		provider2 = (InfinispanDatastoreProvider) sessionFactory2.getServiceRegistry().getService( DatastoreProvider.class );
+		provider1 = (InfinispanEmbeddedDatastoreProvider) sessionFactory1.getServiceRegistry().getService( DatastoreProvider.class );
+		provider2 = (InfinispanEmbeddedDatastoreProvider) sessionFactory2.getServiceRegistry().getService( DatastoreProvider.class );
 		dialect1 = new InfinispanDialect( provider1 );
 		dialect2 = new InfinispanDialect( provider2 );
 
@@ -98,7 +101,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, new TuplePointer( tuple ), emptyTupleContext() );
 
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
@@ -158,11 +161,11 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, new TuplePointer( tuple ), emptyTupleContext() );
 
 		// then
 		MyConsumer consumer = new MyConsumer();
-		dialect2.forEachTuple( consumer, keyMetadata );
+		dialect2.forEachTuple( consumer, emptyTupleTypeContext(), keyMetadata );
 		assertThat( consumer.consumedTuple.get( "foo" ) ).isEqualTo( "bar" );
 	}
 
@@ -171,15 +174,15 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		private Tuple consumedTuple;
 
 		@Override
-		public void consume(Tuple tuple) {
-			consumedTuple = tuple;
+		public void consume(TuplesSupplier supplier) {
+			consumedTuple = supplier.get( null ).next();
 		}
 	}
 
-	private static InfinispanDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
+	private static InfinispanEmbeddedDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
 		Map<String, Object> configurationValues = new HashMap<String, Object>();
 		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-dist.xml" );
-		InfinispanDatastoreProvider provider = new InfinispanDatastoreProvider();
+		InfinispanEmbeddedDatastoreProvider provider = new InfinispanEmbeddedDatastoreProvider();
 
 		provider.configure( configurationValues );
 		provider.injectServices( serviceRegistry );
@@ -195,7 +198,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		jtaPlatform.injectServices( serviceRegistry );
 		when( serviceRegistry.getService( JtaPlatform.class ) ).thenReturn( jtaPlatform );
 
-		InfinispanDatastoreProvider provider = createAndStartNewProvider( serviceRegistry );
+		InfinispanEmbeddedDatastoreProvider provider = createAndStartNewProvider( serviceRegistry );
 		when( serviceRegistry.getService( DatastoreProvider.class ) ).thenReturn( provider );
 
 		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );

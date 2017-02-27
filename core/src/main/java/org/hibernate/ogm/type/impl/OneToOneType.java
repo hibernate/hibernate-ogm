@@ -9,20 +9,15 @@ package org.hibernate.ogm.type.impl;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 
 /**
  * @author Emmanuel Bernard
  */
-public class OneToOneType extends GridTypeDelegatingToCoreType implements GridType {
-	private final TypeTranslator typeTranslator;
-	private final org.hibernate.type.OneToOneType delegate;
+public class OneToOneType extends EntityType {
 
 	public OneToOneType(org.hibernate.type.OneToOneType type, TypeTranslator typeTranslator) {
-		super( type );
-		this.delegate = type;
-		this.typeTranslator = typeTranslator;
+		super( type, typeTranslator );
 	}
 
 	@Override

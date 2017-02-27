@@ -41,7 +41,7 @@ public final class MapHelpers {
 	}
 
 	public static Map<String, Object> associationRowToMap(Tuple associationRow) {
-		if (associationRow == null) {
+		if ( associationRow == null ) {
 			return null;
 		}
 		Map<String, Object> snapshot;
@@ -74,6 +74,8 @@ public final class MapHelpers {
 					break;
 			}
 		}
+		// the snapshot has been updated so we have to clear the various operations added to the Association
+		association.reset();
 	}
 
 }

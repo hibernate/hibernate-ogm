@@ -9,32 +9,28 @@ package org.hibernate.ogm.test.dialectinvocations;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.List;
-import java.util.Map;
-
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.backendtck.dialectinvocations.AbstractGridDialectOperationInvocationsTest;
+import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
-import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.Before;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
 
 /**
  * Asserts the number and order of grid dialect operations.
  * @author Gunnar Morling
  */
-public class GridDialectOperationInvocationsTest extends OgmTestCase {
-
-	@Before
-	public void resetOperationsLog() {
-		getOperationsLogger().reset();
-	}
+@TestForIssue(jiraKey = "OGM-1152")
+public class GridDialectOperationInvocationsTest extends AbstractGridDialectOperationInvocationsTest {
 
 	@Test
 	public void insertUpdateAndDelete() throws Exception {
+		GridDialect gridDialect = getGridDialect();
+
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 
@@ -67,19 +63,46 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		session.clear();
 		session.close();
 
-		assertThat( getOperations() ).containsExactly(
-				"getTuple",
-				"createTuple",
-				"insertOrUpdateTuple",
-				"getTuple",
-				"insertOrUpdateTuple",
-				"getTuple",
-				"removeTuple"
-		);
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) || GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
+			if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
+				assertThat( getOperations() ).containsExactly(
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+			else {
+				assertThat( getOperations() ).containsExactly(
+						"getTuple",
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+		}
+		else {
+			assertThat( getOperations() ).containsExactly(
+					"getTuple",
+					"createTuple",
+					"insertOrUpdateTuple",
+					"getTuple",
+					"insertOrUpdateTuple",
+					"getTuple",
+					"removeTuple"
+			);
+		}
 	}
 
 	@Test
 	public void insertAndUpdateInSameTransaction() throws Exception {
+		GridDialect gridDialect = getGridDialect();
+
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 
@@ -106,18 +129,43 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		transaction.commit();
 		session.close();
 
-		assertThat( getOperations() ).containsExactly(
-				"getTuple",
-				"createTuple",
-				"insertOrUpdateTuple",
-				"insertOrUpdateTuple",
-				"getTuple",
-				"removeTuple"
-		);
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) || GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
+			if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
+				assertThat( getOperations() ).containsExactly(
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+			else {
+				assertThat( getOperations() ).containsExactly(
+						"getTuple",
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+		}
+		else {
+			assertThat( getOperations() ).containsExactly(
+					"getTuple",
+					"createTuple",
+					"insertOrUpdateTuple",
+					"insertOrUpdateTuple",
+					"getTuple",
+					"removeTuple"
+			);
+		}
 	}
 
 	@Test
 	public void insertSearchUpdateDelete() throws Exception {
+		GridDialect gridDialect = getGridDialect();
+
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 
@@ -148,15 +196,51 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 		transaction.commit();
 		session.close();
-		assertThat( getOperations() ).containsExactly(
-				"getTuple",
-				"createTuple",
-				"insertOrUpdateTuple",
-				"getTuple",
-				"insertOrUpdateTuple",
-				"getTuple",
-				"removeTuple"
-		);
+
+		if ( GridDialects.hasFacet( gridDialect, GroupingByEntityDialect.class ) || GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
+			if ( GridDialects.hasFacet( gridDialect, QueryableGridDialect.class ) ) {
+				assertThat( getOperations() ).containsExactly(
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"executeBackendQuery",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+			else if ( isDuplicateInsertPreventionStrategyNative( gridDialect ) ) {
+				assertThat( getOperations() ).containsExactly(
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+			else {
+				assertThat( getOperations() ).containsExactly(
+						"getTuple",
+						"createTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[group[insertOrUpdateTuple]]",
+						"getTuple",
+						"executeBatch[removeTuple]"
+				);
+			}
+		}
+		else {
+			assertThat( getOperations() ).containsExactly(
+					"getTuple",
+					"createTuple",
+					"insertOrUpdateTuple",
+					"getTuple",
+					"insertOrUpdateTuple",
+					"getTuple",
+					"removeTuple"
+			);
+		}
 	}
 
 	@Override
@@ -164,22 +248,4 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		return new Class<?>[] { StockItem.class };
 	}
 
-	@Override
-	protected void configure(Map<String, Object> settings) {
-		settings.put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
-	}
-
-	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
-		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
-				gridDialect,
-				InvokedOperationsLoggingDialect.class
-		);
-
-		return invocationLogger;
-	}
-
-	private List<String> getOperations() {
-		return getOperationsLogger().getOperations();
-	}
 }

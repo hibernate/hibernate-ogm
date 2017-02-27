@@ -18,6 +18,9 @@ public final class MapTupleSnapshot implements TupleSnapshot {
 	private final Map<String, Object> map;
 
 	public MapTupleSnapshot(Map<String, Object> map) {
+		if ( map == null ) {
+			throw new NullPointerException( "the map parameter is required" );
+		}
 		this.map = map;
 	}
 	@Override

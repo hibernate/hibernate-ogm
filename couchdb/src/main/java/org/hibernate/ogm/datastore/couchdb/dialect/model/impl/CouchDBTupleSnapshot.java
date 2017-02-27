@@ -6,64 +6,41 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
-import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
-import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
- * A {@link TupleSnapshot} based on the properties of a CouchDB {@link EntityDocument}.
- * <p>
- * Fundamentally a {@link MapTupleSnapshot} except that the {@link EntityKey} column names and values are copied.
+ * A {@link TupleSnapshot} based on a CouchDB {@link EntityDocument}.
  *
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBTupleSnapshot implements TupleSnapshot {
 
-	private final Map<String, Object> properties;
-	private final boolean createdOnInsert;
+	private final EntityDocument entity;
 
-	public CouchDBTupleSnapshot(EntityKey key) {
-		createdOnInsert = true;
-
-		properties = new HashMap<String, Object>();
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			properties.put( key.getColumnNames()[i], key.getColumnValues()[i] );
-		}
-	}
-
-	public CouchDBTupleSnapshot(Map<String, Object> properties) {
-		createdOnInsert = false;
-		this.properties = properties;
+	public CouchDBTupleSnapshot(EntityDocument entity) {
+		this.entity = entity;
 	}
 
 	@Override
 	public Object get(String column) {
-		return properties.get( column );
+		return entity.getProperty( column );
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return properties.isEmpty();
+		return entity.isEmpty();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
-		return properties.keySet();
+		return entity.getKeys();
 	}
 
-	/**
-	 * Whether this snapshot has been created during an insert or not.
-	 *
-	 * @return {@code true} if the snapshot has been created during an insert, {@code false} if it has been created
-	 * during an update.
-	 */
-	public boolean isCreatedOnInsert() {
-		return createdOnInsert;
+	public EntityDocument getEntity() {
+		return entity;
 	}
 }

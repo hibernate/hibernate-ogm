@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.datastore.redis.logging.impl;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -24,16 +26,37 @@ import org.jboss.logging.annotations.MessageLogger;
 public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@LogMessage(level = INFO)
-	@Message(id = 1601, value = "Connecting to Redis at %1$s with a timeout set at %2$d millisecond(s)")
+	@Message(id = 1701, value = "Connecting to Redis at %1$s with a timeout set at %2$d millisecond(s)")
 	void connectingToRedis(String host, long timeout);
 
 	@LogMessage(level = INFO)
-	@Message(id = 1602, value = "Closing connection to Redis")
+	@Message(id = 1702, value = "Closing connection to Redis")
 	void disconnectingFromRedis();
 
-	@Message(id = 1603, value = "Unable to find or initialize a connection to the Redis server")
+	@Message(id = 1703, value = "Unable to find or initialize a connection to the Redis server")
 	HibernateException unableToInitializeRedis(@Cause RuntimeException e);
 
-	@Message(id = 1604, value = "The value set for the configuration property '" + OgmProperties.DATABASE + "' must be a number between 0 and 15. Found '%s'.")
+	@Message(id = 1704, value = "The value set for the configuration property '" + OgmProperties.DATABASE + "' must be a number between 0 and 15. Found '%s'.")
 	HibernateException illegalDatabaseValue(int value);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1705, value = "Cannot determine redis_mode from INFO output. Found '%s'.")
+	void cannotDetermineRedisMode(String value);
+
+	@LogMessage(level = DEBUG)
+	@Message(id = 1706, value = "Connected Redis node runs in mode '%s'.")
+	void connectedRedisNodeRunsIn(String redisMode);
+
+	@LogMessage(level = INFO)
+	@Message(id = 1707, value = "Connecting to Redis Cluster at %1$s with a timeout set at %2$d millisecond(s)")
+	void connectingToRedisCluster(String hosts, long timeout);
+
+	@Message(id = 1708, value = "The connection is configured for cluster mode but Redis runs in '%s' mode")
+	HibernateException redisModeMismatchClusterModeConfigured(String redisMode);
+
+	@Message(id = 1709, value = "The connection is configured for standalone mode but Redis runs in '%s' mode")
+	HibernateException redisModeMismatchStandaloneModeConfigured(String redisMode);
+
+	@Message(id = 1710, value = "Redis Hash dialect does not support *ToMany associations embedded in the entity %1$s#%2$s")
+	HibernateException embeddedToManyAssociationsNotSupportByRedisHash(String entityName, String collectionRole);
 }

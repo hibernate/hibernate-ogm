@@ -28,7 +28,8 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.CASSANDRA, GridDialectType.REDIS_HASH },
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE,
+				GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.CASSANDRA, GridDialectType.REDIS_HASH },
 		comment = "Only the document stores CouchDB and MongoDB and Redis JSON support the configuration of specific association storage strategies"
 )
 public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
@@ -57,10 +58,10 @@ public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 
 		session.clear();
 
-		assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
+		assertThat( getNumberOfAssociations( sessionFactory, AssociationStorageType.IN_ENTITY ) )
 				.describedAs( "Element collection contents should be stored within the entity document" )
 				.isEqualTo( 2 );
-		assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
+		assertThat( getNumberOfAssociations( sessionFactory, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
 				.describedAs( "Map contents should be stored in association document" )
 				.isEqualTo( 1 );
 

@@ -21,6 +21,7 @@ public enum OperationType {
 	INSERT_OR_UPDATE_ASSOCIATION,
 	REMOVE_ASSOCIATION,
 	EXECUTE_BATCH,
+	FLUSH_PENDING_OPERATIONS,
 
 	// IdentityColumnAwareGridDialect
 

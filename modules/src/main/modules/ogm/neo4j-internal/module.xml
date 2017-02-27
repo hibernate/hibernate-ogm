@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.neo4j-internal.module.slot}">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <resource-root path="lucene-core-${luceneVersion}.jar" />
+        <resource-root path="lucene-codecs-${luceneVersion}.jar" />
+        <resource-root path="lucene-backward-codecs-${luceneVersion}.jar" />
+        <resource-root path="lucene-queryparser-${luceneVersion}.jar" />
+        <resource-root path="lucene-analyzers-common-${luceneVersion}.jar" />
+
+        <resource-root path="neo4j-java-driver-${neo4jJavaDriverVersion}.jar" />
+        <resource-root path="neo4j-lucene-upgrade-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
+        <resource-root path="parboiled-scala_2.11-${parboiledVersion}.jar" />
+        <resource-root path="scala-library-${neo4jScalaLibraryVersion}.jar" />
+        <resource-root path="scala-reflect-${neo4jScalaLibraryVersion}.jar" />
+        <resource-root path="neo4j-security-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-graphdb-api-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-io-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-codegen-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-logging-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-resource-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-collections-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-common-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-unsafe-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.3-${neo4jCypherCompiler23Version}.jar" />
+        <resource-root path="neo4j-cypher-frontend-2.3-${neo4jCypherCompiler23Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-3.0-${neo4jCypherCompiler30Version}.jar" />
+        <resource-root path="neo4j-cypher-frontend-3.0-${neo4jCypherCompiler30Version}.jar" />
+        <resource-root path="concurrentlinkedhashmap-lru-${neo4jConcurrentlinkedhashmapVersion}.jar" />
+        <resource-root path="commons-lang3-${neo4jCommonsLang3Version}.jar" />
+    </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+
+        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}"/>
+
+        <!-- neo4j-lucene-index requires the API in the Kernel -->
+        <module name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.neo4j.module.slot}"/>
+
+        <!-- It requires sun.misc.Unsafe -->
+        <module name="sun.jdk" />
+    </dependencies>
+</module>

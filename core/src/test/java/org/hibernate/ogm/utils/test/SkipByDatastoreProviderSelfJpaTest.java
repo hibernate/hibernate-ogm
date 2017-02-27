@@ -6,32 +6,32 @@
  */
 package org.hibernate.ogm.utils.test;
 
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.CASSANDRA_EXPERIMENTAL;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.COUCHDB_EXPERIMENTAL;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.INFINISPAN;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.MAP;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.EHCACHE;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.REDIS_EXPERIMENTAL;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.NEO4J_EMBEDDED;
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.MONGODB;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.CASSANDRA_EXPERIMENTAL;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.COUCHDB_EXPERIMENTAL;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.INFINISPAN_EMBEDDED;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.MAP;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.EHCACHE;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.REDIS_EXPERIMENTAL;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_EMBEDDED;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.MONGODB;
 import static org.junit.Assert.fail;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.utils.SkipByDatastoreProvider;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import org.junit.Test;
 
 /**
- * Test {@link SkipByDatastoreProvider} is working with {@link JpaTestCase}
+ * Test {@link SkipByDatastoreProvider} is working with {@link OgmJpaTestCase}
  *
  * @author Mark Paluch
  */
-public class SkipByDatastoreProviderSelfJpaTest extends JpaTestCase {
+public class SkipByDatastoreProviderSelfJpaTest extends OgmJpaTestCase {
 
 	@Test
 	@SkipByDatastoreProvider({
-		MAP, INFINISPAN, MONGODB, EHCACHE, NEO4J_EMBEDDED, COUCHDB_EXPERIMENTAL, REDIS_EXPERIMENTAL, CASSANDRA_EXPERIMENTAL
+		MAP, INFINISPAN_EMBEDDED, MONGODB, EHCACHE, NEO4J_EMBEDDED, COUCHDB_EXPERIMENTAL, REDIS_EXPERIMENTAL, CASSANDRA_EXPERIMENTAL
 	})
 	public void testWhichAlwaysFails() {
 		fail( "This should never be executed" );
@@ -43,7 +43,7 @@ public class SkipByDatastoreProviderSelfJpaTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Hypothesis.class };
 	}
 

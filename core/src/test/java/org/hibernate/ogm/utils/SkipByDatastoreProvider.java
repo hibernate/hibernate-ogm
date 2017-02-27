@@ -11,7 +11,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 
 /**
  * Allows to skip specific tests for certain datastore providers. If given on a test method and the containing test
@@ -26,7 +26,7 @@ public @interface SkipByDatastoreProvider {
 	/**
 	 * The datastore provider(s) on which to skip the test.
 	 */
-	AvailableDatastoreProvider[] value();
+	DatastoreProviderType[] value();
 
 	/**
 	 * Optional comment describing the reason for skipping the test.

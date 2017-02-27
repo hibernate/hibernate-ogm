@@ -70,11 +70,11 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch"
+				"executeBatch[removeTuple]"
 		);
 	}
 
@@ -116,14 +116,12 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
 				"getAssociation",
-				"executeBatch",
+				"executeBatch[group[insertOrUpdateTuple,insertOrUpdateAssociation]]",
 				"getTuple",
 				"getAssociation",
 				"getTuple",
 				"getAssociation",
-				"removeAssociation",
-				"removeTuple",
-				"executeBatch"
+				"executeBatch[group[removeAssociation],removeTuple]"
 				);
 	}
 
@@ -157,10 +155,10 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch",
-				"executeBatch",
+				"executeBatch[group[insertOrUpdateTuple]]",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch"
+				"executeBatch[removeTuple]"
 		);
 	}
 
@@ -198,11 +196,11 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		session.close();
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
-				"executeBatch",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"executeBackendQuery",
-				"executeBatch",
+				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch"
+				"executeBatch[removeTuple]"
 		);
 	}
 
@@ -217,7 +215,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {
-		GridDialect gridDialect = sfi().getServiceRegistry().getService( GridDialect.class );
+		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
 				gridDialect,
 				InvokedOperationsLoggingDialect.class

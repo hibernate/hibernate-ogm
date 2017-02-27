@@ -16,10 +16,9 @@ import org.hibernate.ogm.model.spi.Tuple;
 public interface ModelConsumer {
 
 	/**
-	 * Processes the given tuple.
+	 * Consume a model element on all the tuples provided by a {@link TuplesSupplier}.
 	 *
-	 * @param tuple the tuple to process
+	 * @param supplier provides the tuples the model will consume
 	 */
-	void consume(Tuple tuple);
-
+	void consume(TuplesSupplier supplier);
 }

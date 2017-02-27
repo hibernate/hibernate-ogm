@@ -16,6 +16,9 @@ import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBProcessingChain;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryParsingResult;
 import org.hibernate.ogm.datastore.mongodb.test.query.parsing.model.IndexedEntity;
+import org.hibernate.ogm.datastore.mongodb.test.query.parsing.model.inheritance.singletable.CommunityMemberST;
+import org.hibernate.ogm.datastore.mongodb.test.query.parsing.model.inheritance.singletable.EmployeeST;
+import org.hibernate.ogm.datastore.mongodb.test.query.parsing.model.inheritance.singletable.PersonST;
 import org.hibernate.ogm.datastore.mongodb.utils.MapBasedEntityNamesResolver;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Before;
@@ -41,6 +44,48 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"from IndexedEntity",
 				"{ }" );
+	}
+
+	@Test
+	public void shouldCreateQueryWithSingleDiscriminatorValue() {
+		assertMongoDbQuery(
+				"from EmployeeST",
+				"{ \"DTYPE\" : \"EMP\"}",
+				EmployeeST.class );
+	}
+
+	@Test
+	public void shouldCreateQueryWithSingleDiscriminatorValueWithFilter() {
+		assertMongoDbQuery(
+				"from EmployeeST e where e.employer = 'Red Hat'",
+				"{ \"$and\" : [ " +
+					"{ \"employer\" : \"Red Hat\"} , " +
+					"{ \"DTYPE\" : \"EMP\"}" +
+				"]}",
+				EmployeeST.class );
+	}
+
+	@Test
+	public void shouldCreateQueryWithMultipleDiscriminatorValues() {
+		assertMongoDbQuery(
+				"from CommunityMemberST",
+				"{ \"DTYPE\" : " +
+					"{ \"$in\" : [ \"CMM\" , \"EMP\"]}" +
+				"}",
+				CommunityMemberST.class );
+	}
+
+	@Test
+	public void shouldCreateQueryWithMultipleDiscriminatorValuesWithFilter() {
+		assertMongoDbQuery(
+				"from CommunityMemberST c where c.project = 'Hibernate OGM'",
+				"{ \"$and\" : [ " +
+					"{ \"project\" : \"Hibernate OGM\"} , " +
+					"{ \"DTYPE\" : " +
+						"{ \"$in\" : [ \"CMM\" , \"EMP\"]}" +
+					"}" +
+				"]}",
+				CommunityMemberST.class );
 	}
 
 	@Test
@@ -130,7 +175,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 						"{ \"position\" : { \"$lt\" : 1}} , " +
 						"{ \"position\" : { \"$gt\" : 3}}" +
 					"]}" +
-				"]}");
+				"]}" );
 	}
 
 	@Test
@@ -158,7 +203,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 				"{ \"$and\" : [ " +
 					"{ \"position\" : { \"$gte\" : 10}} , " +
 					"{ \"position\" : { \"$lte\" : 20}}" +
-				"]}");
+				"]}" );
 	}
 
 	@Test
@@ -187,7 +232,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 					"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
 					"\"$options\" : \"s\"" +
 					"}" +
-				"}");
+				"}" );
 	}
 
 	@Test
@@ -200,7 +245,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 						"\"$options\" : \"s\"" +
 						"}" +
 					"}" +
-				"}");
+				"}" );
 	}
 
 	@Test
@@ -225,10 +270,18 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery( queryString, null, expectedMongoDbQuery );
 	}
 
+	private void assertMongoDbQuery(String queryString, String expectedMongoDbQuery, Class<?> expectedEntityType) {
+		assertMongoDbQuery( queryString, null, expectedMongoDbQuery, expectedEntityType );
+	}
+
 	private void assertMongoDbQuery(String queryString, Map<String, Object> namedParameters, String expectedMongoDbQuery) {
+		assertMongoDbQuery( queryString, namedParameters, expectedMongoDbQuery, IndexedEntity.class );
+	}
+
+	private void assertMongoDbQuery(String queryString, Map<String, Object> namedParameters, String expectedMongoDbQuery, Class<?> expectedEntityType) {
 		MongoDBQueryParsingResult parsingResult = parseQuery( queryString, namedParameters );
 		assertThat( parsingResult ).isNotNull();
-		assertThat( parsingResult.getEntityType() ).isSameAs( IndexedEntity.class );
+		assertThat( parsingResult.getEntityType() ).isSameAs( expectedEntityType );
 
 		if ( expectedMongoDbQuery == null ) {
 			assertThat( parsingResult.getQuery() ).isNull();
@@ -254,13 +307,16 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		Map<String, Class<?>> entityNames = new HashMap<String, Class<?>>();
 		entityNames.put( "com.acme.IndexedEntity", IndexedEntity.class );
 		entityNames.put( "IndexedEntity", IndexedEntity.class );
+		entityNames.put( "CommunityMemberST", CommunityMemberST.class );
+		entityNames.put( "PersonST", PersonST.class );
+		entityNames.put( "EmployeeST", EmployeeST.class );
 		EntityNamesResolver nameResolver = new MapBasedEntityNamesResolver( entityNames );
 
-		return new MongoDBProcessingChain( sfi(), nameResolver, namedParameters );
+		return new MongoDBProcessingChain( getSessionFactory(), nameResolver, namedParameters );
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { IndexedEntity.class };
+		return new Class<?>[]{ IndexedEntity.class, PersonST.class, CommunityMemberST.class, EmployeeST.class };
 	}
 }

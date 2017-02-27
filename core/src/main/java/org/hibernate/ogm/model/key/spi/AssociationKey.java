@@ -8,10 +8,10 @@ package org.hibernate.ogm.model.key.spi;
 
 import java.util.Arrays;
 
-import org.hibernate.annotations.common.AssertionFailure;
+import org.hibernate.AssertionFailure;
 
 /**
- * Represents the key used to link a property value and the id of it's owning entity
+ * Represents the key used to link a property value and the id of its owning entity
  *
  * @author Emmanuel Bernard
  * @author Sanne Grinovero

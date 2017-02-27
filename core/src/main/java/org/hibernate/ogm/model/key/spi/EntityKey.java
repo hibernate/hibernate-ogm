@@ -98,7 +98,7 @@ public final class EntityKey {
 		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) {
 			return false;
 		}
-		if ( !keyMetadata.equals( entityKey.keyMetadata )) {
+		if ( !keyMetadata.equals( entityKey.keyMetadata ) ) {
 			return false;
 		}
 

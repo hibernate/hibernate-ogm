@@ -76,8 +76,11 @@ public class BiDirectionalAssociationHelper {
 			// candidate is a *-to-many association
 			if ( type.isCollectionType() ) {
 				OgmCollectionPersister inverseCollectionPersister = getPersister( factory, (CollectionType) type );
-				if ( isCollectionMatching( mainSideJoinable, inverseCollectionPersister ) ) {
-					return inverseCollectionPersister.getAssociationKeyMetadata();
+				String mappedByProperty = inverseCollectionPersister.getMappedByProperty();
+				if ( mainSideProperty.equals( mappedByProperty ) ) {
+					if ( isCollectionMatching( mainSideJoinable, inverseCollectionPersister ) ) {
+						return inverseCollectionPersister.getAssociationKeyMetadata();
+					}
 				}
 			}
 		}

@@ -13,7 +13,10 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -37,17 +40,17 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+		public Tuple getTuple(EntityKey key, OperationContext tupleContext) {
 			return null;
 		}
 
 		@Override
-		public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+		public Tuple createTuple(EntityKey key, OperationContext tupleContext) {
 			return null;
 		}
 
 		@Override
-		public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+		public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
 		}
 
 		@Override
@@ -83,7 +86,7 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		}
 	}
 }

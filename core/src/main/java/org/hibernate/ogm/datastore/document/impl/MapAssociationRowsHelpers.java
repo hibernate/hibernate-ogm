@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
+import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 

@@ -16,17 +16,18 @@ import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
+import org.junit.After;
 import org.junit.Test;
 
 /**
  * @author David Williams
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
 		comment = "Zoo.animals set - bag semantics unsupported (no primary key)"
 )
-public class PostLoadTest extends JpaTestCase {
+public class PostLoadTest extends OgmJpaTestCase {
 
 	/**
 	 * Load an entity with an embedded collection which uses a @PostLoad annotated method
@@ -95,8 +96,17 @@ public class PostLoadTest extends JpaTestCase {
 		return animal;
 	}
 
+	@After
+	public void removeEntities() throws Exception {
+		EntityManager em = getFactory().createEntityManager();
+		em.getTransaction().begin();
+		em.remove( em.find( Zoo.class, 1 ) );
+		em.getTransaction().commit();
+		em.close();
+	}
+
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Zoo.class };
 	}
 }

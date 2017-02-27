@@ -10,7 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.hibernate.ogm.cfg.spi.Hosts;
 
+import com.lambdaworks.redis.AbstractRedisClient;
 import com.lambdaworks.redis.RedisClient;
+import com.lambdaworks.redis.cluster.RedisClusterClient;
 
 /**
  * Data store provider that reused the {@link com.lambdaworks.redis.RedisClient} throughout the test run.
@@ -19,7 +21,7 @@ import com.lambdaworks.redis.RedisClient;
  */
 public class TestRedisDatastoreProvider extends RedisDatastoreProvider {
 
-	private static volatile RedisClient staticInstance;
+	private static volatile AbstractRedisClient staticInstance;
 
 	@Override
 	protected RedisClient createClient(Hosts.HostAndPort hostAndPort) {
@@ -37,8 +39,26 @@ public class TestRedisDatastoreProvider extends RedisDatastoreProvider {
 			staticInstance = redisClient;
 		}
 
-		return staticInstance;
+		return (RedisClient) staticInstance;
+	}
 
+	@Override
+	protected RedisClusterClient createClusterClient(Hosts hosts) {
+		if ( staticInstance == null ) {
+			final RedisClusterClient redisClient = super.createClusterClient( hosts );
+
+			Runtime.getRuntime().addShutdownHook(
+					new Thread( "RedisClient shutdown hook" ) {
+						@Override
+						public void run() {
+							redisClient.shutdown( 0, 0, TimeUnit.MILLISECONDS );
+						}
+					}
+			);
+			staticInstance = redisClient;
+		}
+
+		return (RedisClusterClient) staticInstance;
 	}
 
 	@Override

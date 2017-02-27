@@ -17,7 +17,7 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SessionHelper.ProjectionResult;
@@ -38,7 +38,8 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  * @author Davide D'Alto
  */
-@SkipByGridDialect(value = GridDialectType.CASSANDRA, comment = "Bag semantics not supported by Cassandra backend")
+@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
+	comment = "Bag semantics not supported by backends which require a primary key")
 public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@TestSessionFactory
@@ -71,7 +72,16 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testEqualOpeartorWithEmbeddedCollection() throws Exception {
+	@SkipByGridDialect(
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			comment = "The parser does not support this at the moment" )
+	public void testEqualOperatorWithCollectionOfElements() throws Exception {
+		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.dwarves d WHERE d = 'Dwalin' " ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 300L );
+	}
+
+	@Test
+	public void testEqualOperatorWithEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText = '[ARTIFACT] Search for the evil artifact'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
@@ -82,15 +92,14 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
-
 	@Test
-	public void testBetweenOpeartorWithEmbeddedCollection() throws Exception {
+	public void testBetweenOperatorWithEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText BETWEEN '[' AND '[B'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
 	@Test
-	public void testLikeOpeartorWithEmbeddedCollection() throws Exception {
+	public void testLikeOperatorWithEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "FROM StoryGame story JOIN story.chaoticBranches c WHERE c.evilText LIKE '[ART%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
@@ -139,9 +148,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
-	@SkipByDatastoreProvider(value = AvailableDatastoreProvider.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once avialable)")
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfPropertyInEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "SELECT c.evilText FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 1" ).list();
 		assertThat( result ).containsOnly( "[ARTIFACT] Search for the evil artifact", "[VENDETTA] assassinate the leader of the party" );
@@ -149,9 +158,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
-	@SkipByDatastoreProvider(value = AvailableDatastoreProvider.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once avialable)")
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfEmbeddedInEmbeddedCollection() throws Exception {
 		List<?> result = session.createQuery( "SELECT c.evilEnding.score FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 1" ).list();
 		assertThat( result ).containsOnly( 5, 10 );
@@ -159,9 +168,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
-	@SkipByDatastoreProvider(value = AvailableDatastoreProvider.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once avialable)")
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfEmbeddedInEmbeddedCollectionWithNull() throws Exception {
 		List<?> result = session.createQuery( "SELECT c.evilEnding.score FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 20" ).list();
 		assertThat( result ).containsOnly( null, 333 );
@@ -169,9 +178,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
-	@SkipByDatastoreProvider(value = AvailableDatastoreProvider.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once avialable)")
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfPropertiesInEmbeddedCollection() throws Exception {
 		List<ProjectionResult> result = asProjectionResults( session, "SELECT story.id, story.goodBranch.storyText, c.evilEnding.text, c.evilText FROM StoryGame story JOIN story.chaoticBranches c WHERE story.id = 1" );
 		assertThat( result ).containsOnly(
@@ -181,9 +190,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
-	@SkipByDatastoreProvider(value = AvailableDatastoreProvider.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once avialable)")
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionsOfPropertiesInEmbeddedCollectionWithInnerJoin() throws Exception {
 		List<ProjectionResult> result = asProjectionResults( session, "SELECT story.id, story.goodBranch.storyText, c.evilEnding.text, c.evilText FROM StoryGame story JOIN story.chaoticBranches c " );
 		assertThat( result ).containsOnly(
@@ -195,9 +204,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
+			value = { GridDialectType.CASSANDRA, GridDialectType.COUCHDB, GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.REDIS_JSON, GridDialectType.REDIS_HASH },
 			comment = "Hibernate Search cannot project multiple values from the same field at the moment" )
-	@SkipByDatastoreProvider(value = AvailableDatastoreProvider.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once avialable)")
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "OGM-835 - needs a Fongo upgrade (once available)")
 	public void testProjectionWithMultipleAssociations() throws Exception {
 		List<ProjectionResult> result = asProjectionResults( session, "SELECT story.id, c.evilEnding.text, n.evilText "
 				+ "FROM StoryGame story JOIN story.chaoticBranches c JOIN story.neutralBranches n WHERE story.id = 1" );
@@ -286,8 +295,9 @@ public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 		StoryGame story3 = new StoryGame( 300L, new StoryBranch( "[DUNGEON] You go to the dungeon", null ) );
 		story3.setEvilBranch( new StoryBranch( "[DUNGEON] You become the dungeon keeper", null ) );
+		story3.setDwarves( Arrays.asList( "Dwalin", "Balin", "Kili", "Fili", "Dori", "Nori", "Ori", "Oin", "Gloin", "Bifur", "Bofur", "Bombur", "Thorin" ) );
 
-		persist( sessions, story1, story2, story3);
+		persist( sessions, story1, story2, story3 );
 	}
 
 

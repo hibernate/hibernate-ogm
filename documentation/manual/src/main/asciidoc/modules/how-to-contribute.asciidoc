@@ -1,0 +1,362 @@
+[[ogm-howtocontribute]]
+
+== How to get help and contribute on Hibernate OGM
+
+Hibernate OGM is a young project.
+Join and help us shape it!
+
+[[ogm-howtocontribute-help]]
+
+=== How to get help
+
+First of all, make sure to read this reference documentation.
+This is the most comprehensive formal source of information.
+Of course, it is not perfect:
+feel free to come and ask for help,
+comment or propose improvements in our
+https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM forum].
+
+You can also:
+
+* open bug reports in https://hibernate.atlassian.net/browse/OGM[JIRA]
+* propose improvements on the
+  http://www.hibernate.org/community/mailinglists[development mailing list]
+* join us on IRC to discuss developments and improvements
+  (`#hibernate-dev` on `freenode.net`;
+  you need to be registered on freenode:
+  the room does not accept "anonymous" users).
+
+[[ogm-howtocontribute-contribute]]
+
+=== How to contribute
+
+Welcome!
+
+There are many ways to contribute:
+
+* report bugs in https://hibernate.atlassian.net/browse/OGM[JIRA]
+* give feedback in the forum, IRC or the development mailing list
+* improve the documentation
+* fix bugs or contribute new features
+* propose and code a datastore dialect for your favorite NoSQL engine
+
+
+Hibernate OGM's code is available on GitHub at
+https://github.com/hibernate/hibernate-ogm.
+
+==== How to build Hibernate OGM
+
+Hibernate OGM uses Git and Maven 3,
+make sure to have both installed on your system.
+
+Clone the git repository from GitHub:
+
+[source, bash]
+----
+#get the sources
+git clone https://github.com/hibernate/hibernate-ogm
+cd hibernate-ogm
+----
+
+Run maven
+
+[source, bash]
+----
+#build project
+mvn clean install -s settings-example.xml
+----
+
+[NOTE]
+====
+Note that Hibernate OGM uses artifacts from the Maven repository hosted by JBoss.
+Make sure to either use the [code]`-s settings-example.xml` option
+or adjust your [filename]`$$~/.m2/settings.xml$$`
+according to the descriptions available
+http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
+
+These settings are required for development of Hibernate OGM but should not be needed to use it.
+====
+
+To skip building the documentation, set the `skipDocs` property to true:
+
+[source, bash]
+----
+mvn clean install -DskipDocs=true -s settings-example.xml
+----
+
+[TIP]
+====
+If you just want to build the documentation only,
+run it from the [filename]`hibernate-ogm-documentation/manual` subdirectory.
+====
+
+==== How to contribute code effectively
+
+The best way to share code is to fork the Hibernate OGM repository on GitHub,
+create a branch and open a pull request when you are ready.
+Make sure to rebase your pull request
+on the latest version of the master branch before offering it.
+
+Here are a couple of approaches the team follows:
+
+* We do small independent commits for each code change.
+  In particular, we do not mix stylistic code changes (import, typos, etc)
+  and new features in the same commit.
+* Commit messages follow this convention:
+  the JIRA issue number, a short commit summary, an empty line,
+  a longer description if needed.
+  Make sure to limit line length to 80 characters, even at this day and age
+  it makes for more readable commit comments.
+[source]
+----
+OGM-123 Summary of commit operation
+
+Optional details on the commit
+and a longer description can be
+added here.
+----
+
+* A pull request can contain several commits but should be self contained:
+  include the implementation, its unit tests, its documentation
+  and javadoc changes if needed.
+* All commits are proposed via pull requests
+  and reviewed by another member of the team
+  before being pushed to the reference repository.
+  That's right, we never commit directly upstream without code review.
+
+
+=== How to build support for a data store
+
+[TIP]
+.Advanced section
+====
+This is an advanced subject, feel free to skip this section if you are not building a data store.
+====
+
+Hibernate OGM supports various data stores by abstracting them
+with `DatastoreProvider` and `GridDialect`. The supported features vary between data stores,
+and dialects do not have to implement all features. Hibernate OGM implements a TCK
+(Technology Compatibility Kit) to verify interoperability and features of the dialect.
+Hibernate OGM supports a variety of document- and key-value-stores and ships
+with some abstraction and utility classes for document- and key-value-stores
+(like `KeyValueStoreProperties` and `DocumentStoreProperties`).
+
+
+==== DataStore providers
+
+Supporting a data store usually begins with a `DatastoreProvider`. Providers can
+implement a lifecycle (`start`, `stop`) to initialize, configure and shutdown
+resources. Taking a look at existing data store support such as MongoDB
+(see `org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider`)
+is a good idea to get an impression of how to boot the data store support.
+Providers are seen as services, they can implement various service interfaces
+to activate certain features (see the `org.hibernate.service.spi` package for details).
+
+A common issue to face then implementing new data stores is transactionality.
+Some data stores provide transactional support that can be used in the context of Hibernate OGM wrapped by JTA.
+If your data store does not support transactions, you
+can enable transaction emulation within the `DatastoreProvider`.
+
+Features of a `DatastoreProvider`:
+
+* Resource lifecycle
+* Managing connection resources
+* Configuration
+* Access to query parsers
+* Define/Validate a schema
+
+
+==== Dialects
+
+A data store can have one or more dialects. Dialects describe the style
+how data is mapped to a particular data store. NoSQL data stores imply a
+certain nature, how to map data. Document-oriented data stores encourage
+an entity-as-document pattern where embedded data structures could be
+stored within the document itself. Key-value data stores allow different
+approaches, e.g. storing an entity as JSON document or event storing
+individual key-value pairs that map the entity within a hash table
+data structure. Hibernate OGM allows multiple dialects per data store
+and users may choose the most appropriate one.
+
+The most basic support is provided by implementing the `GridDialect`
+interface. Implementing that interface is mandatory to support a
+specific data store.
+
+A `GridDialect` usually supports:
+
+* Create/Read/Update/Delete for entities
+* Create/Read/Update/Delete for associations
+* Id/Sequence generator
+* Provides locking strategies
+
+A dialect _may_ optionally implement one or more additional facet
+interfaces to provide a broader support for certain features:
+
+* `QueryableGridDialect`
+* `BatchableGridDialect`
+* `IdentityColumnAwareGridDialect`
+* `OptimisticLockingAwareGridDialect`
+* `MultigetGridDialect`
+
+Features of a `QueryableGridDialect`
+
+* Query execution
+* Support for native queries
+
+Features of a `BatchableGridDialect`
+
+* Operation queueing
+* Execution of queued Create/Update/Delete as a batch
+
+Features of a `IdentityColumnAwareGridDialect`
+
+* Supports the generation of identity values upon data insertion
+
+Features of an `OptimisticLockingAwareGridDialect`
+
+* Finding and altering versioned records in an atomic fashion
+
+Features of a `MultigetGridDialect`
+
+* Retrieve multiple tuples within one operation
+
+
+[TIP]
+====
+Before starting make a clear plan of how you think entities, relations and nested structures
+are best represented in the NoSQL store you plan to implement.
+It helps to have a clear picture about that, and this will require some experience with the
+NoSQL database you plan to support.
+====
+
+[TIP]
+====
+Start with a small feature set to get a feeling for Hibernate OGM,
+for example aim at implementing CRUD operations only and ignore relations and queries.
+You can always extend the features as you proceed.
+
+Starting from or studying existing dialects is also an interesting strategy.
+It can be intimidating with complex dialects though.
+====
+
+Hibernate OGM is not opinionated by which means data is stored/loaded
+for a particular data store, but the particular dialect is.
+Hibernate OGM strives for the most natural mapping style.
+The idea is to facilitate integration with other applications
+of that database by sticking to established patterns and idioms of that store.
+
+==== Entities
+
+Entities are seen by a dialect as `Tuple`. A `Tuple` contains:
+
+* a snapshot (that's the view of the data as loaded from your database),
+* a set of key-value pairs that carry the actual data,
+* and a list of operations to apply onto the original snapshot.
+Tuple keys use dot-path
+property identifiers to indicate nesting. That comes handy when working
+with document stores because you can build a document structure based on that details.
+
+
+==== Associations
+
+Most NoSQL data stores have no built-in support for associations
+between entities (unless you're using a graph database).
+
+Hibernate OGM simulates associations for datastore with no support
+by storing the navigational information to go from a given entity
+to its (list of) associated entity.
+This of it as query materialisation.
+This navigational information data can be stored within the
+entity itself or externally (as own documents or relation items).
+
+
+
+==== Configuration
+
+Hibernate OGM can read its configuration properties from various sources.
+Most common configuration sources are:
+
+* `hibernate.properties` file
+* `persistence.xml` file
+* environment variables override or integrate properties set in the above configuration files
+* annotation configuration (entity classes)
+* programmatic configuration
+
+The `org.hibernate.ogm.options` package provides the configuration infrastructure.
+
+You might want to look at `MongoDBConfiguration` or `InfinispanConfiguration`
+to get an idea how configuration works. Configuration is usually read
+when starting a data store provider or while operating. A good example
+of accessing configuration during runtime is the association storage
+option, where users can define, how to store a particular association
+(within the entity or as a separate collection/key/document/node).
+
+The configuration and options context infrastructure allows to support
+data store-specific options such as `ReadPreference` for MongoDB or `TTL` for Redis.
+
+
+===== Programmatic configuration
+
+Data store support can implement programmatic configuration. The
+configuration splits into three parts:
+
+* Global configuration
+* Entity configuration
+* Property configuration
+
+Programmatic configuration consists of two parts: configuration
+interfaces (see `org.hibernate.ogm.options.navigation`) and partial (abstract)
+implementation classes. These parts are merged at runtime using ASM class generation.
+
+==== Types
+
+Every data store supports a unique set of data types. Some stores support
+floating point types and date types, others just strings. Hibernate OGM allows
+users to utility a variety of data types (see JPA spec) for their data models.
+On the other hand, that data needs to be stored within the data store and mapped back.
+
+A dialect can provide a `GridType` to describe the handling of a particular
+data type, meaning you can specify how dates, floating point types or even
+byte arrays are handled. Whether they are mapped to other data types (e. g. use
+`double` for `float` or use base64-encoded strings for byte arrays) or wrapped within strings.
+
+Data store-specific types can be handled the same way, check out `StringAsObjectIdType`
+ for the String-mapping of MongoDB's `ObjectId` type.
+
+[NOTE]
+====
+Type-mapping can be an exhausting task. The whole type handling is in flux and is subject
+to change as Hibernate OGM progresses. Ask, if you're not sure about it.
+====
+
+==== Tests
+
+Hibernate OGM brings a well suited infrastructure for tests. The test
+infrastructure consists of generic base classes (`OgmTestCase` for OGM and
+`JpaTestCase` for JPA) for tests and a test helper (see `GridDialectTestHelper`).
+That classes are used to get a different view on data than the frontend-view
+by the `Session` and the `EntityManager`.
+
+[NOTE]
+====
+It is always helpful to create a set of own test cases for different
+scenarios to validate the data is mapped in the way it's intended or
+to verify data store-specific options such as `TTL`.
+====
+
+Another bunch of tests is called the backend TCK. That test classes test nearly
+all aspects of Hibernate OGM viewed from a users' perspective. Tests contain
+cases for simple/complex entities, associations, list- and map data types,
+queries using Hibernate Search, and tests for data type support.
+
+The backend TCK is included using classpath filters, just check one of the
+current implementations (like `RedisBackendTckHelper`). When you're developing a
+core module, that is included in the distribution, you will have to add your
+dialect to the `@SkipByGridDialect` annotation of some tests.
+
+[TIP]
+====
+Running even 20% of the tests successfully is a great achievement. Proceed step-by-step.
+Large numbers of tests can fail just because of one thing that is handled differently.
+Don't hesitate to ask for help.
+====

@@ -6,11 +6,11 @@
  */
 package org.hibernate.ogm.datastore.redis.dialect.model.impl;
 
-import java.util.Map;
-
 import org.hibernate.ogm.datastore.redis.dialect.value.Association;
 import org.hibernate.ogm.datastore.redis.dialect.value.Entity;
+import org.hibernate.ogm.datastore.redis.dialect.value.HashEntity;
 import org.hibernate.ogm.datastore.redis.dialect.value.StructuredValue;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 
 /**
@@ -25,31 +25,31 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 public abstract class RedisAssociation {
 
 	/**
-	 * Creates a {@link RedisAssociation} from the given {@link Entity} and association name.
+	 * Creates a {@link RedisAssociation} from the given {@link TuplePointer} and association name.
 	 *
-	 * @param entity the owner of the association
+	 * @param tuplePointer a pointer to the owner of the association
 	 * @param associationKeyMetadata association key meta-data
 	 *
 	 * @return a {@link RedisAssociation} representing the association
 	 */
 	public static RedisAssociation fromEmbeddedAssociation(
-			Entity entity,
+			TuplePointer tuplePointer,
 			AssociationKeyMetadata associationKeyMetadata) {
-		return new EmbeddedAssociation( entity, associationKeyMetadata );
+		return new EmbeddedAssociation( tuplePointer, associationKeyMetadata );
 	}
 
 	/**
 	 * Creates a {@link RedisAssociation} from the given {@link java.util.Map} and association name.
 	 *
-	 * @param entity the owner of the association
+	 * @param tuplePointer a pointer to the owner of the association
 	 * @param associationKeyMetadata association key meta-data
 	 *
 	 * @return a {@link RedisAssociation} representing the association
 	 */
-	public static RedisAssociation fromEmbeddedAssociation(
-			Map<String, String> entity,
+	public static RedisAssociation fromHashEmbeddedAssociation(
+			TuplePointer tuplePointer,
 			AssociationKeyMetadata associationKeyMetadata) {
-		return new HashEmbeddedAssociation( entity, associationKeyMetadata );
+		return new HashEmbeddedAssociation( tuplePointer, associationKeyMetadata );
 	}
 
 	/**
@@ -79,7 +79,7 @@ public abstract class RedisAssociation {
 	public abstract void setRows(Object rows);
 
 	/**
-	 * Returns the Redis value which owns this association, either an {@link Association} or an
+	 * Returns the Redis value which owns this association, either an {@link Association}, an {@link HashEntity} or an
 	 * {@link Entity}.
 	 *
 	 * @return the {@link StructuredValue} representing the owner of the association

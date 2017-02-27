@@ -7,14 +7,19 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.StringHelper;
 
@@ -27,6 +32,8 @@ import com.mongodb.DBObject;
  * @author Gunnar Morling
  */
 public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQueryParsingResult> {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
@@ -51,14 +58,58 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	public MongoDBQueryParsingResult getResult() {
 		OgmEntityPersister entityPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( targetType.getName() );
 
+		DBObject query = appendDiscriminatorClause( entityPersister, builder.build() );
+
 		return new MongoDBQueryParsingResult(
 				targetType,
 				entityPersister.getTableName(),
-				builder.build(),
+				query,
 				getProjectionDBObject(),
 				orderBy,
-				unwinds
-		);
+				unwinds );
+	}
+
+	private DBObject appendDiscriminatorClause(OgmEntityPersister entityPersister, DBObject query) {
+		String discriminatorColumnName = entityPersister.getDiscriminatorColumnName();
+		if ( discriminatorColumnName != null ) {
+			// InheritanceType.SINGLE_TABLE
+			BasicDBObject discriminatorFilter = createDiscriminatorFilter( entityPersister, discriminatorColumnName );
+
+			if ( query.keySet().isEmpty() ) {
+				return discriminatorFilter;
+			}
+			else {
+				return new BasicDBObject( "$and", Arrays.asList( query, discriminatorFilter ) );
+			}
+		}
+		else if ( entityPersister.hasSubclasses() ) {
+			// InheritanceType.TABLE_PER_CLASS
+			@SuppressWarnings("unchecked")
+			Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
+			throw log.queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( "MongoDB", subclassEntityNames );
+		}
+		return query;
+	}
+
+	private BasicDBObject createDiscriminatorFilter(OgmEntityPersister entityPersister, String discriminatorColumnName) {
+		final Object discriminatorValue = entityPersister.getDiscriminatorValue();
+		BasicDBObject discriminatorFilter = null;
+		@SuppressWarnings("unchecked")
+		Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
+		if ( subclassEntityNames.size() == 1 ) {
+			discriminatorFilter = new BasicDBObject( discriminatorColumnName, discriminatorValue );
+		}
+		else {
+			Set<Object> discriminatorValues = new HashSet<>();
+			discriminatorValues.add( discriminatorValue );
+			for ( String subclass : subclassEntityNames ) {
+				OgmEntityPersister subclassPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( subclass );
+				Object subDiscriminatorValue = subclassPersister.getDiscriminatorValue();
+				discriminatorValues.add( subDiscriminatorValue );
+			}
+			discriminatorFilter = new BasicDBObject( discriminatorColumnName, new BasicDBObject( "$in", discriminatorValues ) );
+		}
+		return discriminatorFilter;
 	}
 
 	@Override

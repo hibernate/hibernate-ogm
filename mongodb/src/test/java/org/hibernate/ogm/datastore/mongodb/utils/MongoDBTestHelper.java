@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -29,7 +30,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -46,7 +47,7 @@ import com.mongodb.util.JSON;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
-public class MongoDBTestHelper implements TestableGridDialect {
+public class MongoDBTestHelper implements GridDialectTestHelper {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -68,6 +69,11 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
+
+	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DB db = provider.getDatabase();
@@ -82,6 +88,12 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 	private boolean isSystemCollection(String collectionName) {
 		return collectionName.startsWith( "system." );
+	}
+
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -183,8 +195,8 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( session.getSessionFactory() );
 		DBObject finder = new BasicDBObject( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
 		DBObject result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
 		replaceIdentifierColumnName( result, key );
@@ -230,7 +242,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		//read variables from the System properties set in the static initializer
-		Map<String,String> envProps = new HashMap<String, String>(2);
+		Map<String, String> envProps = new HashMap<String, String>( 4 );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
@@ -276,12 +288,27 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		assertJsonEquals( expectedDbObject, actual.toString() );
 	}
 
-	private static void assertJsonEquals(String expectedJson, String actualJson) {
+	public static Map<String, DBObject> getIndexes(OgmSessionFactory sessionFactory, String collection) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		List<DBObject> indexes = provider.getDatabase().getCollection( collection ).getIndexInfo();
+		Map<String, DBObject> indexMap = new HashMap<>();
+		for ( DBObject index : indexes ) {
+			indexMap.put( index.get( "name" ).toString(), index );
+		}
+		return indexMap;
+	}
+
+	public static void dropIndexes(OgmSessionFactory sessionFactory, String collection) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		provider.getDatabase().getCollection( collection ).dropIndexes();
+	}
+
+	public static void assertJsonEquals(String expectedJson, String actualJson) {
 		try {
 			JSONCompareResult result = JSONCompare.compareJSON( expectedJson, actualJson, JSONCompareMode.NON_EXTENSIBLE );
 
 			if ( result.failed() ) {
-				throw new AssertionError(result.getMessage() + "; Actual: " + actualJson);
+				throw new AssertionError( result.getMessage() + "; Actual: " + actualJson );
 			}
 		}
 		catch (JSONException e) {

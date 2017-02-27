@@ -16,9 +16,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.hibernate.ogm.backendtck.jpa.Poem;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,21 +31,27 @@ import org.junit.Test;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
+public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
+
+	/*
+	 *  The only purpose of this constant is to keep track of the nodes created using a native query via the
+	 *	executeUpdate method. This is just a Label (not a table or entity).
+	 */
+	private static final String UPDATE_LABEL = "UPDATE";
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
 	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime(), critic );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime(), null );
 
 	private EntityManager em;
 
 	@Before
 	public void init() throws Exception {
 		em = createEntityManager();
-		persist( portia, athanasia, critic );
+		persist( critic, portia, athanasia );
 	}
 
 	@After
@@ -133,6 +141,47 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		em.getTransaction().commit();
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-854")
+	public void testToOneInitializedByQuery() throws Exception {
+		em.getTransaction().begin();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
+		OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
+
+		assertThat( poem.getCritic() ).isNotNull();
+		assertThat( poem.getCritic().getName() ).as( "Wrong critic name" ).isEqualTo( "Roger" );
+
+		em.getTransaction().commit();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testNativeQueryExecuteUpdate() throws Exception {
+		em.getTransaction().begin();
+
+		String findQueryString = "MATCH (n:" + UPDATE_LABEL + ") RETURN n";
+		Query findQuery = em.createNativeQuery( findQueryString );
+
+		String createQuery = "CREATE (n:" + UPDATE_LABEL + " { author:'Giorgio Faletti' })";
+		int updates = em.createNativeQuery( createQuery ).executeUpdate();
+		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+			assertThat( updates ).isEqualTo( 3 ); // 1 node + 1 label + 1 property set
+		}
+		List<Object> createdNode = (List<Object>) findQuery.getResultList();
+		assertThat( createdNode ).hasSize( 1 );
+
+		String deleteQuery = "MATCH (n:" + UPDATE_LABEL + ") DELETE n ";
+		int deletes = em.createNativeQuery( deleteQuery ).executeUpdate();
+		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+			assertThat( deletes ).isEqualTo( 1 ); // 1 node
+		}
+		List<Object> uniqueResult = (List<Object>) findQuery.getResultList();
+		assertThat( uniqueResult ).isEmpty();
+
+		em.getTransaction().commit();
+	}
+
 	private void persist(Object... entities) {
 		EntityManager em = createEntityManager();
 		em.getTransaction().begin();
@@ -151,14 +200,15 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { OscarWildePoem.class, Critic.class };
 	}
 
 	private void delete(Object... entities) {
 		em.getTransaction().begin();
 		for ( Object object : entities ) {
-			em.detach( object );
+			Object entity = em.merge( object );
+			em.remove( entity );
 		}
 		em.getTransaction().commit();
 		em.clear();

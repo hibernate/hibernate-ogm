@@ -11,12 +11,13 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.infinispan.Infinispan;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -25,7 +26,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.infinispan.Cache;
@@ -33,7 +34,12 @@ import org.infinispan.Cache;
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public class InfinispanTestHelper implements TestableGridDialect {
+public class InfinispanTestHelper implements GridDialectTestHelper {
+
+	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
+	}
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -49,6 +55,11 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		}
 
 		return entityCount;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -68,26 +79,26 @@ public class InfinispanTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		InfinispanDatastoreProvider provider = getProvider( sessionFactory );
-		return getEntityCache( sessionFactory, key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		InfinispanEmbeddedDatastoreProvider provider = getProvider( session.getSessionFactory() );
+		return getEntityCache( session.getSessionFactory(), key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
 	}
 
 	private static Cache<?, Map<String, Object>> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
-		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
+		InfinispanEmbeddedDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getEntityCache( entityKeyMetadata );
 	}
 
-	public static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
+	public static InfinispanEmbeddedDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
-		if ( !( InfinispanDatastoreProvider.class.isInstance( provider ) ) ) {
+		if ( !( InfinispanEmbeddedDatastoreProvider.class.isInstance( provider ) ) ) {
 			throw new RuntimeException( "Not testing with Infinispan, cannot extract underlying cache" );
 		}
-		return InfinispanDatastoreProvider.class.cast( provider );
+		return InfinispanEmbeddedDatastoreProvider.class.cast( provider );
 	}
 
 	private static Cache<?, ?> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
-		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
+		InfinispanEmbeddedDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getAssociationCache( associationKeyMetadata );
 	}
 
@@ -113,11 +124,11 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new InfinispanDialect( (InfinispanDatastoreProvider) datastoreProvider );
+		return new InfinispanDialect( (InfinispanEmbeddedDatastoreProvider) datastoreProvider );
 	}
 
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
-		return Infinispan.class;
+		return InfinispanEmbedded.class;
 	}
 }

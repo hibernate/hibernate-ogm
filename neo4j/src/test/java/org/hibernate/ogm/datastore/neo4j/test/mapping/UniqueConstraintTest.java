@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
 import static java.util.Collections.singletonMap;
-import static org.fest.assertions.Assertions.assertThat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,12 +17,12 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.BaseNeo4jDialect;
+import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.neo4j.graphdb.QueryExecutionException;
 
 /**
  * Test that unique constraints are created on Neo4j for:
@@ -120,9 +119,8 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void shouldThrowExceptionForDuplicatedNaturalId() throws Throwable {
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001403" );
-		thrown.expectMessage( "naturalId" );
+		thrown.expect( EntityAlreadyExistsException.class );
+		thrown.expectMessage( "OGM000067: Trying to insert an already existing entity" );
 
 		try {
 			final EntityManager em = getFactory().createEntityManager();
@@ -135,15 +133,14 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 			em.close();
 		}
 		catch (Exception e) {
-			throw extract( HibernateException.class, e );
+			throw extract( EntityAlreadyExistsException.class, e );
 		}
 	}
 
 	@Test
 	public void shouldThrowExceptionForDuplicatedUniqueColumn() throws Throwable {
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001403" );
-		thrown.expectMessage( "uniqueColumn" );
+		thrown.expect( EntityAlreadyExistsException.class );
+		thrown.expectMessage( "OGM000067: Trying to insert an already existing entity" );
 
 		try {
 			final EntityManager em = getFactory().createEntityManager();
@@ -156,15 +153,14 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 			em.close();
 		}
 		catch (Exception e) {
-			throw extract( HibernateException.class, e );
+			throw extract( EntityAlreadyExistsException.class, e );
 		}
 	}
 
 	@Test
 	public void shouldThrowExceptionForDuplicatedTableUniqueConstraintColumn() throws Throwable {
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001403" );
-		thrown.expectMessage( "tableConstraint" );
+		thrown.expect( EntityAlreadyExistsException.class );
+		thrown.expectMessage( "OGM000067: Trying to insert an already existing entity" );
 
 		try {
 			final EntityManager em = getFactory().createEntityManager();
@@ -177,7 +173,7 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 			em.close();
 		}
 		catch (Exception e) {
-			throw extract( HibernateException.class, e );
+			throw extract( EntityAlreadyExistsException.class, e );
 		}
 	}
 
@@ -186,15 +182,10 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 	 */
 	@Test
 	public void shouldThrowExceptionForDuplicatedIdentifierWithNativeQuery() throws Throwable {
-		thrown.expect( QueryExecutionException.class );
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM001416: " + BaseNeo4jDialect.CONSTRAINT_VIOLATION_CODE );
 
-		try {
-			executeCypherQuery( "CREATE (n:`UniqueConstraintTest$EntityWithConstraints` {id: {id}})", singletonMap( "id", (Object) entityWithConstraints.id ) );
-		}
-		catch (QueryExecutionException e) {
-			assertThat( e.getStatusCode() ).isEqualTo( Neo4jDialect.CONSTRAINT_VIOLATION_CODE );
-			throw e;
-		}
+		executeCypherQuery( "CREATE (n:`UniqueConstraintTest$EntityWithConstraints` {id: {id}})", singletonMap( "id", (Object) entityWithConstraints.id ) );
 	}
 
 	@Test
@@ -218,11 +209,14 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 			}
 			cause = cause.getCause();
 		}
+		if ( cause == null ) {
+			throw e;
+		}
 		throw cause;
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { EntityWithConstraints.class };
 	}
 }

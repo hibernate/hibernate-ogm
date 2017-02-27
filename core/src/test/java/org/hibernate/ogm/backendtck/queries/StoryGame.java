@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.queries;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.ElementCollection;
@@ -44,6 +45,10 @@ public class StoryGame {
 	@ElementCollection
 	@IndexedEmbedded
 	private List<OptionalStoryBranch> neutralBranches;
+
+	@ElementCollection
+	@IndexedEmbedded
+	private List<String> dwarves = new ArrayList<String>();
 
 	public StoryGame() {
 	}
@@ -87,5 +92,13 @@ public class StoryGame {
 
 	public void setNeutralBranches(List<OptionalStoryBranch> neutralBranches) {
 		this.neutralBranches = neutralBranches;
+	}
+
+	public List<String> getDwarves() {
+		return dwarves;
+	}
+
+	public void setDwarves(List<String> dwarves) {
+		this.dwarves = dwarves;
 	}
 }

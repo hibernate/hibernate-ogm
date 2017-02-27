@@ -19,7 +19,6 @@ import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.ErrorHandler.RollbackContext;
@@ -28,8 +27,8 @@ import org.hibernate.ogm.compensation.operation.ExecuteBatch;
 import org.hibernate.ogm.compensation.operation.GridDialectOperation;
 import org.hibernate.ogm.compensation.operation.InsertOrUpdateTuple;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
-import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -38,7 +37,7 @@ import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,15 +50,16 @@ import org.junit.Test;
  */
 @SkipByGridDialect(
 		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support uniq constraint even on primary key except by explicit/slow CAS use"
+		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
 )
-public class CompensationSpiJpaTest  extends JpaTestCase {
+public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Shipment.class );
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "MongoDB tests runs w/o transaction manager")
+	@SkipByGridDialect(value = { GridDialectType.MONGODB, GridDialectType.INFINISPAN_REMOTE },
+		comment = "MongoDB and Infinispan Remote tests runs w/o transaction manager")
 	public void onRollbackTriggeredThroughJtaPresentsAppliedInsertOperations() throws Exception {
 		Map<String, Object> settings = new HashMap<>();
 		settings.putAll( TestHelper.getDefaultTestSettings() );
@@ -94,7 +94,7 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
 		assertThat( onRollbackInvocations.hasNext() ).isFalse();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			GridDialectOperation operation = appliedOperations.next();
@@ -167,10 +167,17 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 		Iterator<GridDialectOperation> appliedOperations = onRollbackInvocations.next().getAppliedGridDialectOperations().iterator();
 		assertThat( onRollbackInvocations.hasNext() ).isFalse();
 
-		if ( currentDialectHasFacet( BatchableGridDialect.class ) ) {
+		if ( currentDialectHasFacet( BatchableGridDialect.class ) || currentDialectHasFacet( GroupingByEntityDialect.class ) ) {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
-			assertThat( appliedOperations.next() ).isInstanceOf( ExecuteBatch.class );
+
+			GridDialectOperation operation = appliedOperations.next();
+			assertThat( operation ).isInstanceOf( ExecuteBatch.class );
+			ExecuteBatch batch = operation.as( ExecuteBatch.class );
+			Iterator<GridDialectOperation> batchedOperations = batch.getOperations().iterator();
+			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( batchedOperations.next() ).isInstanceOf( InsertOrUpdateTuple.class );
+			assertThat( batchedOperations.hasNext() ).isFalse();
 		}
 		else {
 			assertThat( appliedOperations.next() ).isInstanceOf( CreateTupleWithKey.class );
@@ -211,19 +218,19 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Shipment.class };
 	}
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.getProperties().put( OgmProperties.ERROR_HANDLER, InvocationTrackingHandler.INSTANCE );
 	}
 
 	private boolean currentDialectHasFacet(Class<? extends GridDialect> facet) {
 		SessionFactoryImplementor sfi = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) getFactory() ).getSessionFactory();
 		GridDialect gridDialect = sfi.getServiceRegistry().getService( GridDialect.class );
-		return GridDialects.hasFacet( gridDialect, OptimisticLockingAwareGridDialect.class );
+		return GridDialects.hasFacet( gridDialect, facet );
 	}
 
 	private boolean currentDialectUsesLookupDuplicatePreventionStrategy() {
@@ -234,9 +241,4 @@ public class CompensationSpiJpaTest  extends JpaTestCase {
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 
-	private TransactionManager getTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
-				.getSessionFactory();
-		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
-	}
 }

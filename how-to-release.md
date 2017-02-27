@@ -6,13 +6,12 @@ Make sure you have:
 
 1. **JDK 8** for the build (the created artifacts are compatible with Java 7)
 
-2. **Maven** configured to use the JBoss repositories, with permissions to upload. Make sure your _settings.xml_ is configured accordingly or use the option _-s settings-example.xml_ when running the commands.
+2. **Maven**
 
-3. all the permissions required to upload the packages on:
+3. all the permissions required to perform the release process:
 
+  - [CI](http://ci.hibernate.org/)
   - [Nexus](https://repository.jboss.org/nexus/index.html): you can try to login on the Nexus web interface
-  - [SourceForge](https://sourceforge.net): you need to have the authorization on the hibernate-ogm project
-  - Documentation: you have to be able to connect via ssh to hibernate@filemgmt.jboss.org:/docs_htdocs/hibernate/ogm/[version]
 
 ## Release process
 
@@ -45,28 +44,19 @@ Verify:
 
 ### Release
 
-The Jenkins [release job](http://ci.hibernate.org/view/OGM/job/hibernate-ogm-release/) should be used for performing releases.
-This parameterized job automates step 5 from this section as well as steps 1 and 2 from the "Publish" section.
-
 1. [Release the version on JIRA](https://hibernate.atlassian.net/plugins/servlet/project-config/OGM/versions)
 
-2. Update the _changelog.txt_ in project root from [JIRA's release notes](https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160)
+2. Do **NOT** update _changelog.txt_ in project root: it will be automatically updated
 
 3. Verify _readme.txt_:
    - content is up to date
    - links are not broken
-   - current date and version number in the header
+   - don't change the version number, it will be automatically updated
 
 4. Commit any outstanding changes
 
-5. Tag and build the release using the [maven release plugin](http://maven.apache.org/plugins/maven-release-plugin); During _release:prepare_ you will have to specify the tag name and release version:
-
-   ```
-       mvn release:prepare -s settings-example.xml
-       mvn release:perform -s settings-example.xml
-       git push upstream HEAD
-       git push upstream <release-version>
-   ```
+5. Go to CI and execute the [release job](http://ci.hibernate.org/view/OGM/job/hibernate-ogm-release/).
+   - **Be careful when filling the form with the build parameters.**
 
 6. Log in to [Nexus](https://repository.jboss.org/nexus):
    - check all artifacts you expect are there
@@ -75,37 +65,9 @@ This parameterized job automates step 5 from this section as well as steps 1 and
 
 ### Publish
 
-1. Upload the distribution packages to SourceForge (they should be under _target/checkout/target_). You need to be member of the Hibernate project team of Sourceforge to do that (Also see the [Sourceforge instructions](https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download/)):
-   - Copy the _changelog.txt_ (in _target/checkout/distribution/target/hibernate-ogm-[version]-dist_)
-   - Copy the _readme.txt_ (in _target/checkout/distribution/target/hibernate-ogm-[version]-dist_)
-   - Copy the _.zip distribution_ (in _target/checkout/distribution/target_)
-   - Copy the _.tar.gz distribution_ (in _target/checkout/distribution/target_)
-   - Copy the _.zip containing the JBoss Modules_. There is currently one .zip file:
-     - for **WildFly 10**: in _target/checkout/modules/wildfly/target_
+1. The CI job automatically pushes the distribution to SourceForge and publishes the documentation to docs.jboss.org.
 
-2. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/hibernate/ogm/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
-
-   ```
-       rsync -rzh --progress --delete \
-             --protocol=28 docs/ hibernate@filemgmt.jboss.org:/docs_htdocs/hibernate/ogm/[version-family]
-   ```
-
-   or alternatively
-
-   ```
-       scp -r api hibernate@filemgmt.jboss.org:docs_htdocs/hibernate/ogm/[version-family]
-       scp -r reference hibernate@filemgmt.jboss.org:docs_htdocs/hibernate/ogm/[version-family]
-   ```
-
-3. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
-   You can't create symlinks on the server so you either create it locally then rsync it up, or make a copy of the documentation in that URL.
-
-   ```
-       rsync -rzh --progress --delete \
-             --protocol=28 docs/ hibernate@filemgmt.jboss.org:/docs_htdocs/hibernate/stable/ogm
-   ```
-
-4. Update the [community pages](http://community.jboss.org/en/hibernate/ogm).
+2. Update the [community pages](http://community.jboss.org/en/hibernate/ogm).
    In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
    When doing the latter, create an API change report by running `mvn clirr:clirr -pl core`.
    The report created at _core/target/site/clirr-report.html_ provides an overview of all changed API/SPI types.

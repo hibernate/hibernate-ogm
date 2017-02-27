@@ -1,6 +1,254 @@
 Hibernate OGM Changelog
 =======================
 
+5.1.0.CR1 (15-02-2017)
+-------------------------
+
+** Bug
+    * OGM-1240 - mongodb           - MongoDB uses the wrong db for checking credentials
+    * OGM-1238 - mongodb           - Collection of elements in MongoDB should be returned in the same order of the DB
+    * OGM-1221 - neo4j             - @OneToOne and @ManyToOne / @OneToOne relationships cause exception with InheritanceType#SINGLE_TABLE while persisting
+    * OGM-913 - mongodb, neo4j    - Element collection queries not working for collections of primitive types
+
+** Improvement
+    * OGM-1251 - query             - Update HQL parser to version 1.4.0.Final 
+    * OGM-1245 - build             - Upgrade HQL Parser to version 1.4.0.Beta1
+    * OGM-1244 - build, core       - Upgrade to Hibernate Search 5.6.0.Final
+    * OGM-1241 - mongodb           - Update mongo driver to version 3.4.2
+    * OGM-1236 - core              - Collections of elements should be stored and returned in the same order with MongoDB
+    * OGM-1234 - build             - Travis - Get the Neo4j version from the pom file
+    * OGM-1067 -                   - CollectionHelper.newHashMap(int) is counter productive
+
+** New Feature
+    * OGM-1024 - mongodb           - Support .aggregate() using MongoDB CLI syntax  
+
+** Task
+    * OGM-1248 - documentation     - Switch to Asciidoctor output for the documentation
+    * OGM-1243 - build, infinispan - Infinispan Remote test should start a full Infinispan Server as separate container
+    * OGM-1228 - build             - Upgrade to Hibernate Search 5.5.6.Final
+
+5.1.0.Beta3 (04-01-2017)
+-------------------------
+
+** Improvement
+    * OGM-1215 - documentation - Remove [classname] from the documentation
+    * OGM-1195 - build         - Update checkstyle ParenPad rule to include RESOURCE_SPECIFICATION
+    * OGM-1191 - core          - Dead code warning in OgmLoader
+
+5.1.0.Beta2 (03-01-2017)
+-------------------------
+
+** Bug
+    * OGM-1213 - mongodb           - MongoDBDialect.nextValue is not thread safe
+    * OGM-1208 - couchdb           - Generation of values for sequence causes Optimistic locking exception
+    * OGM-1207 - redis             - Value generation for sequences is not thread safe
+    * OGM-732 - query             - Make queries work with InheritanceType#SINGLE_TABLE
+
+** Improvement
+    * OGM-1214 - neo4j             - Upgrade neo4j-java-driver to version 1.0.6
+    * OGM-1111 - neo4j             - Support the MassIndexer for Neo4j remote
+
+** New Feature
+    * OGM-1227 - mongodb           - Upgrade Mongo java driver to version 3.4.1
+    * OGM-1226 - neo4j             - Update Neo4j and MongoDB
+    * OGM-1225 - core, neo4j       - Fix Neo4j tests
+
+** Task
+    * OGM-1220 - build, core       - Upgrade Hibernate ORM to 5.1.2.Final
+    * OGM-1219 - build, tests      - Upgrade Narayana to version 5.4.0.Final
+    * OGM-1218 - build, tests      - Upgrade to Hibernate Search 5.5.5.Final
+    * OGM-1217 - infinispan        - Upgrade to Infinispan 8.2.5.Final
+    * OGM-1205 - infinispan, tests - Occasional failures of SequenceIdGeneratorTest for the Hot Rod dialect
+    * OGM-1193 - tests             - Neo4J SequenceNextValueGenerationTest needs to verify generation of unique ids
+
+5.1.0.Beta1 (08-11-2016)
+-------------------------
+
+** Bug
+    * OGM-1198 - core                      - Incorrect mapping of multiple associations with the same entity
+    * OGM-1187 - neo4j, tests              - Integration tests with Bolt are not executed during the build
+    * OGM-1157 -                           - Make sure that all AssertionFailures being thrown are not the one from HCANN
+
+** Improvement
+    * OGM-1200 - neo4j                     - Upgrade Neo4j to version 3.0.7
+    * OGM-1192 - build                     - Checkstyle: stricter ParenPad rule
+    * OGM-1185 - documentation             - Improve documentation about inheritance
+    * OGM-1006 - neo4j                     - Support the MassIndexer for Neo4j embedded on Wildfly
+
+** New Feature
+    * OGM-1189 - neo4j                     - Support execution of Native update queries for Neo4j
+    * OGM-353 - infinispan                - Create a Hot Rod (remote Infinispan) GridDialect
+
+** Sub-task
+    * OGM-1194 - build, infinispan         - Include the Hot Rod Dialect in the release distribution
+    * OGM-1173 - infinispan                - Pass-through of configuration properties to the client configuration
+    * OGM-1169 -                           - Deprecate DatastoreProviderType.INFINISPAN and migrate to DatastoreProviderType.INFINISPAN_EMBEDDED
+    * OGM-1164 - infinispan                - The Hot Rod Dialect sequence generator needs stress tests
+    * OGM-1163 - infinispan                - OgmProtoStreamMarshaller should not use a static ThreadLocal
+    * OGM-1162 - infinispan                - Strict validation of the Hot Rod client configuration
+    * OGM-1161 - infinispan                - Define an exit strategy from excessive spinning in HotRodSequencer
+    * OGM-1160 - build, infinispan         - Bundle the Hot Rod Dialect with the WildFly modules
+    * OGM-1159 - documentation, infinispan - Document the Infinispan Remote (Hot Rod) dialect
+
+** Task
+    * OGM-1203 - documentation             - Add neo4j_http and neo4j_bolt to the list of available datastore provider shortcuts
+    * OGM-1201 - mongodb                   - Update embedded mongodb for tests to version 3.2.10
+
+5.1.0.Alpha1 (07-10-2016)
+-------------------------
+
+** Bug
+    * OGM-1165 - neo4j                              - GraphAssertions: a few as(...) are misplaced
+    * OGM-1151 - core                               - Invalid mapping when redefining a column name in a list of embedded
+    * OGM-1127 - documentation                      - Fix link to hibernate search documentation
+    * OGM-1122 - core                               - Association#getKeys() does not take into account the currentState if clear is used
+    * OGM-1121 - ehcache                            - Missing break statement in EhcacheDialect#insertOrUpdateAssociation
+    * OGM-1118 - mongodb                            - Upgrade HQLParser to 1.3.0.Final when released to support case insensitive NULL
+    * OGM-1114 -                                    - Event context not set up for all event cycles
+    * OGM-1113 -                                    - Properties given via configure() to tests not always applied
+    * OGM-1103 -                                    - ConcurrentModificationException with EventContextManager and OperationCollector
+    * OGM-1101 - tests                              - CompensationSpiJpaTest does not test the right facet
+    * OGM-1084 - redis                              - Redis - If an association is stored in the entity, the TTL should be the one of the entity
+    * OGM-1070 -                                    - Entries in OperationsQueue.entityKeys are not removed on poll() (and should not be)
+    * OGM-1069 -                                    - In OperationsQueueLifecycle.onFinish, we should pass the OperationsQueue to executeBatch
+    * OGM-1068 -                                    - OperationsQueue is closed while it should not be
+
+** Improvement
+    * OGM-1150 - tests                              - Upgrade to WildFly 10.1.0.Final for tests
+    * OGM-1146 - build                              - Properly ignore hibernate-noorm-release-scripts directory in the build
+    * OGM-1145 - documentation                      - Upgrade maven-jdocbook-plugin and pressgang to generate valid HTML5 documentation
+    * OGM-1144 - build                              - Make release scripts more generic
+    * OGM-1143 - documentation                      - Rename readme.md to README.md for consistency with other projects
+    * OGM-1142 - neo4j                              - Upgrade Neo4j to 3.0.4
+    * OGM-1141 - mongodb                            - Upgrade MongoDB driver to 3.3.0 and MongoDB to 3.2.8
+    * OGM-1140 - ehcache                            - Upgrade Ehcache to 2.6.11
+    * OGM-1138 - build                              - Reorganize the version properties of the bom for more clarity
+    * OGM-1137 - redis                              - Upgrade Lettuce to 4.2.1.Final
+    * OGM-1134 - documentation                      - Use https for links to docs.jboss.org
+    * OGM-1133 - cassandra                          - Update Cassandra driver to 3.1.0
+    * OGM-1132 - cassandra                          - Document that we only support ordinal parameters for Cassandra native queries for now
+    * OGM-1128 - infinispan                         - Upgrade to Infinispan 8.2.3.Final
+    * OGM-1124 - build                              - Update doc server metadata on release
+    * OGM-1120 - cassandra                          - Avoid calls to cluster.connect()
+    * OGM-1119 - tests                              - Improve JPA related test cases to avoid initializing a new EntityManagerFactory for each test
+    * OGM-1116 - build                              - Use same pattern for artifact id / classifier for Module ZIP as for HSEARCH and ORM
+    * OGM-1115 - mongodb                            - The regexp used to identify primary key constraint violation is too strict
+    * OGM-1092 -                                    - Add missing @Override annotation
+    * OGM-1076 - neo4j                              - Check response for errors when sequences are created in Neo4j remote
+
+** New Feature
+    * OGM-1182 - neo4j                              - Upgrade Neo4j to version 3.0.6
+    * OGM-1089 - documentation, neo4j, query, tests - Support Neo4j 3 remote datastore through the bolt protocol
+    * OGM-1085 - build                              - Add script to start docker container for OGM datastores
+    * OGM-1064 - core                               - Replace separate association management methods by upsertTupleWithAssociations()
+    * OGM-1032 -                                    - Make ORM and Search version referenced in documentation a property
+    * OGM-1026 -                                    - Support Neo4j 3.0
+    * OGM-910 - mongodb                            - MongoDB - Create field indexes based on @Index
+
+** Sub-task
+    * OGM-1095 - build, core, tests                 - Get the project to build and run essential unit tests JDK 9
+    * OGM-1075 - neo4j                              - Make sure we upload embedded correctly in Neo4j remote
+    * OGM-1044 -                                    - Local transaction in Neo4j should not refer to JDBC
+    * OGM-1038 - core                               - Make it possible for a dialect to get the id of the current transaction
+
+** Task
+    * OGM-1183 - documentation                      - Minor fixes to the javadoc
+    * OGM-1176 - build                              - Java 9 preview builds need --add-modules instead of -addmods as build option
+    * OGM-1158 - tests                              - Some tests are missing @SortableField
+    * OGM-1149 - infinispan                         - Upgrade to Infinispan 8.2.4.Final
+
+5.0.0.Final (13-05-2016)
+-------------------------
+
+** Bug
+    * OGM-973 - build                - Do not ship an 'org.parboiled' WildFly module
+    * OGM-1039 - documentation, neo4j  - Fix javadoc for embedded Neo4j transaction coordinators
+    * OGM-854 - neo4j                - Neo4j - *ToOne association not populated for entity returned from JP-QL or native NoSQL query
+
+** Improvement
+    * OGM-1018 - core, documentation  - hibernate-search-orm is not optional if you have Hibernate Search on the class path
+    * OGM-1017 - cassandra            - Cassandra should store java.math.BigDecimal as decimal
+    * OGM-899 - documentation        - Wrong OS Name
+    * OGM-860 -                      - Move DocumentHelpers to more sensible place
+    * OGM-1015 - build                - Publish WildFly modules using a slot reflecting the version of OGM
+    * OGM-1053 - documentation        - Minor various documentation updates for 5.0 release
+
+** New Feature
+    * OGM-1046 - build, tests         - Tests in the package 'org.hibernate.ogm.backendtck.batchfetching' aren't committing the transaction
+    * OGM-1034 - neo4j                - Propagate changed property values to embedded nodes when updating an association
+    * OGM-1027 - mongodb              - Support BSON function calls in the MongoDB native parser
+    * OGM-1030 - build                - Upgrade to ORM 5.0.9
+    * OGM-1028 - core                 - Add more verbosity to exception thrown by OgmEntityEntryState#getStateFor()
+    * OGM-581 - query                - Support Query#setParameterList()
+
+** Sub-task
+    * OGM-991 - documentation        - Add a unit test to make sure the Getting Started Guide is having the right configuration
+    * OGM-921 - documentation        - Remove hint for adding JBoss repo
+
+** Task
+    * OGM-1013 - tests                - Add unit tests for ArrayHelper utility class
+    * OGM-1002 - build, tests         - Move integration tests in the same module
+    * OGM-1022 - documentation        - Improve documentation around MongoDB CLI syntax
+    * OGM-1048 -                      - Travis - Cassandra download URL is not stable
+    * OGM-1010 - documentation, tests - No longer require users to import the Hibernate Search modules
+    * OGM-1036 - build                - Upgrade to Hibernate Search 5.5.3.Final
+    * OGM-1037 - infinispan           - Upgrade to Infinispan 8.2.1.Final
+    * OGM-1009 - tests                - Minor resource leaks in integration tests
+    * OGM-713 - build, documentation - Remove mention of the full Object/Grid Mapper name in the documentation
+    * OGM-1050 -                      - Fix several typos in method names and comments
+    * OGM-1011 - core, mongodb        - Move ByteStringType to core and update name and javadoc
+    * OGM-888 - documentation        - Update reference documentation after migration to ORM 5
+    * OGM-990 - documentation        - The Getting Started Guide needs to be updated
+    * OGM-1021 - tests                - Add Travis support
+
+5.0.0.CR1 (29-03-2016)
+-------------------------
+
+** Bug
+    * [OGM-900] - Support dots in MongoDB collection names
+    * [OGM-950] - Add Guava version used by Cassandra backend to distribution
+    * [OGM-952] - Add support for JPA AttributeConverter / @Convert type
+    * [OGM-962] - Yes/No and True/False types are incorrectly written to Cassandra
+    * [OGM-969] - Add test for DefaultAssociationKeyMetadata#equals()
+    * [OGM-970] - ClassCastException when running query on entity with batch size > 1
+    * [OGM-993] - Modules for Infinispan should use the Infinispan community modules rather than the WildFly ones
+    * [OGM-995] - MongoDBQueryDescriptor contains javadoc errors causing the build to fail
+    * [OGM-1007] - Add missing dependencies to the Redis module for wildfly
+
+
+** New Feature
+    * [OGM-519] - Add support for executing native update queries
+    * [OGM-873] - Implement hash strategy
+    * [OGM-953] - Convert query parameter types to grid types in core
+    * [OGM-978] - Map java.util.UUID to Cassandra's native uuid type
+
+** Task
+    * [OGM-679] - Don't persist null values in CouchDB
+    * [OGM-941] - Add mapping tests for Cassandra
+    * [OGM-979] - Upgrade to WildFly 10.0.0.Final
+    * [OGM-989] - Align Narayana and JTA API versions to those of WildFly 10 and Infinispan 8
+    * [OGM-997] - Upgrade to JUnit 4.12
+    * [OGM-1001] - Upgrade the checkstyle plugin to allow using Java 8 lambdas
+
+** Improvement
+    * [OGM-711] - Avoid exporting module org.jboss.jts to user classpath
+    * [OGM-897] - cache cassandra PreparedStatements
+    * [OGM-909] - Support Cassandra native CQL queries
+    * [OGM-945] - Batch-fetch association elements if supported by dialect
+    * [OGM-947] - Implement Redis Cluster support
+    * [OGM-948] - Update Redis driver library to 4.0.2.Final
+    * [OGM-959] - Remove dead code in TestHelper
+    * [OGM-961] - Refactor Cassandra row handling
+    * [OGM-966] - Refactor test for Neo4j sequence generation
+    * [OGM-972] - Upgrade to Neo4j 2.3
+    * [OGM-977] - MongoDB - add support for more types of native queries
+    * [OGM-985] - Upgrade MongoDB java Driver
+    * [OGM-988] - Redis and Cassandra use the same range for the Log message ids
+    * [OGM-992] - Upgrade to Infinispan 8.1.0.Final
+    * [OGM-994] - Upgrade to Infinispan 8.2.0.Final
+    * [OGM-1003] - Add license header to make file in Redis backend
+    * [OGM-1004] - Build is failing because of JavaDoc
+
 5.0.0.Beta1 (18-12-2015)
 -------------------------
 

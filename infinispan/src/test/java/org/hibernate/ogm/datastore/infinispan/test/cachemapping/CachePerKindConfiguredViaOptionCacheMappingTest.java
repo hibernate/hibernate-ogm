@@ -13,7 +13,7 @@ import java.util.Map;
 import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.OptionConfigurator;
-import org.hibernate.ogm.datastore.infinispan.Infinispan;
+import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
 import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.infinispan.Cache;
@@ -47,7 +47,7 @@ public class CachePerKindConfiguredViaOptionCacheMappingTest extends CacheMappin
 
 			@Override
 			public void configure(Configurable configurable) {
-				configurable.configureOptionsFor( Infinispan.class )
+				configurable.configureOptionsFor( InfinispanEmbedded.class )
 					.cacheMapping( CacheMappingType.CACHE_PER_KIND );
 			}
 		} );

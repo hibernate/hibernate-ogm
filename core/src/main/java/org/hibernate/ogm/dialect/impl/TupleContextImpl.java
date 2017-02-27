@@ -6,15 +6,10 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.options.spi.OptionsContext;
-import org.hibernate.ogm.util.impl.StringHelper;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
@@ -24,66 +19,35 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 public class TupleContextImpl implements TupleContext {
 
-	private final List<String> selectableColumns;
-	private final OptionsContext optionsContext;
+	private final TupleTypeContext tupleTypeContext;
 	private final OperationsQueue operationsQueue;
-
-	/**
-	 * Information of the associated entity stored per foreign key column names
-	 */
-	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata;
-
-	private final Map<String, String> roles;
+	private final TransactionContext transactionContext;
 
 	public TupleContextImpl(TupleContextImpl original, OperationsQueue operationsQueue) {
-		this( original.selectableColumns, original.associatedEntityMetadata, original.roles, original.optionsContext, operationsQueue );
+		this( original.tupleTypeContext, operationsQueue, original.transactionContext );
 	}
 
-	public TupleContextImpl(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles, OptionsContext optionsContext) {
-		this( selectableColumns, associatedEntityMetadata, roles, optionsContext, null );
+	public TupleContextImpl(TupleContextImpl original, TransactionContext transactionContext) {
+		this( original.tupleTypeContext, original.operationsQueue, transactionContext );
 	}
 
-	private TupleContextImpl(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles, OptionsContext optionsContext, OperationsQueue operationsQueue) {
-		this.selectableColumns = selectableColumns;
-		this.associatedEntityMetadata = Collections.unmodifiableMap( associatedEntityMetadata );
-		this.roles = Collections.unmodifiableMap( roles );
-		this.optionsContext = optionsContext;
+	public TupleContextImpl(TupleTypeContext tupleTypeContext, TransactionContext transactionContext) {
+		this( tupleTypeContext, null, transactionContext );
+	}
+
+	public TupleContextImpl(TupleTypeContext tupleTypeContext) {
+		this( tupleTypeContext, null, null );
+	}
+
+	private TupleContextImpl(TupleTypeContext tupleTypeContext, OperationsQueue operationsQueue, TransactionContext transactionContext) {
+		this.tupleTypeContext = tupleTypeContext;
 		this.operationsQueue = operationsQueue;
+		this.transactionContext = transactionContext;
 	}
 
 	@Override
-	public List<String> getSelectableColumns() {
-		return selectableColumns;
-	}
-
-	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
-	}
-
-	@Override
-	public boolean isPartOfAssociation(String column) {
-		return associatedEntityMetadata.containsKey( column );
-	}
-
-	@Override
-	public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata(String column) {
-		return associatedEntityMetadata.get( column );
-	}
-
-	@Override
-	public Map<String, AssociatedEntityKeyMetadata> getAllAssociatedEntityKeyMetadata() {
-		return associatedEntityMetadata;
-	}
-
-	@Override
-	public String getRole(String column) {
-		return roles.get( column );
-	}
-
-	@Override
-	public Map<String, String> getAllRoles() {
-		return roles;
+	public TransactionContext getTransactionContext() {
+		return transactionContext;
 	}
 
 	@Override
@@ -92,13 +56,8 @@ public class TupleContextImpl implements TupleContext {
 	}
 
 	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder( "Tuple Context {" );
-
-		builder.append( "selectableColumns: [");
-		builder.append( StringHelper.join( selectableColumns, ", " ) );
-		builder.append( "] }" );
-
-		return builder.toString();
+	public TupleTypeContext getTupleTypeContext() {
+		return tupleTypeContext;
 	}
+
 }

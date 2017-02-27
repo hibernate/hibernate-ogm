@@ -34,7 +34,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.GridDialects;
@@ -54,8 +54,8 @@ public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
 	private static final String TX_CONTROL_CLASS_NAME = "com.arjuna.ats.arjuna.coordinator.TxControl";
-	private static final GridModule GRID_MODULE = determineGridModule();
-	private static final TestableGridDialect helper = instantiate( GRID_MODULE.loadTestableGridDialectClass() );
+	private static final GridDialectTestHelperType GRID_DIALECT_TEST_HELPER_TYPE = determineGridDialectTestHelperType();
+	private static final GridDialectTestHelper HELPER = instantiate( GRID_DIALECT_TEST_HELPER_TYPE.loadGridDialectTestHelperClass() );
 	private static final GridDialectType GRID_DIALECT_TYPE = determineGridDialectType();
 
 	static {
@@ -82,21 +82,21 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
-	private static GridModule determineGridModule() {
-		for ( GridModule gridType : GridModule.values() ) {
-			Class<TestableGridDialect> testDialectClass = gridType.loadTestableGridDialectClass();
+	private static GridDialectTestHelperType determineGridDialectTestHelperType() {
+		for ( GridDialectTestHelperType gridType : GridDialectTestHelperType.values() ) {
+			Class<GridDialectTestHelper> testDialectClass = gridType.loadGridDialectTestHelperClass();
 			if ( testDialectClass != null ) {
 				return gridType;
 			}
 		}
 
-		return GridModule.HASHMAP;
+		return GridDialectTestHelperType.HASHMAP;
 	}
 
 	private static GridDialectType determineGridDialectType() {
-		Class<? extends GridDialect> gridDialectClass = getCurrentGridDialect();
+		Class<? extends GridDialect> gridDialectClass = getCurrentGridDialectClass();
 		for ( GridDialectType gridDialectType : GridDialectType.values() ) {
-			Class<TestableGridDialect> testDialectClass = gridDialectType.loadGridDialectClass();
+			Class<? extends GridDialect> testDialectClass = gridDialectType.loadGridDialectClass();
 			if ( testDialectClass != null && testDialectClass.isAssignableFrom( gridDialectClass ) ) {
 				return gridDialectType;
 			}
@@ -104,13 +104,13 @@ public class TestHelper {
 		return GridDialectType.HASHMAP;
 	}
 
-	private static TestableGridDialect instantiate(Class<TestableGridDialect> testableGridDialectClass) {
+	private static GridDialectTestHelper instantiate(Class<GridDialectTestHelper> testableGridDialectClass) {
 		if ( testableGridDialectClass == null ) {
 			return new HashMapTestHelper();
 		}
 
 		try {
-			TestableGridDialect testableGridDialect = testableGridDialectClass.newInstance();
+			GridDialectTestHelper testableGridDialect = testableGridDialectClass.newInstance();
 			log.debugf( "Using TestGridDialect %s", testableGridDialectClass );
 			return testableGridDialect;
 		}
@@ -127,37 +127,42 @@ public class TestHelper {
 		return GRID_DIALECT_TYPE;
 	}
 
-	public static AvailableDatastoreProvider getCurrentDatastoreProvider() {
-		return DatastoreProviderHolder.INSTANCE;
+	public static DatastoreProviderType getCurrentDatastoreProviderType() {
+		return DatastoreProviderTypeHolder.INSTANCE;
 	}
-	public static Class<? extends GridDialect> getCurrentGridDialect() {
-		return GridDialectHolder.INSTANCE;
+
+	public static Class<? extends GridDialect> getCurrentGridDialectClass() {
+		return GridDialectClassHolder.INSTANCE;
 	}
 
 	public static GridDialect getCurrentGridDialect(DatastoreProvider datastoreProvider) {
-		return helper.getGridDialect( datastoreProvider );
+		return HELPER.getGridDialect( datastoreProvider );
 	}
 
 	public static <D extends DatastoreConfiguration<?>> Class<D> getCurrentDatastoreConfiguration() {
 		@SuppressWarnings("unchecked") // relies on the fact that the caller assigns correctly; that's ok for this purpose
-		Class<D> configurationType = (Class<D>) helper.getDatastoreConfigurationType();
+		Class<D> configurationType = (Class<D>) HELPER.getDatastoreConfigurationType();
 		return configurationType;
 	}
 
-	public static long getNumberOfEntities( Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
+	public static long getNumberOfEntities( Session session ) {
+		return HELPER.getNumberOfEntities( session );
 	}
 
 	public static long getNumberOfEntities(SessionFactory sessionFactory) {
-		return helper.getNumberOfEntities( sessionFactory );
+		return HELPER.getNumberOfEntities( sessionFactory );
 	}
 
-	public static Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return helper.extractEntityTuple( sessionFactory, key );
+	public static Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
+		return HELPER.extractEntityTuple( session, key );
+	}
+
+	public static long getNumberOfAssociations(Session session) {
+		return HELPER.getNumberOfAssociations( session );
 	}
 
 	public static long getNumberOfAssociations(SessionFactory sessionFactory) {
-		return helper.getNumberOfAssociations( sessionFactory );
+		return HELPER.getNumberOfAssociations( sessionFactory );
 	}
 
 	/**
@@ -166,11 +171,11 @@ public class TestHelper {
 	 * Optional operation which only is supported for document datastores.
 	 */
 	public static long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		return helper.getNumberOfAssociations( sessionFactory, type );
+		return HELPER.getNumberOfAssociations( sessionFactory, type );
 	}
 
 	public static boolean backendSupportsTransactions() {
-		return helper.backendSupportsTransactions();
+		return HELPER.backendSupportsTransactions();
 	}
 
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
@@ -184,14 +189,16 @@ public class TestHelper {
 	}
 
 	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
-		dropSchemaAndDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+		if ( emf != null ) {
+			dropSchemaAndDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+		}
 	}
 
 	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		// if the factory is closed, we don't have access to the service registry
 		if ( sessionFactory != null && !sessionFactory.isClosed() ) {
 			try {
-				helper.dropSchemaAndDatabase( sessionFactory );
+				HELPER.dropSchemaAndDatabase( sessionFactory );
 			}
 			catch ( Exception e ) {
 				log.warn( "Exception while dropping schema and database in test", e );
@@ -211,7 +218,7 @@ public class TestHelper {
 		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
 
-		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
+		Map<String, String> environmentProperties = HELPER.getEnvironmentProperties();
 
 		if ( environmentProperties != null ) {
 			settings.putAll( environmentProperties );
@@ -237,12 +244,13 @@ public class TestHelper {
 	private static MetadataSources getMetadataSources(Class<?>... entityTypes) {
 		MetadataSources sources = new MetadataSources();
 
-		for (Class<?> entityType : entityTypes) {
+		for ( Class<?> entityType : entityTypes ) {
 			sources.addAnnotatedClass( entityType );
 		}
 
 		return sources;
 	}
+
 	private static Metadata getDefaultTestMetadata(Map<String, Object> settings, Class<?>... entityTypes) {
 		StandardServiceRegistry serviceRegistry = getDefaultTestStandardServiceRegistry( settings );
 		MetadataSources sources = getMetadataSources( entityTypes );
@@ -295,27 +303,39 @@ public class TestHelper {
 		}
 	}
 
-	private static class GridDialectHolder {
+	private static class GridDialectClassHolder {
 
-		private static final Class<? extends GridDialect> INSTANCE = getGridDialect();
+		private static final Class<? extends GridDialect> INSTANCE = getGridDialectClass();
 
-		private static Class<? extends GridDialect> getGridDialect() {
-			Object gridDialect = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
-					.getService( GridDialect.class );
+		private static Class<? extends GridDialect> getGridDialectClass() {
+			// We need to instantiate the GridDialect service as the GridDialect selection relies on having the
+			// DatastoreProvider service initialized.
+			// This dialect instance is initialized with the default configuration and is not aware of the additional settings
+			// set in the test itself. This is not an issue per se as this dialect is not used for anything else.
+			StandardServiceRegistry isolatedServiceRegistry = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() );
 
-			return GridDialects.getWrappedDialect( (GridDialect) gridDialect );
+			Object gridDialect = isolatedServiceRegistry.getService( GridDialect.class );
+			Class<? extends GridDialect> gridDialectClass = GridDialects.getWrappedDialect( (GridDialect) gridDialect );
+
+			StandardServiceRegistryBuilder.destroy( isolatedServiceRegistry );
+
+			return gridDialectClass;
 		}
 	}
 
-	private static class DatastoreProviderHolder {
+	private static class DatastoreProviderTypeHolder {
 
-		private static final AvailableDatastoreProvider INSTANCE = getDatastoreProvider();
+		private static final DatastoreProviderType INSTANCE = getDatastoreProvider();
 
-		private static AvailableDatastoreProvider getDatastoreProvider() {
-			Object datastoreProviderProperty = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() )
+		private static DatastoreProviderType getDatastoreProvider() {
+			StandardServiceRegistry isolatedServiceRegistry = getDefaultTestStandardServiceRegistry( Collections.<String, Object>emptyMap() );
+
+			Object datastoreProviderProperty = isolatedServiceRegistry
 					.getService( ConfigurationService.class )
 					.getSettings()
 					.get( OgmProperties.DATASTORE_PROVIDER );
+
+			StandardServiceRegistryBuilder.destroy( isolatedServiceRegistry );
 
 			if ( datastoreProviderProperty == null ) {
 				return null;
@@ -324,19 +344,19 @@ public class TestHelper {
 			String value = datastoreProviderProperty.toString();
 
 			// try to resolve by short name
-			AvailableDatastoreProvider byShortName = findByShortName( value );
+			DatastoreProviderType byShortName = findByShortName( value );
 			if ( byShortName != null ) {
 				return byShortName;
 			}
 
 			// try to resolve by exact class name
-			AvailableDatastoreProvider byClassName = findByExactClassName( value );
+			DatastoreProviderType byClassName = findByExactClassName( value );
 			if ( byClassName != null ) {
 				return byClassName;
 			}
 
 			// try to resolve by assignable type (allows matching on subtypes of a data store provider)
-			AvailableDatastoreProvider byAssignableType = findByAssignableType( value );
+			DatastoreProviderType byAssignableType = findByAssignableType( value );
 			if ( byAssignableType != null ) {
 				return byAssignableType;
 			}
@@ -344,15 +364,15 @@ public class TestHelper {
 			throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );
 		}
 
-		private static AvailableDatastoreProvider findByShortName(String value) {
-			if ( AvailableDatastoreProvider.isShortName( value ) ) {
-				return AvailableDatastoreProvider.byShortName( value );
+		private static DatastoreProviderType findByShortName(String value) {
+			if ( DatastoreProviderType.isShortName( value ) ) {
+				return DatastoreProviderType.byShortName( value );
 			}
 			return null;
 		}
 
-		private static AvailableDatastoreProvider findByExactClassName(String value) {
-			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+		private static DatastoreProviderType findByExactClassName(String value) {
+			for ( DatastoreProviderType provider : DatastoreProviderType.values() ) {
 				if ( provider.getDatastoreProviderClassName().equals( value ) ) {
 					return provider;
 				}
@@ -360,13 +380,13 @@ public class TestHelper {
 			return null;
 		}
 
-		private static AvailableDatastoreProvider findByAssignableType(String value) {
+		private static DatastoreProviderType findByAssignableType(String value) {
 			Class<?> configuredProviderClass = loadClass( value );
 			if ( configuredProviderClass == null ) {
 				return null;
 			}
 
-			for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+			for ( DatastoreProviderType provider : DatastoreProviderType.values() ) {
 				Class<?> availableProviderClass = loadClass( provider.getDatastoreProviderClassName() );
 
 				if ( availableProviderClass != null &&
@@ -377,4 +397,5 @@ public class TestHelper {
 			return null;
 		}
 	}
+
 }

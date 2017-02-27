@@ -11,29 +11,41 @@ import static org.hibernate.ogm.datastore.neo4j.test.dsl.GraphAssertions.assertT
 
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
+import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
+import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelperDelegate;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.Transaction;
+import org.junit.Before;
 
 /**
  * Common methods to check the mapping of entities in Neo4j.
  *
  * @author Davide D'Alto
  */
-public abstract class Neo4jJpaTestCase extends JpaTestCase {
+public abstract class Neo4jJpaTestCase extends OgmJpaTestCase {
+
+	private static final String NUMBER_OF_NODES_QUERY = "MATCH (n) RETURN COUNT(*) as count";
+
+	private static final String NUMBER_OF_RELATIONSHIPS_QUERY = "MATCH (n) - [r] -> () RETURN COUNT(r) as count";
+
+	private Neo4jTestHelperDelegate delegate;
+
+	@Before
+	public void initDelegate() {
+		delegate = Neo4jTestHelper.delegate();
+	}
 
 	@After
 	public void deleteAll() throws Exception {
-		executeQueryUpdate( "MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r" );
+		DatastoreProvider datastoreProvider = datastoreProvider();
+		delegate.deleteAllElements( datastoreProvider );
 	}
 
 	protected void assertNumberOfRelationships(int rel) throws Exception {
@@ -45,65 +57,51 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 	}
 
 	protected Long numberOfNodes() throws Exception {
-		return executeCount( "MATCH (n) RETURN COUNT(*) as count" );
+		DatastoreProvider datastoreProvider = datastoreProvider();
+		return delegate.executeCountQuery( datastoreProvider, NUMBER_OF_NODES_QUERY );
 	}
 
 	protected Long numberOfRelationships() throws Exception {
-		return executeCount( "MATCH (n) - [r] -> () RETURN COUNT(r) as count" );
+		DatastoreProvider datastoreProvider = datastoreProvider();
+		return delegate.executeCountQuery( datastoreProvider, NUMBER_OF_RELATIONSHIPS_QUERY );
 	}
 
-	protected Result executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
-		GraphDatabaseService engine = createExecutionEngine();
-		Result result = engine.execute( query, parameters );
-		return result;
+	protected void executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
+		DatastoreProvider datastoreProvider = datastoreProvider();
+		delegate.executeCypherQuery( datastoreProvider, query, parameters );
 	}
 
-	protected GraphDatabaseService createExecutionEngine() {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) getFactory() ).getSessionFactory();
-		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
-		return provider.getDataBase();
-	}
-
-	private Long executeCount(String queryString) throws Exception {
-		GraphDatabaseService graphDb = createExecutionEngine();
-		Transaction tx = graphDb.beginTx();
-		Result result = graphDb.execute( queryString );
-		ResourceIterator<Long> count = result.columnAs( "count" );
-		try {
-			tx.success();
-			return count.next();
+	private DatastoreProvider datastoreProvider() {
+		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
+		if ( emFactory != null ) {
+			SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+			DatastoreProvider datastoreProvider = sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
+			return datastoreProvider;
 		}
-		finally {
-			try {
-				count.close();
-			}
-			finally {
-				tx.close();
-			}
-		}
-	}
-
-	private void executeQueryUpdate(String queryString) throws Exception {
-		GraphDatabaseService graphDb = createExecutionEngine();
-		try (Transaction tx = graphDb.beginTx()) {
-			graphDb.execute( queryString ).close();
-			tx.success();
-		}
+		return null;
 	}
 
 	protected void assertThatOnlyTheseNodesExist(NodeForGraphAssertions... nodes) throws Exception {
+		DatastoreProvider datastoreProvider = datastoreProvider();
 		for ( NodeForGraphAssertions node : nodes ) {
-			assertThatExists( createExecutionEngine(), node );
+			assertThatExists( delegate, datastoreProvider, node );
 		}
 		assertNumberOfNodes( nodes.length );
 	}
 
 	protected void assertThatOnlyTheseRelationshipsExist(RelationshipsChainForGraphAssertions... relationships) throws Exception {
+		DatastoreProvider datastoreProvider = datastoreProvider();
 		int expectedNumberOfRelationships = 0;
 		for ( RelationshipsChainForGraphAssertions relationship : relationships ) {
-			assertThatExists( createExecutionEngine(), relationship );
+			assertThatExists( delegate, datastoreProvider, relationship );
 			expectedNumberOfRelationships += relationship.getSize();
 		}
 		assertNumberOfRelationships( expectedNumberOfRelationships );
+	}
+
+	protected void persist(EntityManager em, Object... entities) {
+		for ( Object entity : entities ) {
+			em.persist( entity );
+		}
 	}
 }

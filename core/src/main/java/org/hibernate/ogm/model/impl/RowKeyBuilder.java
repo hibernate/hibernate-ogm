@@ -40,7 +40,7 @@ public class RowKeyBuilder {
 		final int length = columnNamesArray.length;
 		Object[] columnValuesArray = new Object[length];
 
-		for (int index = 0 ; index < length ; index++ ) {
+		for ( int index = 0; index < length; index++ ) {
 			columnValuesArray[index] = tuple.get( columnNamesArray[index] );
 		}
 

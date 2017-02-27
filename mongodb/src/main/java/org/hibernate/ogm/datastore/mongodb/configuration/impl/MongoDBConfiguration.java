@@ -13,11 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
-
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -29,6 +24,11 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
+
 /**
  * Configuration for {@link MongoDBDatastoreProvider}.
  *
@@ -39,6 +39,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
+	public static final String DEFAULT_AUTHENTICATION_DATABASE = "admin";
 
 	private static final int DEFAULT_PORT = 27017;
 	private static final Log log = LoggerFactory.getLogger();
@@ -47,6 +48,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private final ReadPreference readPreference;
 	private final AuthenticationMechanismType authenticationMechanism;
 	private final ConfigurationPropertyReader propertyReader;
+	private final String authenticationDatabaseName;
 
 	/**
 	 * Creates a new {@link MongoDBConfiguration}.
@@ -60,6 +62,9 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		this.propertyReader = propertyReader;
 		this.authenticationMechanism = propertyReader.property( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.class )
 				.withDefault( AuthenticationMechanismType.BEST )
+				.getValue();
+		this.authenticationDatabaseName = propertyReader.property( MongoDBProperties.AUTHENTICATION_DATABASE, String.class )
+				.withDefault( DEFAULT_AUTHENTICATION_DATABASE )
 				.getValue();
 		this.writeConcern = globalOptions.getUnique( WriteConcernOption.class );
 		this.readPreference = globalOptions.getUnique( ReadPreferenceOption.class );
@@ -129,12 +134,16 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return settingsMap;
 	}
 
+	private String getAuthenticationDatabaseName() {
+		return authenticationDatabaseName;
+	}
+
 	public List<MongoCredential> buildCredentials() {
 		if ( getUsername() != null ) {
 			return Collections.singletonList(
 					authenticationMechanism.createCredential(
 							getUsername(),
-							getDatabaseName(),
+							getAuthenticationDatabaseName(),
 							getPassword()
 					)
 			);

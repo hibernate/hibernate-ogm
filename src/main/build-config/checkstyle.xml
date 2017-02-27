@@ -48,7 +48,9 @@
         <module name="WhitespaceAround" />
         <module name="TypecastParenPad" />
         <module name="DeclarationOrder" />
-        <module name="RedundantModifier" />
+
+        <!-- Disabled as apparently our code shows that we prefer the verbose form as it's more explicit -->
+        <!-- module name="RedundantModifier" /-->
 
         <module name="MethodParamPad">
             <property name="option" value="nospace" />
@@ -57,14 +59,24 @@
 
         <module name="LeftCurly">
             <property name="option" value="eol" />
+            <!-- not doing this for methods so we can allow single line getters/setters -->
+            <property name="tokens" value="INTERFACE_DEF, CLASS_DEF, ANNOTATION_DEF, ENUM_DEF, CTOR_DEF,
+                        ENUM_CONSTANT_DEF, LITERAL_WHILE, LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY,
+                        LITERAL_SYNCHRONIZED, LITERAL_SWITCH, LITERAL_DO, LITERAL_IF, LITERAL_ELSE, LITERAL_FOR,
+                        STATIC_INIT" />
         </module>
 
         <module name="RightCurly">
             <property name="option" value="alone" />
+            <!-- not doing this for methods so we can allow single line getters/setters -->
+            <property name="tokens" value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF,
+                        LITERAL_ELSE, CLASS_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO,
+                        STATIC_INIT, INSTANCE_INIT" />
         </module>
 
         <module name="ParenPad">
-            <property name="tokens" value="CTOR_CALL, METHOD_CALL, SUPER_CTOR_CALL" />
+            <property name="tokens" value="CTOR_CALL, METHOD_CALL, SUPER_CTOR_CALL, LITERAL_FOR, LITERAL_IF,
+                        LITERAL_WHILE, LITERAL_SWITCH, LITERAL_NEW, RESOURCE_SPECIFICATION" />
             <property name="option" value="space" />
         </module>
 
@@ -79,6 +91,9 @@
 
             <!-- Dom4J is still being used internally by Hibernate ORM but we're getting rid of it. Avoid it in OGM -->
             <property name="illegalPkgs" value="org.dom4j"/>
+
+            <!-- Avoid org.hibernate.annotations.common.AssertionFailure. Check OGM-1157 -->
+            <property name="illegalPkgs" value="org.hibernate.annotations.common"/>
         </module>
     </module>
 

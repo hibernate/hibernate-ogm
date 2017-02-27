@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.neo4j.module.slot}">
+    <resources>
+        <resource-root path="hibernate-ogm-neo4j-${project.version}.jar" />
+        <resource-root path="neo4j-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-udc-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-cypher-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-graph-algo-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-graph-matching-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-jmx-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-cypher-${neo4jVersion}.jar" />
+    </resources>
+    <dependencies>
+        <module name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}" />
+        <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
+
+        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}"/>
+
+        <!-- Separate module to make sure it's not visible to the applications -->
+        <module name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.neo4j-internal.module.slot}" services="import" />
+
+        <module name="javax.api" />
+        <module name="javax.persistence.api" />
+        <module name="javax.transaction.api" />
+        <module name="org.jboss.logging" />
+
+        <!-- RestEasy for Neo4j Remote -->
+        <module name="javax.ws.rs.api" />
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
+        <module name="org.jboss.resteasy.resteasy-jaxrs" />
+    </dependencies>
+</module>

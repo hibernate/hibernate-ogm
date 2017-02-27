@@ -6,8 +6,10 @@
  */
 package org.hibernate.ogm.service.impl;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
@@ -82,6 +84,19 @@ public class DefaultSchemaInitializationContext implements SchemaDefiner.SchemaD
 		}
 
 		return allIdSourceKeyMetadata;
+	}
+
+	@Override
+	public Map<String, Class<?>> getTableEntityTypeMapping() {
+		Map<String, Class<?>> mapping = new HashMap<>();
+		Map<String, EntityPersister> entityPersisters = factory.getEntityPersisters();
+
+		for ( Entry<String, EntityPersister> entityPersisterEntry : entityPersisters.entrySet() ) {
+			OgmEntityPersister entityPersister = (OgmEntityPersister) entityPersisterEntry.getValue();
+			mapping.put( entityPersister.getEntityKeyMetadata().getTable(), entityPersister.getMappedClass() );
+		}
+
+		return mapping;
 	}
 
 	/**

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
@@ -65,5 +66,14 @@ public interface SchemaDefiner extends Service {
 		Set<AssociationKeyMetadata> getAllAssociationKeyMetadata();
 		Set<IdSourceKeyMetadata> getAllIdSourceKeyMetadata();
 		SessionFactoryImplementor getSessionFactory();
+
+		/**
+		 * Note that it only returns one entity type per physical table in the case several entity types share the same table.
+		 *
+		 * This method is used to get the options attached to an entity and as options are inherited from the superclasses
+		 * and the options for the physical table are likely to be set in the common superclass, this seems like an
+		 * acceptable tradeoff.
+		 */
+		Map<String, Class<?>> getTableEntityTypeMapping();
 	}
 }

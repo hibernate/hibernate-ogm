@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -40,10 +40,6 @@
 
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
             <optional>true</optional>
         </dependency>
@@ -65,8 +61,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -105,10 +101,29 @@
             <artifactId>guava</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -121,6 +136,7 @@
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
+                    <argLine>${additionalRuntimeArgLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -130,15 +146,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipUnitTests>false</skipUnitTests>
-            </properties>
-        </profile>
-    </profiles>
 </project>

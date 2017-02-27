@@ -7,6 +7,7 @@
 package org.hibernate.ogm.perftest.mongodb.nativeapi;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Random;
@@ -32,8 +33,8 @@ public class NativeApiBenchmarkBase {
 	private static Properties properties = new Properties();
 
 	static {
-		try {
-			properties.load( NativeApiBenchmarkBase.class.getClassLoader().getResourceAsStream( "native-settings.properties" ) );
+		try ( InputStream resourceAsStream = NativeApiBenchmarkBase.class.getClassLoader().getResourceAsStream( "native-settings.properties" ) ) {
+			properties.load( resourceAsStream );
 		}
 		catch (IOException e) {
 			throw new RuntimeException( e );

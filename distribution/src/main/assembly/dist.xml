@@ -20,8 +20,7 @@
         <format>tar.gz</format>
         <format>zip</format>
     </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>
-    <baseDirectory>/</baseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
 
     <!-- Configure the module artifacts which make it into the distribution bundle -->
     <dependencySets>
@@ -85,11 +84,26 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
-                <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan:jar</include>
 
                 <!-- Optional dependencies for infinispan -->
                 <include>org.infinispan:infinispan-lucene-directory</include>
                 <include>org.infinispan:infinispan-directory-provider</include>
+            </includes>
+        </dependencySet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-infinispan-remote
+        #######################################################################
+         -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>dist/lib/infinispan-remote</outputDirectory>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-remote</include>
             </includes>
         </dependencySet>
 
@@ -186,7 +200,7 @@
 
     <files>
         <file>
-            <source>../readme.md</source>
+            <source>../README.md</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
         </file>
@@ -207,9 +221,13 @@
             <outputDirectory>sources</outputDirectory>
             <useDefaultExcludes>true</useDefaultExcludes>
             <excludes>
-                <exclude>../readme.md</exclude>
+                <exclude>../README.md</exclude>
+                <exclude>../how-to-release.md</exclude>
                 <exclude>../license.txt</exclude>
                 <exclude>../changelog.txt</exclude>
+                <exclude>../.travis.yml</exclude>
+                <exclude>../travis/**</exclude>
+                <exclude>../hibernate-noorm-release-scripts/**</exclude>
                 <exclude>../*.sh</exclude>
                 <exclude>**/.git/**</exclude>
                 <exclude>**/.gitignore</exclude>
@@ -228,12 +246,12 @@
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>../documentation/manual/target/docbook/publish</directory>
-            <outputDirectory>dist/docs/reference</outputDirectory>
+            <directory>../documentation/manual/target/asciidoctor</directory>
+            <outputDirectory>docs/reference</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../documentation/javadoc/target/apidocs</directory>
-            <outputDirectory>dist/docs/api</outputDirectory>
+            <outputDirectory>docs/api</outputDirectory>
         </fileSet>
         <!--  Lucene Core 3.6.2 for Neo4j -->
         <fileSet>

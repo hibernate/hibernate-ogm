@@ -37,7 +37,7 @@ public class EmbeddedAliasTree {
 	 * Creates a tree node.
 	 *
 	 * @param alias the alias used for the embedded
-	 * @param name the name of the property representing the emebedded
+	 * @param name the name of the property representing the embedded
 	 */
 	public EmbeddedAliasTree(String alias, String name) {
 		this.name = name;

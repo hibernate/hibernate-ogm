@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-bom</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>bom/pom.xml</relativePath>
     </parent>
 
@@ -24,28 +24,31 @@
     <modules>
         <module>bom</module>
         <module>core</module>
-        <module>infinispan</module>
-        <module>ehcache</module>
-        <module>mongodb</module>  
-        <module>neo4j</module>
-        <module>orientdb</module>
-       <module>couchdb</module>
+        <!-- <module>ehcache</module> Is only enabled when not running in Java 9: see the profiles section-->
+        <!-- <module>infinispan</module> Is only enabled when not running in Java 9: see the profiles section-->
+        <!-- <module>infinispan-remote</module> Is only enabled when not running in Java 9: see the profiles section-->
+        <module>mongodb</module>
+        <!-- <module>neo4j</module> Is only enabled when not running in Java 9: see the profiles section-->
+        <module>couchdb</module>
         <module>cassandra</module>
         <module>redis</module>
-        <module>modules</module>
-        <module>performance</module>       
+        <module>jipijapa</module>
+        <!-- <module>modules</module> The modules require all of the above modules to be enabled -->
+        <module>performance</module>
     </modules>
 
     <properties>
         <!-- JDK version required to build OGM; requiring 1.8 as WildFly 10 requires JDK 1.8; We still create
              1.7 byte code to run in other environments -->
         <minJdkVersion>1.8</minJdkVersion>
+        <jdkTargetForProcessor>1.7</jdkTargetForProcessor>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
         <arquillianVersion>1.1.5.Final</arquillianVersion>
         <jmhVersion>1.0</jmhVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
+        <bytemanVersion>3.0.6</bytemanVersion>
 
         <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -57,7 +60,7 @@
         <skipUnitTests>false</skipUnitTests>
 
         <!-- The following properties configure the embedded MongoDB instance used for tests -->
-        <embeddedMongoDbVersion>3.0.2</embeddedMongoDbVersion>
+        <embeddedMongoDbVersion>${mongodbVersion}</embeddedMongoDbVersion>
         <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
         <embeddedMongoDbTempDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}extracted</embeddedMongoDbTempDir>
         <embeddedMongoDbLogDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</embeddedMongoDbLogDir>
@@ -67,11 +70,18 @@
         <!-- Since we require users to import a specific Hibernate Search module explicitly,
          all integration tests need to know which version that shall be.
          So the property needs to be defined in the global parent pom -->
-        <hibernate-search.module.slot>main</hibernate-search.module.slot>
-        <!-- Following might not match the slot, for example when 'main' is being used. Needed in docs URL rendering. -->
-        <hibernate-search-major-minor-version>5.5</hibernate-search-major-minor-version>
-        <!-- For documentation, to omit the slot when not needed: -->
-        <hibernate-search-full-module-id>org.hibernate.search.orm</hibernate-search-full-module-id>
+        <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
+
+        <!-- Target version of WildFly (for testing and JipiJapa integration) -->
+        <version.wildfly>10.1.0.Final</version.wildfly>
+        <hibernate-orm.module.slot>5.1</hibernate-orm.module.slot>
+
+        <!-- Asciidoctor -->
+        <hibernate-asciidoctor-theme.version>1.0.1.Final</hibernate-asciidoctor-theme.version>
+        <asciidoctor-maven-plugin.version>1.5.3</asciidoctor-maven-plugin.version>
+        <jruby.version>1.7.26</jruby.version>
+        <asciidoctorj.version>1.5.4.1</asciidoctorj.version>
+        <asciidoctorj-pdf.version>1.5.0-alpha.11</asciidoctorj-pdf.version>
     </properties>
 
     <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are
@@ -81,7 +91,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.11</version>
+                <version>4.12</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -105,6 +115,24 @@
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
                 <version>1.2.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman</artifactId>
+                <version>${bytemanVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-bmunit</artifactId>
+                <version>${bytemanVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.byteman</groupId>
+                <artifactId>byteman-install</artifactId>
+                <version>${bytemanVersion}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -165,7 +193,29 @@
                 <artifactId>jboss-logging-annotations</artifactId>
                 <version>${jbossLoggingProcessorVersion}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-transaction-spi</artifactId>
+                <version>7.3.0.Final</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.resource</groupId>
+                        <artifactId>jboss-connector-api_1.5_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
@@ -184,6 +234,8 @@
                     <source>1.7</source>
                     <target>1.7</target>
                     <encoding>UTF-8</encoding>
+                    <!-- Annotation processor is run as an independent step -->
+                    <proc>none</proc>
                 </configuration>
             </plugin>
             <plugin>
@@ -220,6 +272,12 @@
                             <version>[${minJdkVersion},)</version>
                         </requireJavaVersion>
                         <DependencyConvergence />
+                        <bannedDependencies>
+                            <searchTransitive>true</searchTransitive>
+                            <excludes>
+                                <exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec</exclude>
+                            </excludes>
+                        </bannedDependencies>
                     </rules>
                 </configuration>
             </plugin>
@@ -239,16 +297,60 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!-- This defines the properties 'parsedVersion.majorVersion'
+                    and 'parsedVersion.minorVersion' to be in synch with the current project version -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-project-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>parse-orm-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>hibernateParsedVersion</propertyPrefix>
+                            <versionString>${hibernateVersion}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-search-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>hibernateSearchParsedVersion</propertyPrefix>
+                            <versionString>${hibernateSearchVersion}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-mongodb-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>mongodbParsedVersion</propertyPrefix>
+                            <versionString>${mongodbVersion}</versionString>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
+                    <version>1.8</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.9</version>
+                    <version>2.10.3</version>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -258,35 +360,47 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>3.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <!-- This override is needed to fix
+                                https://issues.apache.org/jira/browse/MJAR-226
+                              We don't update the maven-jar-plugin yet as it introduces an incompatibility with Eclipse m2e:
+                                http://lists.jboss.org/pipermail/hibernate-dev/2016-August/015192.html
+                              An m2e update is expected to make this redundant, we'll then upgrade to maven-jar-plugin 3.0.2+ -->
+                            <artifactId>maven-archiver</artifactId>
+                            <groupId>org.apache.maven</groupId>
+                            <version>3.1.1</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>2.5</version>
+                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>2.5.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>2.6</version>
+                    <version>3.0.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.3.1</version>
+                    <version>1.4.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.12.1</version>
+                    <version>2.17</version>
                     <dependencies>
                         <!-- force SLF4J dependency to align
                              Maven internals and CheckStyle's
@@ -312,6 +426,10 @@
                         <includeResources>true</includeResources>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <includeTestResources>false</includeTestResources>
+                        <!-- generated code -->
+                        <excludes>
+                            **/Log_$logger.java
+                        </excludes>
                     </configuration>
                     <executions>
                         <execution>
@@ -324,37 +442,44 @@
                     </executions>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-archetype-plugin</artifactId>
-                    <version>2.2</version>
+                    <groupId>org.bsc.maven</groupId>
+                    <artifactId>maven-processor-plugin</artifactId>
+                    <version>2.2.4</version>
                     <executions>
+                        <!-- Run annotation processors on src/main/java sources -->
                         <execution>
-                            <id>generate-archetype-install</id>
-                            <phase>install</phase>
-                            <configuration>
-                                <archetypePostPhase>install</archetypePostPhase>
-                                <propertyFile>archetype.properties</propertyFile>
-                            </configuration>
+                            <id>process</id>
                             <goals>
-                                <goal>create-from-project</goal>
+                                <goal>process</goal>
                             </goals>
-                        </execution>
-                        <execution>
-                            <id>generate-archetype-deploy</id>
-                            <phase>deploy</phase>
+                            <phase>generate-sources</phase>
                             <configuration>
-                                <archetypePostPhase>deploy</archetypePostPhase>
-                                <propertyFile>archetype.properties</propertyFile>
+                                <processors>
+                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
+                                </processors>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${jdkTargetForProcessor} -target ${jdkTargetForProcessor}</compilerArguments>
                             </configuration>
-                            <goals>
-                                <goal>create-from-project</goal>
-                            </goals>
                         </execution>
                     </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging-processor</artifactId>
+                            <version>${jbossLoggingProcessorVersion}</version>
+                            <scope>compile</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>javax.annotation</groupId>
+                            <artifactId>jsr250-api</artifactId>
+                            <version>1.0</version>
+                            <scope>compile</scope>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>animal-sniffer-maven-plugin</artifactId>
-                    <version>1.11</version>
+                    <version>1.15</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.ow2.asm</groupId>
@@ -372,45 +497,49 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.18.1</version>
+                    <version>2.19.1</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <argLine>${additionalRuntimeArgLine}</argLine>
                         <systemPropertyVariables>
                            <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
                            <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
-                <!-- Generate the docbook xml from the asciidoc -->
+                <!-- Asciidoctor -->
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>1.5.2</version>
-                </plugin>
-                <!-- Process the docbook xml -->
-                <plugin>
-                    <groupId>org.jboss.maven.plugins</groupId>
-                    <artifactId>maven-jdocbook-plugin</artifactId>
-                    <version>2.3.9</version>
-                    <extensions>true</extensions>
+                    <version>${asciidoctor-maven-plugin.version}</version>
                     <dependencies>
                         <dependency>
-                            <groupId>org.jboss.pressgang</groupId>
-                            <artifactId>pressgang-xslt-ns</artifactId>
-                            <version>3.1.3</version>
+                            <groupId>org.jruby</groupId>
+                            <artifactId>jruby-complete</artifactId>
+                            <version>${jruby.version}</version>
+                        </dependency>
+                         <dependency>
+                            <groupId>org.asciidoctor</groupId>
+                            <artifactId>asciidoctorj</artifactId>
+                            <version>${asciidoctorj.version}</version>
                         </dependency>
                         <dependency>
-                            <groupId>org.hibernate</groupId>
-                            <artifactId>hibernate-jdocbook-style</artifactId>
-                            <type>jdocbook-style</type>
-                            <version>3.0.0</version>
+                            <groupId>org.asciidoctor</groupId>
+                            <artifactId>asciidoctorj-pdf</artifactId>
+                            <version>${asciidoctorj-pdf.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
                 <plugin>
+                    <groupId>ch.mfrey.maven.plugin</groupId>
+                    <artifactId>copy-maven-plugin</artifactId>
+                    <version>0.0.5</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>2.6</version>
                     <configuration>
+                        <tarLongFileMode>posix</tarLongFileMode>
                         <descriptors>
                             <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
                         </descriptors>
@@ -425,10 +554,28 @@
                             </goals>
                         </execution>
                     </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-archiver</artifactId>
+                            <!-- Required override to work on Java 9 -->
+                            <version>3.3</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-io</artifactId>
+                            <version>2.7.1</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.apache.resources</groupId>
+                            <artifactId>apache-source-release-assembly-descriptor</artifactId>
+                            <version>1.0.6</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.1</version>
+                    <version>2.5.3</version>
                     <configuration>
                         <goals>deploy</goals>
                         <preparationGoals>clean install</preparationGoals>
@@ -442,13 +589,8 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.jboss.maven.plugins</groupId>
-                    <artifactId>maven-injection-plugin</artifactId>
-                    <version>1.0.2</version>
-                </plugin>
-                <plugin>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>2.2.1</version>
+                    <version>3.0.0</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -469,13 +611,18 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.18.1</version>
+                    <version>2.19.1</version>
                 </plugin>
                 <!-- Unpack test from hibernate-ogm-core to re-run them on each other module database integration -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.10</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.10</version>
                 </plugin>
                 <plugin>
                     <!-- This plugin's configuration is used in m2e only. -->
@@ -538,6 +685,32 @@
                                         <ignore />
                                     </action>
                                 </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>build-helper-maven-plugin</artifactId>
+                                        <versionRange>[1.9.1,)</versionRange>
+                                        <goals>
+                                            <goal>parse-version</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.asciidoctor</groupId>
+                                        <artifactId>asciidoctor-maven-plugin</artifactId>
+                                        <versionRange>[1.5.3,)</versionRange>
+                                        <goals>
+                                            <goal>process-asciidoc</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
                     </configuration>
@@ -545,7 +718,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
-                    <version>1.3</version>
+                    <version>1.4</version>
                     <executions>
                         <execution>
                             <phase>validate</phase>
@@ -563,7 +736,7 @@
                 <plugin>
                     <groupId>com.github.joelittlejohn.embedmongo</groupId>
                     <artifactId>embedmongo-maven-plugin</artifactId>
-                    <version>0.1.13</version>
+                    <version>0.3.4</version>
                     <configuration>
                         <port>${embeddedMongoDbPort}</port>
                         <logging>file</logging>
@@ -571,14 +744,6 @@
                         <bindIp>${embeddedMongoDbBindIp}</bindIp>
                         <version>${embeddedMongoDbVersion}</version>
                     </configuration>
-                    <dependencies>
-                        <!-- Using the latest version so the plug-in can run with JDK 9 -->
-                        <dependency>
-                            <groupId>de.flapdoodle.embed</groupId>
-                            <artifactId>de.flapdoodle.embed.mongo</artifactId>
-                            <version>1.48.0</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmaven</groupId>
@@ -594,9 +759,9 @@
                     <!-- Creates a report by running "mvn clirr:clirr" -->
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>clirr-maven-plugin</artifactId>
-                    <version>2.6.1</version>
+                    <version>2.7</version>
                     <configuration>
-                        <comparisonVersion>4.2.0.Final</comparisonVersion>
+                        <comparisonVersion>5.0.0.Final</comparisonVersion>
                         <excludes>
                             <exclude>org/hibernate/ogm/**/impl/**</exclude>
                         </excludes>
@@ -617,12 +782,39 @@
 
     <profiles>
         <profile>
+            <id>non-jigsaw</id>
+            <activation>
+                <!-- The versions we're using of Ehcache, Infinispan and Neo4J won't work on JDK9. Needs upgrading.  -->
+                <jdk>1.8</jdk>
+            </activation>
+            <modules>
+                <module>ehcache</module>
+                <module>infinispan</module>
+                <module>infinispan-remote</module>
+                <module>neo4j</module>
+                <!-- The WildFly modules require the other modules to be enabled too -->
+                <module>modules</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>jigsaw</id>
+            <activation>
+                <!-- Java 9 doesn't identify itself as "1.9" but "9" -->
+                <jdk>9</jdk>
+            </activation>
+            <properties>
+                <additionalRuntimeArgLine>--add-modules java.xml.bind</additionalRuntimeArgLine>
+            </properties>
+        </profile>
+        <profile>
             <id>integrationtest</id>
             <activation>
                 <property>
                     <name>skipITs</name>
                     <value>!true</value>
                 </property>
+                <!-- Skip on Java 9, both because of some NoSQL stores aren't ready and because of WildFly -->
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>integrationtest</module>
@@ -635,6 +827,8 @@
                     <name>skipDocs</name>
                     <value>!true</value>
                 </property>
+                <!-- And skip on Java 9 -->
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>documentation</module>
@@ -647,6 +841,8 @@
                     <name>skipDistro</name>
                     <value>!true</value>
                 </property>
+                <!-- And skip on Java 9 -->
+                <jdk>1.8</jdk>
             </activation>
             <modules>
                 <module>distribution</module>

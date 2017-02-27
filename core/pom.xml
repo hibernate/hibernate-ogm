@@ -12,14 +12,14 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>hibernate-ogm-core</artifactId>
     <packaging>jar</packaging>
 
-    <name>Hibernate Object Grid Mapper Core</name>
+    <name>Hibernate OGM Core</name>
     <description>Persist data in a grid rather than a relational database</description>
 
     <dependencies>
@@ -83,8 +83,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -107,10 +107,29 @@
             <artifactId>guava</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -125,31 +144,6 @@
             <plugin>
                  <groupId>org.apache.maven.plugins</groupId>
                  <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jboss.maven.plugins</groupId>
-                <artifactId>maven-injection-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>bytecode</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <bytecodeInjections>
-                        <bytecodeInjection>
-                            <expression>${project.version}</expression>
-                            <targetMembers>
-                                <methodBodyReturn>
-                                    <className>org.hibernate.ogm.cfg.impl.Version</className>
-                                    <methodName>getVersionString</methodName>
-                                </methodBodyReturn>
-                            </targetMembers>
-                        </bytecodeInjection>
-                    </bytecodeInjections>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -180,15 +174,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipUnitTests>false</skipUnitTests>
-            </properties>
-        </profile>
-     </profiles>
 </project>

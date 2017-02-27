@@ -11,7 +11,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Map;
 
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -73,8 +73,8 @@ public abstract class CacheMappingTestBase extends OgmTestCase {
 				.getIdSourceCache( DefaultIdSourceKeyMetadata.forTable( tableName, "sequence_name", "next_val" ) );
 	}
 
-	private InfinispanDatastoreProvider getProvider() {
-		return (InfinispanDatastoreProvider) sfi()
+	private InfinispanEmbeddedDatastoreProvider getProvider() {
+		return (InfinispanEmbeddedDatastoreProvider) getSessionFactory()
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 	}

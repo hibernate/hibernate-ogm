@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 
@@ -33,16 +34,16 @@ public class QueryParameters {
 		this.positionalParameters = positionalParameters;
 	}
 
-	public static QueryParameters fromOrmQueryParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
+	public static QueryParameters fromOrmQueryParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator, SessionFactoryImplementor sessionFactoryImplementor) {
 		RowSelection selection = RowSelection.fromOrmRowSelection( parameters.getRowSelection() );
-		Map<String, TypedGridValue> namedParameters = new HashMap<>();
+		Map<String, TypedGridValue> namedParameters = createNamedParameters( sessionFactoryImplementor, parameters, typeTranslator );
+		List<TypedGridValue> positionalParameters = createPositionalParameters( parameters, typeTranslator );
+		return new QueryParameters( selection, namedParameters, positionalParameters );
+	}
 
-		for ( Entry<String, TypedValue> parameter : parameters.getNamedParameters().entrySet() ) {
-			namedParameters.put( parameter.getKey(), TypedGridValue.fromOrmTypedValue( parameter.getValue(), typeTranslator ) );
-		}
-
+	private static List<TypedGridValue> createPositionalParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
 		List<TypedGridValue> positionalParameters = new ArrayList<>( parameters.getPositionalParameterTypes().length );
-		for ( int i = 0; i < parameters.getPositionalParameterTypes().length; i++) {
+		for ( int i = 0; i < parameters.getPositionalParameterTypes().length; i++ ) {
 			positionalParameters.add(
 					new TypedGridValue(
 							typeTranslator.getType( parameters.getPositionalParameterTypes()[i] ),
@@ -50,7 +51,16 @@ public class QueryParameters {
 					)
 			);
 		}
-		return new QueryParameters( selection, namedParameters, positionalParameters );
+		return positionalParameters;
+	}
+
+	private static Map<String, TypedGridValue> createNamedParameters(SessionFactoryImplementor factory, org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
+		Map<String, TypedGridValue> namedParameters = new HashMap<>();
+		for ( Entry<String, TypedValue> parameter : parameters.getNamedParameters().entrySet() ) {
+			TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue( parameter.getValue(), typeTranslator, factory );
+			namedParameters.put( parameter.getKey(), typedGridValue );
+		}
+		return namedParameters;
 	}
 
 	public RowSelection getRowSelection() {

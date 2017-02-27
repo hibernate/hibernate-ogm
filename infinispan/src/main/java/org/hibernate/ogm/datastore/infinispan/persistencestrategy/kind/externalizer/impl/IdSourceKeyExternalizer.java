@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.VersionChecker;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
@@ -26,7 +26,7 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  * {@link InfinispanDialect} which stores keys as is in the Infinispan data store.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
- * {@link InfinispanDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
+ * {@link InfinispanEmbeddedDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
  * configuration file.
  *
  * @author Gunnar Morling
@@ -52,8 +52,10 @@ public class IdSourceKeyExternalizer implements AdvancedExternalizer<IdSourceKey
 	public void writeObject(ObjectOutput output, IdSourceKey key) throws IOException {
 		output.writeInt( VERSION );
 		output.writeUTF( key.getTable() );
-		output.writeObject( key.getColumnNames() );
-		output.writeObject( key.getColumnValues() );
+		//Wrapping in String[] and Object[] respectively as this used to be the format,
+		//to maintain compatibility with Hibernate OGM 5.0
+		output.writeObject( new String[] { key.getColumnName() } );
+		output.writeObject( new Object[] { key.getColumnValue() } );
 	}
 
 	@Override

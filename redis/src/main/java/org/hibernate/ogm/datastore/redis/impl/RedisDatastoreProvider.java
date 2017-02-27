@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.redis.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -23,10 +25,14 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
+import com.lambdaworks.redis.AbstractRedisClient;
 import com.lambdaworks.redis.RedisClient;
 import com.lambdaworks.redis.RedisURI;
+import com.lambdaworks.redis.api.StatefulConnection;
 import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.api.sync.RedisCommands;
+import com.lambdaworks.redis.cluster.RedisClusterClient;
+import com.lambdaworks.redis.cluster.api.StatefulRedisClusterConnection;
+import com.lambdaworks.redis.cluster.api.sync.RedisClusterCommands;
 import com.lambdaworks.redis.codec.Utf8StringCodec;
 
 import static com.lambdaworks.redis.RedisURI.Builder.redis;
@@ -45,8 +51,8 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 	private ServiceRegistryImplementor serviceRegistry;
 
 	private RedisConfiguration config;
-	private RedisClient redisClient;
-	private StatefulRedisConnection<String, String> connection;
+	private AbstractRedisClient redisClient;
+	private StatefulConnection<String, String> connection;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -74,11 +80,19 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 	@Override
 	public void start() {
 		try {
-			Hosts.HostAndPort hostAndPort = config.getHosts().getFirst();
-			redisClient = createClient( hostAndPort );
 
-			log.connectingToRedis( config.getHosts().toString(), config.getTimeout() );
-			connection = redisClient.connect( new Utf8StringCodec() );
+			if ( config.isCluster() ) {
+				RedisClusterClient clusterClient = createClusterClient( config.getHosts() );
+				this.redisClient = clusterClient;
+				log.connectingToRedis( config.getHosts().toString(), config.getTimeout() );
+				connection = clusterClient.connect( new Utf8StringCodec() );
+			}
+			else {
+				RedisClient client = createClient( config.getHosts().getFirst() );
+				this.redisClient = client;
+				log.connectingToRedis( config.getHosts().toString(), config.getTimeout() );
+				connection = client.connect( new Utf8StringCodec() );
+			}
 		}
 		catch (RuntimeException e) {
 			// return a ServiceException to be stack trace friendly
@@ -87,6 +101,11 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 	}
 
 	protected RedisClient createClient(Hosts.HostAndPort hostAndPort) {
+		RedisURI builder = configureRedisUri( hostAndPort );
+		return RedisClient.create( builder );
+	}
+
+	private RedisURI configureRedisUri(Hosts.HostAndPort hostAndPort) {
 		RedisURI.Builder builder = redis( hostAndPort.getHost(), hostAndPort.getPort() );
 		builder.withSsl( config.isSsl() );
 		builder.withDatabase( config.getDatabaseNumber() );
@@ -96,7 +115,17 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		}
 
 		builder.withTimeout( config.getTimeout(), TimeUnit.MILLISECONDS );
-		return RedisClient.create( builder.build() );
+		return builder.build();
+	}
+
+	protected RedisClusterClient createClusterClient(Hosts hosts) {
+
+		List<RedisURI> redisURIs = new ArrayList<>();
+		for ( Hosts.HostAndPort hostAndPort : hosts ) {
+			redisURIs.add( configureRedisUri( hostAndPort ) );
+		}
+
+		return RedisClusterClient.create( redisURIs );
 	}
 
 	@Override
@@ -124,7 +153,23 @@ public class RedisDatastoreProvider extends BaseDatastoreProvider implements Sta
 		return true;
 	}
 
-	public RedisCommands<String, String> getConnection() {
-		return connection.sync();
+	public RedisClusterCommands<String, String> getConnection() {
+		if ( connection instanceof StatefulRedisConnection ) {
+			return ( (StatefulRedisConnection) connection ).sync();
+		}
+
+		if ( connection instanceof StatefulRedisClusterConnection ) {
+			return ( (StatefulRedisClusterConnection) connection ).sync();
+		}
+
+		throw new IllegalStateException( "Connection type " + connection + " not supported" );
+
+	}
+
+	/**
+	 * @return {@code true} if {@link RedisDatastoreProvider} is configured for cluster mode.
+	 */
+	public boolean isCluster() {
+		return config.isCluster();
 	}
 }

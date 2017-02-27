@@ -63,13 +63,29 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 		assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "bankAccounts_id" } );
 		assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "bankAccounts_id", "owners_id" } );
 
-		// obtain main side collection from the inverse side
+		// return null from the inverse side
 		entityPersister = getEntityPersister( BankAccount.class.getName() );
 		AssociationKeyMetadata mainSideAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "owners" ) );
-		assertThat( mainSideAssociationKeyMetadata ).isNotNull();
-		assertThat( mainSideAssociationKeyMetadata.getTable() ).isEqualTo( "AccountOwner_BankAccount" );
-		assertThat( mainSideAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "owners_id" } );
-		assertThat( mainSideAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "owners_id", "bankAccounts_id" } );
+		assertThat( mainSideAssociationKeyMetadata ).isNull();
+	}
+
+	@Test
+	public void canHandleSeveralAssociationsOnInverseSideWithTheSameEntity() {
+		OgmEntityPersister entityPersister = getEntityPersister( Muffin.class.getName() );
+		{
+			AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "eater" ) );
+			assertThat( inverseAssociationKeyMetadata ).isNotNull();
+			assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Muffin" );
+			assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "eater_id" } );
+			assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "eater_id", "id" } );
+		}
+		{
+			AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "standinEater" ) );
+			assertThat( inverseAssociationKeyMetadata ).isNotNull();
+			assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Muffin" );
+			assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "standinEater_id" } );
+			assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "standinEater_id", "id" } );
+		}
 	}
 
 	@Test
@@ -134,11 +150,11 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	}
 
 	private OgmEntityPersister getEntityPersister(String entityName) {
-		return (OgmEntityPersister) ( sfi() ).getEntityPersister( entityName );
+		return (OgmEntityPersister) ( getSessionFactory() ).getEntityPersister( entityName );
 	}
 
 	private OgmCollectionPersister getCollectionPersister(String role) {
-		return (OgmCollectionPersister) ( sfi() ).getCollectionPersister( role );
+		return (OgmCollectionPersister) ( getSessionFactory() ).getCollectionPersister( role );
 	}
 
 	@Override

@@ -10,8 +10,10 @@ import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Contracts;
 
 /**
@@ -24,22 +26,27 @@ public class AssociationContextImpl implements AssociationContext {
 
 	private final AssociationTypeContext associationTypeContext;
 	private final OperationsQueue operationsQueue;
-	private final Tuple entityTuple;
+	private final TuplePointer entityTuplePointer;
+	private final TransactionContext transactionContext;
 
-	public AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple) {
-		this( associationTypeContext, entityTuple, null );
+	public AssociationContextImpl(AssociationTypeContext associationTypeContext, TuplePointer entityTuplePointer, TransactionContext transactionContext) {
+		this( associationTypeContext, entityTuplePointer, null, transactionContext );
 	}
 
 	public AssociationContextImpl(AssociationContextImpl original, OperationsQueue operationsQueue) {
-		this( original.associationTypeContext, original.entityTuple, operationsQueue );
+		this( original.associationTypeContext, original.entityTuplePointer, operationsQueue, original.transactionContext );
 	}
 
-	private AssociationContextImpl(AssociationTypeContext associationTypeContext, Tuple entityTuple, OperationsQueue operationsQueue) {
+	private AssociationContextImpl(AssociationTypeContext associationTypeContext,
+			TuplePointer entityTuplePointer,
+			OperationsQueue operationsQueue,
+			TransactionContext transactionContext) {
 		Contracts.assertParameterNotNull( associationTypeContext, "associationTypeContext" );
 
 		this.associationTypeContext = associationTypeContext;
-		this.entityTuple = entityTuple;
+		this.entityTuplePointer = entityTuplePointer;
 		this.operationsQueue = operationsQueue;
+		this.transactionContext = transactionContext;
 	}
 
 	@Override
@@ -53,13 +60,23 @@ public class AssociationContextImpl implements AssociationContext {
 	}
 
 	@Override
-	public Tuple getEntityTuple() {
-		return entityTuple;
+	public TransactionContext getTransactionContext() {
+		return transactionContext;
+	}
+
+	@Override
+	public TuplePointer getEntityTuplePointer() {
+		return entityTuplePointer;
+	}
+
+	@Override
+	public TupleTypeContext getTupleTypeContext() {
+		return associationTypeContext.getOwnerEntityTupleTypeContext();
 	}
 
 	@Override
 	public String toString() {
 		return "AssociationContextImpl [associationTypeContext=" + associationTypeContext + ", operationsQueue=" + operationsQueue + ", entityTuple="
-				+ entityTuple + "]";
+				+ entityTuplePointer + "]";
 	}
 }

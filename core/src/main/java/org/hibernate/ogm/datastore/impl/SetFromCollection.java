@@ -55,12 +55,12 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public boolean add(E e) {
-		throw new UnsupportedOperationException("This Set implementation is read-only");
+		throw new UnsupportedOperationException( "This Set implementation is read-only" );
 	}
 
 	@Override
 	public boolean remove(Object o) {
-		throw new UnsupportedOperationException("This Set implementation is read-only");
+		throw new UnsupportedOperationException( "This Set implementation is read-only" );
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public boolean addAll(Collection<? extends E> c) {
-		throw new UnsupportedOperationException("This Set implementation is read-only");
+		throw new UnsupportedOperationException( "This Set implementation is read-only" );
 	}
 
 	@Override
@@ -80,12 +80,12 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		throw new UnsupportedOperationException("This Set implementation is read-only");
+		throw new UnsupportedOperationException( "This Set implementation is read-only" );
 	}
 
 	@Override
 	public void clear() {
-		throw new UnsupportedOperationException("This Set implementation is read-only");
+		throw new UnsupportedOperationException( "This Set implementation is read-only" );
 	}
 
 }

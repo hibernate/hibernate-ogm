@@ -50,7 +50,7 @@ public class JpaAttributeConverterGridTypeApplicationTest extends OgmTestCase {
 
 		// Make sure the converter has actually been applied
 		Map<String, Object> persistedTuple = TestHelper.extractEntityTuple(
-				sessions,
+				session,
 				getPrinterEntityKey( printer.id )
 		);
 		byte[] persistedPrinterName = (byte[]) persistedTuple.get( "description" );

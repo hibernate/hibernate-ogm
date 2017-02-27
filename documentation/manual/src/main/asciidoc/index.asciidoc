@@ -1,0 +1,45 @@
+= Hibernate OGM {hibernate-ogm-version}: Reference Guide
+Emmanuel Bernard; Sanne Grinovero; Gunnar Morling; Davide D'Alto; Guillaume Scheibel; Mark Paluch; Guillaume Smet
+:doctype: book
+:revdate: {docdate}
+:sectanchors:
+:anchor:
+:toc: left
+:toclevels: 3
+:docinfodir: {docinfodir}
+:docinfo:
+:title-logo-image: image:hibernate_ogm_600px.png[align=left,pdfwidth=33%]
+
+include::modules/preface.asciidoc[]
+
+:numbered:
+
+include::modules/how-to-contribute.asciidoc[]
+
+include::modules/getting-started.asciidoc[]
+
+include::modules/architecture.asciidoc[]
+
+include::modules/configuration.asciidoc[]
+
+include::modules/mapping.asciidoc[]
+
+include::modules/api.asciidoc[]
+
+include::modules/query.asciidoc[]
+
+include::modules/datastore-providers.asciidoc[]
+
+include::modules/infinispan.asciidoc[]
+
+include::modules/ehcache.asciidoc[]
+
+include::modules/mongodb.asciidoc[]
+
+include::modules/neo4j.asciidoc[]
+
+include::modules/couchdb.asciidoc[]
+
+include::modules/cassandra.asciidoc[]
+
+include::modules/redis.asciidoc[]

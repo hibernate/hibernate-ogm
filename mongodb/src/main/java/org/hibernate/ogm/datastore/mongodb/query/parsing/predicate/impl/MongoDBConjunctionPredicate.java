@@ -31,7 +31,7 @@ public class MongoDBConjunctionPredicate extends ConjunctionPredicate<DBObject> 
 			elements.add( child.getQuery() );
 		}
 
-		return new BasicDBObject("$and", elements);
+		return new BasicDBObject( "$and", elements );
 	}
 
 	@Override
@@ -42,6 +42,6 @@ public class MongoDBConjunctionPredicate extends ConjunctionPredicate<DBObject> 
 			elements.add( ( (NegatablePredicate<DBObject>) child ).getNegatedQuery() );
 		}
 
-		return new BasicDBObject("$or", elements);
+		return new BasicDBObject( "$or", elements );
 	}
 }

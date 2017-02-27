@@ -42,7 +42,7 @@ public abstract class RedisEntityContextImpl
 	@Override
 	public RedisEntityContext ttl(
 			long value, TimeUnit timeUnit) {
-		Contracts.assertTrue( value > 0, "value must be greater 0" );
+		Contracts.assertTrue( value > 0, "value must be greater than 0" );
 		Contracts.assertParameterNotNull( timeUnit, "timeUnit" );
 		addEntityOption( new TTLOption(), timeUnit.toMillis( value ) );
 		return this;

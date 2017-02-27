@@ -16,7 +16,7 @@ import javax.persistence.EntityManager;
 import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 @TestForIssue(jiraKey = "OGM-443")
-public class ReadingFromDiskStoreTest extends JpaTestCase {
+public class ReadingFromDiskStoreTest extends OgmJpaTestCase {
 	private EntityManager em;
 
 	@Before
@@ -104,12 +104,12 @@ public class ReadingFromDiskStoreTest extends JpaTestCase {
 	}
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
+	protected void configure(GetterPersistenceUnitInfo info) {
 		info.getProperties().put( EhcacheProperties.CONFIGURATION_RESOURCE_NAME, "enforced-disk-read-ehcache.xml" );
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Bridge.class, Engineer.class };
 	}
 }

@@ -16,6 +16,7 @@ import org.hibernate.ogm.compensation.operation.CreateAssociationWithKey;
 import org.hibernate.ogm.compensation.operation.CreateTuple;
 import org.hibernate.ogm.compensation.operation.CreateTupleWithKey;
 import org.hibernate.ogm.compensation.operation.ExecuteBatch;
+import org.hibernate.ogm.compensation.operation.FlushPendingOperations;
 import org.hibernate.ogm.compensation.operation.GridDialectOperation;
 import org.hibernate.ogm.compensation.operation.InsertOrUpdateAssociation;
 import org.hibernate.ogm.compensation.operation.InsertTuple;
@@ -26,6 +27,7 @@ import org.hibernate.ogm.compensation.operation.impl.CreateAssociationWithKeyImp
 import org.hibernate.ogm.compensation.operation.impl.CreateTupleImpl;
 import org.hibernate.ogm.compensation.operation.impl.CreateTupleWithKeyImpl;
 import org.hibernate.ogm.compensation.operation.impl.ExecuteBatchImpl;
+import org.hibernate.ogm.compensation.operation.impl.FlushPendingOperationsImpl;
 import org.hibernate.ogm.compensation.operation.impl.InsertOrUpdateAssociationImpl;
 import org.hibernate.ogm.compensation.operation.impl.InsertOrUpdateTupleImpl;
 import org.hibernate.ogm.compensation.operation.impl.InsertTupleImpl;
@@ -33,6 +35,7 @@ import org.hibernate.ogm.compensation.operation.impl.RemoveAssociationImpl;
 import org.hibernate.ogm.compensation.operation.impl.RemoveTupleImpl;
 import org.hibernate.ogm.compensation.operation.impl.RemoveTupleWithOptimisticLockImpl;
 import org.hibernate.ogm.compensation.operation.impl.UpdateTupleWithOptimisticLockImpl;
+import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
@@ -43,8 +46,10 @@ import org.hibernate.ogm.dialect.eventstate.impl.EventContextManager;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -68,11 +73,11 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		InsertOrUpdateTupleImpl insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, tuple );
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		InsertOrUpdateTupleImpl insertOrUpdateTuple = new InsertOrUpdateTupleImpl( key, tuplePointer.getTuple() );
 
 		try {
-			super.insertOrUpdateTuple( key, tuple, tupleContext );
+			super.insertOrUpdateTuple( key, tuplePointer, tupleContext );
 		}
 		catch (Exception e) {
 			handleException( insertOrUpdateTuple, e );
@@ -97,24 +102,14 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 			while ( operation != null ) {
 				newQueue.add( operation );
 
-				if ( operation instanceof InsertOrUpdateTupleOperation ) {
-					InsertOrUpdateTupleOperation insertOrUpdateTuple = (InsertOrUpdateTupleOperation) operation;
-					operations.add( new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuple() ) );
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					GroupedChangesToEntityOperation groupedChangesOnEntity = (GroupedChangesToEntityOperation) operation;
+					for ( Operation groupedOperation : groupedChangesOnEntity.getOperations() ) {
+						operations.add( getSimpleGridDialectOperations( groupedOperation ) );
+					}
 				}
-				else if ( operation instanceof RemoveTupleOperation ) {
-					RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
-					operations.add( new RemoveTupleImpl( removeTuple.getEntityKey() ) );
-				}
-				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
-					InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
-					operations.add( new InsertOrUpdateAssociationImpl(
-							insertOrUpdateAssociationOperation.getAssociationKey(),
-							insertOrUpdateAssociationOperation.getAssociation() )
-					);
-				}
-				else if ( operation instanceof RemoveAssociationOperation ) {
-					RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
-					operations.add( new RemoveAssociationImpl( removeAssociationOperation.getAssociationKey() ) );
+				else {
+					operations.add( getSimpleGridDialectOperations( operation ) );
 				}
 
 				operation = queue.poll();
@@ -133,12 +128,76 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public void flushPendingOperations(EntityKey entityKey, TupleContext tupleContext) {
+		OperationsQueue queue = tupleContext.getOperationsQueue();
+		OperationsQueue newQueue = new OperationsQueue();
+		List<GridDialectOperation> operations = new ArrayList<>();
+
+		if ( !queue.isClosed() ) {
+			Operation operation = queue.poll();
+
+			// TODO OGM-766 Avoid the looping + re-creation
+			while ( operation != null ) {
+				newQueue.add( operation );
+
+				if ( operation instanceof GroupedChangesToEntityOperation ) {
+					GroupedChangesToEntityOperation groupedChangesOnEntity = (GroupedChangesToEntityOperation) operation;
+					for ( Operation groupedOperation : groupedChangesOnEntity.getOperations() ) {
+						operations.add( getSimpleGridDialectOperations( groupedOperation ) );
+					}
+				}
+				else {
+					operations.add( getSimpleGridDialectOperations( operation ) );
+				}
+
+				operation = queue.poll();
+			}
+		}
+
+		FlushPendingOperations flushPendingOperations = new FlushPendingOperationsImpl( operations );
+		try {
+			super.flushPendingOperations( entityKey, tupleContext );
+		}
+		catch (Exception e) {
+			handleException( flushPendingOperations, e );
+		}
+
+		handleAppliedOperation( flushPendingOperations );
+	}
+
+	private GridDialectOperation getSimpleGridDialectOperations(Operation operation) {
+		GridDialectOperation gridDialectOperation;
+		if ( operation instanceof InsertOrUpdateTupleOperation ) {
+			InsertOrUpdateTupleOperation insertOrUpdateTuple = (InsertOrUpdateTupleOperation) operation;
+			gridDialectOperation = new InsertOrUpdateTupleImpl( insertOrUpdateTuple.getEntityKey(), insertOrUpdateTuple.getTuplePointer().getTuple() );
+		}
+		else if ( operation instanceof RemoveTupleOperation ) {
+			RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
+			gridDialectOperation = new RemoveTupleImpl( removeTuple.getEntityKey() );
+		}
+		else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+			InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation = (InsertOrUpdateAssociationOperation) operation;
+			gridDialectOperation = new InsertOrUpdateAssociationImpl(
+					insertOrUpdateAssociationOperation.getAssociationKey(),
+					insertOrUpdateAssociationOperation.getAssociation() );
+		}
+		else if ( operation instanceof RemoveAssociationOperation ) {
+			RemoveAssociationOperation removeAssociationOperation = (RemoveAssociationOperation) operation;
+			gridDialectOperation = new RemoveAssociationImpl( removeAssociationOperation.getAssociationKey() );
+		}
+		else {
+			throw new IllegalStateException( "Unsupported operation " + operation );
+		}
+		return gridDialectOperation;
+	}
+
+	@Override
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		Tuple tuple = null;
 		CreateTupleWithKey createTupleWithKey = new CreateTupleWithKeyImpl( key );
 
 		try {
-			tuple = super.createTuple( key, tupleContext );
+			tuple = super.createTuple( key, operationContext );
 		}
 		catch (Exception e) {
 			handleException( createTupleWithKey, e );
@@ -209,12 +268,12 @@ public class InvocationCollectingGridDialect extends ForwardingGridDialect<Seria
 	// IdentityColumnAwareGridDialect
 
 	@Override
-	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, OperationContext operationContext) {
 		Tuple tuple = null;
 		CreateTuple createTuple = new CreateTupleImpl( entityKeyMetadata );
 
 		try {
-			tuple = super.createTuple( entityKeyMetadata, tupleContext );
+			tuple = super.createTuple( entityKeyMetadata, operationContext );
 		}
 		catch (Exception e) {
 			handleException( createTuple, e );

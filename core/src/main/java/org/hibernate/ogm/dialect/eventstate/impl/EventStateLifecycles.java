@@ -6,16 +6,22 @@
  */
 package org.hibernate.ogm.dialect.eventstate.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.impl.ErrorHandlerEnabledTransactionCoordinatorDecorator;
 import org.hibernate.ogm.compensation.impl.OperationCollector;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.util.impl.Immutable;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * Holds all known {@link EventStateLifecycle}s.
@@ -24,16 +30,30 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
  */
 class EventStateLifecycles {
 
-	private EventStateLifecycles() {
-	}
+	public static final EventStateLifecycles INSTANCE = new EventStateLifecycles();
 
-	public static Map<Class<?>, EventStateLifecycle<?>> getLifecycles() {
+	@Immutable
+	private final Map<Class<?>, EventStateLifecycle<?>> lifecycles;
+
+	private EventStateLifecycles() {
 		Map<Class<?>, EventStateLifecycle<?>> lifecycles = new HashMap<>();
 
 		lifecycles.put( OperationCollector.class, OperationCollectorLifecycle.INSTANCE );
 		lifecycles.put( OperationsQueue.class, OperationsQueueLifecycle.INSTANCE );
 
-		return lifecycles;
+		this.lifecycles = Collections.unmodifiableMap( lifecycles );
+	}
+
+	public Map<Class<?>, EventStateLifecycle<?>> getEnabledLifecycles(ServiceRegistryImplementor serviceRegistry) {
+		Map<Class<?>, EventStateLifecycle<?>> enabledLifecycles = new HashMap<>();
+
+		for ( Entry<Class<?>, EventStateLifecycle<?>> lifecycle : lifecycles.entrySet() ) {
+			if ( lifecycle.getValue().mustBeEnabled( serviceRegistry ) ) {
+				enabledLifecycles.put( lifecycle.getKey(), lifecycle.getValue() );
+			}
+		}
+
+		return enabledLifecycles;
 	}
 
 	/**
@@ -42,6 +62,11 @@ class EventStateLifecycles {
 	private static class OperationCollectorLifecycle implements EventStateLifecycle<OperationCollector> {
 
 		private static EventStateLifecycle<?> INSTANCE = new OperationCollectorLifecycle();
+
+		@Override
+		public boolean mustBeEnabled(ServiceRegistryImplementor serviceRegistry) {
+			return serviceRegistry.getService( ConfigurationService.class ).getSettings().containsKey( OgmProperties.ERROR_HANDLER );
+		}
 
 		@Override
 		public OperationCollector create(SessionImplementor session) {
@@ -65,17 +90,28 @@ class EventStateLifecycles {
 		private static EventStateLifecycle<?> INSTANCE = new OperationsQueueLifecycle();
 
 		@Override
+		public boolean mustBeEnabled(ServiceRegistryImplementor serviceRegistry) {
+			GridDialect gridDialect = serviceRegistry.getService( GridDialect.class );
+			BatchOperationsDelegator batchDelegator = GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class );
+			return batchDelegator != null;
+		}
+
+		@Override
 		public OperationsQueue create(SessionImplementor session) {
 			return new OperationsQueue();
 		}
 
 		@Override
-		public void onFinish(OperationsQueue state, SessionImplementor session) {
+		public void onFinish(OperationsQueue operationsQueue, SessionImplementor session) {
 			GridDialect gridDialect = session.getFactory()
 					.getServiceRegistry()
 					.getService( GridDialect.class );
 
-			GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class ).executeBatch();
+			if ( operationsQueue.size() > 0 ) {
+				GridDialects.getDelegateOrNull( gridDialect, BatchOperationsDelegator.class ).executeBatch( operationsQueue );
+			}
+
+			operationsQueue.close();
 		}
 	}
 }

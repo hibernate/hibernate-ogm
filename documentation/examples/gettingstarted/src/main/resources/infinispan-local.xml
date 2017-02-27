@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+
+<!--
+    This is the testing configuration, running in LOCAL clustering mode to speedup tests.
+    Not all tests use this, so that at least one still validates the configuration
+    validity which would be shipped with a release (like JPAStandaloneTest).
+-->
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
+    xmlns="urn:infinispan:config:7.0">
+
+    <cache-container name="HibernateOGM-Testsuite" default-cache="DEFAULT" statistics="false">
+
+        <jmx duplicate-domains="true"/>
+
+        <!-- *************************** -->
+        <!--   Default cache settings    -->
+        <!-- *************************** -->
+        <local-cache name="DEFAULT">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
+
+        <!-- *************************************** -->
+        <!--     Cache to store the OGM entities     -->
+        <!-- *************************************** -->
+        <local-cache name="ENTITIES">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
+
+        <!-- *********************************************** -->
+        <!--   Cache to store the relations across entities  -->
+        <!-- *********************************************** -->
+        <local-cache name="ASSOCIATIONS">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
+
+        <!-- ***************************** -->
+        <!--   Cache to store identifiers  -->
+        <!-- ***************************** -->
+        <local-cache name="IDENTIFIERS">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
+
+    </cache-container>
+</infinispan>

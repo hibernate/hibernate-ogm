@@ -11,8 +11,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.ContainedIn;
@@ -38,7 +38,7 @@ public class Author {
 	@OneToMany(mappedBy = "author")
 	private Set<Hypothesis> hypotheses;
 
-	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
 	@IndexedEmbedded
 	private Address address;
 

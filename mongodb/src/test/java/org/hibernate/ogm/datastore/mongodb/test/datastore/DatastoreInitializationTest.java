@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -62,7 +62,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testAuthentication() throws Exception {
 		error.expect( ServiceException.class );
 		error.expectMessage( "OGM000071" );
@@ -77,7 +77,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testDefaultAuthenticationMechanism() throws Exception {
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		cfg.put( OgmProperties.DATASTORE_PROVIDER, provider );
@@ -89,7 +89,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testSCRAMSHA1AuthenticationMechanism() throws Exception {
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.SCRAM_SHA_1.name() );
@@ -106,7 +106,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testX509AuthenticationMechanism() throws Exception {
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 
@@ -124,7 +124,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testGSSAPIAuthenticationMechanism() throws Exception {
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.GSSAPI.name() );
@@ -141,7 +141,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testPlainAuthenticationMechanism() throws Exception {
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.PLAIN.name() );
@@ -158,7 +158,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testNotRecognizedAuthenticationMechanism() throws Exception {
 		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, "alhdfoiehfnl" );
 
@@ -172,7 +172,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testConnectionErrorWrappedInHibernateException() throws Exception {
 		cfg.put( OgmProperties.HOST, NON_EXISTENT_IP );
 
@@ -186,7 +186,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
+	@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 	public void testConnectionTimeout() {
 		cfg.put( OgmProperties.HOST, NON_EXISTENT_IP );
 		cfg.put( OgmProperties.DATABASE, "ogm_test_database" );

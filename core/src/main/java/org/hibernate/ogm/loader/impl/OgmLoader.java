@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.WrongClassException;
-import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.internal.TwoPhaseLoad;
@@ -379,7 +379,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 						id,
 						hydratedObjects,
 						keys,
-						returnProxies);
+						returnProxies );
 				results.add( result );
 			}
 			//TODO collect subselect result key
@@ -488,12 +488,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		Tuple tuple = resultset.unwrap( TupleAsMapResultSet.class ).getTuple();
 		extractKeysFromResultSet( session, optionalId, tuple, keys );
 
-		registerNonExists( keys, persisters, session);
-
-		//it's a non existing object: cut short
-		if (resultset == null) {
-			return null;
-		}
+		registerNonExists( keys, persisters, session );
 
 		final Object[] row = getRow(
 				tuple,
@@ -535,11 +530,11 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
 		//we do not handle multiple Loaders but that's OK for now
-		if (keys.length == 0) {
+		if ( keys.length == 0 ) {
 			//do nothing, this is a collection
 		}
 		else {
-			if (optionalId == null) {
+			if ( optionalId == null ) {
 				final OgmEntityPersister currentPersister = entityPersisters[0];
 				GridType gridIdentifierType = currentPersister.getGridIdentifierType();
 				optionalId = (Serializable) gridIdentifierType.nullSafeGet( tuple, currentPersister.getIdentifierColumnNames(), session, null );
@@ -568,7 +563,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 					keys[index] = EntityKeyBuilder.fromPersister( persister, (Serializable) qp.getPositionalParameterValues()[index], session );
 				}
 				if ( multigetGridDialect != null ) {
-					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext() ) ) {
+					for ( Tuple tuple : multigetGridDialect.getTuples( keys, persister.getTupleContext( session ) ) ) {
 						if ( tuple != null ) {
 							resultset.addTuple( tuple );
 						}
@@ -576,7 +571,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				}
 				else {
 					for ( EntityKey entityKey : keys ) {
-						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext() );
+						Tuple entry = gridDialect.getTuple( entityKey, persister.getTupleContext( session ) );
 						if ( entry != null ) {
 							resultset.addTuple( entry );
 						}
@@ -585,7 +580,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			}
 			else {
 				final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
-				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
+				Tuple entry = gridDialect.getTuple( key, persister.getTupleContext( session ) );
 				if ( entry != null ) {
 					resultset.addTuple( entry );
 				}
@@ -1010,7 +1005,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			// we don't need to worry about existing version being uninitialized
 			// because this block isn't called by a re-entrant load (re-entrant
 			// loads _always_ have lock mode NONE)
-			if (isVersionCheckNeeded) {
+			if ( isVersionCheckNeeded ) {
 				//we only check the version when _upgrading_ lock modes
 				Object oldVersion = session.getPersistenceContext().getEntry( object ).getVersion();
 				persister.checkVersionAndRaiseSOSE( key.getIdentifier(), oldVersion, session, resultset );
@@ -1135,7 +1130,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 		//FIXME figure out what that means and what value should be set
 		//boolean eagerPropertyFetch = isEagerPropertyFetchEnabled(i);
-		boolean eagerPropertyFetch = true;
+		boolean fetchAllPropertiesRequested = true;
 
 		// add temp entry so that the next step is circular-reference
 		// safe - only needed because some types don't take proper
@@ -1145,7 +1140,6 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				object,
 				persister,
 				lockMode,
-				!eagerPropertyFetch,
 				session
 		);
 
@@ -1161,12 +1155,12 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				object,
 				rootPersister,
 				//cols,
-				eagerPropertyFetch,
+				fetchAllPropertiesRequested,
 				session
 			);
 
 		if ( persister.hasRowId() ) {
-			throw new HibernateException( "Hibernate OGM does nto support row id");
+			throw new HibernateException( "Hibernate OGM does not support row id" );
 		}
 		final Object rowId = null;
 
@@ -1201,11 +1195,10 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				rowId,
 				object,
 				lockMode,
-				!eagerPropertyFetch,
 				session
 			);
 
-		OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
+		OgmEntityEntryState.getStateFor( session, object ).getTuplePointer().setTuple( resultset );
 	}
 
 	/**
@@ -1218,7 +1211,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 	/**
 	 * For missing objects associated by one-to-one with another object in the
-	 * result set, register the fact that the the object is missing with the
+	 * result set, register the fact that the  object is missing with the
 	 * session.
 	 *
 	 * copied form Loader#registerNonExists

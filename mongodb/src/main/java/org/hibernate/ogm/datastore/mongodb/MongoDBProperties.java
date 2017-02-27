@@ -74,6 +74,11 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	public static final String AUTHENTICATION_MECHANISM = "hibernate.ogm.mongodb.authentication_mechanism";
 
 	/**
+	 * Specify the authentication database to use to check the credentials.
+	 */
+	public static final String AUTHENTICATION_DATABASE = "hibernate.ogm.mongodb.authentication_database";
+
+	/**
 	 * Property prefix for MongoDB driver settings which needs to be passed on to the driver. Refer to
 	 * the options of {@link com.mongodb.MongoClientOptions.Builder} for a list of available properties.
 	 * All string, int and boolean builder methods can be configured, eg {@code hibernate.ogm.mongodb.driver.maxWaitTime = 1000}.

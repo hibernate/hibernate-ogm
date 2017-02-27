@@ -67,7 +67,7 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 		serviceRegistryBuilder.addInitiator( OgmSessionFactoryServiceRegistryFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmConnectionProviderInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE);
+		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmTransactionCoordinatorBuilderInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );

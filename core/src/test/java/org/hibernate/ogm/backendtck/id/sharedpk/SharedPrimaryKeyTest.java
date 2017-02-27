@@ -11,7 +11,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import javax.persistence.EntityManager;
 import javax.persistence.PrimaryKeyJoinColumn;
 
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
-public class SharedPrimaryKeyTest extends JpaTestCase {
+public class SharedPrimaryKeyTest extends OgmJpaTestCase {
 	private EntityManager em;
 
 	@Before
@@ -61,7 +61,7 @@ public class SharedPrimaryKeyTest extends JpaTestCase {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { CoffeeMug.class, Lid.class };
 	}
 }

@@ -222,12 +222,14 @@ public class NoopStatement implements Statement {
 	/*
 	 * Added for compatibility with JDK 1.7
 	 */
+	@Override
 	public void closeOnCompletion() throws SQLException {
 	}
 
 	/*
 	 * Added for compatibility with JDK 1.7
 	 */
+	@Override
 	public boolean isCloseOnCompletion() throws SQLException {
 		return false;
 	}

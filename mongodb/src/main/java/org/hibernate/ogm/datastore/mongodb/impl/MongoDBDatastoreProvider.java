@@ -97,7 +97,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	@Override
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return MongoDBEntityMappingValidator.class;
+		return MongoDBSchemaDefiner.class;
 	}
 
 	@Override

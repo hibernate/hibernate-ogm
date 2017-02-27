@@ -3,15 +3,19 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>hibernate-ogm-integrationtest</artifactId>
-    <packaging>pom</packaging>
     <name>Hibernate OGM Integration and performance Tests</name>
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
+        <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
+        <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
+        <infinispan-server.home>${project.build.directory}/infinispan-server-${infinispanVersion}</infinispan-server.home>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
             convergence issues -->
         <enforcer.skip>true</enforcer.skip>
@@ -31,10 +35,53 @@
     </dependencyManagement>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>run-embedded-wildfly-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <includes>
+                                <include>**/neo4j/embedded/*IT.java</include>
+                                <include>**/mongodb/*IT.java</include>
+                                <include>**/ehcache/*IT.java</include>
+                                <include>**/infinispan/*IT.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>
-                     <artifactId>maven-checkstyle-plugin</artifactId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
                 </plugin>
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
@@ -43,24 +90,71 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-jar-plugin</artifactId>
+                    <artifactId>maven-dependency-plugin</artifactId>
                     <executions>
                         <execution>
-                            <id>build-test-jar</id>
+                            <id>unpack</id>
+                            <phase>pre-integration-test</phase>
                             <goals>
-                                <goal>test-jar</goal>
+                                <goal>unpack</goal>
                             </goals>
                             <configuration>
-                                <archive>
-                                    <manifest>
-                                        <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                                        <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                    </manifest>
-                                </archive>
-                                <excludes>
-                                    <exclude>**/hibernate.properties</exclude>
-                                    <exclude>**/log4j.properties</exclude>
-                                </excludes>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.wildfly</groupId>
+                                        <artifactId>wildfly-dist</artifactId>
+                                        <version>${version.wildfly}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${project.build.directory}</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-orm-modules</artifactId>
+                                        <version>${hibernateVersion}</version>
+                                        <classifier>wildfly-10-dist</classifier>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>hibernate-ogm-modules</artifactId>
+                                        <classifier>wildfly-10-dist</classifier>
+                                        <version>${project.version}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                    <artifactItem>
+                                        <groupId>org.infinispan</groupId>
+                                        <artifactId>infinispan-as-embedded-modules</artifactId>
+                                        <version>${infinispanVersion}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                    <!--
+                                      Currently these are (mistakenly?) included in the above package org.infinispan:infinispan-as-embedded-modules
+                                      See https://issues.jboss.org/browse/ISPN-7006
+                                    <artifactItem>
+                                        <groupId>org.infinispan</groupId>
+                                        <artifactId>infinispan-as-client-modules</artifactId>
+                                        <version>${infinispanVersion}</version>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem> -->
+                                    <artifactItem>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-search-modules</artifactId>
+                                        <version>${hibernateSearchVersion}</version>
+                                        <classifier>wildfly-10-dist</classifier>
+                                        <type>zip</type>
+                                        <overWrite>false</overWrite>
+                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
                             </configuration>
                         </execution>
                     </executions>
@@ -70,7 +164,122 @@
     </build>
 
     <dependencies>
-       <dependency>
+        <!-- Backends -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-neo4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-couchdb</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-mongodb</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-redis</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Dependencies for Hot Rod server bootstrap -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-infinispan-remote</artifactId>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-infinispan-remote</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-server-hotrod</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.marshalling</groupId>
+                    <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-server-hotrod</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+            <version>${version.org.wildfly.arquillian}</version>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Pulled in transitively; Neither available on 
+                    Windows nor on JDK 9 -->
+                <exclusion>
+                    <groupId>sun.jdk</groupId>
+                    <artifactId>jconsole</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -114,90 +323,296 @@
         </dependency>
     </dependencies>
 
-    <modules>
-        <module>testcase</module>
-        <module>mongodb</module>
-        <module>couchdb</module>
-        <module>neo4j</module>
-        <module>redis</module>
-    </modules>
-
     <profiles>
         <profile>
-            <id>wildfly</id>
+            <id>run-couchdb-wildfly-tests</id>
+            <!-- To run the tests you need to define the 
+                environment property: COUCHDB_HOSTNAME -->
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
             </activation>
-            <properties>
-                <version.wildfly>10.0.0.Final</version.wildfly>
-                <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
-                <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
-            </properties>
-            <dependencies>
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- Pulled in transitively; Neither available on Windows nor on JDK 9 -->
-                    <exclusion>
-                        <groupId>sun.jdk</groupId>
-                        <artifactId>jconsole</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            </dependencies>
+            <build>
+                <plugins>
+                   <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>couchdb-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/couchdb/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>run-redis-wildfly-tests</id>
+            <!-- To run the tests you need to define the
+                environment property: REDIS_HOSTNAME -->
+            <activation>
+                <property>
+                    <name>env.REDIS_HOSTNAME</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>redis-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/redis/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>run-cassandra-wildfly-tests</id>
+            <!-- To run the tests you need to define the
+                environment property: CASSANDRA_HOSTNAME -->
+            <activation>
+                <property>
+                    <name>env.CASSANDRA_HOSTNAME</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>cassandra-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/cassandra/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>run-neo4j-wildfly-tests</id>
+            <!-- To run the tests you need to define the
+                environment properties NEO4J_HOSTNAME, NEO4J_USERNAME and NEO4J_PASSWORD -->
+            <activation>
+                <property>
+                    <name>env.NEO4J_HOSTNAME</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                   <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>neo4j-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/neo4j/remote/**/*IT.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>embedded-mongodb</id>
+            <activation>
+                <property>
+                    <name>!useExternalMongoDb</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.gmaven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-mongodb-directories</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <source>
+                                    println "[INFO] ------------------------------------------------------------------------"
+                                    println "[INFO] MONGO DB BUILD INFO                                                     "
+                                    println "[INFO] ------------------------------------------------------------------------"
+                                    println "[INFO] Extracting MongoDB distribution to " + project.properties['embeddedMongoDbTempDir'] + " and        "
+                                    println "[INFO] launching MongoDB process on port " + project.properties['embeddedMongoDbPort'] + ". The properties"
+                                    println "[INFO] 'embeddedMongoDbTempDir' and 'embeddedMongoDbPort' can be used to       "
+                                    println "[INFO] specify another directory and/or port like this:                        "
+                                    println "[INFO]                                                                         "
+                                    println "[INFO]     mvn test -DembeddedMongoDbTempDir=%dir% -DembeddedMongoDbPort=%port%"
+                                    println "[INFO]                                                                         "
+                                    println "[INFO] To use an external Mongo DB instance instead, specify the               "
+                                    println "[INFO] 'useExternalMongoDb' property:                                          "
+                                    println "[INFO]                                                                         "
+                                    println "[INFO]     mvn test -DuseExternalMongoDb                                       "
+                                    println "[INFO]                                                                         "
+                                    println "[INFO] In this case, host and port are retrieved from the environment          "
+                                    println "[INFO] variables MONGODB_HOSTNAME and MONGODB_PORT, respectively.              "
+                                    println "[INFO] ------------------------------------------------------------------------"
+
+                                    def tempDir = new File(project.properties['embeddedMongoDbTempDir'])
+                                    ant.delete(dir : tempDir)
+                                    ant.mkdir(dir : tempDir)
+
+                                    def logDir = new File(project.properties['embeddedMongoDbLogDir'])
+                                    ant.delete(dir : logDir)
+                                    ant.mkdir(dir : logDir)
+
+                                    System.setProperty( "de.flapdoodle.embed.io.tmpdir", project.properties['embeddedMongoDbTempDir'] )
+                                    </source>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <MONGODB_PORT>${embeddedMongoDbPort}</MONGODB_PORT>
+                                <MONGODB_HOSTNAME>${embeddedMongoDbBindIp}</MONGODB_HOSTNAME>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                        <artifactId>embedmongo-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>start-embedded-mongodb</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop-embedded-mongodb</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>hotrod-server</id>
+            <activation>
+                <property>
+                    <name>!skipHotRod</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>unpack</id>
-                                <phase>pre-integration-test</phase>
+                                <id>unpack-infinispan-server</id>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
                                 <configuration>
                                     <artifactItems>
                                         <artifactItem>
-                                            <groupId>org.wildfly</groupId>
-                                            <artifactId>wildfly-dist</artifactId>
-                                            <version>${version.wildfly}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-wildfly10</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                        <!-- The following modules are disabled as *with this specific version* we can
-                                          use the main modules as bundled with WildFly
-                                        <artifactItem>
-                                            <groupId>org.hibernate</groupId>
-                                            <artifactId>hibernate-search-modules</artifactId>
-                                            <version>${hibernateSearchVersion}</version>
-                                            <classifier>wildfly-8-dist</classifier>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.infinispan</groupId>
-                                            <artifactId>infinispan-as-embedded-modules</artifactId>
+                                            <groupId>org.infinispan.server</groupId>
+                                            <artifactId>infinispan-server-build</artifactId>
                                             <version>${infinispanVersion}</version>
                                             <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                            <outputDirectory>${project.build.directory}/node1</outputDirectory>
                                         </artifactItem>
-                                         -->
                                     </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <!-- Copy the WildFly configuration files so we can use our custom configurations -->
+                            <execution>
+                                <id>configure-infinispan-server</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/node1/infinispan-server-${infinispanVersion}/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>${basedir}/infinispan-server-testconfig</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>neo4j-integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                                    <includes>
+                                        <include>**/infinispanremote/*IT.java</include>
+                                    </includes>
                                 </configuration>
                             </execution>
                         </executions>

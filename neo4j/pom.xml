@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -28,11 +28,8 @@
         </testResources>
         <plugins>
             <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <!-- Skipping it because neo4j uses a different Lucene version -->
-                    <skip>true</skip>
-                </configuration>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -53,12 +50,6 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>hibernate-search-engine</artifactId>
-                    <groupId>org.hibernate</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -70,6 +61,40 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+        </dependency>
+
+        <!-- For tests with mass indexer -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- RESTEasy and Jackson -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>
@@ -90,8 +115,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -129,5 +154,49 @@
             <artifactId>takari-cpsuite</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- Executes the tests against an embedded Neo4j -->
+        <profile>
+            <id>neo4j-embedded</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <datastoreProvider>neo4j_embedded</datastoreProvider>
+            </properties>
+        </profile>
+
+        <!-- Executes the tests against a separately started Neo4j server using the Bolt protocol interface -->
+        <profile>
+            <id>neo4j-bolt</id>
+            <properties>
+                <datastoreProvider>neo4j_bolt</datastoreProvider>
+            </properties>
+        </profile>
+
+        <!-- Executes the tests against a separately started Neo4j server using the HTTP interface -->
+        <profile>
+            <id>neo4j-http</id>
+            <properties>
+                <datastoreProvider>neo4j_http</datastoreProvider>
+            </properties>
+        </profile>
+    </profiles>
 </project>

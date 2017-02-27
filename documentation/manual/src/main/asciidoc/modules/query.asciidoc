@@ -1,0 +1,409 @@
+[[ogm-query]]
+
+== Query your entities
+
+Once your data is in the datastore, it's time for some query fun!
+With Hibernate OGM, you have a few alternatives that should get you covered:
+
+* Use JP-QL - only for simple queries for now
+* Use the NoSQL native query mapping the result as managed entities
+* Use Hibernate Search queries - primarily full-text queries
+
+=== Using JP-QL
+
+For Hibernate OGM, we developed a brand new JP-QL parser
+which is already able to convert simple queries into the native underlying datastore query language
+(e.g. MongoQL for MongoDB, CypherQL for Neo4J, etc).
+This parser can also generate Hibernate Search queries
+for datastores that do not support a query language.
+
+[NOTE]
+====
+For datastores like Infinispan that require Hibernate Search to execute JP-QL queries,
+the following preconditions must be met:
+
+* no join, aggregation, or other relational operations are implied
+* the entity involved in the query must be indexed
+* the properties involved in the predicates must be indexed
+
+Here is an example:
+
+[source, JAVA]
+----
+@Entity @Indexed
+public class Hypothesis {
+
+    @Id
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    @Field(analyze=Analyze.NO)
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    private String description;
+}
+
+Query query = session
+    .createQuery("from Hypothesis h where h.description = :desc")
+    .setString("desc", "tomorrow it's going to rain");
+----
+
+Note that the `description` field is marked as not analysed.
+This is necessary to support field equality and comparison as defined by JP-QL.
+====
+
+You can make use of the following JP-QL constructs:
+
+* simple comparisons using "<", "+<=+", "=", ">=" and ">"
+* `IS NULL` and `IS NOT NULL`
+* the boolean operators `AND`, `OR`, `NOT`
+* `LIKE`, `IN` and `BETWEEN`
+* `ORDER BY`
+
+In particular and of notice, what is not supported is:
+
+* cross entity joins
+* JP-QL functions in particular aggregation functions like `count`
+* JP-QL update and delete queries
+
+That may sound rather limiting for your use cases so bear with us.
+This is a hot area we want to improve, please tell us what feature you miss
+<<ogm-howtocontribute-contribute,by opening a JIRA or via email>>.
+Also read the next section, you will see other alternatives to implement your queries.
+
+Let's look at some of the queries you can express in JP-QL:
+
+.Some JP-QL queries
+====
+[source]
+----
+// query returning an entity based on a simple predicate
+select h from Hypothesis h where id = 16
+
+// projection of the entity property
+select id, description from Hypothesis h where id = 16
+
+// projection of the embedded properties
+select h.author.address.street from Hypothesis h where h.id = 16
+
+// predicate comparing a property value and a literal
+from Hypothesis h where h.position = '2'
+
+// negation
+from Hypothesis h where not h.id = '13'
+from Hypothesis h where h.position <> 4
+
+// conjunction
+from Hypothesis h where h.position = 2 and not h.id = '13'
+
+// named parameters
+from Hypothesis h where h.description = :myParam
+
+// range query
+from Hypothesis h where h.description BETWEEN :start and :end"
+
+// comparisons
+from Hypothesis h where h.position < 3
+
+// in
+from Hypothesis h where h.position IN (2, 3, 4)
+
+// like
+from Hypothesis h where h.description LIKE '%dimensions%'
+
+// comparison with null
+from Hypothesis h where h.description IS null
+
+// order by
+from Hypothesis h where h.description IS NOT null ORDER BY id
+from Helicopter h order by h.make desc, h.name
+----
+====
+
+There are also features that are partially supported:
+
+* Inner `JOIN` on an embedded association:
+  works as expected with Neo4j and MongoDB;
+  doesn't work if your datastore provider implements JP-QL queries using Hibernate Search.
+
+* Projections or filters on properties of an embedded identifier:
+  works as expected with Neo4j and MongoDB;
+  doesn't work if your datastore provider implements JP-QL queries using Hibernate Search.
+
+These are better illustrated by the following example:
+
+.Entity with embedded collection and supported JP-QL queries
+====
+[source, JAVA]
+----
+@Indexed
+@Entity
+public class StoryGame {
+
+    @DocumentId
+    @EmbeddedId
+    @FieldBridge(impl = NewsIdFieldBridge.class)
+    private StoryID storyId;
+
+    @ElementCollection
+    @IndexedEmbedded
+    private List<OptionalStoryBranch> optionalEndings;
+
+    ...
+
+}
+
+@Embeddable
+public class StoryID implements Serializable {
+
+    private String title;
+    private String author;
+
+    ...
+}
+
+@Embeddable
+public class OptionalStoryBranch {
+
+    // Analyze.NO for filtering in query
+    // Store.YES for projection in query
+    @Field(store = Store.YES, analyze = Analyze.NO)
+    private String text;
+
+    ...
+
+}
+----
+
+Filter the results using the supported operators will work for all the datastores:
+
+[source, JAVA]
+----
+String query =
+    "SELECT sg" +
+    "FROM StoryGame sg JOIN sg.optionalEndings ending WHERE ending.text = 'Happy ending'"
+List<StoryGame> stories = session.createQuery( query ).list();
+----
+
+Projection of properties of an embedded association works with Neo4j and MongoDB,
+but the other datastores will only return one element from the association.
+This is due to the fact that Hibernate Search is currently not supporting projection
+of associations.
+Here's an example of a query affected by this:
+
+[source, JAVA]
+----
+String query =
+     "SELECT ending.text " +
+     "FROM StoryGame sg JOIN sg.optionalEndings ending WHERE ending.text LIKE 'Happy%'";
+List<String> endings = session.createQuery( query ).list();
+----
+
+Projecting and filtering on embedded id properties works with Neo4j and MongoDB
+but throws an exception with the other datastores:
+
+[source, JAVA]
+----
+String query =
+     "SELECT sg.storyId.title FROM StoryGame sg WHERE sg.storyId.title = 'Best Story Ever'";
+List<String> title = session.createQuery( query ).list();
+----
+
+It will cause the following exception if the datastore uses Hibernate Search
+to execute JP-QL queries:
+
+[source, JAVA]
+----
+org.hibernate.hql.ParsingException: HQL100002: The type [storyId] has no indexed property named title.
+----
+====
+
+[NOTE]
+====
+In order to reflect changes performed in the current session,
+all entities affected by a given query are flushed to the datastore prior to query execution
+(that’s the case for Hibernate ORM as well as Hibernate OGM).
+
+For not fully transactional stores,
+this can cause changes to be written as a side-effect of running queries
+which cannot be reverted by a possible later rollback.
+
+Depending on your specific use cases and requirements you may prefer to disable auto-flushing,
+e.g. by invoking `query.setFlushMode(FlushMode.MANUAL)`.
+Bear in mind though that query results will then not reflect changes applied within the current session.
+====
+
+[[ogm-query-native]]
+=== Using the native query language of your NoSQL
+
+Often you want the raw power of the underlying NoSQL query engine.
+Even if that costs you portability.
+
+Hibernate OGM addresses that problem by letting you express native queries (e.g. in MongoQL or CypherQL)
+and map the result of these queries as mapped entities.
+
+In JPA, use `EntityManager.createNativeQuery`.
+The first form accepts a result class if your result set maps the mapping definition of the entity.
+The second form accepts the name of a resultSetMapping
+and lets you customize how properties are mapped to columns by the query.
+You can also used a predefined named query which defines its result set mapping.
+
+Let's take a look at how it is done for Neo4J:
+
+.Various ways to create a native query in JPA
+====
+[source, JAVA]
+----
+@Entity
+@NamedNativeQuery(
+   name = "AthanasiaPoem",
+   query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }",
+   resultClass = Poem.class )
+public class Poem {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    private String author;
+
+   // getters, setters ...
+
+}
+
+...
+
+javax.persistence.EntityManager em = ...
+
+// a single result query
+String query1 = "MATCH ( n:Poem { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
+Poem poem = (Poem) em.createNativeQuery( query1, Poem.class ).getSingleResult();
+
+// query with order by
+String query2 = "MATCH ( n:Poem { name:'Portia', author:'Oscar Wilde' } ) " +
+                "RETURN n ORDER BY n.name";
+List<Poem> poems = em.createNativeQuery( query2, Poem.class ).getResultList();
+
+// query with projections
+String query3 = MATCH ( n:Poem ) RETURN n.name, n.author ORDER BY n.name";
+List<Object[]> poemNames = (List<Object[]>)em.createNativeQuery( query3 )
+                               .getResultList();
+
+// named query
+Poem poem = (Poem) em.createNamedQuery( "AthanasiaPoem" ).getSingleResult();
+----
+====
+
+In the native Hibernate API, use `OgmSession.createNativeQuery` or `Session.getNamedQuery`.
+The former form lets you define the result set mapping programmatically.
+The latter is receiving the name of a predefined query already describing its result set mapping.
+
+.Hibernate API defining a result set mapping
+====
+[source, JAVA]
+----
+OgmSession session = ...
+String query1 = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
+Poem poem = session.createNativeQuery( query1 )
+                      .addEntity( "Poem", Poem.class )
+                      .uniqueResult();
+----
+====
+
+Check out each individual datastore chapter for more info
+on the specifics of the native query language mapping.
+In particular <<ogm-neo4j-queries-native,Neo4J>> and <<ogm-mongodb-queries-native,MongoDB>>.
+
+=== Using Hibernate Search
+
+Hibernate Search offers a way to index Java objects into Lucene indexes
+and to execute full-text queries on them.
+The indexes do live outside your datastore.
+This offers a few interesting properties in terms of feature set and scalability.
+
+Apache Lucene is a full-text indexing and query engine with excellent query performance.
+Feature wise, _full-text_ means
+you can do much more than a simple equality match.
+
+Hibernate Search natively integrates with Hibernate ORM.
+And Hibernate OGM of course!
+
+.Using Hibernate Search for full-text matching
+====
+[source, JAVA]
+----
+@Entity @Indexed
+public class Hypothesis {
+
+    @Id
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    @Field(analyze=Analyze.YES)
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    private String description;
+}
+----
+
+[source, JAVA]
+----
+EntityManager entityManager = ...
+//Add full-text superpowers to any EntityManager:
+FullTextEntityManager ftem = Search.getFullTextEntityManager(entityManager);
+
+//Optionally use the QueryBuilder to simplify Query definition:
+QueryBuilder b = ftem.getSearchFactory()
+   .buildQueryBuilder()
+   .forEntity(Hypothesis.class)
+   .get();
+
+//Create a Lucene Query:
+Query lq = b.keyword().onField("description").matching("tomorrow").createQuery();
+
+//Transform the Lucene Query in a JPA Query:
+FullTextQuery ftQuery = ftem.createFullTextQuery(lq, Hypothesis.class);
+
+//List all matching Hypothesis:
+List<Hypothesis> resultList = ftQuery.getResultList();
+----
+====
+
+Assuming our database contains an `Hypothesis` instance
+having description "Sometimes tomorrow we release",
+that instance will be returned by our full-text query.
+
+Text similarity can be very powerful as it can be configured for specific languages
+or domain specific terminology;
+it can deal with typos and synonyms,
+and above all it can return results by _relevance_.
+
+Worth noting the Lucene index is a vectorial space of term occurrence statistics:
+so extracting tags from text, frequencies of strings
+and correlate this data makes it very easy to build efficient data analysis applications.
+
+
+While the potential of Lucene queries is very high,
+it's not suited for all use cases
+ Let's see some of the limitations of Lucene Queries as our main query engine:
+
+* Lucene doesn't support Joins.
+  Any `to-One` relations can be mapped fine,
+  and the Lucene community is making progress on other forms,
+  but restrictions on `OneToMany` or `ManyToMany` can't be implemented today.
+* Since we apply changes to the index at commit time,
+  your updates won't affect queries until you commit
+  (we might improve on this).
+* While queries are extremely fast, write operations are not as fast
+  (but we can make it scale).
+
+For a complete understanding of what Hibernate Search can do for you
+and how to use it, 
+go check the https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/[Hibernate Search reference documentation].
+
+=== Using the Criteria API
+
+At this time, we have not implemented support for the Criteria APIs (neither Hibernate native nor JPA).

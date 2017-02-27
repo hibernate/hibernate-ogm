@@ -294,13 +294,13 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 	@Override
 	public OgmSession openSession() throws HibernateException {
 		final Session session = delegate.openSession();
-		return new OgmSessionImpl(this, (EventSource) session);
+		return new OgmSessionImpl( this, (EventSource) session );
 	}
 
 	@Override
 	public OgmSession getCurrentSession() throws HibernateException {
 		final Session session = delegate.getCurrentSession();
-		return new OgmSessionImpl(this, (EventSource) session);
+		return new OgmSessionImpl( this, (EventSource) session );
 	}
 
 	@Override
@@ -439,5 +439,10 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 	@Override
 	public DeserializationResolver getDeserializationResolver() {
 		return delegate.getDeserializationResolver();
+	}
+
+	@Override
+	public String getUuid() {
+		return delegate.getUuid();
 	}
 }

@@ -47,6 +47,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		return null;
 	}
 
+	@Override
 	public String getPersistenceUnitName() {
 		return persistenceUnitName;
 	}
@@ -55,6 +56,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.persistenceUnitName = persistenceUnitName;
 	}
 
+	@Override
 	public String getPersistenceProviderClassName() {
 		return persistenceProviderClassName;
 	}
@@ -63,6 +65,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.persistenceProviderClassName = persistenceProviderClassName;
 	}
 
+	@Override
 	public PersistenceUnitTransactionType getTransactionType() {
 		return transactionType;
 	}
@@ -71,6 +74,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.transactionType = transactionType;
 	}
 
+	@Override
 	public DataSource getJtaDataSource() {
 		return jtaDataSource;
 	}
@@ -79,6 +83,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.jtaDataSource = jtaDataSource;
 	}
 
+	@Override
 	public DataSource getNonJtaDataSource() {
 		return nonJtaDataSource;
 	}
@@ -87,6 +92,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.nonJtaDataSource = nonJtaDataSource;
 	}
 
+	@Override
 	public List<String> getMappingFileNames() {
 		return mappingFileNames;
 	}
@@ -95,6 +101,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.mappingFileNames = mappingFileNames;
 	}
 
+	@Override
 	public List<URL> getJarFileUrls() {
 		return jarFileUrls;
 	}
@@ -103,6 +110,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.jarFileUrls = jarFileUrls;
 	}
 
+	@Override
 	public URL getPersistenceUnitRootUrl() {
 		return persistenceUnitRootUrl;
 	}
@@ -111,6 +119,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.persistenceUnitRootUrl = persistenceUnitRootUrl;
 	}
 
+	@Override
 	public List<String> getManagedClassNames() {
 		return managedClassNames;
 	}
@@ -128,6 +137,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.managedClassNames = managedClassNames;
 	}
 
+	@Override
 	public ValidationMode getValidationMode() {
 		return validationMode;
 	}
@@ -136,6 +146,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.validationMode = validationMode;
 	}
 
+	@Override
 	public String getPersistenceXMLSchemaVersion() {
 		return persistenceXMLSchemaVersion;
 	}
@@ -144,6 +155,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.persistenceXMLSchemaVersion = persistenceXMLSchemaVersion;
 	}
 
+	@Override
 	public SharedCacheMode getSharedCacheMode() {
 		return sharedCacheMode;
 	}
@@ -152,6 +164,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.sharedCacheMode = sharedCacheMode;
 	}
 
+	@Override
 	public Properties getProperties() {
 		return properties;
 	}
@@ -160,6 +173,7 @@ public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 		this.properties = properties;
 	}
 
+	@Override
 	public ClassLoader getClassLoader() {
 		return classLoader;
 	}

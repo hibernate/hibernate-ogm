@@ -55,7 +55,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-		// TODO OGM-893 Redefined column name of embeddable should be prefixed with embeddable name (i.e. 'postal_code' has to be inside 'homeAddress')
 		// Then
 		assertDbObject(
 				session.getSessionFactory(),

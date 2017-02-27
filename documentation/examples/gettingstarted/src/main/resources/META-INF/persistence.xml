@@ -8,14 +8,11 @@
         <!-- Use Hibernate OGM provider: configuration will be transparent -->
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
-            <!-- property optional if you plan and use Infinispan, otherwise adjust to your favorite
-                NoSQL Datastore provider.
-            <property name="hibernate.ogm.datastore.provider"
-                      value="org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider"/>
-            -->
-            <!-- defines which JTA Transaction we plan to use -->
-            <property name="hibernate.transaction.jta.platform"
-                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/>
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
+            <property name="hibernate.ogm.datastore.provider" value="infinispan_embedded"/>
+            <!-- The following is not necessary, the purpose is to run the test quickly -->
+            <property name="hibernate.ogm.infinispan.configuration_resource_name" value="infinispan-local.xml"/>
         </properties>
-	</persistence-unit>
+    </persistence-unit>
 </persistence>

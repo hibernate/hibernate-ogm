@@ -24,7 +24,7 @@ public class CacheInitializer extends BaseSchemaDefiner {
 		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
 
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
-		InfinispanDatastoreProvider provider = (InfinispanDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		InfinispanEmbeddedDatastoreProvider provider = (InfinispanEmbeddedDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 
 		provider.initializePersistenceStrategy(
 				optionsService.context().getGlobalOptions().getUnique( CacheMappingOption.class ),

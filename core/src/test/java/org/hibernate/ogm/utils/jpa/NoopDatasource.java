@@ -47,6 +47,7 @@ public class NoopDatasource implements DataSource {
 		return 0;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}

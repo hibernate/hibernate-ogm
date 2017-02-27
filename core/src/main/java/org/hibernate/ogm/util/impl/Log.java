@@ -13,6 +13,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
+import java.util.Collection;
 
 import javax.persistence.PersistenceException;
 import javax.transaction.SystemException;
@@ -46,6 +47,7 @@ import org.jboss.logging.annotations.MessageLogger;
  * <li>1401-1500: neo4j</li>
  * <li>1501-1600: ehcache</li>
  * <li>1601-1700: redis</li>
+ * <li>1701-1800: infinispan_remote</li>
  * </ul>
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
@@ -66,7 +68,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
 	HibernateException cannotInstantiateGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, @Cause Exception e);
 
-	@Message(id = 14, value = "%1$s has no constructor accepting DatasourceProvider")
+	@Message(id = 14, value = "%1$s has no constructor accepting org.hibernate.ogm.datastore.spi.DatastoreProvider" )
 	HibernateException gridDialectHasNoProperConstructor(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass);
 
 	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
@@ -238,10 +240,10 @@ public interface Log extends BasicLogger {
 	@Message(id = 70, value = "'%1$s' is no valid datastore provider short name. Valid values are: %2$s")
 	void noValidDatastoreProviderShortName(String providerName, String validProviderNames);
 
-	@Message(id = 71, value = "Unable to start datatore provider")
+	@Message(id = 71, value = "Unable to start datastore provider")
 	ServiceException unableToStartDatastoreProvider(@Cause Exception e);
 
-	@Message(id = 72, value = "Unable to configure datatore provider")
+	@Message(id = 72, value = "Unable to configure datastore provider")
 	ServiceException unableToConfigureDatastoreProvider(@Cause Exception e);
 
 	@Message(id = 73, value = "Couldn't load the Lucene-based query parser backend. Make sure the dependency "
@@ -286,4 +288,20 @@ public interface Log extends BasicLogger {
 	@Message(id = 84, value = "Unable to find basic type support for [%2$s] when using JPA AttributeConverter [%1$s]." +
 			"Is the datastore type of the converter a supported type for your datastore?")
 	PersistenceException cannotFindTypeForAttributeConverter(@FormatWith(ClassObjectFormatter.class) Class<?> converted, @FormatWith(ClassObjectFormatter.class) Class<?> databaseColumnJavaType);
+
+	@Message(id = 85, value = "Unable to find an entity entry for the entity '%1$s'")
+	PersistenceException cannotFindEntityEntryForEntity(Object entity);
+
+	@Message(id = 86, value = "Transaction identifier not available")
+	HibernateException transactionIdIsNotAvailable();
+
+	@Message(id = 87, value = "The tuple context is not available, probably because we are dealing with more than a single entity type")
+	HibernateException tupleContextNotAvailable();
+
+	@LogMessage(level = WARN)
+	@Message(id = 88, value = "Configuration is referring to deprecated datastore provider name '%1$s'. Please use the new form '%2$s' instead.")
+	void usingDeprecatedDatastoreProviderName(String deprecatedName, String newName);
+
+	@Message(id = 89, value = "%1$s does not support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy. You should try using SINGLE_TABLE instead. Entities: %2$s")
+	HibernateException queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( String datastore, Collection<String> subclassEntityNames );
 }

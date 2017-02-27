@@ -108,7 +108,7 @@ public class ManyToOneInEntityJsonRepresentationTest extends OgmTestCase {
 
 
 	private RedisDatastoreProvider getProvider() {
-		return (RedisDatastoreProvider) sfi()
+		return (RedisDatastoreProvider) getSessionFactory()
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 	}

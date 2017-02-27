@@ -12,217 +12,244 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>hibernate-ogm-documentation-manual</artifactId>
-    <packaging>jdocbook</packaging>
+    <packaging>jar</packaging>
 
     <name>Hibernate OGM Manual</name>
     <description>The Hibernate OGM reference manual</description>
 
     <properties>
+        <asciidoctor.base-output-dir>${project.build.directory}/asciidoctor/en-US</asciidoctor.base-output-dir>
+        <asciidoctor.theme-dir>${project.build.directory}/hibernate-asciidoctor-theme</asciidoctor.theme-dir>
+        <asciidoctor.aggregated-resources-dir>${project.build.directory}/aggregated-resources</asciidoctor.aggregated-resources-dir>
+
+        <html.meta.description>Hibernate OGM, JPA for NoSQL datastores - Reference Documentation</html.meta.description>
+        <html.meta.keywords>hibernate, ogm, hibernate ogm, nosql, jpa, infinispan, mongodb, neo4j, cassandra, couchdb, ehcache, redis</html.meta.keywords>
+        <html.meta.project-key>ogm</html.meta.project-key>
+        <html.google-analytics.id>UA-45270411-3</html.google-analytics.id>
+        <html.google-analytics.tag-manager.id>GTM-NJWS5L</html.google-analytics.tag-manager.id>
+        <html.google-analytics.tag-manager.channel>Hibernate</html.google-analytics.tag-manager.channel>
+        <html.outdated-content.project-key>${html.meta.project-key}</html.outdated-content.project-key>
+
         <!-- Skip artifact deployment -->
         <maven.deploy.skip>true</maven.deploy.skip>
-        <docname>master</docname>
-        <bookname>Hibernate OGM</bookname>
     </properties>
 
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-asciidoctor-theme</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.hibernate.infra</groupId>
+                                    <artifactId>hibernate-asciidoctor-theme</artifactId>
+                                    <version>${hibernate-asciidoctor-theme.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>filter-asciidoc-resources</id>
+                        <id>copy-asciidoc-theme-to-aggregated-resources</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/asciidoc-prepared</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>src/main/asciidoc</directory>
+                                    <directory>${asciidoctor.theme-dir}</directory>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
+                            <outputDirectory>${asciidoctor.aggregated-resources-dir}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-local-resources-to-aggregated-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${asciidoctor.aggregated-resources-dir}</outputDirectory>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-css-to-html-output</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${asciidoctor.aggregated-resources-dir}/css/</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${asciidoctor.base-output-dir}/html_single/css/</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-images-to-html-output</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${asciidoctor.aggregated-resources-dir}/images/</directory>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${asciidoctor.base-output-dir}/html_single/images/</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-docbook-xml</id>
+                        <id>output-html</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>process-asciidoc</goal>
                         </goals>
+                        <configuration>
+                            <backend>html5</backend>
+                            <outputDirectory>${asciidoctor.base-output-dir}/html_single</outputDirectory>
+                            <sourceHighlighter>prettify</sourceHighlighter>
+                            <attributes>
+                                <stylesdir>css</stylesdir>
+                                <iconfont-remote>false</iconfont-remote>
+                                <iconfont-name>font-awesome/css/font-awesome.min</iconfont-name>
+                            </attributes>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <sourceDirectory>${project.build.directory}/asciidoc-prepared/en-US</sourceDirectory>
-                    <sourceDocumentName>master.asciidoc</sourceDocumentName>
-                    <outputDirectory>${basedir}/target/docbook/en-US</outputDirectory>
-                    <headerFooter>true</headerFooter>
-                    <compact>false</compact>
-                    <imagesDir>images</imagesDir>
-                    <toc>true</toc>
-                    <backend>docbook</backend>
-                    <doctype>book</doctype>
-                    <goalPrefix>asciidoctor</goalPrefix>
-                    <sourceHighlighter>highlightjs</sourceHighlighter>
+                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
                     <attributes>
-                        <idprefix />
-                        <sectanchors>true</sectanchors>
-                        <toclevels>3</toclevels>
-                        <numbered>true</numbered>
+                        <docinfodir>${asciidoctor.aggregated-resources-dir}/docinfo/noorm-documentation</docinfodir>
                         <icons>font</icons>
-                        <docinfo>true</docinfo>
-                        <experimental>true</experimental>
+                        <tabsize>4</tabsize>
+
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
+                        <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-orm-major-minor-version>${hibernateParsedVersion.majorVersion}.${hibernateParsedVersion.minorVersion}</hibernate-orm-major-minor-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
-                        <hibernate-search-major-minor-version>${hibernate-search-major-minor-version}</hibernate-search-major-minor-version>
-                        <hibernate-search-full-module-id>${hibernate-search-full-module-id}</hibernate-search-full-module-id>
+                        <hibernate-search-major-minor-version>${hibernateSearchParsedVersion.majorVersion}.${hibernateSearchParsedVersion.minorVersion}</hibernate-search-major-minor-version>
                         <infinispan-version>${infinispanVersion}</infinispan-version>
-                        <jboss-jta-version>${jbossjtaVersion}</jboss-jta-version>
-                        <mongodb-version>${mongodbVersion}</mongodb-version>
+                        <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
+                        <ehcache-version>${ehcacheVersion}</ehcache-version>
+                        <mongodb-version>${mongodbParsedVersion.majorVersion}.${mongodbParsedVersion.minorVersion}</mongodb-version>
+                        <fongodb-version>${fongodbVersion}</fongodb-version>
+                        <slf4j-version>${slf4jVersion}</slf4j-version>
                     </attributes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.jboss.maven.plugins</groupId>
-                <artifactId>maven-jdocbook-plugin</artifactId>
-
-                <executions>
-                    <execution>
-                        <!--
-                            here we are attaching the translate goal so that the translations are processed
-                            before compilation so that the translated XML is also transformed during
-                            generation
-                        -->
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>translate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
-                <configuration>
-                    <sourceDirectory>${project.basedir}/target/docbook</sourceDirectory>
-                    <sourceDocumentName>master.xml</sourceDocumentName>
-                    <masterTranslation>en-US</masterTranslation>
-                    <translations>
-                        <!-- <translation>de-DE</translation>
-                        <translation>es-ES</translation>
-                        <translation>fr-FR</translation>
-                        <translation>ja-JP</translation>
-                        <translation>pt-BR</translation>
-                        <translation>zh-CN</translation> -->
-                    </translations>
-                    <imageResource>
-                        <directory>${basedir}/src/main/asciidoc/en-US</directory>
-                        <excludes>
-                            <exclude>*.xml</exclude>
-                            <exclude>*.asciidoc</exclude>
-                            <exclude>**/*.asciidoc</exclude>
-                            <exclude>*.ent</exclude>
-                            <exclude>**/*.xml</exclude>
-                            <exclude>*.zargo</exclude>
-                            <exclude>**/*.zargo</exclude>
-                            <exclude>**/*.graffle</exclude>
-                        </excludes>
-                    </imageResource>
-                    <formats>
-                        <format>
-                            <formatName>html_single</formatName>
-                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/xhtml-single.xsl</stylesheetResource>
-                            <finalName>index.html</finalName>
-                        </format>
-                        <format>
-                            <formatName>html</formatName>
-                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/xhtml.xsl</stylesheetResource>
-                            <finalName>index.html</finalName>
-                        </format>
-                        <format>
-                            <formatName>pdf</formatName>
-                            <!-- stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/pdf.xsl</stylesheetResource -->
-                            <stylesheetResource>classpath:/xslt/org/jboss/pressgang/pdf.xsl</stylesheetResource>
-                            <finalName>hibernate_ogm_reference.pdf</finalName>
-                        </format>
-                    </formats>
-                    <options>
-                        <xincludeSupported>true</xincludeSupported>
-                        <xmlTransformerType>saxon</xmlTransformerType>
-                        <!-- needed for uri-resolvers; can be ommitted if using 'current' uri scheme -->
-                        <!--     could also locate the docbook dependency and inspect its version... -->
-                        <!-- docbookVersion>1.72.0</docbookVersion -->
-                        <localeSeparator>-</localeSeparator>
-                        <applyStandardInjectionValues>false</applyStandardInjectionValues>
-                        <transformerParameters>
-                            <html.googleAnalyticsId>UA-45270411-3</html.googleAnalyticsId>
-                            <html.googleTagManagerId>GTM-NJWS5L</html.googleTagManagerId>
-                            <html.googleTagManagerChannel>Hibernate</html.googleTagManagerChannel>
-                        </transformerParameters>
-                    </options>
-                    <!-- Always need an "injections" element to avoid an NPE in the maven-jdocbook-plugin -->
-                    <injections />
-                    <!-- profiling>
-                        <enabled>true</enabled>
-                    </profiling -->
-                </configuration>
-            </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.asciidoctor</groupId>
-                                        <artifactId>asciidoctor-maven-plugin</artifactId>
-                                        <versionRange>[0.1.3,)</versionRange>
-                                        <goals>
-                                            <goal>process-asciidoc</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.jboss.maven.plugins</groupId>
-                                        <artifactId>maven-jdocbook-plugin</artifactId>
-                                        <versionRange>[2.3.4,)</versionRange>
-                                        <goals>
-                                            <goal>generate</goal>
-                                            <goal>resources</goal>
-                                            <goal>translate</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
+    <profiles>
+        <profile>
+            <id>documentation-pdf</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.asciidoctor</groupId>
+                        <artifactId>asciidoctor-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>output-pdf</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <backend>pdf</backend>
+                                    <outputDirectory>${asciidoctor.base-output-dir}/pdf</outputDirectory>
+                                    <sourceHighlighter>coderay</sourceHighlighter>
+                                    <attributes>
+                                        <imagesDir>${asciidoctor.aggregated-resources-dir}/images/</imagesDir>
+                                        <pdf-stylesdir>${asciidoctor.aggregated-resources-dir}/theme</pdf-stylesdir>
+                                        <pdf-style>hibernate</pdf-style>
+                                        <pdf-fontsdir>${asciidoctor.aggregated-resources-dir}/theme/fonts</pdf-fontsdir>
+                                        <pagenums/>
+                                        <idprefix/>
+                                        <idseparator>-</idseparator>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>ch.mfrey.maven.plugin</groupId>
+                        <artifactId>copy-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <resources>
+                                        <resource>
+                                            <directory>${asciidoctor.base-output-dir}/pdf</directory>
+                                            <move>true</move>
+                                            <includes>
+                                                <include>index.pdf</include>
+                                            </includes>
+                                            <paths>
+                                                <path>
+                                                    <from>index.pdf</from>
+                                                    <to>hibernate_ogm_reference.pdf</to>
+                                                </path>
+                                            </paths>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

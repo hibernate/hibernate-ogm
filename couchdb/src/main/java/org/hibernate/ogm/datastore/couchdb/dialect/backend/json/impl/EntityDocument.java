@@ -98,10 +98,13 @@ public class EntityDocument extends Document {
 		super( Identifier.createEntityId( key ), revision );
 		table = key.getTable();
 
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			properties.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+		}
+
 		if ( tuple != null ) {
 			for ( String columnName : tuple.getColumnNames() ) {
 				if ( columnName != Document.REVISION_FIELD_NAME ) {
-
 					Object value = tuple.get( columnName );
 					if ( value != null ) {
 						properties.put( columnName, value );
@@ -223,7 +226,7 @@ public class EntityDocument extends Document {
 	}
 
 	@JsonIgnore
-	public void removeAssociation(String name) {
+	public void unset(String name) {
 		if ( properties.containsKey( name ) ) {
 			properties.remove( name );
 		}
@@ -231,11 +234,27 @@ public class EntityDocument extends Document {
 			Set<String> keys = new HashSet<String>( properties.keySet() );
 			for ( String key : keys ) {
 				if ( key.startsWith( name + "." ) ) {
-					removeAssociation( key );
+					unset( key );
 				}
 			}
 
 			DotPatternMapHelpers.resetValue( properties, name );
 		}
 	}
+
+	@JsonIgnore
+	public boolean isEmpty() {
+		return getProperties().isEmpty();
+	}
+
+	@JsonIgnore
+	public Set<String> getKeys() {
+		return getProperties().keySet();
+	}
+
+	@JsonIgnore
+	public Object getProperty(String dotPath) {
+		return getProperties().get( dotPath );
+	}
+
 }

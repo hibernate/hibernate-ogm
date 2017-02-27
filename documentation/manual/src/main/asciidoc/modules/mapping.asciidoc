@@ -1,0 +1,122 @@
+[[ogm-mapping]]
+
+// vim: set colorcolumn=100:
+
+== Map your entities
+
+This section mainly describes the specificities of Hibernate OGM mappings.
+It's not meant to be a comprehensive guide to entity mappings,
+the complete guide is
+https://docs.jboss.org/hibernate/orm/{hibernate-orm-major-minor-version}/userguide/html_single/Hibernate_User_Guide.html#domain-model[Hibernate ORM's documentation]:
+after all Hibernate OGM _is_ Hibernate ORM.
+
+=== Supported entity mapping
+
+Pretty much all entity related constructs should work out of the box in Hibernate OGM.
+`@Entity`, `@Table`, `@Column`,
+`@Enumerated`, `@Temporal`, `@Cacheable`
+and the like will work as expected.
+If you want an example,
+check out <<ogm-gettingstarted>> or the documentation of Hibernate ORM.
+Let's concentrate of the features that differ
+or are simply not supported by Hibernate OGM.
+
+Hibernate OGM supports the following inheritance strategies:
+* `InheritanceType.TABLE_PER_CLASS`
+* `InheritanceType.SINGLE_TABLE`
+
+If you feel the need to support other strategies,
+let us know (see <<ogm-howtocontribute-contribute>>).
+
+JPA annotations refer to tables but the kind of abstraction the database will use depends on the
+nature of the NoSQL datastore you are dealing with. For example, in MongoDB a table is mapped as
+a document.
+
+You can find more details about the way entities are stored in the corresponding
+mapping section of the datastore you are using.
+
+Secondary tables are not supported by Hibernate OGM at the moment.
+If you have needs for this feature, let us know (see <<ogm-howtocontribute-contribute>>).
+
+Queries are partially supported, you will find more information in the <<ogm-query,query chapter>>.
+
+All standard JPA id generators are supported: IDENTITY, SEQUENCE, TABLE and AUTO.
+If you need support for additional generators,
+let us know (see <<ogm-howtocontribute-contribute>>).
+
+[NOTE]
+====
+Some NoSQL databases can not provide an efficient implementation for IDENTITY or SEQUENCE,
+for these cases we recommend you use a UUID based generator.
+For example on Infinispan (in embedded mode) using IDENTITY is possible but it will require using cluster
+wide coordination to maintain the counters, which is not going to perform very well.
+
+[source, JAVA]
+----
+@Entity
+public class Breed {
+
+    @Id @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name="uuid", strategy="uuid2")
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    private String name;
+}
+----
+====
+
+[[ogm-mapping-supported-types]]
+
+=== Supported Types
+
+Most Java built-in types are supported at this stage.
+However, custom types (`@Type`) are not supported.
+
+Here is a list of supported Java types:
+
+* Boolean
+* Byte
+* Byte Array
+* Calendar
+* Class
+* Date
+* Double
+* Integer
+* Long
+* Short
+* Float
+* Character
+* String
+* BigDecimal (mapped as scientific notation)
+* BigInteger
+* Url (as described by RFC 1738 and returned by toString of the Java URL type)
+* UUID stored as described by RFC 4122
+* Enums
+
+Let us know if you need more type support <<ogm-howtocontribute-contribute>>
+
+
+=== Supported association mapping
+
+All association types are supported (`@OneToOne`,
+`@OneToMany`, `@ManyToOne`, `@ManyToMany`).
+Likewise, all collection types are supported (`Set`, `Map`,
+`List`).
+The way Hibernate OGM stores association information is however quite different
+than the traditional RDBMS representation.
+Each chapter dedicated to a datastore describes how associations are persisted,
+make sure to check them out.
+
+Not all types of associations can be mapped efficiently on all datastores:
+this will depend on the specific capabilities of the NoSQL technology being used.
+For example the key/value stores will have all of the association navigation for
+a given entity stored in a single key.
+If your collection is made of 1 million elements, Hibernate OGM will have to
+store 1 million tuples in the association key.
+For example the Infinispan Embedded dialect suffers from this limitation as it's
+treated as a pure key/value store, while the Infinispan Remote dialect does not
+as it is more similar to a document store.

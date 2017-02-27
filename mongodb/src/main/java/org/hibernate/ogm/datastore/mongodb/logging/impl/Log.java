@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.logging.impl;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -13,6 +14,8 @@ import static org.jboss.logging.Logger.Level.WARN;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
@@ -52,7 +55,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1210, value = "Removed [%d] associations")
 	void removedAssociation(int nAffected);
 
-	@Message(id = 1214, value = "Unable to connect to MongoDB instance: %1$s" )
+	@Message(id = 1214, value = "Unable to connect to MongoDB instance: %1$s")
 	HibernateException unableToConnectToDatastore(String message, @Cause Exception e);
 
 	@Message(id = 1217, value = "The following native query does neither specify the collection name nor is its result type mapped to an entity: %s")
@@ -65,7 +68,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1219, value = "Database %s does not exist. Either create it yourself or set property '" + OgmProperties.CREATE_DATABASE + "' to true.")
 	HibernateException databaseDoesNotExistException(String databaseName);
 
-	// The following statements have to return MappingException to make sure Hibernate ORM doesn't wrap them in a generic failure
+	// The following statements have to return MappingException to make sure Hibernate ORM doesn't wrap them in a
+	// generic failure
 	// but maintains the user friendly error message
 
 	@Message(id = 1220, value = "When using MongoDB it is not valid to use a name for a table (a collection) which starts with the 'system.' prefix."
@@ -77,8 +81,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	MappingException collectionNameContainsNULCharacter(String qualifiedName);
 
 	@Message(id = 1222, value = "When using MongoDB it is not valid to use a name for a table (a collection) which contains the dollar character '$';"
-			+ " for example this is a common problem with inner classes."
-			+ " Please pick a valid collection name for '%s', for example by using @Table ")
+			+ " for example this is a common problem with inner classes." + " Please pick a valid collection name for '%s', for example by using @Table ")
 	MappingException collectionNameContainsDollarCharacter(String qualifiedName);
 
 	@Message(id = 1223, value = "When using MongoDB it is not valid to use a field name which starts with the prefix '$'."
@@ -94,5 +97,38 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1226, value = "Unable to use reflection on invoke method '%s#%s' via reflection.")
 	HibernateException unableToInvokeMethodViaReflection(String clazz, String method);
+
+	@Message(id = 1227, value = "Query must be executed using the 'executeUpdate()' method: %s")
+	HibernateException updateQueryMustBeExecutedViaExecuteUpdate(MongoDBQueryDescriptor queryDescriptor);
+
+	@Message(id = 1228, value = "Query must be executed using 'getResultList()' or 'getSingleResult()' method: %s")
+	HibernateException readQueryMustBeExecutedViaGetResultList(MongoDBQueryDescriptor queryDescriptor);
+
+	@Message(id = 1229, value = "Constraint violation for entity %s (%s)")
+	HibernateException constraintViolationForEntity(EntityKey entityKey, String message, @Cause Exception cause);
+
+	@Message(id = 1230, value = "Constraint violation while flushing several entities (%s)")
+	HibernateException constraintViolationOnFlush(String message, @Cause Exception cause);
+
+	@Message(id = 1231, value = "Unable to create index %2$s on collection %1$s")
+	HibernateException unableToCreateIndex(String collection, String indexName, @Cause Exception e);
+
+	@Message(id = 1232, value = "Unable to create text index %2$s on collection %1$s. A text index named %3$s already exists and MongoDB only supports one text index per collection.")
+	HibernateException unableToCreateTextIndex(String collection, String newIndexName, String existingIndexName);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1233, value = "Cannot create an index with an empty name for collection %1$s. Please provide a name for all the indexes.")
+	void indexNameIsEmpty(String collection);
+
+	@LogMessage(level = ERROR)
+	@Message(id = 1234, value = "No valid keys found for the index %2$s of collection %1$s.")
+	void noValidKeysForIndex(String collection, String indexName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1235, value = "Index option for index %2$s of collection %1$s are referencing a non existing index.")
+	void indexOptionReferencingNonExistingIndex(String collection, String forIndex);
+
+	@Message(id = 1236, value = "The options for index %2$s of collection %1$s are not a valid JSON object.")
+	HibernateException invalidOptionsFormatForIndex(String collection, String indexName, @Cause Exception e);
 
 }

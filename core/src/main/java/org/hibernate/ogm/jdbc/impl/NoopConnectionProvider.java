@@ -37,6 +37,6 @@ public class NoopConnectionProvider implements ConnectionProvider {
 
 	@Override
 	public <T> T unwrap(Class<T> unwrapType) {
-		throw new UnknownUnwrapTypeException(unwrapType);
+		throw new UnknownUnwrapTypeException( unwrapType );
 	}
 }

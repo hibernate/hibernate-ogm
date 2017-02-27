@@ -43,4 +43,9 @@ public class Critic {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	@Override
+	public String toString() {
+		return "Critic [id=" + id + ", name=" + name + "]";
+	}
 }

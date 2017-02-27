@@ -28,7 +28,7 @@ import org.junit.Test;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
 		comment = "hibernate core doesn't supply required primary key metadata for collections"
 )
 public class MapTest extends OgmTestCase {
@@ -88,10 +88,10 @@ public class MapTest extends OgmTestCase {
 		session.clear();
 
 		if ( getCurrentDialectType().isDocumentStore() ) {
-			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
+			assertThat( getNumberOfAssociations( sessionFactory, AssociationStorageType.IN_ENTITY ) )
 					.describedAs( "Element collections should be stored within the entity document" )
 					.isEqualTo( 2 );
-			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
+			assertThat( getNumberOfAssociations( sessionFactory, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
 					.describedAs( "Element collections should be stored within the entity document" )
 					.isEqualTo( 0 );
 		}

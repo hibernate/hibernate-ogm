@@ -6,24 +6,22 @@
  */
 package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
+import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.TestHelper;
-
 import org.junit.Test;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
-import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
 		comment = "Classroom.students list - bag semantics unsupported (no primary key)"
 )
 public class ManyToManyExtraTest extends OgmTestCase {
@@ -42,13 +40,13 @@ public class ManyToManyExtraTest extends OgmTestCase {
 		math.getStudents().add( mario );
 		ClassRoom english = new ClassRoom( 2L, "English" );
 		english.getStudents().add( kate );
-		math.getStudents().add( mario );
+		english.getStudents().add( mario );
 
 		persist( session, math, english, john, mario, kate );
 		tx.commit();
 
-		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 5 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
+		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 5 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 2 );
 		session.clear();
 
 		delete( session, math, english, john, mario, kate );
@@ -69,16 +67,6 @@ public class ManyToManyExtraTest extends OgmTestCase {
 			session.delete( entity );
 		}
 		transaction.commit();
-	}
-
-	private int expectedAssociationNumber() {
-		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
-			// In Neo4j relationships are bidirectional
-			return 1;
-		}
-		else {
-			return 2;
-		}
 	}
 
 	@Override

@@ -64,7 +64,7 @@ public class CalendarTimeZoneDateTimeTypeDescriptor extends CalendarDateTypeDesc
 	 * @return the {@link SimpleDateFormat} using the date format above.
 	 */
 	private SimpleDateFormat createDateTimeTimeZoneFormat() {
-		SimpleDateFormat dateTimeTimeZoneFormat = new SimpleDateFormat(DATE_TIME_TIMEZONE_FORMAT);
+		SimpleDateFormat dateTimeTimeZoneFormat = new SimpleDateFormat( DATE_TIME_TIMEZONE_FORMAT );
 		dateTimeTimeZoneFormat.setLenient( false );
 		return dateTimeTimeZoneFormat;
 	}

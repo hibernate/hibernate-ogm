@@ -6,8 +6,11 @@
  */
 package org.hibernate.ogm.datastore.couchdb.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.ws.rs.client.Client;
@@ -15,6 +18,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -28,6 +32,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapsh
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.couchdb.test.dialect.CouchDBDialectTest;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.facade.DatabaseTestClient;
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.AssociationCountResponse;
@@ -40,7 +45,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
@@ -55,7 +60,7 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class CouchDBTestHelper implements TestableGridDialect {
+public class CouchDBTestHelper implements GridDialectTestHelper {
 
 	private static final Log logger = LoggerFactory.getLogger();
 
@@ -78,6 +83,11 @@ public class CouchDBTestHelper implements TestableGridDialect {
 
 	private static boolean isNotNull(String couchdbHostName) {
 		return couchdbHostName != null && couchdbHostName.length() > 0 && ! "null".equals( couchdbHostName );
+	}
+
+	@Override
+	public long getNumberOfEntities(Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
 	}
 
 	@Override
@@ -115,6 +125,11 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		DatabaseTestClient databaseTestClient = getDatabaseTestClient( getDataStore( sessionFactory ) );
 		Long count = getNumberOfAssociations( databaseTestClient ).get( type );
 		return count != null ? count : 0;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -167,11 +182,11 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
-		CouchDBDatastore dataStore = getDataStore( sessionFactory );
+		CouchDBDatastore dataStore = getDataStore( session.getSessionFactory() );
 		EntityDocument entity = dataStore.getEntity( Identifier.createEntityId( key ) );
-		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
+		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity );
 		Set<String> columnNames = snapshot.getColumnNames();
 		for ( String columnName : columnNames ) {
 			tupleMap.put( columnName, snapshot.get( columnName ) );
@@ -268,11 +283,24 @@ public class CouchDBTestHelper implements TestableGridDialect {
 			);
 
 			if ( result.failed() ) {
-				throw new AssertionError(result.getMessage() + "; Actual: " + actualJson);
+				throw new AssertionError( result.getMessage() + "; Actual: " + actualJson );
 			}
 		}
 		catch (JSONException e) {
 			Exceptions.<RuntimeException>sneakyThrow( e );
+		}
+	}
+
+	/**
+	 * Loads the `hibernate.properties` file into an existing Properties instance.
+	 * @param properties the modified properties
+	 */
+	public static void loadHibernatePropertiesInto(Properties properties) {
+		try ( InputStream resourceAsStream = CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) ) {
+			properties.load( resourceAsStream );
+		}
+		catch (IOException e) {
+			throw new RuntimeException( e );
 		}
 	}
 }

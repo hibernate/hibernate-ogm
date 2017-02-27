@@ -31,7 +31,7 @@ public class EmbeddableStateFinder {
 
 	public EmbeddableStateFinder(Tuple tuple, TupleContext tupleContext) {
 		this.tuple = tuple;
-		this.columns = tupleContext.getSelectableColumns();
+		this.columns = tupleContext.getTupleTypeContext().getSelectableColumns();
 	}
 
 	/**
@@ -115,7 +115,7 @@ public class EmbeddableStateFinder {
 		boolean hasOnlyNullColumns = true;
 
 		for ( String selectableColumn : columns ) {
-			if ( !isColumnPartOfEmbeddable( embeddable, selectableColumn) ) {
+			if ( !isColumnPartOfEmbeddable( embeddable, selectableColumn ) ) {
 				continue;
 			}
 

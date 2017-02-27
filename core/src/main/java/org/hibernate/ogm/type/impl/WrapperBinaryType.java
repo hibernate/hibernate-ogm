@@ -34,6 +34,7 @@ public class WrapperBinaryType extends AbstractGenericBasicType<Byte[]> {
 		return 1;
 	}
 
+	@Override
 	public String getName() {
 		//TODO find a decent name before documenting
 		return "wrapper-binary";

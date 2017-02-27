@@ -19,8 +19,8 @@ import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 public class ReadingFromDiskStoreUsingCachePerKindStrategyTest extends ReadingFromDiskStoreTest {
 
 	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
+	protected void configure(GetterPersistenceUnitInfo info) {
+		super.configure( info );
 		info.getProperties().put( EhcacheProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
 	}
 }

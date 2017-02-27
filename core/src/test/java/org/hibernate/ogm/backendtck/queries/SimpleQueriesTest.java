@@ -8,7 +8,8 @@ package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
 
 import java.util.ArrayList;
@@ -116,21 +117,21 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associations is not yet implemented.")
 	public void testSelectingAttributeFromAssociatedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.name from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "alfred" ) );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associations is not yet implemented.")
 	public void testSelectingAttributeFromIndirectlyAssociatedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.address.street from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "Main Street" ) );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Projecting complete entity is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Projecting complete entity is not yet implemented.")
 	public void testSelectingCompleteEntityInProjectionQuery() throws Exception {
 		List<?> projectionResult = session.createQuery( "select h, h.id from Hypothesis h where h.id = 16" ).list();
 		assertThat( projectionResult ).hasSize( 1 );
@@ -140,7 +141,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Doesn't apply to MongoDB or Neo4j queries.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Doesn't apply to MongoDB or Neo4j queries.")
 	public void testSelectingCompleteIndexedEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
 		thrown.expect( ParsingException.class );
 		thrown.expectMessage( "HQL100005" );
@@ -179,7 +180,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associations is not yet implemented.")
 	public void testQueryWithPropertyFromAssociatedEntityInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name = 'alfred'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -294,7 +295,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Selecting from associated entities is not yet implemented.")
 	public void testInQueryOnAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IN ('alma', 'alfred')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16" );
@@ -313,13 +314,57 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterList() throws Exception {
+		List<String> paramList = Arrays.asList( "Lama", "Puma" );
+		List<?> result = session.createQuery( "from Helicopter h where h.name IN (:names)" ).setParameterList( "names", paramList ).list();
+		assertThat( result ).onProperty( "name" ).containsOnly( "Lama" );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithLongList() throws Exception {
+		List<Long> paramList = Arrays.asList( 1L, 2L, 4L );
+		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramList ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L, 2L );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithLongArray() throws Exception {
+		Long[] paramArray = new Long[] { 1L, 2L, 4L };
+		List<?> result = session.createQuery( "from Author a where a.id IN (:ids)" ).setParameterList( "ids", paramArray ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L, 2L );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-581")
+	public void testParameterListWithDate() throws Exception {
+		List<Date> paramList = new ArrayList<>();
+
+		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( "GMT" ) );
+		calendar.clear();
+		calendar.set( 2011, 8, 25 );
+		paramList.add( calendar.getTime() );
+
+		calendar.set( Calendar.YEAR, 2012 );
+		paramList.add( calendar.getTime() );
+
+		calendar.set( Calendar.DAY_OF_MONTH, 1 );
+		paramList.add( calendar.getTime() );
+
+		List<?> result = session.createQuery( "from Hypothesis h where h.date IN (:dates)" ).setParameterList( "dates", paramList ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
+	}
+
+	@Test
 	public void testLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "15" );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Querying on associated entities is not yet implemented.")
 	public void testLikeQueryWithSingleCharacterWildCard() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name LIKE 'al_red'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -375,7 +420,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Querying on associated entities is not yet implemented.")
 	public void testIsNullQueryOnPropertyOfAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IS null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
@@ -388,7 +433,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on associated entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Querying on associated entities is not yet implemented.")
 	public void testIsNotNullQueryOnAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author IS NOT null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "19" );
@@ -483,7 +528,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		hypothesis.setPosition( 29 );
 		session.persist( hypothesis );
 
-		if ( EnumSet.of( MONGODB, NEO4J ).contains( TestHelper.getCurrentDialectType() ) ) {
+		if ( EnumSet.of( MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
 			assertQuery( session, query, 9, "Auto-flush should be performed prior to query execution" );
 		}
 		else {

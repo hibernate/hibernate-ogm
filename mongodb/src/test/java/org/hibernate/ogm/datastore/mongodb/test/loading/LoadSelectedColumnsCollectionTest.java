@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.test.loading;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.util.impl.TransactionContextHelper.transactionContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -32,14 +33,13 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageTyp
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
-import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -47,12 +47,15 @@ import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
+import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -149,14 +152,17 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		AssociationContext associationContext = new AssociationContextImpl(
 				new AssociationTypeContextImpl(
 						OptionsContextImpl.forProperty(
-								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sfi().getProperties(), new ClassLoaderServiceImpl() ) ),
+								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( getSessionFactory().getProperties(), new ClassLoaderServiceImpl() ) ),
 								Project.class,
 								"modules"
 						),
+						EmptyOptionsContext.INSTANCE,
+						GridDialectOperationContexts.emptyTupleTypeContext(),
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
-				new Tuple( new MongoDBTupleSnapshot( null, null, null ) )
+				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null ), SnapshotType.UPDATE ) ),
+				transactionContext( session )
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
@@ -175,18 +181,19 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new DefaultEntityKeyMetadata( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME } ),
 				new Object[] { id }
 		);
-		TupleContext tupleContext = new TupleContextImpl(
-				selectedColumns,
-				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
-				Collections.<String, String>emptyMap(),
-				TestOptionContext.INSTANCE
-		);
+		TupleContext tupleContext = new GridDialectOperationContexts.TupleContextBuilder()
+				.tupleTypeContext(
+						new GridDialectOperationContexts.TupleTypeContextBuilder()
+								.selectableColumns( selectedColumns )
+								.optionContext( TestOptionContext.INSTANCE )
+								.buildTupleTypeContext() )
+				.buildTupleContext();
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );
 	}
 
 	protected <S extends Service> S getService(Class<S> serviceRole) {
-		SessionFactoryImplementor factory = super.sfi();
+		SessionFactoryImplementor factory = super.getSessionFactory();
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		return serviceRegistry.getService( serviceRole );
 	}

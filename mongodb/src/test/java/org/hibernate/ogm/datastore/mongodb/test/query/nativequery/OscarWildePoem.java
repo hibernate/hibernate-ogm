@@ -6,7 +6,12 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.persistence.ColumnResult;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EntityResult;
 import javax.persistence.Id;
@@ -47,14 +52,16 @@ public class OscarWildePoem {
 	private String name;
 	private String author;
 	private byte rating;
+	private List<String> mediums = new ArrayList<String>();
 
 	public OscarWildePoem() {
 	}
 
-	public OscarWildePoem(Long id, String name, String author) {
+	public OscarWildePoem(Long id, String name, String author, String... mediums) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
+		this.mediums = Arrays.asList( mediums );
 	}
 
 	public OscarWildePoem(Long id, String name, String author, byte rating) {
@@ -95,6 +102,15 @@ public class OscarWildePoem {
 
 	public void setRating(byte rating) {
 		this.rating = rating;
+	}
+
+	@ElementCollection
+	public List<String> getMediums() {
+		return mediums;
+	}
+
+	public void setMediums(List<String> medium) {
+		this.mediums = medium;
 	}
 
 	@Override

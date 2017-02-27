@@ -26,7 +26,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
 		comment = "POJOs contain lists - bag semantics unsupported (no primary key)"
 )
 public class EmbeddableExtraTest extends OgmTestCase {
@@ -117,7 +117,7 @@ public class EmbeddableExtraTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		AccountWithPhone loadedUser = (AccountWithPhone) session.get( AccountWithPhone.class, wombatSoftware.getId() );
-		assertThat( loadedUser ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedUser ).as( "Cannot load persisted object with nested embeddables" ).isNotNull();
 		// It is not null because of the list of elements
 		assertThat( loadedUser.getPhoneNumber() ).isNotNull();
 		assertThat( loadedUser.getPhoneNumber().getMain() ).isNull();
@@ -148,7 +148,7 @@ public class EmbeddableExtraTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		AccountWithPhone loadedUser = (AccountWithPhone) session.get( AccountWithPhone.class, account.getId() );
-		assertThat( loadedUser ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedUser ).as( "Cannot load persisted object with nested embeddables" ).isNotNull();
 		assertThat( loadedUser.getPhoneNumber() ).isNotNull();
 		assertThat( loadedUser.getPhoneNumber().getMain() ).isEqualTo( account.getPhoneNumber().getMain() );
 		assertThat( loadedUser.getPhoneNumber().getAlternatives() ).containsOnly(
@@ -188,7 +188,7 @@ public class EmbeddableExtraTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		Order loadedOrder = (Order) session.get( Order.class, "order-1" );
-		assertThat( loadedOrder ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedOrder ).as( "Cannot load persisted object with nested embeddables" ).isNotNull();
 		assertThat( loadedOrder.getShippingAddress() ).isNotNull();
 		assertThat( loadedOrder.getShippingAddress().getPhone() ).isNotNull();
 		assertThat( loadedOrder.getShippingAddress().getPhone().getMain() ).isEqualTo( "+1-222-555-0111" );

@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.cassandra.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import javax.persistence.Query;
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -31,7 +32,7 @@ import org.junit.Test;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Jonathan Halliday
  */
-public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
+public class CassandraEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
@@ -132,7 +133,7 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Test
 	@Ignore
-	// TODO OGM-564 Re-enable once HHH-8237 is resolved and we're on ORM 4.3.6
+	// TODO OGM-564 Re-enable once HHH-9279 is resolved and we upgraded ORM
 	public void testProjectionQueryWithTypeConversion() throws Exception {
 		begin();
 
@@ -202,8 +203,47 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 		commit();
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-1008")
+	@SuppressWarnings("unchecked")
+	public void testQueryWithOrdinalParameters() throws Exception {
+		begin();
+
+		Query query = em.createNativeQuery( "SELECT * FROM \"WILDE_POEM\" WHERE name = ?" );
+		query.setParameter( 1, "Portia" ); // CQL parameters positions start at 1
+
+		List<OscarWildePoem> results = query.getResultList();
+		assertThat( results ).as( "Unexpected number of results" ).hasSize( 1 );
+
+		commit();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1008")
+	@SuppressWarnings("unchecked")
+	public void testQueryWithNamedParameters() throws Exception {
+//		Named parameters do not work at all due to CassandraParameterMetadataBuilder's limitations.
+//		See https://hibernate.atlassian.net/projects/OGM/issues/OGM-1008 for discussions about this issue.
+		begin();
+
+		try {
+			Query query = em.createNativeQuery( "SELECT * \"WILDE_POEM\" WHERE name = :nameParam" );
+			fail( "Named parameters should not work at all due to CassandraParameterMetadataBuilder's limitations (See OGM-1008)."
+					+ "It seems the problem has been solved, well done. Delete this line, update the test accordingly and move on :)" );
+
+			query.setParameter( "nameParam", "Portia" );
+			List<OscarWildePoem> results = query.getResultList();
+			assertThat( results ).as( "Unexpected number of results" ).hasSize( 1 );
+		}
+		catch (Exception e) {
+			// Nothing to do, this feature is not working yet
+		}
+
+		commit();
+	}
+
 	@Override
-	public Class<?>[] getEntities() {
+	public Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {OscarWildePoem.class, Critic.class};
 	}
 
@@ -228,7 +268,8 @@ public class CassandraEntityManagerNativeQueryTest extends JpaTestCase {
 
 	private EntityManager delete(Object... entities) {
 		for ( Object object : entities ) {
-			em.detach( object );
+			Object entity = em.merge( object );
+			em.remove( entity );
 		}
 		return em;
 	}

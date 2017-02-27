@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -40,10 +40,6 @@
 
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
         </dependency>
         <dependency>
@@ -57,6 +53,12 @@
             <artifactId>infinispan-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    <groupId>org.jboss.spec.javax.transaction</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -70,14 +72,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <!-- Infinispan uses XA transactions so the JTA package isn't enough -->
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.easytesting</groupId>
@@ -109,10 +117,29 @@
             <artifactId>takari-cpsuite</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-bmunit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.byteman</groupId>
+            <artifactId>byteman-install</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -145,6 +172,7 @@
                     <!-- Apache Lucene uses assertions which currently fail on JDK9: -->
                     <!-- not sure yet how that is going to be resolved, but it's not an OGM problem. -->
                     <enableAssertions>false</enableAssertions>
+                    <argLine>${additionalRuntimeArgLine}</argLine>
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
@@ -157,15 +185,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipUnitTests>false</skipUnitTests>
-            </properties>
-        </profile>
-     </profiles>
 </project>

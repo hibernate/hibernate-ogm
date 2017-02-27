@@ -20,11 +20,34 @@ import org.hibernate.ogm.options.navigation.spi.GenericOptionModel;
 public class Neo4j implements DatastoreConfiguration<GlobalContext<?, ?>> {
 
 	/**
-	 * Short name of this data store provider.
+	 * Short name of the embedded data store provider.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 * @deprecated use {@link #EMBEDDED_DATASTORE_PROVIDER_NAME} instead
+	 */
+	@Deprecated
+	public static final String DATASTORE_PROVIDER_NAME = "NEO4J_EMBEDDED";
+
+	/**
+	 * Short name of the data store provider for an embedded Neo4j instance.
 	 *
 	 * @see OgmProperties#DATASTORE_PROVIDER
 	 */
-	public static final String DATASTORE_PROVIDER_NAME = "NEO4J_EMBEDDED";
+	public static final String EMBEDDED_DATASTORE_PROVIDER_NAME = "NEO4J_EMBEDDED";
+
+	/**
+	 * Short name of the data store provider for a remote Neo4j server using the HTTP API.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String HTTP_DATASTORE_PROVIDER_NAME = "NEO4J_HTTP";
+
+	/**
+	 * Short name of the data store provider for a remote Neo4j server using Bolt.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String BOLT_DATASTORE_PROVIDER_NAME = "NEO4J_BOLT";
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {

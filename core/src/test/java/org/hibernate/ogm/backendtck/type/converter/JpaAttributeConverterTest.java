@@ -50,7 +50,7 @@ public class JpaAttributeConverterTest extends OgmTestCase {
 		session.getTransaction().begin();
 		// Make sure the converter has actually been applied
 		Map<String, Object> persistedTuple = TestHelper.extractEntityTuple(
-				sessions,
+				session,
 				getPrinterEntityKey( printer.id )
 		);
 		String persistedPrinterName = (String) persistedTuple.get( "name" );
@@ -85,7 +85,7 @@ public class JpaAttributeConverterTest extends OgmTestCase {
 		session.getTransaction().begin();
 		// Make sure the converter has actually been applied
 		Map<String, Object> persistedTuple = TestHelper.extractEntityTuple(
-				sessions,
+				session,
 				getPrinterEntityKey( printer.id )
 		);
 		String persistedPrinterName = (String) persistedTuple.get( "brand" );
@@ -122,7 +122,7 @@ public class JpaAttributeConverterTest extends OgmTestCase {
 	}
 
 	private EntityKey getPrinterEntityKey(UUID id) {
-		GridType uuidType = ( (SessionFactoryImplementor) sessions ).getServiceRegistry().
+		GridType uuidType = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().
 				getService( TypeTranslator.class ).
 				getType( StandardBasicTypes.UUID_BINARY );
 

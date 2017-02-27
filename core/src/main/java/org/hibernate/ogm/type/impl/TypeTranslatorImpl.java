@@ -105,7 +105,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		else if ( type instanceof AbstractStandardBasicType ) {
 			AbstractStandardBasicType<?> exposedType = (AbstractStandardBasicType<?>) type;
 			final GridType gridType = typeConverter.get( exposedType );
-			if (gridType == null) {
+			if ( gridType == null ) {
 				throw log.unableToFindGridType( exposedType.getName() );
 			}
 			return gridType;
@@ -122,17 +122,17 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		}
 		else if ( type instanceof org.hibernate.type.ComponentType ) {
 			org.hibernate.type.ComponentType componentType = (org.hibernate.type.ComponentType) type;
-			return new ComponentType(componentType, this);
+			return new ComponentType( componentType, this );
 		}
 		else if ( type instanceof org.hibernate.type.ManyToOneType ) {
 			//do some stuff
 			org.hibernate.type.ManyToOneType manyToOneType = (org.hibernate.type.ManyToOneType) type;
-			return new ManyToOneType(manyToOneType, this);
+			return new ManyToOneType( manyToOneType, this );
 		}
 		else if ( type instanceof org.hibernate.type.OneToOneType ) {
 			//do some stuff
 			org.hibernate.type.OneToOneType oneToOneType = (org.hibernate.type.OneToOneType) type;
-			return new OneToOneType(oneToOneType, this);
+			return new OneToOneType( oneToOneType, this );
 		}
 		else if ( type instanceof org.hibernate.type.CollectionType ) {
 			return new CollectionType( (org.hibernate.type.CollectionType) type );
@@ -168,6 +168,6 @@ public class TypeTranslatorImpl implements TypeTranslator {
 				intermediaryOGMGridType,
 				intermediateJavaTypeDescriptor
 		);
-		return new AttributeConverterGridTypeAdaptor<T>(specificType, gridTypeDescriptorAdapter);
+		return new AttributeConverterGridTypeAdaptor<T>( specificType, gridTypeDescriptorAdapter );
 	}
 }

@@ -242,12 +242,19 @@ public abstract class AbstractGenericBasicType<T>
 	@Override
 	public final void nullSafeSet(Tuple st, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
-		if (settable.length > 1) {
-			throw new NotYetImplementedException("Multi column property not implemented yet");
+		if ( settable.length > 1 ) {
+			throw new NotYetImplementedException( "Multi column property not implemented yet" );
 		}
 		if ( settable[0] ) {
 			nullSafeSet( st, value, names, session );
 		}
+	}
+
+	@Override
+	public Object convertToBackendType(Object value, SessionFactoryImplementor sessionFactory) {
+		Tuple tuple = new Tuple();
+		nullSafeSet( tuple, value, new String[] { "dummy" }, (SessionImplementor) null );
+		return tuple.get( "dummy" );
 	}
 
 //	public void set(PreparedStatement st, T value, int index, SessionImplementor session) throws HibernateException, SQLException {

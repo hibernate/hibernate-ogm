@@ -17,8 +17,11 @@ import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 /**
  * Allows to configure options specific to the Infinispan data store.
  *
+ * @deprecated Use {@link InfinispanEmbedded}
+ *
  * @author Gunnar Morling
  */
+@Deprecated
 public class Infinispan implements DatastoreConfiguration<InfinispanGlobalContext> {
 
 	/**
@@ -26,7 +29,7 @@ public class Infinispan implements DatastoreConfiguration<InfinispanGlobalContex
 	 *
 	 * @see OgmProperties#DATASTORE_PROVIDER
 	 */
-	public static final String DATASTORE_PROVIDER_NAME = "INFINISPAN";
+	public static final String DATASTORE_PROVIDER_NAME = "INFINISPAN_EMBEDDED";
 
 	@Override
 	public InfinispanGlobalContext getConfigurationBuilder(ConfigurationContext context) {

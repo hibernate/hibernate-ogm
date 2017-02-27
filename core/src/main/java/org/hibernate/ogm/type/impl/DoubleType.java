@@ -23,6 +23,7 @@ public class DoubleType  extends AbstractGenericBasicType<Double> {
 		super( PassThroughGridTypeDescriptor.INSTANCE, DoubleTypeDescriptor.INSTANCE );
 	}
 
+	@Override
 	public String getName() {
 		return "double";
 	}

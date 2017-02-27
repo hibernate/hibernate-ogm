@@ -31,7 +31,7 @@ public class MongoHelpers {
 			String[] path = DOT_SEPARATOR_PATTERN.split( column );
 			Object field = entity;
 			int size = path.length;
-			for (int index = 0 ; index < size ; index++) {
+			for ( int index = 0; index < size; index++ ) {
 				String node = path[index];
 				DBObject parent = (DBObject) field;
 				field = parent.get( node );
@@ -63,7 +63,7 @@ public class MongoHelpers {
 			String[] path = DOT_SEPARATOR_PATTERN.split( column );
 			Object field = entity;
 			int size = path.length;
-			for (int index = 0 ; index < size ; index++) {
+			for ( int index = 0; index < size; index++ ) {
 				String node = path[index];
 				DBObject parent = (DBObject) field;
 				field = parent.get( node );
@@ -97,7 +97,7 @@ public class MongoHelpers {
 		String[] path = DOT_SEPARATOR_PATTERN.split( dotPath );
 		int size = path.length;
 
-		for (int index = 0 ; index < size - 1; index++) {
+		for ( int index = 0; index < size - 1; index++ ) {
 			Object next = entity.get( path[index] );
 			if ( next == null || !( next instanceof DBObject ) ) {
 				return null;

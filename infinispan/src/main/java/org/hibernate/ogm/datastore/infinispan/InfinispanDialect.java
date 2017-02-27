@@ -18,18 +18,24 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.OperationContext;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -37,6 +43,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -55,9 +62,9 @@ import org.infinispan.distexec.mapreduce.Reducer;
  */
 public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
-	private final InfinispanDatastoreProvider provider;
+	private final InfinispanEmbeddedDatastoreProvider provider;
 
-	public InfinispanDialect(InfinispanDatastoreProvider provider) {
+	public InfinispanDialect(InfinispanEmbeddedDatastoreProvider provider) {
 		this.provider = provider;
 	}
 
@@ -94,7 +101,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
 		EK cacheKey = getKeyProvider().getEntityCacheKey( key );
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
 		return getTupleFromCacheKey( cacheKey, cache );
@@ -110,22 +117,23 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 			return null;
 		}
 		else {
-			return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
+			return new Tuple( new InfinispanTupleSnapshot( atomicMap ), SnapshotType.UPDATE );
 		}
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+	public Tuple createTuple(EntityKey key, OperationContext operationContext) {
 		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
 		Cache<EK, Map<String, Object>> cache = getCacheManager().getEntityCache( key.getMetadata() );
 		EK cacheKey = getKeyProvider().getEntityCacheKey( key );
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, true );
-		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
+		return new Tuple( new InfinispanTupleSnapshot( atomicMap ), SnapshotType.INSERT );
 	}
 
 	@Override
-	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, TuplePointer tuplePointer, TupleContext tupleContext) {
+		Tuple tuple = tuplePointer.getTuple();
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, atomicMap );
 	}
@@ -209,15 +217,12 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor(
-				entityKeyMetadatas
-		);
+	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor( entityKeyMetadata );
 		for ( Bucket<EK> bucket : buckets ) {
 			Map<EK, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
-			for ( Entry<EK, Map<String, Object>> entry : queryResult.entrySet() ) {
-				consumer.consume( getTupleFromCacheKey( entry.getKey(), bucket.getCache() ) );
-			}
+			InfinispanTuplesSupplier<EK> supplier = new InfinispanTuplesSupplier( bucket.getCache(), queryResult );
+			consumer.consume( supplier );
 		}
 	}
 
@@ -244,5 +249,47 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 			return iter.next();
 		}
 
+	}
+
+	private class InfinispanTuplesSupplier<SEK> implements TuplesSupplier {
+
+		private final Map<SEK, Map<String, Object>> queryResult;
+		private final Cache<SEK, Map<String, Object>> cache;
+
+		public InfinispanTuplesSupplier(Cache<SEK, Map<String, Object>> cache, Map<SEK, Map<String, Object>> queryResult) {
+			this.cache = cache;
+			this.queryResult = queryResult;
+		}
+
+		@Override
+		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
+			return new InfinispanTupleIterator( cache, queryResult.entrySet().iterator() );
+		}
+	}
+
+	private class InfinispanTupleIterator<IEK> implements ClosableIterator<Tuple> {
+
+		private final Iterator<Entry<IEK, Map<String, Object>>> iterator;
+		private final Cache<IEK, Map<String, Object>> cache;
+
+		public InfinispanTupleIterator(Cache<IEK, Map<String, Object>> cache, Iterator<Entry<IEK, Map<String, Object>>> iterator) {
+			this.cache = cache;
+			this.iterator = iterator;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			Entry<IEK, Map<String, Object>> entry = iterator.next();
+			return getTupleFromCacheKey( (EK) entry.getKey(), (Cache<EK, Map<String, Object>>) cache );
+		}
+
+		@Override
+		public void close() {
+		}
 	}
 }

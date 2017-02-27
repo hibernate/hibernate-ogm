@@ -6,9 +6,11 @@
  */
 package org.hibernate.ogm.utils;
 
+import org.hibernate.ogm.dialect.spi.GridDialect;
+
 /**
- * The testsuite needs some knowledge on all NoSQL stores it is meant to support. We mainly need the name of it's
- * TestableGridDialect implementation, but this is also used to disable some tests for a specific GridDialect.
+ * The test suite needs some knowledge on all NoSQL stores it is meant to support.
+ * This is mainly used to disable some tests for a specific GridDialect.
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  * @author Gunnar Morling
@@ -21,11 +23,15 @@ public enum GridDialectType {
 
 	EHCACHE("org.hibernate.ogm.datastore.ehcache.EhcacheDialect", false, false),
 
-	MONGODB("org.hibernate.ogm.datastore.mongodb.MongoDBDialect", true, true),
+	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect", true, false ),
+
+	EHCACHE( "org.hibernate.ogm.datastore.ehcache.EhcacheDialect", false, false ),
 
 	NEO4J("org.hibernate.ogm.datastore.neo4j.Neo4jDialect", false, true),
 
-	COUCHDB("org.hibernate.ogm.datastore.couchdb.CouchDBDialect", true, false),
+	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect", false, true),
+
+	NEO4J_REMOTE( "org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect", false, true),
 
 	CASSANDRA("org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false),
 
@@ -49,7 +55,7 @@ public enum GridDialectType {
 		this.supportsQueries = supportsQueries;
 	}
 
-	public Class<TestableGridDialect> loadGridDialectClass() {
+	public Class<? extends GridDialect> loadGridDialectClass() {
 		return TestHelper.loadClass( dialectClassName );
 	}
 

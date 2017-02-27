@@ -19,6 +19,7 @@ public enum AuthenticationMechanismType {
 
 	GSSAPI {
 
+		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createGSSAPICredential( username );
 		}
@@ -29,18 +30,21 @@ public enum AuthenticationMechanismType {
 	@Deprecated
 	MONGODB_CR {
 
+		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createMongoCRCredential( username, databaseName, asCharArray( password ) );
 		}
 	},
 	PLAIN {
 
+		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createPlainCredential( username, databaseName, asCharArray( password ) );
 		}
 	},
 	MONGODB_X509 {
 
+		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createMongoX509Credential( username );
 		}
@@ -48,6 +52,7 @@ public enum AuthenticationMechanismType {
 	,
 	SCRAM_SHA_1 {
 
+		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createScramSha1Credential( username, databaseName, asCharArray( password ) );
 		}
@@ -58,6 +63,7 @@ public enum AuthenticationMechanismType {
 	 */
 	BEST {
 
+		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createCredential( username, databaseName, asCharArray( password ) );
 		}

@@ -10,6 +10,7 @@ import java.util.Arrays;
 
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
@@ -80,7 +81,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 			throws HibernateException {
 		final boolean[] trueSettable = new boolean[names.length];
-		Arrays.fill( trueSettable, true);
+		Arrays.fill( trueSettable, true );
 		nullSafeSet( resultset, value, names, trueSettable, session );
 	}
 
@@ -107,6 +108,13 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 		}
 
 		return notNull ? values : null;
+	}
+
+	@Override
+	public Object convertToBackendType(Object value, SessionFactoryImplementor sessionFactory) {
+		Tuple tuple = new Tuple();
+		nullSafeSet( tuple, value, new String[] { "dummy" }, (SessionImplementor) null );
+		return tuple.get( "dummy" );
 	}
 
 	//utility methods

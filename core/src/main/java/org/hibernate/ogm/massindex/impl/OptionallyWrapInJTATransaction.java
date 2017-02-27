@@ -14,8 +14,12 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
+import org.hibernate.ogm.dialect.spi.TransactionContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.util.impl.TransactionContextHelper;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.search.exception.ErrorHandler;
 import org.hibernate.search.util.logging.impl.Log;
@@ -86,29 +90,52 @@ public class OptionallyWrapInJTATransaction implements ModelConsumer {
 	}
 
 	@Override
-	public void consume(Tuple tuple) {
+	public void consume(TuplesSupplier supplier) {
 		try {
 			final boolean wrapInTransaction = wrapInTransaction();
 			if ( wrapInTransaction ) {
-				consumeInTransaction( tuple );
+				consumeInTransaction( supplier );
 			}
 			else {
-				delegate.run( null, tuple );
+				ClosableIterator<Tuple> tuples = supplier.get( null );
+				try {
+					while ( tuples.hasNext() ) {
+						Tuple tuple = tuples.next();
+						delegate.run( null, tuple );
+					}
+				}
+				finally {
+					tuples.close();
+				}
 			}
 		}
-		catch ( Throwable e ) {
+		catch (Throwable e) {
 			errorHandler.handleException( log.massIndexerUnexpectedErrorMessage(), e );
 		}
 	}
 
-	private void consumeInTransaction(Tuple tuple) {
+	private void consumeInTransaction(TuplesSupplier supplier) {
 		TransactionManager transactionManager = getTransactionManager();
 		try {
-			final Session session = factory.openSession();
 			transactionManager.begin();
-			delegate.run( session, tuple );
-			transactionManager.commit();
-			session.close();
+			final Session session = factory.openSession();
+			try {
+				TransactionContext transactionContext = TransactionContextHelper.transactionContext( session );
+				ClosableIterator<Tuple> tuples = supplier.get( transactionContext );
+				try {
+					while ( tuples.hasNext() ) {
+						Tuple tuple = tuples.next();
+						delegate.run( session, tuple );
+					}
+					transactionManager.commit();
+				}
+				finally {
+					tuples.close();
+				}
+			}
+			finally {
+				session.close();
+			}
 		}
 		catch ( Throwable e ) {
 			errorHandler.handleException( log.massIndexerUnexpectedErrorMessage(), e );

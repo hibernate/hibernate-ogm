@@ -1,0 +1,242 @@
+[[ogm-gettingstarted]]
+
+== Getting started with Hibernate OGM
+
+If you are familiar with JPA, you are almost good to go.
+We will nevertheless walk you through the first few steps of persisting
+and retrieving an entity using Hibernate OGM.
+
+Before we can start, make sure you have the following tools configured:
+
+* Java JDK 8
+* Maven 3.2.3 or above
+
+Hibernate OGM can be used with JDK 7 too, but in this example we'll
+be using Infinispan 8, which requires JDK 8.
+
+Hibernate OGM is published in the Maven central repository.
+
+Add `org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}` to your dependency management block
+and `org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}`
+to your project dependencies:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-bom</artifactId>
+            <version>{hibernate-ogm-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+<dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-infinispan</artifactId>
+    </dependency>
+</dependencies>
+----
+
+The former is a so-called "bill of materials" POM
+which specifies a matching set of versions for Hibernate OGM and its dependencies.
+That way you never need to specify a version explicitly within your dependencies block,
+you will rather get the versions from the BOM automatically.
+
+[NOTE]
+====
+If you're deploying your application onto WildFly 10,
+you don't need to add the Hibernate OGM modules to your deployment unit
+but you can rather add them as modules to the application server.
+Refer to <<ogm-configuration-jbossmodule>> to learn more.
+====
+
+We will use the JPA APIs in this tutorial.
+While Hibernate OGM depends on JPA 2.1,
+it is marked as provided in the Maven POM file.
+If you run outside a Java EE container,
+make sure to explicitly add the dependency:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.javax.persistence</groupId>
+    <artifactId>hibernate-jpa-2.1-api</artifactId>
+</dependency>
+----
+
+Let's now map our first Hibernate OGM entity.
+
+[source, JAVA]
+----
+@Entity
+public class Dog {
+   @Id @GeneratedValue(strategy = GenerationType.TABLE, generator = "dog")
+   @TableGenerator(
+      name = "dog",
+      table = "sequences",
+      pkColumnName = "key",
+      pkColumnValue = "dog",
+      valueColumnName = "seed"
+   )
+   public Long getId() { return id; }
+   public void setId(Long id) { this.id = id; }
+   private Long id;
+
+   public String getName() { return name; }
+   public void setName(String name) { this.name = name; }
+   private String name;
+
+   @ManyToOne
+   public Breed getBreed() { return breed; }
+   public void setBreed(Breed breed) { this.breed = breed; }
+   private Breed breed;
+}
+
+@Entity
+public class Breed {
+
+   @Id @GeneratedValue(generator = "uuid")
+   @GenericGenerator(name="uuid", strategy="uuid2")
+   public String getId() { return id; }
+   public void setId(String id) { this.id = id; }
+   private String id;
+
+   public String getName() { return name; }
+   public void setName(String name) { this.name = name; }
+   private String name;
+}
+----
+
+I lied to you, we have already mapped two entities!
+
+If you are familiar with JPA,
+you can see that there is nothing specific to Hibernate OGM in our mapping.
+
+In this tutorial, we will use JBoss Transactions for our JTA transaction manager.
+So let's add the JTA API and JBoss Transactions to our POM as well.
+The final list of dependencies should look like this:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependencies>
+    <!-- Hibernate OGM Infinispan module; pulls in the OGM core module -->
+    <dependency>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-infinispan</artifactId>
+    </dependency>
+
+    <!-- standard APIs dependencies - provided in a Java EE container -->
+    <dependency>
+        <groupId>org.hibernate.javax.persistence</groupId>
+        <artifactId>hibernate-jpa-2.1-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss.spec.javax.transaction</groupId>
+        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+    </dependency>
+
+    <!-- Add the Narayana Transactions Manager
+         an implementation would be provided in a Java EE container,
+         but this works nicely in Java SE as well -->
+    <dependency>
+        <groupId>org.jboss.narayana.jta</groupId>
+        <artifactId>narayana-jta</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-transaction-spi</artifactId>
+    </dependency>
+</dependencies>
+----
+
+Next we need to define the persistence unit.
+Create a `META-INF/persistence.xml` file.
+
+[source, XML]
+----
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="ogm-jpa-tutorial" transaction-type="JTA">
+        <!-- Use the Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
+            <property name="hibernate.ogm.datastore.provider" value="infinispan_embedded"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+----
+
+Let's now persist a set of entities and retrieve them.
+
+[source, JAVA]
+----
+//accessing JBoss's Transaction can be done differently but this one works nicely
+TransactionManager tm = com.arjuna.ats.jta.TransactionManager.transactionManager();
+
+//build the EntityManagerFactory as you would build in in Hibernate ORM
+EntityManagerFactory emf = Persistence.createEntityManagerFactory(
+    "ogm-jpa-tutorial");
+
+final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
+
+[..]
+
+//Persist entities the way you are used to in plain JPA
+tm.begin();
+logger.infof("About to store dog and breed");
+EntityManager em = emf.createEntityManager();
+Breed collie = new Breed();
+collie.setName("Collie");
+em.persist(collie);
+Dog dina = new Dog();
+dina.setName("Dina");
+dina.setBreed(collie);
+em.persist(dina);
+Long dinaId = dina.getId();
+em.flush();
+em.close();
+tm.commit();
+
+[..]
+
+//Retrieve your entities the way you are used to in plain JPA
+tm.begin();
+logger.infof("About to retrieve dog and breed");
+em = emf.createEntityManager();
+dina = em.find(Dog.class, dinaId);
+logger.infof("Found dog %s of breed %s", dina.getName(), dina.getBreed().getName());
+em.flush();
+em.close();
+tm.commit();
+
+[..]
+
+emf.close();
+
+----
+
+A working example can be found in Hibernate OGM's distribution under
+`hibernate-ogm-documentation/examples/gettingstarted`.
+
+What have we seen?
+
+* Hibernate OGM is a JPA implementation
+  and is used as such both for mapping and in API usage
+* It is configured as a specific JPA provider:
+  `org.hibernate.ogm.jpa.HibernateOgmPersistence`
+
+Let's explore more in the next chapters.

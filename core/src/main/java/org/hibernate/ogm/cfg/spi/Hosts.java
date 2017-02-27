@@ -21,8 +21,9 @@ import org.hibernate.ogm.util.impl.Contracts;
  */
 public class Hosts implements Iterable<Hosts.HostAndPort> {
 	// explicit new instance. A tiny bit safer during comparison
-	public static Hosts NO_HOST = new Hosts( Collections.<String>emptyList(), Collections.<Integer>emptyList() );
-	private static Pattern LIKELY_IPV6 = Pattern.compile( "^[\\d\\.:a-fA-F]$" );
+	public static final Hosts NO_HOST = new Hosts( Collections.<String>emptyList(), Collections.<Integer>emptyList() );
+	private static final Pattern LIKELY_IPV6 = Pattern.compile( "^[\\d\\.:a-fA-F]$" );
+	private static final String COMMA = ", ";
 
 	private List<HostAndPort> hostsAndPorts;
 
@@ -54,21 +55,26 @@ public class Hosts implements Iterable<Hosts.HostAndPort> {
 
 	@Override
 	public String toString() {
-		StringBuilder toString = new StringBuilder();
-		for (HostAndPort hostAndPort : hostsAndPorts) {
+		StringBuilder sb = new StringBuilder();
+		for ( HostAndPort hostAndPort : hostsAndPorts ) {
+			sb.append( COMMA );
 			String host = hostAndPort.getHost();
 			// add square brackets for IPv6
 			boolean matches = LIKELY_IPV6.matcher( host ).matches();
 			if ( matches ) {
-				toString.append( "[" );
+				sb.append( "[" );
 			}
-			toString.append( hostAndPort.getHost() );
+			sb.append( hostAndPort.getHost() );
 			if ( matches ) {
-				toString.append( "]" );
+				sb.append( "]" );
 			}
-			toString.append( ":" ).append( hostAndPort.getPort() ).append( ", " );
+			sb.append( ":" ).append( hostAndPort.getPort() );
 		}
-		return toString.toString();
+		String string = sb.toString();
+		if ( string.startsWith( COMMA ) ) {
+			return string.substring( COMMA.length() );
+		}
+		return string;
 	}
 
 	@Override

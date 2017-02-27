@@ -14,7 +14,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -39,7 +39,7 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 	private final LockMode lockMode;
 	private final Lockable lockable;
 
-	private final InfinispanDatastoreProvider provider;
+	private final InfinispanEmbeddedDatastoreProvider provider;
 
 	public InfinispanPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
 		this.lockMode = lockMode;
@@ -57,9 +57,9 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 		LocalCacheManager<EK, ?, ?> cacheManager = getCacheManager();
 		KeyProvider<EK, ?, ?> keyProvider = getKeyProvider();
 
-		AdvancedCache<EK, ?> advCache = cacheManager.getEntityCache( ( (OgmEntityPersister) lockable).getRootEntityKeyMetadata() ).getAdvancedCache();
+		AdvancedCache<EK, ?> advCache = cacheManager.getEntityCache( ( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata() ).getAdvancedCache();
 		EntityKey key = EntityKeyBuilder.fromData(
-				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
+				( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
 				identifierGridType,
 				id,
 				session );
@@ -67,14 +67,14 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 
-	private static InfinispanDatastoreProvider getProvider(SessionFactoryImplementor factory) {
+	private static InfinispanEmbeddedDatastoreProvider getProvider(SessionFactoryImplementor factory) {
 		DatastoreProvider service = factory.getServiceRegistry().getService( DatastoreProvider.class );
 
-		if ( service instanceof InfinispanDatastoreProvider ) {
-			return InfinispanDatastoreProvider.class.cast( service );
+		if ( service instanceof InfinispanEmbeddedDatastoreProvider ) {
+			return InfinispanEmbeddedDatastoreProvider.class.cast( service );
 		}
 		else {
-			throw log.unexpectedDatastoreProvider( service.getClass(), InfinispanDatastoreProvider.class );
+			throw log.unexpectedDatastoreProvider( service.getClass(), InfinispanEmbeddedDatastoreProvider.class );
 		}
 	}
 

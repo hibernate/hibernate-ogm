@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.EntityMetadataInformation;
+import org.hibernate.ogm.util.Experimental;
 
 /**
  * Represents a NoSQL query as to be executed via
- * {@link QueryableGridDialect#executeBackendQuery(BackendQuery, QueryParameters)}.
+ * {@link QueryableGridDialect#executeBackendQuery(BackendQuery, QueryParameters, TupleContext)}
  * <p>
  * The wrapped query object generally represents the query in the native form supported by a given datastore, e.g. a
  * String in a native query syntax or an object-based query representation such as the {@code DBObject}-based query
@@ -19,21 +20,23 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
  * @author Gunnar Morling
  * @param <T> The type of query as understood by the underlying dialect implementation
  */
+@Experimental("This contract is under active development, incompatible changes may occur in future versions.")
 public class BackendQuery<T> {
 
 	private final T query;
-	private final EntityKeyMetadata singleEntityKeyMetadata;
+	private final EntityMetadataInformation singleEntityMetadataInformation;
 
-	public BackendQuery(T query, EntityKeyMetadata singleEntityKeyMetadata) {
+	public BackendQuery(T query, EntityMetadataInformation singleEntityMetadataInformation) {
 		this.query = query;
-		this.singleEntityKeyMetadata = singleEntityKeyMetadata;
+		this.singleEntityMetadataInformation = singleEntityMetadataInformation;
 	}
 
 	public T getQuery() {
 		return query;
 	}
 
-	public EntityKeyMetadata getSingleEntityKeyMetadataOrNull() {
-		return singleEntityKeyMetadata;
+	public EntityMetadataInformation getSingleEntityMetadataInformationOrNull() {
+		return singleEntityMetadataInformation;
 	}
+
 }

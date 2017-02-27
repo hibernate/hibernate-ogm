@@ -30,7 +30,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
 
 	private static final Log log = LoggerFactory.make();
-	private static final String DEFAULT_DATASTORE_PROVIDER = "infinispan";
+	private static final String DEFAULT_DATASTORE_PROVIDER = "infinispan_embedded";
 
 	@Override
 	public Class<DatastoreProvider> getServiceInitiated() {
@@ -57,7 +57,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 
 		@Override
 		public boolean isShortName(String name) {
-			boolean isShortName = AvailableDatastoreProvider.isShortName( name );
+			boolean isShortName = DatastoreProviderType.isShortName( name );
 
 			if ( !isShortName ) {
 				// There is the legitimate case of the provider FQN name given; As we encourage the usage of the short
@@ -66,7 +66,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 				if ( name != null && name.indexOf( '.' ) == name.lastIndexOf( '.' ) ) {
 					// we know that there is at least two dots so the name looks like com.acme.SomeClass
 					// we check for null because we are good people
-					String validProviderNames = Arrays.toString( AvailableDatastoreProvider.values() );
+					String validProviderNames = Arrays.toString( DatastoreProviderType.values() );
 					log.noValidDatastoreProviderShortName( name, validProviderNames.substring( 1, validProviderNames.length() - 1 ) );
 				}
 			}
@@ -76,7 +76,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 
 		@Override
 		public String resolve(String shortName) {
-			return AvailableDatastoreProvider.byShortName( shortName ).getDatastoreProviderClassName();
+			return DatastoreProviderType.byShortName( shortName ).getDatastoreProviderClassName();
 		}
 	}
 }

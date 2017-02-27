@@ -107,7 +107,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 	public void start() {
 		if ( cluster == null ) {
 			if ( ! config.getHosts().isSingleHost() ) {
-				throw new HibernateException( "Hibernate OGM Cassandra backend does not yet support multiple hosts, Coming soom" );
+				throw new HibernateException( "Hibernate OGM Cassandra backend does not yet support multiple hosts. Coming soon." );
 			}
 			try {
 				Hosts.HostAndPort hostAndPort = config.getHosts().getFirst();
@@ -119,17 +119,15 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 						.withCredentials( config.getUsername(), config.getPassword() )
 						.build();
 
-				Session bootstrapSession = cluster.connect();
-				bootstrapSession.execute(
+				session = cluster.connect();
+				session.execute(
 						"CREATE KEYSPACE IF NOT EXISTS " + config.getDatabaseName() +
 								" WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1 }"
 				);
-				bootstrapSession.close();
 
-				session = cluster.connect( config.getDatabaseName() );
-				queryBuilder = new QueryBuilder( cluster );
+				session.execute( "USE " + config.getDatabaseName() );
 
-				sequenceHandler = new CassandraSequenceHandler(this);
+				sequenceHandler = new CassandraSequenceHandler( this );
 			}
 			catch (RuntimeException e) {
 				throw log.unableToInitializeCassandra( e );
@@ -148,9 +146,7 @@ public class CassandraDatastoreProvider extends BaseDatastoreProvider
 	}
 
 	public void removeKeyspace() {
-		Session bootstrapSession = cluster.connect();
-		bootstrapSession.execute( "DROP KEYSPACE " + config.getDatabaseName() );
-		bootstrapSession.close();
+		session.execute( "DROP KEYSPACE " + config.getDatabaseName() );
 	}
 
 	public void createSecondaryIndexIfNeeded(String entityName, String columnName) {
