@@ -274,10 +274,21 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 		Long txId = transactionId( associationContext.getTransactionContext() );
 		Tuple associationRow = action.getValue();
 		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata  );
-		Object[] relationshipProperties = relationshipProperties( associationKey, action );
+		if ( !emptyNode( embeddedKey ) ) {
+			Object[] relationshipProperties = relationshipProperties( associationKey, action );
 
-		getAssociationQueries( associationKey.getMetadata() )
-				.createRelationshipForEmbeddedAssociation( client, txId, associationKey, embeddedKey, relationshipProperties );
+			getAssociationQueries( associationKey.getMetadata() )
+					.createRelationshipForEmbeddedAssociation( client, txId, associationKey, embeddedKey, relationshipProperties );
+		}
+	}
+
+	private static boolean emptyNode(EntityKey entityKey) {
+		for ( Object value : entityKey.getColumnValues() ) {
+			if ( value != null ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
