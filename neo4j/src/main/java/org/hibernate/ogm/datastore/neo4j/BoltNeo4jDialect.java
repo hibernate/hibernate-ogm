@@ -484,27 +484,37 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	 * @param associatedEntityKeyMetadata
 	 * @param action
 	 */
-	private Relationship putAssociationOperation(AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
+	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
 		switch ( associationKey.getMetadata().getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
-				return createRelationshipWithEmbeddedNode( associationKey, associationContext, action );
+				createRelationshipWithEmbeddedNode( associationKey, associationContext, action );
 			case ASSOCIATION:
-				return findOrCreateRelationshipWithEntityNode( associationKey, associationContext, action );
+				findOrCreateRelationshipWithEntityNode( associationKey, associationContext, action );
 			default:
 				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getMetadata().getAssociationKind() );
 		}
 	}
 
-	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
+	private void createRelationshipWithEmbeddedNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
 		AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
 		Transaction tx = transaction( associationContext );
 		Tuple associationRow = action.getValue();
 		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata  );
-		Object[] relationshipProperties = relationshipProperties( associationKey, action );
+		if ( !emptyNode( embeddedKey ) ) {
+			Object[] relationshipProperties = relationshipProperties( associationKey, action );
 
-		Relationship relationship = getAssociationQueries( associationKey.getMetadata() )
-				.createRelationshipForEmbeddedAssociation( tx, associationKey, embeddedKey, relationshipProperties );
-		return relationship;
+			getAssociationQueries( associationKey.getMetadata() )
+					.createRelationshipForEmbeddedAssociation( tx, associationKey, embeddedKey, relationshipProperties );
+		}
+	}
+
+	private static boolean emptyNode(EntityKey entityKey) {
+		for ( Object value : entityKey.getColumnValues() ) {
+			if ( value != null ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
