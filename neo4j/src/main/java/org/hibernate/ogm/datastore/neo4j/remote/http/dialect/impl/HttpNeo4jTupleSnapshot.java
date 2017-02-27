@@ -6,12 +6,13 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl;
 
+import static org.hibernate.ogm.datastore.neo4j.BaseNeo4jDialect.isPartOfRegularEmbedded;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Graph.Node;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -54,7 +55,7 @@ public final class HttpNeo4jTupleSnapshot implements TupleSnapshot {
 		if ( associatedEntityKeyMetadata.containsKey( column ) ) {
 			return readPropertyOnOtherNode( column );
 		}
-		else if ( EmbeddedNeo4jDialect.isPartOfRegularEmbedded( entityKeyMetadata.getColumnNames(), column ) ) {
+		else if ( isPartOfRegularEmbedded( entityKeyMetadata.getColumnNames(), column ) ) {
 			return readEmbeddedProperty( column );
 		}
 		else {
