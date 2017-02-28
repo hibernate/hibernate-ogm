@@ -14,7 +14,7 @@ import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
-import org.neo4j.driver.v1.exceptions.ClientException;
+import org.neo4j.driver.v1.exceptions.Neo4jException;
 
 /**
  * @author Davide D'Alto
@@ -47,7 +47,7 @@ public class BoltNeo4jClient {
 		try {
 			driver.session().close();
 		}
-		catch (ClientException e) {
+		catch (Neo4jException e) {
 			throw log.connectionFailed( databaseUri, e.neo4jErrorCode(), e.getMessage() );
 		}
 	}
