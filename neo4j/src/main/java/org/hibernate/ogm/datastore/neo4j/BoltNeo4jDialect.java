@@ -488,8 +488,10 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		switch ( associationKey.getMetadata().getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
 				createRelationshipWithEmbeddedNode( associationKey, associationContext, action );
+				break;
 			case ASSOCIATION:
 				findOrCreateRelationshipWithEntityNode( associationKey, associationContext, action );
+				break;
 			default:
 				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getMetadata().getAssociationKind() );
 		}
