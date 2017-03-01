@@ -82,6 +82,24 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1247")
+	public void shouldParseDistinctQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.distinct('item',{'orderId':'XYZ123'},{'collation' : {'locale' : 'fr'}})" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'orderId' : 'XYZ123'}" ) );
+		assertThat( queryDescriptor.getCollation().getLocale() ).isEqualTo( "fr" );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+		assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
+	}
+
+	@Test
 	public void shouldParseSimplifiedFindQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
