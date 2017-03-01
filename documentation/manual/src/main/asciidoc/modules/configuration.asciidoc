@@ -360,17 +360,100 @@ as you can include your favourite version of Hibernate OGM directly to the colle
 
 You can download the pre-packaged module ZIP for this version of Hibernate OGM from:
 
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-wildfly-10-dist.zip[Sourceforge]
-* https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-wildfly-10-dist.zip[The Maven Central repository]
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-{hibernate-wildfly-classifier}.zip[Sourceforge]
+* https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-{hibernate-wildfly-classifier}.zip[The Maven Central repository]
 
-Unpack the archive into the `modules` folder of your WildFly 10 installation.
+Hibernate OGM {hibernate-ogm-version} requires Hibernate ORM {hibernate-orm-version} that is not included
+with WildFly 10.
+
+For this reason, you also need the pre-packaged module ZIP for Hibernate ORM, you can download it
+https://repo1.maven.org/maven2/org/hibernate/hibernate-orm-modules/{hibernate-orm-version}/hibernate-orm-modules-{hibernate-orm-version}-{hibernate-wildfly-classifier}.zip[from Maven Central]
+
+Unpack the archives into the `modules` folder of your WildFly 10 installation.
 The modules included are:
 
 * _org.hibernate.ogm_, the core Hibernate OGM library.
 * _org.hibernate.ogm.<%DATASTORE%>_, one module for each datastore, with _<%DATASTORE%>_ being one of _infinispan_, _mongodb_ etc.
+* _org.hibernate.orm_, the Hibernate ORM libraries.
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
 
 The module slot to use for Hibernate OGM {hibernate-ogm-version} is `{hibernate-ogm-module-slot}` as the format of the slot name does not include the "micro" part of the project version.
+
+To upgrade the Hibernate ORM version you will need to add the following property to your `persistence.xml`:
+
+.Property to set a different Hibernate ORM version
+====
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<property name="jboss.as.jpa.providerModule" value="org.hibernate:{hibernate-orm-major-minor-version}"/>
+----
+====
+
+You will find more details in the
+http://docs.jboss.org/hibernate/orm/current/topical/html_single/wildfly/Wildfly.html[Using latest Hibernate ORM within WildFly] paragraph of the
+Hibernate ORM documentation.
+
+If you are using Maven, you can download and set up your wildfly with the following snippet:
+
+.Maven example to prepare a WildFly installation for integration tests
+====
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<plugin>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>unpack</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+                <goal>unpack</goal>
+            </goals>
+            <configuration>
+                <artifactItems>
+                    <!-- Download and unpack WildFly -->
+                    <artifactItem>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-dist</artifactId>
+                        <version>{wildfly-version}</version>
+                        <type>zip</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>${project.build.directory}</outputDirectory>
+                    </artifactItem>
+
+                    <!-- Download and unpack Hibernate ORM modules -->
+                    <artifactItem>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-orm-modules</artifactId>
+                        <version>{hibernate-orm-version}</version>
+                        <classifier>{hibernate-wildfly-classifier}</classifier>
+                        <type>zip</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>
+                            ${project.build.directory}/wildfly-{wildfly-version}/modules
+                        </outputDirectory>
+                    </artifactItem>
+
+                    <!-- Download and unpack Hibernate OGM modules -->
+                    <artifactItem>
+                        <groupId>org.hibernate.ogm</groupId>
+                        <artifactId>hibernate-ogm-modules</artifactId>
+                        <classifier>{hibernate-wildfly-classifier}</classifier>
+                        <version>{hibernate-ogm-version}</version>
+                        <type>zip</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>
+                            ${project.build.directory}/wildfly-{wildfly-version}/modules
+                        </outputDirectory>
+                    </artifactItem>
+                </artifactItems>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+====
 
 There are two ways to include the dependencies in your project:
 
@@ -406,7 +489,6 @@ https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly do
 ==== Configure your persistence.xml to use your choice of persistence provider
 
 WildFly will by default attempt to guess which Persistence Provider you need by having a look at the `provider` section of the `persistence.xml`.
-
 
 ==== Enabling both the Hibernate Search and Hibernate OGM modules
 

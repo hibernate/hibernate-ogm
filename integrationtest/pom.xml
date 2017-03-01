@@ -112,7 +112,7 @@
                                         <groupId>org.hibernate</groupId>
                                         <artifactId>hibernate-orm-modules</artifactId>
                                         <version>${hibernateVersion}</version>
-                                        <classifier>wildfly-10-dist</classifier>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>
@@ -120,7 +120,7 @@
                                     <artifactItem>
                                         <groupId>${project.groupId}</groupId>
                                         <artifactId>hibernate-ogm-modules</artifactId>
-                                        <classifier>wildfly-10-dist</classifier>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
                                         <version>${project.version}</version>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
@@ -149,7 +149,7 @@
                                         <groupId>org.hibernate</groupId>
                                         <artifactId>hibernate-search-modules</artifactId>
                                         <version>${hibernateSearchVersion}</version>
-                                        <classifier>wildfly-10-dist</classifier>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>

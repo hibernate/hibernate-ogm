@@ -168,9 +168,11 @@
                         <icons>font</icons>
                         <tabsize>4</tabsize>
 
+                        <wildfly-version>${version.wildfly}</wildfly-version>
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
                         <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-wildfly-classifier>${hibernateWildflyClassifier}</hibernate-wildfly-classifier>
                         <hibernate-orm-major-minor-version>${hibernateParsedVersion.majorVersion}.${hibernateParsedVersion.minorVersion}</hibernate-orm-major-minor-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
