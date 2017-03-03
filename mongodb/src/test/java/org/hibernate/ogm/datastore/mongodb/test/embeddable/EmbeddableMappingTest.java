@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.embeddable;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.util.Arrays;
 
@@ -55,7 +55,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -63,20 +63,19 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"{ '_id' : 'emmanuel' }",
 				// expected
 				"{ " +
-					"'_id' : 'emmanuel', " +
-					"'homeAddress' : {" +
+						"'_id' : 'emmanuel', " +
+						"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'country' : 'France', " +
 						"'street1' : '1 avenue des Champs Elysees'," +
 						"'type' : {" +
-							"'name' : 'main'" +
+						"'name' : 'main'" +
 						"}" +
-					"}, " +
-					"'postal_code' : '75007', " +
-					"'password' : 'like I would tell ya', " +
-					"'version': 0 " +
-				"}"
-		);
+						"}, " +
+						"'postal_code' : '75007', " +
+						"'password' : 'like I would tell ya', " +
+						"'version': 0 " +
+						"}" );
 
 		transaction.commit();
 		session.clear();
@@ -97,7 +96,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -105,18 +104,17 @@ public class EmbeddableMappingTest extends OgmTestCase {
 				"{ '_id' : 'emmanuel' }",
 				// expected
 				"{ " +
-					"'_id' : 'emmanuel', " +
-					"'homeAddress' : {" +
+						"'_id' : 'emmanuel', " +
+						"'homeAddress' : {" +
 						"'city' : 'Paris', " +
 						"'street1' : '1 avenue des Champs Elysees'," +
 						"'type' : {" +
-							"'name' : 'main'" +
+						"'name' : 'main'" +
 						"}" +
-					"}, " +
-					"'postal_code' : '75007', " +
-					"'version': 1 " +
-				"}"
-		);
+						"}, " +
+						"'postal_code' : '75007', " +
+						"'version': 1 " +
+						"}" );
 
 		transaction.commit();
 
@@ -136,7 +134,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -151,8 +149,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 						"}, " +
 						"'postal_code' : '75007', " +
 						"'version': 2 " +
-						"}"
-		);
+						"}" );
 
 		transaction.commit();
 
@@ -173,7 +170,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -184,8 +181,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 						"'_id' : 'emmanuel', " +
 						"'postal_code' : '75007', " +
 						"'version': 3 " +
-						"}"
-		);
+						"}" );
 
 		transaction.commit();
 		// Clean-Up
@@ -221,43 +217,42 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject( session.getSessionFactory(),
-		// collection
+		assertDocument( session.getSessionFactory(),
+				// collection
 				StoryGame.class.getSimpleName(),
 				// query
 				"{ '_id' : " + id + " }",
 				// expected
 				"{" +
-					"'_id' : " + id  + "," +
-					"'goodBranch' : {" +
-							"'ending' : {" +
-								"'score' : 1," +
-								"'text' : 'village ending - everybody is happy'" +
-							"}," +
-							"'storyText' : 'you go to the village'" +
-					"}," +
-					"'evilBranch' : {" +
-							"'storyText' : 'you kill the villagers'" +
-					"}," +
-					"'chaoticBranches' : [" +
+						"'_id' : " + id + "," +
+						"'goodBranch' : {" +
+						"'ending' : {" +
+						"'score' : 1," +
+						"'text' : 'village ending - everybody is happy'" +
+						"}," +
+						"'storyText' : 'you go to the village'" +
+						"}," +
+						"'evilBranch' : {" +
+						"'storyText' : 'you kill the villagers'" +
+						"}," +
+						"'chaoticBranches' : [" +
 						"{" +
-							"'evilText' : 'assassinate the leader of the party'," +
-							"'evilEnding': {" +
-								"'text' : 'you become a demon'," +
-								"'score' : 10," +
-							"}" +
+						"'evilText' : 'assassinate the leader of the party'," +
+						"'evilEnding': {" +
+						"'text' : 'you become a demon'," +
+						"'score' : 10," +
+						"}" +
 						"}," +
 						"{" +
-							"'evilText' : 'search the evil [artifact]'," +
-							"'goodText' : 'you punish the bandits'" +
+						"'evilText' : 'search the evil [artifact]'," +
+						"'goodText' : 'you punish the bandits'" +
 						"}" +
-					"]," +
-					"'neutralBranches' : [" +
-							"{ 'evilText' : 'steal the [artifact]' }," +
-							"{ 'evilText' : 'kill the king' }" +
-					"]" +
-				"}"
-		);
+						"]," +
+						"'neutralBranches' : [" +
+						"{ 'evilText' : 'steal the [artifact]' }," +
+						"{ 'evilText' : 'kill the king' }" +
+						"]" +
+						"}" );
 
 		session.delete( story );
 		transaction.commit();
@@ -267,6 +262,6 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Account.class, StoryGame.class };
+		return new Class<?>[]{ Account.class, StoryGame.class };
 	}
 }

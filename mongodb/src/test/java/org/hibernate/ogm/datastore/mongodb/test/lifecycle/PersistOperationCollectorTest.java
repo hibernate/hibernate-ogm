@@ -30,7 +30,6 @@ import org.junit.Test;
  * Tests for using object ids with MongoDB.
  *
  * @author Gunnar Morling
- *
  */
 @BMUnitConfig(verbose = true, debug = true)
 public class PersistOperationCollectorTest extends OgmTestCase {
@@ -68,13 +67,7 @@ public class PersistOperationCollectorTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1114")
-	@BMRule(
-			targetClass = "EventContextManager",
-			targetMethod = "onEventBegin(EventSource)",
-			helper = "org.hibernate.ogm.utils.BytemanHelper",
-			action = "countInvocation()",
-			name = "countEventBegin"
-	)
+	@BMRule(targetClass = "EventContextManager", targetMethod = "onEventBegin(EventSource)", helper = "org.hibernate.ogm.utils.BytemanHelper", action = "countInvocation()", name = "countEventBegin")
 	public void persistListenerEnabledEvenIfNotJpa() {
 		OgmSession session = openSession();
 
@@ -89,7 +82,7 @@ public class PersistOperationCollectorTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BarKeeper.class };
+		return new Class<?>[]{ BarKeeper.class };
 	}
 
 	@Override

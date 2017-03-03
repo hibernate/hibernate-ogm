@@ -16,12 +16,13 @@ import org.hibernate.ogm.backendtck.associations.collection.manytomany.Tire;
 import org.hibernate.ogm.utils.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ManyToManyCompositeKeyMongoDBFormatTest extends OgmTestCase {
+
 	@Test
 	public void testManyToManyCompositeId() throws Exception {
 		OgmSession session = openSession();
@@ -40,25 +41,22 @@ public class ManyToManyCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
 		session.clear();
 
-
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Car",
 				// query
 				"{ '_id' : { 'maker' : 'Citroen', 'model' : 'AX' } }",
 				// expected
-				"{ '_id' : { 'maker' : 'Citroen', 'model' : 'AX' }, 'hp' : 20, 'tires' : [ { 'maker' : 'Michelin', 'model' : 'B1' } ] }"
-		);
-		assertDbObject(
+				"{ '_id' : { 'maker' : 'Citroen', 'model' : 'AX' }, 'hp' : 20, 'tires' : [ { 'maker' : 'Michelin', 'model' : 'B1' } ] }" );
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Tire",
 				// query
 				"{ '_id' : { 'maker' : 'Michelin', 'model' : 'B1' } }",
 				// expected
-				"{ '_id' : { 'maker' : 'Michelin', 'model' : 'B1' }, 'size' : 17.0, 'cars' : [ { 'maker' : 'Citroen', 'model' : 'AX' } ] }"
-		);
+				"{ '_id' : { 'maker' : 'Michelin', 'model' : 'B1' }, 'size' : 17.0, 'cars' : [ { 'maker' : 'Citroen', 'model' : 'AX' } ] }" );
 
 		transaction = session.beginTransaction();
 		car = (Car) session.get( Car.class, car.getCarId() );
@@ -72,7 +70,7 @@ public class ManyToManyCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
+		return new Class<?>[]{
 				Car.class,
 				Tire.class
 		};

@@ -74,8 +74,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"getTuple",
 				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch[removeTuple]"
-		);
+				"executeBatch[removeTuple]" );
 	}
 
 	@Test
@@ -87,8 +86,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		Product product = new Product(
 				"product-1",
 				"Hybrid 25°",
-				new Vendor( "Leaveland", 10 ), new Vendor( "Headaway", 9 )
-		);
+				new Vendor( "Leaveland", 10 ), new Vendor( "Headaway", 9 ) );
 		session.persist( product );
 
 		transaction.commit();
@@ -121,8 +119,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"getAssociation",
 				"getTuple",
 				"getAssociation",
-				"executeBatch[group[removeAssociation],removeTuple]"
-				);
+				"executeBatch[group[removeAssociation],removeTuple]" );
 	}
 
 	@Test
@@ -158,8 +155,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"executeBatch[group[insertOrUpdateTuple]]",
 				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch[removeTuple]"
-		);
+				"executeBatch[removeTuple]" );
 	}
 
 	@Test
@@ -200,13 +196,12 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"executeBackendQuery",
 				"executeBatch[group[insertOrUpdateTuple]]",
 				"getTuple",
-				"executeBatch[removeTuple]"
-		);
+				"executeBatch[removeTuple]" );
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { StockItem.class, Product.class };
+		return new Class<?>[]{ StockItem.class, Product.class };
 	}
 
 	@Override
@@ -218,8 +213,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		GridDialect gridDialect = getSessionFactory().getServiceRegistry().getService( GridDialect.class );
 		InvokedOperationsLoggingDialect invocationLogger = GridDialects.getDelegateOrNull(
 				gridDialect,
-				InvokedOperationsLoggingDialect.class
-		);
+				InvokedOperationsLoggingDialect.class );
 
 		return invocationLogger;
 	}

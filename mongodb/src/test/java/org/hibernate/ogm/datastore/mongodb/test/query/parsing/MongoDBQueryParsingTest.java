@@ -59,9 +59,9 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"from EmployeeST e where e.employer = 'Red Hat'",
 				"{ \"$and\" : [ " +
-					"{ \"employer\" : \"Red Hat\"} , " +
-					"{ \"DTYPE\" : \"EMP\"}" +
-				"]}",
+						"{ \"employer\" : \"Red Hat\"} , " +
+						"{ \"DTYPE\" : \"EMP\"}" +
+						"]}",
 				EmployeeST.class );
 	}
 
@@ -70,8 +70,8 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"from CommunityMemberST",
 				"{ \"DTYPE\" : " +
-					"{ \"$in\" : [ \"CMM\" , \"EMP\"]}" +
-				"}",
+						"{ \"$in\" : [ \"CMM\" , \"EMP\"]}" +
+						"}",
 				CommunityMemberST.class );
 	}
 
@@ -80,11 +80,11 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"from CommunityMemberST c where c.project = 'Hibernate OGM'",
 				"{ \"$and\" : [ " +
-					"{ \"project\" : \"Hibernate OGM\"} , " +
-					"{ \"DTYPE\" : " +
+						"{ \"project\" : \"Hibernate OGM\"} , " +
+						"{ \"DTYPE\" : " +
 						"{ \"$in\" : [ \"CMM\" , \"EMP\"]}" +
-					"}" +
-				"]}",
+						"}" +
+						"]}",
 				CommunityMemberST.class );
 	}
 
@@ -150,9 +150,9 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title = 'same' and e.position = 1",
 				"{ \"$and\" : [ " +
-					"{ \"title\" : \"same\"} , " +
-					"{ \"position\" : 1}" +
-				"]}" );
+						"{ \"title\" : \"same\"} , " +
+						"{ \"position\" : 1}" +
+						"]}" );
 	}
 
 	@Test
@@ -160,9 +160,9 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where NOT ( e.name = 'Bob' AND e.position = 1 )",
 				"{ \"$or\" : [ " +
-					"{ \"entityName\" : { \"$ne\" : \"Bob\"}} , " +
-					"{ \"position\" : { \"$ne\" : 1}}" +
-				"]}" );
+						"{ \"entityName\" : { \"$ne\" : \"Bob\"}} , " +
+						"{ \"position\" : { \"$ne\" : 1}}" +
+						"]}" );
 	}
 
 	@Test
@@ -170,12 +170,12 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name = 'Bob' and not e.position between 1 and 3",
 				"{ \"$and\" : [ " +
-					"{ \"entityName\" : \"Bob\"} , " +
-					"{ \"$or\" : [ " +
+						"{ \"entityName\" : \"Bob\"} , " +
+						"{ \"$or\" : [ " +
 						"{ \"position\" : { \"$lt\" : 1}} , " +
 						"{ \"position\" : { \"$gt\" : 3}}" +
-					"]}" +
-				"]}" );
+						"]}" +
+						"]}" );
 	}
 
 	@Test
@@ -183,17 +183,17 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name = 'same' or ( e.id = 4 and e.name = 'booh')",
 				"{ \"$or\" : [ " +
-					"{ \"entityName\" : \"same\"} , " +
-					"{ \"$and\" : [ " +
+						"{ \"entityName\" : \"same\"} , " +
+						"{ \"$and\" : [ " +
 						"{ \"_id\" : \"4\"} , " +
 						"{ \"entityName\" : \"booh\"}" +
-					"]}" +
-				"]}" );
+						"]}" +
+						"]}" );
 	}
 
 	@Test
 	public void shouldCreateNumericBetweenQuery() {
-		Map<String, Object> namedParameters = new HashMap<String, Object>();
+		Map<String, Object> namedParameters = new HashMap<>();
 		namedParameters.put( "lower", 10L );
 		namedParameters.put( "upper", 20L );
 
@@ -201,9 +201,9 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 				"select e from IndexedEntity e where e.position between :lower and :upper",
 				namedParameters,
 				"{ \"$and\" : [ " +
-					"{ \"position\" : { \"$gte\" : 10}} , " +
-					"{ \"position\" : { \"$lte\" : 20}}" +
-				"]}" );
+						"{ \"position\" : { \"$gte\" : 10}} , " +
+						"{ \"position\" : { \"$lte\" : 20}}" +
+						"]}" );
 	}
 
 	@Test
@@ -211,8 +211,8 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title IN ( 'foo', 'bar', 'same')",
 				"{ \"title\" : " +
-					"{ \"$in\" : [ \"foo\" , \"bar\" , \"same\"]}" +
-				"}" );
+						"{ \"$in\" : [ \"foo\" , \"bar\" , \"same\"]}" +
+						"}" );
 	}
 
 	@Test
@@ -220,8 +220,8 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title NOT IN ( 'foo', 'bar', 'same')",
 				"{ \"title\" : " +
-					"{ \"$nin\" : [ \"foo\" , \"bar\" , \"same\"]}" +
-				"}" );
+						"{ \"$nin\" : [ \"foo\" , \"bar\" , \"same\"]}" +
+						"}" );
 	}
 
 	@Test
@@ -229,10 +229,10 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title like 'Ali_e%'",
 				"{ \"title\" : " +
-					"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
-					"\"$options\" : \"s\"" +
-					"}" +
-				"}" );
+						"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
+						"\"$options\" : \"s\"" +
+						"}" +
+						"}" );
 	}
 
 	@Test
@@ -240,12 +240,12 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title not like 'Ali_e%'",
 				"{ \"title\" : " +
-					"{ \"$not\" : " +
+						"{ \"$not\" : " +
 						"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
 						"\"$options\" : \"s\"" +
 						"}" +
-					"}" +
-				"}" );
+						"}" +
+						"}" );
 	}
 
 	@Test
@@ -253,8 +253,8 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title is null",
 				"{ \"title\" : " +
-					"{ \"$exists\" : false}" +
-				"}" );
+						"{ \"$exists\" : false}" +
+						"}" );
 	}
 
 	@Test
@@ -262,8 +262,8 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title is not null",
 				"{ \"title\" : " +
-					"{ \"$exists\" : true}" +
-				"}" );
+						"{ \"$exists\" : true}" +
+						"}" );
 	}
 
 	private void assertMongoDbQuery(String queryString, String expectedMongoDbQuery) {
@@ -299,12 +299,11 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	private MongoDBQueryParsingResult parseQuery(String queryString, Map<String, Object> namedParameters) {
 		return queryParser.parseQuery(
 				queryString,
-				setUpMongoDbProcessingChain( namedParameters )
-				);
+				setUpMongoDbProcessingChain( namedParameters ) );
 	}
 
 	private MongoDBProcessingChain setUpMongoDbProcessingChain(Map<String, Object> namedParameters) {
-		Map<String, Class<?>> entityNames = new HashMap<String, Class<?>>();
+		Map<String, Class<?>> entityNames = new HashMap<>();
 		entityNames.put( "com.acme.IndexedEntity", IndexedEntity.class );
 		entityNames.put( "IndexedEntity", IndexedEntity.class );
 		entityNames.put( "CommunityMemberST", CommunityMemberST.class );

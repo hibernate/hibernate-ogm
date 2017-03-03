@@ -17,6 +17,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Module {
+
 	@Id
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "uuid2")

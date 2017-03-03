@@ -23,9 +23,10 @@ import org.hibernate.annotations.CascadeType;
  */
 @Entity
 public class TvShow {
+
 	private String id;
 	private String name;
-	private List<Episode> episodes = new ArrayList<Episode>();
+	private List<Episode> episodes = new ArrayList<>();
 
 	TvShow() {
 	}

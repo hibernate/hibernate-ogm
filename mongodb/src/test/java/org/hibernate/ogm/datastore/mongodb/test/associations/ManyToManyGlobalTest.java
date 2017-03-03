@@ -21,7 +21,6 @@ public class ManyToManyGlobalTest extends ManyToManyTest {
 	protected void configure(Map<String, Object> settings) {
 		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.ASSOCIATION_DOCUMENT
-		);
+				AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 }

@@ -27,7 +27,7 @@ public class LiteratureSociety {
 	private String name;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	private List<Poet> members = new ArrayList<Poet>();
+	private List<Poet> members = new ArrayList<>();
 
 	LiteratureSociety() {
 	}

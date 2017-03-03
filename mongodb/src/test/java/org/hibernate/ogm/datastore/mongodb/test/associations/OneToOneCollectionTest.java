@@ -23,11 +23,9 @@ public class OneToOneCollectionTest extends OneToOneTest {
 	protected void configure(Map<String, Object> settings) {
 		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.ASSOCIATION_DOCUMENT
-		);
+				AssociationStorageType.ASSOCIATION_DOCUMENT );
 		settings.put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
-				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
-		);
+				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 	}
 }

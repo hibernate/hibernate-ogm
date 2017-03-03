@@ -22,11 +22,12 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Cloud {
+
 	private String id;
 	private String type;
 	private double length;
-	private Set<SnowFlake> producedSnowFlakes = new HashSet<SnowFlake>();
-	private Set<SnowFlake> backupSnowFlakes = new HashSet<SnowFlake>();
+	private Set<SnowFlake> producedSnowFlakes = new HashSet<>();
+	private Set<SnowFlake> backupSnowFlakes = new HashSet<>();
 
 	@Id
 	@GeneratedValue(generator = "uuid")

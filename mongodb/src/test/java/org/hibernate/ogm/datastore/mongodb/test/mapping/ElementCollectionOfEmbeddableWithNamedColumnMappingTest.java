@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -53,7 +53,7 @@ public class ElementCollectionOfEmbeddableWithNamedColumnMappingTest extends Ogm
 	@Test
 	@TestForIssue(jiraKey = "OGM-1151")
 	public void testMappingForElementCollectionWithNamedColumn() {
-		assertDbObject(
+		assertDocument(
 				getSessionFactory(),
 				// collection
 				"MultiAddressAccount",
@@ -63,17 +63,16 @@ public class ElementCollectionOfEmbeddableWithNamedColumnMappingTest extends Ogm
 				null,
 				// expected
 				"{ " +
-					"'_id' : '" + account.getLogin() + "', " +
-					"'addresses' : [" +
+						"'_id' : '" + account.getLogin() + "', " +
+						"'addresses' : [" +
 						"{ 'city' : '" + address1.getCity() + "', 'postal_code' : '" + address1.getZipCode() + "' }, " +
 						"{ 'city' : '" + address2.getCity() + "', 'postal_code' : '" + address2.getZipCode() + "' }" +
-					"]" +
-				"}"
-		);
+						"]" +
+						"}" );
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { MultiAddressAccount.class };
+		return new Class<?>[]{ MultiAddressAccount.class };
 	}
 }

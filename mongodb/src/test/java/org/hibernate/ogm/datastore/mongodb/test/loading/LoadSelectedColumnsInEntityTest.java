@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.loading;
 
+import com.mongodb.client.MongoCollection;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Map;
@@ -17,10 +18,8 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -31,29 +30,27 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 	protected void configure(Map<String, Object> settings) {
 		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.IN_ENTITY
-		);
+				AssociationStorageType.IN_ENTITY );
 	}
 
 	@Override
 	protected void addExtraColumn() {
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) super.getService( DatastoreProvider.class );
-		DB database = provider.getDatabase();
-		DBCollection collection = database.getCollection( "Project" );
+		MongoDatabase database = provider.getDatabase();
+		MongoCollection<Document> collection = database.getCollection( "Project" );
 
-		BasicDBObject query = new BasicDBObject( 1 );
+		Document query = new Document();
 		query.put( "_id", "projectID" );
 
-		BasicDBObject updater = new BasicDBObject( 1 );
-		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
-		collection.update( query, updater );
+		Document updater = new Document();
+		updater.put( "$push", new Document( "extraColumn", 1 ) );
+		collection.updateMany( query, updater );
 	}
 
 	@Override
-	protected void checkLoading(DBObject associationObject) {
+	protected void checkLoading(Document associationObject) {
 		/*
-		 * The only column (except _id) that needs to be retrieved is "modules"
-		 * So we should have 2 columns
+		 * The only column (except _id) that needs to be retrieved is "modules" So we should have 2 columns
 		 */
 		final Set<?> retrievedColumns = associationObject.keySet();
 		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, "modules" );

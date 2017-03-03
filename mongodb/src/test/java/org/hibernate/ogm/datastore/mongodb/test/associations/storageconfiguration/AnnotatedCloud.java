@@ -28,11 +28,12 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageTyp
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
 @AssociationDocumentStorage(AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION)
 public class AnnotatedCloud {
+
 	private String id;
 	private String type;
 	private double length;
-	private Set<SnowFlake> producedSnowFlakes = new HashSet<SnowFlake>();
-	private Set<SnowFlake> backupSnowFlakes = new HashSet<SnowFlake>();
+	private Set<SnowFlake> producedSnowFlakes = new HashSet<>();
+	private Set<SnowFlake> backupSnowFlakes = new HashSet<>();
 
 	@Id
 	@GeneratedValue(generator = "uuid")

@@ -27,7 +27,7 @@ import com.mongodb.WriteConcern;
  * @author Gunnar Morling
  */
 public abstract class MongoDBPropertyContextImpl extends BaseDocumentStorePropertyContext<MongoDBEntityContext, MongoDBPropertyContext> implements
-		MongoDBPropertyContext {
+MongoDBPropertyContext {
 
 	public MongoDBPropertyContextImpl(ConfigurationContext context) {
 		super( context );

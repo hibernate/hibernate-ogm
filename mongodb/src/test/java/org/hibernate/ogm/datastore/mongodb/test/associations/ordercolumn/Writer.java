@@ -18,9 +18,10 @@ import javax.persistence.ManyToMany;
  */
 @Entity
 public class Writer {
+
 	private String id;
 	private String name;
-	private List<Episode> episodes = new ArrayList<Episode>();
+	private List<Episode> episodes = new ArrayList<>();
 
 	Writer() {
 	}
@@ -48,8 +49,8 @@ public class Writer {
 	}
 
 	@ManyToMany(mappedBy = "authors")
-//	@JoinColumn(name = "tv_show_id")
-//	@Cascade({ CascadeType.PERSIST, CascadeType.SAVE_UPDATE, CascadeType.DELETE })
+	// @JoinColumn(name = "tv_show_id")
+	// @Cascade({ CascadeType.PERSIST, CascadeType.SAVE_UPDATE, CascadeType.DELETE })
 	public List<Episode> getEpisodes() {
 		return episodes;
 	}

@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.mongodb.DB;
+import com.mongodb.Block;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -49,7 +51,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	private ServiceRegistryImplementor serviceRegistry;
 
 	private MongoClient mongo;
-	private DB mongoDb;
+	private MongoDatabase mongoDb;
 	private MongoDBConfiguration config;
 
 	public MongoDBDatastoreProvider() {
@@ -131,7 +133,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			}
 			return credentials == null
 					? new MongoClient( serverAddresses, clientOptions )
-					: new MongoClient( serverAddresses, credentials, clientOptions );
+							: new MongoClient( serverAddresses, credentials, clientOptions );
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
@@ -144,18 +146,24 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		mongo.close();
 	}
 
-	public DB getDatabase() {
+	public MongoDatabase getDatabase() {
 		return mongoDb;
 	}
 
-	private DB extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
+	private MongoDatabase extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
 		try {
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
 
-			Boolean containsDatabase;
+			Boolean containsDatabase = false;
 			try {
-				containsDatabase = mongo.getDatabaseNames().contains( databaseName );
+				MongoCursor<String> databases = mongo.listDatabaseNames().iterator();
+				while ( databases.hasNext() ) {
+					containsDatabase = databases.next().equalsIgnoreCase( databaseName );
+					if ( containsDatabase ) {
+						break;
+					}
+				}
 			}
 			catch (MongoException me) {
 				// we don't have enough privileges, ignore the database creation
@@ -170,13 +178,22 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 					throw log.databaseDoesNotExistException( config.getDatabaseName() );
 				}
 			}
-			DB db = mongo.getDB( databaseName );
+			MongoDatabase db = mongo.getDatabase( databaseName );
 			if ( containsDatabase == null ) {
 				// force a connection to make sure we do have read access
 				// otherwise the connection failure happens during the first flush
-				db.collectionExists( "WeDoNotCareWhatItIsWeNeedToConnect" );
+				db.listCollectionNames().forEach( new Block<String>() {
+
+					@Override
+					public void apply(String arg0) {
+						// TODO Auto-generated method stub
+
+					}
+
+				} );
+				// db.collectionExists( "WeDoNotCareWhatItIsWeNeedToConnect" );
 			}
-			return mongo.getDB( databaseName );
+			return mongo.getDatabase( databaseName );
 		}
 		catch (MongoException me) {
 			// The Mongo driver allows not to determine the cause of the error, eg failing authentication, anymore

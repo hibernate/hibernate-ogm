@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -45,16 +45,16 @@ public class ElementCollectionWithMapAndEmbeddedTest extends OgmTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertDbObject(
-			getSessionFactory(),
-			// collection
-			ForumUser.LABEL,
-			// query
-			"{ '_id' : '" + user.getId() + "' }",
-			// fields
-			null,
-			"{ '_id' : '" + user.getId() + "', 'issues' : { 'issue2' : { 'number' : 123, 'project' : 'OGM' }, 'issue1' : { 'number' : 123, 'project' : 'OGM' } } }"
-		);
+		assertDocument(
+				getSessionFactory(),
+				// collection
+				ForumUser.LABEL,
+				// query
+				"{ '_id' : '" + user.getId() + "' }",
+				// fields
+				null,
+				"{ '_id' : '" + user.getId()
+						+ "', 'issues' : { 'issue2' : { 'number' : 123, 'project' : 'OGM' }, 'issue1' : { 'number' : 123, 'project' : 'OGM' } } }" );
 	}
 
 	@Override

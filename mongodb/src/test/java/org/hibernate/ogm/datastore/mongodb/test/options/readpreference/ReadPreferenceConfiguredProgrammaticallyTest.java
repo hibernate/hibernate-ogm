@@ -51,7 +51,7 @@ public class ReadPreferenceConfiguredProgrammaticallyTest {
 	@Test
 	public void testReadPreferenceGivenOnEntityLevel() throws Exception {
 		mongoOptions
-			.entity( MyEntity.class )
+				.entity( MyEntity.class )
 				.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
 
 		OptionsContainer options = getSource().getEntityOptions( MyEntity.class );
@@ -61,7 +61,7 @@ public class ReadPreferenceConfiguredProgrammaticallyTest {
 	@Test
 	public void testReadPreferenceGivenOnPropertyLevel() throws Exception {
 		mongoOptions
-			.entity( MyEntity.class )
+				.entity( MyEntity.class )
 				.property( "content", ElementType.FIELD )
 				.readPreference( ReadPreferenceType.NEAREST );
 
@@ -75,6 +75,7 @@ public class ReadPreferenceConfiguredProgrammaticallyTest {
 
 	@SuppressWarnings("unused")
 	private static final class MyEntity {
+
 		String content;
 	}
 }

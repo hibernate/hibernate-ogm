@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.bson.Document;
 
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
@@ -19,11 +20,8 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 /**
- * An association snapshot based on a {@link DBObject} retrieved from MongoDB.
+ * An association snapshot based on a {@link Document} retrieved from MongoDB.
  *
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -33,21 +31,21 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 
 	private static final String EMBEDDABLE_COLUMN_PREFIX = ".value.";
 
-	private final DBObject dbObject;
+	private final Document Document;
 
-	public MongoDBAssociationSnapshot(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
+	public MongoDBAssociationSnapshot(Document document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
 		super( associationKey, getRows( document, associationKey, storageStrategy ), MongoDBAssociationRowFactory.INSTANCE );
-		this.dbObject = document;
+		this.Document = document;
 	}
 
-	//not for embedded
-	public DBObject getQueryObject() {
-		DBObject query = new BasicDBObject();
-		query.put( MongoDBDialect.ID_FIELDNAME, dbObject.get( MongoDBDialect.ID_FIELDNAME ) );
+	// not for embedded
+	public Document getQueryObject() {
+		Document query = new Document();
+		query.put( MongoDBDialect.ID_FIELDNAME, Document.get( MongoDBDialect.ID_FIELDNAME ) );
 		return query;
 	}
 
-	private static Collection<?> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
+	private static Collection<?> getRows(Document document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
 		Collection<?> rows = null;
 
 		if ( associationKey.getMetadata().getAssociationType() == AssociationType.ONE_TO_ONE ) {
@@ -71,8 +69,8 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 				rows = (Collection<?>) toManyValue;
 			}
 			// a map-typed association, rows are organized by row key
-			else if ( toManyValue instanceof DBObject ) {
-				rows = getRowsFromMapAssociation( associationKey, (DBObject) toManyValue );
+			else if ( toManyValue instanceof Document ) {
+				rows = getRowsFromMapAssociation( associationKey, (Document) toManyValue );
 			}
 		}
 
@@ -84,9 +82,9 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 	 * transformed into [{ 'addressType='home', 'address_id'=123}, { 'addressType='work', 'address_id'=456} ]) as
 	 * expected by the row accessor.
 	 */
-	private static Collection<?> getRowsFromMapAssociation(AssociationKey associationKey, DBObject value) {
+	private static Collection<?> getRowsFromMapAssociation(AssociationKey associationKey, Document value) {
 		String rowKeyIndexColumn = associationKey.getMetadata().getRowKeyIndexColumnNames()[0];
-		List<DBObject> rows = new ArrayList<DBObject>();
+		List<Document> rows = new ArrayList<>();
 
 		String[] associationKeyColumns = associationKey.getMetadata()
 				.getAssociatedEntityKeyMetadata()
@@ -103,25 +101,23 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 			Object mapRow = value.get( rowKey );
 
 			// include the row key index column
-			DBObject row = new BasicDBObject();
+			Document row = new Document();
 			row.put( rowKeyIndexColumn, rowKey );
 
 			// several value columns, copy them all
-			if ( mapRow instanceof DBObject ) {
+			if ( mapRow instanceof Document ) {
 				for ( String column : associationKey.getMetadata().getAssociatedEntityKeyMetadata().getAssociationKeyColumns() ) {
 					// The column is part of an element collection; Restore the "value" node in the hierarchy
 					if ( column.startsWith( embeddedValueColumnPrefix ) ) {
 						MongoHelpers.setValue(
 								row,
 								column.substring( associationKey.getMetadata().getCollectionRole().length() + 1 ),
-								( (DBObject) mapRow ).get( column.substring( embeddedValueColumnPrefix.length() ) )
-						);
+								( (Document) mapRow ).get( column.substring( embeddedValueColumnPrefix.length() ) ) );
 					}
 					else {
 						row.put(
 								column.substring( prefix.length() ),
-								( (DBObject) mapRow ).get( column.substring( prefix.length() ) )
-						);
+								( (Document) mapRow ).get( column.substring( prefix.length() ) ) );
 					}
 				}
 			}
@@ -137,8 +133,8 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 	}
 
 	// TODO This only is used for tests; Can we get rid of it?
-	public DBObject getDBObject() {
-		return this.dbObject;
+	public Document getDocument() {
+		return this.Document;
 	}
 
 	@Override

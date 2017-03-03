@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * Test that the creation of unique constraints is skipped when
  * {@link Environment#UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY} is set to
- * {@link  UniqueConstraintSchemaUpdateStrategy#SKIP}
+ * {@link UniqueConstraintSchemaUpdateStrategy#SKIP}
  *
  * @author Davide D'Alto
  * @author Guillaume Smet
@@ -37,6 +37,7 @@ public class UniqueConstraintCanBeSkippedTest extends OgmTestCase {
 	@Entity
 	@Table(name = "EntityWithConstraints")
 	static class EntityWithConstraints {
+
 		@Id
 		private String id;
 
@@ -99,6 +100,6 @@ public class UniqueConstraintCanBeSkippedTest extends OgmTestCase {
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { EntityWithConstraints.class };
+		return new Class<?>[]{ EntityWithConstraints.class };
 	}
 }

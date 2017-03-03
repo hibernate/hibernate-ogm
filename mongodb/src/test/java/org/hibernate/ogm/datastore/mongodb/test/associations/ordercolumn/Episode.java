@@ -26,7 +26,7 @@ public class Episode {
 	private String id;
 	private String name;
 	private TvShow show;
-	private List<Writer> authors = new ArrayList<Writer>();
+	private List<Writer> authors = new ArrayList<>();
 
 	Episode() {
 	}
@@ -65,10 +65,7 @@ public class Episode {
 	}
 
 	@ManyToMany
-	@JoinTable(
-			joinColumns = @JoinColumn(name = "episodeId"),
-			inverseJoinColumns = @JoinColumn(name = "authorId")
-	)
+	@JoinTable(joinColumns = @JoinColumn(name = "episodeId"), inverseJoinColumns = @JoinColumn(name = "authorId"))
 	@OrderColumn(name = "authorOrder")
 	public List<Writer> getAuthors() {
 		return authors;

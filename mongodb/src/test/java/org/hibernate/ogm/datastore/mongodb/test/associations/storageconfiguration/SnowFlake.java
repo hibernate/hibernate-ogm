@@ -17,6 +17,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class SnowFlake {
+
 	private String id;
 	private String description;
 

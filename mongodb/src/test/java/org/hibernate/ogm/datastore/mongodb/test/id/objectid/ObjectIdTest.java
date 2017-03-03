@@ -22,7 +22,6 @@ import org.junit.Test;
  * Tests for using object ids with MongoDB.
  *
  * @author Gunnar Morling
- *
  */
 public class ObjectIdTest extends OgmTestCase {
 
@@ -286,7 +285,8 @@ public class ObjectIdTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class, Singer.class, Comedian.class };
+		return new Class<?>[]{ BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class, Singer.class,
+				Comedian.class };
 	}
 
 	@Override

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.util.Map;
 
@@ -49,7 +49,7 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Wife",
@@ -57,13 +57,12 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 				"{ '_id' : 'bea' }",
 				// expected
 				"{ " +
-					"'_id' : 'bea', " +
-					"'name' : 'Bea'," +
-					"'husband' : 'alex'" +
-				"}"
-		);
+						"'_id' : 'bea', " +
+						"'name' : 'Bea'," +
+						"'husband' : 'alex'" +
+						"}" );
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Husband",
@@ -71,11 +70,10 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 				"{ '_id' : 'alex' }",
 				// expected
 				"{ " +
-					"'_id' : 'alex', " +
-					"'name' : 'Alex'," +
-					"'wife' : 'bea'" +
-				"}"
-		);
+						"'_id' : 'alex', " +
+						"'name' : 'Alex'," +
+						"'wife' : 'bea'" +
+						"}" );
 
 		// Clean-Up
 		husband = (Husband) session.get( Husband.class, husband.getId() );
@@ -91,12 +89,11 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 	protected void configure(Map<String, Object> settings) {
 		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.IN_ENTITY
-		);
+				AssociationStorageType.IN_ENTITY );
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Husband.class, Wife.class };
+		return new Class<?>[]{ Husband.class, Wife.class };
 	}
 }

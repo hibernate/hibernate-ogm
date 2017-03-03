@@ -7,18 +7,16 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.bson.Document;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.util.impl.StringHelper;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -45,11 +43,12 @@ public class MongoDBQueryDescriptorBuilder {
 	private String options;
 
 	private Set<Integer> parsed = new HashSet<>();
-	private List<DBObject> pipeline = new ArrayList<>();
+	private List<Document> pipeline = new LinkedList<>();
 
 	private Deque<StackedOperation> stack = new ArrayDeque<>();
 
 	public static class PipelineOperation {
+
 		private final String command;
 		private final String value;
 
@@ -68,6 +67,7 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	private static class StackedOperation {
+
 		private final int index;
 		private final String operation;
 
@@ -123,41 +123,41 @@ public class MongoDBQueryDescriptorBuilder {
 	public MongoDBQueryDescriptor build() {
 		if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			return new MongoDBQueryDescriptor(
-				collection,
-				operation,
-				parse( criteria ),
-				parse( projection ),
-				parse( orderBy ),
-				parse( options ),
-				parse( updateOrInsert ),
-				null );
+					collection,
+					operation,
+					parse( criteria ),
+					parse( projection ),
+					parse( orderBy ),
+					parse( options ),
+					parse( updateOrInsert ),
+					null );
 		}
 		return new MongoDBQueryDescriptor( collection, operation, pipeline );
 	}
 
 	/**
 	 * Currently, there is no way to parse an array while supporting BSON and JSON extended syntax. So for now, we build
-	 * an object from the JSON string representing an array or an object, parse this object then extract the array/object.
-	 *
-	 * See <a href="https://jira.mongodb.org/browse/JAVA-2186">https://jira.mongodb.org/browse/JAVA-2186</a>.
+	 * an object from the JSON string representing an array or an object, parse this object then extract the
+	 * array/object. See
+	 * <a href="https://jira.mongodb.org/browse/JAVA-2186">https://jira.mongodb.org/browse/JAVA-2186</a>.
 	 *
 	 * @param json a JSON string representing an array or an object
-	 * @return a {@code DBObject} representing the array ({@code BasicDBList}) or the object ({@code BasicDBObject})
+	 * @return a {@code Document} representing the array ({@code BasicDBList}) or the object ({@code Document})
 	 */
-	private DBObject parse(String json) {
-		return (DBObject) parseAsObject( json );
+	private Document parse(String json) {
+		return (Document) parseAsObject( json );
 	}
 
 	private static Object parseAsObject(String json) {
 		if ( StringHelper.isNullOrEmptyString( json ) ) {
 			return null;
 		}
-		BasicDBObject object = BasicDBObject.parse( "{ 'json': " + json + "}" );
+		Document object = Document.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
 	}
 
-	private static DBObject operation(StackedOperation operation, String value) {
-		DBObject stage = new BasicDBObject();
+	private static Document operation(StackedOperation operation, String value) {
+		Document stage = new Document();
 		stage.put( normalize( operation ), parseAsObject( value ) );
 		return stage;
 	}

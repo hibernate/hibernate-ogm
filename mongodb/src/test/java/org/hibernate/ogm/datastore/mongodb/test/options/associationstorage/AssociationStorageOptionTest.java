@@ -33,9 +33,9 @@ public class AssociationStorageOptionTest {
 		ConfigurationContext configurationContext = new ConfigurationContextImpl( context );
 
 		new MongoDB().getConfigurationBuilder( configurationContext )
-			.entity( ExampleForMongoDBMapping.class )
+				.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
-					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
 		OptionsContainer options = new ProgrammaticOptionValueSource( context ).getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
 		assertThat( options.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
@@ -43,6 +43,7 @@ public class AssociationStorageOptionTest {
 
 	@SuppressWarnings("unused")
 	private static final class ExampleForMongoDBMapping {
+
 		String content;
 	}
 }

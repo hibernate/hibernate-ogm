@@ -16,7 +16,8 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
 /**
- * Properties for configuring the MongoDB datastore via {@code persistence.xml} or {@link StandardServiceRegistryBuilder}.
+ * Properties for configuring the MongoDB datastore via {@code persistence.xml} or
+ * {@link StandardServiceRegistryBuilder}.
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  * @author Gunnar Morling
@@ -58,16 +59,16 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	/**
 	 * Configuration property for specifying how to store association documents. Only applicable if
 	 * {@link DocumentStoreProperties#ASSOCIATIONS_STORE} is set to {@link AssociationStorageType#ASSOCIATION_DOCUMENT}.
-	 * Supported values are the {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType} enum or the String representations of its constants.
-	 * Defaults to {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType#GLOBAL_COLLECTION}.
+	 * Supported values are the {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType} enum
+	 * or the String representations of its constants. Defaults to
+	 * {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType#GLOBAL_COLLECTION}.
 	 */
 	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.association_document_storage";
 
 	/**
-	 * Specify the authentication mechanism that MongoDB will use to authenticate the connection.
-	 * Possible values are listed in {@link org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType}.
-	 *
-	 * {@code BEST} (default) will handshake with the server to find the best authentication mechanism.
+	 * Specify the authentication mechanism that MongoDB will use to authenticate the connection. Possible values are
+	 * listed in {@link org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType}. {@code BEST} (default)
+	 * will handshake with the server to find the best authentication mechanism.
 	 *
 	 * @see com.mongodb.MongoCredential
 	 */
@@ -79,9 +80,9 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	public static final String AUTHENTICATION_DATABASE = "hibernate.ogm.mongodb.authentication_database";
 
 	/**
-	 * Property prefix for MongoDB driver settings which needs to be passed on to the driver. Refer to
-	 * the options of {@link com.mongodb.MongoClientOptions.Builder} for a list of available properties.
-	 * All string, int and boolean builder methods can be configured, eg {@code hibernate.ogm.mongodb.driver.maxWaitTime = 1000}.
+	 * Property prefix for MongoDB driver settings which needs to be passed on to the driver. Refer to the options of
+	 * {@link com.mongodb.MongoClientOptions.Builder} for a list of available properties. All string, int and boolean
+	 * builder methods can be configured, eg {@code hibernate.ogm.mongodb.driver.maxWaitTime = 1000}.
 	 */
 	public static final String MONGO_DRIVER_SETTINGS_PREFIX = "hibernate.ogm.mongodb.driver";
 

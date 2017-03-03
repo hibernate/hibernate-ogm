@@ -22,7 +22,7 @@ public class Product {
 
 	private String id;
 	private String itemName;
-	private List<Vendor> vendors = new ArrayList<Vendor>();
+	private List<Vendor> vendors = new ArrayList<>();
 
 	Product() {
 	}

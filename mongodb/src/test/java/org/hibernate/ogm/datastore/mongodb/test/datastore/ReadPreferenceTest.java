@@ -42,7 +42,7 @@ public class ReadPreferenceTest {
 
 	@Before
 	public void setupConfigurationMapAndContexts() {
-		cfg = new HashMap<String, Object>();
+		cfg = new HashMap<>();
 		cfg.put( OgmProperties.DATABASE, "database" );
 
 		reader = new ConfigurationPropertyReader( cfg, new ClassLoaderServiceImpl() );
@@ -66,6 +66,7 @@ public class ReadPreferenceTest {
 	@Test
 	public void shouldApplyValueGivenViaGlobalOptions() {
 		cfg.put( OgmProperties.OPTION_CONFIGURATOR, new OptionConfigurator() {
+
 			@Override
 			public void configure(Configurable configurable) {
 				configurable.configureOptionsFor( MongoDB.class ).readPreference( ReadPreferenceType.SECONDARY_PREFERRED );

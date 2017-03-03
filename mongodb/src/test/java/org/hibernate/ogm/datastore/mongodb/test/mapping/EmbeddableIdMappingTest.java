@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.util.Collections;
 
@@ -40,9 +40,7 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 				new News(
 						new NewsID( "seven-projects", "Jerry" ),
 						"Seven Raspberry Pi projects you would not believe were possible",
-						Collections.<Label>emptyList()
-				)
-		);
+						Collections.<Label>emptyList() ) );
 
 		transaction.commit();
 		session.close();
@@ -54,7 +52,7 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 		Transaction transaction = session.beginTransaction();
 
 		session.delete( session.load( SingleBoardComputer.class, new SingleBoardComputerPk( "sbc-1" ) ) );
-		session.delete(  session.load( News.class, new NewsID( "seven-projects", "Jerry" ) ) );
+		session.delete( session.load( News.class, new NewsID( "seven-projects", "Jerry" ) ) );
 		transaction.commit();
 		session.close();
 	}
@@ -64,7 +62,7 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"News",
@@ -74,13 +72,12 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 				"{ 'content' : 1 }",
 				// expected
 				"{ " +
-					"'_id' : {" +
+						"'_id' : {" +
 						"'title' : 'seven-projects'," +
 						"'author' : 'Jerry'" +
-					"}," +
-					"'content' : 'Seven Raspberry Pi projects you would not believe were possible'" +
-				"}"
-		);
+						"}," +
+						"'content' : 'Seven Raspberry Pi projects you would not believe were possible'" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -91,7 +88,7 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"SingleBoardComputer",
@@ -101,10 +98,9 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 				"{ 'name' : 1 }",
 				// expected
 				"{ " +
-					"'_id' : 'sbc-1', " +
-					"'name' : 'Raspberry Pi'" +
-				"}"
-		);
+						"'_id' : 'sbc-1', " +
+						"'name' : 'Raspberry Pi'" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -112,6 +108,6 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { SingleBoardComputer.class, News.class, Label.class };
+		return new Class<?>[]{ SingleBoardComputer.class, News.class, Label.class };
 	}
 }

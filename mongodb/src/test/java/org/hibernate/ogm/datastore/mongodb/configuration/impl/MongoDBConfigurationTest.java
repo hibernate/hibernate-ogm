@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Hardy Ferentschik
  */
 public class MongoDBConfigurationTest {
+
 	private Map<String, String> configProperties;
 	private ConfigurationPropertyReader propertyReader;
 	private OptionsContext globalOptions;
@@ -55,8 +56,7 @@ public class MongoDBConfigurationTest {
 		assertEquals(
 				"Unexpected server selection timeout",
 				MongoClientOptions.builder().build().getServerSelectionTimeout(),
-				clientOptions.getServerSelectionTimeout()
-		);
+				clientOptions.getServerSelectionTimeout() );
 	}
 
 	@Test
@@ -68,15 +68,13 @@ public class MongoDBConfigurationTest {
 		assertEquals(
 				"Unexpected server selection timeout",
 				expectedTimeout,
-				clientOptions.getServerSelectionTimeout()
-		);
+				clientOptions.getServerSelectionTimeout() );
 	}
 
 	private MongoClientOptions createMongoClientOptions() {
 		MongoDBConfiguration mongoConfig = new MongoDBConfiguration(
 				propertyReader,
-				globalOptions
-		);
+				globalOptions );
 		assertNotNull( mongoConfig );
 
 		MongoClientOptions clientOptions = mongoConfig.buildOptions();

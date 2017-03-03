@@ -87,7 +87,6 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 		assertThat( result ).isEqualTo( "Portia" );
 
-
 		nativeQuery = "db.WILDE_POEM.findOne( "
 				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
 				+ "{ 'name' : 1 }"
@@ -180,7 +179,6 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 		commit();
 	}
 
-
 	@Test
 	public void testExceptionWhenReturnedEntityIsMissing() throws Exception {
 		begin();
@@ -194,8 +192,8 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 			rollback();
 			String message = he.getMessage();
 			assertThat( message )
-				.as( "The native query doesn't define a returned entity, there should be a specific exception" )
-				.contains( "OGM001217" );
+					.as( "The native query doesn't define a returned entity, there should be a specific exception" )
+					.contains( "OGM001217" );
 		}
 	}
 
@@ -257,8 +255,7 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 		Query createNativeQuery = em.createNativeQuery(
 				"db.LiteratureSociety.find( { 'name' : 'Stencil Club Germany' } )",
-				LiteratureSociety.class
-		);
+				LiteratureSociety.class );
 
 		LiteratureSociety stencilClub = (LiteratureSociety) createNativeQuery.getSingleResult();
 		assertThat( stencilClub.getMembers() ).onProperty( "id" ).containsOnly( "christian", "james" );
@@ -284,7 +281,7 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { OscarWildePoem.class, LiteratureSociety.class, Poet.class, Critic.class };
+		return new Class<?>[]{ OscarWildePoem.class, LiteratureSociety.class, Poet.class, Critic.class };
 	}
 
 	private EntityManager persist(Object... entities) {

@@ -20,7 +20,6 @@ import org.junit.Test;
  * Tests for mapping table-based id generators to MongoDB.
  *
  * @author Gunnar Morling
- *
  */
 public class TableGeneratorTest extends OgmTestCase {
 
@@ -61,6 +60,6 @@ public class TableGeneratorTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { PianoPlayer.class, GuitarPlayer.class };
+		return new Class<?>[]{ PianoPlayer.class, GuitarPlayer.class };
 	}
 }

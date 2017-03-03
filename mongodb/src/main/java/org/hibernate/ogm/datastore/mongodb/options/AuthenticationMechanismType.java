@@ -48,8 +48,7 @@ public enum AuthenticationMechanismType {
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createMongoX509Credential( username );
 		}
-	}
-	,
+	},
 	SCRAM_SHA_1 {
 
 		@Override
@@ -58,8 +57,8 @@ public enum AuthenticationMechanismType {
 		}
 	},
 	/**
-	 * The client will negotiate the best mechanism based on
-	 * the version of the server that the client is authenticating to.
+	 * The client will negotiate the best mechanism based on the version of the server that the client is authenticating
+	 * to.
 	 */
 	BEST {
 
@@ -67,8 +66,7 @@ public enum AuthenticationMechanismType {
 		public MongoCredential createCredential(String username, String databaseName, String password) {
 			return MongoCredential.createCredential( username, databaseName, asCharArray( password ) );
 		}
-	}
-	;
+	};
 
 	private static char[] asCharArray(String password) {
 		if ( password == null ) {

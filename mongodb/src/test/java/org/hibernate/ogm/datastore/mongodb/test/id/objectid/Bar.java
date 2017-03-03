@@ -28,7 +28,7 @@ public class Bar {
 	private ObjectId id;
 	private String name;
 	private MusicGenre musicGenre;
-	private Set<DoorMan> doorMen = new HashSet<DoorMan>();
+	private Set<DoorMan> doorMen = new HashSet<>();
 
 	Bar() {
 	}

@@ -31,15 +31,15 @@ public class WriteConcernOption extends UniqueOption<WriteConcern> {
 	@Override
 	public WriteConcern getDefaultValue(ConfigurationPropertyReader propertyReader) {
 		WriteConcernType writeConcernType = propertyReader.property( MongoDBProperties.WRITE_CONCERN, WriteConcernType.class )
-			.withDefault( DEFAULT_WRITE_CONCERN )
-			.getValue();
+				.withDefault( DEFAULT_WRITE_CONCERN )
+				.getValue();
 
 		// load/instantiate custom type
 		if ( writeConcernType == WriteConcernType.CUSTOM ) {
 			return propertyReader.property( MongoDBProperties.WRITE_CONCERN_TYPE, WriteConcern.class )
-				.instantiate()
-				.required()
-				.getValue();
+					.instantiate()
+					.required()
+					.getValue();
 		}
 		// take pre-defined value
 		else {

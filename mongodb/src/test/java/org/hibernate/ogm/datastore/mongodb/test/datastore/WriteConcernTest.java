@@ -50,7 +50,7 @@ public class WriteConcernTest {
 
 	@Before
 	public void setupConfigurationMapAndContexts() {
-		cfg = new HashMap<String, Object>();
+		cfg = new HashMap<>();
 		cfg.put( OgmProperties.DATABASE, "database" );
 
 		context = new AppendableConfigurationContext();
@@ -90,7 +90,7 @@ public class WriteConcernTest {
 		assertEquals( config.buildOptions().getWriteConcern(), new MultipleDataCenters() );
 	}
 
-	@Test(expected = HibernateException.class )
+	@Test(expected = HibernateException.class)
 	public void shouldRaiseErrorIfStrategyIsCUSTOMButNoTypeIsGiven() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
 		new MongoDBConfiguration( new ConfigurationPropertyReader( cfg ), getGlobalOptions() );
@@ -99,8 +99,7 @@ public class WriteConcernTest {
 	private OptionsContext getGlobalOptions() {
 		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList(
 				new ProgrammaticOptionValueSource( context ),
-				new ConfigurationOptionValueSource( reader  )
-		);
+				new ConfigurationOptionValueSource( reader ) );
 
 		return OptionsContextImpl.forGlobal( sources );
 	}

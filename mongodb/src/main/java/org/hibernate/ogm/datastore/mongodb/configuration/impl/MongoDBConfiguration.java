@@ -104,11 +104,10 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 			try {
 				settingMethod.invoke( optionsBuilder, property );
 			}
-			catch ( InvocationTargetException | IllegalAccessException e ) {
+			catch (InvocationTargetException | IllegalAccessException e) {
 				throw log.unableToInvokeMethodViaReflection(
 						settingMethod.getDeclaringClass().getName(),
-						settingMethod.getName()
-				);
+						settingMethod.getName() );
 			}
 		}
 
@@ -144,9 +143,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 					authenticationMechanism.createCredential(
 							getUsername(),
 							getAuthenticationDatabaseName(),
-							getPassword()
-					)
-			);
+							getPassword() ) );
 		}
 		return null;
 	}
