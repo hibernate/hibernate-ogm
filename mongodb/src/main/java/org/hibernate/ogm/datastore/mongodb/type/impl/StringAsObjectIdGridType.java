@@ -16,9 +16,8 @@ import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
  * Persists Strings as {@link ObjectId}s in MongoDB:
  *
  * @author Gunnar Morling
- *
  */
-public class StringAsObjectIdGridType extends AbstractGenericBasicType<String>  {
+public class StringAsObjectIdGridType extends AbstractGenericBasicType<String> {
 
 	public static final StringAsObjectIdGridType INSTANCE = new StringAsObjectIdGridType();
 

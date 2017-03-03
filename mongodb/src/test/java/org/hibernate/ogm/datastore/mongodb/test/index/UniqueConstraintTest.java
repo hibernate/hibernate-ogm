@@ -26,10 +26,10 @@ import org.junit.rules.ExpectedException;
 /**
  * Test that unique constraints are created on MongoDB for:
  * <ul>
- *   <li>{@link Id}</li>
- *   <li>{@link NaturalId}</li>
- *   <li>{@link Column} when {@link Column#unique()} is set to {@code true}</li>
- *   <li>{@link Table#uniqueConstraints()} is set</li>
+ * <li>{@link Id}</li>
+ * <li>{@link NaturalId}</li>
+ * <li>{@link Column} when {@link Column#unique()} is set to {@code true}</li>
+ * <li>{@link Table#uniqueConstraints()} is set</li>
  * </ul>
  *
  * @author Davide D'Alto
@@ -224,6 +224,6 @@ public class UniqueConstraintTest extends OgmTestCase {
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { EntityWithConstraints.class };
+		return new Class<?>[]{ EntityWithConstraints.class };
 	}
 }

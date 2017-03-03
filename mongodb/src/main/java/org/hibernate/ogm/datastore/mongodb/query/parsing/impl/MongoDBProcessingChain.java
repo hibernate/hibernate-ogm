@@ -18,7 +18,7 @@ import org.hibernate.hql.ast.spi.QueryRendererProcessor;
 import org.hibernate.hql.ast.spi.QueryResolverProcessor;
 
 /**
- * AST processing chain for creating MongoDB queries (in form of {@link com.mongodb.DBObject}s from HQL queries.
+ * AST processing chain for creating MongoDB queries (in form of {@link com.mongodb.Document}s from HQL queries.
  *
  * @author Gunnar Morling
  */

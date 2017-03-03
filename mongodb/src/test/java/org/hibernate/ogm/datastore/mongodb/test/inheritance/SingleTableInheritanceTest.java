@@ -127,6 +127,7 @@ public class SingleTableInheritanceTest extends OgmJpaTestCase {
 			em.close();
 		}
 	}
+
 	@After
 	public void tearDown() {
 		remove( parent, simpleChild, textChild );

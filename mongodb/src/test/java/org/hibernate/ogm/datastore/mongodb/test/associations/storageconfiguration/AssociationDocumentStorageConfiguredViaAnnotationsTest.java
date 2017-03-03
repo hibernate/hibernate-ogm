@@ -71,8 +71,8 @@ public class AssociationDocumentStorageConfiguredViaAnnotationsTest extends OgmT
 	private class CloudBuilder {
 
 		private int length;
-		private final List<String> producedSnowflakes = new ArrayList<String>();
-		private final List<String> backupSnowflakes = new ArrayList<String>();
+		private final List<String> producedSnowflakes = new ArrayList<>();
+		private final List<String> backupSnowflakes = new ArrayList<>();
 
 		private CloudBuilder() {
 		}
@@ -147,7 +147,7 @@ public class AssociationDocumentStorageConfiguredViaAnnotationsTest extends OgmT
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
+		return new Class<?>[]{
 				AnnotatedCloud.class,
 				SnowFlake.class
 		};

@@ -43,7 +43,7 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypeOnGlobalLevel() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED );
+				.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED );
 
 		OptionsContainer options = getSource().getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
@@ -62,11 +62,11 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypePriority() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
-			.entity( ExampleForMongoDBMapping.class )
+				.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
+				.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY )
 				.property( "content", ElementType.FIELD )
-					.writeConcern( WriteConcernType.FSYNCED );
+				.writeConcern( WriteConcernType.FSYNCED );
 
 		OptionsContainer options = getSource().getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
@@ -81,11 +81,11 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByInstancePriority() throws Exception {
 		mongoOptions
-			.writeConcern( new ReplicaConfigurableWriteConcern( 2 ) )
-			.entity( ExampleForMongoDBMapping.class )
+				.writeConcern( new ReplicaConfigurableWriteConcern( 2 ) )
+				.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( new ReplicaConfigurableWriteConcern( 3 ) )
 				.property( "content", ElementType.FIELD )
-					.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
+				.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
 
 		OptionsContainer options = getSource().getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 2 ) );
@@ -100,14 +100,14 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByInstanceTakesPrecedenceOverType() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.ACKNOWLEDGED )
-			.writeConcern( new ReplicaConfigurableWriteConcern( 2 ) )
-			.entity( ExampleForMongoDBMapping.class )
+				.writeConcern( WriteConcernType.ACKNOWLEDGED )
+				.writeConcern( new ReplicaConfigurableWriteConcern( 2 ) )
+				.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.ACKNOWLEDGED )
 				.writeConcern( new ReplicaConfigurableWriteConcern( 3 ) )
 				.property( "content", ElementType.FIELD )
-					.writeConcern( WriteConcernType.ACKNOWLEDGED )
-					.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
+				.writeConcern( WriteConcernType.ACKNOWLEDGED )
+				.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
 
 		OptionsContainer options = getSource().getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 2 ) );
@@ -125,6 +125,7 @@ public class WriteConcernOptionTest {
 
 	@SuppressWarnings("unused")
 	private static final class ExampleForMongoDBMapping {
+
 		String content;
 	}
 

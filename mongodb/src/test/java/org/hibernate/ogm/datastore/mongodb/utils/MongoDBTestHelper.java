@@ -36,12 +36,12 @@ import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.util.JSON;
+import org.bson.Document;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -65,7 +65,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	private static boolean isNotNull(String mongoHostName) {
-		return mongoHostName != null && mongoHostName.length() > 0 && ! "null".equals( mongoHostName );
+		return mongoHostName != null && mongoHostName.length() > 0 && !"null".equals( mongoHostName );
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		DB db = provider.getDatabase();
+		MongoDatabase db = provider.getDatabase();
 		int count = 0;
 
 		for ( String collectionName : getEntityCollections( sessionFactory ) ) {
@@ -89,7 +89,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	private boolean isSystemCollection(String collectionName) {
 		return collectionName.startsWith( "system." );
 	}
-
 
 	@Override
 	public long getNumberOfAssociations(Session session) {
@@ -106,12 +105,12 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	public long getNumberOfAssociationsFromGlobalCollection(SessionFactory sessionFactory) {
-		DB db = getProvider( sessionFactory ).getDatabase();
+		MongoDatabase db = getProvider( sessionFactory ).getDatabase();
 		return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count();
 	}
 
 	public long getNumberOfAssociationsFromDedicatedCollections(SessionFactory sessionFactory) {
-		DB db = getProvider( sessionFactory ).getDatabase();
+		MongoDatabase db = getProvider( sessionFactory ).getDatabase();
 
 		Set<String> associationCollections = getDedicatedAssociationCollections( sessionFactory );
 		long associationCount = 0;
@@ -125,14 +124,14 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	// TODO Use aggregation framework for a more efficient solution; Given that there will only be a few
 	// test collections/entities, that's good enough for now
 	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
-		DB db = getProvider( sessionFactory ).getDatabase();
+		MongoDatabase db = getProvider( sessionFactory ).getDatabase();
 		long associationCount = 0;
 
 		for ( String entityCollection : getEntityCollections( sessionFactory ) ) {
-			DBCursor entities = db.getCollection( entityCollection ).find();
+			MongoCursor<Document> cursor = db.getCollection( entityCollection ).find().iterator();
 
-			while ( entities.hasNext() ) {
-				DBObject entity = entities.next();
+			while ( cursor.hasNext() ) {
+				Document entity = cursor.next();
 				associationCount += getNumberOfEmbeddedAssociations( entity );
 			}
 		}
@@ -140,7 +139,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		return associationCount;
 	}
 
-	private int getNumberOfEmbeddedAssociations(DBObject entity) {
+	private int getNumberOfEmbeddedAssociations(Document entity) {
 		int numberOfReferences = 0;
 
 		for ( String fieldName : entity.keySet() ) {
@@ -158,10 +157,10 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	private Set<String> getEntityCollections(SessionFactory sessionFactory) {
-		DB db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
-		Set<String> names = new HashSet<String>();
+		MongoDatabase db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
+		Set<String> names = new HashSet<>();
 
-		for ( String collectionName : db.getCollectionNames() ) {
+		for ( String collectionName : db.listCollectionNames() ) {
 			if ( !isSystemCollection( collectionName ) &&
 					!isDedicatedAssociationCollection( collectionName ) &&
 					!isGlobalAssociationCollection( collectionName ) ) {
@@ -173,10 +172,10 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	private Set<String> getDedicatedAssociationCollections(SessionFactory sessionFactory) {
-		DB db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
-		Set<String> names = new HashSet<String>();
+		MongoDatabase db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
+		Set<String> names = new HashSet<>();
 
-		for ( String collectionName : db.getCollectionNames() ) {
+		for ( String collectionName : db.listCollectionNames() ) {
 			if ( isDedicatedAssociationCollection( collectionName ) ) {
 				names.add( collectionName );
 			}
@@ -197,20 +196,20 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( session.getSessionFactory() );
-		DBObject finder = new BasicDBObject( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
-		DBObject result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
+		Document finder = new Document( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
+		Document result = provider.getDatabase().getCollection( key.getTable() ).find( finder ).first();
 		replaceIdentifierColumnName( result, key );
-		return result.toMap();
+		return DocumentUtil.toMap( result );
 	}
 
 	/**
-	 * The MongoDB dialect replaces the name of the column identifier, so when the tuple is extracted from the db
-	 * we replace the column name of the identifier with the original one.
-	 * We are assuming the identifier is not embedded and is a single property.
+	 * The MongoDB dialect replaces the name of the column identifier, so when the tuple is extracted from the db we
+	 * replace the column name of the identifier with the original one. We are assuming the identifier is not embedded
+	 * and is a single property.
 	 */
-	private void replaceIdentifierColumnName(DBObject result, EntityKey key) {
+	private void replaceIdentifierColumnName(Document result, EntityKey key) {
 		Object idValue = result.get( MongoDBDialect.ID_FIELDNAME );
-		result.removeField( MongoDBDialect.ID_FIELDNAME );
+		result.remove( MongoDBDialect.ID_FIELDNAME );
 		result.put( key.getColumnNames()[0], idValue );
 	}
 
@@ -232,17 +231,17 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = getProvider( sessionFactory );
 		try {
-			provider.getDatabase().dropDatabase();
+			provider.getDatabase().drop();
 		}
-		catch ( MongoException ex ) {
+		catch (MongoException ex) {
 			throw log.unableToDropDatabase( ex, provider.getDatabase().getName() );
 		}
 	}
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
-		//read variables from the System properties set in the static initializer
-		Map<String, String> envProps = new HashMap<String, String>( 4 );
+		// read variables from the System properties set in the static initializer
+		Map<String, String> envProps = new HashMap<>( 4 );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
@@ -274,27 +273,35 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		return new MongoDBDialect( (MongoDBDatastoreProvider) datastoreProvider );
 	}
 
-	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String expectedDbObject) {
-		assertDbObject( sessionFactory, collection, queryDbObject, null, expectedDbObject );
+	public static void assertDocument(OgmSessionFactory sessionFactory, String collection, String queryDocument, String expectedDocument) {
+		assertDocument( sessionFactory, collection, queryDocument, null, expectedDocument );
 	}
 
-	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String projectionDbObject, String expectedDbObject) {
-		DBObject finder = (DBObject) JSON.parse( queryDbObject );
-		DBObject fields = projectionDbObject != null ? (DBObject) JSON.parse( projectionDbObject ) : null;
+	public static void assertDocument(OgmSessionFactory sessionFactory, String collection, String queryDocument, String projectionDocument,
+			String expectedDocument) {
+		Document finder = (Document) JSON.parse( queryDocument );
+		Document fields = projectionDocument != null ? (Document) JSON.parse( projectionDocument ) : null;
 
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder, fields );
+		Document actual = provider.getDatabase().getCollection( collection ).find( finder ).projection( fields ).first();
+		// Document actual = provider.getDatabase().getCollection( collection ).findOne( finder, fields );
 
-		assertJsonEquals( expectedDbObject, actual.toString() );
+		assertJsonEquals( expectedDocument, actual.toString() );
 	}
 
-	public static Map<String, DBObject> getIndexes(OgmSessionFactory sessionFactory, String collection) {
+	public static Map<String, Document> getIndexes(OgmSessionFactory sessionFactory, String collectionName) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		List<DBObject> indexes = provider.getDatabase().getCollection( collection ).getIndexInfo();
-		Map<String, DBObject> indexMap = new HashMap<>();
-		for ( DBObject index : indexes ) {
-			indexMap.put( index.get( "name" ).toString(), index );
+		MongoCollection<Document> collection = provider.getDatabase().getCollection( collectionName );
+
+		Map<String, Document> indexMap = new HashMap<>();
+		try ( MongoCursor<Document> indexes = collection.listIndexes().iterator(); ) {
+			while ( indexes.hasNext() ) {
+				Document index = indexes.next();
+				indexMap.put( index.get( "name" ).toString(), index );
+			}
+
 		}
+
 		return indexMap;
 	}
 

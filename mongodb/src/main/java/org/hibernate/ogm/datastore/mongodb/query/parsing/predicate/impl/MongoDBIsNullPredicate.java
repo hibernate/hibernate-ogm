@@ -6,30 +6,28 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl;
 
+import org.bson.Document;
 import org.hibernate.hql.ast.spi.predicate.IsNullPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 /**
  * MongoDB-based implementation of {@link IsNullPredicate}.
  *
  * @author Gunnar Morling
  */
-public class MongoDBIsNullPredicate extends IsNullPredicate<DBObject> implements NegatablePredicate<DBObject> {
+public class MongoDBIsNullPredicate extends IsNullPredicate<Document> implements NegatablePredicate<Document> {
 
 	public MongoDBIsNullPredicate(String propertyName) {
 		super( propertyName );
 	}
 
 	@Override
-	public DBObject getQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$exists", false ) );
+	public Document getQuery() {
+		return new Document( propertyName, new Document( "$exists", false ) );
 	}
 
 	@Override
-	public DBObject getNegatedQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$exists", true ) );
+	public Document getNegatedQuery() {
+		return new Document( propertyName, new Document( "$exists", true ) );
 	}
 }

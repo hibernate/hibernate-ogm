@@ -39,8 +39,8 @@ import com.mongodb.util.JSON;
  * <li>count(criteria)</li>
  * <li>aggregate(criteria)</li>
  * </ul>
- * The parameter values must be given as JSON objects adhering to the <a
- * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
+ * The parameter values must be given as JSON objects adhering to the
+ * <a href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
  * with the relaxation that Strings may not only be given in double quotes but also single quotes to facilitate their
  * specification in Java Strings.</li>
  * </ul>
@@ -64,7 +64,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule ParsedQuery() {
-		return Sequence( Db(),  Collection(),  Operation() );
+		return Sequence( Db(), Collection(), Operation() );
 	}
 
 	/**
@@ -84,7 +84,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	@SuppressSubnodes
 	public Rule Collection() {
 		return Sequence( OneOrMore( TestNot( Reserved() ), ANY ), builder.setCollection( match() ) );
-		//TODO OGM-949 it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
+		// TODO OGM-949 it should not be just ANY matcher as they are some restrictions in the Collection naming in
+		// Mongo
 		// cf. https://docs.mongodb.org/manual/faq/developers/#are-there-any-restrictions-on-the-names-of-collections
 	}
 
@@ -107,8 +108,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
-				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) )
-		);
+				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ) );
 	}
 
 	public Rule Find() {
@@ -118,8 +118,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
-				") "
-		);
+				") " );
 	}
 
 	public Rule FindOne() {
@@ -129,8 +128,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				Optional( JsonObject(), builder.setCriteria( match() ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
-				") "
-		);
+				") " );
 	}
 
 	public Rule FindAndModify() {
@@ -139,8 +137,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"findAndModify ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
-				") "
-		);
+				") " );
 	}
 
 	public Rule Insert() {
@@ -150,8 +147,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
+				") " );
 	}
 
 	public Rule Remove() {
@@ -161,13 +157,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ",
-					FirstOf(
-						Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
-						Sequence( JsonObject(), builder.setOptions( match() ) )
-					)
-				) ),
-				") "
-		);
+						FirstOf(
+								Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
+								Sequence( JsonObject(), builder.setOptions( match() ) ) ) ) ),
+				") " );
 	}
 
 	public Rule Update() {
@@ -178,8 +171,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
+				") " );
 	}
 
 	public Rule Aggregate() {
@@ -189,7 +181,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	public Rule AggregateArray() {
 		return Sequence(
 				"[ ",
-					Sequence(
+				Sequence(
 						AggregateObject(),
 						ZeroOrMore( Sequence( ", ", AggregateObject() ) ) ),
 				"] " );
@@ -214,8 +206,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"count ",
 				"( ",
 				Optional( Sequence( JsonComposite(), builder.setCriteria( match() ) ) ),
-				") "
-		);
+				") " );
 	}
 
 	public Rule JsonComposite() {
@@ -228,10 +219,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"{ ",
 				FirstOf(
 						Sequence( Pair(), ZeroOrMore( Sequence( ", ", Pair() ) ) ),
-						Optional( Pair() )
-				).suppressNode(),
-				"} "
-		);
+						Optional( Pair() ) ).suppressNode(),
+				"} " );
 	}
 
 	public Rule Pair() {
@@ -261,10 +250,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"[ ",
 				FirstOf(
 						Sequence( Value(), ZeroOrMore( Sequence( ", ", Value() ) ) ),
-						Optional( Value() )
-				),
-				"] "
-		);
+						Optional( Value() ) ),
+				"] " );
 	}
 
 	@SuppressSubnodes
@@ -287,9 +274,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence( Optional( "new " ), SupportedBsonFunction(), ZeroOrMore( WhiteSpace() ), "( ",
 				FirstOf(
 						Sequence( PrimitiveValue(), ZeroOrMore( Sequence( ", ", PrimitiveValue() ) ) ),
-						Optional( PrimitiveValue() )
-				)
-				, ") " );
+						Optional( PrimitiveValue() ) ),
+				") " );
 	}
 
 	public Rule SupportedBsonFunction() {

@@ -5,6 +5,7 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 package org.hibernate.ogm.datastore.mongodb.type.impl;
+
 import org.bson.types.ObjectId;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
@@ -26,6 +27,7 @@ public class ObjectIdTypeDescriptor extends AbstractTypeDescriptor<ObjectId> {
 	public String toString(ObjectId value) {
 		return value == null ? null : value.toString();
 	}
+
 	@Override
 	public ObjectId fromString(String string) {
 		return new ObjectId( string );

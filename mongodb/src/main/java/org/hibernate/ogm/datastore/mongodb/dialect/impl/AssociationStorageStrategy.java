@@ -14,7 +14,8 @@ import org.hibernate.ogm.model.key.spi.AssociationType;
 
 /**
  * Represents a strategy for storing associations in MongoDB. Provides an aggregated view on {@link AssociationKind} as
- * well as the {@link AssociationStorageType} and {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType} options.
+ * well as the {@link AssociationStorageType} and
+ * {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType} options.
  *
  * @author Gunnar Morling
  */
@@ -22,8 +23,10 @@ public enum AssociationStorageStrategy {
 
 	IN_ENTITY, GLOBAL_COLLECTION, COLLECTION_PER_ASSOCIATION;
 
-	public static AssociationStorageStrategy getInstance(AssociationKeyMetadata keyMetadata, AssociationStorageType associationStorage, AssociationDocumentStorageType associationDocumentStorage) {
-		if ( keyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE || keyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION || associationStorage == AssociationStorageType.IN_ENTITY ) {
+	public static AssociationStorageStrategy getInstance(AssociationKeyMetadata keyMetadata, AssociationStorageType associationStorage,
+			AssociationDocumentStorageType associationDocumentStorage) {
+		if ( keyMetadata.getAssociationType() == AssociationType.ONE_TO_ONE || keyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION
+				|| associationStorage == AssociationStorageType.IN_ENTITY ) {
 			return IN_ENTITY;
 		}
 		else if ( associationDocumentStorage == AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION ) {

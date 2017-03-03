@@ -88,7 +88,7 @@ public class ObjectIdWithEmbeddableTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { EntityWithObjectIdAndEmbeddable.class };
+		return new Class<?>[]{ EntityWithObjectIdAndEmbeddable.class };
 	}
 
 	@Override

@@ -9,12 +9,11 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.bson.Document;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.query.spi.QueryParsingResult;
-
-import com.mongodb.DBObject;
 
 /**
  * The result of walking a query parse tree using a {@link MongoDBQueryRendererDelegate}.
@@ -25,12 +24,12 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 
 	private final Class<?> entityType;
 	private final String collectionName;
-	private final DBObject query;
-	private final DBObject projection;
-	private final DBObject orderBy;
+	private final Document query;
+	private final Document projection;
+	private final Document orderBy;
 	private final List<String> unwinds;
 
-	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, DBObject query, DBObject projection, DBObject orderBy, List<String> unwinds) {
+	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, Document query, Document projection, Document orderBy, List<String> unwinds) {
 		this.entityType = entityType;
 		this.collectionName = collectionName;
 		this.query = query;
@@ -39,7 +38,7 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 		this.unwinds = unwinds;
 	}
 
-	public DBObject getQuery() {
+	public Document getQuery() {
 		return query;
 	}
 
@@ -47,11 +46,11 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 		return entityType;
 	}
 
-	public DBObject getProjection() {
+	public Document getProjection() {
 		return projection;
 	}
 
-	public DBObject getOrderBy() {
+	public Document getOrderBy() {
 		return orderBy;
 	}
 
@@ -62,21 +61,20 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	@Override
 	public Object getQueryObject() {
 		return new MongoDBQueryDescriptor(
-			collectionName,
-			unwinds == null ? Operation.FIND : Operation.AGGREGATE,
-			query,
-			projection,
-			orderBy,
-			null,
-			null,
-			unwinds
-		);
+				collectionName,
+				unwinds == null ? Operation.FIND : Operation.AGGREGATE,
+						query,
+						projection,
+						orderBy,
+						null,
+						null,
+						unwinds );
 	}
 
 	@Override
 	public List<String> getColumnNames() {
-		//TODO Non-scalar case
-		return projection != null ? new ArrayList<String>( projection.keySet() ) : Collections.<String>emptyList();
+		// TODO Non-scalar case
+		return projection != null ? new ArrayList<>( projection.keySet() ) : Collections.<String>emptyList();
 	}
 
 	@Override

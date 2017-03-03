@@ -54,7 +54,7 @@ public class DatastoreInitializationTest {
 
 	@Before
 	public void setUp() {
-		cfg =  new HashMap<String, Object>( TestHelper.getDefaultTestSettings() );
+		cfg = new HashMap<String, Object>( TestHelper.getDefaultTestSettings() );
 		cfg.put( OgmProperties.DATABASE, "snafu" );
 		cfg.put( OgmProperties.USERNAME, "foo" );
 		cfg.put( OgmProperties.PASSWORD, "bar" );
@@ -101,8 +101,7 @@ public class DatastoreInitializationTest {
 		assertThat(
 				provider.leakingClient.getCredentialsList()
 						.get( 0 )
-						.getMechanism()
-		).isEqualTo( MongoCredential.SCRAM_SHA_1_MECHANISM );
+						.getMechanism() ).isEqualTo( MongoCredential.SCRAM_SHA_1_MECHANISM );
 	}
 
 	@Test
@@ -119,8 +118,7 @@ public class DatastoreInitializationTest {
 		assertThat(
 				provider.leakingClient.getCredentialsList()
 						.get( 0 )
-						.getMechanism()
-		).isEqualTo( MongoCredential.MONGODB_X509_MECHANISM );
+						.getMechanism() ).isEqualTo( MongoCredential.MONGODB_X509_MECHANISM );
 	}
 
 	@Test
@@ -136,8 +134,7 @@ public class DatastoreInitializationTest {
 		assertThat(
 				provider.leakingClient.getCredentialsList()
 						.get( 0 )
-						.getMechanism()
-		).isEqualTo( MongoCredential.GSSAPI_MECHANISM );
+						.getMechanism() ).isEqualTo( MongoCredential.GSSAPI_MECHANISM );
 	}
 
 	@Test
@@ -153,8 +150,7 @@ public class DatastoreInitializationTest {
 		assertThat(
 				provider.leakingClient.getCredentialsList()
 						.get( 0 )
-						.getMechanism()
-		).isEqualTo( MongoCredential.PLAIN_MECHANISM );
+						.getMechanism() ).isEqualTo( MongoCredential.PLAIN_MECHANISM );
 	}
 
 	@Test
@@ -164,7 +160,7 @@ public class DatastoreInitializationTest {
 
 		error.expect( ServiceException.class );
 		error.expectMessage( "OGM000072" );
-		//nested exception
+		// nested exception
 		error.expectCause( hasMessage( containsString( "OGM000051" ) ) );
 
 		// will start the service
@@ -178,7 +174,7 @@ public class DatastoreInitializationTest {
 
 		error.expect( ServiceException.class );
 		error.expectMessage( "OGM000071" );
-		//nested exception
+		// nested exception
 		error.expectCause( hasMessage( containsString( "OGM001214" ) ) );
 
 		// will start the service
@@ -202,6 +198,7 @@ public class DatastoreInitializationTest {
 	}
 
 	class LeakingMongoDBDatastoreProvider extends MongoDBDatastoreProvider {
+
 		public MongoClient leakingClient;
 
 		@Override
@@ -216,7 +213,7 @@ public class DatastoreInitializationTest {
 			try {
 				super.start();
 			}
-			catch ( Exception e ) {
+			catch (Exception e) {
 			}
 		}
 	}

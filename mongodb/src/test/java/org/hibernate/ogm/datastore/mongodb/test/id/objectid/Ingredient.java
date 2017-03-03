@@ -25,7 +25,7 @@ public class Ingredient {
 
 	private ObjectId id;
 	private String name;
-	private Set<Snack> containedIn = new HashSet<Snack>();
+	private Set<Snack> containedIn = new HashSet<>();
 
 	Ingredient() {
 	}

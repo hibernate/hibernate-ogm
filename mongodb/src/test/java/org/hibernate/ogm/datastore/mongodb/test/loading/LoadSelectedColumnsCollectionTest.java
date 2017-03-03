@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.loading;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.util.impl.TransactionContextHelper.transactionContext;
 import static org.junit.Assert.assertEquals;
@@ -17,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.bson.Document;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -61,11 +64,6 @@ import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Test;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
@@ -77,13 +75,13 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
 
-		DB database = provider.getDatabase();
-		DBCollection collection = database.getCollection( collectionName );
-		BasicDBObject water = new BasicDBObject();
+		MongoDatabase database = provider.getDatabase();
+		MongoCollection<Document> collection = database.getCollection( collectionName );
+		Document water = new Document();
 		water.put( "_id", "1234" );
 		water.put( "name", "Water" );
 		water.put( "volume", "1L" );
-		collection.insert( water );
+		collection.insertOne( water );
 
 		List<String> selectedColumns = new ArrayList<>();
 		selectedColumns.add( "name" );
@@ -93,13 +91,13 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		Set<String> retrievedColumn = tuple.getColumnNames();
 
 		/*
-		 * The dialect will return all columns (which include _id field) so we have to substract 1 to check if
-		 * the right number of columns has been loaded.
+		 * The dialect will return all columns (which include _id field) so we have to substract 1 to check if the right
+		 * number of columns has been loaded.
 		 */
 		assertEquals( selectedColumns.size(), retrievedColumn.size() - 1 );
 		assertTrue( retrievedColumn.containsAll( selectedColumns ) );
 
-		collection.remove( water );
+		collection.deleteOne( water );
 	}
 
 	@Test
@@ -131,9 +129,10 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		this.addExtraColumn();
 		AssociationKeyMetadata metadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( "Project_Module" )
-				.columnNames( new String[] { "Project_id" } )
-				.rowKeyColumnNames( new String[] { "Project_id", "module_id" } )
-				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( new String[] { "module_id" }, new DefaultEntityKeyMetadata( "Module", new String[] { "id" } ) ) )
+				.columnNames( new String[]{ "Project_id" } )
+				.rowKeyColumnNames( new String[]{ "Project_id", "module_id" } )
+				.associatedEntityKeyMetadata(
+						new DefaultAssociatedEntityKeyMetadata( new String[]{ "module_id" }, new DefaultEntityKeyMetadata( "Module", new String[]{ "id" } ) ) )
 				.inverse( false )
 				.collectionRole( "modules" )
 				.associationKind( AssociationKind.ASSOCIATION )
@@ -142,32 +141,28 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
-				new Object[] { "projectID" },
+				new Object[]{ "projectID" },
 				new EntityKey(
-						new DefaultEntityKeyMetadata( "Project", new String[] { "id" } ),
-						new String[] { "projectID" }
-				)
-		);
+						new DefaultEntityKeyMetadata( "Project", new String[]{ "id" } ),
+						new String[]{ "projectID" } ) );
 
 		AssociationContext associationContext = new AssociationContextImpl(
 				new AssociationTypeContextImpl(
 						OptionsContextImpl.forProperty(
-								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( getSessionFactory().getProperties(), new ClassLoaderServiceImpl() ) ),
+								OptionValueSources.getDefaultSources(
+										new ConfigurationPropertyReader( getSessionFactory().getProperties(), new ClassLoaderServiceImpl() ) ),
 								Project.class,
-								"modules"
-						),
+								"modules" ),
 						EmptyOptionsContext.INSTANCE,
 						GridDialectOperationContexts.emptyTupleTypeContext(),
 						new DefaultAssociatedEntityKeyMetadata( null, null ),
-						null
-				),
+						null ),
 				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null ), SnapshotType.UPDATE ) ),
-				transactionContext( session )
-		);
+				transactionContext( session ) );
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-		final DBObject assocObject = associationSnapshot.getDBObject();
+		final Document assocObject = associationSnapshot.getDocument();
 		this.checkLoading( assocObject );
 
 		session.delete( mongodb );
@@ -178,9 +173,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 	private Tuple getTuple(String collectionName, String id, List<String> selectedColumns) {
 		EntityKey key = new EntityKey(
-				new DefaultEntityKeyMetadata( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME } ),
-				new Object[] { id }
-		);
+				new DefaultEntityKeyMetadata( collectionName, new String[]{ MongoDBDialect.ID_FIELDNAME } ),
+				new Object[]{ id } );
 		TupleContext tupleContext = new GridDialectOperationContexts.TupleContextBuilder()
 				.tupleTypeContext(
 						new GridDialectOperationContexts.TupleTypeContextBuilder()
@@ -202,39 +196,36 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 	protected void configure(Map<String, Object> settings) {
 		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.ASSOCIATION_DOCUMENT
-		);
+				AssociationStorageType.ASSOCIATION_DOCUMENT );
 		settings.put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
-				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
-		);
+				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Project.class, Module.class };
+		return new Class<?>[]{ Project.class, Module.class };
 	}
 
 	/**
-	 * To be sure the datastoreProvider retrieves only the columns we want,
-	 * an extra column is manually added to the association document
+	 * To be sure the datastoreProvider retrieves only the columns we want, an extra column is manually added to the
+	 * association document
 	 */
 	protected void addExtraColumn() {
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
-		DB database = provider.getDatabase();
-		DBCollection collection = database.getCollection( "associations_Project_Module" );
-		BasicDBObject query = new BasicDBObject( 1 );
-		query.put( "_id", new BasicDBObject( "Project_id", "projectID" ) );
+		MongoDatabase database = provider.getDatabase();
+		MongoCollection<Document> collection = database.getCollection( "associations_Project_Module" );
+		Document query = new Document();
+		query.put( "_id", new Document( "Project_id", "projectID" ) );
 
-		BasicDBObject updater = new BasicDBObject( 1 );
-		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
-		collection.update( query, updater );
+		Document updater = new Document();
+		updater.put( "$push", new Document( "extraColumn", 1 ) );
+		collection.updateMany( query, updater );
 	}
 
-	protected void checkLoading(DBObject associationObject) {
+	protected void checkLoading(Document associationObject) {
 		/*
-		 * The only column (except _id) that needs to be retrieved is "rows"
-		 * So we should have 2 columns
+		 * The only column (except _id) that needs to be retrieved is "rows" So we should have 2 columns
 		 */
 		final Set<?> retrievedColumns = associationObject.keySet();
 		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
@@ -247,7 +238,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		@Override
 		public <I, V, O extends Option<I, V>> V get(Class<O> optionType, I identifier) {
 			try {
-				Option<I,V> optionInstance = optionType.newInstance();
+				Option<I, V> optionInstance = optionType.newInstance();
 				return optionInstance.getDefaultValue( new ConfigurationPropertyReader( Collections.EMPTY_MAP ) );
 			}
 			catch (InstantiationException | IllegalAccessException e) {

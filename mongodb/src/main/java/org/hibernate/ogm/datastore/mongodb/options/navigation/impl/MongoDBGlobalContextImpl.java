@@ -27,7 +27,7 @@ import com.mongodb.WriteConcern;
  * @author Gunnar Morling
  */
 public abstract class MongoDBGlobalContextImpl extends BaseDocumentStoreGlobalContext<MongoDBGlobalContext, MongoDBEntityContext> implements
-		MongoDBGlobalContext {
+MongoDBGlobalContext {
 
 	public MongoDBGlobalContextImpl(ConfigurationContext context) {
 		super( context );

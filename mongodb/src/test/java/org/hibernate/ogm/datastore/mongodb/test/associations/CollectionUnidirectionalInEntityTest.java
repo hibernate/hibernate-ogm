@@ -21,7 +21,6 @@ public class CollectionUnidirectionalInEntityTest extends CollectionUnidirection
 	protected void configure(Map<String, Object> settings) {
 		settings.put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.IN_ENTITY
-		);
+				AssociationStorageType.IN_ENTITY );
 	}
 }

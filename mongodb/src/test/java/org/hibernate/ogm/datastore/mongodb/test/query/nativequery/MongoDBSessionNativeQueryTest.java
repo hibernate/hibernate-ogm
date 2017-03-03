@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *  Test the execution of native queries on MongoDB using the {@link Session}
+ * Test the execution of native queries on MongoDB using the {@link Session}
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
@@ -149,8 +149,8 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 			transaction.rollback();
 			String message = he.getMessage();
 			assertThat( message )
-				.as( "The native query doesn't define a returned entity, there should be a specific exception" )
-				.contains( "OGM001217" );
+					.as( "The native query doesn't define a returned entity, there should be a specific exception" )
+					.contains( "OGM001217" );
 		}
 		finally {
 			session.clear();
@@ -217,8 +217,8 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 			transaction.rollback();
 			String message = he.getMessage();
 			assertThat( message )
-				.as( "The native query doesn't define a returned entity, there should be a specific exception" )
-				.contains( "OGM001217" );
+					.as( "The native query doesn't define a returned entity, there should be a specific exception" )
+					.contains( "OGM001217" );
 		}
 		finally {
 			session.clear();
@@ -272,7 +272,7 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { OscarWildePoem.class };
+		return new Class<?>[]{ OscarWildePoem.class };
 	}
 
 }

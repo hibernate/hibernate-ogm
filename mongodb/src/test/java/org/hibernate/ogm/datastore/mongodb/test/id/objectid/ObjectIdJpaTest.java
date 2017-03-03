@@ -22,9 +22,9 @@ import org.junit.Test;
  * Tests for using object ids with MongoDB.
  *
  * @author Gunnar Morling
- *
  */
 public class ObjectIdJpaTest extends OgmJpaTestCase {
+
 	private EntityManager em;
 
 	@Before
@@ -60,7 +60,7 @@ public class ObjectIdJpaTest extends OgmJpaTestCase {
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Bar.class, DoorMan.class, MusicGenre.class };
+		return new Class<?>[]{ Bar.class, DoorMan.class, MusicGenre.class };
 	}
 
 	@Override

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -59,7 +59,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -69,10 +69,9 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				"{ 'favourite' : 1 }",
 				// expected
 				"{ " +
-					"'_id' : '" + bookmarkId + "', " +
-					"'favourite' : true" +
-				"}"
-		);
+						"'_id' : '" + bookmarkId + "', " +
+						"'favourite' : true" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -83,7 +82,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -93,10 +92,9 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				"{ 'isPrivate' : 1 }",
 				// expected
 				"{ " +
-					"'_id' : '" + bookmarkId + "', " +
-					"'isPrivate' : 'T'" +
-				"}"
-		);
+						"'_id' : '" + bookmarkId + "', " +
+						"'isPrivate' : 'T'" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -107,7 +105,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -117,10 +115,9 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				"{ 'isRead' : 1 }",
 				// expected
 				"{ " +
-					"'_id' : '" + bookmarkId + "', " +
-					"'isRead' : 'Y'" +
-				"}"
-		);
+						"'_id' : '" + bookmarkId + "', " +
+						"'isRead' : 'Y'" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -131,7 +128,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -141,10 +138,9 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				"{ 'isShared' : 1 }",
 				// expected
 				"{ " +
-					"'_id' : '" + bookmarkId + "', " +
-					"'isShared' : 1" +
-				"}"
-		);
+						"'_id' : '" + bookmarkId + "', " +
+						"'isShared' : 1" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -152,6 +148,6 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Bookmark.class };
+		return new Class<?>[]{ Bookmark.class };
 	}
 }

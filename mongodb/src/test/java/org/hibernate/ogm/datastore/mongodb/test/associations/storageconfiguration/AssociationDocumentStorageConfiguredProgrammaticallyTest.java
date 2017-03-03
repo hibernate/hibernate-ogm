@@ -46,11 +46,11 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest {
 
 	@Test
 	public void associationDocumentStorageSetOnGlobalLevel() throws Exception {
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 
 		TestHelper.configureOptionsFor( settings, MongoDB.class )
-			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-			.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
+				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+				.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 
 		setupSessionFactory( settings );
 
@@ -63,10 +63,10 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest {
 
 	@Test
 	public void associationDocumentStorageSetOnEntityLevel() throws Exception {
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 
 		TestHelper.configureOptionsFor( settings, MongoDB.class )
-			.entity( Cloud.class )
+				.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 
@@ -81,15 +81,15 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest {
 
 	@Test
 	public void associationDocumentStorageSetOnPropertyLevel() throws Exception {
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 
 		TestHelper.configureOptionsFor( settings, MongoDB.class )
-			.entity( Cloud.class )
+				.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.property( "producedSnowFlakes", ElementType.METHOD )
-					.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION )
+				.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION )
 				.property( "backupSnowFlakes", ElementType.METHOD )
-					.associationDocumentStorage( AssociationDocumentStorageType.GLOBAL_COLLECTION );
+				.associationDocumentStorage( AssociationDocumentStorageType.GLOBAL_COLLECTION );
 
 		setupSessionFactory( settings );
 
@@ -122,8 +122,8 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest {
 	private class CloudBuilder {
 
 		private int length;
-		private final List<String> producedSnowflakes = new ArrayList<String>();
-		private final List<String> backupSnowflakes = new ArrayList<String>();
+		private final List<String> producedSnowflakes = new ArrayList<>();
+		private final List<String> backupSnowflakes = new ArrayList<>();
 
 		public CloudBuilder withLength(int length) {
 			this.length = length;

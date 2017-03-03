@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
 import java.util.List;
+import org.bson.Document;
 
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate;
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
@@ -29,15 +30,13 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBN
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBRangePredicate;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBRootPredicate;
 
-import com.mongodb.DBObject;
-
 /**
  * Factory for {@link org.hibernate.hql.ast.spi.predicate.Predicate}s creating MongoDB queries in form of
- * {@link DBObject}s.
+ * {@link Document}s.
  *
  * @author Gunnar Morling
  */
-public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
+public class MongoDBPredicateFactory implements PredicateFactory<Document> {
 
 	private final MongoDBPropertyHelper propertyHelper;
 
@@ -46,51 +45,51 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 	}
 
 	@Override
-	public RootPredicate<DBObject> getRootPredicate(String entityType) {
+	public RootPredicate<Document> getRootPredicate(String entityType) {
 		return new MongoDBRootPredicate();
 	}
 
 	@Override
-	public ComparisonPredicate<DBObject> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
+	public ComparisonPredicate<Document> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
 		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBComparisonPredicate( columnName, comparisonType, value );
 	}
 
 	@Override
-	public RangePredicate<DBObject> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
+	public RangePredicate<Document> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
 		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBRangePredicate( columnName, lowerValue, upperValue );
 	}
 
 	@Override
-	public NegationPredicate<DBObject> getNegationPredicate() {
+	public NegationPredicate<Document> getNegationPredicate() {
 		return new MongoDBNegationPredicate();
 	}
 
 	@Override
-	public DisjunctionPredicate<DBObject> getDisjunctionPredicate() {
+	public DisjunctionPredicate<Document> getDisjunctionPredicate() {
 		return new MongoDBDisjunctionPredicate();
 	}
 
 	@Override
-	public ConjunctionPredicate<DBObject> getConjunctionPredicate() {
+	public ConjunctionPredicate<Document> getConjunctionPredicate() {
 		return new MongoDBConjunctionPredicate();
 	}
 
 	@Override
-	public InPredicate<DBObject> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
+	public InPredicate<Document> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
 		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBInPredicate( columnName, typedElements );
 	}
 
 	@Override
-	public IsNullPredicate<DBObject> getIsNullPredicate(String entityType, List<String> propertyPath) {
+	public IsNullPredicate<Document> getIsNullPredicate(String entityType, List<String> propertyPath) {
 		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBIsNullPredicate( columnName );
 	}
 
 	@Override
-	public LikePredicate<DBObject> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
+	public LikePredicate<Document> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
 		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBLikePredicate( columnName, patternValue, escapeCharacter );
 	}

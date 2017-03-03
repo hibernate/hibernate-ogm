@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -50,7 +50,7 @@ public class ElementCollectionListWithIndexTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"GrandMother",
@@ -60,13 +60,12 @@ public class ElementCollectionListWithIndexTest extends OgmTestCase {
 				null,
 				// expected
 				"{ " +
-					"'_id' : '" + granny.getId() + "', " +
-					"'grandChildren' : [" +
+						"'_id' : '" + granny.getId() + "', " +
+						"'grandChildren' : [" +
 						"{ 'name' : 'Luke', 'birthorder' : 0 }," +
 						"{ 'name' : 'Leia', 'birthorder' : 1 }" +
-					"]" +
-				"}"
-		);
+						"]" +
+						"}" );
 
 		transaction.commit();
 		session.close();
@@ -74,6 +73,6 @@ public class ElementCollectionListWithIndexTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { GrandMother.class, Child.class };
+		return new Class<?>[]{ GrandMother.class, Child.class };
 	}
 }

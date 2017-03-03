@@ -60,7 +60,6 @@ public class NodeLink {
 		setTarget( target );
 	}
 
-
 	@Override
 	public String toString() {
 		return "NodeLink(" + id + "):  " + source + " to " + target;

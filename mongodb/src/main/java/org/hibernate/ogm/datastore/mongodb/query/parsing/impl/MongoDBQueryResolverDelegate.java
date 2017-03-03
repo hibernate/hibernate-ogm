@@ -19,11 +19,10 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 
 /**
- * Query resolver delegate targeting MongoDB queries. Very basic implementation atm., need to decide on
- * type checks, validation etc.
+ * Query resolver delegate targeting MongoDB queries. Very basic implementation atm., need to decide on type checks,
+ * validation etc.
  *
  * @author Gunnar Morling
- *
  */
 public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 
@@ -32,8 +31,8 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 	/**
 	 * Persister space: keep track of aliases and entity names.
 	 */
-	private final Map<String, String> aliasToEntityType = new HashMap<String, String>();
-	private final Map<String, PropertyPath> aliasToPropertyPath = new HashMap<String, PropertyPath>();
+	private final Map<String, String> aliasToEntityType = new HashMap<>();
+	private final Map<String, PropertyPath> aliasToPropertyPath = new HashMap<>();
 
 	private String alias;
 
@@ -100,7 +99,8 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 	}
 
 	@Override
-	public PathedPropertyReferenceSource normalizeIntermediateIndexOperation(PathedPropertyReferenceSource propertyReferenceSource, Tree collectionProperty, Tree selector) {
+	public PathedPropertyReferenceSource normalizeIntermediateIndexOperation(PathedPropertyReferenceSource propertyReferenceSource, Tree collectionProperty,
+			Tree selector) {
 		return propertyReferenceSource;
 	}
 
@@ -126,16 +126,16 @@ public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
 
 	@Override
 	public void pushSelectStrategy() {
-		//nothing to do
+		// nothing to do
 	}
 
 	@Override
 	public void popStrategy() {
-		//nothing to do
+		// nothing to do
 	}
 
 	@Override
 	public void propertyPathCompleted(PropertyPath path) {
-		//nothing to do
+		// nothing to do
 	}
 }

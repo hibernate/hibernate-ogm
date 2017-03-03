@@ -18,7 +18,7 @@ import org.hibernate.ogm.backendtck.associations.manytoone.Game;
 import org.hibernate.ogm.utils.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -57,8 +57,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 
-
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Court",
@@ -71,9 +70,8 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 						"[ { 'gameSequenceNo': 456, 'category': 'primary' }, " +
 						"  { 'gameSequenceNo': 457, 'category': 'primary' } ], " +
 						"'name': 'Hamburg Court' " +
-						"}"
-		);
-		assertDbObject(
+						"}" );
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Game",
@@ -84,8 +82,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 						"'_id' : { 'category': 'primary', 'gameSequenceNo': 456 }, " +
 						"'playedOn_id' : { 'countryCode': 'DE', 'sequenceNo': 123 }, " +
 						"'name': 'The game' " +
-				"}"
-		);
+						"}" );
 
 		Court localCourt = (Court) session.get( Court.class, new Court.CourtId( "DE", 123 ) );
 		assertThat( localCourt.getGames() ).hasSize( 2 );
@@ -121,7 +118,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Race",
@@ -132,8 +129,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 						"'runnersByArrival' : [ " +
 						"{ 'firstname' : 'Emmanuel', 'lastname' : 'Bernard', 'ranking' : 0 }, " +
 						"{ 'firstname' : 'Pere', 'lastname' : 'Noel', 'ranking' : 1 } " +
-						"] }"
-		);
+						"] }" );
 		race = (Race) session.get( Race.class, race.getRaceId() );
 		assertThat( race.getRunnersByArrival() ).hasSize( 2 );
 		assertThat( race.getRunnersByArrival().get( 0 ).getRunnerId().getFirstname() ).isEqualTo( "Emmanuel" );
@@ -147,6 +143,6 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Game.class, Court.class, Race.class, Runner.class };
+		return new Class<?>[]{ Game.class, Court.class, Race.class, Runner.class };
 	}
 }

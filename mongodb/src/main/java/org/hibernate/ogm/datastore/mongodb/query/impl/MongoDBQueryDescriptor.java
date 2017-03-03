@@ -14,8 +14,7 @@ import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescrip
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 /**
  * Describes a query to be executed against MongoDB.
@@ -27,15 +26,10 @@ import com.mongodb.DBObject;
 public class MongoDBQueryDescriptor implements Serializable {
 
 	public enum Operation {
-		FIND,
-		FINDONE,
-		FINDANDMODIFY,
-		INSERT,
-		REMOVE,
-		UPDATE,
-		COUNT,
+		FIND, FINDONE, FINDANDMODIFY, INSERT, REMOVE, UPDATE, COUNT,
 		/**
-		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
+		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded
+		 * collections.
 		 */
 		AGGREGATE,
 		/**
@@ -46,14 +40,16 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	private final String collectionName;
 	private final Operation operation;
-	private final DBObject criteria;   // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
-	private final DBObject projection;
+	private final Document criteria; // Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of
+	// criteria),
+	private final Document projection;
 
 	/**
-	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT query.
+	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT
+	 * query.
 	 */
-	private final DBObject updateOrInsert;
-	private final DBObject orderBy;
+	private final Document updateOrInsert;
+	private final Document orderBy;
 
 	/**
 	 * Optional query options in case this is an UPDATE, INSERT or REMOVE. Will have the following structure:
@@ -63,11 +59,11 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * <li>{ justOne: boolean, writeConcern: document } argument for a REMOVE query</li>
 	 * </ul>
 	 */
-	private final DBObject options;
+	private final Document options;
 	private final List<String> unwinds;
-	private final List<DBObject> pipeline;
+	private final List<Document> pipeline;
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, List<DBObject> pipeline) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, List<Document> pipeline) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = null;
@@ -76,10 +72,17 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.options = null;
 		this.updateOrInsert = null;
 		this.unwinds = null;
-		this.pipeline = pipeline == null ? Collections.<DBObject>emptyList() : pipeline;
+		this.pipeline = ( pipeline == null ) ? Collections.<Document>emptyList() : pipeline;
 	}
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy, DBObject options, DBObject updateOrInsert, List<String> unwinds) {
+	public MongoDBQueryDescriptor(String collectionName,
+			Operation operation,
+			Document criteria,
+			Document projection,
+			Document orderBy,
+			Document options,
+			Document updateOrInsert,
+			List<String> unwinds) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
@@ -88,10 +91,10 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.options = options;
 		this.updateOrInsert = updateOrInsert;
 		this.unwinds = unwinds;
-		this.pipeline = Collections.<DBObject>emptyList();
+		this.pipeline = Collections.<Document>emptyList();
 	}
 
-	public List<DBObject> getPipeline() {
+	public List<Document> getPipeline() {
 		return pipeline;
 	}
 
@@ -111,9 +114,9 @@ public class MongoDBQueryDescriptor implements Serializable {
 	/**
 	 * Criteria describing the records to apply this query to.
 	 *
-	 * @return the {@link DBObject} representing the criteria
+	 * @return the {@link Document} representing the criteria
 	 */
-	public DBObject getCriteria() {
+	public Document getCriteria() {
 		return criteria;
 	}
 
@@ -121,25 +124,25 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * The fields to be selected, if this query doesn't return all fields of the entity. Passed to the {@code keys}
 	 * parameter of the MongoDB find API.
 	 *
-	 * @return the {@link DBObject} representing the projection
+	 * @return the {@link Document} representing the projection
 	 */
-	public DBObject getProjection() {
+	public Document getProjection() {
 		return projection;
 	}
 
 	/**
 	 * Get the order criteria of the result of the query.
 	 *
-	 * @return the {@link DBObject} representing the order to apply the results of the query
+	 * @return the {@link Document} representing the order to apply the results of the query
 	 */
-	public DBObject getOrderBy() {
+	public Document getOrderBy() {
 		return orderBy;
 	}
 
 	/**
 	 * Returns (optional) query options if this is a INSERT, UPDATE or REMOVE query.
 	 */
-	public DBObject getOptions() {
+	public Document getOptions() {
 		return options;
 	}
 
@@ -147,7 +150,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * Returns the update (new values to apply) in case this is an UPDATE query or values to insert in case this is an
 	 * INSERT query.
 	 */
-	public DBObject getUpdateOrInsert() {
+	public Document getUpdateOrInsert() {
 		return updateOrInsert;
 	}
 
@@ -158,9 +161,9 @@ public class MongoDBQueryDescriptor implements Serializable {
 	@Override
 	public String toString() {
 		return String.format( "MongoDBQueryDescriptor [collectionName=%s, %s=%s, %s=%s, %s%s]",
-			collectionName,
-			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
-			operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : "projection", projection,
-			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options );
+				collectionName,
+				operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
+						operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : "projection", projection,
+								operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options );
 	}
 }

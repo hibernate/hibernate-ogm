@@ -316,7 +316,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author':'Oscar Wilde'}, {'name': 'Portia' }]}}, { '$sort' : { 'name' : -1 } }])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".aggregate([{ '$match': {'$or': [ {'author':'Oscar Wilde'}, {'name': 'Portia' }]}}, { '$sort' : { 'name' : -1 } }])";
 			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
@@ -333,7 +334,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*', '$options': 'i'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*', '$options': 'i'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
 			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
@@ -383,7 +385,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : 1 } }])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : 1 } }])";
 			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.setMaxResults( 2 ).list();
@@ -400,7 +403,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': { '$regex': '.*'  } }}, { '$sort' : { 'name' : -1 } }])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".aggregate([{ '$match': {'author': { '$regex': '.*'  } }}, { '$sort' : { 'name' : -1 } }])";
 			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.setFirstResult( 1 ).list();
@@ -417,7 +421,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
 			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.setMaxResults( 1 ).setFirstResult( 1 ).list();
@@ -434,7 +439,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$and': [ {'author': { '$regex': 'oscar.*', '$options': 'i' }}, {'name': { '$regex': 'po.*', '$options': 'i'} }]}}, { '$sort' : { 'name' : -1 } }])";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".aggregate([{ '$match': {'$and': [ {'author': { '$regex': 'oscar.*', '$options': 'i' }}, {'name': { '$regex': 'po.*', '$options': 'i'} }]}}, { '$sort' : { 'name' : -1 } }])";
 			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
@@ -596,6 +602,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[] { OscarWildePoem.class };
+		return new Class[]{ OscarWildePoem.class };
 	}
 }

@@ -16,9 +16,8 @@ import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
  * Persists {@link ObjectId}s as is in MongoDB.
  *
  * @author Gunnar Morling
- *
  */
-public class ObjectIdGridType extends AbstractGenericBasicType<ObjectId>  {
+public class ObjectIdGridType extends AbstractGenericBasicType<ObjectId> {
 
 	public static final ObjectIdGridType INSTANCE = new ObjectIdGridType();
 

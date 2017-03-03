@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query;
 
-
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
@@ -150,8 +149,9 @@ public class MongoDBLikeQueryTest extends OgmTestCase {
 		results = session.createQuery( "from Hypothesis h where h.description like '100%% scientia' escape '%'" ).list();
 		assertThat( results ).onProperty( "id" ).containsOnly( "7" );
 	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class };
+		return new Class<?>[]{ Hypothesis.class };
 	}
 }

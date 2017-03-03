@@ -56,7 +56,7 @@ public enum WriteConcernType {
 	/**
 	 * A custom {@link WriteConcern} implementation is specified.
 	 */
-	CUSTOM( null );
+	CUSTOM(null);
 
 	private static Log log = LoggerFactory.getLogger();
 

@@ -94,7 +94,7 @@ public class BatchInsertTest extends OgmTestCase {
 
 		Session session = openSession();
 		session.beginTransaction();
-		List<Helicopter> helicopters = new ArrayList<Helicopter>();
+		List<Helicopter> helicopters = new ArrayList<>();
 		for ( int i = 0; i < numInsert; i++ ) {
 			Helicopter helicopter = helicopter( "H_" + i );
 			session.persist( helicopter );
@@ -129,7 +129,7 @@ public class BatchInsertTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Helicopter.class };
+		return new Class<?>[]{ Helicopter.class };
 	}
 
 	@Override

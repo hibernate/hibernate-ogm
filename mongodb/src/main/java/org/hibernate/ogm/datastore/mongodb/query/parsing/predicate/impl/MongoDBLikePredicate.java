@@ -7,20 +7,18 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl;
 
 import java.util.regex.Pattern;
+import org.bson.Document;
 
 import org.hibernate.hql.ast.spi.predicate.LikePredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.ogm.util.parser.impl.LikeExpressionToRegExpConverter;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 /**
  * MongoDB-based implementation of {@link LikePredicate}.
  *
  * @author Gunnar Morling
  */
-public class MongoDBLikePredicate extends LikePredicate<DBObject> implements NegatablePredicate<DBObject> {
+public class MongoDBLikePredicate extends LikePredicate<Document> implements NegatablePredicate<Document> {
 
 	private final Pattern pattern;
 
@@ -32,12 +30,12 @@ public class MongoDBLikePredicate extends LikePredicate<DBObject> implements Neg
 	}
 
 	@Override
-	public DBObject getQuery() {
-		return new BasicDBObject( propertyName, pattern );
+	public Document getQuery() {
+		return new Document( propertyName, pattern );
 	}
 
 	@Override
-	public DBObject getNegatedQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$not", pattern ) );
+	public Document getNegatedQuery() {
+		return new Document( propertyName, new Document( "$not", pattern ) );
 	}
 }

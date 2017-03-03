@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations.ordercolumn;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -45,7 +45,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"TvShow",
@@ -53,17 +53,16 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"{ '_id' : 'tvshow-1' }",
 				// expected
 				"{" +
-					"'_id' : 'tvshow-1', " +
-					"'episodes' : [ " +
+						"'_id' : 'tvshow-1', " +
+						"'episodes' : [ " +
 						"{ 'idx' : 2, 'id' : 'episode-3'} ," +
 						"{ 'idx' : 1, 'id' : 'episode-2'} ," +
 						"{ 'idx' : 0, 'id' : 'episode-1'}" +
-					"]," +
-					"'name' : 'Baking Bread'" +
-				"}"
-		);
+						"]," +
+						"'name' : 'Baking Bread'" +
+						"}" );
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Episode",
@@ -71,11 +70,10 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"{ '_id' : 'episode-1' }",
 				// expected
 				"{ " +
-					"'_id' : 'episode-1', " +
-					"'name' : 'Preparing the Dough'," +
-					"'tv_show_id' : 'tvshow-1'" +
-				"}"
-		);
+						"'_id' : 'episode-1', " +
+						"'name' : 'Preparing the Dough'," +
+						"'tv_show_id' : 'tvshow-1'" +
+						"}" );
 
 		// Clean-Up
 		bakingBread = (TvShow) session.get( TvShow.class, "tvshow-1" );
@@ -122,7 +120,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Writer",
@@ -130,13 +128,12 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"{ '_id' : 'writer-1' }",
 				// expected
 				"{" +
-					"'_id' : 'writer-1', " +
-					"'episodes' : ['episode-1' , 'episode-2']," +
-					"'name' : 'John'" +
-				"}"
-		);
+						"'_id' : 'writer-1', " +
+						"'episodes' : ['episode-1' , 'episode-2']," +
+						"'name' : 'John'" +
+						"}" );
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Writer",
@@ -144,13 +141,12 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"{ '_id' : 'writer-3' }",
 				// expected
 				"{" +
-					"'_id' : 'writer-3', " +
-					"'episodes' : ['episode-1']," +
-					"'name' : 'Ernst'" +
-				"}"
-		);
+						"'_id' : 'writer-3', " +
+						"'episodes' : ['episode-1']," +
+						"'name' : 'Ernst'" +
+						"}" );
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Episode",
@@ -158,14 +154,13 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"{ '_id' : 'episode-1' }",
 				// expected
 				"{ " +
-					"'_id' : 'episode-1', " +
-					"'authors' : [" +
+						"'_id' : 'episode-1', " +
+						"'authors' : [" +
 						"{ 'authorOrder' : 1, 'authorId' : 'writer-1' }," +
 						"{ 'authorOrder' : 0, 'authorId' : 'writer-3' }" +
-					"]," +
-					"'name' : 'Preparing the Dough'" +
-				"}"
-		);
+						"]," +
+						"'name' : 'Preparing the Dough'" +
+						"}" );
 
 		// Clean-Up
 		Writer writerToDelete = (Writer) session.get( Writer.class, "writer-1" );
@@ -191,6 +186,6 @@ public class OrderColumnMappingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { TvShow.class, Episode.class, Writer.class };
+		return new Class<?>[]{ TvShow.class, Episode.class, Writer.class };
 	}
 }

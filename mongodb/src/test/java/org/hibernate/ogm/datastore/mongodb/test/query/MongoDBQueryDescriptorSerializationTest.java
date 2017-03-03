@@ -14,12 +14,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import org.bson.Document;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.junit.Test;
-
-import com.mongodb.BasicDBObject;
 
 /**
  * Tests the serialization and de-serialization of {@link MongoDBQueryDescriptor}.
@@ -33,13 +32,12 @@ public class MongoDBQueryDescriptorSerializationTest {
 		MongoDBQueryDescriptor descriptor = new MongoDBQueryDescriptor(
 				"test",
 				Operation.FIND,
-				new BasicDBObject( "foo", "bar" ),
-				new BasicDBObject( "foo", 1 ),
-				new BasicDBObject( "bar", 1 ),
-				new BasicDBObject(),
-				new BasicDBObject(),
-				Arrays.asList( "foo, bar" )
-		);
+				new Document( "foo", "bar" ),
+				new Document( "foo", 1 ),
+				new Document( "bar", 1 ),
+				new Document(),
+				new Document(),
+				Arrays.asList( "foo, bar" ) );
 
 		byte[] bytes = serialize( descriptor );
 		MongoDBQueryDescriptor deserializedDescriptor = deserialize( bytes );

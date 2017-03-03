@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.lang.annotation.ElementType;
 import java.util.HashMap;
@@ -55,7 +55,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -63,13 +63,12 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : '" + user.getId() + "' }",
 				// expected
 				"{ " +
-					"'_id' : '" + user.getId() + "', " +
-					"'addresses' : {" +
+						"'_id' : '" + user.getId() + "', " +
+						"'addresses' : {" +
 						"'home' : '" + home.getId() + "'," +
 						"'work' : '" + work.getId() + "'" +
-					"}" +
-				"}"
-		);
+						"}" +
+						"}" );
 
 		// clean-up
 		user = session.get( User.class, user.getId() );
@@ -104,7 +103,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -112,13 +111,12 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : '" + user.getId() + "' }",
 				// expected
 				"{ " +
-					"'_id' : '" + user.getId() + "', " +
-					"'alternativePhoneNumbers' : [" +
+						"'_id' : '" + user.getId() + "', " +
+						"'alternativePhoneNumbers' : [" +
 						"{ 'phoneType' : 'home', 'countryCode' : 'DE', 'number'  : 123 }," +
 						"{ 'phoneType' : 'work', 'countryCode' : 'EN', 'number'  : 456 }" +
-					"]" +
-				"}"
-		);
+						"]" +
+						"}" );
 
 		// clean-up
 		user = session.get( User.class, user.getId() );
@@ -134,12 +132,12 @@ public class MapMappingTest extends OgmTestCase {
 
 	@Test
 	public void testMapOfEntityUsingListStrategyConfiguredViaOptionApi() throws Exception {
-		Map<String, Object> settings = new HashMap<String, Object>();
+		Map<String, Object> settings = new HashMap<>();
 
 		TestHelper.configureOptionsFor( settings, MongoDB.class )
-			.entity( User.class )
+				.entity( User.class )
 				.property( "addresses", ElementType.METHOD )
-					.mapStorage( MapStorageType.AS_LIST );
+				.mapStorage( MapStorageType.AS_LIST );
 
 		OgmSessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings, getAnnotatedClasses() );
 		OgmSession session = sessionFactory.openSession();
@@ -162,7 +160,7 @@ public class MapMappingTest extends OgmTestCase {
 
 		tx = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -170,13 +168,12 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : '" + user.getId() + "' }",
 				// expected
 				"{ " +
-					"'_id' : '" + user.getId() + "', " +
-					"'addresses' : [" +
+						"'_id' : '" + user.getId() + "', " +
+						"'addresses' : [" +
 						"{ 'addressType' : 'home', 'addresses_id' : '" + home.getId() + "' }," +
 						"{ 'addressType' : 'work', 'addresses_id' : '" + work.getId() + "' }" +
-					"]" +
-				"}"
-		);
+						"]" +
+						"}" );
 
 		// clean-up
 		user = session.get( User.class, user.getId() );
@@ -212,7 +209,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -220,13 +217,12 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : '" + user.getId() + "' }",
 				// expected
 				"{ " +
-					"'_id' : '" + user.getId() + "', " +
-					"'phoneNumbers' : {" +
+						"'_id' : '" + user.getId() + "', " +
+						"'phoneNumbers' : {" +
 						"'home' : { 'countryCode' : 'DE', 'number'  : 123 }," +
 						"'work' : { 'countryCode' : 'EN', 'number'  : 456 }" +
-					"}" +
-				"}"
-		);
+						"}" +
+						"}" );
 
 		// clean-up
 		user = session.get( User.class, user.getId() );
@@ -261,7 +257,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -269,13 +265,12 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : '" + user.getId() + "' }",
 				// expected
 				"{ " +
-					"'_id' : '" + user.getId() + "', " +
-					"'phoneNumbersByPriority' : [" +
+						"'_id' : '" + user.getId() + "', " +
+						"'phoneNumbersByPriority' : [" +
 						"{ 'priority' : 1, 'countryCode' : 'DE', 'number'  : 123 }," +
 						"{ 'priority' : 2, 'countryCode' : 'EN', 'number'  : 456 }" +
-					"]" +
-				"}"
-		);
+						"]" +
+						"}" );
 
 		// clean-up
 		user = session.get( User.class, user.getId() );
@@ -306,7 +301,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// assert
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Enterprise",
@@ -314,13 +309,12 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : 'enterprise-1' }",
 				// expected
 				"{ " +
-					"'_id' : 'enterprise-1', " +
-					"'departments' : {" +
+						"'_id' : 'enterprise-1', " +
+						"'departments' : {" +
 						"'sawing' : { 'name' : 'Sawing', 'headCount'  : 7 }," +
 						"'sale' : { 'name' : 'Sale', 'headCount'  : 2 }," +
-					"}" +
-				"}"
-		);
+						"}" +
+						"}" );
 
 		// clean up
 		session.delete( timberTradingInc );
@@ -347,7 +341,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// assert
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Enterprise",
@@ -355,14 +349,13 @@ public class MapMappingTest extends OgmTestCase {
 				"{ '_id' : 'enterprise-1' }",
 				// expected
 				"{ " +
-					"'_id' : 'enterprise-1', " +
-					"'revenueByDepartment' : {" +
+						"'_id' : 'enterprise-1', " +
+						"'revenueByDepartment' : {" +
 						"'sawing' : 2000," +
 						"'sale' : 1000," +
 						"'planting' : 3000," +
-					"}" +
-				"}"
-		);
+						"}" +
+						"}" );
 
 		// clean up
 		session.delete( timberTradingInc );
@@ -374,6 +367,6 @@ public class MapMappingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { User.class, Address.class, PhoneNumber.class, Enterprise.class };
+		return new Class<?>[]{ User.class, Address.class, PhoneNumber.class, Enterprise.class };
 	}
 }

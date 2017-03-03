@@ -34,35 +34,14 @@ public class MongoDBPerformanceTest extends OgmTestCase {
 
 	@Test
 	@BMRules(rules = {
-			@BMRule(
-					targetClass = "com.mongodb.DBCollection",
-					targetMethod = "insert(java.util.List, com.mongodb.WriteConcern)",
-					helper = "org.hibernate.ogm.utils.BytemanHelper",
-					action = "countInvocation(\"update\")",
-					name = "countInsert"),
-			@BMRule(targetClass = "com.mongodb.DBCollection",
-					targetMethod = "update(com.mongodb.DBObject, com.mongodb.DBObject, boolean, boolean, com.mongodb.WriteConcern)",
-					helper = "org.hibernate.ogm.utils.BytemanHelper",
-					action = "countInvocation(\"update\")",
-					name = "countUpdate"),
-			@BMRule(targetClass = "com.mongodb.DBCollection",
-					targetMethod = "update(com.mongodb.DBObject, com.mongodb.DBObject, boolean, boolean, com.mongodb.WriteConcern)",
-					helper = "org.hibernate.ogm.utils.BytemanHelper",
-					action = "countInvocation(\"update\")",
-					name = "countUpdate"),
-			@BMRule(targetClass = "com.mongodb.DBCollection",
-					targetMethod = "findAndModify(com.mongodb.DBObject, com.mongodb.DBObject)",
-					helper = "org.hibernate.ogm.utils.BytemanHelper",
-					action = "countInvocation(\"update\")",
-					name = "countFindAndModify"),
-			@BMRule(targetClass = "com.mongodb.DBCollection",
-					targetMethod = "findOne(com.mongodb.DBObject, com.mongodb.DBObject, com.mongodb.ReadPreference)",
-					helper = "org.hibernate.ogm.utils.BytemanHelper",
-					action = "countInvocation(\"load\")",
-					name = "countFindOne")
+			@BMRule(targetClass = "com.mongodb.MongoCollection<Document>", targetMethod = "insert(java.util.List, com.mongodb.WriteConcern)", helper = "org.hibernate.ogm.utils.BytemanHelper", action = "countInvocation(\"update\")", name = "countInsert"),
+			@BMRule(targetClass = "com.mongodb.MongoCollection<Document>", targetMethod = "update(com.mongodb.Document, com.mongodb.Document, boolean, boolean, com.mongodb.WriteConcern)", helper = "org.hibernate.ogm.utils.BytemanHelper", action = "countInvocation(\"update\")", name = "countUpdate"),
+			@BMRule(targetClass = "com.mongodb.MongoCollection<Document>", targetMethod = "update(com.mongodb.Document, com.mongodb.Document, boolean, boolean, com.mongodb.WriteConcern)", helper = "org.hibernate.ogm.utils.BytemanHelper", action = "countInvocation(\"update\")", name = "countUpdate"),
+			@BMRule(targetClass = "com.mongodb.MongoCollection<Document>", targetMethod = "findAndModify(com.mongodb.Document, com.mongodb.Document)", helper = "org.hibernate.ogm.utils.BytemanHelper", action = "countInvocation(\"update\")", name = "countFindAndModify"),
+			@BMRule(targetClass = "com.mongodb.MongoCollection<Document>", targetMethod = "findOne(com.mongodb.Document, com.mongodb.Document, com.mongodb.ReadPreference)", helper = "org.hibernate.ogm.utils.BytemanHelper", action = "countInvocation(\"load\")", name = "countFindOne")
 	})
 	public void testNumberOfCallsToDatastore() throws Exception {
-		//insert entity with embedded collection
+		// insert entity with embedded collection
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();
 		GrandChild luke = new GrandChild();
@@ -88,7 +67,7 @@ public class MongoDBPerformanceTest extends OgmTestCase {
 		assertThat( loadInvocationCount ).isEqualTo( 0 );
 		assertThat( updateInvocationCount ).isEqualTo( 0 );
 
-		//remove one of the elements and add a new one
+		// remove one of the elements and add a new one
 		tx = session.beginTransaction();
 		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
 		grandMother.getGrandChildren().remove( 0 );
@@ -100,7 +79,7 @@ public class MongoDBPerformanceTest extends OgmTestCase {
 		assertThat( loadInvocationCount ).isEqualTo( 1 );
 		assertThat( updateInvocationCount ).isEqualTo( 1 );
 
-		//assert removal has been propagated
+		// assert removal has been propagated
 		tx = session.beginTransaction();
 		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
 		assertThat( grandMother.getGrandChildren() ).onProperty( "name" ).containsExactly( "Leia" );
@@ -113,7 +92,7 @@ public class MongoDBPerformanceTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
+		return new Class<?>[]{
 				GrandMother.class,
 				Child.class
 		};

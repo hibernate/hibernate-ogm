@@ -25,7 +25,7 @@ public class MusicGenre {
 
 	private ObjectId id;
 	private String name;
-	private Set<Bar> playedIn = new HashSet<Bar>();
+	private Set<Bar> playedIn = new HashSet<>();
 
 	MusicGenre() {
 	}

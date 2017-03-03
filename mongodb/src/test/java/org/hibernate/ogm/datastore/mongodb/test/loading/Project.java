@@ -19,6 +19,7 @@ import javax.persistence.OrderColumn;
  */
 @Entity
 public class Project {
+
 	@Id
 	private String id;
 

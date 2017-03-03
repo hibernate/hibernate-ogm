@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping.associations;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.io.Serializable;
 
@@ -74,7 +74,7 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			assertDbObject(
+			assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"Node",
@@ -84,12 +84,11 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					null,
 					// expected
 					"{ " +
-						"'_id' : 'root', " +
-						"'children' : [ 'nl1', 'nl2' ]" +
-					"}"
-			);
+							"'_id' : 'root', " +
+							"'children' : [ 'nl1', 'nl2' ]" +
+							"}" );
 
-			assertDbObject(
+			assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"Node",
@@ -99,11 +98,10 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					null,
 					// expected
 					"{ " +
-						"'_id' : 'child1', " +
-					"}"
-			);
+							"'_id' : 'child1', " +
+							"}" );
 
-			assertDbObject(
+			assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"Node",
@@ -113,11 +111,10 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					null,
 					// expected
 					"{ " +
-						"'_id' : 'child2', " +
-					"}"
-			);
+							"'_id' : 'child2', " +
+							"}" );
 
-			assertDbObject(
+			assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"NodeLink",
@@ -127,13 +124,12 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					null,
 					// expected
 					"{ " +
-						"'_id' : 'nl1', " +
-						"'source_name' : 'root', " +
-						"'target_name' : 'child1', " +
-					"}"
-			);
+							"'_id' : 'nl1', " +
+							"'source_name' : 'root', " +
+							"'target_name' : 'child1', " +
+							"}" );
 
-			assertDbObject(
+			assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"NodeLink",
@@ -143,11 +139,10 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					null,
 					// expected
 					"{ " +
-						"'_id' : 'nl2', " +
-						"'source_name' : 'root', " +
-						"'target_name' : 'child2', " +
-					"}"
-			);
+							"'_id' : 'nl2', " +
+							"'source_name' : 'root', " +
+							"'target_name' : 'child2', " +
+							"}" );
 
 			transaction.commit();
 		}
