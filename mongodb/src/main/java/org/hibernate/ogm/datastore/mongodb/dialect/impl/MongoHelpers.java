@@ -8,8 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import java.util.regex.Pattern;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 /**
  * Provides functionality for dealing with (nested) fields of MongoDB documents.
@@ -22,7 +21,7 @@ public class MongoHelpers {
 
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 
-	public static void setValue(DBObject entity, String column, Object value) {
+	public static void setValue(Document entity, String column, Object value) {
 		// fast path for non-embedded case
 		if ( !column.contains( "." ) ) {
 			entity.put( column, value );
@@ -33,14 +32,14 @@ public class MongoHelpers {
 			int size = path.length;
 			for ( int index = 0; index < size; index++ ) {
 				String node = path[index];
-				DBObject parent = (DBObject) field;
+				Document parent = (Document) field;
 				field = parent.get( node );
 				if ( field == null ) {
 					if ( index == size - 1 ) {
 						field = value;
 					}
 					else {
-						field = new BasicDBObject();
+						field = new Document();
 					}
 					parent.put( node, field );
 				}
@@ -49,15 +48,15 @@ public class MongoHelpers {
 	}
 
 	/**
-	 * Remove a column from the DBObject
+	 * Remove a column from the Document
 	 *
-	 * @param entity the {@link DBObject} with the column
+	 * @param entity the {@link Document} with the column
 	 * @param column the column to remove
 	 */
-	public static void resetValue(DBObject entity, String column) {
+	public static void resetValue(Document entity, String column) {
 		// fast path for non-embedded case
 		if ( !column.contains( "." ) ) {
-			entity.removeField( column );
+			entity.remove( column );
 		}
 		else {
 			String[] path = DOT_SEPARATOR_PATTERN.split( column );
@@ -65,7 +64,7 @@ public class MongoHelpers {
 			int size = path.length;
 			for ( int index = 0; index < size; index++ ) {
 				String node = path[index];
-				DBObject parent = (DBObject) field;
+				Document parent = (Document) field;
 				field = parent.get( node );
 				if ( field == null && index < size - 1 ) {
 					//TODO clean up the hierarchy of empty containers
@@ -73,22 +72,22 @@ public class MongoHelpers {
 					return;
 				}
 				if ( index == size - 1 ) {
-					parent.removeField( node );
+					parent.remove( node );
 				}
 			}
 		}
 	}
 
-	public static boolean hasField(DBObject entity, String dotPath) {
+	public static boolean hasField(Document entity, String dotPath) {
 		return getValueOrNull( entity, dotPath ) != null;
 	}
 
-	public static <T> T getValueOrNull(DBObject entity, String dotPath, Class<T> type) {
+	public static <T> T getValueOrNull(Document entity, String dotPath, Class<T> type) {
 		Object value = getValueOrNull( entity, dotPath );
 		return type.isInstance( value ) ? type.cast( value ) : null;
 	}
 
-	public static Object getValueOrNull(DBObject entity, String dotPath) {
+	public static Object getValueOrNull(Document entity, String dotPath) {
 		// fast path for simple properties
 		if ( !dotPath.contains( "." ) ) {
 			return entity.get( dotPath );
@@ -99,10 +98,10 @@ public class MongoHelpers {
 
 		for ( int index = 0; index < size - 1; index++ ) {
 			Object next = entity.get( path[index] );
-			if ( next == null || !( next instanceof DBObject ) ) {
+			if ( next == null || !( next instanceof Document ) ) {
 				return null;
 			}
-			entity = (DBObject) next;
+			entity = (Document) next;
 		}
 
 		String field = path[size - 1];

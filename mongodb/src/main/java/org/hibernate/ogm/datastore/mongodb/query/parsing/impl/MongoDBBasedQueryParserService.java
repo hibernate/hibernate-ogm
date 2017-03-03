@@ -19,10 +19,9 @@ import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.query.spi.QueryParsingResult;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 
-import com.mongodb.DBObject;
 
 /**
- * A {@link QueryParserService} implementation which creates MongoDB queries in form of {@link DBObject}s.
+ * A {@link QueryParserService} implementation which creates MongoDB queries in form of {@link Document}s.
  *
  * @author Gunnar Morling
  */

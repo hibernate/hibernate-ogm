@@ -237,6 +237,7 @@
                     <encoding>UTF-8</encoding>
                     <!-- Annotation processor is run as an independent step -->
                     <proc>none</proc>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>

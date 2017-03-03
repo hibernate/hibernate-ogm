@@ -17,8 +17,8 @@ import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.Assoc
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 
 /**
  * {@link AssociationRowFactory} which creates association rows based on the {@link DBObject} based representation used
@@ -27,27 +27,27 @@ import com.mongodb.DBObject;
  * @author Gunnar Morling
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationRowFactory<DBObject> {
+public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationRowFactory<Document> {
 
 	public static final MongoDBAssociationRowFactory INSTANCE = new MongoDBAssociationRowFactory();
 
 	private MongoDBAssociationRowFactory() {
-		super( DBObject.class );
+		super( Document.class );
 	}
 
 	@Override
-	protected DBObject getSingleColumnRow(String columnName, Object value) {
-		DBObject dbObjectAsRow = new BasicDBObject( 1 );
+	protected Document getSingleColumnRow(String columnName, Object value) {
+		Document dbObjectAsRow = new Document(  );
 		MongoHelpers.setValue( dbObjectAsRow, columnName, value );
 		return dbObjectAsRow;
 	}
 
 	@Override
-	protected AssociationRowAccessor<DBObject> getAssociationRowAccessor(String[] prefixedColumns, String prefix) {
+	protected AssociationRowAccessor<Document> getAssociationRowAccessor(String[] prefixedColumns, String prefix) {
 		return prefix != null ? new MongoDBAssociationRowAccessor( prefixedColumns, prefix ) : MongoDBAssociationRowAccessor.INSTANCE;
 	}
 
-	private static class MongoDBAssociationRowAccessor implements AssociationRow.AssociationRowAccessor<DBObject> {
+	private static class MongoDBAssociationRowAccessor implements AssociationRow.AssociationRowAccessor<Document> {
 
 		private static final MongoDBAssociationRowAccessor INSTANCE = new MongoDBAssociationRowAccessor();
 
@@ -69,7 +69,7 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 		}
 
 		@Override
-		public Set<String> getColumnNames(DBObject row) {
+		public Set<String> getColumnNames(Document row) {
 			Set<String> columnNames = new HashSet<String>();
 			addColumnNames( row, columnNames, "" );
 			for ( String prefixedColumn : prefixedColumns ) {
@@ -87,11 +87,11 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 			return prefixedColumn.substring( prefix.length() + 1 ); // prefix + "."
 		}
 
-		private void addColumnNames(DBObject row, Set<String> columnNames, String prefix) {
+		private void addColumnNames(Document row, Set<String> columnNames, String prefix) {
 			for ( String field : row.keySet() ) {
 				Object sub = row.get( field );
-				if ( sub instanceof DBObject ) {
-					addColumnNames( (DBObject) sub, columnNames, MongoHelpers.flatten( prefix, field ) );
+				if ( sub instanceof Document ) {
+					addColumnNames( (Document) sub, columnNames, MongoHelpers.flatten( prefix, field ) );
 				}
 				else {
 					columnNames.add( MongoHelpers.flatten( prefix, field ) );
@@ -100,7 +100,7 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 		}
 
 		@Override
-		public Object get(DBObject row, String column) {
+		public Object get(Document row, String column) {
 			if ( prefixedColumns.contains( column ) ) {
 				column = removePrefix( column );
 			}

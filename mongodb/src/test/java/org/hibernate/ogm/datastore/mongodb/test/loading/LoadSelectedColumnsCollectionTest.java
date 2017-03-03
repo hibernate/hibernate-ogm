@@ -61,10 +61,9 @@ import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Test;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -77,9 +76,9 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
 
-		DB database = provider.getDatabase();
-		DBCollection collection = database.getCollection( collectionName );
-		BasicDBObject water = new BasicDBObject();
+		MongoDatabase database = provider.getDatabase();
+		MongoCollection<Document> collection = database.getCollection( collectionName );
+		Document water = new Document();
 		water.put( "_id", "1234" );
 		water.put( "name", "Water" );
 		water.put( "volume", "1L" );
@@ -167,7 +166,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-		final DBObject assocObject = associationSnapshot.getDBObject();
+		final Document assocObject = associationSnapshot.getDocument();
 		this.checkLoading( assocObject );
 
 		session.delete( mongodb );
@@ -221,17 +220,17 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 	 */
 	protected void addExtraColumn() {
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
-		DB database = provider.getDatabase();
-		DBCollection collection = database.getCollection( "associations_Project_Module" );
-		BasicDBObject query = new BasicDBObject( 1 );
-		query.put( "_id", new BasicDBObject( "Project_id", "projectID" ) );
+		MongoDatabase database = provider.getDatabase();
+		MongoCollection<Document> collection = database.getCollection( "associations_Project_Module" );
+		Document query = new Document(  );
+		query.put( "_id", new Document( "Project_id", "projectID" ) );
 
-		BasicDBObject updater = new BasicDBObject( 1 );
-		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
+		Document updater = new Document(  );
+		updater.put( "$push", new Document( "extraColumn", 1 ) );
 		collection.update( query, updater );
 	}
 
-	protected void checkLoading(DBObject associationObject) {
+	protected void checkLoading(Document associationObject) {
 		/*
 		 * The only column (except _id) that needs to be retrieved is "rows"
 		 * So we should have 2 columns

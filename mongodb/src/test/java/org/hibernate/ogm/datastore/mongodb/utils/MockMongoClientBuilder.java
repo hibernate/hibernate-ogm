@@ -16,18 +16,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import com.mongodb.client.MongoDatabase;
 
 /**
- * A builder for mocked {@link MongoClient} instances which return given {@link DBObject}s for given collections.
+ * A builder for mocked {@link MongoClient} instances which return given {@link Document}s for given collections.
  * <p>
- * Note that currently only one {@code DBObject} is allowed per collection, but this could be expanded into a more
+ * Note that currently only one {@code Document} is allowed per collection, but this could be expanded into a more
  * general mechanism if required.
  *
  * @author Gunnar Morling
@@ -48,13 +46,13 @@ public class MockMongoClientBuilder {
 		private final Map<String, DBCollection> collections = new HashMap<String, DBCollection>();
 
 		/**
-		 * Registers the given {@link DBObject} with the specified collection. The object can be retrieved from the
+		 * Registers the given {@link Document} with the specified collection. The object can be retrieved from the
 		 * collection via {@link DBCollection#findOne(DBObject, DBObject))}.
 		 * <p>
 		 * Note that currently only one {@code DBObject} is supported per collection, but this could be expanded into a
 		 * more general mechanism if required.
 		 */
-		public MockMongoClientBuilderContext insert(String collectionName, DBObject object) {
+		public MockMongoClientBuilderContext insert(String collectionName, Document object) {
 			DBCollection collection = mock( DBCollection.class );
 			collections.put( collectionName, collection );
 
@@ -70,7 +68,7 @@ public class MockMongoClientBuilder {
 		 * Builds and returns a mock MongoDB client based on the given configuration.
 		 */
 		public MockMongoClient build() {
-			DB database = mock( DB.class );
+			MongoDatabase database = mock( MongoDatabase.class );
 
 			DBCollection defaultCollection = mock( DBCollection.class );
 			when( database.getCollection( anyString() ) ).thenReturn( defaultCollection );

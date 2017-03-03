@@ -9,58 +9,58 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl;
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 
 /**
  * MongoDB-based implementation of {@link ComparisonPredicate}.
  *
  * @author Gunnar Morling
  */
-public class MongoDBComparisonPredicate extends ComparisonPredicate<DBObject> implements NegatablePredicate<DBObject> {
+public class MongoDBComparisonPredicate extends ComparisonPredicate<Document> implements NegatablePredicate<Document> {
 
 	public MongoDBComparisonPredicate(String propertyName, ComparisonPredicate.Type comparisonType, Object value) {
 		super( propertyName, comparisonType, value );
 	}
 
 	@Override
-	protected DBObject getStrictlyLessQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$lt", value ) );
+	protected Document getStrictlyLessQuery() {
+		return new Document( propertyName, new Document( "$lt", value ) );
 	}
 
 	@Override
-	protected DBObject getLessOrEqualsQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$lte", value ) );
+	protected Document getLessOrEqualsQuery() {
+		return new Document( propertyName, new Document( "$lte", value ) );
 	}
 
 	@Override
-	protected DBObject getEqualsQuery() {
-		return new BasicDBObject( propertyName, value );
+	protected Document getEqualsQuery() {
+		return new Document( propertyName, value );
 	}
 
 	@Override
-	protected DBObject getGreaterOrEqualsQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$gte", value ) );
+	protected Document getGreaterOrEqualsQuery() {
+		return new Document( propertyName, new Document( "$gte", value ) );
 	}
 
 	@Override
-	protected DBObject getStrictlyGreaterQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$gt", value ) );
+	protected Document getStrictlyGreaterQuery() {
+		return new Document( propertyName, new Document( "$gt", value ) );
 	}
 
 	@Override
-	public DBObject getNegatedQuery() {
+	public Document getNegatedQuery() {
 		switch ( type ) {
 			case LESS:
-				return new BasicDBObject( propertyName, new BasicDBObject( "$gte", value ) );
+				return new Document( propertyName, new Document( "$gte", value ) );
 			case LESS_OR_EQUAL:
-				return new BasicDBObject( propertyName, new BasicDBObject( "$gt", value ) );
+				return new Document( propertyName, new Document( "$gt", value ) );
 			case EQUALS:
-				return new BasicDBObject( propertyName, new BasicDBObject( "$ne", value ) );
+				return new Document( propertyName, new Document( "$ne", value ) );
 			case GREATER_OR_EQUAL:
-				return new BasicDBObject( propertyName, new BasicDBObject( "$lt", value ) );
+				return new Document( propertyName, new Document( "$lt", value ) );
 			case GREATER:
-				return new BasicDBObject( propertyName, new BasicDBObject( "$lte", value ) );
+				return new Document( propertyName, new Document( "$lte", value ) );
 			default:
 				throw new UnsupportedOperationException( "Unsupported comparison type: " + type );
 		}

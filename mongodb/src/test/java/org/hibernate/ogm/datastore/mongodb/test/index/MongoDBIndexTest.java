@@ -19,7 +19,7 @@ import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 /**
  * Testing index creation with options specific to MongoDB
@@ -38,7 +38,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 	public void testSuccessfulIndexCreation() throws Exception {
 		OgmSession session = openSession();
 
-		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
+		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
 
 		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
@@ -59,7 +59,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 	public void testSuccessfulTextIndexCreation() throws Exception {
 		OgmSession session = openSession();
 
-		Map<String, DBObject> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
+		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
 
 		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
