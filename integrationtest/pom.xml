@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.1.0-SNAPSHOT</version>
+        <version>5.2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>hibernate-ogm-integrationtest</artifactId>
@@ -112,7 +112,7 @@
                                         <groupId>org.hibernate</groupId>
                                         <artifactId>hibernate-orm-modules</artifactId>
                                         <version>${hibernateVersion}</version>
-                                        <classifier>wildfly-10-dist</classifier>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>
@@ -120,7 +120,7 @@
                                     <artifactItem>
                                         <groupId>${project.groupId}</groupId>
                                         <artifactId>hibernate-ogm-modules</artifactId>
-                                        <classifier>wildfly-10-dist</classifier>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
                                         <version>${project.version}</version>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
@@ -149,7 +149,7 @@
                                         <groupId>org.hibernate</groupId>
                                         <artifactId>hibernate-search-modules</artifactId>
                                         <version>${hibernateSearchVersion}</version>
-                                        <classifier>wildfly-10-dist</classifier>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>

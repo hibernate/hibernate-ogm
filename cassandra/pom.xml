@@ -3,7 +3,7 @@
     <parent>
         <artifactId>hibernate-ogm-parent</artifactId>
         <groupId>org.hibernate.ogm</groupId>
-        <version>5.1.0-SNAPSHOT</version>
+        <version>5.2.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 

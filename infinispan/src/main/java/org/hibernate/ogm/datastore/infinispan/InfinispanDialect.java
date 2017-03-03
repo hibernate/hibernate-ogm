@@ -157,7 +157,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
+		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
 		Cache<AK, Map<RowKey, Map<String, Object>>> cache = getCacheManager().getAssociationCache(
 				key.getMetadata()

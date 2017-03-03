@@ -20,6 +20,7 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.common.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jAssociatedNodesHelper;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jAssociationQueries;
@@ -27,7 +28,6 @@ import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jEntit
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jMapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jNodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.NodeWithEmbeddedNodes;
@@ -274,10 +274,21 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 		Long txId = transactionId( associationContext.getTransactionContext() );
 		Tuple associationRow = action.getValue();
 		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata  );
-		Object[] relationshipProperties = relationshipProperties( associationKey, action );
+		if ( !emptyNode( embeddedKey ) ) {
+			Object[] relationshipProperties = relationshipProperties( associationKey, action );
 
-		getAssociationQueries( associationKey.getMetadata() )
-				.createRelationshipForEmbeddedAssociation( client, txId, associationKey, embeddedKey, relationshipProperties );
+			getAssociationQueries( associationKey.getMetadata() )
+					.createRelationshipForEmbeddedAssociation( client, txId, associationKey, embeddedKey, relationshipProperties );
+		}
+	}
+
+	private static boolean emptyNode(EntityKey entityKey) {
+		for ( Object value : entityKey.getColumnValues() ) {
+			if ( value != null ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
@@ -325,15 +336,14 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 		while ( relationships.hasNext() ) {
 			RemoteNeo4jAssociationPropertiesRow row = relationships.next();
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
-			HttpNeo4jTupleAssociationSnapshot snapshot = new HttpNeo4jTupleAssociationSnapshot( client,
-					getAssociationQueries( associationKey.getMetadata() ), row, associationKey, associatedEntityKeyMetadata );
+			RemoteNeo4jTupleAssociationSnapshot snapshot = new RemoteNeo4jTupleAssociationSnapshot( row, associationKey, associatedEntityKeyMetadata );
 			RowKey rowKey = convert( associationKey, snapshot );
 			tuples.put( rowKey, new Tuple( snapshot, SnapshotType.UPDATE ) );
 		}
 		return tuples;
 	}
 
-	private RowKey convert(AssociationKey associationKey, HttpNeo4jTupleAssociationSnapshot snapshot) {
+	private RowKey convert(AssociationKey associationKey, RemoteNeo4jTupleAssociationSnapshot snapshot) {
 		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Object[] values = new Object[columnNames.length];
 

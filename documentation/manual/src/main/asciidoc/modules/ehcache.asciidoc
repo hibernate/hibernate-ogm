@@ -20,7 +20,7 @@ with this version of Hibernate OGM.
 
 === Configure Ehcache
 
-Two steps:
+Few steps:
 
 * Add the dependencies to classpath
 * And then choose one of:
@@ -28,6 +28,7 @@ Two steps:
 ** Use the default Ehcache configuration (no action needed)
 ** Point to your own configuration resource name
 
+* If you need JPQL or HQL queries, add Hibernate Search (<<ogm-query-using-hibernate-search>>)
 
 [[ogm-ehcache-adddepencies]]
 
@@ -671,6 +672,92 @@ public class GrandChild {
 
 Here we used an indexed collection and to identify the entry in the collection,
 only the owning entity id and the index value is enough.
+
+.@ElementCollection with Map of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+	private Integer number;
+	private String project;
+
+    // getters, setters ...
+}
+----
+
+.Content of the `ForumUser` cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                            2+^| MAP ENTRIES
+   ^.^| ["id"], ["Jane Doe"]                | id          | "Jane Doe"
+|===
+
+.Content of the `ForumUser_issues` cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
+
+.12+^.^| ["ForumUser_id"], ["Jane Doe"]
+
+.4+^.^| ["ForumUser_id", "issues_KEY"], ["Jane Doe", "issueWithNull"]
+
+      | ForumUser_id
+      | Jane Doe
+
+      | issue_KEY
+      | "issueWithNull"
+
+      | issues.value.project
+      | <null>
+
+      | issues.value.number
+      | <null>
+
+.4+^.^| ["ForumUser_id", "issues_KEY"], ["Jane Doe", "issue1"]
+
+      | ForumUser_id
+      | "Jane Doe"
+
+      | issue_KEY
+      | "issue1"
+
+      | issues.value.project
+      | "OGM"
+
+      | issues.value.number
+      | 1253
+
+.4+^.^| ["ForumUser_id", "issues_KEY"], ["Jane Doe", "issue2"]
+
+      | ForumUser_id
+      | "Jane Doe"
+
+      | issue_KEY
+      | "issue2"
+
+      | issues.value.project
+      | "HSEARCH"
+
+      | issues.value.number
+      | 2000
+|===
+====
 
 ==== Associations
 

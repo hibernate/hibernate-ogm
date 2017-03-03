@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.1.0-SNAPSHOT</version>
+        <version>5.2.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -168,9 +168,11 @@
                         <icons>font</icons>
                         <tabsize>4</tabsize>
 
+                        <wildfly-version>${version.wildfly}</wildfly-version>
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
                         <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-wildfly-classifier>${hibernateWildflyClassifier}</hibernate-wildfly-classifier>
                         <hibernate-orm-major-minor-version>${hibernateParsedVersion.majorVersion}.${hibernateParsedVersion.minorVersion}</hibernate-orm-major-minor-version>
                         <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
                         <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>

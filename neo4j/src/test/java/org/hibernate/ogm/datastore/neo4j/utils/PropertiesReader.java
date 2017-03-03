@@ -14,9 +14,11 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * Reads properties from the hibernate.properties configuration for the tests.
+ *
  * @author Davide D'Alto
  */
-public class PropertiesReader {
+public final class PropertiesReader {
 
 	private static final Map<String, String> hibernateProperties = readProperties();
 

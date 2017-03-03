@@ -1,6 +1,27 @@
 Hibernate OGM Changelog
 =======================
 
+5.1.0.Final (01-03-2017)
+-------------------------
+
+** Improvement
+    * OGM-1260 - documentation          - Extends the documentation paragraph about WildFly configuration
+    * OGM-1258 - core                   - Update Hibernate ORM to version 5.1.4.Final
+    * OGM-1257 - neo4j                  - Update Neo4j java driver to version 1.1.2
+    * OGM-1253 - neo4j, tests           - Add testcase for mapping of Map<String, Embedded> in Neo4j
+    * OGM-1252 - documentation, neo4j   - Show mapping example for Map<String, Embedded>
+    * OGM-1052 - documentation          - Update the documentation to state that the store specific properties are in classes, not interfaces
+    * OGM-924 - couchdb, documentation - Improve CouchDB configuration paragraph
+
+** New Feature
+    * OGM-1091 - documentation          - Clarify what needs to be done to do searches in the getting started guide
+
+** Sub-task
+    * OGM-1078 - documentation, neo4j   - Update documentation
+
+** Task
+    * OGM-1256 - build                  - Upgrade to Hibernate Search 5.6.1.Final and Apache Lucene 5.5.4
+
 5.1.0.CR1 (15-02-2017)
 -------------------------
 

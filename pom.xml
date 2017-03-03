@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-bom</artifactId>
-        <version>5.1.0-SNAPSHOT</version>
+        <version>5.2.0-SNAPSHOT</version>
         <relativePath>bom/pom.xml</relativePath>
     </parent>
 
@@ -74,6 +74,7 @@
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>10.1.0.Final</version.wildfly>
+        <hibernateWildflyClassifier>wildfly-10-dist</hibernateWildflyClassifier>
         <hibernate-orm.module.slot>5.1</hibernate-orm.module.slot>
 
         <!-- Asciidoctor -->

@@ -10,7 +10,7 @@
 
     <groupId>org.hibernate.ogm</groupId>
     <artifactId>hibernate-ogm-bom</artifactId>
-    <version>5.1.0-SNAPSHOT</version>
+    <version>5.2.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -39,7 +39,7 @@
         <narayanaVersion>5.4.0.Final</narayanaVersion>
 
         <!-- Hibernate ORM -->
-        <hibernateVersion>5.1.2.Final</hibernateVersion>
+        <hibernateVersion>5.1.4.Final</hibernateVersion>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
         <luceneVersion>5.5.4</luceneVersion>
@@ -63,7 +63,7 @@
 
         <!-- Neo4j -->
         <neo4jVersion>3.0.8</neo4jVersion>
-        <neo4jJavaDriverVersion>1.1.0</neo4jJavaDriverVersion>
+        <neo4jJavaDriverVersion>1.1.2</neo4jJavaDriverVersion>
         <!-- Update dependency versions accordingly when updating Neo4j  -->
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler30Version>${neo4jVersion}</neo4jCypherCompiler30Version>

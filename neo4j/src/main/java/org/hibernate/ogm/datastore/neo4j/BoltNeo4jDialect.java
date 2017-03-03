@@ -25,7 +25,6 @@ import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jEntit
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jMapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jNodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.NodeWithEmbeddedNodes;
@@ -33,6 +32,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationPropertiesRow;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.common.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -425,7 +425,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		while ( relationships.hasNext() ) {
 			RemoteNeo4jAssociationPropertiesRow row = relationships.next();
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
-			BoltNeo4jTupleAssociationSnapshot snapshot = new BoltNeo4jTupleAssociationSnapshot( row, associationKey, associatedEntityKeyMetadata );
+			RemoteNeo4jTupleAssociationSnapshot snapshot = new RemoteNeo4jTupleAssociationSnapshot( row, associationKey, associatedEntityKeyMetadata );
 			RowKey rowKey = convert( associationKey, snapshot );
 			tuples.put( rowKey, new Tuple( snapshot, SnapshotType.UPDATE ) );
 		}
@@ -484,27 +484,39 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	 * @param associatedEntityKeyMetadata
 	 * @param action
 	 */
-	private Relationship putAssociationOperation(AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
+	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
 		switch ( associationKey.getMetadata().getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
-				return createRelationshipWithEmbeddedNode( associationKey, associationContext, action );
+				createRelationshipWithEmbeddedNode( associationKey, associationContext, action );
+				break;
 			case ASSOCIATION:
-				return findOrCreateRelationshipWithEntityNode( associationKey, associationContext, action );
+				findOrCreateRelationshipWithEntityNode( associationKey, associationContext, action );
+				break;
 			default:
 				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getMetadata().getAssociationKind() );
 		}
 	}
 
-	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
+	private void createRelationshipWithEmbeddedNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
 		AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();
 		Transaction tx = transaction( associationContext );
 		Tuple associationRow = action.getValue();
 		EntityKey embeddedKey = getEntityKey( associationRow, associatedEntityKeyMetadata  );
-		Object[] relationshipProperties = relationshipProperties( associationKey, action );
+		if ( !emptyNode( embeddedKey ) ) {
+			Object[] relationshipProperties = relationshipProperties( associationKey, action );
 
-		Relationship relationship = getAssociationQueries( associationKey.getMetadata() )
-				.createRelationshipForEmbeddedAssociation( tx, associationKey, embeddedKey, relationshipProperties );
-		return relationship;
+			getAssociationQueries( associationKey.getMetadata() )
+					.createRelationshipForEmbeddedAssociation( tx, associationKey, embeddedKey, relationshipProperties );
+		}
+	}
+
+	private static boolean emptyNode(EntityKey entityKey) {
+		for ( Object value : entityKey.getColumnValues() ) {
+			if ( value != null ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {

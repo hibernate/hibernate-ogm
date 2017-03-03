@@ -559,6 +559,49 @@ Key: GrandMother:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 ----
 ====
 
+.@ElementCollection with Map of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+	private Integer number;
+	private String project;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: "ForumUser:Jane Doe"
+{
+	"issues": {
+		"issue2": {
+			"number" : 2000,
+			"project" : "OGM"
+		},
+		"issue1": {
+			"number" : 1253,
+			"project" : "HSEARCH"
+		}
+	}
+}
+----
+====
 
 [[redis-hash-mapping]]
 ==== Hash mapping
@@ -912,6 +955,46 @@ Key: Associations:GrandMother_grandChildren:86ada718-f2a2-4299-b6ac-3d90b1ef2331
 [
     "{\"name\":\"Luke\",\"birthorder\":\"0\"}",
     "{\"name\":\"Leia\",\"birthorder\":\"1\"}"
+]
+----
+====
+
+.@ElementCollection with Map of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+public class ForumUser {
+
+	@Id
+	private String name;
+
+	@ElementCollection
+	private Map<String, JiraIssue> issues = new HashMap<>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class JiraIssue {
+
+	private Integer number;
+	private String project;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+Key: "ForumUser:Jane Doe"
+id = "Jane Doe"
+
+Key: Associations:ForumUser_issues:Jane Doe:issues
+[
+	{"issues_KEY":\"issueWithNull\"}"
+	{"value":{\"number\":\"2000\",\"project\":\"OGM\"},\"issues_KEY\":\"issue2\"}"
+	{"value":{\"number\":\"1253\",\"project\":\"HSEARCH\"},\"issues_KEY\":\"issue1\"}
 ]
 ----
 ====
@@ -2322,7 +2405,8 @@ But do not consider rollback as a possibility, this won't work.
 Hibernate OGM is a work in progress
 and we are actively working on JP-QL query support.
 
-In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM.
+In the mean time, you can use Hibernate Search to query entities stored by Hibernate OGM
+(<<ogm-query-using-hibernate-search>>).
 
 === Redis Cluster
 
