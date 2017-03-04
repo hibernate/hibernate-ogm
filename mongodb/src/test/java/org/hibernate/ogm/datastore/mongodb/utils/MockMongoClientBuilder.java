@@ -20,7 +20,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
 /**
  * A builder for mocked {@link MongoClient} instances which return given {@link Document}s for given collections.
@@ -43,7 +45,7 @@ public class MockMongoClientBuilder {
 
 	public static class MockMongoClientBuilderContext {
 
-		private final Map<String, DBCollection> collections = new HashMap<String, DBCollection>();
+		private final Map<String, MongoCollection<Document>> collections = new HashMap<>();
 
 		/**
 		 * Registers the given {@link Document} with the specified collection. The object can be retrieved from the

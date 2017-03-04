@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mongodb.client.MongoCursor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -127,7 +128,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		long associationCount = 0;
 
 		for ( String entityCollection : getEntityCollections( sessionFactory ) ) {
-			DBCursor entities = db.getCollection( entityCollection ).find();
+			MongoCursor<Document> entities = db.getCollection( entityCollection ).find().iterator();
 
 			while ( entities.hasNext() ) {
 				Document entity = entities.next();
@@ -156,7 +157,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	private Set<String> getEntityCollections(SessionFactory sessionFactory) {
-		DB db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
+		MongoDatabase db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
 		Set<String> names = new HashSet<String>();
 
 		for ( String collectionName : db.getCollectionNames() ) {
@@ -171,7 +172,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	private Set<String> getDedicatedAssociationCollections(SessionFactory sessionFactory) {
-		DB db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
+		MongoDatabase db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
 		Set<String> names = new HashSet<String>();
 
 		for ( String collectionName : db.getCollectionNames() ) {
