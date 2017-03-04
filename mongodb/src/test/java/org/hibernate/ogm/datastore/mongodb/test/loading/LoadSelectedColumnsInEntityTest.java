@@ -45,7 +45,7 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 
 		Document updater = new Document( );
 		updater.put( "$push", new Document( "extraColumn", 1 ) );
-		collection.update( query, updater );
+		collection.updateMany( query, updater );
 	}
 
 	@Override

@@ -49,6 +49,6 @@ public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsCollection
 
 		Document updater = new Document( );
 		updater.put( "$push", new Document( "extraColumn", 1 ) );
-		collection.update( query, updater );
+		collection.updateMany( query, updater );
 	}
 }

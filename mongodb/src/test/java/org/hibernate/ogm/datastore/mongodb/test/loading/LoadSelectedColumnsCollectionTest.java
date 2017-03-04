@@ -82,7 +82,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		water.put( "_id", "1234" );
 		water.put( "name", "Water" );
 		water.put( "volume", "1L" );
-		collection.insert( water );
+		collection.insertOne( water );
 
 		List<String> selectedColumns = new ArrayList<>();
 		selectedColumns.add( "name" );
@@ -98,7 +98,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		assertEquals( selectedColumns.size(), retrievedColumn.size() - 1 );
 		assertTrue( retrievedColumn.containsAll( selectedColumns ) );
 
-		collection.remove( water );
+		collection.deleteMany( water );
 	}
 
 	@Test
@@ -227,7 +227,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 		Document updater = new Document(  );
 		updater.put( "$push", new Document( "extraColumn", 1 ) );
-		collection.update( query, updater );
+		collection.updateMany( query, updater );
 	}
 
 	protected void checkLoading(Document associationObject) {

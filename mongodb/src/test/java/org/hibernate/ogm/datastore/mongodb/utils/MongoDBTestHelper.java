@@ -158,9 +158,11 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 
 	private Set<String> getEntityCollections(SessionFactory sessionFactory) {
 		MongoDatabase db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
-		Set<String> names = new HashSet<String>();
+		Set<String> names = new HashSet<>();
+		MongoCursor<String> collections = db.listCollectionNames().iterator();
 
-		for ( String collectionName : db.getCollectionNames() ) {
+		while ( collections.hasNext() ) {
+			String collectionName = collections.next();
 			if ( !isSystemCollection( collectionName ) &&
 					!isDedicatedAssociationCollection( collectionName ) &&
 					!isGlobalAssociationCollection( collectionName ) ) {
@@ -173,14 +175,14 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 
 	private Set<String> getDedicatedAssociationCollections(SessionFactory sessionFactory) {
 		MongoDatabase db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
-		Set<String> names = new HashSet<String>();
-
-		for ( String collectionName : db.getCollectionNames() ) {
+		Set<String> names = new HashSet<>();
+		MongoCursor<String> collections = db.listCollectionNames().iterator();
+		while ( collections.hasNext() ) {
+			String collectionName = collections.next();
 			if ( isDedicatedAssociationCollection( collectionName ) ) {
 				names.add( collectionName );
 			}
 		}
-
 		return names;
 	}
 
@@ -197,9 +199,9 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( session.getSessionFactory() );
 		Document finder = new Document( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
-		Document result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
+		Document result = provider.getDatabase().getCollection( key.getTable() ).find( finder ).first();
 		replaceIdentifierColumnName( result, key );
-		return result.toMap();
+		return DocumentUtil.toMap( result );
 	}
 
 	/**
@@ -278,24 +280,28 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String projectionDbObject, String expectedDbObject) {
-		Document finder = (Document) Document.parse( queryDbObject );
+		Document finder =  Document.parse( queryDbObject );
 		Document fields = projectionDbObject != null ? (Document) Document.parse( projectionDbObject ) : null;
 
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		Document actual = provider.getDatabase().getCollection( collection ).findOne( finder, fields );
+		Document actual = provider.getDatabase().getCollection( collection ).find( finder) .projection( fields ).first();
 
 		assertJsonEquals( expectedDbObject, actual.toString() );
 	}
 
 	public static Map<String, Document> getIndexes(OgmSessionFactory sessionFactory, String collection) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		List<Document> indexes = provider.getDatabase().getCollection( collection ).getIndexInfo();
+		MongoCursor<Document> indexes = provider.getDatabase().getCollection( collection ).listIndexes().iterator();
 		Map<String, Document> indexMap = new HashMap<>();
-		for ( Document index : indexes ) {
+
+		while ( indexes.hasNext() ) {
+			Document index = indexes.next();
 			indexMap.put( index.get( "name" ).toString(), index );
 		}
+
 		return indexMap;
 	}
+
 
 	public static void dropIndexes(OgmSessionFactory sessionFactory, String collection) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
