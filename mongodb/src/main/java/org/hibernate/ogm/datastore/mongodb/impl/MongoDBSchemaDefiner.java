@@ -47,6 +47,7 @@ import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
@@ -290,10 +291,12 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	private Map<String, Document> getIndexes(MongoCollection<Document> collection) {
-		List<Document> indexes = collection.getIndexInfo();
 		Map<String, Document> indexMap = new HashMap<>();
-		for ( Document index : indexes ) {
-			indexMap.put( index.get( "name" ).toString(), index );
+		try (MongoCursor<Document> it = collection.listIndexes().iterator()) {
+			while ( it.hasNext() ) {
+				Document index = it.next();
+				indexMap.put( index.get( "name" ).toString(), index );
+			}
 		}
 		return indexMap;
 	}

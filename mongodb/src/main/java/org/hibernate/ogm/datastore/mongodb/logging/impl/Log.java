@@ -53,7 +53,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@LogMessage(level = TRACE)
 	@Message(id = 1210, value = "Removed [%d] associations")
-	void removedAssociation(int nAffected);
+	void removedAssociation(long nAffected);
 
 	@Message(id = 1214, value = "Unable to connect to MongoDB instance: %1$s")
 	HibernateException unableToConnectToDatastore(String message, @Cause Exception e);

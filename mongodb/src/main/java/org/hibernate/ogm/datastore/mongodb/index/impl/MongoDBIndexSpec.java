@@ -14,6 +14,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
 
+import com.mongodb.client.model.IndexOptions;
 import org.bson.Document;
 
 /**
@@ -45,7 +46,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * The options specific to MongoDB.
 	 */
-	private Document options;
+	private IndexOptions options;
 
 	/**
 	 * Indicates if the index is a text index.
@@ -86,17 +87,16 @@ public class MongoDBIndexSpec {
 	/**
 	 * Prepare the options by adding additional information to them.
 	 */
-	private Document prepareOptions(Document options, String indexName, boolean unique) {
-		options.put( "name", indexName );
+	private IndexOptions prepareOptions(Document options, String indexName, boolean unique) {
+		IndexOptions indexOptions = new IndexOptions();
+		indexOptions.name( indexName );
+		indexOptions.unique( unique );
 		if ( unique ) {
-			options.put( "unique", true );
 			// MongoDB only allows one null value per unique index which is not in line with what we usually consider
 			// as the definition of a unique constraint. Thus, we mark the index as sparse to only index values
 			// defined and avoid this issue. We do this only if a partialFilterExpression has not been defined
 			// as partialFilterExpression and sparse are exclusive.
-			if ( !options.containsKey( "partialFilterExpression" ) ) {
-				options.put( "sparse", true );
-			}
+			indexOptions.sparse( !options.containsKey( "partialFilterExpression" ) );
 		}
 		if ( Boolean.TRUE.equals( options.get( "text" ) ) ) {
 			// text is an option we take into account to mark an index as a full text index as we cannot put "text" as
@@ -105,7 +105,7 @@ public class MongoDBIndexSpec {
 			isTextIndex = true;
 			options.remove( "text" );
 		}
-		return options;
+		return indexOptions;
 	}
 
 	public String getCollection() {
@@ -136,7 +136,7 @@ public class MongoDBIndexSpec {
 		}
 	}
 
-	public Document getOptions() {
+	public IndexOptions getOptions() {
 		return options;
 	}
 
