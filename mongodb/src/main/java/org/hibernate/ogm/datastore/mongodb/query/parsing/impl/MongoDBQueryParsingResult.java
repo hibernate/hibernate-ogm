@@ -69,6 +69,7 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 			orderBy,
 			null,
 			null,
+			null,
 			unwinds
 		);
 	}

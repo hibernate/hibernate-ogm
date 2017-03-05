@@ -55,7 +55,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 	/**
 	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT query.
 	 */
-	private final Document updateOrInsert;
+	private final Document updateOrInsertOne;
+	private final List<Document> updateOrInsertMany;
 	private final Document orderBy;
 
 	/**
@@ -77,7 +78,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.projection = null;
 		this.orderBy = null;
 		this.options = null;
-		this.updateOrInsert = null;
+		this.updateOrInsertOne = null;
+		this.updateOrInsertMany = null;
 		this.unwinds = null;
 		this.pipeline = pipeline == null ? Collections.<Document>emptyList() : pipeline;
 	}
@@ -88,7 +90,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 			Document projection,
 			Document orderBy,
 			Document options,
-			Document updateOrInsert,
+			Document updateOrInsertOne,
+			List<Document> updateOrInsertMany,
 			List<String> unwinds) {
 		this.collectionName = collectionName;
 		this.operation = operation;
@@ -96,7 +99,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.projection = projection;
 		this.orderBy = orderBy;
 		this.options = options;
-		this.updateOrInsert = updateOrInsert;
+		this.updateOrInsertOne = updateOrInsertOne;
+		this.updateOrInsertMany = updateOrInsertMany;
 		this.unwinds = unwinds;
 		this.pipeline = Collections.<Document>emptyList();
 	}
@@ -157,9 +161,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * Returns the update (new values to apply) in case this is an UPDATE query or values to insert in case this is an
 	 * INSERT query.
 	 */
-	public Document getUpdateOrInsert() {
-		return updateOrInsert;
-	}
+	public Document getUpdateOrInsertOne() { return updateOrInsertOne; }
+	public List<Document> getUpdateOrInsertMany() { return updateOrInsertMany; }
 
 	public List<String> getUnwinds() {
 		return unwinds;

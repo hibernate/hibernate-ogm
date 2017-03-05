@@ -13,11 +13,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.print.Doc;
+
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 import org.bson.Document;
+import org.bson.codecs.BsonDocumentCodec;
+import org.bson.codecs.BsonValueCodecProvider;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.DocumentCodecProvider;
+import org.bson.codecs.ValueCodecProvider;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.json.JsonReader;
+
+import static java.util.Arrays.asList;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -27,6 +41,7 @@ import org.bson.Document;
  * @author Guillaume Smet
  */
 public class MongoDBQueryDescriptorBuilder {
+	private static Log log = LoggerFactory.getLogger();
 
 	private String collection;
 	private Operation operation;
@@ -120,22 +135,54 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	public MongoDBQueryDescriptor build() {
-		if (operation == Operation.INSERTMANY ) {
+		log.debugf( "operation: %s", operation );
+		log.debugf( "criteria: %s", criteria );
+		log.debugf( "projection: %s", projection );
+		log.debugf( "orderBy: %s", orderBy );
+		log.debugf( "options: %s", options );
+		log.debugf( "updateOrInsert: %s", updateOrInsert );
+		if ( operation != Operation.AGGREGATE_PIPELINE ) {
+			MongoDBQueryDescriptor descriptor = null;
+			if (operation == Operation.INSERTMANY) {
+				// must be array
+				Object anyDocs = parseAsObject( updateOrInsert );
+				log.debugf( "1.document: %s", anyDocs );
+				List<Document> documents = (List<Document>) parseAsObject( updateOrInsert );
+				descriptor = new MongoDBQueryDescriptor(
+						collection,
+						operation,
+						parse( criteria ),
+						parse( projection ),
+						parse( orderBy ),
+						parse( options ),
+						null,
+						documents,
+						null
+				);
 
-		}
-		else if (operation == Operation.INSERT) {
+			} else if (operation == Operation.INSERT) {
+				//can be document or array
+				Object anyDocs = parseAsObject( updateOrInsert );
+				log.debugf( "2.document: %s", anyDocs );
 
-		}
-		else if ( operation != Operation.AGGREGATE_PIPELINE ) {
-			return new MongoDBQueryDescriptor(
-				collection,
-				operation,
-				parse( criteria ),
-				parse( projection ),
-				parse( orderBy ),
-				parse( options ),
-				parse( updateOrInsert ),
-				null );
+			} else {
+				descriptor = new MongoDBQueryDescriptor(
+						collection,
+						operation,
+						parse( criteria ),
+						parse( projection ),
+						parse( orderBy ),
+						parse( options ),
+						parse( updateOrInsert ),
+						null,
+						null
+				);
+			}
+
+
+
+
+			return descriptor;
 		}
 		return new MongoDBQueryDescriptor( collection, operation, pipeline );
 	}
@@ -154,10 +201,17 @@ public class MongoDBQueryDescriptorBuilder {
 		return (Document) parseAsObject( json );
 	}
 
+	/**
+	 * parse JSON
+	 * @param json
+	 * @return
+	 * @see <a href="http://stackoverflow.com/questions/34436952/json-parse-equivalent-in-mongo-driver-3-x-for-java"> JSON.parse equivalent</a>
+	 */
 	private static Object parseAsObject(String json) {
 		if ( StringHelper.isNullOrEmptyString( json ) ) {
 			return null;
 		}
+		log.debugf( "json: %s", json );
 		Document object = Document.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
 	}

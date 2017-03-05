@@ -1049,7 +1049,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@SuppressWarnings("unchecked")
 	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
-		Document insert = queryDesc.getUpdateOrInsert();
+		Document insert = queryDesc.getUpdateOrInsertOne();
 		Document options = queryDesc.getOptions();
 		Boolean ordered = FALSE;
 		WriteConcern wc = null;
@@ -1105,7 +1105,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static long doUpdate(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
 		Document query = queryDesc.getCriteria();
-		Document update = queryDesc.getUpdateOrInsert();
+		Document update = queryDesc.getUpdateOrInsertOne();
 		Document options = queryDesc.getOptions();
 		Boolean upsert = FALSE;
 		Boolean multi = FALSE;

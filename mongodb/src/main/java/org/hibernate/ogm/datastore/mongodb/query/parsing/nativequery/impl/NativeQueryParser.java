@@ -94,7 +94,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), InsertOne(), Remove(), Update(), Count(), Aggregate() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate() );
 		// TODO There are many more query types than what we support.
 	}
 
