@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.utils;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.bson.Document;
 
@@ -23,6 +24,11 @@ public class DocumentUtil {
 			result.put( key, value );
 		}
 		return result;
+	}
+
+	public static List<Document> fromJsonArray(String sourceJson) {
+		Document jsonDocument = Document.parse( "{'json': " + sourceJson + "}" );
+		return (List<Document>) jsonDocument.get( "json" );
 	}
 
 }

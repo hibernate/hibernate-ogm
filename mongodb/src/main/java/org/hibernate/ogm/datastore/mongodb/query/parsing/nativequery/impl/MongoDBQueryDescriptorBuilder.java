@@ -7,13 +7,11 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import javax.print.Doc;
 
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
@@ -22,16 +20,6 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Ope
 import org.hibernate.ogm.util.impl.StringHelper;
 
 import org.bson.Document;
-import org.bson.codecs.BsonDocumentCodec;
-import org.bson.codecs.BsonValueCodecProvider;
-import org.bson.codecs.DecoderContext;
-import org.bson.codecs.DocumentCodecProvider;
-import org.bson.codecs.ValueCodecProvider;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.json.JsonReader;
-
-import static java.util.Arrays.asList;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -59,7 +47,7 @@ public class MongoDBQueryDescriptorBuilder {
 	private String options;
 
 	private Set<Integer> parsed = new HashSet<>();
-	private List<Document> pipeline = new ArrayList<>();
+	private List<Document> pipeline = new LinkedList<>();
 
 	private Deque<StackedOperation> stack = new ArrayDeque<>();
 
@@ -135,18 +123,12 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	public MongoDBQueryDescriptor build() {
-		log.debugf( "operation: %s", operation );
-		log.debugf( "criteria: %s", criteria );
-		log.debugf( "projection: %s", projection );
-		log.debugf( "orderBy: %s", orderBy );
-		log.debugf( "options: %s", options );
-		log.debugf( "updateOrInsert: %s", updateOrInsert );
+		//@todo redactor the spagetti!
 		if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			MongoDBQueryDescriptor descriptor = null;
-			if (operation == Operation.INSERTMANY) {
+			if ( operation == Operation.INSERTMANY ) {
 				// must be array
 				Object anyDocs = parseAsObject( updateOrInsert );
-				log.debugf( "1.document: %s", anyDocs );
 				List<Document> documents = (List<Document>) parseAsObject( updateOrInsert );
 				descriptor = new MongoDBQueryDescriptor(
 						collection,
@@ -160,12 +142,40 @@ public class MongoDBQueryDescriptorBuilder {
 						null
 				);
 
-			} else if (operation == Operation.INSERT) {
+			}
+			else if ( operation == Operation.INSERT ) {
 				//can be document or array
 				Object anyDocs = parseAsObject( updateOrInsert );
-				log.debugf( "2.document: %s", anyDocs );
-
-			} else {
+				if ( anyDocs instanceof List ) {
+					//this is array
+					descriptor = new MongoDBQueryDescriptor(
+							collection,
+							operation,
+							parse( criteria ),
+							parse( projection ),
+							parse( orderBy ),
+							parse( options ),
+							null,
+							(List<Document>) anyDocs,
+							null
+					);
+				}
+				else {
+					//this is one document
+					descriptor = new MongoDBQueryDescriptor(
+							collection,
+							operation,
+							parse( criteria ),
+							parse( projection ),
+							parse( orderBy ),
+							parse( options ),
+							(Document) anyDocs,
+							null,
+							null
+					);
+				}
+			}
+			else {
 				descriptor = new MongoDBQueryDescriptor(
 						collection,
 						operation,
@@ -178,10 +188,6 @@ public class MongoDBQueryDescriptorBuilder {
 						null
 				);
 			}
-
-
-
-
 			return descriptor;
 		}
 		return new MongoDBQueryDescriptor( collection, operation, pipeline );
