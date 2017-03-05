@@ -475,7 +475,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	/*
-	 * Insert the tuple and return an object containing the id in the field ID_FIELDNAME
+	 * InsertOne the tuple and return an object containing the id in the field ID_FIELDNAME
 	 */
 	private Document insertDocument(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern) {
 		Document dbObject = objectForInsert( tuple, ( (MongoDBTupleSnapshot) tuple.getSnapshot() ).getDbObject() );

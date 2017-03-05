@@ -120,7 +120,13 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	public MongoDBQueryDescriptor build() {
-		if ( operation != Operation.AGGREGATE_PIPELINE ) {
+		if (operation == Operation.INSERTMANY ) {
+
+		}
+		else if (operation == Operation.INSERT) {
+
+		}
+		else if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			return new MongoDBQueryDescriptor(
 				collection,
 				operation,
@@ -141,7 +147,8 @@ public class MongoDBQueryDescriptorBuilder {
 	 * See <a href="https://jira.mongodb.org/browse/JAVA-2186">https://jira.mongodb.org/browse/JAVA-2186</a>.
 	 *
 	 * @param json a JSON string representing an array or an object
-	 * @return a {@code Document} representing the array ({@code BasicDBList}) or the object ({@code Document})
+	 * @return returns the array ({@code List}) (for many documents) or the object ({@code Document}) for one document
+	 * @see <a href="https://docs.mongodb.com/manual/tutorial/insert-documents/">insert documents</a>
 	 */
 	private Document parse(String json) {
 		return (Document) parseAsObject( json );

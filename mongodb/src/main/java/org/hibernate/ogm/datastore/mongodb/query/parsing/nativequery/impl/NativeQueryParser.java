@@ -94,7 +94,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count(), Aggregate() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), InsertOne(), Remove(), Update(), Count(), Aggregate() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -104,6 +104,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( FindOne(), builder.setOperation( Operation.FINDONE ) ),
 				Sequence( FindAndModify(), builder.setOperation( Operation.FINDANDMODIFY ) ),
 				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
+				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
+				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
@@ -147,6 +149,28 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence(
 				Separator(),
 				"insert ",
+				"( ",
+				JsonComposite(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule InsertOne() {
+		return Sequence(
+				Separator(),
+				"insertOne ",
+				"( ",
+				JsonComposite(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule InsertMany() {
+		return Sequence(
+				Separator(),
+				"insertMany ",
 				"( ",
 				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),

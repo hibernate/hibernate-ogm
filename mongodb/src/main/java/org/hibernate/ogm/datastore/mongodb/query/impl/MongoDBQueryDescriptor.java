@@ -32,6 +32,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		FINDONE,
 		FINDANDMODIFY,
 		INSERT,
+		INSERTONE,
+		INSERTMANY,
 		REMOVE,
 		UPDATE,
 		COUNT,

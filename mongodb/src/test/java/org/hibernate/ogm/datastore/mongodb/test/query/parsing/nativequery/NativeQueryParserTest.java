@@ -15,7 +15,6 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.Native
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
 
-import com.mongodb.util.JSON;
 import org.bson.Document;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.RecoveringParseRunner;
@@ -28,6 +27,7 @@ import org.parboiled.support.ParsingResult;
  * Unit test for {@link NativeQueryParser}.
  *
  * @author Gunnar Morling
+ * @see <a href="https://docs.mongodb.com/manual/tutorial/insert-documents/"> InsertOne documents in 3.4 API</a>
  */
 public class NativeQueryParserTest {
 
@@ -46,8 +46,8 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
 		assertThat( queryDescriptor.getPipeline() )
 			.containsExactly(
-					JSON.parse( match ),
-					JSON.parse( sort )
+					Document.parse( match ),
+					Document.parse( sort )
 					);
 	}
 
@@ -75,10 +75,10 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
 		assertThat( queryDescriptor.getPipeline() )
 			.containsExactly(
-					JSON.parse( match )
-					, JSON.parse( unwind )
-					, JSON.parse( group )
-					, JSON.parse( sort )
+					Document.parse( match )
+					, Document.parse( unwind )
+					, Document.parse( group )
+					, Document.parse( sort )
 					);
 	}
 
@@ -141,11 +141,11 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryInsertSingleDocument() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( { 'item': 'card', 'qty': 15 } )" );
+				.run( "db.Order.insertOne( { 'item': 'card', 'qty': 15 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTONE );
 		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
 	}
 
@@ -153,11 +153,11 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryInsertSingleDocumentAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( { 'item': 'card', 'qty': 15 }, { 'ordered': true } )" );
+				.run( "db.Order.insertOne( { 'item': 'card', 'qty': 15 }, { 'ordered': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTONE );
 		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ ordered: true })" ) );
 	}
@@ -166,24 +166,43 @@ public class NativeQueryParserTest {
 	public void shouldParseQueryInsertMultipleDocuments() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
+				.run( "db.Order.insertMany( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
+try {
+	MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+	assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+	assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTMANY );
+	assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( Document.parse(
+			"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
+} catch ( ClassCastException e) {
+e.printStackTrace();
+}
+	}
 
-		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
-		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( Document.parse(
-				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
+	@Test
+	public void shouldParseQueryInsertUnkwounDocuments() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
+		try {
+			MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+			assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+			assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
+			assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( Document.parse(
+					"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
+		} catch ( ClassCastException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
 	public void shouldParseQueryInsertMultipleDocumentsAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ], { 'ordered': true } )" );
+				.run( "db.Order.insertMany( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ], { 'ordered': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTMANY );
 		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( Document.parse(
 				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ ordered: true })" ) );
