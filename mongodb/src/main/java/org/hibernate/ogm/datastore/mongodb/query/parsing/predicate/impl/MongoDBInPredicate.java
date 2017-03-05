@@ -11,27 +11,27 @@ import java.util.List;
 import org.hibernate.hql.ast.spi.predicate.InPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 
 /**
  * MongoDB-based implementation of {@link InPredicate}.
  *
  * @author Gunnar Morling
  */
-public class MongoDBInPredicate extends InPredicate<DBObject> implements NegatablePredicate<DBObject> {
+public class MongoDBInPredicate extends InPredicate<Document> implements NegatablePredicate<Document> {
 
 	public MongoDBInPredicate(String propertyName, List<Object> values) {
 		super( propertyName, values );
 	}
 
 	@Override
-	public DBObject getQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$in", values ) );
+	public Document getQuery() {
+		return new Document( propertyName, new Document( "$in", values ) );
 	}
 
 	@Override
-	public DBObject getNegatedQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$nin", values ) );
+	public Document getNegatedQuery() {
+		return new Document( propertyName, new Document( "$nin", values ) );
 	}
 }

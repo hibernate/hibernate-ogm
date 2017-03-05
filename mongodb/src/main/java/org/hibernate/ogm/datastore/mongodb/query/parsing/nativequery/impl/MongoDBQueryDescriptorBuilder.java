@@ -17,8 +17,7 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.util.impl.StringHelper;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -45,7 +44,7 @@ public class MongoDBQueryDescriptorBuilder {
 	private String options;
 
 	private Set<Integer> parsed = new HashSet<>();
-	private List<DBObject> pipeline = new ArrayList<>();
+	private List<Document> pipeline = new ArrayList<>();
 
 	private Deque<StackedOperation> stack = new ArrayDeque<>();
 
@@ -142,22 +141,22 @@ public class MongoDBQueryDescriptorBuilder {
 	 * See <a href="https://jira.mongodb.org/browse/JAVA-2186">https://jira.mongodb.org/browse/JAVA-2186</a>.
 	 *
 	 * @param json a JSON string representing an array or an object
-	 * @return a {@code DBObject} representing the array ({@code BasicDBList}) or the object ({@code BasicDBObject})
+	 * @return a {@code Document} representing the array ({@code BasicDBList}) or the object ({@code Document})
 	 */
-	private DBObject parse(String json) {
-		return (DBObject) parseAsObject( json );
+	private Document parse(String json) {
+		return (Document) parseAsObject( json );
 	}
 
 	private static Object parseAsObject(String json) {
 		if ( StringHelper.isNullOrEmptyString( json ) ) {
 			return null;
 		}
-		BasicDBObject object = BasicDBObject.parse( "{ 'json': " + json + "}" );
+		Document object = Document.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
 	}
 
-	private static DBObject operation(StackedOperation operation, String value) {
-		DBObject stage = new BasicDBObject();
+	private static Document operation(StackedOperation operation, String value) {
+		Document stage = new Document();
 		stage.put( normalize( operation ), parseAsObject( value ) );
 		return stage;
 	}

@@ -14,8 +14,8 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.mongodb.client.model.IndexOptions;
+import org.bson.Document;
 
 /**
  * Definition of an index to be applied to a MongoDB collection
@@ -41,12 +41,12 @@ public class MongoDBIndexSpec {
 	/**
 	 * The index keys of the index prepared for MongoDB.
 	 */
-	private DBObject indexKeys = new BasicDBObject();
+	private Document indexKeys = new Document();
 
 	/**
 	 * The options specific to MongoDB.
 	 */
-	private DBObject options;
+	private IndexOptions options;
 
 	/**
 	 * Indicates if the index is a text index.
@@ -56,7 +56,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * Constructor used for columns marked as unique.
 	 */
-	public MongoDBIndexSpec(String collection, String columnName, String indexName, DBObject options) {
+	public MongoDBIndexSpec(String collection, String columnName, String indexName, Document options) {
 		this.options = prepareOptions( options, indexName, true );
 		this.collection = collection;
 		this.indexName = indexName;
@@ -66,7 +66,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * Constructor used for {@link UniqueKey}s.
 	 */
-	public MongoDBIndexSpec(UniqueKey uniqueKey, DBObject options) {
+	public MongoDBIndexSpec(UniqueKey uniqueKey, Document options) {
 		this.options = prepareOptions( options, uniqueKey.getName(), true );
 		this.collection = uniqueKey.getTable().getName();
 		this.indexName = uniqueKey.getName();
@@ -76,7 +76,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * Constructor used for {@link Index}es.
 	 */
-	public MongoDBIndexSpec(Index index, DBObject options) {
+	public MongoDBIndexSpec(Index index, Document options) {
 		this.options = prepareOptions( options, index.getName(), false );
 		this.collection = index.getTable().getName();
 		this.indexName = index.getName();
@@ -87,26 +87,25 @@ public class MongoDBIndexSpec {
 	/**
 	 * Prepare the options by adding additional information to them.
 	 */
-	private DBObject prepareOptions(DBObject options, String indexName, boolean unique) {
-		options.put( "name", indexName );
+	private IndexOptions prepareOptions(Document options, String indexName, boolean unique) {
+		IndexOptions indexOptions = new IndexOptions();
+		indexOptions.name( indexName );
+		indexOptions.unique( unique );
 		if ( unique ) {
-			options.put( "unique", true );
 			// MongoDB only allows one null value per unique index which is not in line with what we usually consider
 			// as the definition of a unique constraint. Thus, we mark the index as sparse to only index values
 			// defined and avoid this issue. We do this only if a partialFilterExpression has not been defined
 			// as partialFilterExpression and sparse are exclusive.
-			if ( !options.containsField( "partialFilterExpression" ) ) {
-				options.put( "sparse", true );
-			}
+			indexOptions.sparse( !options.containsKey( "partialFilterExpression" ) );
 		}
 		if ( Boolean.TRUE.equals( options.get( "text" ) ) ) {
 			// text is an option we take into account to mark an index as a full text index as we cannot put "text" as
 			// the order like MongoDB as ORM explicitely checks that the order is either asc or desc.
-			// we remove the option from the DBObject so that we don't pass it to MongoDB
+			// we remove the option from the Document so that we don't pass it to MongoDB
 			isTextIndex = true;
-			options.removeField( "text" );
+			options.remove( "text" );
 		}
-		return options;
+		return indexOptions;
 	}
 
 	public String getCollection() {
@@ -137,11 +136,11 @@ public class MongoDBIndexSpec {
 		}
 	}
 
-	public DBObject getOptions() {
+	public IndexOptions getOptions() {
 		return options;
 	}
 
-	public DBObject getIndexKeysDBObject() {
+	public Document getIndexKeysDocument() {
 		return indexKeys;
 	}
 
