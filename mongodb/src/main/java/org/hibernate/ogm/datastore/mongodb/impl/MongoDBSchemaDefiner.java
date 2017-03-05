@@ -292,11 +292,10 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 	private Map<String, Document> getIndexes(MongoCollection<Document> collection) {
 		Map<String, Document> indexMap = new HashMap<>();
-		try (MongoCursor<Document> it = collection.listIndexes().iterator()) {
-			while ( it.hasNext() ) {
-				Document index = it.next();
-				indexMap.put( index.get( "name" ).toString(), index );
-			}
+		MongoCursor<Document> it = collection.listIndexes().iterator();
+		while ( it.hasNext() ) {
+			Document index = it.next();
+			indexMap.put( index.get( "name" ).toString(), index );
 		}
 		return indexMap;
 	}

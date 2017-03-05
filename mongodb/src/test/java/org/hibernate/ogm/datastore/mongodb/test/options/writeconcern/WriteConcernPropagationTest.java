@@ -8,13 +8,12 @@ package org.hibernate.ogm.datastore.mongodb.test.options.writeconcern;
 
 import static org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.mockClient;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.lang.annotation.ElementType;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,10 +31,9 @@ import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import org.bson.Document;
 
 /**
  * Tests that the configured write concern is applied when performing operations against MongoDB.
@@ -69,7 +67,7 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect one (batched) insert with the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ) ).insert( any( List.class ), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ) ).insertMany( any( List.class ) );
 	}
 
 	@Test
@@ -91,7 +89,9 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect one (batched) insert with the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ) )
+				.findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@Test
@@ -114,7 +114,7 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect a call to remove with the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ) ).remove( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ) ).deleteMany( any( Document.class ) );
 	}
 
 	@Test
@@ -138,7 +138,10 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect one update using the configured write concern for adding the row
-		verify( mockClient.getCollection( "GolfPlayer" ), times( 1 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//verify( mockClient.getCollection( "GolfPlayer" ), times( 1 ) ).update( any( Document.class ), any( Document.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//@todo correct parameters of FindOneAndUpdateOptions
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ), times( 1 ) )
+				.findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@Test
@@ -158,7 +161,9 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect association operations using the configured write concern
-		verify( mockClient.getCollection( "Associations" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//verify( mockClient.getCollection( "Associations" ) ).update( any( Document.class ), any( Document.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//@todo correct parameters of FindOneAndUpdateOptions
+		verify( mockClient.getCollection( "Associations" ).withWriteConcern( WriteConcern.MAJORITY ) ).findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@SuppressWarnings("unchecked")
@@ -190,14 +195,15 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect tuple and association operations using the configured write concerns
-		verify( mockClient.getCollection( "GolfPlayer" ) ).insert( any( List.class ), eq( WriteConcern.REPLICA_ACKNOWLEDGED ) );
-		verify( mockClient.getCollection( "Associations" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.ACKNOWLEDGED ) );
+		//@todo correct parameters of FindOneAndUpdateOptions
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.REPLICA_ACKNOWLEDGED ) ).insertMany( any( List.class ) );
+		verify( mockClient.getCollection( "Associations" ).withWriteConcern( WriteConcern.ACKNOWLEDGED ) ).findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@Test
 	public void shouldApplyConfiguredWriteConcernForUpdateOfEmbeddedAssociation() {
 		// given a persisted player with one associated golf course
-		BasicDBObject player = getPlayer();
+		Document player = getPlayer();
 		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
 
 		MockMongoClient mockClient = mockClient()
@@ -218,7 +224,9 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect updates to the player document using the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ), times( 1 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//@todo correct parameters of FindOneAndUpdateOptions
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ), times( 1 ) )
+				.findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@Test
@@ -243,13 +251,16 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect one update to the association collection
-		verify( mockClient.getCollection( "Associations" ), times( 1 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//@todo correct parameters of FindOneAndUpdateOptions
+		//verify( mockClient.getCollection( "Associations" ), times( 1 ) ).update( any( Document.class ), any( Document.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "Associations" ).withWriteConcern( WriteConcern.MAJORITY ), times( 1 ) )
+				.findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@Test
 	public void shouldApplyConfiguredWriteConcernForRemovalOfEmbeddedAssociation() {
 		// given a persisted player with one associated golf course
-		BasicDBObject player = getPlayer();
+		Document player = getPlayer();
 		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
 
 		MockMongoClient mockClient = mockClient()
@@ -270,7 +281,10 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect one call to update using the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		//@todo correct parameters of FindOneAndUpdateOptions
+		//verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( Document.class ), any( Document.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ) )
+				.findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) );
 	}
 
 	@Test
@@ -295,7 +309,8 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect one call to remove with the configured write concern
-		verify( mockClient.getCollection( "Associations" ) ).remove( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
+		//verify( mockClient.getCollection( "Associations" ) ).remove( any( Document.class ), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "Associations" ).withWriteConcern( WriteConcern.MAJORITY ) ).deleteMany( any( Document.class ) );
 	}
 
 	private Class<?>[] getAnnotatedClasses() {
@@ -317,43 +332,43 @@ public class WriteConcernPropagationTest {
 		sessions = TestHelper.getDefaultTestSessionFactory( settings, getAnnotatedClasses() );
 	}
 
-	private BasicDBObject getGolfCourse() {
-		BasicDBObject bepplePeach = new BasicDBObject();
+	private Document getGolfCourse() {
+		Document bepplePeach = new Document();
 		bepplePeach.put( "_id", 1L );
 		bepplePeach.put( "name", "Bepple Peach" );
 		return bepplePeach;
 	}
 
-	private BasicDBObject getPlayer() {
-		BasicDBObject golfPlayer = new BasicDBObject();
+	private Document getPlayer() {
+		Document golfPlayer = new Document();
 		golfPlayer.put( "_id", 1L );
 		golfPlayer.put( "name", "Ben" );
 		golfPlayer.put( "handicap", 0.1 );
 		return golfPlayer;
 	}
 
-	private BasicDBList getPlayedCoursesAssociationEmbedded() {
-		BasicDBObject bepplePeachRef = new BasicDBObject();
+	private List<Document> getPlayedCoursesAssociationEmbedded() {
+		Document bepplePeachRef = new Document();
 		bepplePeachRef.put( "playedCourses_id", 1L );
 
-		BasicDBList playedCourses = new BasicDBList();
+		List<Document> playedCourses = new LinkedList<>();
 		playedCourses.add( bepplePeachRef );
 
 		return playedCourses;
 	}
 
-	private BasicDBObject getPlayedCoursesAssociationAsDocument() {
-		BasicDBObject id = new BasicDBObject();
+	private Document getPlayedCoursesAssociationAsDocument() {
+		Document id = new Document();
 		id.put( "golfPlayer_id", 1L );
 		id.put( "table", "GolfPlayer_GolfCourse" );
 
-		BasicDBObject row = new BasicDBObject();
+		Document row = new Document();
 		row.put( "playedCourses_id", 1L );
 
-		BasicDBList rows = new BasicDBList();
+		List<Document> rows = new LinkedList<>(  );
 		rows.add( row );
 
-		BasicDBObject association = new BasicDBObject();
+		Document association = new Document();
 		association.put( "_id", id );
 		association.put( "rows", rows );
 		return association;

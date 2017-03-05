@@ -11,17 +11,14 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.mongodb.MongoClient;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 
 /**
@@ -49,19 +46,19 @@ public class MockMongoClientBuilder {
 
 		/**
 		 * Registers the given {@link Document} with the specified collection. The object can be retrieved from the
-		 * collection via {@link DBCollection#findOne(DBObject, DBObject))}.
+		 * collection via {@link MongoCollection<Document>#findOne(Document, Document))}.
 		 * <p>
-		 * Note that currently only one {@code DBObject} is supported per collection, but this could be expanded into a
+		 * Note that currently only one {@code Document} is supported per collection, but this could be expanded into a
 		 * more general mechanism if required.
 		 */
 		public MockMongoClientBuilderContext insert(String collectionName, Document object) {
-			DBCollection collection = mock( DBCollection.class );
+			MongoCollection<Document> collection = mock( MongoCollection.class );
 			collections.put( collectionName, collection );
 
-			when( collection.findOne( any( DBObject.class ), any( DBObject.class ), any( ReadPreference.class ) ) ).thenReturn( object );
+			when( collection.find( any( Document.class ) ).projection( any( Document.class ) ).first() ).thenReturn( object );
 
-			WriteResult writeResult = mock( WriteResult.class );
-			when( collection.remove( any( DBObject.class ), any( WriteConcern.class ) ) ).thenReturn( writeResult );
+			DeleteResult deleteResult = mock( DeleteResult.class );
+			when( collection.deleteMany( any( Document.class ) ) ).thenReturn( deleteResult );
 
 			return this;
 		}
@@ -72,16 +69,17 @@ public class MockMongoClientBuilder {
 		public MockMongoClient build() {
 			MongoDatabase database = mock( MongoDatabase.class );
 
-			DBCollection defaultCollection = mock( DBCollection.class );
+			MongoCollection<Document> defaultCollection = mock( MongoCollection.class );
 			when( database.getCollection( anyString() ) ).thenReturn( defaultCollection );
 
-			for ( Entry<String, DBCollection> collection : collections.entrySet() ) {
+			for ( Entry<String, MongoCollection<Document>> collection : collections.entrySet() ) {
 				when( database.getCollection( collection.getKey() ) ).thenReturn( collection.getValue() );
 			}
 
 			MongoClient mongoClient = mock( MongoClient.class );
-			when( mongoClient.getDatabaseNames() ).thenReturn( Collections.<String>emptyList() );
-			when( mongoClient.getDB( anyString() ) ).thenReturn( database );
+			//@TODO prepare mock for MongoCursor
+			//when( mongoClient.getDatabaseNames() ).thenReturn( Collections.<String>emptyList() );
+			when( mongoClient.getDatabase( anyString() ) ).thenReturn( database );
 
 			return new MockMongoClient( collections, defaultCollection, mongoClient );
 		}
@@ -94,11 +92,11 @@ public class MockMongoClientBuilder {
 	 */
 	public static class MockMongoClient {
 
-		private final Map<String, DBCollection> collections;
-		private final DBCollection defaultCollection;
+		private final Map<String, MongoCollection<Document>> collections;
+		private final MongoCollection<Document> defaultCollection;
 		private final MongoClient client;
 
-		public MockMongoClient(Map<String, DBCollection> collections, DBCollection defaultCollection, MongoClient client) {
+		public MockMongoClient(Map<String, MongoCollection<Document>> collections, MongoCollection<Document> defaultCollection, MongoClient client) {
 			this.collections = collections;
 			this.defaultCollection = defaultCollection;
 			this.client = client;
@@ -115,8 +113,8 @@ public class MockMongoClientBuilder {
 		 * Returns the collection with a given name. This is a Mockito mock object, so verifications can be performed on
 		 * it.
 		 */
-		public DBCollection getCollection(String collectionName) {
-			DBCollection collection = collections.get( collectionName );
+		public MongoCollection<Document> getCollection(String collectionName) {
+			MongoCollection<Document> collection = collections.get( collectionName );
 			return collection != null ? collection : defaultCollection;
 		}
 	}

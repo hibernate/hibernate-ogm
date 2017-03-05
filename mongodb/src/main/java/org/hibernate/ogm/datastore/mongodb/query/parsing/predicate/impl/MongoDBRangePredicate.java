@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
-;import org.bson.Document;
+import org.bson.Document;
 
 /**
  * MongoDB-based implementation of {@link RangePredicate}.

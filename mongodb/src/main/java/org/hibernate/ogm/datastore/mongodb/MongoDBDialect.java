@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.mongodb.AggregationOutput;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
@@ -116,7 +115,6 @@ import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
-import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -127,7 +125,6 @@ import org.parboiled.support.ParsingResult;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -376,10 +373,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 	private MongoCollection<Document> getCollection(String table,ReadPreference readPreference,WriteConcern writeConcern) {
 		MongoCollection<Document> collection = currentDB.getCollection( table );
-		if (readPreference!=null) {
+		if ( readPreference != null ) {
 			collection.withReadPreference( readPreference );
 		}
-		if (writeConcern!=null) {
+		if ( writeConcern != null ) {
 			collection.withWriteConcern( writeConcern );
 		}
 		return collection;
@@ -685,7 +682,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 				// if there is a single column on the value side left, unwrap it
 				if ( row.keySet().size() == 1 ) {
-					rows.put( rowKeyValue, DocumentUtil.toMap(row).values().iterator().next() );
+					rows.put( rowKeyValue, DocumentUtil.toMap( row ).values().iterator().next() );
 				}
 				else {
 					rows.put( rowKeyValue, row );
@@ -1030,18 +1027,22 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				*/
 		Document theOne = null;
 		if ( remove != null ? remove : false ) {
-			theOne = collection.findOneAndDelete( query, new FindOneAndDeleteOptions().sort( sort ).projection( fields ).maxTime(0, TimeUnit.MILLISECONDS ) );
-		} else {
+			theOne = collection.findOneAndDelete(
+					query,
+					new FindOneAndDeleteOptions().sort( sort )
+							.projection( fields )
+							.maxTime( 0, TimeUnit.MILLISECONDS )
+			);
+		}
+		else {
 			FindOneAndUpdateOptions options = new FindOneAndUpdateOptions()
 					.sort( sort )
 					.bypassDocumentValidation( ( bypass != null ? bypass : false ) )
 					.upsert( ( upsert != null ? upsert : false ) )
 					.projection( fields )
-					.returnDocument( ( returnNewDocument != null ? returnNewDocument : false ) ?
-											 ReturnDocument.AFTER :
-											 ReturnDocument.BEFORE )
+					.returnDocument( ( returnNewDocument != null ? returnNewDocument : false ) ? ReturnDocument.AFTER :	ReturnDocument.BEFORE )
 					.maxTime( 0, TimeUnit.MILLISECONDS );
-			theOne = collection.findOneAndUpdate( query ,update, options);
+			theOne = collection.findOneAndUpdate( query, update, options );
 		}
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
@@ -1067,10 +1068,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			for ( Document doc : (List<Document>) insert ) {
 				operationList.add( new InsertOneModel( doc ) );
 			}
-		} else {
+		}
+		else {
 			operationList.add( new InsertOneModel( insert ) );
 		}
-		final BulkWriteResult result = collection.bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
+		final BulkWriteResult result = collection.withWriteConcern( wc ).bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
 
 		if ( result.wasAcknowledged() ) {
 			return result.getInsertedCount();
@@ -1118,9 +1120,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		UpdateOptions updateOptions = new UpdateOptions().upsert( upsert );
 		UpdateResult result = null;
-		if (multi) {
+		if ( multi ) {
 			result = collection.updateMany( query, update, updateOptions );
-		} else {
+		}
+		else {
 			result = collection.updateOne( query, update, updateOptions );
 		}
 
@@ -1145,7 +1148,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * @return The parsed write concern or <code>null</code> if <code>obj</code> is <code>null</code>.
 	 */
 	@SuppressWarnings("deprecation")
-	@Deprecated
 	private static WriteConcern getWriteConcern(Document obj) {
 		WriteConcern wc = null;
 		if ( obj != null ) {
@@ -1334,7 +1336,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					Document query = associationSnapshot.getQueryObject();
 					Document update = new Document( "$set", new Document( ROWS_FIELDNAME, toStore ) );
 					//associationCollection.update( query, update, true, false, getWriteConcern( associationContext ) );
-					associationCollection.updateOne( query,update,new UpdateOptions().upsert( true ) );
+					associationCollection.withWriteConcern( getWriteConcern( associationContext ) ).updateOne( query,update,new UpdateOptions().upsert( true ) );
 				}
 			}
 			else if ( operation instanceof RemoveAssociationOperation ) {
@@ -1362,8 +1364,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy );
 					Document query = associationKeyToObject( associationKey, storageStrategy );
 					DeleteResult result = associationCollection.deleteMany( query );
-					long nAffected =-1;
-					if (result.wasAcknowledged()) {
+					long nAffected = -1;
+					if ( result.wasAcknowledged() ) {
 						nAffected = result.getDeletedCount();
 					}
 					//int nAffected = associationCollection.remove( query, getWriteConcern( associationContext ) ).getN();
@@ -1377,7 +1379,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		if ( updateStatement != null && !updateStatement.isEmpty() ) {
 			//collection.update( prepareIdObject( entityKey ), updateStatement, true, false, writeConcern );
-			collection.updateOne( prepareIdObject( entityKey ), updateStatement ,new UpdateOptions().upsert( true ));
+			collection. withWriteConcern( writeConcern ).updateOne( prepareIdObject( entityKey ), updateStatement ,new UpdateOptions().upsert( true ) );
 		}
 	}
 

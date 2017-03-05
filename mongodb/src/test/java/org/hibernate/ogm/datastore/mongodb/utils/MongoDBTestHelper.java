@@ -284,7 +284,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		Document fields = projectionDbObject != null ? (Document) Document.parse( projectionDbObject ) : null;
 
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		Document actual = provider.getDatabase().getCollection( collection ).find( finder) .projection( fields ).first();
+		Document actual = provider.getDatabase().getCollection( collection ).find( finder ).projection( fields ).first();
 
 		assertJsonEquals( expectedDbObject, actual.toString() );
 	}

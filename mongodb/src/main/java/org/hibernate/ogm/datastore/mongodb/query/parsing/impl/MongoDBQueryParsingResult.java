@@ -76,7 +76,7 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	@Override
 	public List<String> getColumnNames() {
 		//TODO Non-scalar case
-		return projection != null ? new ArrayList<String>( projection.keySet() ) : Collections.<String>emptyList();
+		return projection != null ? new ArrayList<>( projection.keySet() ) : Collections.<String>emptyList();
 	}
 
 	@Override

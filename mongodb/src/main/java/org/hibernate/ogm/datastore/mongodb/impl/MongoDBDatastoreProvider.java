@@ -17,7 +17,6 @@ import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -158,8 +157,8 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			Boolean containsDatabase = false;
 			try {
 				MongoCursor<String> it = mongo.listDatabaseNames().iterator();
-				while(it.hasNext()) {
-					if ((it.next().equalsIgnoreCase( databaseName ))) {
+				while ( it.hasNext() ) {
+					if ( ( it.next().equalsIgnoreCase( databaseName ) ) ) {
 						containsDatabase = true;
 						break;
 					}
@@ -183,8 +182,8 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 				// force a connection to make sure we do have read access
 				// otherwise the connection failure happens during the first flush
 				MongoCursor<String> it = db.listCollectionNames().iterator();
-				while(it.hasNext()) {
-					if ((it.next().equalsIgnoreCase( "WeDoNotCareWhatItIsWeNeedToConnect" ))) {
+				while ( it.hasNext() ) {
+					if ( ( it.next().equalsIgnoreCase( "WeDoNotCareWhatItIsWeNeedToConnect" ) ) ) {
 						containsDatabase = true;
 						break;
 					}
