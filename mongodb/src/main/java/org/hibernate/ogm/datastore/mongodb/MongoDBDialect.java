@@ -1072,7 +1072,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			operationList.add( new InsertOneModel( queryDesc.getUpdateOrInsertOne() ) );
 		}
-		final BulkWriteResult result = collection.withWriteConcern( wc ).bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
+		final BulkWriteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
 
 		if ( result.wasAcknowledged() ) {
 			return result.getInsertedCount();
