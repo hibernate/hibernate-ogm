@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -294,8 +293,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( tupleContext );
 
 		Document query = new Document();
-		query.put( ID_FIELDNAME, new Document( "$in", searchObjects ) );
-		//return collection.find( query, projection );
+		query.put( ID_FIELDNAME, new Document( "$in", Arrays.asList( searchObjects )  ) );
 		return collection.find( query ).projection( projection ).iterator();
 	}
 
@@ -1063,7 +1061,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		// Need to use BulkWriteOperation here rather than collection.insert(..) because the WriteResult returned
 		// by the latter returns 0 for getN() even if the insert was successful (which is bizarre, but that's the way it
 		// is defined...)
-		List<InsertOneModel<Document>> operationList = new LinkedList<>(  );
+		List<InsertOneModel<Document>> operationList = new ArrayList<>(  );
 		if ( queryDesc.getUpdateOrInsertMany() != null ) {
 			for ( Document doc : queryDesc.getUpdateOrInsertMany() ) {
 				operationList.add( new InsertOneModel( doc ) );
@@ -1241,7 +1239,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			Operation operation = queue.poll();
 			Map<MongoCollection<Document>, BatchInsertionTask> inserts = new HashMap<MongoCollection<Document>, BatchInsertionTask>();
 
-			List<Tuple> insertTuples = new LinkedList<Tuple>();
+			List<Tuple> insertTuples = new ArrayList<Tuple>();
 
 			while ( operation != null ) {
 				if ( operation instanceof GroupedChangesToEntityOperation ) {
