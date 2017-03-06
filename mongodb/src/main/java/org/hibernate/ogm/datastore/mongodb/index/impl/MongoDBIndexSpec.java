@@ -9,13 +9,17 @@ package org.hibernate.ogm.datastore.mongodb.index.impl;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 
 import com.mongodb.client.model.IndexOptions;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 /**
  * Definition of an index to be applied to a MongoDB collection
@@ -23,6 +27,8 @@ import org.bson.Document;
  * @author Guillaume Smet
  */
 public class MongoDBIndexSpec {
+
+	private Log log = LoggerFactory.getLogger();
 
 	/**
 	 * The MongoDB collection/table for which the index will be set
@@ -86,11 +92,13 @@ public class MongoDBIndexSpec {
 
 	/**
 	 * Prepare the options by adding additional information to them.
+	 * @see <a href="https://docs.mongodb.com/manual/core/index-ttl/"> TTL Indexes</a>
 	 */
 	private IndexOptions prepareOptions(Document options, String indexName, boolean unique) {
 		IndexOptions indexOptions = new IndexOptions();
-		indexOptions.name( indexName );
-		indexOptions.unique( unique );
+		indexOptions.name( indexName ).unique( unique ).background( options.getBoolean( "background" , false ) );
+
+
 		if ( unique ) {
 			// MongoDB only allows one null value per unique index which is not in line with what we usually consider
 			// as the definition of a unique constraint. Thus, we mark the index as sparse to only index values
@@ -98,6 +106,15 @@ public class MongoDBIndexSpec {
 			// as partialFilterExpression and sparse are exclusive.
 			indexOptions.sparse( !options.containsKey( "partialFilterExpression" ) );
 		}
+		else if (options.containsKey( "partialFilterExpression" )) {
+			indexOptions.partialFilterExpression( (Bson) options.get( "partialFilterExpression" ) );
+		}
+		if (options.containsKey( "expireAfterSeconds" )) {
+			//@todo is it correct?
+			indexOptions.expireAfter( options.getInteger( "expireAfterSeconds" ).longValue() , TimeUnit.SECONDS );
+
+		}
+
 		if ( Boolean.TRUE.equals( options.get( "text" ) ) ) {
 			// text is an option we take into account to mark an index as a full text index as we cannot put "text" as
 			// the order like MongoDB as ORM explicitely checks that the order is either asc or desc.
@@ -105,6 +122,7 @@ public class MongoDBIndexSpec {
 			isTextIndex = true;
 			options.remove( "text" );
 		}
+		log.debugf(" indexName: %s ; options: %s ; ",indexName, options.toJson() );
 		return indexOptions;
 	}
 
