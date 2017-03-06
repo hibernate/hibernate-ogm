@@ -40,8 +40,6 @@ public class MongoDBIndexTest extends OgmTestCase {
 
 		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 6 );
-		Document authorIdx =  indexMap.get( "author_idx" );
-		System.err.println( "author_idx toJson(): "+authorIdx.toJson() );
 
 		assertJsonEquals( "{ 'v' : " + VERSION + " , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
 				indexMap.get( "author_idx" ).toJson() );

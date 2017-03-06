@@ -25,6 +25,7 @@ import org.bson.conversions.Bson;
  * Definition of an index to be applied to a MongoDB collection
  *
  * @author Guillaume Smet
+ * @see <a href="https://docs.mongodb.com/manual/indexes/">info about indexes in MongoDB Java Driver 3.4</a>
  */
 public class MongoDBIndexSpec {
 
@@ -98,7 +99,6 @@ public class MongoDBIndexSpec {
 		IndexOptions indexOptions = new IndexOptions();
 		indexOptions.name( indexName ).unique( unique ).background( options.getBoolean( "background" , false ) );
 
-
 		if ( unique ) {
 			// MongoDB only allows one null value per unique index which is not in line with what we usually consider
 			// as the definition of a unique constraint. Thus, we mark the index as sparse to only index values
@@ -106,10 +106,10 @@ public class MongoDBIndexSpec {
 			// as partialFilterExpression and sparse are exclusive.
 			indexOptions.sparse( !options.containsKey( "partialFilterExpression" ) );
 		}
-		else if (options.containsKey( "partialFilterExpression" )) {
+		else if ( options.containsKey( "partialFilterExpression" ) ) {
 			indexOptions.partialFilterExpression( (Bson) options.get( "partialFilterExpression" ) );
 		}
-		if (options.containsKey( "expireAfterSeconds" )) {
+		if ( options.containsKey( "expireAfterSeconds" ) ) {
 			//@todo is it correct?
 			indexOptions.expireAfter( options.getInteger( "expireAfterSeconds" ).longValue() , TimeUnit.SECONDS );
 
@@ -119,10 +119,16 @@ public class MongoDBIndexSpec {
 			// text is an option we take into account to mark an index as a full text index as we cannot put "text" as
 			// the order like MongoDB as ORM explicitely checks that the order is either asc or desc.
 			// we remove the option from the Document so that we don't pass it to MongoDB
+			if ( options.containsKey( "default_language" ) ) {
+				indexOptions.defaultLanguage( options.getString( "default_language" ) );
+			}
+			if ( options.containsKey( "weights" ) ) {
+				indexOptions.weights( (Bson) options.get( "weights" ) );
+			}
+
 			isTextIndex = true;
 			options.remove( "text" );
 		}
-		log.debugf(" indexName: %s ; options: %s ; ",indexName, options.toJson() );
 		return indexOptions;
 	}
 
