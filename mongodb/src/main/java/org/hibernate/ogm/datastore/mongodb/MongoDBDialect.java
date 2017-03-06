@@ -1002,7 +1002,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static ClosableIterator<Tuple> doFindOne(final MongoDBQueryDescriptor query, final MongoCollection<Document> collection,
 			final EntityKeyMetadata entityKeyMetadata) {
 
-		//final Document theOne = collection.findOne( query.getCriteria(), query.getProjection() );
 		final Document theOne = collection.find( query.getCriteria() ).projection( query.getProjection() ).first();
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
@@ -1019,7 +1018,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Boolean upsert = (Boolean) queryDesc.getCriteria().get( "upsert" );
 		Boolean bypass = (Boolean) queryDesc.getCriteria().get( "bypassDocumentValidation" );
 		Document o = (Document) queryDesc.getCriteria().get( "writeConcern" );
-		//WriteConcern wc = getWriteConcern( o );
+		WriteConcern wc = getWriteConcern( o );
 		//@TODO Analyse it! New API have methods findAndRemove and findAndUpdate
 		/*final Document theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ),
 				update, (returnNewDocument != null ? returnNewDocument : false), (upsert != null ? upsert : false), (bypass != null ? bypass : false),
@@ -1042,13 +1041,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					.projection( fields )
 					.returnDocument( ( returnNewDocument != null ? returnNewDocument : false ) ? ReturnDocument.AFTER :	ReturnDocument.BEFORE )
 					.maxTime( 0, TimeUnit.MILLISECONDS );
-			theOne = collection.findOneAndUpdate( query, update, options );
+			theOne = collection.withWriteConcern( (wc != null ? wc : collection.getWriteConcern() ) ).findOneAndUpdate( query, update, options );
 		}
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 
 	@SuppressWarnings("unchecked")
 	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+		//@todo suppurt list<document>
 		Document insert = queryDesc.getUpdateOrInsertOne();
 		Document options = queryDesc.getOptions();
 		Boolean ordered = FALSE;
@@ -1096,7 +1096,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		//final WriteResult result = collection.remove( query, ( wc != null ? wc : collection.getWriteConcern() ) );
-		DeleteResult result = collection.deleteMany( query );
+		DeleteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).deleteMany( query );
 		if ( result.wasAcknowledged() ) {
 			return result.getDeletedCount();
 		}
@@ -1116,15 +1116,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			multi = (Boolean) options.get( "multi" );
 			multi = ( multi != null ) ? multi : FALSE;
 			Document o = (Document) options.get( "writeConcern" );
-			//wc = getWriteConcern( o );
+			wc = getWriteConcern( o );
 		}
 		UpdateOptions updateOptions = new UpdateOptions().upsert( upsert );
 		UpdateResult result = null;
 		if ( multi ) {
-			result = collection.updateMany( query, update, updateOptions );
+			result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateMany( query, update, updateOptions );
 		}
 		else {
-			result = collection.updateOne( query, update, updateOptions );
+			result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateOne( query, update, updateOptions );
 		}
 
 		//final WriteResult result = collection.update( query, update, upsert, multi, ( wc != null ? wc : collection.getWriteConcern() ) );
