@@ -26,25 +26,40 @@ import org.bson.Document;
  * @author Thorsten Möller
  */
 public class MongoDBQueryDescriptor implements Serializable {
-
+	/**
+	 * Enum with operations
+	 * @see <a href="https://docs.mongodb.com/manual/reference/method/js-collection/">list of operations in mongo shell</a>
+	 */
 	public enum Operation {
-		FIND,
-		FINDONE,
-		FINDANDMODIFY,
-		INSERT,
-		INSERTONE,
-		INSERTMANY,
-		REMOVE,
-		UPDATE,
-		COUNT,
+		FIND( false ),
+		FINDONE ( false ),
+		FINDANDMODIFY( false ),
+		INSERT( true ),
+		INSERTONE( false ),
+		INSERTMANY( false ),
+		REMOVE( true ),
+		UPDATE( false ),
+		UPDATEONE( false ),
+		UPDATEMANY( false ),
+		REPLACEONE( false ),
+		COUNT ( false ),
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
 		 */
-		AGGREGATE,
+		AGGREGATE( false ),
 		/**
 		 * This is used for native queries, when the user wants to execute a generic aggregation query.
 		 */
-		AGGREGATE_PIPELINE;
+		AGGREGATE_PIPELINE( false );
+		private boolean deprecated;
+
+		Operation(boolean deprecated) {
+			this.deprecated = deprecated;
+		}
+
+		public boolean isDeprecated() {
+			return deprecated;
+		}
 	}
 
 	private final String collectionName;

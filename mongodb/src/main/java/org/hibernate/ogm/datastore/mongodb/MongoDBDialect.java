@@ -856,6 +856,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		switch ( queryDescriptor.getOperation() ) {
+			case INSERTMANY:
+			case INSERTONE:
 			case INSERT:
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
@@ -1048,8 +1050,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@SuppressWarnings("unchecked")
 	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
-		//@todo suppurt list<document>
-		Document insert = queryDesc.getUpdateOrInsertOne();
 		Document options = queryDesc.getOptions();
 		Boolean ordered = FALSE;
 		WriteConcern wc = null;
@@ -1064,13 +1064,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		// by the latter returns 0 for getN() even if the insert was successful (which is bizarre, but that's the way it
 		// is defined...)
 		List<InsertOneModel<Document>> operationList = new LinkedList<>(  );
-		if ( insert instanceof List<?> ) {
-			for ( Document doc : (List<Document>) insert ) {
+		if ( queryDesc.getUpdateOrInsertMany() != null ) {
+			for ( Document doc : queryDesc.getUpdateOrInsertMany() ) {
 				operationList.add( new InsertOneModel( doc ) );
 			}
 		}
 		else {
-			operationList.add( new InsertOneModel( insert ) );
+			operationList.add( new InsertOneModel( queryDesc.getUpdateOrInsertOne() ) );
 		}
 		final BulkWriteResult result = collection.withWriteConcern( wc ).bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
 
