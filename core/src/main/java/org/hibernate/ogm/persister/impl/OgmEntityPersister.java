@@ -89,7 +89,6 @@ import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.access.internal.PropertyAccessStrategyBackRefImpl;
-import org.hibernate.search.exception.ErrorHandler;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tuple.GenerationTiming;
 import org.hibernate.tuple.NonIdentifierAttribute;
@@ -146,7 +145,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final OptionsService optionsService;
 
 	/**
-	 * Keeps track of all applied/failed operations in case there is an {@link ErrorHandler} configured. In this case,
+	 * Keeps track of all applied/failed operations in case there is an {@link org.hibernate.ogm.compensation.ErrorHandler} configured. In this case,
 	 * exceptions raised in the context of a specific grid dialect operation should be passed to the collector rather
 	 * throwing them directly. The collector will then propagate or ignore them as determined by the error handler.
 	 */
