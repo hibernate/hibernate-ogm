@@ -12,7 +12,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public interface SessionAwareRunnable {
+interface SessionAwareRunnable {
 
 	void run(Session upperSession, Tuple tuple);
 
