@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.util.Collections;
 
@@ -17,6 +17,7 @@ import org.hibernate.ogm.backendtck.id.News;
 import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.id.embeddable.SingleBoardComputer;
 import org.hibernate.ogm.backendtck.id.embeddable.SingleBoardComputerPk;
+import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -64,7 +65,7 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"News",
@@ -91,7 +92,7 @@ public class EmbeddableIdMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"SingleBoardComputer",

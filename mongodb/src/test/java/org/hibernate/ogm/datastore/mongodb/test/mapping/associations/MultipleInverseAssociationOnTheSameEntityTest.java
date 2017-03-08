@@ -6,12 +6,13 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping.associations;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.io.Serializable;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -74,7 +75,7 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 
-			assertDbObject(
+			MongoDBTestHelper.assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"Node",
@@ -89,7 +90,7 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					"}"
 			);
 
-			assertDbObject(
+			MongoDBTestHelper.assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"Node",
@@ -103,7 +104,7 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					"}"
 			);
 
-			assertDbObject(
+			MongoDBTestHelper.assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"Node",
@@ -117,7 +118,7 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					"}"
 			);
 
-			assertDbObject(
+			MongoDBTestHelper.assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"NodeLink",
@@ -133,7 +134,7 @@ public class MultipleInverseAssociationOnTheSameEntityTest extends OgmTestCase {
 					"}"
 			);
 
-			assertDbObject(
+			MongoDBTestHelper.assertDocument(
 					session.getSessionFactory(),
 					// collection
 					"NodeLink",

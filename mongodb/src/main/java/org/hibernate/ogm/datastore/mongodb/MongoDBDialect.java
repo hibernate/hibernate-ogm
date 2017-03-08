@@ -752,6 +752,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		Document setInitialValueOnInsert = new Document();
 		addSubQuery( "$setOnInsert", setInitialValueOnInsert, valueColumnName, request.getInitialValue() + request.getIncrement() );
+		//@todo think about make FindOneAndUpdateOptions constant
 		//Document originalDocument = sequenceCollection.findAndModify( sequenceId, null, null, false, setInitialValueOnInsert, false, true );
 		Document originalDocument = sequenceCollection.findOneAndUpdate( sequenceId, setInitialValueOnInsert, new FindOneAndUpdateOptions().upsert( true ) );
 
@@ -762,9 +763,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			// all columns should match to find the value
 			Document incrementUpdate = new Document();
-			Integer increment = Integer.valueOf( request.getIncrement() );
 
-			addSubQuery( "$inc", incrementUpdate, valueColumnName, increment );
+			addSubQuery( "$inc", incrementUpdate, valueColumnName, request.getIncrement() );
 
 			//Document beforeUpdateDoc = sequenceCollection.findAndModify( sequenceId, null, null, false, incrementUpdate, false, true );
 			Document beforeUpdateDoc = sequenceCollection.findOneAndUpdate( sequenceId, incrementUpdate,  new FindOneAndUpdateOptions().upsert( true ) );

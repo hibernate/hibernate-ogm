@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.util.Map;
 
@@ -49,7 +49,7 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Wife",
@@ -63,7 +63,7 @@ public class OneToOneInEntityMappingTest extends OgmTestCase {
 				"}"
 		);
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Husband",

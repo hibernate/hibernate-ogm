@@ -275,18 +275,18 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		return new MongoDBDialect( (MongoDBDatastoreProvider) datastoreProvider );
 	}
 
-	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String expectedDbObject) {
-		assertDbObject( sessionFactory, collection, queryDbObject, null, expectedDbObject );
+	public static void assertDocument(OgmSessionFactory sessionFactory, String collection, String queryDocument, String expectedDocument) {
+		assertDocument( sessionFactory, collection, queryDocument, null, expectedDocument );
 	}
 
-	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String projectionDbObject, String expectedDbObject) {
-		Document finder =  Document.parse( queryDbObject );
-		Document fields = projectionDbObject != null ? (Document) Document.parse( projectionDbObject ) : null;
+	public static void assertDocument(OgmSessionFactory sessionFactory, String collection, String queryDocument, String projectionDocument, String expectedDocument) {
+		Document finder =  Document.parse( queryDocument );
+		Document fields = projectionDocument != null ? Document.parse( projectionDocument ) : null;
 
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		Document actual = provider.getDatabase().getCollection( collection ).find( finder ).projection( fields ).first();
+		Document actualDocument = provider.getDatabase().getCollection( collection ).find( finder ).projection( fields ).first();
 
-		assertJsonEquals( expectedDbObject, actual.toString() );
+		assertJsonEquals( expectedDocument, actualDocument.toJson() );
 	}
 
 	public static Map<String, Document> getIndexes(OgmSessionFactory sessionFactory, String collection) {
@@ -313,7 +313,7 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 			JSONCompareResult result = JSONCompare.compareJSON( expectedJson, actualJson, JSONCompareMode.NON_EXTENSIBLE );
 
 			if ( result.failed() ) {
-				throw new AssertionError( result.getMessage() + "; Actual: " + actualJson );
+				throw new AssertionError( result.getMessage() + "; Actual: " + actualJson + "; Expected: " + expectedJson );
 			}
 		}
 		catch (JSONException e) {

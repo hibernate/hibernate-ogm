@@ -6,12 +6,13 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.embeddable.Address;
 import org.hibernate.ogm.backendtck.embeddable.MultiAddressAccount;
+import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Before;
@@ -53,7 +54,7 @@ public class ElementCollectionOfEmbeddableWithNamedColumnMappingTest extends Ogm
 	@Test
 	@TestForIssue(jiraKey = "OGM-1151")
 	public void testMappingForElementCollectionWithNamedColumn() {
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				getSessionFactory(),
 				// collection
 				"MultiAddressAccount",

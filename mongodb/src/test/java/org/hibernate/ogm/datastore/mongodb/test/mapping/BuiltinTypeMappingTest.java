@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.type.Bookmark;
+import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -59,7 +60,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -83,7 +84,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -107,7 +108,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -131,7 +132,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		MongoDBTestHelper.assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
