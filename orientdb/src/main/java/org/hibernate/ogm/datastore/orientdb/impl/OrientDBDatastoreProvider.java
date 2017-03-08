@@ -67,8 +67,16 @@ public class OrientDBDatastoreProvider extends BaseDatastoreProvider implements 
 			}
 
 			String user = PropertyReaderUtil.readUserProperty( propertyReader );
+			if ( user == null ) {
+				throw new RuntimeException( String.format( "User not defined! Please set '%s' property",OrientDBProperties.USERNAME ) );
+			}
 			String password = PropertyReaderUtil.readPasswordProperty( propertyReader );
+			if ( password == null ) {
+				throw new RuntimeException( String.format( "Password not defined! Please set '%s' property",OrientDBProperties.PASSWORD ) );
+			}
+
 			Integer poolSize = PropertyReaderUtil.readPoolSizeProperty( propertyReader );
+			//@todo check required properties!!!!
 			String orientDBUrl = prepareOrientDbUrl( storageMode );
 			log.debugf( "connect to URL %s", orientDBUrl );
 
