@@ -12,6 +12,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.orientdb.OrientDBDialect;
 import org.hibernate.ogm.datastore.orientdb.OrientDBProperties;
 import org.hibernate.ogm.datastore.orientdb.OrientDBProperties.DatabaseTypeEnum;
@@ -68,15 +69,14 @@ public class OrientDBDatastoreProvider extends BaseDatastoreProvider implements 
 
 			String user = PropertyReaderUtil.readUserProperty( propertyReader );
 			if ( user == null ) {
-				throw new RuntimeException( String.format( "User not defined! Please set '%s' property",OrientDBProperties.USERNAME ) );
+				throw log.userNotDefined( OrientDBProperties.USERNAME );
 			}
 			String password = PropertyReaderUtil.readPasswordProperty( propertyReader );
 			if ( password == null ) {
-				throw new RuntimeException( String.format( "Password not defined! Please set '%s' property",OrientDBProperties.PASSWORD ) );
+				throw log.passwordNotDefined( OrientDBProperties.PASSWORD );
 			}
 
 			Integer poolSize = PropertyReaderUtil.readPoolSizeProperty( propertyReader );
-			//@todo check required properties!!!!
 			String orientDBUrl = prepareOrientDbUrl( storageMode );
 			log.debugf( "connect to URL %s", orientDBUrl );
 
@@ -87,8 +87,10 @@ public class OrientDBDatastoreProvider extends BaseDatastoreProvider implements 
 			databaseHolder = new DatabaseHolder( orientDBUrl, user, password, poolSize );
 
 			FormatterUtil.setDateFormatter( createFormatter( propertyReader, OrientDBProperties.DATE_FORMAT, OrientDBConstant.DEFAULT_DATE_FORMAT ) );
-			FormatterUtil
-					.setDateTimeFormatter( createFormatter( propertyReader, OrientDBProperties.DATETIME_FORMAT, OrientDBConstant.DEFAULT_DATETIME_FORMAT ) );
+			FormatterUtil.setDateTimeFormatter( createFormatter( propertyReader, OrientDBProperties.DATETIME_FORMAT, OrientDBConstant.DEFAULT_DATETIME_FORMAT ) );
+		}
+		catch (HibernateException he) {
+			throw he;
 		}
 		catch (Exception e) {
 			throw log.unableToStartDatastoreProvider( e );

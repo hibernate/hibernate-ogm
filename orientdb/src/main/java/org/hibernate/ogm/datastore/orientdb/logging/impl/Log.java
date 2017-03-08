@@ -34,4 +34,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1704, value = "Unsupported storage type %s !")
 	HibernateException unsupportedStorage(StorageModeEnum storage);
+
+	@Message(id = 1705, value = "User not defined! Please set '%s' property!")
+	HibernateException userNotDefined(String propertyName);
+
+	@Message(id = 1706, value = "Password not defined! Please set '%s' property!")
+	HibernateException passwordNotDefined(String propertyName);
 }
