@@ -63,6 +63,10 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBinaryGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBsonBinaryGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBsonBinaryType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.LongAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
@@ -114,6 +118,8 @@ import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
+import org.hibernate.type.MaterializedBlobType;
+import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -790,6 +796,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type instanceof StringAsObjectIdType ) {
 			return StringAsObjectIdGridType.INSTANCE;
+		}
+		else if ( type instanceof BytesAsBsonBinaryType ) {
+			return BytesAsBsonBinaryGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == Long.class && type.getClass() == SerializableToBlobType.class  ) {
+			return LongAsBinaryGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == byte[].class && type.getClass() == MaterializedBlobType.class  ) {
+			return BytesAsBinaryGridType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}
