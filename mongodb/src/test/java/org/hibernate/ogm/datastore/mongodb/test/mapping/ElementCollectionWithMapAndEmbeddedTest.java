@@ -12,7 +12,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.embeddable.ForumUser;
 import org.hibernate.ogm.backendtck.embeddable.JiraIssue;
-import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Before;
@@ -46,7 +45,7 @@ public class ElementCollectionWithMapAndEmbeddedTest extends OgmTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		MongoDBTestHelper.assertDocument(
+		assertDocument(
 			getSessionFactory(),
 			// collection
 			ForumUser.LABEL,

@@ -13,7 +13,6 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.associations.collection.types.Child;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandChild;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandMother;
-import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +50,7 @@ public class ElementCollectionListWithIndexTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		MongoDBTestHelper.assertDocument(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"GrandMother",

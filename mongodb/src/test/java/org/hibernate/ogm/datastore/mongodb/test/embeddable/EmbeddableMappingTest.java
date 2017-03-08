@@ -228,7 +228,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 						"{ '_id' : " + id + " }",
 						// expected
 						"{" +
-					"'_id' : { \"$numberLong\" :  \""+ id  +"\" }," +
+					"'_id' : { \"$numberLong\" :  \"" + id  + "\" }," +
 					"'goodBranch' : {" +
 							"'ending' : {" +
 								"'score' : 1," +
