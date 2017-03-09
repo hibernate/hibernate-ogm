@@ -1374,7 +1374,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					addUnsetToQuery( updateStatement, collectionRole );
 				}
 				else {
-					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy );
+					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy ).withWriteConcern( getWriteConcern( associationContext ) );
 					Document query = associationKeyToObject( associationKey, storageStrategy );
 					DeleteResult result = associationCollection.deleteMany( query );
 					long nAffected = -1;
