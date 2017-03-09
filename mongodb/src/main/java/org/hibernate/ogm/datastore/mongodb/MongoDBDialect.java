@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.mongodb.MongoBulkWriteException;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
@@ -1427,7 +1428,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			try {
 				collection.insertMany( entry.getValue().getAll()  );
 			}
-			catch ( DuplicateKeyException dke ) {
+			catch ( DuplicateKeyException | MongoBulkWriteException dke ) {
 				// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
 				// so we determine if it concerns the primary key by matching on the message
 				if ( PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE.matcher( dke.getMessage() ).matches() ) {
