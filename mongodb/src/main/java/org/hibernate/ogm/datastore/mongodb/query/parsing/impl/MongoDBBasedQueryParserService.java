@@ -21,7 +21,7 @@ import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 
 
 /**
- * A {@link QueryParserService} implementation which creates MongoDB queries in form of {@link Document}s.
+ * A {@link QueryParserService} implementation which creates MongoDB queries in form of {@link org.bson.Document}s.
  *
  * @author Gunnar Morling
  */
@@ -31,9 +31,16 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
+	private ThreadLocal<QueryParser> parser = new ThreadLocal<QueryParser>() {
+		@Override
+		protected QueryParser initialValue() {
+			return new QueryParser();
+		}
+	};
+
 	@Override
 	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
-		QueryParser queryParser = new QueryParser();
+		QueryParser queryParser = parser.get();
 		MongoDBProcessingChain processingChain = createProcessingChain( sessionFactory, unwrap( namedParameters ) );
 
 		MongoDBQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
