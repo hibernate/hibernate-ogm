@@ -557,10 +557,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		MongoCollection<Document> collection = getCollection( key );
 		Document toDelete = prepareIdObject( key );
-		//WriteConcern writeConcern = getWriteConcern( tupleContext );
-
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
 		collection.deleteMany( toDelete );
 	}
 
@@ -583,8 +582,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		ReadPreference readPreference = getReadPreference( associationContext );
 		final Document associationKeyObject = associationKeyToObject( key, storageStrategy );
 
-		//return getAssociationCollection( key, storageStrategy ).findOne( associationKeyObject, getProjection( key, false ), readPreference );
-		return getAssociationCollection( key, storageStrategy, readPreference ).find( associationKeyObject ).projection( getProjection( key, false ) ).first();
+		FindIterable<Document> fi = getAssociationCollection( key, storageStrategy, readPreference ).find( associationKeyObject );
+		return fi!=null ? ( fi.projection( getProjection( key, false ) ).first() ) : null ;
 	}
 
 	private static Document getProjection(AssociationKey key, boolean embedded) {
@@ -1302,6 +1301,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document updateStatement = new Document();
 		WriteConcern writeConcern = null;
 
+		final UpdateOptions updateOptions = new UpdateOptions().upsert( true );
 		for ( Operation operation : groupedOperation.getOperations() ) {
 			if ( operation instanceof InsertOrUpdateTupleOperation ) {
 				InsertOrUpdateTupleOperation tupleOperation = (InsertOrUpdateTupleOperation) operation;
@@ -1349,8 +1349,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 																								storageStrategy );
 					Document query = associationSnapshot.getQueryObject();
 					Document update = new Document( "$set", new Document( ROWS_FIELDNAME, toStore ) );
-					//associationCollection.update( query, update, true, false, getWriteConcern( associationContext ) );
-					associationCollection.withWriteConcern( getWriteConcern( associationContext ) ).updateOne( query,update,new UpdateOptions().upsert( true ) );
+					associationCollection.withWriteConcern( getWriteConcern( associationContext ) ).updateOne( query, update, updateOptions );
 				}
 			}
 			else if ( operation instanceof RemoveAssociationOperation ) {
@@ -1382,7 +1381,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					if ( result.wasAcknowledged() ) {
 						nAffected = result.getDeletedCount();
 					}
-					//int nAffected = associationCollection.remove( query, getWriteConcern( associationContext ) ).getN();
 					log.removedAssociation( nAffected );
 				}
 			}
@@ -1392,8 +1390,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		if ( updateStatement != null && !updateStatement.isEmpty() ) {
-			//collection.update( prepareIdObject( entityKey ), updateStatement, true, false, writeConcern );
-			collection. withWriteConcern( writeConcern ).updateOne( prepareIdObject( entityKey ), updateStatement ,new UpdateOptions().upsert( true ) );
+			collection. withWriteConcern( writeConcern ).updateOne( prepareIdObject( entityKey ), updateStatement , updateOptions );
 		}
 	}
 
