@@ -12,8 +12,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -62,9 +62,7 @@ public class ReadPreferencePropagationTest {
 		session.close();
 
 		// then expect a findOne() call with the configured read preference
-		//@todo analyse it!
-		//verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( Document.class ), any( Document.class ), eq( ReadPreference.secondaryPreferred() ) );
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) ).projection( any( Document.class ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) );
 	}
 
 	@Test
@@ -92,9 +90,7 @@ public class ReadPreferencePropagationTest {
 		session.close();
 
 		// then expect a findOne() call for the entity and the embedded association with the configured read preference
-		//@todo analyse it!
-		//verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( Document.class ), any( Document.class ), eq( ReadPreference.secondaryPreferred() ) );
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) ).projection( any( Document.class ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) );
 	}
 
 	@Test
@@ -118,13 +114,11 @@ public class ReadPreferencePropagationTest {
 
 		transaction.commit();
 		session.close();
-		//@todo analyse it!
 		// then expect a findOne() call for the entity and one for the association  with the configured read preference
-		//verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( Document.class ), any( Document.class ), eq( ReadPreference.secondaryPreferred() ) );
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) ).projection( any( Document.class ) );
-		//verify( mockClient.getCollection( "Associations" ) ).findOne( any( Document.class ), any( Document.class ), eq( ReadPreference.primaryPreferred() ) );
-		verify( mockClient.getCollection( "Associations" ).withReadPreference( ReadPreference.primaryPreferred() ) ).find( any( Document.class ) ).projection( any( Document.class ) );
-		verifyNoMoreInteractions( mockClient.getCollection( "GolfPlayer" ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) ) ;
+		verify( mockClient.getCollection( "Associations" ).withReadPreference( ReadPreference.primaryPreferred() ) ).find( any( Document.class ) ) ;
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) ).first() ;
+		verifyNoMoreInteractions( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) );
 	}
 
 	private Class<?>[] getAnnotatedClasses() {
@@ -165,7 +159,7 @@ public class ReadPreferencePropagationTest {
 		Document bepplePeachRef = new Document();
 		bepplePeachRef.put( "playedCourses_id", 1L );
 
-		List<Document> playedCourses = new LinkedList<>(  );
+		List<Document> playedCourses = new ArrayList<>();
 		playedCourses.add( bepplePeachRef );
 
 		return playedCourses;
@@ -179,7 +173,7 @@ public class ReadPreferencePropagationTest {
 		Document row = new Document();
 		row.put( "playedCourses_id", 1L );
 
-		List<Document> rows = new LinkedList<>(  );
+		List<Document> rows = new ArrayList<>();
 		rows.add( row );
 
 		Document association = new Document();
