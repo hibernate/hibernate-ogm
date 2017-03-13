@@ -21,7 +21,7 @@ import org.bson.Document;
 
 
 /**
- * {@link AssociationRowFactory} which creates association rows based on the {@link DBObject} based representation used
+ * {@link AssociationRowFactory} which creates association rows based on the {@link Document} based representation used
  * in MongoDB.
  *
  * @author Gunnar Morling
