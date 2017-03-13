@@ -271,7 +271,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			ReadPreference readPreference = getReadPreference( associationContext );
 
-			MongoCollection<Document> collection = getCollection( key.getEntityKey() ).withReadPreference( readPreference );
+			MongoCollection<Document> collection = readPreference != null ? getCollection( key.getEntityKey() ).withReadPreference( readPreference ) : getCollection( key.getEntityKey() );
 			Document searchObject = prepareIdObject( key.getEntityKey() );
 			Document projection = getProjection( key, true );
 
@@ -282,7 +282,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private Document getObject(EntityKey key, OperationContext operationContext) {
 		ReadPreference readPreference = getReadPreference( operationContext );
 
-		MongoCollection<Document> collection = getCollection( key ).withReadPreference( readPreference );
+		MongoCollection<Document> collection = readPreference != null ? getCollection( key ).withReadPreference( readPreference ) : getCollection( key ) ;
 		Document searchObject = prepareIdObject( key );
 		Document projection = getProjection( operationContext );
 
@@ -294,7 +294,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			tupleContext) {
 		ReadPreference readPreference = getReadPreference( tupleContext );
 
-		MongoCollection<Document> collection = getCollection( entityKeyMetadata ).withReadPreference( readPreference );
+		MongoCollection<Document> collection = readPreference != null ? getCollection( entityKeyMetadata ).withReadPreference( readPreference ) : getCollection( entityKeyMetadata );
 
 		Document projection = getProjection( tupleContext );
 
@@ -554,8 +554,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private Document findAssociation(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
 		ReadPreference readPreference = getReadPreference( associationContext );
 		final Document associationKeyObject = associationKeyToObject( key, storageStrategy );
+		MongoCollection<Document> associationCollection = ( readPreference != null  ? getAssociationCollection( key, storageStrategy ).withReadPreference( readPreference ) : getAssociationCollection( key, storageStrategy ) );
 
-		FindIterable<Document> fi = getAssociationCollection( key, storageStrategy ).withReadPreference( readPreference ).find( associationKeyObject );
+		FindIterable<Document> fi = associationCollection.find( associationKeyObject );
 		return fi != null ? ( fi.projection( getProjection( key, false ) ).first() ) : null ;
 	}
 
