@@ -41,10 +41,6 @@
             we import all types from dependant modules -->
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-ehcache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-infinispan</artifactId>
         </dependency>
         <dependency>
@@ -58,18 +54,6 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-neo4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-couchdb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-redis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-cassandra</artifactId>
         </dependency>
     </dependencies>
 
@@ -98,21 +82,12 @@
                             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                             <version>${jbossJtaAPIVersion}</version>
                         </dependency>
-                        <dependency>
-                            <groupId>com.google.guava</groupId>
-                            <artifactId>guava</artifactId>
-                            <version>${cassandraGuavaVersion}</version>
-                        </dependency>
                     </additionalDependencies>
                     <sourcepath>
                         ${basedir}/../../core/src/main/java;
-                        ${basedir}/../../ehcache/src/main/java;
                         ${basedir}/../../infinispan/src/main/java;
                         ${basedir}/../../mongodb/src/main/java;
                         ${basedir}/../../neo4j/src/main/java;
-                        ${basedir}/../../couchdb/src/main/java;
-                        ${basedir}/../../redis/src/main/java;
-                        ${basedir}/../../cassandra/src/main/java;
                     </sourcepath>
                     <show>public</show>
                     <tags>
