@@ -205,12 +205,12 @@ public class CouchDBTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
+	public Map<String, String> getAdditionalConfigurationProperties() {
 		return environmentProperties();
 	}
 
 	public static Map<String, String> environmentProperties() {
-		Map<String, String> envProps = new HashMap<String, String>( 2 );
+		Map<String, String> envProps = new HashMap<String, String>( 6 );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.DATABASE, envProps );
