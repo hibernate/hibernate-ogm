@@ -393,6 +393,39 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1024")
+	public void testAggregateWithUnwindGroupAndSort() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String match = "{ '$match': { 'author':{'$regex':'o.*', '$options': 'i'}}}";
+			String unwind = "{'$unwind': '$mediums'}";
+			String group = "{ '$group': {'_id' : '$_id' ,'clicks' : {'$push':'$mediums'} } }";
+			String sort = "{ '$sort': { '_id' : -1 } }";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate(["
+					+ match
+					+ "," + unwind
+					+ "," + group
+					+ "," + sort
+					+ "])";
+
+			Query query = session.createNativeQuery( nativeQuery );
+			@SuppressWarnings("unchecked")
+			List<Object[]> result = query.list();
+			assertThat( result ).hasSize( 2 );
+
+			BasicDBList expectedImperatrix = new BasicDBList();
+			expectedImperatrix.addAll( imperatrix.getMediums() );
+			assertThat( result.get( 0 ) ).isEqualTo( new Object[]{ imperatrix.getId(), expectedImperatrix } );
+
+			BasicDBList expectedAthanasia = new BasicDBList();
+			expectedAthanasia.addAll( athanasia.getMediums() );
+			assertThat( result.get( 1 ) ).isEqualTo( new Object[]{ athanasia.getId(), expectedAthanasia } );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1024")
 	public void testAggregateWithMatchSortAndRegexWithMaxResults() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
