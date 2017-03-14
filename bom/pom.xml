@@ -53,9 +53,6 @@
         <infinispanVersion>8.2.6.Final</infinispanVersion>
         <protostreamVersion>3.0.7.Final</protostreamVersion>
 
-        <!-- Ehcache -->
-        <ehcacheVersion>2.6.11</ehcacheVersion>
-
         <!-- MongoDB -->
         <mongodbDriverVersion>3.4.2</mongodbDriverVersion>
         <mongodbVersion>3.4.1</mongodbVersion>
@@ -73,25 +70,6 @@
         <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
         <!-- See Parboiled dependency above -->
         <!-- See Lucene dependency above -->
-
-        <!-- Cassandra -->
-        <cassandraVersion>3.1.0</cassandraVersion>
-        <!-- Update dependency versions accordingly when updating C*  -->
-        <!--
-             The following versions are required for the Cassandra driver; We don't expose a managed versions
-             of these libraries through this BOM, these versions are for internal usage to make sure the right
-             JARs end up in the C* driver WildFly module
-        -->
-        <cassandraCodahaleMetricsVersion>3.1.2</cassandraCodahaleMetricsVersion>
-        <cassandraGuavaVersion>16.0.1</cassandraGuavaVersion>
-
-        <!-- Redis -->
-        <lettuceVersion>4.2.1.Final</lettuceVersion>
-        <!-- Update dependency versions accordingly when updating lettuce  -->
-        <lettuceRxjavaVersion>1.1.6</lettuceRxjavaVersion>
-        <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
-        <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
-
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -491,13 +469,6 @@
 
             <!-- NoSQL databases -->
 
-            <!-- Ehcache -->
-            <dependency>
-                <groupId>net.sf.ehcache</groupId>
-                <artifactId>ehcache-core</artifactId>
-                <version>${ehcacheVersion}</version>
-            </dependency>
-
             <!-- Infinispan -->
             <dependency>
                 <groupId>org.infinispan</groupId>
@@ -620,21 +591,7 @@
                 <version>${neo4jScalaLibraryVersion}</version>
             </dependency>
 
-            <!-- Cassandra -->
-            <dependency>
-                <groupId>com.datastax.cassandra</groupId>
-                <artifactId>cassandra-driver-core</artifactId>
-                <version>${cassandraVersion}</version>
-            </dependency>
-
-            <!-- Redis -->
-            <dependency>
-                <groupId>biz.paluch.redis</groupId>
-                <artifactId>lettuce</artifactId>
-                <version>${lettuceVersion}</version>
-            </dependency>
-
-            <!-- RESTEasy for accessing CouchDB -->
+            <!-- RESTEasy -->
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
