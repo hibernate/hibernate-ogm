@@ -7,14 +7,9 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
-import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
-import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
-import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
-import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -45,7 +40,7 @@ import org.junit.rules.ExpectedException;
  *
  * @author Davide D'Alto
  */
-@SkipByGridDialect({ HASHMAP, INFINISPAN, INFINISPAN_REMOTE, REDIS_HASH, REDIS_JSON, CASSANDRA, COUCHDB, EHCACHE })
+@SkipByGridDialect({ HASHMAP, INFINISPAN, INFINISPAN_REMOTE })
 public class SimpleQueriesWithTablePerClassNotSupportedTest extends OgmTestCase {
 
 	@Rule

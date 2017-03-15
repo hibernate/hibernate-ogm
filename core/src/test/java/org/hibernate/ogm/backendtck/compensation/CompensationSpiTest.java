@@ -53,10 +53,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *
  * @author Gunnar Morling
  */
-@SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
-)
 public class CompensationSpiTest extends OgmTestCase {
 
 	private static ExecutorService executor;
@@ -247,7 +243,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN, GridDialectType.EHCACHE },
+			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN },
 			comment = "Can use parallel local TX not with JTA"
 	)
 	public void appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction() throws Exception {

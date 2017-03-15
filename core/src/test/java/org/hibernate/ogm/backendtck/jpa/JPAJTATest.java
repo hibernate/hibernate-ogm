@@ -31,7 +31,7 @@ public class JPAJTATest extends OgmJpaTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.MONGODB, GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
+			value = { GridDialectType.MONGODB, GridDialectType.INFINISPAN_REMOTE },
 			comment = "MongoDB, Cassandra and Hot Rod tests run w/o transaction manager"
 	)
 	public void testBootstrapAndCRUD() throws Exception {
