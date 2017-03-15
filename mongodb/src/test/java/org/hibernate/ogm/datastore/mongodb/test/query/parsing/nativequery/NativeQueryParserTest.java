@@ -12,21 +12,24 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
+import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
 import org.hibernate.ogm.utils.TestForIssue;
+
 import org.junit.Test;
+
+import org.bson.Document;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
 
 /**
  * Unit test for {@link NativeQueryParser}.
  *
  * @author Gunnar Morling
+ * @see <a href="https://docs.mongodb.com/manual/tutorial/insert-documents/"> InsertOne documents in 3.4 API</a>
  */
 public class NativeQueryParserTest {
 
@@ -45,8 +48,8 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
 		assertThat( queryDescriptor.getPipeline() )
 			.containsExactly(
-					JSON.parse( match ),
-					JSON.parse( sort )
+					Document.parse( match ),
+					Document.parse( sort )
 					);
 	}
 
@@ -74,10 +77,10 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
 		assertThat( queryDescriptor.getPipeline() )
 			.containsExactly(
-					JSON.parse( match )
-					, JSON.parse( unwind )
-					, JSON.parse( group )
-					, JSON.parse( sort )
+					Document.parse( match )
+					, Document.parse( unwind )
+					, Document.parse( group )
+					, Document.parse( sort )
 					);
 	}
 
@@ -110,7 +113,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'orderId' : { '$in': ['XYZ123', '123']}}" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'orderId' : { '$in': ['XYZ123', '123'] } }" ) );
 		assertThat( queryDescriptor.getCollation().getLocale() ).isEqualTo( "fr" );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
@@ -126,13 +129,13 @@ public class NativeQueryParserTest {
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
-		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{}" ) );
-		assertThat( queryDescriptor.getCollation().getLocale() ).isEqualTo( "fr" );
-		assertThat( queryDescriptor.getProjection() ).isNull();
-		assertThat( queryDescriptor.getOrderBy() ).isNull();
-		assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
+	assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+	assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
+	assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{}" ) );
+	assertThat( queryDescriptor.getCollation().getLocale() ).isEqualTo( "fr" );
+	assertThat( queryDescriptor.getProjection() ).isNull();
+	assertThat( queryDescriptor.getOrderBy() ).isNull();
+	assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
 	}
 
 	@Test
@@ -145,7 +148,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isNull();
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -160,7 +163,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -175,7 +178,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -187,59 +190,72 @@ public class NativeQueryParserTest {
 				.run( "db.Order.find({})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new BasicDBObject() );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new Document() );
 	}
 
 	@Test
 	public void shouldParseQueryInsertSingleDocument() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( { 'item': 'card', 'qty': 15 } )" );
+				.run( "db.Order.insertOne( { 'item': 'card', 'qty': 15 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTONE );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
 	}
 
 	@Test
 	public void shouldParseQueryInsertSingleDocumentAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( { 'item': 'card', 'qty': 15 }, { 'ordered': true } )" );
+				.run( "db.Order.insertOne( { 'item': 'card', 'qty': 15 }, { 'ordered': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'item': 'card', 'qty': 15 }" ) );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ ordered: true })" ) );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTONE );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertMany() ).isNull();
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ ordered: true })" ) );
 	}
 
 	@Test
 	public void shouldParseQueryInsertMultipleDocuments() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
+				.run( "db.Order.insertMany( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTMANY );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isNull();
+		assertThat( queryDescriptor.getUpdateOrInsertMany() ).isEqualTo( DocumentUtil.fromJsonArray( "[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
+	}
 
+	@Test
+	public void shouldParseQueryInsertUnkwounDocuments() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse(
-				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isNull();
+		assertThat( queryDescriptor.getUpdateOrInsertMany() ).isEqualTo( DocumentUtil.fromJsonArray(
+					"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
 	}
 
 	@Test
 	public void shouldParseQueryInsertMultipleDocumentsAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ], { 'ordered': true } )" );
+				.run( "db.Order.insertMany( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ], { 'ordered': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERT );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse(
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTMANY );
+		assertThat( queryDescriptor.getUpdateOrInsertMany() ).isEqualTo( DocumentUtil.fromJsonArray(
 				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ ordered: true })" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ ordered: true })" ) );
 	}
 
 	@Test
@@ -251,7 +267,7 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REMOVE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new BasicDBObject() );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new Document() );
 	}
 
 	@Test
@@ -263,8 +279,8 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REMOVE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new BasicDBObject() );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ \"justOne\" : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new Document() );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ \"justOne\" : true }" ) );
 	}
 
 	@Test
@@ -276,8 +292,8 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REMOVE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new BasicDBObject() );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ \"justOne\" : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new Document() );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ \"justOne\" : true }" ) );
 	}
 
 	@Test
@@ -289,8 +305,8 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'name': 'Andy' }" ) );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name': 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'rating': 1, 'score': 1 }" ) );
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
@@ -303,9 +319,9 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'name': 'Andy' }" ) );
-		assertThat( queryDescriptor.getUpdateOrInsert() ).isEqualTo( JSON.parse( "{ 'rating': 1, 'score': 1 }" ) );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( JSON.parse( "{ 'upsert': true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name': 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'rating': 1, 'score': 1 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'upsert': true }" ) );
 	}
 
 	@Test
@@ -318,7 +334,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FINDANDMODIFY );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse(
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
 				"{ 'query': { 'name': 'Andy' }, 'sort': { 'rating': 1 }, 'update': { '$inc': { 'score': 1 } }, 'upsert': true }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
@@ -349,7 +365,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FINDONE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -364,8 +380,8 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FINDONE );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true }" ) );
-		assertThat( queryDescriptor.getProjection() ).isEqualTo( JSON.parse( "{ \"foo\" : 1 }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true }" ) );
+		assertThat( queryDescriptor.getProjection() ).isEqualTo( Document.parse( "{ \"foo\" : 1 }" ) );
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
@@ -379,8 +395,8 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true }" ) );
-		assertThat( queryDescriptor.getProjection() ).isEqualTo( JSON.parse( "{ \"foo\" : 1 }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true }" ) );
+		assertThat( queryDescriptor.getProjection() ).isEqualTo( Document.parse( "{ \"foo\" : 1 }" ) );
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
@@ -394,8 +410,8 @@ public class NativeQueryParserTest {
 		assertThat( run.hasErrors() ).isFalse();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"  foo  \" : true }" ) );
-		assertThat( queryDescriptor.getProjection() ).isEqualTo( JSON.parse( "{ \"foo\" : 1 }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"  foo  \" : true }" ) );
+		assertThat( queryDescriptor.getProjection() ).isEqualTo( Document.parse( "{ \"foo\" : 1 }" ) );
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
@@ -411,7 +427,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -441,7 +457,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'foo' : true }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'foo' : true }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -456,7 +472,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -471,7 +487,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -486,7 +502,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -501,7 +517,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$not': { 'foo' : false } } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$not': { 'foo' : false } } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -516,7 +532,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -531,7 +547,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -546,7 +562,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -561,7 +577,7 @@ public class NativeQueryParserTest {
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ '$not': { 'foo' : false } } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$not': { 'foo' : false } } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}

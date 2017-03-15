@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -45,7 +45,7 @@ public class ElementCollectionWithMapAndEmbeddedTest extends OgmTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertDbObject(
+		assertDocument(
 			getSessionFactory(),
 			// collection
 			ForumUser.LABEL,
