@@ -7,16 +7,11 @@
 package org.hibernate.ogm.backendtck.optimisticlocking;
 
 import static org.hamcrest.CoreMatchers.isA;
-import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
-import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
-import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
-import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
-import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -106,8 +101,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	@SkipByGridDialect(
-			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, CASSANDRA, REDIS_JSON, REDIS_HASH },
-			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
+			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE }
 	)
 	public void updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate() throws Throwable {
 		thrown.expectCause( isA( StaleObjectStateException.class ) );
@@ -153,8 +147,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	@SkipByGridDialect(
-			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, CASSANDRA, REDIS_JSON, REDIS_HASH },
-			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
+			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE }
 	)
 	public void deletingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndDelete() throws Throwable {
 		thrown.expectCause( isA( StaleObjectStateException.class ) );

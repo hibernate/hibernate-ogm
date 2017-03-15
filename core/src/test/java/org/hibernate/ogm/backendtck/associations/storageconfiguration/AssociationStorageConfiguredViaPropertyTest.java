@@ -35,8 +35,8 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE,
-				GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.CASSANDRA },
+		value = { GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE,
+				GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE },
 		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
 )
 public class AssociationStorageConfiguredViaPropertyTest extends AssociationStorageTestBase {
@@ -53,11 +53,6 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.REDIS_HASH },
-			comment = "Only Redis JSON supports in-entity association storage"
-	)
-
 	public void associationStorageSetViaApiTakesPrecedenceOverProperty() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 

@@ -17,8 +17,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.SessionHelper.ProjectionResult;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
@@ -34,7 +34,7 @@ import org.junit.rules.ExpectedException;
  * @author Davide D'Alto
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
+		value = { GridDialectType.INFINISPAN_REMOTE },
 		comment = "Collection of embeddeds - bag semantics unsupported (no primary key)"
 )
 public class QueriesWithEmbeddedTest extends OgmTestCase {
