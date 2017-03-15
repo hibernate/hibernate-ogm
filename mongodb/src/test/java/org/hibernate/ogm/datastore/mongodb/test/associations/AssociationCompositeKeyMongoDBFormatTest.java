@@ -18,7 +18,7 @@ import org.hibernate.ogm.backendtck.associations.manytoone.Game;
 import org.hibernate.ogm.utils.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -58,7 +58,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Court",
@@ -73,7 +73,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 						"'name': 'Hamburg Court' " +
 						"}"
 		);
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Game",
@@ -121,7 +121,7 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Race",

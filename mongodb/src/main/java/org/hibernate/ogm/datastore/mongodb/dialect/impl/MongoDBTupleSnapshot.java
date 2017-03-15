@@ -13,10 +13,11 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 
 /**
- * A {@link TupleSnapshot} based on a {@link DBObject} retrieved from MongoDB.
+ * A {@link TupleSnapshot} based on a {@link Document} retrieved from MongoDB.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Christopher Auston
@@ -26,15 +27,15 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
-	private final DBObject dbObject;
+	private final Document dbObject;
 	private final EntityKeyMetadata keyMetadata;
 
-	public MongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata meta) {
+	public MongoDBTupleSnapshot(Document dbObject, EntityKeyMetadata meta) {
 		this.dbObject = dbObject;
 		this.keyMetadata = meta;
 	}
 
-	public DBObject getDbObject() {
+	public Document getDbObject() {
 		return dbObject;
 	}
 
@@ -64,22 +65,22 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 		if ( keyMetadata.getColumnNames().length == 1 ) {
 			return idField;
 		}
-		// multi-column key nested within DBObject
+		// multi-column key nested within Document
 		else {
 			// the name of the column within the id object
 			if ( column.contains( MongoDBDialect.PROPERTY_SEPARATOR ) ) {
 				column = column.substring( column.indexOf( MongoDBDialect.PROPERTY_SEPARATOR ) + 1 );
 			}
 
-			return getValue( (DBObject) idField, column );
+			return getValue( (Document) idField, column );
 		}
 	}
 
 	/**
-	 * The internal structure of a {@link DBOject} is like a tree. Each embedded object is a new {@code DBObject}
+	 * The internal structure of a {@link Document} is like a tree. Each embedded object is a new {@code Document}
 	 * itself. We traverse the tree until we've arrived at a leaf and retrieve the value from it.
 	 */
-	private Object getValue(DBObject dbObject, String column) {
+	private Object getValue(Document dbObject, String column) {
 		Object valueOrNull = MongoHelpers.getValueOrNull( dbObject, column );
 		return valueOrNull;
 	}

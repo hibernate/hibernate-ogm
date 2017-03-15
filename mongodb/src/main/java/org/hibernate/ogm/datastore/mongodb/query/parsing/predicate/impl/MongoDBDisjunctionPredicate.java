@@ -7,41 +7,42 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.hibernate.hql.ast.spi.predicate.DisjunctionPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.hql.ast.spi.predicate.Predicate;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 
 /**
  * MongoDB-based implementation of {@link DisjunctionPredicate}.
  *
  * @author Gunnar Morling
  */
-public class MongoDBDisjunctionPredicate extends DisjunctionPredicate<DBObject> implements NegatablePredicate<DBObject> {
+public class MongoDBDisjunctionPredicate extends DisjunctionPredicate<Document> implements NegatablePredicate<Document> {
 
 	@Override
-	public DBObject getQuery() {
-		List<DBObject> elements = new ArrayList<DBObject>();
+	public Document getQuery() {
+		List<Document> elements = new ArrayList<Document>();
 
-		for ( Predicate<DBObject> child : children ) {
+		for ( Predicate<Document> child : children ) {
 			elements.add( child.getQuery() );
 		}
 
-		return new BasicDBObject( "$or", elements );
+		return new Document( "$or", elements );
 	}
 
 	@Override
-	public DBObject getNegatedQuery() {
-		List<DBObject> elements = new ArrayList<DBObject>();
+	public Document getNegatedQuery() {
+		List<Document> elements = new LinkedList<>();
 
-		for ( Predicate<DBObject> child : children ) {
-			elements.add( ( (NegatablePredicate<DBObject>) child ).getNegatedQuery() );
+		for ( Predicate<Document> child : children ) {
+			elements.add( ( (NegatablePredicate<Document>) child ).getNegatedQuery() );
 		}
 
-		return new BasicDBObject( "$and", elements );
+		return new Document( "$and", elements );
 	}
 }

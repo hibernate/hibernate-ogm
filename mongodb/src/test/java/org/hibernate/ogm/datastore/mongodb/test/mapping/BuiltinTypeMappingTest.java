@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -64,7 +64,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -88,7 +88,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -112,7 +112,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -136,7 +136,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -160,7 +160,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -173,7 +173,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 					"'_id' : '" + bookmarkId + "', " +
 					"'data' : {" +
 						"'$binary' : 'c2xmaHM7bGFma3NhIDtmaSBqZXdlIGE7dSByOTAzMnVyIHQnLSlfJFUgbGthamRzIGxmMzAyMi0gNzUyIC05MzcyLTMyIHM7ZCdnZCAjZnMnZyMgczs=', " +
-						"'$type' : 0, " +
+						"'$type' : '00', " +
 					" }," +
 				"}"
 		);
@@ -187,7 +187,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -200,7 +200,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 					"'_id' : '" + bookmarkId + "', " +
 					"'lob' : {" +
 						"'$binary' : 'c2xmaHM7bGFma3NhIDtmaSBqZXdlIGE7dSByOTAzMnVyIHQnLSlfJFUgbGthamRzIGxmMzAyMi0gNzUyIC05MzcyLTMyIHM7ZCdnZCAjZnMnZyMgczs=', " +
-						"'$type' : 0, " +
+						"'$type' : '00', " +
 					" }," +
 				"}"
 		);
@@ -214,7 +214,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",
@@ -227,7 +227,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 					"'_id' : '" + bookmarkId + "', " +
 					"'lobWithLong' : {" +
 						"'$binary' : 'rO0ABXNyAA5qYXZhLmxhbmcuTG9uZzuL5JDMjyPfAgABSgAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHB//////////w==', " +
-						"'$type' : 0, " +
+						"'$type' : '00', " +
 					" }," +
 				"}"
 		);
@@ -241,7 +241,7 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Bookmark",

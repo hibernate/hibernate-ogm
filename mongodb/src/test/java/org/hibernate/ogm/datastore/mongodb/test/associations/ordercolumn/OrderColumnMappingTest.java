@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations.ordercolumn;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -45,7 +45,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"TvShow",
@@ -63,7 +63,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"}"
 		);
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Episode",
@@ -122,7 +122,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Writer",
@@ -136,7 +136,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"}"
 		);
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Writer",
@@ -150,7 +150,7 @@ public class OrderColumnMappingTest extends OgmTestCase {
 				"}"
 		);
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Episode",

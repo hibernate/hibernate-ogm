@@ -23,21 +23,20 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.StringHelper;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 /**
- * Parser delegate which creates MongoDB queries in form of {@link DBObject}s.
+ * Parser delegate which creates MongoDB queries in form of {@link Document}s.
  *
  * @author Gunnar Morling
  */
-public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQueryParsingResult> {
+public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<Document, MongoDBQueryParsingResult> {
 
 	private static final Log log = LoggerFactory.getLogger();
 
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
-	private DBObject orderBy;
+	private Document orderBy;
 	/*
 	 * The fields for which needs to be aggregated using $unwind when running the query
 	 */
@@ -58,28 +57,28 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	public MongoDBQueryParsingResult getResult() {
 		OgmEntityPersister entityPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( targetType.getName() );
 
-		DBObject query = appendDiscriminatorClause( entityPersister, builder.build() );
+		Document query = appendDiscriminatorClause( entityPersister, builder.build() );
 
 		return new MongoDBQueryParsingResult(
 				targetType,
 				entityPersister.getTableName(),
 				query,
-				getProjectionDBObject(),
+				getProjectionDocument(),
 				orderBy,
 				unwinds );
 	}
 
-	private DBObject appendDiscriminatorClause(OgmEntityPersister entityPersister, DBObject query) {
+	private Document appendDiscriminatorClause(OgmEntityPersister entityPersister, Document query) {
 		String discriminatorColumnName = entityPersister.getDiscriminatorColumnName();
 		if ( discriminatorColumnName != null ) {
 			// InheritanceType.SINGLE_TABLE
-			BasicDBObject discriminatorFilter = createDiscriminatorFilter( entityPersister, discriminatorColumnName );
+			Document discriminatorFilter = createDiscriminatorFilter( entityPersister, discriminatorColumnName );
 
 			if ( query.keySet().isEmpty() ) {
 				return discriminatorFilter;
 			}
 			else {
-				return new BasicDBObject( "$and", Arrays.asList( query, discriminatorFilter ) );
+				return new Document( "$and", Arrays.asList( query, discriminatorFilter ) );
 			}
 		}
 		else if ( entityPersister.hasSubclasses() ) {
@@ -91,13 +90,13 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 		return query;
 	}
 
-	private BasicDBObject createDiscriminatorFilter(OgmEntityPersister entityPersister, String discriminatorColumnName) {
+	private Document createDiscriminatorFilter(OgmEntityPersister entityPersister, String discriminatorColumnName) {
 		final Object discriminatorValue = entityPersister.getDiscriminatorValue();
-		BasicDBObject discriminatorFilter = null;
+		Document discriminatorFilter = null;
 		@SuppressWarnings("unchecked")
 		Set<String> subclassEntityNames = entityPersister.getEntityMetamodel().getSubclassEntityNames();
 		if ( subclassEntityNames.size() == 1 ) {
-			discriminatorFilter = new BasicDBObject( discriminatorColumnName, discriminatorValue );
+			discriminatorFilter = new Document( discriminatorColumnName, discriminatorValue );
 		}
 		else {
 			Set<Object> discriminatorValues = new HashSet<>();
@@ -107,7 +106,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 				Object subDiscriminatorValue = subclassPersister.getDiscriminatorValue();
 				discriminatorValues.add( subDiscriminatorValue );
 			}
-			discriminatorFilter = new BasicDBObject( discriminatorColumnName, new BasicDBObject( "$in", discriminatorValues ) );
+			discriminatorFilter = new Document( discriminatorColumnName, new Document( "$in", discriminatorValues ) );
 		}
 		return discriminatorFilter;
 	}
@@ -146,33 +145,33 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	}
 
 	/**
-	 * Returns the projection columns of the parsed query in form of a {@code DBObject} as expected by MongoDB.
+	 * Returns the projection columns of the parsed query in form of a {@code Document} as expected by MongoDB.
 	 *
-	 * @return a {@code DBObject} representing the projections of the query
+	 * @return a {@code Document} representing the projections of the query
 	 */
-	private DBObject getProjectionDBObject() {
+	private Document getProjectionDocument() {
 		if ( projections.isEmpty() ) {
 			return null;
 		}
 
-		DBObject projectionDBObject = new BasicDBObject();
+		Document projectionDocument = new Document();
 
 		for ( String projection : projections ) {
-			projectionDBObject.put( projection, 1 );
+			projectionDocument.put( projection, 1 );
 		}
 
-		return projectionDBObject;
+		return projectionDocument;
 	}
 
 	@Override
 	protected void addSortField(PropertyPath propertyPath, String collateName, boolean isAscending) {
 		if ( orderBy == null ) {
-			orderBy = new BasicDBObject();
+			orderBy = new Document();
 		}
 
 		String columnName = propertyHelper.getColumnName( targetType, propertyPath.getNodeNamesWithoutAlias() );
 
-		// BasicDBObject is essentially a LinkedHashMap, so in case of several sort keys they'll be evaluated in the
+		// Document is essentially a LinkedHashMap, so in case of several sort keys they'll be evaluated in the
 		// order they're inserted here, which is the order within the original statement
 		orderBy.put( columnName, isAscending ? 1 : -1 );
 	}
