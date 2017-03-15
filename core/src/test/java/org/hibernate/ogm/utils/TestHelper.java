@@ -45,6 +45,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
+import com.sun.tools.javac.util.ServiceLoader;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -54,8 +55,7 @@ public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
 	private static final String TX_CONTROL_CLASS_NAME = "com.arjuna.ats.arjuna.coordinator.TxControl";
-	private static final GridDialectTestHelperType GRID_DIALECT_TEST_HELPER_TYPE = determineGridDialectTestHelperType();
-	private static final GridDialectTestHelper HELPER = instantiate( GRID_DIALECT_TEST_HELPER_TYPE.loadGridDialectTestHelperClass() );
+	private static final GridDialectTestHelper HELPER = determineGridDialectTestHelper();
 	private static final GridDialectType GRID_DIALECT_TYPE = determineGridDialectType();
 
 	static {
@@ -82,15 +82,19 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
-	private static GridDialectTestHelperType determineGridDialectTestHelperType() {
+	private static GridDialectTestHelper determineGridDialectTestHelper() {
 		for ( GridDialectTestHelperType gridType : GridDialectTestHelperType.values() ) {
 			Class<GridDialectTestHelper> testDialectClass = gridType.loadGridDialectTestHelperClass();
 			if ( testDialectClass != null ) {
-				return gridType;
+				return instantiate( gridType.loadGridDialectTestHelperClass() );
 			}
 		}
 
-		return GridDialectTestHelperType.HASHMAP;
+		ServiceLoader<GridDialectTestHelper> testHelper = ServiceLoader.load( GridDialectTestHelper.class );
+		if ( testHelper.iterator().hasNext() ) {
+			return testHelper.iterator().next();
+		}
+		return instantiate( GridDialectTestHelperType.HASHMAP.loadGridDialectTestHelperClass() );
 	}
 
 	private static GridDialectType determineGridDialectType() {
@@ -104,7 +108,7 @@ public class TestHelper {
 		return GridDialectType.HASHMAP;
 	}
 
-	private static GridDialectTestHelper instantiate(Class<GridDialectTestHelper> testableGridDialectClass) {
+	private static <T extends GridDialectTestHelper> GridDialectTestHelper instantiate(Class<T> testableGridDialectClass) {
 		if ( testableGridDialectClass == null ) {
 			return new HashMapTestHelper();
 		}
@@ -354,7 +358,7 @@ public class TestHelper {
 				return byAssignableType;
 			}
 
-			throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );
+			return null;
 		}
 
 		private static DatastoreProviderType findByShortName(String value) {

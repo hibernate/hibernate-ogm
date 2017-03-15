@@ -11,6 +11,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.dialect.spi.GridDialect;
+
 /**
  * Annotation to skip a specific test for certain grid dialects. If given on a test method and the containing test class
  * at the same time, the annotation declared on the method takes precedence.
@@ -26,7 +28,9 @@ public @interface SkipByGridDialect {
 	 *
 	 * @return The dialects
 	 */
-	GridDialectType[] value();
+	GridDialectType[] value() default {};
+
+	Class<? extends GridDialect>[] dialects() default {};
 
 	/**
 	 * Comment describing the reason for the skip.
