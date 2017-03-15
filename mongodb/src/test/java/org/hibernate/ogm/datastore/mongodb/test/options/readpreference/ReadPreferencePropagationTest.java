@@ -9,10 +9,10 @@ package org.hibernate.ogm.datastore.mongodb.test.options.readpreference;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.mockClient;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +29,8 @@ import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
+import org.bson.Document;
 
 /**
  * Tests that the configured read preference is applied when performing operations against MongoDB.
@@ -64,13 +62,13 @@ public class ReadPreferencePropagationTest {
 		session.close();
 
 		// then expect a findOne() call with the configured read preference
-		verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( DBObject.class ), any( DBObject.class ), eq( ReadPreference.secondaryPreferred() ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) );
 	}
 
 	@Test
 	public void shouldApplyConfiguredReadPreferenceForGettingEmbeddedAssociation() {
 		// given a persisted player with one associated golf course
-		BasicDBObject player = getPlayer();
+		Document player = getPlayer();
 		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
 
 		MockMongoClient mockClient = mockClient()
@@ -92,7 +90,7 @@ public class ReadPreferencePropagationTest {
 		session.close();
 
 		// then expect a findOne() call for the entity and the embedded association with the configured read preference
-		verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( DBObject.class ), any( DBObject.class ), eq( ReadPreference.secondaryPreferred() ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) );
 	}
 
 	@Test
@@ -116,11 +114,11 @@ public class ReadPreferencePropagationTest {
 
 		transaction.commit();
 		session.close();
-
 		// then expect a findOne() call for the entity and one for the association  with the configured read preference
-		verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( DBObject.class ), any( DBObject.class ), eq( ReadPreference.secondaryPreferred() ) );
-		verify( mockClient.getCollection( "Associations" ) ).findOne( any( DBObject.class ), any( DBObject.class ), eq( ReadPreference.primaryPreferred() ) );
-		verifyNoMoreInteractions( mockClient.getCollection( "GolfPlayer" ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) ) ;
+		verify( mockClient.getCollection( "Associations" ).withReadPreference( ReadPreference.primaryPreferred() ) ).find( any( Document.class ) ) ;
+		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) ).first() ;
+		verifyNoMoreInteractions( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) );
 	}
 
 	private Class<?>[] getAnnotatedClasses() {
@@ -142,43 +140,43 @@ public class ReadPreferencePropagationTest {
 		sessions = TestHelper.getDefaultTestSessionFactory( settings, getAnnotatedClasses() );
 	}
 
-	private BasicDBObject getGolfCourse() {
-		BasicDBObject bepplePeach = new BasicDBObject();
+	private Document getGolfCourse() {
+		Document bepplePeach = new Document();
 		bepplePeach.put( "_id", 1L );
 		bepplePeach.put( "name", "Bepple Peach" );
 		return bepplePeach;
 	}
 
-	private BasicDBObject getPlayer() {
-		BasicDBObject golfPlayer = new BasicDBObject();
+	private Document getPlayer() {
+		Document golfPlayer = new Document();
 		golfPlayer.put( "_id", 1L );
 		golfPlayer.put( "name", "Ben" );
 		golfPlayer.put( "handicap", 0.1 );
 		return golfPlayer;
 	}
 
-	private BasicDBList getPlayedCoursesAssociationEmbedded() {
-		BasicDBObject bepplePeachRef = new BasicDBObject();
+	private List<Document> getPlayedCoursesAssociationEmbedded() {
+		Document bepplePeachRef = new Document();
 		bepplePeachRef.put( "playedCourses_id", 1L );
 
-		BasicDBList playedCourses = new BasicDBList();
+		List<Document> playedCourses = new ArrayList<>();
 		playedCourses.add( bepplePeachRef );
 
 		return playedCourses;
 	}
 
-	private BasicDBObject getPlayedCoursesAssociationAsDocument() {
-		BasicDBObject id = new BasicDBObject();
+	private Document getPlayedCoursesAssociationAsDocument() {
+		Document id = new Document();
 		id.put( "golfPlayer_id", 1L );
 		id.put( "table", "GolfPlayer_GolfCourse" );
 
-		BasicDBObject row = new BasicDBObject();
+		Document row = new Document();
 		row.put( "playedCourses_id", 1L );
 
-		BasicDBList rows = new BasicDBList();
+		List<Document> rows = new ArrayList<>();
 		rows.add( row );
 
-		BasicDBObject association = new BasicDBObject();
+		Document association = new Document();
 		association.put( "_id", id );
 		association.put( "rows", rows );
 		return association;
