@@ -362,6 +362,13 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-integrationtest</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>hibernate-ogm-jipijapa</artifactId>
                 <version>${project.version}</version>
             </dependency>
