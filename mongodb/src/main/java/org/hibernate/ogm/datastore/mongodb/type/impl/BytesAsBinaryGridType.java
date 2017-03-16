@@ -19,7 +19,7 @@ public class BytesAsBinaryGridType extends AbstractGenericBasicType<byte[]> {
 	public static final BytesAsBinaryGridType INSTANCE = new BytesAsBinaryGridType();
 
 	public BytesAsBinaryGridType() {
-		super( WrappedGridTypeDescriptor.INSTANCE, BytesAsBsonBinaryTypeDescriptor.INSTANCE );
+		super( WrappedGridTypeDescriptor.INSTANCE, BytesAsBinaryTypeDescriptor.INSTANCE );
 	}
 
 	@Override
