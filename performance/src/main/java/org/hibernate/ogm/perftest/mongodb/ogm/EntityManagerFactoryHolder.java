@@ -69,7 +69,7 @@ public class EntityManagerFactoryHolder {
 	private void dropSchemaAndDatabase(EntityManagerFactory entityManagerFactory) {
 		MongoDBDatastoreProvider provider = getProvider( entityManagerFactory.unwrap( SessionFactory.class ) );
 		try {
-			provider.getDatabase().dropDatabase();
+			provider.getDatabase().drop();
 		}
 		catch ( MongoException ex ) {
 			throw new RuntimeException( ex );
