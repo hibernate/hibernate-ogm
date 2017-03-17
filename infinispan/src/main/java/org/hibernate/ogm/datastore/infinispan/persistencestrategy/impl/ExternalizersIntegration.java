@@ -18,6 +18,7 @@ import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.external
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKeyExternalizer;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.SerializationConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -75,6 +76,20 @@ public final class ExternalizersIntegration {
 		for ( AdvancedExternalizer<?> advancedExternalizer : ogmExternalizers.values() ) {
 			cfg.addAdvancedExternalizer( advancedExternalizer );
 		}
+	}
+
+	/**
+	 * Registers all custom Externalizer implementations that Hibernate OGM needs into a running
+	 * Infinispan CacheManager configuration.
+	 * This is only safe to do when Caches from this CacheManager haven't been started yet,
+	 * or the ones already started do not contain any data needing these.
+	 *
+	 * @see ExternalizerIds
+	 * @param globalCfg the Serialization section of a GlobalConfiguration builder
+	 */
+	public static void registerOgmExternalizers(GlobalConfiguration globalCfg) {
+		Map<Integer, AdvancedExternalizer<?>> externalizerMap = globalCfg.serialization().advancedExternalizers();
+		externalizerMap.putAll( ogmExternalizers );
 	}
 
 	/**
