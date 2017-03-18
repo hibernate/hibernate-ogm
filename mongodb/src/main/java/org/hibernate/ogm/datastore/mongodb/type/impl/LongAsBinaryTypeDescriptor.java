@@ -8,8 +8,6 @@ package org.hibernate.ogm.datastore.mongodb.type.impl;
 
 import java.nio.ByteBuffer;
 
-import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 
@@ -22,8 +20,6 @@ import org.bson.types.Binary;
 public class LongAsBinaryTypeDescriptor extends AbstractTypeDescriptor<Long> {
 
 	public static final LongAsBinaryTypeDescriptor INSTANCE = new LongAsBinaryTypeDescriptor();
-
-	private static final Log log = LoggerFactory.getLogger();
 
 	public LongAsBinaryTypeDescriptor() {
 		super( Long.class );
@@ -41,16 +37,13 @@ public class LongAsBinaryTypeDescriptor extends AbstractTypeDescriptor<Long> {
 
 	@Override
 	public <X> X unwrap(Long value, Class<X> type, WrapperOptions options) {
-		log.debug( " unwrap !" );
 		byte[] bytes = ByteBuffer.allocate( Long.SIZE ).putLong( value ).array();
 		return (X) new BsonBinary( bytes );
 	}
 
 	@Override
 	public <X> Long wrap(X value, WrapperOptions options) {
-		log.debugf( " wrap from class %s", value.getClass() );
 		Binary bson = (Binary) value;
-		log.debugf( " BsonBinary. properties : %s ; length: %s", bson.getData().length, bson.length() );
 		return ByteBuffer.wrap( bson.getData() ).getLong();
 	}
 }

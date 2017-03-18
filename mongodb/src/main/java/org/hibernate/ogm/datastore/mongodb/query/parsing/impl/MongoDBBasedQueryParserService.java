@@ -31,16 +31,9 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
-	private ThreadLocal<QueryParser> parser = new ThreadLocal<QueryParser>() {
-		@Override
-		protected QueryParser initialValue() {
-			return new QueryParser();
-		}
-	};
-
 	@Override
 	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
-		QueryParser queryParser = parser.get();
+		QueryParser queryParser = new QueryParser();
 		MongoDBProcessingChain processingChain = createProcessingChain( sessionFactory, unwrap( namedParameters ) );
 
 		MongoDBQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );

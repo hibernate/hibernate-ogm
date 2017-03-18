@@ -313,7 +313,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Returns a projection object for specifying the fields to retrieve during a specific find operation.
 	 */
 	private static Document getProjection(List<String> fieldNames) {
-		Document projection = new Document( );
+		Document projection = new Document();
 		for ( String column : fieldNames ) {
 			projection.put( column, 1 );
 		}
@@ -951,7 +951,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		//@todo extract batchSize to module parameters
 		MongoCursor<String> cursor = distinctFieldValues.iterator();
-		List<String> documents = new LinkedList<>(  );
+		List<String> documents = new LinkedList<>();
 		while ( cursor.hasNext() ) {
 			documents.add( cursor.next() );
 		}
@@ -1037,11 +1037,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Boolean bypass = (Boolean) queryDesc.getCriteria().get( "bypassDocumentValidation" );
 		Document o = (Document) queryDesc.getCriteria().get( "writeConcern" );
 		WriteConcern wc = getWriteConcern( o );
-		//@TODO Analyse it! New API have methods findAndRemove and findAndUpdate
-		/*final Document theOne = collection.findAndModify( query, fields, sort, ( remove != null ? remove : false ),
-				update, (returnNewDocument != null ? returnNewDocument : false), (upsert != null ? upsert : false), (bypass != null ? bypass : false),
-				0, TimeUnit.MILLISECONDS, (wc != null ? wc : collection.getWriteConcern() ) );
-				*/
 		Document theOne = null;
 		if ( remove != null ? remove : false ) {
 			theOne = collection.findOneAndDelete(
@@ -1079,13 +1074,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		// Need to use BulkWriteOperation here rather than collection.insert(..) because the WriteResult returned
 		// by the latter returns 0 for getN() even if the insert was successful (which is bizarre, but that's the way it
 		// is defined...)
-		List<InsertOneModel<Document>> operationList = new ArrayList<>(  );
+		List<InsertOneModel<Document>> operationList = null;
 		if ( queryDesc.getUpdateOrInsertMany() != null ) {
+			operationList = new ArrayList<>( queryDesc.getUpdateOrInsertMany().size() );
 			for ( Document doc : queryDesc.getUpdateOrInsertMany() ) {
 				operationList.add( new InsertOneModel( doc ) );
 			}
 		}
 		else {
+			operationList = new ArrayList<>( 1 );
 			operationList.add( new InsertOneModel( queryDesc.getUpdateOrInsertOne() ) );
 		}
 		final BulkWriteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
@@ -1209,7 +1206,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					+ ".associationKeyToObject should not be called for associations embedded in entity documents" );
 		}
 		Object[] columnValues = key.getColumnValues();
-		Document columns = new Document(  );
+		Document columns = new Document();
 
 		// if the columns are only made of the embedded id columns, remove the embedded id property prefix
 		// _id: [ { id: { id1: "foo", id2: "bar" } } ] becomes _id: [ { id1: "foo", id2: "bar" } ]
@@ -1220,7 +1217,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			MongoHelpers.setValue( columns, name.substring( prefix.length() ), columnValues[i++] );
 		}
 
-		Document idObject = new Document(  );
+		Document idObject = new Document();
 
 		if ( storageStrategy == AssociationStorageStrategy.GLOBAL_COLLECTION ) {
 			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
@@ -1347,8 +1344,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey,
-																								storageStrategy );
+					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy );
 					Document query = associationSnapshot.getQueryObject();
 					Document update = new Document( "$set", new Document( ROWS_FIELDNAME, toStore ) );
 					associationCollection.withWriteConcern( getWriteConcern( associationContext ) ).updateOne( query, update, updateOptions );
