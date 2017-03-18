@@ -9,19 +9,16 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.util.impl.StringHelper;
 
-import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.CollationAlternate;
-import com.mongodb.client.model.CollationCaseFirst;
-import com.mongodb.client.model.CollationMaxVariable;
-import com.mongodb.client.model.CollationStrength;
 import org.bson.Document;
 
 /**
@@ -32,6 +29,23 @@ import org.bson.Document;
  * @author Guillaume Smet
  */
 public class MongoDBQueryDescriptorBuilder {
+
+	private static final Map<Operation,QueryDescriptor> OPERATION_QUERY_DESCRIPTOR_MAP;
+
+	static {
+		EnumMap<Operation, QueryDescriptor> descriptorEnumMap = new EnumMap<>( Operation.class );
+
+		QueryDescriptor defaultDesc = new DefaultQueryDescriptor();
+		for ( Operation op : Operation.values() ) {
+			descriptorEnumMap.put( op, defaultDesc );
+		}
+		// operations with non default query description
+		descriptorEnumMap.put( Operation.AGGREGATE_PIPELINE, new AggregatePipelineQueryDescriptor() );
+		descriptorEnumMap.put( Operation.DISTINCT, new DistinctQueryDescriptor() );
+		descriptorEnumMap.put( Operation.INSERTMANY, new InsertManyQueryDescriptor() );
+		descriptorEnumMap.put( Operation.INSERT, new InsertQueryDescriptor() );
+		OPERATION_QUERY_DESCRIPTOR_MAP = descriptorEnumMap;
+	}
 
 	private String collection;
 	private Operation operation;
@@ -145,90 +159,10 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	public MongoDBQueryDescriptor build() {
-		//@todo redactor the spagetti!
-		if ( operation != Operation.AGGREGATE_PIPELINE ) {
-			MongoDBQueryDescriptor descriptor = null;
-			if ( operation == Operation.DISTINCT ) {
-				descriptor = new MongoDBQueryDescriptor( collection, operation, parse( criteria ), parseCollation( collation ), distinctFieldName );
-			}
-			else if ( operation == Operation.INSERTMANY ) {
-				// must be array
-				Object anyDocs = parseAsObject( updateOrInsert );
-				List<Document> documents = (List<Document>) parseAsObject( updateOrInsert );
-				descriptor = new MongoDBQueryDescriptor(
-						collection,
-						operation,
-						parse( criteria ),
-						parse( projection ),
-						parse( orderBy ),
-						parse( options ),
-						null,
-						documents,
-						null
-				);
-			}
-			else if ( operation == Operation.INSERT ) {
-				//can be document or array
-				Object anyDocs = parseAsObject( updateOrInsert );
-				if ( anyDocs instanceof List ) {
-					//this is array
-					descriptor = new MongoDBQueryDescriptor(
-							collection,
-							operation,
-							parse( criteria ),
-							parse( projection ),
-							parse( orderBy ),
-							parse( options ),
-							null,
-							(List<Document>) anyDocs,
-							null
-					);
-				}
-				else {
-					//this is one document
-					descriptor = new MongoDBQueryDescriptor(
-							collection,
-							operation,
-							parse( criteria ),
-							parse( projection ),
-							parse( orderBy ),
-							parse( options ),
-							(Document) anyDocs,
-							null,
-							null
-					);
-				}
-			}
-			else {
-				descriptor = new MongoDBQueryDescriptor(
-						collection,
-						operation,
-						parse( criteria ),
-						parse( projection ),
-						parse( orderBy ),
-						parse( options ),
-						parse( updateOrInsert ),
-						null,
-						null
-				);
-			}
-			return descriptor;
-		}
-		return new MongoDBQueryDescriptor( collection, operation, pipeline );
-	}
-
-	/**
-	 * Currently, there is no way to parse an array while supporting BSON and JSON extended syntax. So for now, we build
-	 * an object from the JSON string representing an array or an object, parse this object then extract the array/object.
-	 *
-	 * See <a href="https://jira.mongodb.org/browse/JAVA-2186">https://jira.mongodb.org/browse/JAVA-2186</a>.
-	 *
-	 * @param json a JSON string representing an array or an object
-	 * @return returns the array ({@code List}) (for many documents) or the object ({@code Document}) for one document
-	 * @see <a href="https://docs.mongodb.com/manual/tutorial/insert-documents/">insert documents</a>
-	 */
-	private Document parse(String json) {
-		return (Document) parseAsObject( json );
+		return OPERATION_QUERY_DESCRIPTOR_MAP
+				.get( operation )
+				.build( collection,operation,criteria,projection,orderBy,options,updateOrInsert,
+						pipeline,distinctFieldName,collation );
 	}
 
 	/**
@@ -243,50 +177,6 @@ public class MongoDBQueryDescriptorBuilder {
 		}
 		Document object = Document.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
-	}
-
-	private static Collation parseCollation(String json) {
-		Document dbObject = ( (Document) parseAsObject( json ) );
-
-		if ( dbObject != null ) {
-			dbObject = (Document) dbObject.get( "collation" );
-			if ( dbObject != null ) {
-				Collation collation = Collation.builder()
-						.locale( (String) dbObject.get( "locale" ) )
-						.caseLevel( (Boolean) dbObject.get( "caseLevel" ) )
-						.numericOrdering( (Boolean) dbObject.get( "numericOrdering" ) )
-						.backwards( (Boolean) dbObject.get( "backwards" ) )
-						.collationCaseFirst( caseFirst( dbObject ) )
-						.collationStrength( strength( dbObject ) )
-						.collationAlternate( alternate( dbObject ) )
-						.collationMaxVariable( maxVariable( dbObject ) )
-						.build();
-
-				return collation;
-			}
-
-		}
-		return null;
-	}
-
-	private static CollationCaseFirst caseFirst(Document dbObject) {
-		String caseFirst = dbObject.getString( "caseFirst" );
-		return caseFirst == null ? null : CollationCaseFirst.fromString( caseFirst );
-	}
-
-	private static CollationStrength strength(Document dbObject) {
-		Integer strength = dbObject.getInteger( "strength" );
-		return strength == null ? null : CollationStrength.fromInt( strength );
-	}
-
-	private static CollationAlternate alternate(Document dbObject) {
-		String value = dbObject.getString( "alternate" );
-		return value == null ? null : CollationAlternate.fromString( value );
-	}
-
-	private static CollationMaxVariable maxVariable(Document dbObject) {
-		String value = dbObject.getString( "maxVariable" );
-		return value == null ? null : CollationMaxVariable.fromString( value );
 	}
 
 	private static Document operation(StackedOperation operation, String value) {
