@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.redis.utils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,8 +167,8 @@ public class RedisTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		return null;
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.emptyMap();
 	}
 
 	@Override

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.utils;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -80,8 +81,8 @@ public class HashMapTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		return null;
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.emptyMap();
 	}
 
 	@Override

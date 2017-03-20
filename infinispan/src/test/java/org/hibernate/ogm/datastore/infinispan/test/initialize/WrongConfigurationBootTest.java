@@ -13,8 +13,13 @@ import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper;
 import org.hibernate.ogm.utils.TestHelper;
+import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -61,12 +66,20 @@ public class WrongConfigurationBootTest {
 		if ( sessionFactory != null ) {
 			try {
 				// trigger service initialization, and also verifies it actually uses Infinispan:
-				InfinispanTestHelper.getProvider( sessionFactory );
+				InfinispanEmbeddedDatastoreProvider provider = InfinispanTestHelper.getProvider( sessionFactory );
+				verifyExternalizersRegistered( provider );
 			}
 			finally {
 				sessionFactory.close();
 			}
 		}
+	}
+
+	private void verifyExternalizersRegistered(InfinispanEmbeddedDatastoreProvider provider) {
+		Map<Integer, AdvancedExternalizer<?>> advancedExternalizers = provider.getCacheManager()
+				.getCacheManager().getCacheManagerConfiguration()
+				.serialization().advancedExternalizers();
+		Assert.assertTrue( RowKeyExternalizer.INSTANCE == advancedExternalizers.get( ExternalizerIds.ROW_KEY ) );
 	}
 
 }

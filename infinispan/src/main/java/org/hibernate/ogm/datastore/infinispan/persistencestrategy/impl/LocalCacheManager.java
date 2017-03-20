@@ -21,7 +21,6 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.infinispan.Cache;
-import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -80,9 +79,7 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 					.read( tmpCacheManager.getCacheManagerConfiguration() )
 					.serialization();
 
-				for ( AdvancedExternalizer<?> externalizer : keyProvider.getExternalizers() ) {
-					serializationConfiguration.addAdvancedExternalizer( externalizer.getId(), externalizer );
-				}
+				ExternalizersIntegration.registerOgmExternalizers( serializationConfiguration );
 				allCacheNames.addAll( tmpCacheManager.getCacheNames() );
 
 				GlobalConfiguration globalConfiguration = serializationConfiguration.build();
