@@ -181,13 +181,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			if ( containsDatabase == null ) {
 				// force a connection to make sure we do have read access
 				// otherwise the connection failure happens during the first flush
-				MongoCursor<String> it = db.listCollectionNames().iterator();
-				while ( it.hasNext() ) {
-					if ( ( it.next().equalsIgnoreCase( "WeDoNotCareWhatItIsWeNeedToConnect" ) ) ) {
-						containsDatabase = true;
-						break;
-					}
-				}
+				db.getCollection( "WeDoNotCareWhatItIsWeNeedToConnect" );
 			}
 			return mongo.getDatabase( databaseName );
 		}
