@@ -31,36 +31,27 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * @see <a href="https://docs.mongodb.com/manual/reference/method/js-collection/">list of operations in mongo shell</a>
 	 */
 	public enum Operation {
-		FIND( false ),
-		FINDONE ( false ),
-		FINDANDMODIFY( false ),
-		INSERT( true ),
-		INSERTONE( false ),
-		INSERTMANY( false ),
-		REMOVE( true ),
-		UPDATE( false ),
-		UPDATEONE( false ),
-		UPDATEMANY( false ),
-		REPLACEONE( false ),
-		COUNT ( false ),
+		FIND,
+		FINDONE,
+		FINDANDMODIFY,
+		INSERT,
+		INSERTONE,
+		INSERTMANY,
+		REMOVE,
+		UPDATE,
+		UPDATEONE,
+		UPDATEMANY,
+		REPLACEONE,
+		COUNT,
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
 		 */
-		AGGREGATE( false ),
+		AGGREGATE,
 		/**
 		 * This is used for native queries, when the user wants to execute a generic aggregation query.
 		 */
-		AGGREGATE_PIPELINE( false ),
-		DISTINCT ( false );
-		private boolean deprecated;
-
-		Operation(boolean deprecated) {
-			this.deprecated = deprecated;
-		}
-
-		public boolean isDeprecated() {
-			return deprecated;
-		}
+		AGGREGATE_PIPELINE,
+		DISTINCT;
 	}
 
 	private final String collectionName;
