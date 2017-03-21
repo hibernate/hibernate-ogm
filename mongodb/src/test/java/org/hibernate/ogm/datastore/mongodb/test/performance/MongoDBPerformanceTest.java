@@ -56,13 +56,7 @@ public class MongoDBPerformanceTest extends OgmTestCase {
 					targetMethod = "find(" + BSON_DOCUMENT + ")",
 					helper = HELPER,
 					action = "countInvocation(\"load\")",
-					name = "countFind1"),
-			@BMRule(targetClass = MONGO_COLLECTION,
-					isInterface = true,
-					targetMethod = "find()",
-					helper = HELPER,
-					action = "countInvocation(\"load\")",
-					name = "countFind2")
+					name = "countFind")
 	})
 	public void testNumberOfCallsToDatastore() throws Exception {
 		//insert entity with embedded collection
