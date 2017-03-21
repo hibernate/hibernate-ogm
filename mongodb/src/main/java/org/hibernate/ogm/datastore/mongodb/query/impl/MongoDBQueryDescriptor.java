@@ -188,8 +188,12 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * Returns the update (new values to apply) in case this is an UPDATE query or values to insert in case this is an
 	 * INSERT query.
 	 */
-	public Document getUpdateOrInsertOne() { return updateOrInsertOne; }
-	public List<Document> getUpdateOrInsertMany() { return updateOrInsertMany; }
+	public Document getUpdateOrInsertOne() {
+		return updateOrInsertOne;
+	}
+	public List<Document> getUpdateOrInsertMany() {
+		return updateOrInsertMany;
+	}
 
 	public List<String> getUnwinds() {
 		return unwinds;
