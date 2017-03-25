@@ -69,6 +69,7 @@ public class OrientDBConstant {
 	public static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS z";
 
 	public static final String GET_TABLE_SEQ_VALUE_FUNC = "getTableSeqValue".toUpperCase();
+	@Deprecated
 	public static final String EXECUTE_QUERY_FUNC = "executeQuery".toUpperCase();
 	public static final String GET_NEXT_SEQ_VALUE_FUNC = "getNextSeqValue".toUpperCase();
 

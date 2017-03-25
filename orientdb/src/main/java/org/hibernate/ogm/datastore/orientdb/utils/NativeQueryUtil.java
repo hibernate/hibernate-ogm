@@ -9,20 +9,23 @@ package org.hibernate.ogm.datastore.orientdb.utils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.hibernate.ogm.datastore.orientdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.orientdb.logging.impl.LoggerFactory;
 
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
-import com.orientechnologies.orient.core.metadata.function.OFunction;
+import com.orientechnologies.orient.core.exception.OCommandExecutionException;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import org.hibernate.ogm.datastore.orientdb.constant.OrientDBConstant;
+import com.orientechnologies.orient.core.sql.OCommandSQLParsingException;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 /**
  * Util class for execute queries by native OrientDB API
  *
  * @author Sergey Chernolyas &lt;sergey.chernolyas@gmail.com&gt;
+ * @see <a href="http://orientdb.com/docs/master/Java-Query-API.html">Java-Query-API</a>
+ * @since 1.8
  */
 public class NativeQueryUtil {
 
@@ -32,12 +35,26 @@ public class NativeQueryUtil {
 		return executeIdempotentQuery( db, query.toString() );
 	}
 
-	public static List<ODocument> executeIdempotentQuery(ODatabaseDocumentTx db, String query) {
+	public static  List<ODocument> executeIdempotentQuery(ODatabaseDocumentTx db, String query) {
 		return executeIdempotentQueryWithParams( db, query, Collections.<String, Object>emptyMap() );
 	}
 
 	public static List<ODocument> executeIdempotentQueryWithParams(ODatabaseDocumentTx db, String query, Map<String, Object> queryParams) {
-		return db.command( new OSQLSynchQuery<ODocument>( query ) ).execute( queryParams );
+		List<ODocument> resultElements = null;
+		try ( OResultSet resultSet = db.query( query, queryParams ) ) {
+			resultElements = resultSet.elementStream()
+					.map( element -> {
+						return (ODocument) element;
+					} )
+					.collect( Collectors.toList() );
+		}
+		catch (OCommandSQLParsingException e1) {
+
+		}
+		catch (OCommandExecutionException e2) {
+			throw log.cannotExecuteQuery( query, e2 );
+		}
+		return resultElements;
 	}
 
 	public static Object executeNonIdempotentQuery(ODatabaseDocumentTx db, StringBuilder query) {
@@ -45,11 +62,10 @@ public class NativeQueryUtil {
 	}
 
 	public static Object executeNonIdempotentQuery(ODatabaseDocumentTx db, String query) {
-		OFunction executeQuery = db.getMetadata().getFunctionLibrary().getFunction( OrientDBConstant.EXECUTE_QUERY_FUNC );
-		if ( executeQuery == null ) {
-			db.getMetadata().reload();
-			executeQuery = db.getMetadata().getFunctionLibrary().getFunction( OrientDBConstant.EXECUTE_QUERY_FUNC );
+		ODocument result  = null;
+		try ( OResultSet resultSet = db.command( query ) ) {
+			result  = (ODocument) resultSet.next().toElement();
 		}
-		return executeQuery.execute( query );
+		return result;
 	}
 }
