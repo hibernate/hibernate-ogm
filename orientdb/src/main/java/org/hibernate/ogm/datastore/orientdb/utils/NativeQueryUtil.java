@@ -47,9 +47,10 @@ public class NativeQueryUtil {
 						return (ODocument) element;
 					} )
 					.collect( Collectors.toList() );
+			log.debugf( "load documents: %d",resultElements.size() );
 		}
 		catch (OCommandSQLParsingException e1) {
-
+			throw log.cannotParseQuery( query, e1 );
 		}
 		catch (OCommandExecutionException e2) {
 			throw log.cannotExecuteQuery( query, e2 );
@@ -65,6 +66,12 @@ public class NativeQueryUtil {
 		ODocument result  = null;
 		try ( OResultSet resultSet = db.command( query ) ) {
 			result  = (ODocument) resultSet.next().toElement();
+		}
+		catch (OCommandSQLParsingException e1) {
+			throw log.cannotParseQuery( query, e1 );
+		}
+		catch (OCommandExecutionException e2) {
+			throw log.cannotExecuteQuery( query, e2 );
 		}
 		return result;
 	}

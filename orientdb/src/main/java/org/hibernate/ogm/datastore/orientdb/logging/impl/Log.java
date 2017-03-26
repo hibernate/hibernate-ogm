@@ -40,4 +40,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1706, value = "Password not defined! Please set '%s' property!")
 	HibernateException passwordNotDefined(String propertyName);
+
+	@Message(id = 1707, value = "Cannot parse query %s!")
+	HibernateException cannotParseQuery(String propertyQuery, @Cause Exception cause);
 }
