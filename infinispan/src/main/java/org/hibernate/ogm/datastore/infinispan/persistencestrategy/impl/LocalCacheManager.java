@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,6 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.infinispan.Cache;
-import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -29,6 +29,7 @@ import org.infinispan.configuration.global.SerializationConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.TransactionMode;
 
 /**
  * Provides access to the ISPN caches used for storing entities, associations and id sources. The number of caches used
@@ -63,6 +64,8 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 	}
 
 	private static EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform, Set<String> cacheNames, KeyProvider<?, ?, ?> keyProvider) {
+		Set<String> allCacheNames = new HashSet<>();//To include both the requires ones and the ones found in the configuration files
+		allCacheNames.addAll( cacheNames );
 		TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
 		try {
 			InputStream configurationFile = configUrl.openStream();
@@ -76,9 +79,8 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 					.read( tmpCacheManager.getCacheManagerConfiguration() )
 					.serialization();
 
-				for ( AdvancedExternalizer<?> externalizer : keyProvider.getExternalizers() ) {
-					serializationConfiguration.addAdvancedExternalizer( externalizer.getId(), externalizer );
-				}
+				ExternalizersIntegration.registerOgmExternalizers( serializationConfiguration );
+				allCacheNames.addAll( tmpCacheManager.getCacheNames() );
 
 				GlobalConfiguration globalConfiguration = serializationConfiguration.build();
 
@@ -86,16 +88,27 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 
 				// override the named cache configuration defined in the configuration file to
 				// inject the platform TransactionManager
-				for ( String cacheName : cacheNames ) {
+				for ( String cacheName : allCacheNames ) {
 					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( cacheName );
 					if ( originalCfg == null ) {
 						originalCfg = tmpCacheManager.getDefaultCacheConfiguration();
 					}
-					Configuration newCfg = new ConfigurationBuilder()
-						.read( originalCfg )
-							.transaction()
-								.transactionManagerLookup( transactionManagerLookupDelegator )
-						.build();
+					Configuration newCfg;
+					if ( originalCfg.transaction().transactionMode() == TransactionMode.TRANSACTIONAL ) {
+						//Inject our TransactionManager lookup delegate for transactional caches ONLY!
+						//injecting one in a non-transactional cache will have side-effects on other configuration settings.
+						newCfg = new ConfigurationBuilder()
+								.read( originalCfg )
+									.transaction()
+										.transactionManagerLookup( transactionManagerLookupDelegator )
+								.build();
+					}
+					else {
+						//But also define all other caches:
+						newCfg = new ConfigurationBuilder()
+								.read( originalCfg )
+								.build();
+					}
 					cacheManager.defineConfiguration( cacheName, newCfg );
 				}
 
@@ -119,7 +132,7 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 		);
 	}
 
-	protected EmbeddedCacheManager getCacheManager() {
+	public EmbeddedCacheManager getCacheManager() {
 		return cacheManager;
 	}
 

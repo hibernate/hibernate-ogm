@@ -11,8 +11,8 @@
 -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
-    xmlns="urn:infinispan:config:7.0">
+    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
+    xmlns="urn:infinispan:config:8.2">
 
     <jgroups>
         <!-- This is a JGroups stack useful for in-VM tests only -->
@@ -28,9 +28,8 @@
         <!-- *************************************** -->
         <distributed-cache name="DEFAULT" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+                concurrency-level="500" write-skew="false"  isolation="REPEATABLE_READ"/>
+            <transaction mode="NON_XA" />
             <eviction max-entries="-1" strategy="NONE" />
             <expiration max-idle="-1" />
             <indexing index="NONE" />
@@ -43,9 +42,8 @@
         <!-- *************************************** -->
         <distributed-cache name="ENTITIES" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+                concurrency-level="500" write-skew="false" isolation="REPEATABLE_READ"/>
+            <transaction mode="NON_XA" />
             <eviction max-entries="-1" strategy="NONE" />
             <expiration max-idle="-1" />
             <indexing index="NONE" />
@@ -58,9 +56,8 @@
         <!-- *********************************************** -->
         <distributed-cache name="ASSOCIATIONS" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+                concurrency-level="500" write-skew="false" isolation="REPEATABLE_READ"/>
+            <transaction mode="NON_XA" />
             <eviction max-entries="-1" strategy="NONE" />
             <expiration max-idle="-1" />
             <indexing index="NONE" />
@@ -73,9 +70,8 @@
         <!-- ***************************** -->
         <distributed-cache name="IDENTIFIERS" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+                concurrency-level="500" write-skew="false"  isolation="REPEATABLE_READ"/>
+            <transaction mode="NON_XA" />
             <eviction max-entries="-1" strategy="NONE" />
             <expiration max-idle="-1" />
             <indexing index="NONE" />

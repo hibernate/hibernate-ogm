@@ -8,13 +8,11 @@
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
-import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.distexec.mapreduce.Mapper;
 
 /**
@@ -37,5 +35,4 @@ public interface KeyProvider<EK,AK,ISK> {
 
 	Mapper<EK, Map<String, Object>, EK, Map<String, Object>> getMapper(EntityKeyMetadata... entityKeyMetadatas);
 
-	Set<AdvancedExternalizer<?>> getExternalizers();
 }

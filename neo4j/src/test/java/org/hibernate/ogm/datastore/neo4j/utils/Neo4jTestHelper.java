@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.utils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -114,23 +115,8 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		Map<String, String> envProps = new HashMap<String, String>( 2 );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PASSWORD, envProps );
-
-		// The configuration file overrides the environment properties
-		envProps.putAll( PropertiesReader.getHibernateProperties() );
-		envProps.put( Neo4jProperties.DATABASE_PATH, EmbeddedNeo4jTestHelperDelegate.dbLocation() );
-		return envProps;
-	}
-
-	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
-		String value = System.getProperties().getProperty( environmentVariableName );
-		if ( value != null && value.length() > 0 ) {
-			envProps.put( environmentVariableName, value );
-		}
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.singletonMap( Neo4jProperties.DATABASE_PATH, EmbeddedNeo4jTestHelperDelegate.dbLocation() );
 	}
 
 	private static DatastoreProvider getDatastoreProvider(SessionFactory sessionFactory) {

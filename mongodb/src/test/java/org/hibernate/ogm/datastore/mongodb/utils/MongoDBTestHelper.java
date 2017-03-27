@@ -7,6 +7,7 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -240,21 +241,8 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		//read variables from the System properties set in the static initializer
-		Map<String, String> envProps = new HashMap<String, String>( 4 );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PASSWORD, envProps );
-		return envProps;
-	}
-
-	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
-		String value = System.getProperties().getProperty( environmentVariableName );
-		if ( value != null && value.length() > 0 ) {
-			envProps.put( environmentVariableName, value );
-		}
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.emptyMap();
 	}
 
 	@Override

@@ -113,8 +113,8 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		return null;
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.emptyMap();
 	}
 
 	@Override

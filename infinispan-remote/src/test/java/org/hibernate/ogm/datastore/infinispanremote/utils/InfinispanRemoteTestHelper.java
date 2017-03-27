@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.infinispanremote.utils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,8 +78,8 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		return null;
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.emptyMap();
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  * Infinispan.
  * <p>
  * The range 1400 - 1499 is <a
- * href="http://infinispan.org/docs/6.0.x/user_guide/user_guide.html#_advanced_externalizers">reserved</a> for OGM.
+ * href="http://infinispan.org/docs/9.0.x/user_guide/user_guide.html#preassigned_externalizer_id_ranges">reserved</a> for OGM.
  *
  * @author Gunnar Morling
  */

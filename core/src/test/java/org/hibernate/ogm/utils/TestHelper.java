@@ -213,17 +213,10 @@ public class TestHelper {
 
 	public static Map<String, String> getDefaultTestSettings() {
 		Map<String, String> settings = new HashMap<>();
-
 		settings.put( OgmProperties.ENABLED, "true" );
 		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
-
-		Map<String, String> environmentProperties = HELPER.getEnvironmentProperties();
-
-		if ( environmentProperties != null ) {
-			settings.putAll( environmentProperties );
-		}
-
+		settings.putAll( HELPER.getAdditionalConfigurationProperties() );
 		return settings;
 	}
 

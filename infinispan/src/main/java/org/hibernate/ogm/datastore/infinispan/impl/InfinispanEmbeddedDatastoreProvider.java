@@ -32,6 +32,8 @@ import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 import org.infinispan.manager.EmbeddedCacheManager;
 
+import static org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.ExternalizersIntegration.validateExternalizersPresent;
+
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
  * it can be taken via JNDI or started by this ServiceProvider; in this case it will also
@@ -69,6 +71,9 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 		catch (RuntimeException e) {
 			// return a ServiceException to be stack trace friendly
 			throw LOG.unableToInitializeInfinispan( e );
+		}
+		if ( externalCacheManager != null ) {
+			validateExternalizersPresent( externalCacheManager );
 		}
 
 		// clear resources

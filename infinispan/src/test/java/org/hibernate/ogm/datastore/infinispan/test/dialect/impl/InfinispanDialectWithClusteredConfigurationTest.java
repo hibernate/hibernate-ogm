@@ -85,8 +85,12 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 	@AfterClass
 	public static void stopProvider() {
-		provider1.stop();
-		provider2.stop();
+		if ( provider1 != null ) {
+			provider1.stop();
+		}
+		if ( provider2 != null ) {
+			provider2.stop();
+		}
 	}
 
 	@Test
