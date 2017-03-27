@@ -381,7 +381,7 @@ public class OrientDBDocumentSchemaDefiner extends BaseSchemaDefiner {
 					NativeQueryUtil.executeNonIdempotentQuery( db, propertyQuery );
 					if ( column.isUnique() ) {
 						// create unique index for the column
-						String uniqueIndexQuery = String.format( "create index %s.%s unique",
+						String uniqueIndexQuery = String.format( "create index %s.%s UNIQUE_HASH_INDEX ",
 								tableName,
 								column.getName() );
 						NativeQueryUtil.executeNonIdempotentQuery( db, uniqueIndexQuery );
@@ -397,8 +397,6 @@ public class OrientDBDocumentSchemaDefiner extends BaseSchemaDefiner {
 					}
 				}
 			}
-			// TODO: support @Column( unique = true )
-
 		}
 	}
 

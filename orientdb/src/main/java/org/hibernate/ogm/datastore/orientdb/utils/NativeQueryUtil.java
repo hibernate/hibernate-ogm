@@ -63,6 +63,7 @@ public class NativeQueryUtil {
 	}
 
 	public static Object executeNonIdempotentQuery(ODatabaseDocumentTx db, String query) {
+		log.debugf( "NonIdempotentQuery: %s", query );
 		ODocument result  = null;
 		try ( OResultSet resultSet = db.command( query ) ) {
 			result  = (ODocument) resultSet.next().toElement();
