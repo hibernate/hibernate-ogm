@@ -10,7 +10,9 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.junit.Test;
 
 /**
@@ -138,6 +140,7 @@ public class ListTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE }, comment = "CompositeId not supported")
 	@Test
 	public void testOrderedListAndCompositeId() throws Exception {
 		Session session = openSession();

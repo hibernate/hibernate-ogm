@@ -131,4 +131,8 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return InfinispanEmbedded.class;
 	}
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
 }

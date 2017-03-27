@@ -46,13 +46,10 @@ import org.junit.Test;
  * Test for using the compensation SPI with JPA.
  *
  * @author Gunnar Morling
- *
  */
-@SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
-)
-public class CompensationSpiJpaTest  extends OgmJpaTestCase {
+@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE },
+					comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use OrientDB has own version")
+public class CompensationSpiJpaTest extends OgmJpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Shipment.class );
@@ -219,7 +216,7 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Shipment.class };
+		return new Class<?>[]{ Shipment.class };
 	}
 
 	@Override
@@ -236,7 +233,7 @@ public class CompensationSpiJpaTest  extends OgmJpaTestCase {
 	private boolean currentDialectUsesLookupDuplicatePreventionStrategy() {
 		SessionFactoryImplementor sfi = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) getFactory() ).getSessionFactory();
 		GridDialect gridDialect = sfi.getServiceRegistry().getService( GridDialect.class );
-		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{"id"} );
+		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{ "id" } );
 
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
 	}

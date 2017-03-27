@@ -166,4 +166,8 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 				throw new RuntimeException( "Not testing with Neo4jDB, cannot extract underlying dialect" );
 		}
 	}
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
 }

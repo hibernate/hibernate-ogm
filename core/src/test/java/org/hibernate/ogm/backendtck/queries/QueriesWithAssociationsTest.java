@@ -16,6 +16,8 @@ import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_JSON;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
+import static org.hibernate.ogm.utils.GridDialectType.ORIENTDB;
+import static org.hibernate.ogm.utils.GridDialectType.ORIENTDB_REMOTE;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -34,7 +36,7 @@ import org.junit.Test;
  * @author Guillaume Smet
  */
 @SkipByGridDialect(
-		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, INFINISPAN_REMOTE },
+		value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, INFINISPAN_REMOTE, ORIENTDB, ORIENTDB_REMOTE },
 		comment = "We need a QueryParserService to be able to perform these queries.")
 public class QueriesWithAssociationsTest extends OgmJpaTestCase {
 
@@ -90,7 +92,7 @@ public class QueriesWithAssociationsTest extends OgmJpaTestCase {
 	@Test
 	@SuppressWarnings("unchecked")
 	@SkipByGridDialect(
-			value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, MONGODB },
+			value = { CASSANDRA, COUCHDB, EHCACHE, HASHMAP, INFINISPAN, REDIS_JSON, REDIS_HASH, MONGODB, ORIENTDB, ORIENTDB_REMOTE },
 			comment = "We need to be able to join on associations. Currently, only the Neo4j dialect supports it.")
 	public void testGetWithJoinOnAssociations() throws Exception {
 		Author alma = (Author) em.createQuery( "FROM Author WHERE name = :name" )

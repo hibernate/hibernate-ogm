@@ -114,6 +114,7 @@ public class OgmTestRunner extends SkippableTestRunner {
 		if ( isTestScopedSessionFactoryRequired() ) {
 			testScopedSessionFactory = buildSessionFactory();
 			injectSessionFactory( null, testScopedFactoryFields, testScopedSessionFactory );
+			TestHelper.prepareDatabase( testScopedSessionFactory );
 		}
 
 		try {

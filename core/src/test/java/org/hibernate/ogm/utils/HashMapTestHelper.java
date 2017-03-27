@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.utils;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.Session;
@@ -65,7 +64,7 @@ public class HashMapTestHelper implements GridDialectTestHelper {
 		return MapDatastoreProvider.class.cast( provider );
 	}
 
-	private static Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache( SessionFactory sessionFactory) {
+	private static Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache(SessionFactory sessionFactory) {
 		MapDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getAssociationsMap();
 	}
@@ -81,8 +80,13 @@ public class HashMapTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.emptyMap();
+	public void prepareDatabase(SessionFactory sessionFactory) {
+		// Nothing to do
+	}
+
+	@Override
+	public Map<String, String> getEnvironmentProperties() {
+		return null;
 	}
 
 	@Override

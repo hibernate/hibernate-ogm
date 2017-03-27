@@ -17,10 +17,16 @@ import org.junit.Test;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
+@SkipByGridDialect(
+		value = { GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE },
+		comment = "Not supports @EmbeddedId"
+)
 public class CompositeIdTest extends OgmJpaTestCase {
 	private EntityManager em;
 

@@ -172,4 +172,8 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 		return InfinispanRemoteDatastoreProvider.class.cast( provider );
 	}
 
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
+
 }

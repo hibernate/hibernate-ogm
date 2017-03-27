@@ -22,6 +22,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.type.Bookmark.Classifier;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -168,6 +170,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertArrayEquals( "Original and loaded data do not match!", testData, loadedBookmark.getLob() );
 	}
 
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE }, comment = "OrientDB not supports LOB")
 	@Test
 	public void testLongAsLobSupport() throws Exception {
 		bookmark.setLobWithLong( Long.MIN_VALUE );
@@ -176,6 +179,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "Original and loaded data do not match!", (Long) Long.MIN_VALUE, (Long) loadedBookmark.getLobWithLong() );
 	}
 
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE }, comment = "OrientDB not supports LOB")
 	@Test
 	public void testStringAsLobSupport() throws Exception {
 		String text = "Very long text ...";
@@ -218,6 +222,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 	}
 
 	// Date/time types
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB_REMOTE }, comment = "Bug in OrientDB")
 	@Test
 	public void testDatePersistedAsTemporalTypeDateSupport() throws Exception {
 		Date creationDate = new Date();
@@ -243,6 +248,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "Time zones doe not match", expectedTimeZoneOffset, actualTimeZoneOffset );
 	}
 
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB_REMOTE }, comment = "Bug in OrientDB")
 	@Test
 	public void testDatePersistedAsTemporalTypeTimeSupport() throws Exception {
 		Date updateTime = new Date();
@@ -278,6 +284,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "Year value does not match", bookmark.getDestructionDate(), loadedBookmark.getDestructionDate() );
 	}
 
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE }, comment = "OrientDB not supports Calendar")
 	@Test
 	public void testCalendarTemporalTypeTimestampSupport() throws Exception {
 		bookmark.setDestructionCalendar( Calendar.getInstance() );
@@ -290,6 +297,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		);
 	}
 
+	@SkipByGridDialect(value = { GridDialectType.ORIENTDB, GridDialectType.ORIENTDB_REMOTE }, comment = "OrientDB not supports Calendar")
 	@Test
 	public void testCalendarPersistedAsTemporalTypeDateSupport() throws Exception {
 		Calendar creationCalendar = Calendar.getInstance();

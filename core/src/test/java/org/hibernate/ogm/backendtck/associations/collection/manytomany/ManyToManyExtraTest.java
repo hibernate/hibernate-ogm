@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.ORIENTDB;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 
@@ -15,6 +16,7 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 /**
@@ -46,7 +48,7 @@ public class ManyToManyExtraTest extends OgmTestCase {
 		tx.commit();
 
 		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 5 );
-		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 2 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( expectedAssociationNumber() );
 		session.clear();
 
 		delete( session, math, english, john, mario, kate );
@@ -67,6 +69,16 @@ public class ManyToManyExtraTest extends OgmTestCase {
 			session.delete( entity );
 		}
 		transaction.commit();
+	}
+
+	private int expectedAssociationNumber() {
+		if ( ORIENTDB.equals( TestHelper.getCurrentDialectType() ) ) {
+			// In OrientDB ManyToMany relationships is like in RDBMS
+			return 4;
+		}
+		else {
+			return 2;
+		}
 	}
 
 	@Override

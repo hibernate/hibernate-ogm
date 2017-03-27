@@ -12,7 +12,9 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
 
@@ -21,6 +23,7 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect(value = { GridDialectType.ORIENTDB,GridDialectType.ORIENTDB_REMOTE }, comment = "Composite primary key not supports")
 public class EmbeddableIdTest extends OgmTestCase {
 
 	@Test

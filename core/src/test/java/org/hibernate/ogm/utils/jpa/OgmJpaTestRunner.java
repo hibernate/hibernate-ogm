@@ -32,6 +32,8 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestEntities;
 import org.hibernate.ogm.utils.TestEntityManagerFactory;
@@ -95,6 +97,8 @@ import org.junit.runners.model.TestClass;
  */
 public class OgmJpaTestRunner extends SkippableTestRunner {
 
+	private static final Log LOG = LoggerFactory.make();
+
 	private final Set<Field> testScopedFactoryFields;
 	private final Set<Field> testMethodScopedFactoryFields;
 
@@ -127,6 +131,7 @@ public class OgmJpaTestRunner extends SkippableTestRunner {
 		if ( isTestScopedEntityManagerFactoryRequired() ) {
 			testScopedEntityManagerFactory = buildEntityManagerFactory();
 			injectEntityManagerFactory( null, testScopedFactoryFields, testScopedEntityManagerFactory );
+			TestHelper.prepareDatabase( testScopedEntityManagerFactory );
 		}
 
 		try {

@@ -24,7 +24,7 @@ import org.junit.Test;
  * @author David Williams
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE, GridDialectType.ORIENTDB_REMOTE },
 		comment = "Zoo.animals set - bag semantics unsupported (no primary key)"
 )
 public class PostLoadTest extends OgmJpaTestCase {
