@@ -852,9 +852,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case INSERT:
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
-				return (int) doRemove( queryDescriptor, collection );
+				return doRemove( queryDescriptor, collection );
 			case UPDATE:
-				return (int) doUpdate( queryDescriptor, collection );
+				return doUpdate( queryDescriptor, collection );
 			case FIND:
 			case FINDONE:
 			case FINDANDMODIFY:
@@ -1093,7 +1093,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return -1; // Not sure if we should throw an exception instead?
 	}
 
-	private static long doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
 		Document query = queryDesc.getCriteria();
 		Document options = queryDesc.getOptions();
 		Boolean justOne = FALSE;
@@ -1110,12 +1110,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		DeleteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).deleteMany( query );
 		if ( result.wasAcknowledged() ) {
-			return result.getDeletedCount();
+			return (int) result.getDeletedCount();
 		}
 		return -1; // Not sure if we should throw an exception instead?
 	}
 
-	private static long doUpdate(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
 		Document query = queryDesc.getCriteria();
 		Document update = queryDesc.getUpdateOrInsertOne();
 		Document options = queryDesc.getOptions();
@@ -1139,12 +1139,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateOne( query, update, updateOptions );
 		}
 
-		//final WriteResult result = collection.update( query, update, upsert, multi, ( wc != null ? wc : collection.getWriteConcern() ) );
 		if ( result.wasAcknowledged() ) {
 			// IMPROVE How could we return result.getUpsertedId() if it was an upsert, or isUpdateOfExisting()?
 			// I see only a possibility by using javax.persistence.StoredProcedureQuery in the application
 			// and then using getOutputParameterValue(String) to get additional result values.
-			return result.getModifiedCount();
+			return (int) result.getModifiedCount();
 		}
 		return -1; // Not sure if we should throw an exception instead?
 	}
