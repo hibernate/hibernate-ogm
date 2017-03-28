@@ -16,7 +16,7 @@ import org.hibernate.ogm.backendtck.associations.collection.manytomany.Tire;
 import org.hibernate.ogm.utils.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -41,7 +41,7 @@ public class ManyToManyCompositeKeyMongoDBFormatTest extends OgmTestCase {
 		session.clear();
 
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Car",
@@ -50,7 +50,7 @@ public class ManyToManyCompositeKeyMongoDBFormatTest extends OgmTestCase {
 				// expected
 				"{ '_id' : { 'maker' : 'Citroen', 'model' : 'AX' }, 'hp' : 20, 'tires' : [ { 'maker' : 'Michelin', 'model' : 'B1' } ] }"
 		);
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Tire",

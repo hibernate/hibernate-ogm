@@ -38,7 +38,6 @@ import com.mongodb.util.JSON;
  * <li>count()</li>
  * <li>count(criteria)</li>
  * <li>aggregate(criteria)</li>
- * <li>distinct(fieldName, criteria, options)</li>
  * </ul>
  * The parameter values must be given as JSON objects adhering to the <a
  * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
@@ -95,7 +94,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), Remove(), Update(), Count(), Aggregate(), Distinct() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate(), Distinct() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -105,6 +104,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( FindOne(), builder.setOperation( Operation.FINDONE ) ),
 				Sequence( FindAndModify(), builder.setOperation( Operation.FINDANDMODIFY ) ),
 				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
+				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
+				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
@@ -149,6 +150,28 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence(
 				Separator(),
 				"insert ",
+				"( ",
+				JsonComposite(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule InsertOne() {
+		return Sequence(
+				Separator(),
+				"insertOne ",
+				"( ",
+				JsonComposite(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule InsertMany() {
+		return Sequence(
+				Separator(),
+				"insertMany ",
 				"( ",
 				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),

@@ -8,18 +8,18 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl;
 
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
 
 /**
  * MongoDB-based implementation of {@link RootPredicate}.
  *
  * @author Gunnar Morling
  */
-public class MongoDBRootPredicate extends RootPredicate<DBObject> {
+public class MongoDBRootPredicate extends RootPredicate<Document> {
 
 	@Override
-	public DBObject getQuery() {
-		return child == null ? new BasicDBObject() : child.getQuery();
+	public Document getQuery() {
+		return child == null ? new Document() : child.getQuery();
 	}
 }

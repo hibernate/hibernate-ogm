@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.associations;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.lang.annotation.ElementType;
 import java.util.HashMap;
@@ -55,7 +55,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -104,7 +104,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -162,7 +162,7 @@ public class MapMappingTest extends OgmTestCase {
 
 		tx = session.beginTransaction();
 
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -212,7 +212,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -261,7 +261,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"User",
@@ -306,7 +306,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// assert
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Enterprise",
@@ -347,7 +347,7 @@ public class MapMappingTest extends OgmTestCase {
 		tx = session.beginTransaction();
 
 		// assert
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Enterprise",
