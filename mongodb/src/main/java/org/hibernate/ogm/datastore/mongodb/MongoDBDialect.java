@@ -963,42 +963,28 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			EntityKeyMetadata entityKeyMetadata) {
 		Document criteria = query.getCriteria();
 		Document orderby = query.getOrderBy();
-		String hintIndexName = null;
-		Document hintDocument = null;
-		int maxScan = -1;
-		long maxTimeMS = -1;
-		boolean snapshot = false;
-		Document min = null;
-		Document max = null;
-		String comment = null;
-		boolean explain = false;
+		int maxTimeMS = -1;
 
+		Document modifiers = new Document();
 		// We need to extract the different parts of the criteria and pass them to the cursor API
 		if ( criteria.containsKey( "$query" ) ) {
 			if ( orderby == null ) {
 				orderby = (Document) criteria.get( "$orderby" );
 			}
-
-			Object hintObject = criteria.get( "$hint" );
-			if ( hintObject instanceof String ) {
-				hintIndexName = (String) hintObject;
-			}
-			else if ( hintObject instanceof Document ) {
-				hintDocument = (Document) hintObject;
-			}
-			maxScan = criteria.getInteger( "$maxScan", -1 );
 			maxTimeMS = criteria.getInteger( "$maxTimeMS", -1 );
 
-			snapshot = criteria.getBoolean( "$snapshot", false );
-			min = (Document) criteria.get( "$min" );
-			max = (Document) criteria.get( "$max" );
-
-			comment = criteria.getString( "$comment" );
-			explain = criteria.getBoolean( "$explain", false );
+			addModifer( modifiers, criteria, "$hint" );
+			addModifer( modifiers, criteria, "$maxScan" );
+			addModifer( modifiers, criteria, "$snapshot", false );
+			addModifer( modifiers, criteria, "$min" );
+			addModifer( modifiers, criteria, "$max" );
+			addModifer( modifiers, criteria, "$comment" );
+			addModifer( modifiers, criteria, "$explain", false );
 
 			criteria = (Document) criteria.get( "$query" );
 		}
-		FindIterable<Document> prepareFind = collection.find( criteria ).projection( query.getProjection() );
+
+		FindIterable<Document> prepareFind = collection.find( criteria ).modifiers( modifiers ).projection( query.getProjection() );
 		if ( orderby != null ) {
 			prepareFind.sort( orderby );
 		}
@@ -1014,7 +1000,24 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( queryParameters.getRowSelection().getMaxRows() != null ) {
 			prepareFind.limit( queryParameters.getRowSelection().getMaxRows() );
 		}
-		return new MongoDBResultsCursor( prepareFind.iterator(), entityKeyMetadata );
+
+		MongoCursor<Document> iterator = prepareFind.iterator();
+		return new MongoDBResultsCursor( iterator, entityKeyMetadata );
+	}
+
+	private static void addModifer(Document modifiers, Document criteria, String key) {
+		Object value = criteria.get( key );
+		if ( value != null ) {
+			modifiers.append( key, value );
+		}
+	}
+
+	private static <T> void addModifer(Document modifiers, Document criteria, String key, T defaultValue) {
+		Object value = criteria.get( key );
+		if ( value == null ) {
+			value = defaultValue;
+		}
+		modifiers.append( key, value );
 	}
 
 	private static ClosableIterator<Tuple> doFindOne(final MongoDBQueryDescriptor query, final MongoCollection<Document> collection,
