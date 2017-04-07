@@ -17,33 +17,31 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
  */
 public enum GridDialectType {
 
-	HASHMAP("org.hibernate.ogm.datastore.map.impl.MapDialect", false, false),
+	HASHMAP( "org.hibernate.ogm.datastore.map.impl.MapDialect", false, false ),
 
-	INFINISPAN("org.hibernate.ogm.datastore.infinispan.InfinispanDialect", false, false),
-
-	EHCACHE("org.hibernate.ogm.datastore.ehcache.EhcacheDialect", false, false),
+	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.InfinispanDialect", false, false ),
 
 	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect", true, false ),
 
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.EhcacheDialect", false, false ),
 
-	NEO4J("org.hibernate.ogm.datastore.neo4j.Neo4jDialect", false, true),
+	MONGODB( "org.hibernate.ogm.datastore.mongodb.MongoDBDialect", true, true ),
 
-	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect", false, true),
+	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect", false, true ),
 
-	NEO4J_REMOTE( "org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect", false, true),
+	NEO4J_REMOTE( "org.hibernate.ogm.datastore.neo4j.RemoteNeo4jDialect", false, true ),
 
-	CASSANDRA("org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false),
+	COUCHDB( "org.hibernate.ogm.datastore.couchdb.CouchDBDialect", true, false ),
 
-	REDIS("org.hibernate.ogm.datastore.redis.RedisDialect", false, false),
+	CASSANDRA( "org.hibernate.ogm.datastore.cassandra.CassandraDialect", false, false ),
 
-	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.OrientDBDialect", false, false  ),
 	REDIS_JSON( "org.hibernate.ogm.datastore.redis.RedisJsonDialect", false, false ),
 
 	REDIS_HASH( "org.hibernate.ogm.datastore.redis.RedisHashDialect", false, false ),
 
-	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.OrientDBDialect", false, true );
+	IGNITE( "org.hibernate.ogm.datastore.ignite.IgniteDialect", false, false ),
 
+	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.OrientDBDialect", false, false );
 
 	private final String dialectClassName;
 	private final boolean isDocumentStore;
@@ -61,7 +59,6 @@ public enum GridDialectType {
 
 	/**
 	 * Whether this store is a document store or not.
-	 * 
 	 * @return {@code true} if this is a document store, {@code false} otherwise.
 	 */
 	public boolean isDocumentStore() {

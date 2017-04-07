@@ -11,6 +11,7 @@ import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
 import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
 import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.REDIS_HASH;
@@ -45,7 +46,7 @@ import org.junit.rules.ExpectedException;
  *
  * @author Davide D'Alto
  */
-@SkipByGridDialect({ HASHMAP, INFINISPAN, INFINISPAN_REMOTE, REDIS_HASH, REDIS_JSON, CASSANDRA, COUCHDB, EHCACHE })
+@SkipByGridDialect({ HASHMAP, INFINISPAN, INFINISPAN_REMOTE, REDIS_HASH, REDIS_JSON, CASSANDRA, COUCHDB, EHCACHE, IGNITE })
 public class SimpleQueriesWithTablePerClassNotSupportedTest extends OgmTestCase {
 
 	@Rule

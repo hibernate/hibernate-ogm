@@ -6,17 +6,21 @@
  */
 package org.hibernate.ogm.backendtck.associations.onetoone;
 
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
+
 import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not implemented in dialect yet!")
 public class OneToOneTest extends OgmTestCase {
 
 	@Test

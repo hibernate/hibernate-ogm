@@ -641,8 +641,8 @@
                 <artifactId>lettuce</artifactId>
                 <version>${lettuceVersion}</version>
             </dependency>
-
-            <!-- OrientDB -->
+            
+             <!-- OrientDB -->
             <dependency>
                 <groupId>com.orientechnologies</groupId>
                 <artifactId>orientdb-core</artifactId>
@@ -653,6 +653,38 @@
                 <artifactId>orientdb-jdbc</artifactId>
                 <version>${orientdbVersion}</version>
             </dependency>
+
+            <!-- Apache Ignite -->
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-core</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-jta</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-indexing</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-spring</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-log4j</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-slf4j</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency> 
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>

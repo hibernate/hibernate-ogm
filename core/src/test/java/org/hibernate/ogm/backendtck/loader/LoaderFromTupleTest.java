@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.loader;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.TestHelper.extractEntityTuple;
 
 import java.util.ArrayList;
@@ -27,12 +28,14 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.persister.entity.EntityPersister;
 import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not implemented in dialect yet!")
 public class LoaderFromTupleTest extends OgmTestCase {
 	@Test
 	public void testLoadingFromTuple() throws Exception {

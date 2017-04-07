@@ -141,11 +141,6 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
-		return null;
-	}
-
-	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
 		return new IgniteDialect( (IgniteDatastoreProvider) datastoreProvider );
 	}
@@ -182,5 +177,11 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	public long getNumberOfAssociations(Session session) {
 		return getNumberOfAssociations( session.getSessionFactory() );
 	}
+
+	@Override
+	public Map<String, String> getAdditionalConfigurationProperties() {
+		return Collections.emptyMap();
+	}
+
 
 }

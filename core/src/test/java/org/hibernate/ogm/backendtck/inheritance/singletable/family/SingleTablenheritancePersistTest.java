@@ -12,6 +12,8 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
@@ -21,6 +23,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto
  */
+@SkipByGridDialect( value = { GridDialectType.IGNITE}, comment = "Not implemented in dialect yet!")
 @TestForIssue(jiraKey = "OGM-1221")
 public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
 
