@@ -91,6 +91,9 @@
         <lettuceRxjavaVersion>1.1.6</lettuceRxjavaVersion>
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
+        <!-- Ignite -->
+        <igniteVersion>1.9.0</igniteVersion>
+        <igniteCommonsLang3Version>3.3.2</igniteCommonsLang3Version>
 
     </properties>
 
@@ -434,6 +437,11 @@
                 <artifactId>hibernate-ogm-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-ignite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -633,6 +641,38 @@
                 <artifactId>lettuce</artifactId>
                 <version>${lettuceVersion}</version>
             </dependency>
+            
+            <!-- Apache Ignite -->
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-core</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-jta</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-indexing</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-spring</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-log4j</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-slf4j</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency> 
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>

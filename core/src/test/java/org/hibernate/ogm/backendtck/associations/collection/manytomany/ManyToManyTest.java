@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.TestHelper.get;
@@ -26,6 +27,7 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not implemented in dialect yet!")
 public class ManyToManyTest extends OgmTestCase {
 
 	@Test

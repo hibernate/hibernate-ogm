@@ -25,9 +25,9 @@ import org.junit.Test;
  * @author Emmanuel Bernard emmanuel@hibernate.org
  * @author Guillaume Smet
  */
-@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.NEO4J_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.REDIS_HASH, GridDialectType.INFINISPAN_REMOTE  },
+@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.NEO4J_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.REDIS_HASH, GridDialectType.INFINISPAN_REMOTE, GridDialectType.IGNITE  },
 		comment = "For Cassandra and Neo4j, the getAssociation always return an association, thus we don't have the createAssociation call. " +
-					"Redis Hash is just weird. Infinispan Remote needs to be investigated.")
+					"Redis Hash is just weird. Infinispan Remote and Ignite needs to be investigated.")
 @TestForIssue(jiraKey = "OGM-1152")
 public class GridDialectOperationInvocationsForOneToOneTest extends AbstractGridDialectOperationInvocationsTest {
 

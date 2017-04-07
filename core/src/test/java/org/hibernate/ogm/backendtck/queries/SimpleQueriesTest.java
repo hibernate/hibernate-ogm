@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
@@ -44,6 +45,7 @@ import org.junit.rules.ExpectedException;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  * @author Gunnar Morling
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not supported by dialect yet!")
 public class SimpleQueriesTest extends OgmTestCase {
 
 	@TestSessionFactory

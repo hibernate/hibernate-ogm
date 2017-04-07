@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.queries;
 
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
@@ -35,6 +36,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Inheritance is not supported by the dialect" )
 public class SimpleQueriesWithTablePerClassInheritanceTest extends OgmTestCase {
 
 	private Person joe = new Person( "Joe" );
