@@ -49,11 +49,10 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
-import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBsonBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBsonBinaryType;
-import org.hibernate.ogm.datastore.mongodb.type.impl.LongAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
@@ -775,11 +774,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else if ( type instanceof BytesAsBsonBinaryType ) {
 			return BytesAsBsonBinaryGridType.INSTANCE;
 		}
-		else if ( type.getReturnedClass() == Long.class && type.getClass() == SerializableToBlobType.class  ) {
-			return LongAsBinaryGridType.INSTANCE;
+		else if ( type instanceof SerializableToBlobType ) {
+			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
+			return new SerializableAsBinaryGridType<>( exposedType.getJavaTypeDescriptor() );
 		}
-		else if ( type.getReturnedClass() == byte[].class && type.getClass() == MaterializedBlobType.class  ) {
-			return BytesAsBinaryGridType.INSTANCE;
+		else if ( type instanceof MaterializedBlobType ) {
+			MaterializedBlobType exposedType = (MaterializedBlobType) type;
+			return new SerializableAsBinaryGridType<>( exposedType.getJavaTypeDescriptor() );
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}
