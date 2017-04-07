@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,22 +23,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.mongodb.MongoBulkWriteException;
-import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.DistinctIterable;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.BulkWriteOptions;
-import com.mongodb.client.model.FindOneAndDeleteOptions;
-import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.InsertOneModel;
-import com.mongodb.client.model.ReturnDocument;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
@@ -131,8 +114,24 @@ import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoBulkWriteException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
+import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.DistinctIterable;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.FindOneAndDeleteOptions;
+import com.mongodb.client.model.FindOneAndUpdateOptions;
+import com.mongodb.client.model.InsertOneModel;
+import com.mongodb.client.model.ReturnDocument;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -176,7 +175,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	/**
 	 * Pattern used to recognize a constraint violation on the primary key.
 	 *
-	 * MongoDB returns an exception with {@code .$_id_ } or {@code  _id_ } while Fongo returns an exception with {@code ._id }
+	 * MongoDB returns an exception with {@code .$_id_ } or {@code _id_ } while Fongo returns an exception with {@code ._id }
 	 */
 	private static final Pattern PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE = Pattern.compile( ".*[. ]\\$?_id_? .*" );
 
@@ -301,7 +300,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( tupleContext );
 
 		Document query = new Document();
-		query.put( ID_FIELDNAME, new Document( "$in", Arrays.asList( searchObjects )  ) );
+		query.put( ID_FIELDNAME, new Document( "$in", Arrays.asList( searchObjects ) ) );
 		return collection.find( query ).projection( projection ).iterator();
 	}
 
@@ -728,9 +727,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		Document setInitialValueOnInsert = new Document();
 		addSubQuery( "$setOnInsert", setInitialValueOnInsert, valueColumnName, request.getInitialValue() + request.getIncrement() );
-		//@todo think about make FindOneAndUpdateOptions constant
-		//Document originalDocument = sequenceCollection.findAndModify( sequenceId, null, null, false, setInitialValueOnInsert, false, true );
-		Document originalDocument = sequenceCollection.findOneAndUpdate( sequenceId, setInitialValueOnInsert, new FindOneAndUpdateOptions().upsert( true ) );
+
+		// I don't trust to make this a constant because the object is not immutable
+		FindOneAndUpdateOptions enableUpsert = new FindOneAndUpdateOptions().upsert( true );
+		Document originalDocument = sequenceCollection.findOneAndUpdate( sequenceId, setInitialValueOnInsert, enableUpsert );
 
 		Object nextValue = null;
 		if ( originalDocument == null ) {
@@ -742,7 +742,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 			addSubQuery( "$inc", incrementUpdate, valueColumnName, request.getIncrement() );
 
-			//Document beforeUpdateDoc = sequenceCollection.findAndModify( sequenceId, null, null, false, incrementUpdate, false, true );
 			Document beforeUpdateDoc = sequenceCollection.findOneAndUpdate( sequenceId, incrementUpdate,  new FindOneAndUpdateOptions().upsert( true ) );
 
 			nextValue = beforeUpdateDoc.get( valueColumnName );
@@ -925,7 +924,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		List<Document> pipeline = query.getPipeline();
 		applyFirstResult( queryParameters, pipeline );
 		applyMaxResults( queryParameters, pipeline );
-		AggregateIterable<Document>  output = collection.aggregate( pipeline );
+		AggregateIterable<Document> output = collection.aggregate( pipeline );
 		return new MongoDBAggregationOutput( output, entityKeyMetadata );
 	}
 
@@ -937,21 +936,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	/**
 	 * do 'Distinct' operation
-	 * Attention! Now the operation works for String fields!
+	 *
 	 * @param queryDescriptor descriptor of MongoDN query
 	 * @param collection collection for execute the operation
 	 * @return result iterator
 	 * @see <a href ="https://docs.mongodb.com/manual/reference/method/db.collection.distinct/">distinct</a>
 	 */
 	private static ClosableIterator<Tuple> doDistinct(final MongoDBQueryDescriptor queryDescriptor, final MongoCollection<Document> collection) {
-		//@todo try to support other types
-		DistinctIterable<String> distinctFieldValues = collection.distinct( queryDescriptor.getDistinctFieldName(), queryDescriptor.getCriteria(), String.class );
+		DistinctIterable<?> distinctFieldValues = collection.distinct( queryDescriptor.getDistinctFieldName(), queryDescriptor.getCriteria(), String.class );
 		if ( queryDescriptor.getCollation() != null ) {
 			distinctFieldValues = distinctFieldValues.collation( queryDescriptor.getCollation() );
 		}
-		//@todo extract batchSize to module parameters
-		MongoCursor<String> cursor = distinctFieldValues.iterator();
-		List<String> documents = new LinkedList<>();
+		MongoCursor<?> cursor = distinctFieldValues.iterator();
+		List<Object> documents = new ArrayList<>();
 		while ( cursor.hasNext() ) {
 			documents.add( cursor.next() );
 		}
