@@ -49,8 +49,7 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
-import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBsonBinaryGridType;
-import org.hibernate.ogm.datastore.mongodb.type.impl.BytesAsBsonBinaryType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
@@ -759,6 +758,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
 			return StringCalendarDateType.INSTANCE;
 		}
+		else if ( type == StandardBasicTypes.BINARY ) {
+			return BinaryAsBsonBinaryGridType.INSTANCE;
+		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
 		}
@@ -770,9 +772,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type instanceof StringAsObjectIdType ) {
 			return StringAsObjectIdGridType.INSTANCE;
-		}
-		else if ( type instanceof BytesAsBsonBinaryType ) {
-			return BytesAsBsonBinaryGridType.INSTANCE;
 		}
 		else if ( type instanceof SerializableToBlobType ) {
 			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
