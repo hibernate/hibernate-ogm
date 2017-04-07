@@ -28,9 +28,9 @@ import org.junit.Test;
  */
 public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
-	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", 1881 );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", 1879 );
+	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde", 1882 );
 
 	@Before
 	public void init() {
@@ -191,7 +191,7 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 		List<OscarWildePoem> result = query.list();
 		assertThat( result ).isEmpty();
 
-		OscarWildePoem voice = new OscarWildePoem( 4L, "Her Voice", "Oscar Wilde" );
+		OscarWildePoem voice = new OscarWildePoem( 4L, "Her Voice", "Oscar Wilde", 1881 );
 		session.persist( voice );
 
 		result = query.list();
@@ -252,7 +252,7 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 }, $explain: true, $comment: 'a very useful comment',"
+		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 }, $explain: false, $comment: 'a very useful comment',"
 				+ "$maxTimeMS: 500 }";
 		@SuppressWarnings("unchecked")
 		List<OscarWildePoem> result = session.createNativeQuery( nativeQuery )

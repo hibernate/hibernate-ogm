@@ -34,7 +34,7 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Poem.class );
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", 1881 );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 5 );
 	private final Poet christian = new Poet( "christian", "Christian Abendsonne" );
 	private final Poet james = new Poet( "james", "James Krass" );
@@ -225,7 +225,7 @@ public class MongoDBEntityManagerNativeQueryTest extends OgmJpaTestCase {
 		List<OscarWildePoem> results = query.getResultList();
 		assertThat( results ).as( "Unexpected number of results" ).hasSize( 0 );
 
-		OscarWildePoem voice = new OscarWildePoem( 3L, "Her Voice", "Oscar Wilde" );
+		OscarWildePoem voice = new OscarWildePoem( 3L, "Her Voice", "Oscar Wilde", 1881 );
 		em.persist( voice );
 
 		results = query.getResultList();
