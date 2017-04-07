@@ -91,6 +91,9 @@
         <lettuceRxjavaVersion>1.1.6</lettuceRxjavaVersion>
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
+        <!-- Ignite -->
+        <igniteVersion>1.9.0</igniteVersion>
+        <igniteCommonsLang3Version>3.3.2</igniteCommonsLang3Version>
 
     </properties>
 
@@ -432,6 +435,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>hibernate-ogm-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-ignite</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
