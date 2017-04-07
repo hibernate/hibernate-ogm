@@ -32,9 +32,9 @@ import com.mongodb.BasicDBList;
  */
 public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", "ebook" );
-	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde", "audible", "ebook", "paperback" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", 1881 );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", 1879, "ebook" );
+	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde", 1882,"audible", "ebook", "paperback" );
 
 	@Before
 	public void init() {
@@ -353,6 +353,86 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 					imperatrix.getId(),
 					athanasia.getId()
 			);
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	public void testFindWithMax() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String queryJson = "'$query': { 'author': 'Oscar Wilde' } ";
+			String max = " '$max': { 'year' : 1881 } ";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + max + "})";
+
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			assertThat( result ).onProperty( "id" ).containsExactly( athanasia.getId() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	public void testFindWithMin() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String queryJson = "'$query': { 'author': 'Oscar Wilde' } ";
+			String min = " '$min': { 'year' : 1882 } ";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + min + "})";
+
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			assertThat( result ).onProperty( "id" ).containsExactly( imperatrix.getId() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	// This test is purpose is mainly to see if we can parse this type of queries and return the expected result.
+	public void testFindWithModfiers() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			StringBuilder queryWithModifiers = new StringBuilder();
+			queryWithModifiers.append( "'$query': { } " );
+			queryWithModifiers.append( ", '$max': { 'year' : 1881 } " );
+			queryWithModifiers.append( ", '$explain': false " );
+			queryWithModifiers.append( ", '$snapshot': false " );
+			queryWithModifiers.append( ", 'hint': { 'year' : 1881 } " );
+			queryWithModifiers.append( ", 'maxScan': 11234" );
+
+			queryWithModifiers.append( ", '$comment': 'Testing comment' " );
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers.toString() + "})";
+
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			assertThat( result ).onProperty( "id" ).containsExactly( athanasia.getId() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	public void testFindWithExplain() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			StringBuilder queryWithModifiers = new StringBuilder();
+			queryWithModifiers.append( "'$query': { 'author': 'Oscar Wilde' } " );
+			queryWithModifiers.append( ", '$max': { 'year' : 1881 } " );
+			queryWithModifiers.append( ", '$explain': true " );
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers.toString() + "})";
+
+			Query query = session.createNativeQuery( nativeQuery );
+			@SuppressWarnings("unchecked")
+			List<Object[]> result = query.list();
+			// I'm not sure we can test the content because this is the result of the explain command
+			// and I believe it might change among versions
+			assertThat( result.get( 0 ) ).isNotEmpty();
 
 			transaction.commit();
 		}
