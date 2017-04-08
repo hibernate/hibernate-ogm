@@ -245,5 +245,19 @@
                 <skipUnitTests>false</skipUnitTests>
             </properties>
         </profile>
+        <profile>
+            <id>epam</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>epam-vtb-dbo</id>
+                    <name>VTB-DBO Snapshots Repository</name>
+                    <url>https://localhost/nexus/content/repositories/snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
     </profiles>
 </project>
