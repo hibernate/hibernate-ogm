@@ -173,5 +173,22 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>epam</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>epam-vtb-dbo</id>
+                    <name>VTB-DBO Snapshots Repository</name>
+                    <url>http://nexus.vtb-dbo.projects.epam.com/repository/hibernate-ogm/</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+    </profiles>
+
 
 </project>

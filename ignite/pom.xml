@@ -254,7 +254,7 @@
                 <snapshotRepository>
                     <id>epam-vtb-dbo</id>
                     <name>VTB-DBO Snapshots Repository</name>
-                    <url>https://localhost/nexus/content/repositories/snapshots/</url>
+                    <url>http://nexus.vtb-dbo.projects.epam.com/repository/hibernate-ogm/</url>
                 </snapshotRepository>
             </distributionManagement>
         </profile>
