@@ -359,6 +359,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Doesn't seem to work in Fongo'")
 	public void testFindWithMax() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -376,6 +377,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Doesn't seem to work in Fongo'")
 	public void testFindWithMin() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -393,8 +395,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	// This test purpose is mainly to see if we can parse this type of queries and return the expected result.
-	public void testFindWithModfiers() {
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Doesn't seem to work in Fongo'")
+	public void testFindWithModifiersWithEntity() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
 			StringBuilder queryWithModifiers = new StringBuilder();
@@ -418,6 +420,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Fongo does not implements '$explain'")
 	public void testFindWithExplain() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
