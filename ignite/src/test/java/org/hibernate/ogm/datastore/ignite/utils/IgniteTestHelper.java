@@ -179,9 +179,12 @@ public class IgniteTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public Map<String, String> getAdditionalConfigurationProperties() {
+	public Map<String, String> getEnvironmentProperties() {
 		return Collections.emptyMap();
 	}
 
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
 
+	}
 }

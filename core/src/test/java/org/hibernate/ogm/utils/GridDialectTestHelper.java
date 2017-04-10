@@ -80,6 +80,13 @@ public interface GridDialectTestHelper {
 	boolean backendSupportsTransactions();
 
 	/**
+	 * Initialize the database on start-up.
+	 *
+	 * @param sessionFactory
+	 */
+	void prepareDatabase(SessionFactory sessionFactory);
+
+	/**
 	 * Used to clean up all the stored data. The cleaning can be done by dropping
 	 * the database and/or the schema.
 	 * Each implementor can so define its own way to delete all data inserted by
@@ -90,11 +97,11 @@ public interface GridDialectTestHelper {
 	void dropSchemaAndDatabase(SessionFactory sessionFactory);
 
 	/**
-	 * Properties that needs to be added to the configuration for tests to run,
-	 * for example Neo4J will generate the database store path programmatically
-	 * so expecting it in a configuration file is not practical.
+	 * Properties that needs to be overridden in configuration for tests to run
+	 * This is typical of the host and port defined using an environment variable.
 	 */
-	Map<String, String> getAdditionalConfigurationProperties();
+	Map<String, String> getEnvironmentProperties();
+
 
 	/**
 	 * Returns the store-specific {@link DatastoreConfiguration} type for applying configuration options.
