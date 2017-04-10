@@ -154,20 +154,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
 
-			Boolean containsDatabase = false;
-			try {
-				MongoCursor<String> it = mongo.listDatabaseNames().iterator();
-				while ( it.hasNext() ) {
-					if ( ( it.next().equalsIgnoreCase( databaseName ) ) ) {
-						containsDatabase = true;
-						break;
-					}
-				}
-			}
-			catch (MongoException me) {
-				// we don't have enough privileges, ignore the database creation
-				containsDatabase = null;
-			}
+			Boolean containsDatabase = containsDatabase( mongo, databaseName );
 
 			if ( containsDatabase == Boolean.FALSE ) {
 				if ( config.isCreateDatabase() ) {
@@ -196,6 +183,17 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			// by error code. At best the message contains some more information.
 			// See also http://stackoverflow.com/questions/30455152/check-mongodb-authentication-with-java-3-0-driver
 			throw log.unableToConnectToDatastore( me.getMessage(), me );
+		}
+	}
+
+	private Boolean containsDatabase(MongoClient mongo, String databaseName) {
+		try {
+			// We still use getDatabaseNames() instead of listDatabaseNames() because Fongo does not support that command yet.
+			return mongo.getDatabaseNames().contains( databaseName );
+		}
+		catch (MongoException me) {
+			// we don't have enough privileges, ignore the database creation
+			return null;
 		}
 	}
 }
