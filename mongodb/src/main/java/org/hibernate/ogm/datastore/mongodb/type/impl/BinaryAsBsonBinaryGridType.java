@@ -6,13 +6,11 @@
  */
 package org.hibernate.ogm.datastore.mongodb.type.impl;
 
+import org.bson.types.Binary;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-
-import org.hibernate.ogm.type.descriptor.impl.WrappedGridTypeDescriptor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
-
-import org.bson.types.Binary;
+import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 
 /**
  * Persists {@link Binary}s as is in MongoDB.
@@ -25,7 +23,7 @@ public class BinaryAsBsonBinaryGridType extends AbstractGenericBasicType<byte[]>
 	public static final BinaryAsBsonBinaryGridType INSTANCE = new BinaryAsBsonBinaryGridType();
 
 	public BinaryAsBsonBinaryGridType() {
-		super( WrappedGridTypeDescriptor.INSTANCE, BinaryAsBsonBinaryTypeDescriptor.INSTANCE );
+		super( BinaryMappedGridTypeDescriptor.INSTANCE, PrimitiveByteArrayTypeDescriptor.INSTANCE );
 	}
 
 	@Override
