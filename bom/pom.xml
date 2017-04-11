@@ -93,7 +93,7 @@
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 
         <!-- Ignite -->
-        <igniteVersion>1.8.0</igniteVersion>
+        <igniteVersion>1.9.0</igniteVersion>
         <igniteCommonsLang3Version>3.3.2</igniteCommonsLang3Version>
     </properties>
 
