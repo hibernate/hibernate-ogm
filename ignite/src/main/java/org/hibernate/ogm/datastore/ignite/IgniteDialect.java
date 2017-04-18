@@ -153,6 +153,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 		}
 		else {
 			keyObject = provider.createKeyObject( key );
+			log.debugf( "key.getMetadata() : %s", key.getMetadata() );
 			builder = provider.createBinaryObjectBuilder( provider.getEntityTypeName( key.getMetadata().getTable() ) );
 		}
 		for ( String columnName : tuple.getColumnNames() ) {
@@ -168,6 +169,7 @@ public class IgniteDialect extends BaseGridDialect implements GridDialect, Query
 			}
 		}
 		BinaryObject valueObject = builder.build();
+		log.debugf( "Binary valueObject : %s",valueObject  );
 		entityCache.put( keyObject, valueObject );
 	}
 
