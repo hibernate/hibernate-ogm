@@ -457,7 +457,7 @@ public class IgniteDatastoreProvider extends BaseDatastoreProvider
 	/**
 	 * Get the entity type from the metadata
 	 *
-	 * @param keyMetadata metadata
+	 * @param entity metadata
 	 * @return type
 	 */
 	public String getEntityTypeName(String entity) {
