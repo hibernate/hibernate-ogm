@@ -27,6 +27,7 @@
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
         <hibernateSearchVersion>5.6.1.Final</hibernateSearchVersion>
+        <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.2.1.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
@@ -46,6 +47,7 @@
 
         <!-- Various dependencies -->
         <hibernateHqlParserVersion>1.4.0.Final</hibernateHqlParserVersion>
+        <hibernate.hql.module.slot>${hibernateHqlParserVersion}</hibernate.hql.module.slot>
         <parboiledVersion>1.1.7</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
         <asmVersion>5.0.3</asmVersion> <!-- used for Parboiled and Neo4j -->
 
