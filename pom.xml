@@ -63,11 +63,6 @@
         <!-- Not using default port to reduce chances of shutting down an external MongoDB instance -->
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
 
-        <!-- Since we require users to import a specific Hibernate Search module explicitly,
-         all integration tests need to know which version that shall be.
-         So the property needs to be defined in the global parent pom -->
-        <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
-
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>10.1.0.Final</version.wildfly>
         <hibernateWildflyClassifier>wildfly-10-dist</hibernateWildflyClassifier>
