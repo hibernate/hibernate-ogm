@@ -38,8 +38,10 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  * @author Davide D'Alto
  */
-@SkipByGridDialect(value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
-	comment = "Bag semantics not supported by backends which require a primary key")
+@SkipByGridDialect(
+	value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE, GridDialectType.ORIENTDB },
+	comment = "Bag semantics not supported by backends which require a primary key"
+)
 public class QueriesWithEmbeddedCollectionTest extends OgmTestCase {
 
 	@TestSessionFactory

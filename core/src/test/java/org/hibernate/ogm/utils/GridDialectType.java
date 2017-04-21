@@ -37,7 +37,11 @@ public enum GridDialectType {
 
 	REDIS_JSON( "org.hibernate.ogm.datastore.redis.RedisJsonDialect", false, false ),
 
-	REDIS_HASH( "org.hibernate.ogm.datastore.redis.RedisHashDialect", false, false );
+	REDIS_HASH( "org.hibernate.ogm.datastore.redis.RedisHashDialect", false, false ),
+
+	ORIENTDB("org.hibernate.ogm.datastore.orientdb.OrientDBDialect", false, false),
+
+	ORIENTDB_REMOTE("org.hibernate.ogm.datastore.orientdbremote.RemoteOrientDBDialect", false, false);
 
 	private final String dialectClassName;
 	private final boolean isDocumentStore;

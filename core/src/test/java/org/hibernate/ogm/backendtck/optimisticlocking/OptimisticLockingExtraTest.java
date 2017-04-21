@@ -35,14 +35,15 @@ import org.junit.rules.ExpectedException;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE },
-		comment = "list - bag semantics unsupported (no primary key)"
+		value = { GridDialectType.CASSANDRA, GridDialectType.INFINISPAN_REMOTE, GridDialectType.ORIENTDB },
+		comment = "list - bag semantics unsupported (no primary key); "
+				+ "OrientDB stores all transaction changes in memory on the client. "
+				+ "If you're using remote storage, it sends no changes to the server until you call the commit() method. "
 )
 public class OptimisticLockingExtraTest extends OgmTestCase {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-
 
 	@Test
 	public void updateToEmbeddedCollectionCausesVersionToBeIncreased() throws Throwable {

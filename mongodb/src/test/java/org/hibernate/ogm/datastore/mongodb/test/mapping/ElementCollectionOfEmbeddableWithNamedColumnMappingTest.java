@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.mapping;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -53,7 +53,7 @@ public class ElementCollectionOfEmbeddableWithNamedColumnMappingTest extends Ogm
 	@Test
 	@TestForIssue(jiraKey = "OGM-1151")
 	public void testMappingForElementCollectionWithNamedColumn() {
-		assertDbObject(
+		assertDocument(
 				getSessionFactory(),
 				// collection
 				"MultiAddressAccount",

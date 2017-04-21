@@ -25,6 +25,10 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect(
+		value = { GridDialectType.ORIENTDB },
+		comment = "OrientDB uses schema: 'one thread-one transaction'"
+)
 public class JPAJTATest extends OgmJpaTestCase {
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/transaction-type-jta.xml", Poem.class );

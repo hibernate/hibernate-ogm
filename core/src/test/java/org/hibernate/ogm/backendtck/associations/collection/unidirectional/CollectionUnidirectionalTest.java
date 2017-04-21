@@ -14,7 +14,9 @@ import static org.junit.Assert.assertNotNull;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByHelper;
 import org.junit.Test;
 
 /**
@@ -39,11 +41,21 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		session.persist( cloud );
 		session.flush();
 		assertThat( getNumberOfEntities( session ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( session ) ).isEqualTo( 1 );
+		if ( SkipByHelper.isCurrentGridDialect( GridDialectType.ORIENTDB ) || SkipByHelper.isCurrentGridDialect( GridDialectType.ORIENTDB_REMOTE ) ) {
+			assertThat( getNumberOfAssociations( session ) ).isEqualTo( 2 );
+		}
+		else {
+			assertThat( getNumberOfAssociations( session ) ).isEqualTo( 1 );
+		}
 		transaction.commit();
 
 		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 1 );
+		if ( SkipByHelper.isCurrentGridDialect( GridDialectType.ORIENTDB ) || SkipByHelper.isCurrentGridDialect( GridDialectType.ORIENTDB_REMOTE ) ) {
+			assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 2 );
+		}
+		else {
+			assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 1 );
+		}
 
 		session.clear();
 
@@ -60,7 +72,12 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		transaction.commit();
 
 		assertThat( getNumberOfEntities( sessionFactory ) ).isEqualTo( 4 );
-		assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 1 );
+		if ( SkipByHelper.isCurrentGridDialect( GridDialectType.ORIENTDB ) || SkipByHelper.isCurrentGridDialect( GridDialectType.ORIENTDB_REMOTE ) ) {
+			assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 2 );
+		}
+		else {
+			assertThat( getNumberOfAssociations( sessionFactory ) ).isEqualTo( 1 );
+		}
 
 		session.clear();
 

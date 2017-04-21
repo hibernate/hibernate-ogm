@@ -334,4 +334,9 @@ public class CassandraTestHelper implements GridDialectTestHelper {
 
 	}
 
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+		// TODO Auto-generated method stub
+		
+	}
 }

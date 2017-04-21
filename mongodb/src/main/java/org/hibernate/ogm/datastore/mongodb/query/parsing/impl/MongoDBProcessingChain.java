@@ -17,8 +17,10 @@ import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.QueryRendererProcessor;
 import org.hibernate.hql.ast.spi.QueryResolverProcessor;
 
+import org.bson.Document;
+
 /**
- * AST processing chain for creating MongoDB queries (in form of {@link com.mongodb.DBObject}s from HQL queries.
+ * AST processing chain for creating MongoDB queries (in form of {@link Document}s from HQL queries.
  *
  * @author Gunnar Morling
  */
