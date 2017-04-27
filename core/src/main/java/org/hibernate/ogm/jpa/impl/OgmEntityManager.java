@@ -59,6 +59,7 @@ import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
+import org.hibernate.procedure.ProcedureCall;
 
 /**
  * An OGM specific {@code EntityManager} implementation which delegates most method calls to the underlying ORM
@@ -518,22 +519,33 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
+		hibernateEm.checkOpen( true );
 		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		ProcedureCall procedureCall  = ( (Session) getDelegate() ).createStoredProcedureCall( procedureName );
+		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		return new OgmJpaStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		ProcedureCall procedureCall = ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultClasses );
+
+		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		return new OgmJpaStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		ProcedureCall procedureCall  = ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultSetMappings );
+		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		return new OgmJpaStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override

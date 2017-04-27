@@ -30,6 +30,7 @@ import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -39,6 +40,8 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -46,7 +49,9 @@ import org.hibernate.persister.entity.Lockable;
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
+public class MapDialect extends BaseGridDialect implements MultigetGridDialect, StoredProcedureGridDialect {
+
+	private static final Log log = LoggerFactory.make();
 
 	private final MapDatastoreProvider provider;
 
@@ -154,6 +159,14 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata metadata) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
 		consumer.consume( new MapTuplesSupplier( entityMap, metadata ) );
+	}
+
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(
+			String storedProcedureName, TupleContext tupleContext) {
+		log.info( "callStoredProcedure!!!!!" );
+		return null;
 	}
 
 	private static class MapTuplesSupplier implements TuplesSupplier {

@@ -20,6 +20,7 @@ import org.hibernate.ogm.dialect.impl.MultigetGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
+import org.hibernate.ogm.dialect.impl.StoredProcedureGridDialectInitiator;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactoryInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
@@ -81,6 +82,7 @@ public class OgmServiceRegistryInitializer implements ServiceContributor {
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( MultigetGridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( StoredProcedureGridDialectInitiator.INSTANCE );
 	}
 
 	private boolean isOgmEnabled(Map<?, ?> settings) {
