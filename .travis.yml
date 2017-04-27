@@ -12,24 +12,17 @@ addons:
 #      - $(find $HOME -name surefire-reports | tr "\n" ":")
 #      - $(find $HOME -name failsafe-reports | tr "\n" ":")
 #  s3_region: 'us-west-2'
-services:
-  - redis-server
 cache:
   directories:
     - $HOME/.m2
 env:
   global:
-    - REDIS_HOSTNAME=127.0.0.1
-    - COUCHDB_HOSTNAME=127.0.0.1
-    - CASSANDRA_VERSION=3.0.7 CASSANDRA_HOSTNAME=127.0.0.1
     - NEO4J_VERSION=$(xmlstarlet sel -N maven=http://maven.apache.org/POM/4.0.0 -t -m '/maven:project/maven:properties' -v maven:neo4jVersion bom/pom.xml)
     - NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
 install:
   - $NEO4J_HOME/bin/neo4j start
-  - sudo apt-get install -qq couchdb
-  - bash travis/setup-cassandra.sh 2>&1 > cassandra.log
   # The Maven install provided by Travis is outdated, use Maven wrapper to get the latest version
   - mvn -N io.takari:maven:wrapper
   - ./mvnw -v
