@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.embeddable;
 
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDocument;
 
 import java.util.Arrays;
 
@@ -55,7 +55,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -97,7 +97,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -136,7 +136,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -173,7 +173,7 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject(
+		assertDocument(
 				session.getSessionFactory(),
 				// collection
 				"Account",
@@ -221,14 +221,14 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 
 		// Then
-		assertDbObject( session.getSessionFactory(),
-		// collection
-				StoryGame.class.getSimpleName(),
-				// query
-				"{ '_id' : " + id + " }",
-				// expected
-				"{" +
-					"'_id' : " + id  + "," +
+		assertDocument( session.getSessionFactory(),
+						// collection
+						StoryGame.class.getSimpleName(),
+						// query
+						"{ '_id' : " + id + " }",
+						// expected
+						"{" +
+					"'_id' : { \"$numberLong\" :  \"" + id  + "\" }," +
 					"'goodBranch' : {" +
 							"'ending' : {" +
 								"'score' : 1," +

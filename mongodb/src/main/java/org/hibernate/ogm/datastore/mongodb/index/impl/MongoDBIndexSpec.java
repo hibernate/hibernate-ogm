@@ -9,20 +9,27 @@ package org.hibernate.ogm.datastore.mongodb.index.impl;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.mongodb.client.model.IndexOptions;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 
 /**
  * Definition of an index to be applied to a MongoDB collection
  *
  * @author Guillaume Smet
+ * @see <a href="https://docs.mongodb.com/manual/indexes/">info about indexes in MongoDB Java Driver 3.4</a>
  */
 public class MongoDBIndexSpec {
+
+	private Log log = LoggerFactory.getLogger();
 
 	/**
 	 * The MongoDB collection/table for which the index will be set
@@ -41,12 +48,12 @@ public class MongoDBIndexSpec {
 	/**
 	 * The index keys of the index prepared for MongoDB.
 	 */
-	private DBObject indexKeys = new BasicDBObject();
+	private Document indexKeys = new Document();
 
 	/**
 	 * The options specific to MongoDB.
 	 */
-	private DBObject options;
+	private IndexOptions options;
 
 	/**
 	 * Indicates if the index is a text index.
@@ -56,7 +63,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * Constructor used for columns marked as unique.
 	 */
-	public MongoDBIndexSpec(String collection, String columnName, String indexName, DBObject options) {
+	public MongoDBIndexSpec(String collection, String columnName, String indexName, Document options) {
 		this.options = prepareOptions( options, indexName, true );
 		this.collection = collection;
 		this.indexName = indexName;
@@ -66,7 +73,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * Constructor used for {@link UniqueKey}s.
 	 */
-	public MongoDBIndexSpec(UniqueKey uniqueKey, DBObject options) {
+	public MongoDBIndexSpec(UniqueKey uniqueKey, Document options) {
 		this.options = prepareOptions( options, uniqueKey.getName(), true );
 		this.collection = uniqueKey.getTable().getName();
 		this.indexName = uniqueKey.getName();
@@ -76,7 +83,7 @@ public class MongoDBIndexSpec {
 	/**
 	 * Constructor used for {@link Index}es.
 	 */
-	public MongoDBIndexSpec(Index index, DBObject options) {
+	public MongoDBIndexSpec(Index index, Document options) {
 		this.options = prepareOptions( options, index.getName(), false );
 		this.collection = index.getTable().getName();
 		this.indexName = index.getName();
@@ -86,27 +93,43 @@ public class MongoDBIndexSpec {
 
 	/**
 	 * Prepare the options by adding additional information to them.
+	 * @see <a href="https://docs.mongodb.com/manual/core/index-ttl/"> TTL Indexes</a>
 	 */
-	private DBObject prepareOptions(DBObject options, String indexName, boolean unique) {
-		options.put( "name", indexName );
+	private IndexOptions prepareOptions(Document options, String indexName, boolean unique) {
+		IndexOptions indexOptions = new IndexOptions();
+		indexOptions.name( indexName ).unique( unique ).background( options.getBoolean( "background" , false ) );
+
 		if ( unique ) {
-			options.put( "unique", true );
 			// MongoDB only allows one null value per unique index which is not in line with what we usually consider
 			// as the definition of a unique constraint. Thus, we mark the index as sparse to only index values
 			// defined and avoid this issue. We do this only if a partialFilterExpression has not been defined
 			// as partialFilterExpression and sparse are exclusive.
-			if ( !options.containsField( "partialFilterExpression" ) ) {
-				options.put( "sparse", true );
-			}
+			indexOptions.sparse( !options.containsKey( "partialFilterExpression" ) );
 		}
+		else if ( options.containsKey( "partialFilterExpression" ) ) {
+			indexOptions.partialFilterExpression( (Bson) options.get( "partialFilterExpression" ) );
+		}
+		if ( options.containsKey( "expireAfterSeconds" ) ) {
+			//@todo is it correct?
+			indexOptions.expireAfter( options.getInteger( "expireAfterSeconds" ).longValue() , TimeUnit.SECONDS );
+
+		}
+
 		if ( Boolean.TRUE.equals( options.get( "text" ) ) ) {
 			// text is an option we take into account to mark an index as a full text index as we cannot put "text" as
 			// the order like MongoDB as ORM explicitely checks that the order is either asc or desc.
-			// we remove the option from the DBObject so that we don't pass it to MongoDB
+			// we remove the option from the Document so that we don't pass it to MongoDB
+			if ( options.containsKey( "default_language" ) ) {
+				indexOptions.defaultLanguage( options.getString( "default_language" ) );
+			}
+			if ( options.containsKey( "weights" ) ) {
+				indexOptions.weights( (Bson) options.get( "weights" ) );
+			}
+
 			isTextIndex = true;
-			options.removeField( "text" );
+			options.remove( "text" );
 		}
-		return options;
+		return indexOptions;
 	}
 
 	public String getCollection() {
@@ -137,11 +160,11 @@ public class MongoDBIndexSpec {
 		}
 	}
 
-	public DBObject getOptions() {
+	public IndexOptions getOptions() {
 		return options;
 	}
 
-	public DBObject getIndexKeysDBObject() {
+	public Document getIndexKeysDocument() {
 		return indexKeys;
 	}
 

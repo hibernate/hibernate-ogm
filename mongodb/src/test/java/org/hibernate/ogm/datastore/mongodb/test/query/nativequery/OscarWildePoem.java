@@ -15,6 +15,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EntityResult;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.NamedNativeQueries;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.SqlResultSetMapping;
@@ -22,7 +23,7 @@ import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = OscarWildePoem.TABLE_NAME)
+@Table(name = OscarWildePoem.TABLE_NAME, indexes = @Index(name = "year", columnList = "year"))
 @NamedNativeQueries({
 	@NamedNativeQuery(name = "AthanasiaQuery", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultClass = OscarWildePoem.class ),
 	@NamedNativeQuery(name = "AthanasiaQueryWithMapping", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultSetMapping = "poemMapping" ),
@@ -52,22 +53,25 @@ public class OscarWildePoem {
 	private String name;
 	private String author;
 	private byte rating;
+	private Integer year;
 	private List<String> mediums = new ArrayList<String>();
 
 	public OscarWildePoem() {
 	}
 
-	public OscarWildePoem(Long id, String name, String author, String... mediums) {
+	public OscarWildePoem(Long id, String name, String author, int year, String... mediums) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
+		this.year = year;
 		this.mediums = Arrays.asList( mediums );
 	}
 
-	public OscarWildePoem(Long id, String name, String author, byte rating) {
+	public OscarWildePoem(Long id, String name, String author, int year, byte rating) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
+		this.year = year;
 		this.rating = rating;
 	}
 
@@ -102,6 +106,14 @@ public class OscarWildePoem {
 
 	public void setRating(byte rating) {
 		this.rating = rating;
+	}
+
+	public Integer getYear() {
+		return year;
+	}
+
+	public void setYear(Integer year) {
+		this.year = year;
 	}
 
 	@ElementCollection

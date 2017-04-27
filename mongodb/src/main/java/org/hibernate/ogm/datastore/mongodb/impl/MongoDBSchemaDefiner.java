@@ -45,11 +45,11 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
 /**
  * Performs sanity checks of the mapped objects.
@@ -181,7 +181,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 				if ( constraintMethod != UniqueConstraintSchemaUpdateStrategy.SKIP ) {
 					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( table.getName(), column.getName(), indexName,
-							getIndexOptionDBObject( table, indexOptions.getOptionForIndex( indexName ) ) );
+							getIndexOptionDocument( table, indexOptions.getOptionForIndex( indexName ) ) );
 					if ( validateIndexSpec( indexSpec ) ) {
 						indexSpecs.add( indexSpec );
 					}
@@ -199,7 +199,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 			if ( constraintMethod != UniqueConstraintSchemaUpdateStrategy.SKIP ) {
 				MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( uniqueKey,
-						getIndexOptionDBObject( table, indexOptions.getOptionForIndex( uniqueKey.getName() ) ) );
+						getIndexOptionDocument( table, indexOptions.getOptionForIndex( uniqueKey.getName() ) ) );
 				if ( validateIndexSpec( indexSpec ) ) {
 					indexSpecs.add( indexSpec );
 				}
@@ -213,21 +213,21 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 			Index index = indexes.next();
 			forIndexNotReferenced.remove( index.getName() );
 			MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index,
-					getIndexOptionDBObject( table, indexOptions.getOptionForIndex( index.getName() ) ) );
+					getIndexOptionDocument( table, indexOptions.getOptionForIndex( index.getName() ) ) );
 			if ( validateIndexSpec( indexSpec ) ) {
 				indexSpecs.add( indexSpec );
 			}
 		}
 	}
 
-	private DBObject getIndexOptionDBObject(Table table, IndexOption indexOption) {
+	private Document getIndexOptionDocument(Table table, IndexOption indexOption) {
 		try {
-			BasicDBObject options;
+			Document options;
 			if ( StringHelper.isNullOrEmptyString( indexOption.getOptions() ) ) {
-				options = new BasicDBObject();
+				options = new Document();
 			}
 			else {
-				options = BasicDBObject.parse( indexOption.getOptions() );
+				options = Document.parse( indexOption.getOptions() );
 			}
 			options.put( "name", indexOption.getTargetIndexName() );
 			return options;
@@ -251,29 +251,29 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 			log.indexNameIsEmpty( indexSpec.getCollection() );
 			valid = false;
 		}
-		if ( indexSpec.getIndexKeysDBObject().keySet().isEmpty() ) {
+		if ( indexSpec.getIndexKeysDocument().keySet().isEmpty() ) {
 			log.noValidKeysForIndex( indexSpec.getCollection(), indexSpec.getIndexName() );
 			valid = false;
 		}
 		return valid;
 	}
 
-	public void createIndex(DB database, MongoDBIndexSpec indexSpec) {
-		DBCollection collection = database.getCollection( indexSpec.getCollection() );
-		Map<String, DBObject> preexistingIndexes = getIndexes( collection );
+	public void createIndex(MongoDatabase database, MongoDBIndexSpec indexSpec) {
+		MongoCollection<Document> collection = database.getCollection( indexSpec.getCollection() );
+		Map<String, Document> preexistingIndexes = getIndexes( collection );
 		String preexistingTextIndex = getPreexistingTextIndex( preexistingIndexes );
 
 		// if a text index already exists in the collection, MongoDB silently ignores the creation of the new text index
 		// so we might as well log a warning about it
 		if ( indexSpec.isTextIndex() && preexistingTextIndex != null && !preexistingTextIndex.equalsIgnoreCase( indexSpec.getIndexName() ) ) {
-			throw log.unableToCreateTextIndex( collection.getName(), indexSpec.getIndexName(), preexistingTextIndex );
+			throw log.unableToCreateTextIndex( collection.getNamespace().getCollectionName(), indexSpec.getIndexName(), preexistingTextIndex );
 		}
 
 		try {
 			// if the index is already present and with the same definition, MongoDB simply ignores the call
 			// if the definition is not the same, MongoDB throws an error, except in the case of a text index
 			// where it silently ignores the creation
-			collection.createIndex( indexSpec.getIndexKeysDBObject(), indexSpec.getOptions() );
+			collection.createIndex( indexSpec.getIndexKeysDocument(), indexSpec.getOptions() );
 		}
 		catch (MongoException e) {
 			String indexName = indexSpec.getIndexName();
@@ -282,27 +282,28 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 					&& preexistingIndexes.containsKey( indexName ) ) {
 				// The index already exists with a different definition and has a name: we drop it and we recreate it
 				collection.dropIndex( indexName );
-				collection.createIndex( indexSpec.getIndexKeysDBObject(), indexSpec.getOptions() );
+				collection.createIndex( indexSpec.getIndexKeysDocument(), indexSpec.getOptions() );
 			}
 			else {
-				throw log.unableToCreateIndex( collection.getName(), indexName, e );
+				throw log.unableToCreateIndex( collection.getNamespace().getCollectionName(), indexName, e );
 			}
 		}
 	}
 
-	private Map<String, DBObject> getIndexes(DBCollection collection) {
-		List<DBObject> indexes = collection.getIndexInfo();
-		Map<String, DBObject> indexMap = new HashMap<>();
-		for ( DBObject index : indexes ) {
+	private Map<String, Document> getIndexes(MongoCollection<Document> collection) {
+		Map<String, Document> indexMap = new HashMap<>();
+		MongoCursor<Document> it = collection.listIndexes().iterator();
+		while ( it.hasNext() ) {
+			Document index = it.next();
 			indexMap.put( index.get( "name" ).toString(), index );
 		}
 		return indexMap;
 	}
 
-	private String getPreexistingTextIndex(Map<String, DBObject> preexistingIndexes) {
-		for ( Entry<String, DBObject> indexEntry : preexistingIndexes.entrySet() ) {
-			DBObject keys = (DBObject) indexEntry.getValue().get( "key" );
-			if ( keys != null && keys.containsField( "_fts" ) ) {
+	private String getPreexistingTextIndex(Map<String, Document> preexistingIndexes) {
+		for ( Entry<String, Document> indexEntry : preexistingIndexes.entrySet() ) {
+			Document keys = (Document) indexEntry.getValue().get( "key" );
+			if ( keys != null && keys.containsKey( "_fts" ) ) {
 				return indexEntry.getKey();
 			}
 		}

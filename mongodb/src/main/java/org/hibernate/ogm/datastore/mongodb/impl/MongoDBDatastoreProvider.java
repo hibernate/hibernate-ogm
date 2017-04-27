@@ -10,12 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -49,7 +50,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	private ServiceRegistryImplementor serviceRegistry;
 
 	private MongoClient mongo;
-	private DB mongoDb;
+	private MongoDatabase mongoDb;
 	private MongoDBConfiguration config;
 
 	public MongoDBDatastoreProvider() {
@@ -144,25 +145,18 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		mongo.close();
 	}
 
-	public DB getDatabase() {
+	public MongoDatabase getDatabase() {
 		return mongoDb;
 	}
 
-	private DB extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
+	private MongoDatabase extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
 		try {
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
 
-			Boolean containsDatabase;
-			try {
-				containsDatabase = mongo.getDatabaseNames().contains( databaseName );
-			}
-			catch (MongoException me) {
-				// we don't have enough privileges, ignore the database creation
-				containsDatabase = null;
-			}
+			Boolean containsDatabase = containsDatabase( mongo, databaseName );
 
-			if ( containsDatabase != null && containsDatabase == Boolean.FALSE ) {
+			if ( containsDatabase == Boolean.FALSE ) {
 				if ( config.isCreateDatabase() ) {
 					log.creatingDatabase( databaseName );
 				}
@@ -170,19 +164,36 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 					throw log.databaseDoesNotExistException( config.getDatabaseName() );
 				}
 			}
-			DB db = mongo.getDB( databaseName );
+			MongoDatabase db = mongo.getDatabase( databaseName );
 			if ( containsDatabase == null ) {
 				// force a connection to make sure we do have read access
 				// otherwise the connection failure happens during the first flush
-				db.collectionExists( "WeDoNotCareWhatItIsWeNeedToConnect" );
+				MongoCursor<String> it = db.listCollectionNames().iterator();
+				while ( it.hasNext() ) {
+					if ( ( it.next().equalsIgnoreCase( "WeDoNotCareWhatItIsWeNeedToConnect" ) ) ) {
+						containsDatabase = true;
+						break;
+					}
+				}
 			}
-			return mongo.getDB( databaseName );
+			return mongo.getDatabase( databaseName );
 		}
 		catch (MongoException me) {
 			// The Mongo driver allows not to determine the cause of the error, eg failing authentication, anymore
 			// by error code. At best the message contains some more information.
 			// See also http://stackoverflow.com/questions/30455152/check-mongodb-authentication-with-java-3-0-driver
 			throw log.unableToConnectToDatastore( me.getMessage(), me );
+		}
+	}
+
+	private Boolean containsDatabase(MongoClient mongo, String databaseName) {
+		try {
+			// We still use getDatabaseNames() instead of listDatabaseNames() because Fongo does not support that command yet.
+			return mongo.getDatabaseNames().contains( databaseName );
+		}
+		catch (MongoException me) {
+			// we don't have enough privileges, ignore the database creation
+			return null;
 		}
 	}
 }
