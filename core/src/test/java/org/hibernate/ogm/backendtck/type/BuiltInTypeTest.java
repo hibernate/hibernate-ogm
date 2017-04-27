@@ -14,7 +14,6 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -35,7 +34,6 @@ import org.junit.Test;
  * @author Hardy Ferentschik
  */
 public class BuiltInTypeTest extends OgmTestCase {
-	private static final Random RANDOM = new Random();
 	private static TimeZone originalTimeZone = null;
 
 	private Calendar calendar;
@@ -78,8 +76,24 @@ public class BuiltInTypeTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testIntegerMaxValueSupport() throws Exception {
+		bookmark.setStockCount( Integer.MAX_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Integer value does not match", bookmark.getStockCount(), loadedBookmark.getStockCount() );
+	}
+
+	@Test
+	public void testIntegerMinValueSupport() throws Exception {
+		bookmark.setStockCount( Integer.MIN_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Integer value does not match", bookmark.getStockCount(), loadedBookmark.getStockCount() );
+	}
+
+	@Test
 	public void testIntegerSupport() throws Exception {
-		bookmark.setStockCount( RANDOM.nextInt() );
+		bookmark.setStockCount( 567 );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
 		assertEquals( "Integer value does not match", bookmark.getStockCount(), loadedBookmark.getStockCount() );
@@ -94,11 +108,43 @@ public class BuiltInTypeTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testLongSupport() throws Exception {
-		bookmark.setUserId( RANDOM.nextLong() );
+	public void testLongMaxValueSupport() throws Exception {
+		bookmark.setUserId( Long.MAX_VALUE );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
 		assertEquals( "Long value does not match", bookmark.getUserId(), loadedBookmark.getUserId() );
+	}
+
+	@Test
+	public void testLongMinValueSupport() throws Exception {
+		bookmark.setUserId( Long.MIN_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Long value does not match", bookmark.getUserId(), loadedBookmark.getUserId() );
+	}
+
+	@Test
+	public void testLongSupport() throws Exception {
+		bookmark.setUserId( 12L );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Long value does not match", bookmark.getUserId(), loadedBookmark.getUserId() );
+	}
+
+	@Test
+	public void testFloatMaxValueSupport() throws Exception {
+		bookmark.setVisitRatio( Float.MAX_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Float value does not match", bookmark.getVisitRatio(), loadedBookmark.getVisitRatio() );
+	}
+
+	@Test
+	public void testFloatMinValueSupport() throws Exception {
+		bookmark.setVisitRatio( Float.MIN_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Float value does not match", bookmark.getVisitRatio(), loadedBookmark.getVisitRatio() );
 	}
 
 	@Test
@@ -106,7 +152,23 @@ public class BuiltInTypeTest extends OgmTestCase {
 		bookmark.setVisitRatio( (float) 10.4 );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
-		assertEquals( "Long value does not match", bookmark.getVisitRatio(), loadedBookmark.getVisitRatio() );
+		assertEquals( "Float value does not match", bookmark.getVisitRatio(), loadedBookmark.getVisitRatio() );
+	}
+
+	@Test
+	public void testDoubleMaxValueSupport() throws Exception {
+		bookmark.setTaxPercentage( Double.MAX_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Double value does not match", bookmark.getTaxPercentage(), loadedBookmark.getTaxPercentage() );
+	}
+
+	@Test
+	public void testDoubleMinValueSupport() throws Exception {
+		bookmark.setTaxPercentage( Double.MIN_VALUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Double value does not match", bookmark.getTaxPercentage(), loadedBookmark.getTaxPercentage() );
 	}
 
 	@Test
@@ -160,8 +222,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 	// byte arrays
 	@Test
 	public void testByteArrayAsLobSupport() throws Exception {
-		byte[] testData = new byte[200];
-		new Random().nextBytes( testData );
+		byte[] testData = "akshd aflasfukpao p43o5jpt jg ;sdj;dsaljg;0s=-34 '[sfk;flj s' [s[43u '#[s fpi'psfj;fds# s#s soj jfs \'kgs;".getBytes();
 		bookmark.setLob( testData );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
@@ -187,8 +248,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	@Test
 	public void testByteArraySupport() throws Exception {
-		byte[] testData = new byte[200];
-		new Random().nextBytes( testData );
+		byte[] testData = "slfhs;lafksa ;fi jewe a;u r9032ur t'-)_$U lkajds lf3022- 752 -9372-32 s;d'gd #fs'g# s;".getBytes();
 		bookmark.setData( testData );
 
 		Bookmark loadedBookmark = saveAndGet( bookmark );
