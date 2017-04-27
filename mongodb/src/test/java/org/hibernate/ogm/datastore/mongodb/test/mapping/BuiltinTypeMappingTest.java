@@ -29,8 +29,13 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 	public void setUpTestData() {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
+		byte[] testData = "slfhs;lafksa ;fi jewe a;u r9032ur t'-)_$U lkajds lf3022- 752 -9372-32 s;d'gd #fs'g# s;".getBytes();
 
 		Bookmark bookmark = new Bookmark();
+		bookmark.setData( testData );
+		bookmark.setLob( testData );
+		bookmark.setLobWithLong( Long.MAX_VALUE );
+		bookmark.setLobWithString( "Very long text ..." );
 		bookmark.setFavourite( Boolean.TRUE );
 		bookmark.setPrivate( true );
 		bookmark.setRead( true );
@@ -143,6 +148,111 @@ public class BuiltinTypeMappingTest extends OgmTestCase {
 				"{ " +
 					"'_id' : '" + bookmarkId + "', " +
 					"'isShared' : 1" +
+				"}"
+		);
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void byteArrayTypeMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Bookmark",
+				// query
+				"{ '_id' : '" + bookmarkId + "' }",
+				// fields
+				"{ 'data' : 1 }",
+				// expected
+				"{ " +
+					"'_id' : '" + bookmarkId + "', " +
+					"'data' : {" +
+						"'$binary' : 'c2xmaHM7bGFma3NhIDtmaSBqZXdlIGE7dSByOTAzMnVyIHQnLSlfJFUgbGthamRzIGxmMzAyMi0gNzUyIC05MzcyLTMyIHM7ZCdnZCAjZnMnZyMgczs=', " +
+						"'$type' : 0, " +
+					" }," +
+				"}"
+		);
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void lobTypeMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Bookmark",
+				// query
+				"{ '_id' : '" + bookmarkId + "' }",
+				// fields
+				"{ 'lob' : 1 }",
+				// expected
+				"{ " +
+					"'_id' : '" + bookmarkId + "', " +
+					"'lob' : {" +
+						"'$binary' : 'c2xmaHM7bGFma3NhIDtmaSBqZXdlIGE7dSByOTAzMnVyIHQnLSlfJFUgbGthamRzIGxmMzAyMi0gNzUyIC05MzcyLTMyIHM7ZCdnZCAjZnMnZyMgczs=', " +
+						"'$type' : 0, " +
+					" }," +
+				"}"
+		);
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void lobWithLongTypeMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Bookmark",
+				// query
+				"{ '_id' : '" + bookmarkId + "' }",
+				// fields
+				"{ 'lobWithLong' : 1 }",
+				// expected
+				"{ " +
+					"'_id' : '" + bookmarkId + "', " +
+					"'lobWithLong' : {" +
+						"'$binary' : 'rO0ABXNyAA5qYXZhLmxhbmcuTG9uZzuL5JDMjyPfAgABSgAFdmFsdWV4cgAQamF2YS5sYW5nLk51bWJlcoaslR0LlOCLAgAAeHB//////////w==', " +
+						"'$type' : 0, " +
+					" }," +
+				"}"
+		);
+
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
+	public void lobWithStringTypeMapping() {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Bookmark",
+				// query
+				"{ '_id' : '" + bookmarkId + "' }",
+				// fields
+				"{ 'lobWithString' : 1 }",
+				// expected
+				"{ " +
+					"'_id' : '" + bookmarkId + "', " +
+					"'lobWithString' : 'Very long text ...'" +
 				"}"
 		);
 

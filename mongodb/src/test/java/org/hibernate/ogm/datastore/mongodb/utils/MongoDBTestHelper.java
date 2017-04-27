@@ -43,6 +43,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
+import com.mongodb.util.JSONSerializers;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -273,7 +274,9 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder, fields );
 
-		assertJsonEquals( expectedDbObject, actual.toString() );
+		StringBuilder builder = new StringBuilder();
+		JSONSerializers.getStrict().serialize( actual, builder );
+		assertJsonEquals( expectedDbObject, builder.toString() );
 	}
 
 	public static Map<String, DBObject> getIndexes(OgmSessionFactory sessionFactory, String collection) {
