@@ -36,7 +36,9 @@ public enum DatastoreProviderType {
 	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider" ),
 	COUCHDB_EXPERIMENTAL( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" ),
 	CASSANDRA_EXPERIMENTAL( "org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider" ),
-	REDIS_EXPERIMENTAL( "org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider" );
+	REDIS_EXPERIMENTAL( "org.hibernate.ogm.datastore.redis.impl.RedisDatastoreProvider" ),
+	IGNITE( "org.hibernate.ogm.datastore.ignite.impl.IgniteDatastoreProvider" ),
+	ORIENTDB( "org.hibernate.datastore.ogm.orientdb.impl.OrientDBDatastoreProvider" );
 
 	private static final Log log = LoggerFactory.make();
 

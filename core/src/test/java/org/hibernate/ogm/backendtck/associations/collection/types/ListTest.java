@@ -7,16 +7,20 @@
 package org.hibernate.ogm.backendtck.associations.collection.types;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
+
 import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not implemented in dialect yet!")
 public class ListTest extends OgmTestCase {
 
 	@Test

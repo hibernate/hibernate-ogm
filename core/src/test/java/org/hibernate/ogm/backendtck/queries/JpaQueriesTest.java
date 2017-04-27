@@ -7,11 +7,13 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 
 import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +24,7 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "JPQL not supported.")
 public class JpaQueriesTest extends OgmJpaTestCase {
 
 	private static final String POLICE_HELICOPTER = "Bell 206";

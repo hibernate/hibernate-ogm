@@ -11,6 +11,7 @@ import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
 import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
 import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
@@ -52,6 +53,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect( value = {IGNITE},comment = "Not implemented in dialect yet!")
 public class OptimisticLockingTest extends OgmTestCase {
 
 	private static enum LatchAction {

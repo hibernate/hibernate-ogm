@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.batchfetching;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +24,7 @@ import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.stat.Statistics;
 import org.junit.Test;
@@ -30,6 +32,7 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not implemented in dialect yet!")
 public class BatchFetchingTest extends OgmTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {

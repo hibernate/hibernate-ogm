@@ -216,7 +216,13 @@ public class TestHelper {
 		settings.put( OgmProperties.ENABLED, "true" );
 		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
-		settings.putAll( HELPER.getAdditionalConfigurationProperties() );
+
+		Map<String, String> environmentProperties = HELPER.getEnvironmentProperties();
+
+		if ( environmentProperties != null ) {
+			settings.putAll( environmentProperties );
+		}
+
 		return settings;
 	}
 
