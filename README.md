@@ -13,6 +13,23 @@ The benefits are fairly obvious:
 
 Checkout <http://hibernate.org/ogm/> for more information.
 
+## Core datastores and contrib datastores
+
+Hibernate OGM supports a large number of NoSQL datastores.
+
+Some are included in this very repository:
+
+ * Infinispan
+ * MongoDB
+ * Neo4j
+
+Others are in separate repositories, called contrib:
+
+ * [Cassandra](https://github.com/hibernate/hibernate-ogm-cassandra)
+ * [CouchDB](https://github.com/hibernate/hibernate-ogm-couchdb)
+ * [Ehcache](https://github.com/hibernate/hibernate-ogm-ehcache)
+ * [Redis](https://github.com/hibernate/hibernate-ogm-redis)
+
 ## Useful pointers
 
 Latest Documentation:
@@ -38,7 +55,7 @@ To run the full project build including tests for all backends, documentation et
 
     mvn clean install -s settings-example.xml
 
-Note that for running the test suite against separately installed MongoDB and CouchDB servers their host name must be specified via an environment variable.
+Note that for running the test suite against separately installed MongoDB or Neo4j servers their host name must be specified via an environment variable.
 See the sections below for the details.
 
 To speed things up, there are several options for skipping parts of the build.
@@ -121,48 +138,6 @@ prior to running the tests:
 Finally, you also can run the test suite against the in-memory "fake implementation" Fongo:
 
     mvn clean install -s settings-example.xml -DmongodbProvider=fongo
-
-### CouchDB
-
-For running the tests in the _couchdb_ module an installed CouchDB server is required. Specify its host name by
-setting the environment variable `COUCHDB_HOSTNAME` prior to running the test suite:
-
-    export COUCHDB_HOSTNAME=couchdb-machine
-
-If this variable is not set, the _couchdb_ module still will be compiled and packaged but the tests will be skipped.
-If needed, the port to connect to can be configured through the environment variable `COUCHDB_PORT`.
-
-### Cassandra
-
-For running the tests in the _cassandra_ module an installed Cassandra server is required. Specify its host name by
-setting the environment variable `CASSANDRA_HOSTNAME` prior to running the test suite:
-
-    export CASSANDRA_HOSTNAME=cassandra-machine
-
-If this variable is not set, the _cassandra_ module still will be compiled and packaged but the tests will be skipped.
-If needed, the port to connect to can be configured through the environment variable `CASSANDRA_PORT`.
-
-### Redis
-
-For running the tests in the _redis_ module an installed Redis server is required. Specify its host name by
-setting the environment variable `REDIS_HOSTNAME` prior to running the test suite:
-
-    export REDIS_HOSTNAME=redis-machine
-
-If this variable is not set, the _redis_ module still will be compiled and packaged but the tests will be skipped.
-If needed, the port to connect to can be configured through the environment variable `REDIS_PORT`.
-
-Tests with the _redis_ module can be started using a Makefile. The Makefile takes care of downloading and compiling
-a recent Redis version, starts a single Redis Standalone and four Redis Cluster nodes and can start the tests.
-
-     make test # Make me happy and run tests against Redis Standalone and Redis Cluster
-     make test-standalone
-     make test-cluster
-
-Commands to spin up/shut down the Redis instances:
-
-    make start
-    make stop
 
 ### Neo4j
 
