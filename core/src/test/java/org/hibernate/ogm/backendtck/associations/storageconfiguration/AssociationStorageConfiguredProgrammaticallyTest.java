@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.backendtck.associations.storageconfiguration;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,11 +23,8 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
-
 import org.junit.After;
 import org.junit.Test;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test for configuring the different association storage modes via the option API.
@@ -33,7 +32,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(
-		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.CASSANDRA },
+		value = { GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE, GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE },
 		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
 )
 public class AssociationStorageConfiguredProgrammaticallyTest extends AssociationStorageTestBase {
@@ -56,10 +55,6 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.REDIS_HASH },
-			comment = "Only Redis JSON supports in-entity association storage"
-	)
 	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
@@ -91,10 +86,6 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.REDIS_HASH },
-			comment = "Only Redis JSON supports in-entity association storage"
-	)
 	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
@@ -111,10 +102,6 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.REDIS_HASH },
-			comment = "Only Redis JSON supports in-entity association storage"
-	)
 	public void associationStorageSetOnPropertyLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 
@@ -134,11 +121,6 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.REDIS_HASH },
-			comment = "Only Redis JSON supports in-entity association storage"
-	)
-
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
 		Map<String, Object> settings = new HashMap<String, Object>();
 

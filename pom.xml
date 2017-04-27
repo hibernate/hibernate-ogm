@@ -24,14 +24,10 @@
     <modules>
         <module>bom</module>
         <module>core</module>
-        <!-- <module>ehcache</module> Is only enabled when not running in Java 9: see the profiles section-->
         <!-- <module>infinispan</module> Is only enabled when not running in Java 9: see the profiles section-->
         <!-- <module>infinispan-remote</module> Is only enabled when not running in Java 9: see the profiles section-->
         <module>mongodb</module>
         <!-- <module>neo4j</module> Is only enabled when not running in Java 9: see the profiles section-->
-        <module>couchdb</module>
-        <module>cassandra</module>
-        <module>redis</module>
         <module>jipijapa</module>
         <!-- <module>modules</module> The modules require all of the above modules to be enabled -->
         <module>performance</module>
@@ -66,11 +62,6 @@
         <embeddedMongoDbLogDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</embeddedMongoDbLogDir>
         <!-- Not using default port to reduce chances of shutting down an external MongoDB instance -->
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
-
-        <!-- Since we require users to import a specific Hibernate Search module explicitly,
-         all integration tests need to know which version that shall be.
-         So the property needs to be defined in the global parent pom -->
-        <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>10.1.0.Final</version.wildfly>
@@ -789,7 +780,6 @@
                 <jdk>1.8</jdk>
             </activation>
             <modules>
-                <module>ehcache</module>
                 <module>infinispan</module>
                 <module>infinispan-remote</module>
                 <module>neo4j</module>

@@ -17,9 +17,7 @@ import java.util.EnumSet;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
@@ -93,10 +91,6 @@ public class ManyToManyTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { GridDialectType.CASSANDRA },
-			comment = "composite PKs in associations not yet supported"
-	)
 	public void testManyToManyCompositeId() throws Exception {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();

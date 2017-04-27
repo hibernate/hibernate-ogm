@@ -6,29 +6,22 @@
  */
 package org.hibernate.ogm.backendtck.id;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.SkipByGridDialect;
-import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * Tests that the insertion of a record with an already existing primary key is prevented.
  *
  * @author Gunnar Morling
  */
-@SkipByGridDialect(
-		value = { GridDialectType.CASSANDRA },
-		comment = "Cassandra always upserts, doesn't read-lock before write, doesn't support unique constraints even on primary key except by explicit/slow CAS use"
-)
 public class DuplicateIdDetectionTest extends OgmJpaTestCase {
 	EntityManager em;
 

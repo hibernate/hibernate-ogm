@@ -32,14 +32,7 @@ include::modules/datastore-providers.asciidoc[]
 
 include::modules/infinispan.asciidoc[]
 
-include::modules/ehcache.asciidoc[]
-
 include::modules/mongodb.asciidoc[]
 
 include::modules/neo4j.asciidoc[]
 
-include::modules/couchdb.asciidoc[]
-
-include::modules/cassandra.asciidoc[]
-
-include::modules/redis.asciidoc[]

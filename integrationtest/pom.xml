@@ -54,6 +54,27 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                </manifest>
+                            </archive>
+                            <excludes>
+                                <exclude>**/hibernate.properties</exclude>
+                                <exclude>**/log4j.properties</exclude>
+                                <exclude>org/hibernate/ogm/test/integration/testcase</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -69,7 +90,6 @@
                             <includes>
                                 <include>**/neo4j/embedded/*IT.java</include>
                                 <include>**/mongodb/*IT.java</include>
-                                <include>**/ehcache/*IT.java</include>
                                 <include>**/infinispan/*IT.java</include>
                             </includes>
                         </configuration>
@@ -172,17 +192,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>hibernate-ogm-couchdb</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>hibernate-ogm-mongodb</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hibernate-ogm-redis</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -324,105 +334,6 @@
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>run-couchdb-wildfly-tests</id>
-            <!-- To run the tests you need to define the 
-                environment property: COUCHDB_HOSTNAME -->
-            <activation>
-                <property>
-                    <name>env.COUCHDB_HOSTNAME</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                   <plugin>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>couchdb-integration-tests</id>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                                <configuration>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>**/couchdb/*IT.java</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>run-redis-wildfly-tests</id>
-            <!-- To run the tests you need to define the
-                environment property: REDIS_HOSTNAME -->
-            <activation>
-                <property>
-                    <name>env.REDIS_HOSTNAME</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>redis-integration-tests</id>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                                <configuration>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>**/redis/*IT.java</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>run-cassandra-wildfly-tests</id>
-            <!-- To run the tests you need to define the
-                environment property: CASSANDRA_HOSTNAME -->
-            <activation>
-                <property>
-                    <name>env.CASSANDRA_HOSTNAME</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>cassandra-integration-tests</id>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                                <configuration>
-                                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                                    <includes>
-                                        <include>**/cassandra/*IT.java</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>run-neo4j-wildfly-tests</id>
             <!-- To run the tests you need to define the
