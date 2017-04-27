@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.type.converter;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.junit.Test;
@@ -31,6 +33,7 @@ import org.junit.Test;
  *
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not supported by dialect yet!")
 public class JpaAttributeConverterTest extends OgmTestCase {
 
 	/**

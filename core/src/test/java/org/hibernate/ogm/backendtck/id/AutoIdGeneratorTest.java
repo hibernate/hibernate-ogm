@@ -11,15 +11,19 @@ import javax.persistence.EntityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 
 /**
  * Test case for JPA Auto identifier generator.
  *
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
+@SkipByGridDialect( value = {IGNITE}, comment = "Not implemented in dialect yet!")
 public class AutoIdGeneratorTest extends OgmJpaTestCase {
 	private EntityManager em;
 

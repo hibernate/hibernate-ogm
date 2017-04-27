@@ -27,7 +27,7 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-@SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE }, comment = "Neo4j is not compatible with HSEARCH 5")
+@SkipByGridDialect(value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.IGNITE }, comment = "Neo4j and Ignite are not compatible with HSEARCH 5")
 public class HibernateSearchAtopOgmTest extends OgmJpaTestCase {
 
 	@Test
