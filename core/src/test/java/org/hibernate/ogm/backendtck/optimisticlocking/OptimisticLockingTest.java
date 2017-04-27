@@ -11,6 +11,7 @@ import static org.hibernate.ogm.utils.GridDialectType.CASSANDRA;
 import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
 import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
+import static org.hibernate.ogm.utils.GridDialectType.IGNITE;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
@@ -106,7 +107,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	@SkipByGridDialect(
-			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, CASSANDRA, REDIS_JSON, REDIS_HASH },
+			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, CASSANDRA, REDIS_JSON, REDIS_HASH, IGNITE },
 			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
 	)
 	public void updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate() throws Throwable {
@@ -153,7 +154,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	@SkipByGridDialect(
-			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, CASSANDRA, REDIS_JSON, REDIS_HASH },
+			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, EHCACHE, NEO4J_EMBEDDED, NEO4J_REMOTE, COUCHDB, CASSANDRA, REDIS_JSON, REDIS_HASH, IGNITE },
 			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
 	)
 	public void deletingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndDelete() throws Throwable {

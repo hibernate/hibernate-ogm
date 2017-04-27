@@ -26,13 +26,16 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.persister.entity.EntityPersister;
 import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect( value = { GridDialectType.IGNITE }, comment = "Not yet implemented" )
 public class LoaderFromTupleTest extends OgmTestCase {
 	@Test
 	public void testLoadingFromTuple() throws Exception {

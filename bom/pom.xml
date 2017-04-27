@@ -92,6 +92,9 @@
         <lettuceCommonsPoolVersion>2.4.2</lettuceCommonsPoolVersion>
         <lettuceGuavaVersion>18.0</lettuceGuavaVersion> <!-- Currently in sync with the version of Wildfly -->
 
+        <!-- Ignite -->
+        <igniteVersion>1.9.0</igniteVersion>
+        <igniteCommonsLang3Version>3.3.2</igniteCommonsLang3Version>
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -434,6 +437,11 @@
                 <artifactId>hibernate-ogm-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-ignite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -464,7 +472,12 @@
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4jVersion}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4jVersion}</version>
+            </dependency>
+ 
             <!-- HQL Parsing and Lucene Query creation support -->
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
@@ -632,6 +645,39 @@
                 <groupId>biz.paluch.redis</groupId>
                 <artifactId>lettuce</artifactId>
                 <version>${lettuceVersion}</version>
+            </dependency>
+
+            <!-- Ignite -->
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-core</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-jta</artifactId>
+                <version>${igniteVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-indexing</artifactId>
+                <version>${igniteVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${igniteCommonsLang3Version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ignite</groupId>
+                <artifactId>ignite-slf4j</artifactId>
+                <version>${igniteVersion}</version>
             </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->

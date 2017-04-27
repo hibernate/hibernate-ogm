@@ -247,7 +247,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN, GridDialectType.EHCACHE },
+			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN, GridDialectType.EHCACHE, GridDialectType.IGNITE },
 			comment = "Can use parallel local TX not with JTA"
 	)
 	public void appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction() throws Exception {
