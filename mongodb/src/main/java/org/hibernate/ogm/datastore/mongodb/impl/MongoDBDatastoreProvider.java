@@ -188,9 +188,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	private Boolean containsDatabase(MongoClient mongo, String databaseName) {
 		try {
-			MongoCursor<String> mongoCursor = mongo.listDatabaseNames().iterator();
-			while ( mongoCursor.hasNext() ) {
-				String existingName = (String) mongoCursor.next();
+			for ( String existingName : mongo.listDatabaseNames() ) {
 				if ( existingName.equals( databaseName ) ) {
 					return Boolean.TRUE;
 				}
