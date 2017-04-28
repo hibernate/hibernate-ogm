@@ -16,11 +16,15 @@ require 'net/https'
 require 'choice'
 require 'git'
 
-# REST URL used to retrieve all release versions of OGM - https://docs.atlassian.com/jira/REST/latest/#d2e4023
-$jira_versions_url='https://hibernate.atlassian.net/rest/api/latest/project/OGM/versions'
+# Project specific configuration
+$website_directory='ogm'
+$jira_key='OGM'
+
+# REST URL used to retrieve all release versions of the project - https://docs.atlassian.com/jira/REST/latest/#d2e4023
+$jira_versions_url='https://hibernate.atlassian.net/rest/api/latest/project/' + $jira_key + '/versions'
 
 # REST URL used for getting all issues of given release - see https://docs.atlassian.com/jira/REST/latest/#d2e2450
-$jira_issues_url='https://hibernate.atlassian.net/rest/api/2/search/?jql=project%20%3D%20OGM%20AND%20fixVersion%20%3D%20#{release_version}%20ORDER%20BY%20issuetype%20ASC'
+$jira_issues_url='https://hibernate.atlassian.net/rest/api/2/search/?jql=project%20%3D%20' + $jira_key + '%20AND%20fixVersion%20%3D%20#{release_version}%20ORDER%20BY%20issuetype%20ASC'
 
 $now = Time.now
 
@@ -35,7 +39,7 @@ Choice.options do
   option :release_version, :required => true do
     short '-v'
     long '--release-version=<version>'
-    desc 'The OGM release version to process'
+    desc 'The release version to process'
   end
 
   separator 'Optional:'
@@ -63,7 +67,7 @@ Choice.options do
   option :help do
     short '-h'
     long '--help'
-    desc 'This scripts handles various OGM pre-release steps like changelog and readme updates.'
+    desc 'This scripts handles various pre-release steps like changelog and readme updates.'
   end
 end
 
@@ -110,7 +114,7 @@ def create_website_release_file(jira_release_info)
   puts 'Run the following command in the hibernate.org repository to create the release announcement file:'
   puts ''
   puts '====='
-  puts 'cat <<EOF > _data/projects/ogm/releases/' + jira_release_info['name'] + '.yml'
+  puts 'cat <<EOF > _data/projects/' + $website_directory + '/releases/' + jira_release_info['name'] + '.yml'
   puts 'version: ' + version
   puts 'version_family: ' + version.split('.')[0] + '.' + version.split('.')[1]
   puts 'date: ' + jira_release_info['releaseDate']
@@ -129,11 +133,11 @@ end
 # -------------------------
 #
 # ** <issue-type-1>
-#    * OGM-<key> - <component>  - <summary>
+#    * PROJECT-<key> - <component>  - <summary>
 #    ...
 #
 # ** <issue-type-2>
-#    * OGM-<key> - <component>  - <summary>
+#    * PROJECT-<key> - <component>  - <summary>
 #    ...
 #
 def create_changelog_update(release_version)
