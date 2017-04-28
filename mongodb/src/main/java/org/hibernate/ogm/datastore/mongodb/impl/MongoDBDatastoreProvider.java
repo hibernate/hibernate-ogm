@@ -188,8 +188,14 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	private Boolean containsDatabase(MongoClient mongo, String databaseName) {
 		try {
-			// We still use getDatabaseNames() instead of listDatabaseNames() because Fongo does not support that command yet.
-			return mongo.getDatabaseNames().contains( databaseName );
+			MongoCursor<String> mongoCursor = mongo.listDatabaseNames().iterator();
+			while ( mongoCursor.hasNext() ) {
+				String existingName = (String) mongoCursor.next();
+				if ( existingName.equals( databaseName ) ) {
+					return Boolean.TRUE;
+				}
+			}
+			return Boolean.FALSE;
 		}
 		catch (MongoException me) {
 			// we don't have enough privileges, ignore the database creation
