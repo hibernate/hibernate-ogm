@@ -23,14 +23,19 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.persistence.PessimisticLockException;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
@@ -46,7 +51,7 @@ import org.hibernate.service.spi.Stoppable;
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public final class MapDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable {
+public final class MapDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable,ServiceRegistryAwareService {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -54,6 +59,7 @@ public final class MapDatastoreProvider extends BaseDatastoreProvider implements
 	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = newConcurrentHashMap();
 	private final ConcurrentMap<IdSourceKey, AtomicInteger> sequencesStorage = newConcurrentHashMap();
 	private final ConcurrentMap<Object, ReadWriteLock> dataLocks = newConcurrentHashMap();
+	private ServiceRegistryImplementor serviceRegistry;
 
 	/**
 	 * This simplistic data store only supports thread-bound transactions:
@@ -191,5 +197,16 @@ public final class MapDatastoreProvider extends BaseDatastoreProvider implements
 	@Override
 	public boolean allowsTransactionEmulation() {
 		return true;
+	}
+
+	@Override
+	public void configure(Map configurationValues) {
+		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
 	}
 }

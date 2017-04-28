@@ -10,13 +10,13 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureGridDialect;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-public class StoredProcedureGridDialectInitiator implements StandardServiceInitiator<StoredProcedureGridDialect> {
+public class StoredProcedureGridDialectInitiator implements StandardServiceInitiator<StoredProcedureAwareGridDialect> {
 
 	public static final StoredProcedureGridDialectInitiator INSTANCE = new StoredProcedureGridDialectInitiator();
 
@@ -24,12 +24,12 @@ public class StoredProcedureGridDialectInitiator implements StandardServiceIniti
 	}
 
 	@Override
-	public Class<StoredProcedureGridDialect> getServiceInitiated() {
-		return StoredProcedureGridDialect.class;
+	public Class<StoredProcedureAwareGridDialect> getServiceInitiated() {
+		return StoredProcedureAwareGridDialect.class;
 	}
 
 	@Override
-	public StoredProcedureGridDialect<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return GridDialects.getDialectFacetOrNull( registry.getService( GridDialect.class ), StoredProcedureGridDialect.class );
+	public StoredProcedureAwareGridDialect initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+		return GridDialects.getDialectFacetOrNull( registry.getService( GridDialect.class ), StoredProcedureAwareGridDialect.class );
 	}
 }

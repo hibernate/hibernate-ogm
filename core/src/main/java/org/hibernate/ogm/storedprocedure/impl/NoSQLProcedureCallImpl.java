@@ -6,42 +6,128 @@
  */
 package org.hibernate.ogm.storedprocedure.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.ParameterMode;
+
+import org.hibernate.QueryException;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureGridDialect;
+import org.hibernate.internal.util.StringHelper;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureOutputs;
 import org.hibernate.procedure.internal.ProcedureCallImpl;
+import org.hibernate.procedure.spi.ParameterStrategy;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 	private static final Log log = LoggerFactory.make();
+	private final boolean globalParameterPassNullsSetting = true;
+
+	private ParameterStrategy parameterStrategy = ParameterStrategy.UNKNOWN;
+	private List<NoSQLProcedureParameterRegistration<?>> registeredParameters = new ArrayList<NoSQLProcedureParameterRegistration<?>>();
+	private StoredProcedureAwareGridDialect gridDialect;
 
 	public NoSQLProcedureCallImpl(SessionImplementor session, String procedureName) {
 		super( session, procedureName );
+		this.gridDialect = getGridDialectService();
+		defineParameterStrategy();
 	}
 
 	public NoSQLProcedureCallImpl(SessionImplementor session, String procedureName, Class[] resultClasses) {
 		super( session, procedureName, resultClasses );
+		this.gridDialect = getGridDialectService();
+		defineParameterStrategy();
 	}
 
 	public NoSQLProcedureCallImpl(SessionImplementor session, String procedureName, String... resultSetMappings) {
 		super( session, procedureName, resultSetMappings );
+		this.gridDialect = getGridDialectService();
+	}
+
+	private void defineParameterStrategy() {
+		if ( this.gridDialect.supportsNamedPosition() ) {
+			parameterStrategy = ParameterStrategy.NAMED;
+		}
+		else {
+			parameterStrategy = ParameterStrategy.POSITIONAL;
+		}
+	}
+
+	@Override
+	public List<ParameterRegistration> getRegisteredParameters() {
+		List<ParameterRegistration> resList = new ArrayList<>( registeredParameters.size() );
+		for ( NoSQLProcedureParameterRegistration reg : registeredParameters ) {
+			resList.add( reg );
+		}
+		return resList;
+	}
+
+	@Override
+	public <T> ParameterRegistration<T> registerParameter(String name, Class<T> type, ParameterMode mode) {
+		NoSQLProcedureParameterRegistration<T> parameterRegistration = new
+				NoSQLProcedureParameterRegistration<T>( this, null, name, mode, type );
+		registerParameter( parameterRegistration );
+		return parameterRegistration;
+	}
+
+	@Override
+	public <T> ParameterRegistration<T> registerParameter(int position, Class<T> type, ParameterMode mode) {
+		NoSQLProcedureParameterRegistration<T> parameterRegistration =
+				new NoSQLProcedureParameterRegistration<T>( this, position, null, mode, type );
+		registerParameter( parameterRegistration );
+		return parameterRegistration;
 	}
 
 	@Override
 	public ProcedureOutputs getOutputs() {
 		log.info( "I am here!" );
-		StoredProcedureGridDialect gridDialect = getSession().getFactory().getServiceRegistry().getService(
-				StoredProcedureGridDialect.class );
 
 		log.infof( "gridDialect : %s", gridDialect );
-		getQueryParameters().traceParameters( getSession().getFactory() );
-		gridDialect.callStoredProcedure( getProcedureName(),null );
-		//BackendStoredProcLoader loader = new BackendStoredProcLoader(  );
+		for ( ParameterRegistration<?> r : getRegisteredParameters() ) {
+			log.infof( "ParameterRegistration name : %s", r.getName() );
+			log.infof( "ParameterRegistration position : %d", r.getPosition() );
+		}
+		//gridDialect.callStoredProcedure( getProcedureName(), null );
+		// BackendStoredProcLoader loader = new BackendStoredProcLoader( );
 
 		return new NoSQLProcedureOutputsImpl( this );
+	}
+
+	private void registerParameter(NoSQLProcedureParameterRegistration<?> parameter) {
+		if ( StringHelper.isNotEmpty( parameter.getName() ) ) {
+			prepareForNamedParameters();
+		}
+		else if ( parameter.getPosition() != null ) {
+			prepareForPositionalParameters();
+		}
+		else {
+			throw new IllegalArgumentException( "Given parameter did not define name or position [" + parameter + "]" );
+		}
+		registeredParameters.add( parameter );
+	}
+
+	private void prepareForPositionalParameters() {
+		if ( parameterStrategy == ParameterStrategy.NAMED ) {
+			throw new QueryException( "Cannot mix named and positional parameters" );
+		}
+	}
+
+	private void prepareForNamedParameters() {
+		if ( parameterStrategy == ParameterStrategy.POSITIONAL ) {
+			throw new QueryException( "Cannot mix named and positional parameters" );
+		}
+	}
+
+	private StoredProcedureAwareGridDialect getGridDialectService() {
+		return getSession().getFactory().getServiceRegistry().getService( StoredProcedureAwareGridDialect.class );
+	}
+
+	protected StoredProcedureAwareGridDialect getGridDialect() {
+		return gridDialect;
 	}
 }

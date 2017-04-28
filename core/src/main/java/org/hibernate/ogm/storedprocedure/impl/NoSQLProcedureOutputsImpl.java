@@ -6,6 +6,15 @@
  */
 package org.hibernate.ogm.storedprocedure.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureOutputs;
 import org.hibernate.result.Output;
@@ -14,6 +23,7 @@ import org.hibernate.result.Output;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
+	private static final Log log = LoggerFactory.make();
 	private final NoSQLProcedureCallImpl procedureCall;
 
 	public NoSQLProcedureOutputsImpl(NoSQLProcedureCallImpl procedureCall) {
@@ -37,9 +47,27 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 		return null;
 	}
 
+
 	@Override
 	public Output getCurrent() {
-		return new NoSQLProcedureOutputImpl();
+		// needs to execute stored procedure here
+		Object result = null;
+
+		if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
+//
+
+		}
+		else {
+			List parameters = new ArrayList( procedureCall.getRegisteredParameters().size() );
+			for ( ParameterRegistration parameterRegistration : procedureCall.getRegisteredParameters() ) {
+				parameters.add( parameterRegistration.getBind().getValue() );
+			}
+			log.infof( "indexed parameters: %s", parameters );
+			result = procedureCall.getGridDialect()
+					.callStoredProcedure( procedureCall.getProcedureName(), parameters.toArray() , null );
+		}
+		//copy data from iterator
+		return new NoSQLProcedureOutputImpl( result );
 	}
 
 	@Override
@@ -50,5 +78,9 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 	@Override
 	public void release() {
 
+	}
+
+	public boolean isResultSet() {
+		return getCurrent().isResultSet();
 	}
 }
