@@ -22,7 +22,6 @@ atlassian-ide-plugin.xml
 .factorypath
 .settings
 .externalToolBuilders
-bin/
 
 # NetBeans specific files/directories
 .nbattrs
