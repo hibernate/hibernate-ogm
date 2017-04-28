@@ -37,6 +37,5 @@ script:
   - ./mvnw -s settings-example.xml clean install
   - ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-http clean install
   - NEO4J_PORT=7687 ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-bolt clean install
-  - ./mvnw -s settings-example.xml -pl mongodb -DmongodbProvider=fongo clean install
 after_script:
   - rm -rf $HOME/.m2/repository/org/hibernate/ogm/
