@@ -58,7 +58,6 @@
         <!-- MongoDB -->
         <mongodbDriverVersion>3.4.2</mongodbDriverVersion>
         <mongodbVersion>3.4.1</mongodbVersion>
-        <fongodbVersion>2.0.12</fongodbVersion>
 
         <!-- Neo4j -->
         <neo4jVersion>3.0.8</neo4jVersion>
@@ -534,11 +533,6 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>${mongodbDriverVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.fakemongo</groupId>
-                <artifactId>fongo</artifactId>
-                <version>${fongodbVersion}</version>
             </dependency>
 
             <!-- Neo4j -->

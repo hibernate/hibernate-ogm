@@ -14,9 +14,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -247,7 +245,6 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "FongoDB does not support explain")
 	public void testQueryWithOptions() throws Exception {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();

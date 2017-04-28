@@ -135,10 +135,6 @@ prior to running the tests:
     export MONGODB_PASSWORD=someP@ssw0rd
     mvn clean install -s settings-example.xml -DmongodbProvider=external
 
-Finally, you also can run the test suite against the in-memory "fake implementation" Fongo:
-
-    mvn clean install -s settings-example.xml -DmongodbProvider=fongo
-
 ### Neo4j
 
 For running the tests in the _neo4j_ and _integrationtest/neo4j_ modules, by default the

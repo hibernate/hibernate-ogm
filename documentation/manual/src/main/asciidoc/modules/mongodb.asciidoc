@@ -165,56 +165,6 @@ Common properties shared between stores are declared on `OgmProperties`
 For maximum portability between stores, use the most generic interface possible.
 ====
 
-==== FongoDB Provider
-
-Fongo is an in-memory java implementation of MongoDB.
-It intercepts calls to the standard mongo-java-driver for finds, updates, inserts, removes and other methods.
-The primary use is for lightweight unit testing where you don't want to spin up a `mongod` process.
-
-Hibernate OGM provides a FongoDB provider so during tests it can be used instead of MongoDB driver.
-Note that you don't need to change your business code to adapt to FongoDB because all adaptations are done under the cover by Hibernate OGM.
-
-To start using FongoDB provider, you should do two things:
-
-The first one is register the provider by using `hibernate.ogm.datastore.provider` and setting to `fongodb`.
-
-.Configuring FongoDB provider
-====
-[source, XML]
-[subs="verbatim,attributes"]
-----
-<persistence-unit name="ogm-jpa-tutorial" transaction-type="JTA">
-    <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
-    <properties>
-        <property name="hibernate.ogm.datastore.provider" value="fongodb"/>
-        <property name="hibernate.transaction.jta.platform"
-                  value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/>
-    </properties>
-</persistence-unit>
-----
-====
-
-The second one is adding FongoDB and SLF4J dependencies in your project.
-
-[source, XML]
-[subs="verbatim,attributes"]
-----
-<dependency>
-    <groupId>com.github.fakemongo</groupId>
-    <artifactId>fongo</artifactId>
-    <version>{fongodb-version}</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-simple</artifactId>
-    <version>{slf4j-version}</version>
-    <scope>test</scope>
-</dependency>
-----
-
-You can read more about FongoDB project and its limitations at https://github.com/fakemongo/fongo
-
 [[ogm-mongodb-annotation-configuration]]
 ==== Annotation based configuration
 

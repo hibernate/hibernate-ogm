@@ -15,9 +15,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.After;
 import org.junit.Before;
@@ -359,7 +357,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Doesn't seem to work in Fongo'")
 	public void testFindWithMax() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -377,7 +374,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Doesn't seem to work in Fongo'")
 	public void testFindWithMin() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -395,7 +391,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Doesn't seem to work in Fongo'")
 	public void testFindWithModifiersWithEntity() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -420,7 +415,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "Fongo does not implements '$explain'")
 	public void testFindWithExplain() {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -698,7 +692,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "FongoDB does not support collation")
 	public void testDistinctQueryWithCriteriaAndCollation() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -718,7 +711,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "FongoDB does not support collation")
 	public void testDistinctQueryWithoutCriteriaAndWIthCollation() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -738,7 +730,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "FongoDB does not support collation")
 	public void testDistinctQueryWithInCriteriaAndCollation() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -758,7 +749,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "FongoDB does not support collation")
 	public void testSimpleDistinctQuery() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
@@ -777,7 +767,6 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
-	@SkipByDatastoreProvider(value = DatastoreProviderType.FONGO, comment = "FongoDB does not support collation")
 	public void testDistinctQueryWithCriteria() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();

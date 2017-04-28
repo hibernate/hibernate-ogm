@@ -29,7 +29,6 @@ public enum DatastoreProviderType {
 	INFINISPAN_EMBEDDED( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider" ),
 	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
-	FONGO( "org.hibernate.ogm.datastore.mongodb.impl.FongoDBDatastoreProvider" ),
 	NEO4J_BOLT( "org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jDatastoreProvider" ),
 	NEO4J_HTTP( "org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider" ),
 	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider" );

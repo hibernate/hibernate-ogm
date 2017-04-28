@@ -14,19 +14,15 @@ import java.util.Map;
 
 import org.bson.Document;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.junit.Test;
 
 /**
  * Testing index creation with options specific to MongoDB
  *
- * @see FongoDBIndexTest
  * @author Francois Le Droff
  * @author Guillaume Smet
  */
-@SkipByDatastoreProvider(DatastoreProviderType.FONGO)
 public class MongoDBIndexTest extends OgmTestCase {
 
 	private static final String COLLECTION_NAME = "T_POEM";

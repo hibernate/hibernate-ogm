@@ -181,7 +181,6 @@
                         <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
                         <ehcache-version>${ehcacheVersion}</ehcache-version>
                         <mongodb-version>${mongodbParsedVersion.majorVersion}.${mongodbParsedVersion.minorVersion}</mongodb-version>
-                        <fongodb-version>${fongodbVersion}</fongodb-version>
                         <slf4j-version>${slf4jVersion}</slf4j-version>
                     </attributes>
                 </configuration>

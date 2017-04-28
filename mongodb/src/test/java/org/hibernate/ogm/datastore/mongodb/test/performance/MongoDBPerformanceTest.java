@@ -13,11 +13,9 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.associations.collection.types.Child;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandChild;
 import org.hibernate.ogm.backendtck.associations.collection.types.GrandMother;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.utils.BytemanHelper;
 import org.hibernate.ogm.utils.BytemanHelperStateCleanup;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.junit.Rule;
@@ -26,7 +24,6 @@ import org.junit.Test;
 /**
  * @author Guillaume Smet
  */
-@SkipByDatastoreProvider({ DatastoreProviderType.FONGO })
 public class MongoDBPerformanceTest extends OgmTestCase {
 
 	private static final String MONGO_COLLECTION = "com.mongodb.client.MongoCollection";

@@ -74,11 +74,6 @@
             <artifactId>parboiled-java</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.fakemongo</groupId>
-            <artifactId>fongo</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
@@ -270,27 +265,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <!-- Executes the tests against an in-memory fake MongoDB (Fongo) -->
-        <profile>
-            <id>fongo</id>
-            <activation>
-                <property>
-                    <name>mongodbProvider</name>
-                    <value>fongo</value>
-                </property>
-            </activation>
-            <properties>
-                <datastoreProvider>fongo</datastoreProvider>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
         </profile>
 
         <!-- Executes the tests against a separately started MongoDB server -->
