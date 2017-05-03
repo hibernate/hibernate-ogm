@@ -250,4 +250,16 @@ What have we seen?
 * It is configured as a specific JPA provider:
   `org.hibernate.ogm.jpa.HibernateOgmPersistence`
 
-Let's explore more in the next chapters.
+What Let's explore more in the next chapters.
+
+[NOTE]
+====
+Hibernate OGM might also require http://hibernate.org/search/[Hibernate Search] on the classpath.
+This depends on the dialect or features you want to use with you project and you will find more
+details about it in the next chapters.
+
+If you want to use Hibernate OGM with http://wildfly.org/[WildFLy 10] you will need some
+additional configuration and you can find all the details
+in the <<ogm-configuration-jbossmodule>> paragraph.
+
+====
