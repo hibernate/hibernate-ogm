@@ -5,6 +5,17 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
+
+<!-- This alias main purpose is to bring consistency in the build, this way 
+    we can use the same property hibernate-search.module.slot for hibernate-search-orm 
+    and hibernate-search-engine.
+
+    WildFly 10 ships with Hibernate ORM 5.0 and Hibernate Search 5.5.4, to make it work with OGM 5.1
+    we need to add the ORM 5.1 module and the Search 5.6.1 module. The user can then select these modules
+    using the property wildfly.jpa.hibernate.search.module.
+
+    The only place where hibernate-search-engine slot is referred at the moment is in the HQL module, make
+    sure to update it accordingly if you want to remove this alias -->
 <module-alias xmlns="urn:jboss:module:1.1"
     name="org.hibernate.search.engine" slot="${hibernate-search.module.slot}"
     target-name="org.hibernate.search.engine" target-slot="${hibernateSearchVersion}" />
