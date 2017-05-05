@@ -21,6 +21,28 @@ for a complete description of all its capabilities and configuration options,
 refer to the Infinispan project documentation at
 http://infinispan.org/documentation/[infinispan.org].
 
+=== Why use Hibernate OGM with Infinispan?
+
+Infinispan provides great scalability and elasticity features but
+it can have a steep learning curve.
+
+If you are already familiar with the JPA API you will
+be able to store your data in Infinispan quickly and you will also benefit
+from the optimizations that a framework like Hibernate OGM can
+apply under the hood.
+
+In particular:
+
+* you can get started without having to learn Protobuf first;
+  it will still be useful to learn Protobuf to maintain your applications
+* no need to learn the Infinispan API
+* Hibernate OGM will setup and manage the HotRod client for you
+* same API of Hibernate ORM, meaning that you can use the same tools
+
+You will still need to learn about Infinispan, all its capabilities and how to configure
+them to reach your application top performance, but you can get a proof of concept
+done quickly with the example configuration.
+
 === Infinispan: Choosing between Embedded Mode and Hot Rod
 
 Java applications can use Infinispan in two fundamentally different ways:
@@ -96,7 +118,6 @@ having to enlarge heap size too much on the embedded, application nodes.
 Finally, remember that options such as replication vs distribution (`CacheMode`) and passivation
 to additional storage (``CacheStore``s) can be configured differently for each of Infinispan caches.
 ====
-
 
 [[ogm-infinispan-embedded]]
 === Hibernate OGM & Infinispan Embedded
