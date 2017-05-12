@@ -379,13 +379,13 @@ You can download the pre-packaged module ZIP for this version of Hibernate OGM f
 * https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-{hibernate-wildfly-classifier}.zip[The Maven Central repository]
 
 Hibernate OGM {hibernate-ogm-version} requires Hibernate ORM {hibernate-orm-version}
-and Hibernate Search {hibernate-search-verision}.
+and Hibernate Search {hibernate-search-version}.
 
-These versions are not included in WildFly 10 but you can download the pre-package ZIP modules from 
+These versions are not included in WildFly 10 but you can download the pre-packaged ZIP modules from 
 Maven Central:
 
 * https://repo1.maven.org/maven2/org/hibernate/hibernate-orm-modules/{hibernate-orm-version}/hibernate-orm-modules-{hibernate-orm-version}-{hibernate-wildfly-classifier}.zip[Hibernate ORM modules]
-* http://repo1.maven.org/maven2/org/hibernate/hibernate-search-modules/{hibernate-search-version}/hibernate-search-modules-{hibernate-search-version}-{hibernate-wildfly-classifier}.zip[Hibernate Search modules]
+* https://repo1.maven.org/maven2/org/hibernate/hibernate-search-modules/{hibernate-search-version}/hibernate-search-modules-{hibernate-search-version}-{hibernate-wildfly-classifier}.zip[Hibernate Search modules]
 
 Once you have the archives, you need to 
 unpack them into the `modules` folder of your WildFly 10 installation.
@@ -492,7 +492,7 @@ If you are using Maven, you can download and set up your WildFly with the follow
 ----
 ====
 
-Now that WildFly is ready, you can include the dependency in your application in two ways:
+Now that WildFly is ready, you can include the dependencies in your application in two ways:
 
 Include dependencies using the manifest::
 Add this entry to the MANIFEST.MF in your archive (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
