@@ -9,6 +9,7 @@ With Hibernate OGM, you have a few alternatives that should get you covered:
 * Use the NoSQL native query mapping the result as managed entities
 * Use Hibernate Search queries - primarily full-text queries
 
+[[ogm-jpql-query]]
 === Using JP-QL
 
 For Hibernate OGM, we developed a brand new JP-QL parser
