@@ -222,6 +222,7 @@
         <local-cache name="Race_Runners" />
         <local-cache name="Runner" />
         <local-cache name="Printer" />
+        <local-cache name="StockItem" />
 
         <local-cache name="INITIAL_VALUE_GENERATOR_TABLE" />
         <local-cache name="THREAD_SAFETY_GENERATOR_TABLE" />
