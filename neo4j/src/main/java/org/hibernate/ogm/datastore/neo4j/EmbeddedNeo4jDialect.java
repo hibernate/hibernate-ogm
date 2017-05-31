@@ -302,7 +302,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQu
 	private Map<RowKey, Tuple> createAssociationMap(AssociationKey associationKey, AssociationContext associationContext, EntityKey entityKey) {
 		String relationshipType = associationContext.getAssociationTypeContext().getRoleOnMainSide();
 		ResourceIterator<Relationship> relationships = getEntityQueries( entityKey.getMetadata(), associationContext )
-				.findAssociation( dataBase, entityKey.getColumnValues(), relationshipType );
+				.findAssociation( dataBase, entityKey.getColumnValues(), relationshipType, associationKey.getMetadata() );
 
 		Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 		try {

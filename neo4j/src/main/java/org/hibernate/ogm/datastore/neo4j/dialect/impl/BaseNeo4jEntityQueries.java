@@ -321,7 +321,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	/*
 	 * Example:
 	 *
-	 * MATCH (owner:ENTITY:Car {`carId.maker`: {0}, `carId.model`: {1}}) -[r:tires]- (target)
+	 * MATCH (owner:ENTITY:Car {`carId.maker`: {0}, `carId.model`: {1}}) <-[r:tires]- (target)
 	 * RETURN r, owner, target
 	 *
 	 * or for embedded associations:
@@ -329,8 +329,8 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * MATCH (owner:ENTITY:StoryGame {id: {0}}) -[:evilBranch]-> (:EMBEDDED) -[r:additionalEndings]-> (target:EMBEDDED)
 	 * RETURN id(target), r, owner, target ORDER BY id(target)
 	 */
-	private String completeFindAssociationQuery(String relationshipType) {
-		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType );
+	private String completeFindAssociationQuery(String relationshipType, boolean isInverse) {
+		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType, isInverse );
 		queryBuilder.append( "RETURN id(target), r, " );
 		queryBuilder.append( ENTITY_ALIAS );
 		queryBuilder.append( ", target ORDER BY id(target) " );
@@ -340,7 +340,7 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	/*
 	 * Example:
 	 *
-	 * MATCH (owner:ENTITY:Car {`carId.maker`: {0}, `carId.model`: {1}}) -[r:tires]- (target)
+	 * MATCH (owner:ENTITY:Car {`carId.maker`: {0}, `carId.model`: {1}}) <-[r:tires]- (target)
 	 * OPTIONAL MATCH (target) -[x*1..]->(e:EMBEDDED)
 	 * RETURN id(target), extract(n IN x| type(n)), x, e ORDER BY id(target)
 	 *
@@ -350,15 +350,15 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * OPTIONAL MATCH (target) -[x*1..]->(e:EMBEDDED)
 	 * RETURN id(target), extract(n IN x| type(n)), x, e ORDER BY id(target)
 	 */
-	protected String getFindAssociationTargetEmbeddedValues(String relationshipType) {
-		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType );
+	protected String getFindAssociationTargetEmbeddedValues(String relationshipType, boolean isInverse) {
+		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType, isInverse );
 		queryBuilder.append( "OPTIONAL MATCH (target) -[x*1..]->(e:EMBEDDED) " );
 		// Should we split this in two Queries?
 		queryBuilder.append( "RETURN id(target), extract(n IN x| type(n)), x, e ORDER BY id(target)" );
 		return queryBuilder.toString();
 	}
 
-	private StringBuilder findAssociationPartialQuery(String relationshipType) {
+	private StringBuilder findAssociationPartialQuery(String relationshipType, boolean isInverse) {
 		StringBuilder queryBuilder = new StringBuilder( findAssociationPartialQuery );
 		if ( isPartOfEmbedded( relationshipType ) ) {
 			String[] path = split( relationshipType );
@@ -381,10 +381,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			}
 		}
 		else {
-			queryBuilder.append( " -[r" );
+			queryBuilder.append( isInverse ? " <-[r" : " -[r" );
 			queryBuilder.append( ":" );
 			appendRelationshipType( queryBuilder, relationshipType );
-			queryBuilder.append( "]- (target) " );
+			queryBuilder.append( isInverse ? "]- (target) " : "]-> (target) " );
 		}
 		return queryBuilder;
 	}
@@ -577,10 +577,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return query;
 	}
 
-	public String getFindAssociationQuery(String role) {
+	public String getFindAssociationQuery(String role, boolean isInverse) {
 		String query = findAssociationQueryCache.get( role );
 		if ( query == null ) {
-			query = completeFindAssociationQuery( role );
+			query = completeFindAssociationQuery( role, isInverse );
 			String cached = findAssociationQueryCache.putIfAbsent( role, query );
 			if ( cached != null ) {
 				query = cached;

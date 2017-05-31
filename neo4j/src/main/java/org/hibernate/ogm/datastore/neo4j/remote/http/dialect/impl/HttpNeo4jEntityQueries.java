@@ -34,6 +34,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.Statements;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.StatementsResponse;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -365,13 +366,13 @@ public class HttpNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(HttpNeo4jClient executionEngine, Long txId, Object[] columnValues,
-			String role) {
+	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(HttpNeo4jClient executionEngine, Long txId, Object[] columnValues, String role,
+			AssociationKeyMetadata associationKeyMetadata) {
 		// Find the target node
-		String queryForAssociation = getFindAssociationQuery( role );
+		String queryForAssociation = getFindAssociationQuery( role, associationKeyMetadata.isInverse() );
 
 		// Find the embedded properties of the target node
-		String queryForEmbedded = getFindAssociationTargetEmbeddedValues( role );
+		String queryForEmbedded = getFindAssociationTargetEmbeddedValues( role, associationKeyMetadata.isInverse() );
 
 		// Execute the queries
 		Map<String, Object> params = params( columnValues );
