@@ -332,7 +332,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 
 		Long txId = transactionId( transactionContext );
 		ClosableIterator<RemoteNeo4jAssociationPropertiesRow> relationships = getEntityQueries( entityKey.getMetadata(), associationContext )
-				.findAssociation( client, txId, entityKey.getColumnValues(), relationshipType );
+				.findAssociation( client, txId, entityKey.getColumnValues(), relationshipType, associationKey.getMetadata() );
 		while ( relationships.hasNext() ) {
 			RemoteNeo4jAssociationPropertiesRow row = relationships.next();
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();

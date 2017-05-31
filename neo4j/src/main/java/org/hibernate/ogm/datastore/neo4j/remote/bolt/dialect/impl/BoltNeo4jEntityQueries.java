@@ -20,6 +20,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jA
 import org.hibernate.ogm.datastore.neo4j.remote.common.util.impl.RemoteNeo4jHelper;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -248,12 +249,12 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		transaction.run( getRemoveEntityQuery(), params( columnValues ) );
 	}
 
-	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(Transaction tx, Object[] columnValues, String role) {
+	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(Transaction tx, Object[] columnValues, String role, AssociationKeyMetadata associationKeyMetadata) {
 		// Find the target node
-		String queryForAssociation = getFindAssociationQuery( role );
+		String queryForAssociation = getFindAssociationQuery( role, associationKeyMetadata.isInverse() );
 
 		// Find the embedded properties of the target node
-		String queryForEmbedded = getFindAssociationTargetEmbeddedValues( role );
+		String queryForEmbedded = getFindAssociationTargetEmbeddedValues( role, associationKeyMetadata.isInverse() );
 
 		// Execute the queries
 		Map<String, Object> params = params( columnValues );
