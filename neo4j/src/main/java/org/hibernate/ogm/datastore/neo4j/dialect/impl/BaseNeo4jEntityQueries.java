@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.EmbeddedHelper;
@@ -262,13 +264,15 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			Map<String, AssociatedEntityKeyMetadata> allAssociatedEntityKeyMetadata = tupleTypeContext.getAllAssociatedEntityKeyMetadata();
 			Map<String, String> queries = new HashMap<>( allAssociatedEntityKeyMetadata.size() );
 			for ( Entry<String, AssociatedEntityKeyMetadata> entry : allAssociatedEntityKeyMetadata.entrySet() ) {
+				EntityKeyMetadata targetKeyMetadata = entry.getValue().getEntityKeyMetadata();
 				String associationRole = tupleTypeContext.getRole( entry.getKey() );
 				StringBuilder queryBuilder = new StringBuilder( "MATCH " );
 				appendEntityNode( ENTITY_ALIAS, ownerEntityKeyMetadata, queryBuilder );
 				queryBuilder.append( " -[r:" );
 				appendRelationshipType( queryBuilder, associationRole );
-				queryBuilder.append( "]-> (target)" );
-				queryBuilder.append( "RETURN target" );
+				queryBuilder.append( "]-> " );
+				appendEntityNode( "target", targetKeyMetadata, queryBuilder, 0, false );
+				queryBuilder.append( " RETURN target" );
 				queries.put( associationRole, queryBuilder.toString() );
 			}
 			return queries;
@@ -329,8 +333,8 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * MATCH (owner:ENTITY:StoryGame {id: {0}}) -[:evilBranch]-> (:EMBEDDED) -[r:additionalEndings]-> (target:EMBEDDED)
 	 * RETURN id(target), r, owner, target ORDER BY id(target)
 	 */
-	private String completeFindAssociationQuery(String relationshipType, boolean isInverse) {
-		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType, isInverse );
+	private String completeFindAssociationQuery(String relationshipType, AssociationKeyMetadata associationKeyMetadata) {
+		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType, associationKeyMetadata );
 		queryBuilder.append( "RETURN id(target), r, " );
 		queryBuilder.append( ENTITY_ALIAS );
 		queryBuilder.append( ", target ORDER BY id(target) " );
@@ -350,15 +354,15 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * OPTIONAL MATCH (target) -[x*1..]->(e:EMBEDDED)
 	 * RETURN id(target), extract(n IN x| type(n)), x, e ORDER BY id(target)
 	 */
-	protected String getFindAssociationTargetEmbeddedValues(String relationshipType, boolean isInverse) {
-		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType, isInverse );
+	protected String getFindAssociationTargetEmbeddedValues(String relationshipType, AssociationKeyMetadata associationKeyMetadata) {
+		StringBuilder queryBuilder = findAssociationPartialQuery( relationshipType, associationKeyMetadata );
 		queryBuilder.append( "OPTIONAL MATCH (target) -[x*1..]->(e:EMBEDDED) " );
 		// Should we split this in two Queries?
 		queryBuilder.append( "RETURN id(target), extract(n IN x| type(n)), x, e ORDER BY id(target)" );
 		return queryBuilder.toString();
 	}
 
-	private StringBuilder findAssociationPartialQuery(String relationshipType, boolean isInverse) {
+	private StringBuilder findAssociationPartialQuery(String relationshipType, AssociationKeyMetadata associationKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder( findAssociationPartialQuery );
 		if ( isPartOfEmbedded( relationshipType ) ) {
 			String[] path = split( relationshipType );
@@ -381,10 +385,17 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			}
 		}
 		else {
-			queryBuilder.append( isInverse ? " <-[r" : " -[r" );
-			queryBuilder.append( ":" );
+			queryBuilder.append( associationKeyMetadata.isInverse() ? " <-[r:" : " -[r:" );
 			appendRelationshipType( queryBuilder, relationshipType );
-			queryBuilder.append( isInverse ? "]- (target) " : "]-> (target) " );
+			queryBuilder.append( associationKeyMetadata.isInverse() ? "]- " : "]-> " );
+			if ( associationKeyMetadata.getAssociationKind() == AssociationKind.ASSOCIATION ) {
+				EntityKeyMetadata associatedEntityMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
+				appendEntityNode( "target", associatedEntityMetadata, queryBuilder, 0, false );
+			}
+			else {
+				queryBuilder.append( "(target)" );
+			}
+			queryBuilder.append( ' ' );
 		}
 		return queryBuilder;
 	}
@@ -577,10 +588,10 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return query;
 	}
 
-	public String getFindAssociationQuery(String role, boolean isInverse) {
+	public String getFindAssociationQuery(String role, AssociationKeyMetadata associationKeyMetadata) {
 		String query = findAssociationQueryCache.get( role );
 		if ( query == null ) {
-			query = completeFindAssociationQuery( role, isInverse );
+			query = completeFindAssociationQuery( role, associationKeyMetadata );
 			String cached = findAssociationQueryCache.putIfAbsent( role, query );
 			if ( cached != null ) {
 				query = cached;

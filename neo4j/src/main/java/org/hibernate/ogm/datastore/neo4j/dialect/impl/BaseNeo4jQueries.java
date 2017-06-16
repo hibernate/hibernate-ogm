@@ -79,13 +79,19 @@ class BaseNeo4jQueries {
 	}
 
 	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder, int offset) {
+		appendEntityNode( alias, entityKeyMetadata, queryBuilder, offset, true );
+	}
+
+	protected static void appendEntityNode(String alias, EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder, int offset, boolean addProperties) {
 		queryBuilder.append( "(" );
 		queryBuilder.append( alias );
 		queryBuilder.append( ":" );
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( queryBuilder, entityKeyMetadata.getColumnNames(), offset );
+		if ( addProperties ) {
+			appendProperties( queryBuilder, entityKeyMetadata.getColumnNames(), offset );
+		}
 		queryBuilder.append( ")" );
 	}
 

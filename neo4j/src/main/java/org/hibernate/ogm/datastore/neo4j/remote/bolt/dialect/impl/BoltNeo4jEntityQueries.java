@@ -251,10 +251,10 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 	public ClosableIterator<RemoteNeo4jAssociationPropertiesRow> findAssociation(Transaction tx, Object[] columnValues, String role, AssociationKeyMetadata associationKeyMetadata) {
 		// Find the target node
-		String queryForAssociation = getFindAssociationQuery( role, associationKeyMetadata.isInverse() );
+		String queryForAssociation = getFindAssociationQuery( role, associationKeyMetadata );
 
 		// Find the embedded properties of the target node
-		String queryForEmbedded = getFindAssociationTargetEmbeddedValues( role, associationKeyMetadata.isInverse() );
+		String queryForEmbedded = getFindAssociationTargetEmbeddedValues( role, associationKeyMetadata );
 
 		// Execute the queries
 		Map<String, Object> params = params( columnValues );
