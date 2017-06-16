@@ -50,7 +50,7 @@ public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	// EntityKeyMetadata make it easier
 	// to deal with the *ToOne scenario
 	public ResourceIterator<Relationship> findAssociation(GraphDatabaseService executionEngine, Object[] columnValues, String role, AssociationKeyMetadata associationKeyMetadata) {
-		String query = getFindAssociationQuery( role, associationKeyMetadata.isInverse() );
+		String query = getFindAssociationQuery( role, associationKeyMetadata );
 		Map<String, Object> params = params( columnValues );
 		executionEngine.execute( query, params );
 		return executionEngine.execute( query, params( columnValues ) ).columnAs( "r" );
