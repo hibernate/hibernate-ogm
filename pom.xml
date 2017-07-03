@@ -44,7 +44,7 @@
         <arquillianVersion>1.1.5.Final</arquillianVersion>
         <jmhVersion>1.0</jmhVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
-        <bytemanVersion>3.0.6</bytemanVersion>
+        <bytemanVersion>3.0.10</bytemanVersion>
 
         <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
