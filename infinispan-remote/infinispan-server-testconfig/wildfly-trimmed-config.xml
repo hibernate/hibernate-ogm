@@ -238,6 +238,9 @@
         <local-cache name="FORUM_USER" />
         <local-cache name="ForumUser_issues" />
 
+        <local-cache name="DisneyGrandMother" />
+        <local-cache name="DisneyGrandMother_grandChildren" />
+
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
             </cache-container>
