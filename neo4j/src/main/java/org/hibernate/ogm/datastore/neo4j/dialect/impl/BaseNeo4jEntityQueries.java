@@ -384,8 +384,12 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			queryBuilder.append( associationKeyMetadata.isInverse() ? " <-[r:" : " -[r:" );
 			appendRelationshipType( queryBuilder, relationshipType );
 			queryBuilder.append( associationKeyMetadata.isInverse() ? "]- " : "]-> " );
-			appendEntityNode("target", associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata(),
-					queryBuilder, 0, false);
+			if (associationKeyMetadata.getAssociationKind() == AssociationKind.ASSOCIATION) {
+				appendEntityNode("target", associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata(),
+						queryBuilder, 0, false);
+			} else {
+				queryBuilder.append("(target)");
+			}
 			queryBuilder.append(' ');
 		}
 		return queryBuilder;
