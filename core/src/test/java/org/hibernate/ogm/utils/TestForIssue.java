@@ -21,9 +21,9 @@ import java.lang.annotation.Target;
 public @interface TestForIssue {
 
 	/**
-	 * The key of a JIRA issue tested.
+	 * The key of the JIRA issues tested.
 	 *
-	 * @return The JIRA issue key
+	 * @return The JIRA issues keys
 	 */
-	String jiraKey();
+	String[] jiraKey();
 }
