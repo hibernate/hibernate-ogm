@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
-import static org.neo4j.graphdb.DynamicLabel.label;
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.HashMap;
@@ -151,11 +150,11 @@ public class EmbeddedNeo4jTupleAssociationSnapshot implements TupleSnapshot {
 	}
 
 	private static Node ownerNodeFromAssociation(AssociationKey associationKey, Relationship relationship) {
-		if ( relationship.getStartNode().hasLabel( label( associationKey.getEntityKey().getTable() ) ) ) {
-			return relationship.getStartNode();
+		if ( associationKey.getMetadata().isInverse() ) {
+			return relationship.getEndNode();
 		}
 		else {
-			return relationship.getEndNode();
+			return relationship.getStartNode();
 		}
 	}
 
