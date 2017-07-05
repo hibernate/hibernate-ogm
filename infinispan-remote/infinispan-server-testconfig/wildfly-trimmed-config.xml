@@ -242,6 +242,9 @@
         <local-cache name="DisneyGrandMother" />
         <local-cache name="DisneyGrandMother_grandChildren" />
 
+        <local-cache name="TreeNode" />
+        <local-cache name="TreeNode_children" />
+
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
             </cache-container>
