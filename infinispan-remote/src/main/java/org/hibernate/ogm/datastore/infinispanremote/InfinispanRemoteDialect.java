@@ -140,7 +140,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 				owningEntity.applyOperations( tuple );
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
-				insertOrUpdateAssociation( (InsertOrUpdateAssociationOperation) operation );
+				owningEntity.insertOrUpdateAssociation( (InsertOrUpdateAssociationOperation) operation );
 			}
 			else if ( operation instanceof RemoveAssociationOperation ) {
 				log.debugf( "removeAssociation for key '%s' on cache '%s'", entityKey, cacheName );
@@ -217,6 +217,43 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 			}
 		}
 
+		public void insertOrUpdateAssociation(InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation) {
+			AssociationKey associationKey = insertOrUpdateAssociationOperation.getAssociationKey();
+			org.hibernate.ogm.model.spi.Association association = insertOrUpdateAssociationOperation.getAssociation();
+			AssociationContext associationContext = insertOrUpdateAssociationOperation.getContext();
+
+			if ( !associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
+				associationsToRemove.remove( associationKey );
+				insertOrUpdateAssociationMappedAsDedicatedEntries( associationKey, association, associationContext );
+			}
+		}
+
+		private void insertOrUpdateAssociationMappedAsDedicatedEntries(AssociationKey key, Association association, AssociationContext associationContext) {
+			final String cacheName = cacheName( key );
+			final ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
+			log.debugf( "insertOrUpdateAssociation for key '%s' on cache '%s', mapped as dedicated entries in ad-hoc table", key, cacheName );
+			final List<AssociationOperation> operations = association.getOperations();
+			for ( AssociationOperation ao : operations ) {
+				AssociationOperationType type = ao.getType();
+				RowKey rowKey = ao.getKey();
+				ProtostreamId idBuffer = mapper.createIdPayload( rowKey.getColumnNames(), rowKey.getColumnValues() );
+				switch ( type ) {
+					case PUT:
+						ProtostreamPayload valuePayloadForPut = mapper.createValuePayload( ao.getValue() );
+						mapper.withinCacheEncodingContext( c -> c.put( idBuffer, valuePayloadForPut ) );
+						break;
+					case REMOVE:
+						mapper.withinCacheEncodingContext( c -> c.remove( idBuffer ) );
+						break;
+					case CLEAR:
+						throw new AssertionFailure( "Request for CLEAR operation on an association mapped to dedicated entries. Makes no sense?" );
+				}
+			}
+
+			// the snapshot has been updated so we have to clear the various operations added to the Association
+			association.reset();
+		}
+
 		public void removeAssociation(RemoveAssociationOperation removeAssociationOperation) {
 				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
 				AssociationContext associationContext = removeAssociationOperation.getContext();
@@ -259,16 +296,6 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 				}
 			}
 			return owningEntity;
-		}
-	}
-
-	private void insertOrUpdateAssociation(InsertOrUpdateAssociationOperation insertOrUpdateAssociationOperation) {
-		AssociationKey associationKey = insertOrUpdateAssociationOperation.getAssociationKey();
-		org.hibernate.ogm.model.spi.Association association = insertOrUpdateAssociationOperation.getAssociation();
-		AssociationContext associationContext = insertOrUpdateAssociationOperation.getContext();
-
-		if ( !associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
-			insertOrUpdateAssociationMappedAsDedicatedEntries( associationKey, association, associationContext );
 		}
 	}
 
@@ -349,32 +376,6 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		Map<RowKey, Map<String, Object>> associationMap = new HashMap<RowKey, Map<String,Object>>();
 		return new Association( new MapAssociationSnapshot( associationMap ) );
-	}
-
-	private void insertOrUpdateAssociationMappedAsDedicatedEntries(AssociationKey key, Association association, AssociationContext associationContext) {
-		final String cacheName = cacheName( key );
-		final ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
-		log.debugf( "insertOrUpdateAssociation for key '%s' on cache '%s', mapped as dedicated entries in ad-hoc table", key, cacheName );
-		final List<AssociationOperation> operations = association.getOperations();
-		for ( AssociationOperation ao : operations ) {
-			AssociationOperationType type = ao.getType();
-			RowKey rowKey = ao.getKey();
-			ProtostreamId idBuffer = mapper.createIdPayload( rowKey.getColumnNames(), rowKey.getColumnValues() );
-			switch ( type ) {
-				case PUT:
-					ProtostreamPayload valuePayloadForPut = mapper.createValuePayload( ao.getValue() );
-					mapper.withinCacheEncodingContext( c -> c.put( idBuffer, valuePayloadForPut ) );
-					break;
-				case REMOVE:
-					mapper.withinCacheEncodingContext( c -> c.remove( idBuffer ) );
-					break;
-				case CLEAR:
-					throw new AssertionFailure( "Request for CLEAR operation on an association mapped to dedicated entries. Makes no sense?" );
-			}
-		}
-
-		// the snapshot has been updated so we have to clear the various operations added to the Association
-		association.reset();
 	}
 
 	private static void removeAssociationFromBridgeTable(InfinispanRemoteDatastoreProvider provider, AssociationKey key) {
