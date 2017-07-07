@@ -167,7 +167,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 
 		private final EntityKey ownerEntityKey;
 
-		// A representation/ of the entity that we want to create or insert
+		// A representation of the entity that we want to create or insert
 		private Map<String, Object> owningEntity;
 
 		// If the entity already exists in the datastore or not
@@ -218,20 +218,20 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 		}
 
 		public void removeAssociation(RemoveAssociationOperation removeAssociationOperation) {
-				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
-				AssociationContext associationContext = removeAssociationOperation.getContext();
-				// N.B. 'key' might match multiple entries
-				if ( associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
-					// The entity contains the association
-					if ( owningEntity == null ) {
-						TuplePointer entityTuplePointer = getEmbeddingEntityTuplePointer( provider, associationKey, associationContext );
-						applyOperations( entityTuplePointer.getTuple() );
-					}
+			AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
+			AssociationContext associationContext = removeAssociationOperation.getContext();
+			// N.B. 'key' might match multiple entries
+			if ( associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
+				// The entity contains the association
+				if ( owningEntity == null ) {
+					TuplePointer entityTuplePointer = getEmbeddingEntityTuplePointer( provider, associationKey, associationContext );
+					applyOperations( entityTuplePointer.getTuple() );
 				}
-				else {
-					// The association is mapped with a bridge "table"
-					associationsToRemove.add( associationKey );
-				}
+			}
+			else {
+				// The association is mapped with a bridge "table"
+				associationsToRemove.add( associationKey );
+			}
 		}
 
 		/**
@@ -292,12 +292,15 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 	}
 
 	private static String cacheName(EntityKey key) {
-		final String cacheName = key.getTable();
-		return cacheName;
+		return key.getTable();
 	}
 
 	private static String cacheName(AssociationKey key) {
 		return key.getTable();
+	}
+
+	private static String cacheName(EntityKeyMetadata keyMetadata) {
+		return keyMetadata.getTable();
 	}
 
 	@Override
@@ -312,7 +315,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 	}
 
 	private static Map<RowKey, Map<String, Object>> loadRowKeysByQuery(InfinispanRemoteDatastoreProvider provider, AssociationKey key) {
-		final String cacheName = key.getTable();
+		final String cacheName = cacheName( key );
 		ProtostreamAssociationMappingAdapter mapper = provider.getCollectionsDataMapper( cacheName );
 		return mapper.withinCacheEncodingContext( c -> {
 			QueryFactory queryFactory = Search.getQueryFactory( c );
@@ -401,7 +404,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		final String cacheName = entityKeyMetadata.getTable();
+		final String cacheName = cacheName( entityKeyMetadata );
 		ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
 
 		VersionedValue<ProtostreamPayload> v = mapper.withinCacheEncodingContext( c -> {
@@ -438,7 +441,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 			return Collections.singletonList( getTuple( keys[0], tupleContext ) );
 		}
 		else {
-			final String cacheName = keys[0].getTable();
+			final String cacheName = cacheName( keys[0] );
 			final ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
 			final Map<EntityKey,ProtostreamId> keyConversionMatch = new HashMap<>();
 			final Set<ProtostreamId> convertedKeys = new HashSet<>();
@@ -446,7 +449,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 				if ( ek == null ) {
 					continue;
 				}
-				assert ek.getTable().equals( cacheName ) : "The javadoc comment promised batches would be loaded from the same table";
+				assert cacheName( ek ).equals( cacheName ) : "The javadoc comment promised batches would be loaded from the same table";
 				ProtostreamId idBuffer = mapper.createIdPayload( ek.getColumnNames(), ek.getColumnValues() );
 				keyConversionMatch.put( ek, idBuffer );
 				convertedKeys.add( idBuffer );
@@ -476,8 +479,12 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 	}
 
 	private static boolean associationStoredWithinEntityEntry(AssociationKey key, AssociationContext associationContext) {
-		final String cacheName = key.getTable();
+		final String cacheName = cacheName( key );
 		final String entityTableName = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable();
+
+		// in the case of embedded collections, the entityTableName and the cacheName are equal but they reference the name of a
+		// join table so the association is not stored in the entity entry.
+
 		return cacheName.equals( entityTableName ) && ! key.getMetadata().getAssociationKind().equals( AssociationKind.EMBEDDED_COLLECTION );
 	}
 
