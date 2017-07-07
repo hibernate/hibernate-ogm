@@ -421,7 +421,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 
 		Transaction tx = transaction( associationContext );
 		ClosableIterator<RemoteNeo4jAssociationPropertiesRow> relationships = getEntityQueries( entityKey.getMetadata(), associationContext )
-				.findAssociation( tx, entityKey.getColumnValues(), relationshipType );
+				.findAssociation( tx, entityKey.getColumnValues(), relationshipType, associationKey.getMetadata() );
 		while ( relationships.hasNext() ) {
 			RemoteNeo4jAssociationPropertiesRow row = relationships.next();
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata();

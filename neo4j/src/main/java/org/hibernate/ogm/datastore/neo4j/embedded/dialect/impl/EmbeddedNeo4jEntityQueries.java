@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jEntityQueries;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -48,8 +49,8 @@ public class EmbeddedNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	// We should move this in EmbeddedNeo4jAssociationQueries but, at the moment, having a query that only requires an
 	// EntityKeyMetadata make it easier
 	// to deal with the *ToOne scenario
-	public ResourceIterator<Relationship> findAssociation(GraphDatabaseService executionEngine, Object[] columnValues, String role) {
-		String query = getFindAssociationQuery( role );
+	public ResourceIterator<Relationship> findAssociation(GraphDatabaseService executionEngine, Object[] columnValues, String role, AssociationKeyMetadata associationKeyMetadata) {
+		String query = getFindAssociationQuery( role, associationKeyMetadata );
 		Map<String, Object> params = params( columnValues );
 		executionEngine.execute( query, params );
 		return executionEngine.execute( query, params( columnValues ) ).columnAs( "r" );
