@@ -47,10 +47,8 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
-import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -222,10 +220,10 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 			org.hibernate.ogm.model.spi.Association association = insertOrUpdateAssociationOperation.getAssociation();
 			AssociationContext associationContext = insertOrUpdateAssociationOperation.getContext();
 
-			if ( !associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
-				associationsToRemove.remove( associationKey );
-				insertOrUpdateAssociationMappedAsDedicatedEntries( associationKey, association, associationContext );
-			}
+			// For Infinispan remote, associations are always stored in separate caches
+			// as it was not possible to implement embeddeds in a "natural mapping" way
+			associationsToRemove.remove( associationKey );
+			insertOrUpdateAssociationMappedAsDedicatedEntries( associationKey, association, associationContext );
 		}
 
 		private void insertOrUpdateAssociationMappedAsDedicatedEntries(AssociationKey key, Association association, AssociationContext associationContext) {
@@ -256,19 +254,10 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 
 		public void removeAssociation(RemoveAssociationOperation removeAssociationOperation) {
 			AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
-			AssociationContext associationContext = removeAssociationOperation.getContext();
-			// N.B. 'key' might match multiple entries
-			if ( associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
-				// The entity contains the association
-				if ( owningEntity == null ) {
-					TuplePointer entityTuplePointer = getEmbeddingEntityTuplePointer( provider, associationKey, associationContext );
-					applyOperations( entityTuplePointer.getTuple() );
-				}
-			}
-			else {
-				// The association is mapped with a bridge "table"
-				associationsToRemove.add( associationKey );
-			}
+
+			// For Infinispan remote, associations are always stored in separate caches
+			// as it was not possible to implement embeddeds in a "natural mapping" way
+			associationsToRemove.add( associationKey );
 		}
 
 		/**
@@ -299,16 +288,6 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 		}
 	}
 
-	private static TuplePointer getEmbeddingEntityTuplePointer(InfinispanRemoteDatastoreProvider provider, AssociationKey key, AssociationContext associationContext) {
-		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
-
-		if ( tuplePointer.getTuple() == null ) {
-			tuplePointer.setTuple( getTuple( provider, key.getEntityKey() ) );
-		}
-
-		return tuplePointer;
-	}
-
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		final String cacheName = cacheName( key );
@@ -319,8 +298,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 	}
 
 	private static String cacheName(EntityKey key) {
-		final String cacheName = key.getTable();
-		return cacheName;
+		return key.getTable();
 	}
 
 	private static String cacheName(AssociationKey key) {
@@ -474,12 +452,6 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 			}
 			return results;
 		}
-	}
-
-	private static boolean associationStoredWithinEntityEntry(AssociationKey key, AssociationContext associationContext) {
-		final String cacheName = key.getTable();
-		final String entityTableName = associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable();
-		return cacheName.equals( entityTableName ) && ! key.getMetadata().getAssociationKind().equals( AssociationKind.EMBEDDED_COLLECTION );
 	}
 
 	private static class InfinispanRemoteTuplesSupplier implements TuplesSupplier {
