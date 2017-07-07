@@ -48,7 +48,7 @@ Here are the few exceptions:
 * `EntityManager` 's stored procedure APIs are not supported - see
   https://hibernate.atlassian.net/browse/OGM-695[OGM-695]
 * `EntityManager.lock` is not fully supported at this time
-* see <<ogm-query>> to know what is supported for JP-QL and native queries
+* see <<ogm-query>> to know what is supported for JPQL and native queries
 
 ==== Accessing the `OgmSession` API
 

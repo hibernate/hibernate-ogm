@@ -9,7 +9,7 @@ It reuses Hibernate ORM's object life cycle management and (de)hydration engine
 but persists entities into a NoSQL store (key/value, document, column-oriented, etc)
 instead of a relational database.
 
-It allows using the Java Persistence Query Language (JP-QL) as an interface to querying stored data,
+It allows using the Java Persistence Query Language (JPQL) as an interface to querying stored data,
 in addition to using native queries of the specific NoSQL database.
 
 The project is now fairly mature when it comes to the storage strategies,
@@ -102,7 +102,7 @@ Here is a list of what we have:
 * support for basic types (numbers, String, URL, Date, enums, etc)
 * support for associations
 * support for collections (Set, List, Map, etc)
-* support for JP-QL queries (not arbitrary joins though)
+* support for JPQL queries (not arbitrary joins though)
 * support for mapping native queries results to managed entities
 * support for Hibernate Search's full-text queries
 * and generally, support for JPA and native Hibernate ORM API support

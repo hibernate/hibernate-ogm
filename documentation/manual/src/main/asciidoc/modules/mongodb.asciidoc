@@ -3208,11 +3208,11 @@ public class Planet implements Nameable {
 
 You can express queries in a few different ways:
 
-* using JP-QL
+* using JPQL
 * using a native MongoQL query
 * using a Hibernate Search query (brings advanced full-text and geospatial queries)
 
-While you can use JP-QL for simple queries, you might hit limitations.
+While you can use JPQL for simple queries, you might hit limitations.
 The current recommended approach is to use native MongoQL
 if your query involves nested (list of) elements.
 
@@ -3233,10 +3233,10 @@ e.g. by invoking `query.setFlushMode( FlushMode.MANUAL )`.
 Bear in mind though that query results will then not reflect changes applied within the current session.
 ====
 
-==== JP-QL queries
+==== JPQL queries
 
-Hibernate OGM is a work in progress, so only a sub-set of JP-QL constructs is available
-when using the JP-QL query support. This includes:
+Hibernate OGM is a work in progress, so only a sub-set of JPQL constructs is available
+when using the JPQL query support. This includes:
 
 * simple comparisons using "<", "+<=+", "=", ">=" and ">"
 * `IS NULL` and `IS NOT NULL`
@@ -3316,7 +3316,7 @@ Object[] count = (Object[])em.createNativeQuery( query4 ).getSingleResult();
 ====
 
 The result of a query is a managed entity (or a list thereof) or a projection of attributes in form of an object array,
-just like you would get from a JP-QL query.
+just like you would get from a JPQL query.
 
 .Using the Hibernate native API
 ====

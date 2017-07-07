@@ -5,14 +5,14 @@
 Once your data is in the datastore, it's time for some query fun!
 With Hibernate OGM, you have a few alternatives that should get you covered:
 
-* Use JP-QL - only for simple queries for now
+* Use JPQL - only for simple queries for now
 * Use the NoSQL native query mapping the result as managed entities
 * Use Hibernate Search queries - primarily full-text queries
 
 [[ogm-jpql-query]]
-=== Using JP-QL
+=== Using JPQL
 
-For Hibernate OGM, we developed a brand new JP-QL parser
+For Hibernate OGM, we developed a brand new JPQL parser
 which is already able to convert simple queries into the native underlying datastore query language
 (e.g. MongoQL for MongoDB, CypherQL for Neo4J, etc).
 This parser can also generate Hibernate Search queries
@@ -20,7 +20,7 @@ for datastores that do not support a query language.
 
 [NOTE]
 ====
-For datastores like Infinispan that require Hibernate Search to execute JP-QL queries,
+For datastores like Infinispan that require Hibernate Search to execute JPQL queries,
 the following preconditions must be met:
 
 * no join, aggregation, or other relational operations are implied
@@ -51,10 +51,10 @@ Query query = session
 ----
 
 Note that the `description` field is marked as not analysed.
-This is necessary to support field equality and comparison as defined by JP-QL.
+This is necessary to support field equality and comparison as defined by JPQL.
 ====
 
-You can make use of the following JP-QL constructs:
+You can make use of the following JPQL constructs:
 
 * simple comparisons using "<", "+<=+", "=", ">=" and ">"
 * `IS NULL` and `IS NOT NULL`
@@ -65,17 +65,17 @@ You can make use of the following JP-QL constructs:
 In particular and of notice, what is not supported is:
 
 * cross entity joins
-* JP-QL functions in particular aggregation functions like `count`
-* JP-QL update and delete queries
+* JPQL functions in particular aggregation functions like `count`
+* JPQL update and delete queries
 
 That may sound rather limiting for your use cases so bear with us.
 This is a hot area we want to improve, please tell us what feature you miss
 <<ogm-howtocontribute-contribute,by opening a JIRA or via email>>.
 Also read the next section, you will see other alternatives to implement your queries.
 
-Let's look at some of the queries you can express in JP-QL:
+Let's look at some of the queries you can express in JPQL:
 
-.Some JP-QL queries
+.Some JPQL queries
 ====
 [source]
 ----
@@ -126,15 +126,15 @@ There are also features that are partially supported:
 
 * Inner `JOIN` on an embedded association:
   works as expected with Neo4j and MongoDB;
-  doesn't work if your datastore provider implements JP-QL queries using Hibernate Search.
+  doesn't work if your datastore provider implements JPQL queries using Hibernate Search.
 
 * Projections or filters on properties of an embedded identifier:
   works as expected with Neo4j and MongoDB;
-  doesn't work if your datastore provider implements JP-QL queries using Hibernate Search.
+  doesn't work if your datastore provider implements JPQL queries using Hibernate Search.
 
 These are better illustrated by the following example:
 
-.Entity with embedded collection and supported JP-QL queries
+.Entity with embedded collection and supported JPQL queries
 ====
 [source, JAVA]
 ----
@@ -212,7 +212,7 @@ List<String> title = session.createQuery( query ).list();
 ----
 
 It will cause the following exception if the datastore uses Hibernate Search
-to execute JP-QL queries:
+to execute JPQL queries:
 
 [source, JAVA]
 ----

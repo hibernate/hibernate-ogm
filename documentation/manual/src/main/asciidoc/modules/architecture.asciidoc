@@ -17,7 +17,7 @@ In this chapter we will explore:
 
 * the general architecture
 * how the data is persisted in the NoSQL datastore
-* how we support JP-QL queries
+* how we support JPQL queries
 
 
 Let's start with the general architecture.
@@ -71,7 +71,7 @@ As of today, we have implemented the following datastore providers:
 * a Cassandra based datastore provider to persist data in Apache Cassandra (experimental)
 * a Redis based datastore provider to persist data in the Redis key/value store (experimental)
 
-To implement JP-QL queries, Hibernate OGM parses the JP-QL string
+To implement JPQL queries, Hibernate OGM parses the JPQL string
 and calls the appropriate translator functions to build a native query.
 Since not all NoSQL technologies support querying, when lacking we can
 use Hibernate Search as an external query engine.
@@ -256,8 +256,8 @@ Here's some things to keep in mind when dealing with sequence generation:
 
 === How is data queried
 
-Since Hibernate OGM wants to offer all of JPA, it needs to support JP-QL queries.
-Hibernate OGM parses the JP-QL query string and extracts its meaning.
+Since Hibernate OGM wants to offer all of JPA, it needs to support JPQL queries.
+Hibernate OGM parses the JPQL query string and extracts its meaning.
 From there, several options are available
 depending of the capabilities of the NoSQL store you target:
 
@@ -267,8 +267,8 @@ depending of the capabilities of the NoSQL store you target:
 
 
 If the NoSQL datastore has some query capabilities
-and if the JP-QL query is simple enough to be executed by the datastore,
-then the JP-QL parser directly pushes the query generation
+and if the JPQL query is simple enough to be executed by the datastore,
+then the JPQL parser directly pushes the query generation
 to the NoSQL specific query translator.
 The query returns the list of matching entity columns or projections
 and Hibernate OGM returns managed entities.
@@ -289,7 +289,7 @@ image::ogm-architecture-with-hsearch.png[align="center", depth="", scalefit="1"]
 In this situation, Hibernate ORM Core pushes change events
 to Hibernate Search which will index entities accordingly
 and keep the index and the datastore in sync.
-The JP-QL query parser delegates the query translation to the Hibernate Search query translator
+The JPQL query parser delegates the query translation to the Hibernate Search query translator
 and executes the query on top of the Lucene indexes.
 Indexes can be stored in various fashions:
 
