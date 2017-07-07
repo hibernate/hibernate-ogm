@@ -11,7 +11,7 @@ The currently supported version is {mongodb-version}.
 
 === Why should I use Hibernate OGM with MongoDB
 
-It's possible that in your project you have some entities that might benefit from MongoDB
+It is possible that in your project you have some entities that might benefit from MongoDB
 dynamic schema, but having a schema makes it possible to obtain better performance because
 the datastore can use the information of the schema to apply some optimizations that
 wouldn't be otherwise possible.
@@ -27,11 +27,11 @@ Another benefit of using Hibernate OGM with MongoDB is that it will also make it
 to use Hibernate Search out of the box. Hibernate Search brings the power of Lucene
 to your project, giving you the ability to run fast google-like searches.
 
-This means that you can query the datastore:
+This means that you can query the datastore using:
 
-* <<ogm-jpql-query>>
-* using <<ogm-mongodb-queries-native>>
-* Full-text queries using <<ogm-query-using-hibernate-search>>
+* JPQL queries (see <<ogm-jpql-query>>)
+* MongoDB native queries (see <<ogm-mongodb-queries-native>>)
+* Full-text queries (see <<ogm-query-using-hibernate-search>>)
 
 One of Hibernate OGM main goal is to map entities in a "natural" way, this means that your
 datastore will still be accessible in case you need to use other tools or want to run

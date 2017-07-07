@@ -37,7 +37,7 @@ In particular:
   it will still be useful to learn Protobuf to maintain your applications
 * no need to learn the Infinispan API
 * Hibernate OGM will setup and manage the HotRod client for you
-* same API of Hibernate ORM, meaning that you can use the same tools
+* same API as Hibernate ORM, meaning that you can use the same tools
 
 You will still need to learn about Infinispan, all its capabilities and how to configure
 them to reach your application top performance, but you can get a proof of concept
