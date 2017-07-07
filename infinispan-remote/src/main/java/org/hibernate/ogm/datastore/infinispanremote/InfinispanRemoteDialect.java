@@ -167,7 +167,7 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 
 		private final EntityKey ownerEntityKey;
 
-		// A representation/ of the entity that we want to create or insert
+		// A representation of the entity that we want to create or insert
 		private Map<String, Object> owningEntity;
 
 		// If the entity already exists in the datastore or not
@@ -255,20 +255,20 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 		}
 
 		public void removeAssociation(RemoveAssociationOperation removeAssociationOperation) {
-				AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
-				AssociationContext associationContext = removeAssociationOperation.getContext();
-				// N.B. 'key' might match multiple entries
-				if ( associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
-					// The entity contains the association
-					if ( owningEntity == null ) {
-						TuplePointer entityTuplePointer = getEmbeddingEntityTuplePointer( provider, associationKey, associationContext );
-						applyOperations( entityTuplePointer.getTuple() );
-					}
+			AssociationKey associationKey = removeAssociationOperation.getAssociationKey();
+			AssociationContext associationContext = removeAssociationOperation.getContext();
+			// N.B. 'key' might match multiple entries
+			if ( associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
+				// The entity contains the association
+				if ( owningEntity == null ) {
+					TuplePointer entityTuplePointer = getEmbeddingEntityTuplePointer( provider, associationKey, associationContext );
+					applyOperations( entityTuplePointer.getTuple() );
 				}
-				else {
-					// The association is mapped with a bridge "table"
-					associationsToRemove.add( associationKey );
-				}
+			}
+			else {
+				// The association is mapped with a bridge "table"
+				associationsToRemove.add( associationKey );
+			}
 		}
 
 		/**
