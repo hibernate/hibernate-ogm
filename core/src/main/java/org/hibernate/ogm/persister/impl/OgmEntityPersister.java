@@ -73,6 +73,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.type.spi.GridType;
@@ -1220,6 +1221,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				TuplePointer tuplePointer = getSharedTuplePointer( key, object, session );
 				Tuple resultset = tuplePointer.getTuple();
 				resultset = createNewResultSetIfNull( key, resultset, id, session );
+				resultset.setSnapshotType( SnapshotType.UPDATE );
 				saveSharedTuple( object, resultset, session );
 
 				if ( mightManageInverseAssociations ) {
@@ -1448,6 +1450,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 
 			resultset = createNewResultSetIfNull( key, resultset, id, session );
+			resultset.setSnapshotType( SnapshotType.INSERT );
 			TuplePointer tuplePointer = saveSharedTuple( object, resultset, session );
 
 			// add the discriminator
