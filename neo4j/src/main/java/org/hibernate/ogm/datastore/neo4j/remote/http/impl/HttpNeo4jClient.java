@@ -104,12 +104,12 @@ public class HttpNeo4jClient implements AutoCloseable {
 	}
 
 	public StatementsResponse executeQueriesInOpenTransaction(Long txId, Statements statements) {
-		Response executeQuery = neo4jFacade.executeQuery( txId, statements );
+		Response response = neo4jFacade.executeQuery( txId, statements );
 		try {
-			return executeQuery.readEntity( StatementsResponse.class );
+			return response.readEntity( StatementsResponse.class );
 		}
 		finally {
-			executeQuery.close();
+			response.close();
 		}
 	}
 
