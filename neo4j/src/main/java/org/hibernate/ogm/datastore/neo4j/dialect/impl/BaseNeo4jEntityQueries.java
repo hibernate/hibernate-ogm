@@ -588,11 +588,11 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return query;
 	}
 
-	public String getFindAssociationQuery(String role, AssociationKeyMetadata associationKeyMetadata) {
-		String query = findAssociationQueryCache.get( role );
+	public String getFindAssociationQuery(String relationshipType, AssociationKeyMetadata associationKeyMetadata) {
+		String query = findAssociationQueryCache.get( associationKeyMetadata.getCollectionRole() );
 		if ( query == null ) {
-			query = completeFindAssociationQuery( role, associationKeyMetadata );
-			String cached = findAssociationQueryCache.putIfAbsent( role, query );
+			query = completeFindAssociationQuery( relationshipType, associationKeyMetadata );
+			String cached = findAssociationQueryCache.putIfAbsent( associationKeyMetadata.getCollectionRole(), query );
 			if ( cached != null ) {
 				query = cached;
 			}
