@@ -1333,12 +1333,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 					writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( associationContext ) );
 					if ( insertStatement != null ) {
+						// The association is updated in a new document
 						MongoHelpers.setValue( insertStatement, collectionRole, rows );
 					}
 					else {
-						MongoHelpers.setValue( ( (MongoDBTupleSnapshot) associationContext.getEntityTuplePointer().getTuple().getSnapshot() ).getDbObject(),
-								associationKey.getMetadata().getCollectionRole(), toStore );
-						addSetToQuery( updateStatement, collectionRole, toStore );
+						// The association is updated on an existing document
+						Document document = getDocument( association, associationContext );
+						if ( document != null ) {
+							MongoHelpers.setValue( document, associationKey.getMetadata().getCollectionRole(), toStore );
+							addSetToQuery( updateStatement, collectionRole, toStore );
+						}
 					}
 				}
 				else {
@@ -1389,6 +1393,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( updateStatement != null && !updateStatement.isEmpty() ) {
 			collection. withWriteConcern( writeConcern ).updateOne( prepareIdObject( entityKey ), updateStatement , updateOptions );
 		}
+	}
+
+	private Document getDocument(Association association, AssociationContext associationContext) {
+		TuplePointer tuplePointer = associationContext.getEntityTuplePointer();
+		if ( tuplePointer.getTuple() != null ) {
+			Tuple tuple = tuplePointer.getTuple();
+			MongoDBTupleSnapshot tupleSnapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+			return tupleSnapshot.getDbObject();
+		}
+		return null;
 	}
 
 	@Override
