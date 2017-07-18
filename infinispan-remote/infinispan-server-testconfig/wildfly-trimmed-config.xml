@@ -245,6 +245,10 @@
         <local-cache name="TreeNode" />
         <local-cache name="TreeNode_children" />
 
+        <local-cache name="VideoGame" />
+        <local-cache name="PlayableCharacter" />
+        <local-cache name="NonPlayableCharacter" />
+
         <local-cache name="sequences" />
         <local-cache name="hibernate_sequences" />
             </cache-container>
