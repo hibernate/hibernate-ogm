@@ -195,7 +195,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( session.getSessionFactory() );
 		Document finder = new Document( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
@@ -273,6 +272,9 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		Document actualDocument = provider.getDatabase().getCollection( collection ).find( finder ).projection( fields ).first();
 
+		if ( actualDocument == null ) {
+			throw new AssertionError( "Document not found!" );
+		}
 		assertJsonEquals( expectedDocument, actualDocument.toJson() );
 	}
 
