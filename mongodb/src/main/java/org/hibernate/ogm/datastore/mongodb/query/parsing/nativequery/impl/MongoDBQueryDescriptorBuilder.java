@@ -17,11 +17,6 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.util.impl.StringHelper;
 
-import com.mongodb.client.model.Collation;
-import com.mongodb.client.model.CollationAlternate;
-import com.mongodb.client.model.CollationCaseFirst;
-import com.mongodb.client.model.CollationMaxVariable;
-import com.mongodb.client.model.CollationStrength;
 import org.bson.Document;
 
 /**
@@ -47,10 +42,8 @@ public class MongoDBQueryDescriptorBuilder {
 	 */
 	private String distinctFieldName;
 
-	/**
-	 * Collation document
-	 */
-	private String collation;
+	private String mapFunction;
+	private String reduceFunction;
 
 	/**
 	 * Document or array of documents to insert/update for an INSERT/UPDATE query.
@@ -139,8 +132,13 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
-	public boolean setCollation(String collation) {
-		this.collation = collation;
+	public boolean setMapFunction(String mapFunction) {
+		this.mapFunction = mapFunction;
+		return true;
+	}
+
+	public boolean setReduceFunction(String reduceFunction) {
+		this.reduceFunction = reduceFunction;
 		return true;
 	}
 
@@ -148,10 +146,8 @@ public class MongoDBQueryDescriptorBuilder {
 		//@todo redactor the spagetti!
 		if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			MongoDBQueryDescriptor descriptor = null;
-			if ( operation == Operation.DISTINCT ) {
-				descriptor = new MongoDBQueryDescriptor( collection, operation, parse( criteria ), parseCollation( collation ), distinctFieldName );
-			}
-			else if ( operation == Operation.INSERTMANY ) {
+
+			if ( operation == Operation.INSERTMANY ) {
 				// must be array
 				@SuppressWarnings("unchecked")
 				List<Document> documents = (List<Document>) parseAsObject( updateOrInsert );
@@ -164,6 +160,9 @@ public class MongoDBQueryDescriptorBuilder {
 						parse( options ),
 						null,
 						documents,
+						null,
+						null,
+						null,
 						null
 				);
 			}
@@ -181,6 +180,9 @@ public class MongoDBQueryDescriptorBuilder {
 							parse( options ),
 							null,
 							(List<Document>) anyDocs,
+							null,
+							null,
+							null,
 							null
 					);
 				}
@@ -194,6 +196,9 @@ public class MongoDBQueryDescriptorBuilder {
 							parse( orderBy ),
 							parse( options ),
 							(Document) anyDocs,
+							null,
+							null,
+							null,
 							null,
 							null
 					);
@@ -209,7 +214,10 @@ public class MongoDBQueryDescriptorBuilder {
 						parse( options ),
 						parse( updateOrInsert ),
 						null,
-						null
+						null,
+						distinctFieldName,
+						mapFunction,
+						reduceFunction
 				);
 			}
 			return descriptor;
@@ -243,50 +251,6 @@ public class MongoDBQueryDescriptorBuilder {
 		}
 		Document object = Document.parse( "{ 'json': " + json + "}" );
 		return object.get( "json" );
-	}
-
-	private static Collation parseCollation(String json) {
-		Document dbObject = ( (Document) parseAsObject( json ) );
-
-		if ( dbObject != null ) {
-			dbObject = (Document) dbObject.get( "collation" );
-			if ( dbObject != null ) {
-				Collation collation = Collation.builder()
-						.locale( (String) dbObject.get( "locale" ) )
-						.caseLevel( (Boolean) dbObject.get( "caseLevel" ) )
-						.numericOrdering( (Boolean) dbObject.get( "numericOrdering" ) )
-						.backwards( (Boolean) dbObject.get( "backwards" ) )
-						.collationCaseFirst( caseFirst( dbObject ) )
-						.collationStrength( strength( dbObject ) )
-						.collationAlternate( alternate( dbObject ) )
-						.collationMaxVariable( maxVariable( dbObject ) )
-						.build();
-
-				return collation;
-			}
-
-		}
-		return null;
-	}
-
-	private static CollationCaseFirst caseFirst(Document dbObject) {
-		String caseFirst = dbObject.getString( "caseFirst" );
-		return caseFirst == null ? null : CollationCaseFirst.fromString( caseFirst );
-	}
-
-	private static CollationStrength strength(Document dbObject) {
-		Integer strength = dbObject.getInteger( "strength" );
-		return strength == null ? null : CollationStrength.fromInt( strength );
-	}
-
-	private static CollationAlternate alternate(Document dbObject) {
-		String value = dbObject.getString( "alternate" );
-		return value == null ? null : CollationAlternate.fromString( value );
-	}
-
-	private static CollationMaxVariable maxVariable(Document dbObject) {
-		String value = dbObject.getString( "maxVariable" );
-		return value == null ? null : CollationMaxVariable.fromString( value );
 	}
 
 	private static Document operation(StackedOperation operation, String value) {

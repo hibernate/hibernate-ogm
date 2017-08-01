@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.parsing.nativequery;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
@@ -23,6 +21,8 @@ import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 
 /**
@@ -92,11 +92,10 @@ public class NativeQueryParserTest {
 				.run( "db.Order.distinct('item')" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
-
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
 		assertThat( queryDescriptor.getCriteria() ).isNull();
-		assertThat( queryDescriptor.getCollation() ).isNull();
+		assertThat( queryDescriptor.getOptions() ).isNull();
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 		assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
@@ -110,11 +109,10 @@ public class NativeQueryParserTest {
 				.run( "db.Order.distinct('item',{'orderId': { '$in': ['XYZ123', '123']}},{'collation' : {'locale' : 'fr'}})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
-
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'orderId' : { '$in': ['XYZ123', '123'] } }" ) );
-		assertThat( queryDescriptor.getCollation().getLocale() ).isEqualTo( "fr" );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{'collation' : {'locale' : 'fr'}}" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 		assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
@@ -128,14 +126,70 @@ public class NativeQueryParserTest {
 				.run( "db.Order.distinct('item', {}, {'collation' : {'locale' : 'fr'}})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{}" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{'collation' : {'locale' : 'fr'} }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+		assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
+	}
 
-	assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
-	assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
-	assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{}" ) );
-	assertThat( queryDescriptor.getCollation().getLocale() ).isEqualTo( "fr" );
-	assertThat( queryDescriptor.getProjection() ).isNull();
-	assertThat( queryDescriptor.getOrderBy() ).isNull();
-	assertThat( queryDescriptor.getDistinctFieldName() ).isEqualTo( "item" );
+	@Test
+	@TestForIssue(jiraKey = "OGM-1246")
+	public void shouldParseSimpleMapReduceQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		String mapFunction = "function() { emit(this.cust_id, this.price); }";
+		String reduceFuntion = "function(keyCustId, valuesPrices) { return Array.sum(valuesPrices); }";
+		String query = "db.Order.mapReduce('" + mapFunction + "','" + reduceFuntion + "')";
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( query );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.MAP_REDUCE );
+		assertThat( queryDescriptor.getMapFunction() ).isEqualTo( mapFunction );
+		assertThat( queryDescriptor.getReduceFunction() ).isEqualTo( reduceFuntion );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+		assertThat( queryDescriptor.getCriteria() ).isNull();
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+		assertThat( queryDescriptor.getDistinctFieldName() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1246")
+	public void shouldParseComplexMapReduceQuery() {
+		//https://docs.mongodb.com/manual/tutorial/map-reduce-examples/
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		String mapFunction = "function() { for (var idx = 0; idx < this.items.length; idx++) { var key = this.items[idx].sku; var value = { count: 1, qty: this.items[idx].qty }; emit(key, value); } }";
+		String reduceFuntion = "function(keySKU, countObjVals) { reducedVal = { count: 0, qty: 0 }; for (var idx = 0; idx < countObjVals.length; idx++) { reducedVal.count += countObjVals[idx].count; reducedVal.qty += countObjVals[idx].qty; } return reducedVal; }";
+		String finalizeFunction = "function (key, reducedVal) { reducedVal.avg = reducedVal.qty/reducedVal.count; return reducedVal; }";
+		String options = "{ 'out': 'mycollection'," +
+				"			'query': {}," +
+				"			'sort' : {}," +
+				"			'limit' : 1000," +
+				"			'finalize' : '" + finalizeFunction + "'," +
+				"			'scope' : {}," +
+				"			'jsMode' : true," +
+				"			'verbose' : false," +
+				"			'bypassDocumentValidation' : false," +
+				"			'collation' : {'locale' : 'fr'} }";
+
+		String query = "db.Order.mapReduce('" + mapFunction + "','" + reduceFuntion + "'," + options + ")";
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( query );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.MAP_REDUCE );
+		assertThat( queryDescriptor.getMapFunction() ).isEqualTo( mapFunction );
+		assertThat( queryDescriptor.getReduceFunction() ).isEqualTo( reduceFuntion );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( options ) );
+		assertThat( queryDescriptor.getCriteria() ).isNull();
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+		assertThat( queryDescriptor.getDistinctFieldName() ).isNull();
 	}
 
 	@Test

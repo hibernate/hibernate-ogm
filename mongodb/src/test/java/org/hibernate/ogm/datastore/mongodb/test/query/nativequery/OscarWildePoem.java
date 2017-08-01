@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.persistence.ColumnResult;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -54,26 +53,30 @@ public class OscarWildePoem {
 	private String author;
 	private byte rating;
 	private Integer year;
+	private Integer copiesSold;
 	private List<String> mediums = new ArrayList<String>();
 
 	public OscarWildePoem() {
 	}
 
-	public OscarWildePoem(Long id, String name, String author, int year, String... mediums) {
+	public OscarWildePoem(Long id, String name, String author, int year) {
+		this( id, name, author, year, 0 );
+	}
+
+	public OscarWildePoem(Long id, String name, String author, int year, int copiesSold) {
+		this( id, name, author, year, copiesSold, (byte) 0 );
+	}
+
+	public OscarWildePoem(Long id, String name, String author, int year, int copiesSold, byte rating, String... mediums) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
 		this.year = year;
+		this.copiesSold = copiesSold;
+		this.rating = rating;
 		this.mediums = Arrays.asList( mediums );
 	}
 
-	public OscarWildePoem(Long id, String name, String author, int year, byte rating) {
-		this.id = id;
-		this.name = name;
-		this.author = author;
-		this.year = year;
-		this.rating = rating;
-	}
 
 	@Id
 	public Long getId() {
@@ -125,8 +128,16 @@ public class OscarWildePoem {
 		this.mediums = medium;
 	}
 
+	public Integer getCopiesSold() {
+		return copiesSold;
+	}
+
+	public void setCopiesSold(Integer copiesSold) {
+		this.copiesSold = copiesSold;
+	}
+
 	@Override
 	public String toString() {
-		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", rating=" + rating + "]";
+		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", rating=" + rating + ", copiesSold=" + copiesSold + "]";
 	}
 }
