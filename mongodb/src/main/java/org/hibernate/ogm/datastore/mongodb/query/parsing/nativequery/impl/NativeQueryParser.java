@@ -38,6 +38,8 @@ import com.mongodb.util.JSON;
  * <li>count()</li>
  * <li>count(criteria)</li>
  * <li>aggregate(criteria)</li>
+ * <li>distinct(fieldName,criteria,options)</li>
+ * <li>mapReduce(mapFunction,reduceFunction,options)</li>
  * </ul>
  * The parameter values must be given as JSON objects adhering to the <a
  * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
@@ -94,7 +96,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate(), Distinct() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate(), Distinct(), MapReduce() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -110,7 +112,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
 				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
-				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) )
+				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) ),
+				Sequence( MapReduce(), builder.setOperation( Operation.MAP_REDUCE ) )
 		);
 	}
 
@@ -250,7 +253,19 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				Sequence( JsonString(), builder.setDistinctFieldName( JSON.parse( match() ).toString() ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setCollation( match() ) ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule MapReduce() {
+		return Sequence(
+				Separator(),
+				"mapReduce ",
+				"( ",
+				Sequence( JsonString(), builder.setMapFunction( JSON.parse( match() ).toString() ) ),
+				Sequence( ", ", JsonString(), builder.setReduceFunction( JSON.parse( match() ).toString() ) ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
 	}

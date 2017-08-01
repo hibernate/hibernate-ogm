@@ -40,7 +40,10 @@ public class MongoDBQueryDescriptorSerializationTest {
 				new Document(),
 				new Document(),
 				null,
-				Arrays.asList( "foo, bar" )
+				Arrays.asList( "foo, bar" ),
+				null,
+				null,
+				null
 		);
 
 		byte[] bytes = serialize( descriptor );

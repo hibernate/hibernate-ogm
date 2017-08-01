@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bson.Document;
-import com.mongodb.client.model.Collation;
 
 /**
  * Describes a query to be executed against MongoDB.
@@ -51,7 +50,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		 * This is used for native queries, when the user wants to execute a generic aggregation query.
 		 */
 		AGGREGATE_PIPELINE,
-		DISTINCT;
+		DISTINCT,
+		MAP_REDUCE;
 	}
 
 	private final String collectionName;
@@ -64,10 +64,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 */
 	private final String distinctFieldName;
 
-	/**
-	 * Collation object will be used for Distinct Operation
-	 */
-	private final Collation collation; // As of now only applicable to distinct queries
+	private final String mapFunction;
+	private final String reduceFunction;
 
 	/**
 	 * The "update" (new values to apply) in case this is an UPDATE query or values to insert in case this is an INSERT query.
@@ -88,20 +86,6 @@ public class MongoDBQueryDescriptor implements Serializable {
 	private final List<String> unwinds;
 	private final List<Document> pipeline;
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Collation collation, String distinctFieldName) {
-		this.collectionName = collectionName;
-		this.operation = operation;
-		this.criteria = criteria;
-		this.projection = null;
-		this.orderBy = null;
-		this.options = null;
-		this.updateOrInsertOne = null;
-		this.updateOrInsertMany = null;
-		this.unwinds = null;
-		this.pipeline = Collections.<Document>emptyList();
-		this.distinctFieldName = distinctFieldName;
-		this.collation = collation;
-	}
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, List<Document> pipeline) {
 		this.collectionName = collectionName;
 		this.operation = operation;
@@ -114,10 +98,11 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.unwinds = null;
 		this.pipeline = pipeline == null ? Collections.<Document>emptyList() : pipeline;
 		this.distinctFieldName = null;
-		this.collation = null;
+		this.mapFunction = null;
+		this.reduceFunction = null;
 	}
 
-	public MongoDBQueryDescriptor(String collectionName,Operation operation,Document criteria,	Document projection, Document orderBy,	Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Document projection, Document orderBy, Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds, String distinctFieldName, String mapFunction, String reduceFunction) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
@@ -128,8 +113,9 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.updateOrInsertMany = updateOrInsertMany;
 		this.unwinds = unwinds;
 		this.pipeline = Collections.<Document>emptyList();
-		this.distinctFieldName = null;
-		this.collation = null;
+		this.distinctFieldName = distinctFieldName;
+		this.mapFunction = mapFunction;
+		this.reduceFunction = reduceFunction;
 	}
 
 	public List<Document> getPipeline() {
@@ -207,11 +193,17 @@ public class MongoDBQueryDescriptor implements Serializable {
 	}
 
 	/**
-	 * Returns collation document which will be used in DISTINCT operation
-	 *
+	 * Returns map function in the MAP_REDUCE operation
 	 */
-	public Collation getCollation() {
-		return collation;
+	public String getMapFunction() {
+		return mapFunction;
+	}
+
+	/**
+	 * Returns reduce function in the MAP_REDUCE operation
+	 */
+	public String getReduceFunction() {
+		return reduceFunction;
 	}
 
 	@Override
