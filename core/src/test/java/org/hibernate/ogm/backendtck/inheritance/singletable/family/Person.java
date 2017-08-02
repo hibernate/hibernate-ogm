@@ -15,18 +15,23 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "TYPE", discriminatorType = DiscriminatorType.STRING)
+@Indexed
 class Person {
-	@Id
+
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	@Id
 	private String id;
 
+	@Field(analyze = Analyze.NO)
 	private String name;
-
 
 	public Person() {
 	}
@@ -49,5 +54,10 @@ class Person {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 }

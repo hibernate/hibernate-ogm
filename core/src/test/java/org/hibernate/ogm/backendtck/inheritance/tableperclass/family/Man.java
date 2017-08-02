@@ -14,9 +14,17 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+
 @Entity
 @DiscriminatorValue("MAN")
+@Indexed
 class Man extends Person {
+
+	@Field(analyze = Analyze.NO)
+	private String hobby;
 
 	@OneToOne
 	private Woman wife;
@@ -27,8 +35,17 @@ class Man extends Person {
 	public Man() {
 	}
 
-	public Man(String name) {
+	public Man(String name, String hobby) {
 		super( name );
+		this.hobby = hobby;
+	}
+
+	public String getHobby() {
+		return hobby;
+	}
+
+	public void setHobby(String hobby) {
+		this.hobby = hobby;
 	}
 
 	public Woman getWife() {
