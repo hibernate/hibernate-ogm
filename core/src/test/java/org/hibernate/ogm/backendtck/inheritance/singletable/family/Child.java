@@ -10,9 +10,17 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+
 @Entity
 @DiscriminatorValue("CHILD")
+@Indexed
 class Child extends Person {
+
+	@Field(analyze = Analyze.NO)
+	private String favouriteToy;
 
 	@OneToOne
 	private Woman mother;
@@ -23,8 +31,17 @@ class Child extends Person {
 	public Child() {
 	}
 
-	public Child(String name) {
+	public Child(String name, String favouriteToy) {
 		super( name );
+		this.favouriteToy = favouriteToy;
+	}
+
+	public String getFavouriteToy() {
+		return favouriteToy;
+	}
+
+	public void setFavouriteToy(String favouriteToy) {
+		this.favouriteToy = favouriteToy;
 	}
 
 	public Man getFather() {
