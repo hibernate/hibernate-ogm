@@ -97,6 +97,7 @@ public class PostLoadTest extends OgmJpaTestCase {
 	}
 
 	@After
+	@Override
 	public void removeEntities() throws Exception {
 		EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
