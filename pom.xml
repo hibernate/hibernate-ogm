@@ -34,10 +34,12 @@
     </modules>
 
     <properties>
-        <!-- JDK version required to build OGM; requiring 1.8 as WildFly 10 requires JDK 1.8; We still create
-             1.7 byte code to run in other environments -->
         <minJdkVersion>1.8</minJdkVersion>
-        <jdkTargetForProcessor>1.7</jdkTargetForProcessor>
+
+        <maven.compiler.source>${minJdkVersion}</maven.compiler.source>
+        <maven.compiler.target>${minJdkVersion}</maven.compiler.target>
+
+        <jdkTargetForProcessor>${minJdkVersion}</jdkTargetForProcessor>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
@@ -223,8 +225,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <showWarnings>true</showWarnings>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>${minJdkVersion}</source>
+                    <target>${minJdkVersion}</target>
                     <encoding>UTF-8</encoding>
                     <!-- Annotation processor is run as an independent step -->
                     <proc>none</proc>
@@ -482,7 +484,7 @@
                     <configuration>
                         <signature>
                             <groupId>org.codehaus.mojo.signature</groupId>
-                            <artifactId>java16</artifactId>
+                            <artifactId>java18</artifactId>
                             <version>1.0</version>
                         </signature>
                     </configuration>
