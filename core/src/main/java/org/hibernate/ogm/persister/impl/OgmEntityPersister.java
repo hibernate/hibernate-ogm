@@ -1713,7 +1713,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	@Override
-	protected int getSubclassTableSpan() {
+	public int getSubclassTableSpan() {
 		return 1;
 	}
 
