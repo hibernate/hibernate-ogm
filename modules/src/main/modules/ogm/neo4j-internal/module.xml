@@ -17,26 +17,40 @@
         <resource-root path="lucene-queryparser-${luceneVersion}.jar" />
         <resource-root path="lucene-analyzers-common-${luceneVersion}.jar" />
 
+        <resource-root path="neo4j-codegen-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-collections-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-common-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-configuration-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.3-${neo4jCypherCompiler23Version}.jar" />
+        <resource-root path="neo4j-cypher-frontend-2.3-${neo4jCypherCompiler23Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-3.1-${neo4jCypherCompiler31Version}.jar" />
+        <resource-root path="neo4j-cypher-frontend-3.1-${neo4jCypherCompiler31Version}.jar" />
+        <resource-root path="neo4j-cypher-compiler-3.2-${neo4jCypherCompiler32Version}.jar" />
+        <resource-root path="neo4j-cypher-frontend-3.2-${neo4jCypherCompiler32Version}.jar" />
+        <resource-root path="neo4j-cypher-ir-3.2-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-graphdb-api-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-index-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-io-${neo4jVersion}.jar" />
         <resource-root path="neo4j-java-driver-${neo4jJavaDriverVersion}.jar" />
-        <resource-root path="neo4j-lucene-upgrade-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-logging-${neo4jVersion}.jar" />
         <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-lucene-upgrade-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-resource-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-ssl-${neo4jVersion}.jar" />
+        <resource-root path="neo4j-unsafe-${neo4jVersion}.jar" />
+
+        <!-- dependency of neo4j-ssl -->
+        <resource-root path="bcpkix-jdk15on-${neo4jBouncyCastleVersion}.jar" />
+        <resource-root path="bcprov-jdk15on-${neo4jBouncyCastleVersion}.jar" />
+
+        <!-- dependency of neo4j-cypher-compiler -->
+        <resource-root path="caffeine-${neo4jCaffeineVersion}.jar" />
+
         <resource-root path="parboiled-scala_2.11-${parboiledVersion}.jar" />
         <resource-root path="scala-library-${neo4jScalaLibraryVersion}.jar" />
         <resource-root path="scala-reflect-${neo4jScalaLibraryVersion}.jar" />
-        <resource-root path="neo4j-security-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-graphdb-api-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-io-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-codegen-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-logging-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-resource-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-collections-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-common-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-unsafe-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.3-${neo4jCypherCompiler23Version}.jar" />
-        <resource-root path="neo4j-cypher-frontend-2.3-${neo4jCypherCompiler23Version}.jar" />
-        <resource-root path="neo4j-cypher-compiler-3.0-${neo4jCypherCompiler30Version}.jar" />
-        <resource-root path="neo4j-cypher-frontend-3.0-${neo4jCypherCompiler30Version}.jar" />
+
         <resource-root path="concurrentlinkedhashmap-lru-${neo4jConcurrentlinkedhashmapVersion}.jar" />
         <resource-root path="commons-lang3-${neo4jCommonsLang3Version}.jar" />
     </resources>

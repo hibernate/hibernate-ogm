@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.impl;
 
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
-import static org.neo4j.graphdb.DynamicLabel.label;
+import static org.neo4j.graphdb.Label.label;
 
 import java.util.ArrayList;
 import java.util.Iterator;

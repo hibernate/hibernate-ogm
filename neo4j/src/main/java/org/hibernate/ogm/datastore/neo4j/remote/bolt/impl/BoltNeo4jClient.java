@@ -48,7 +48,7 @@ public class BoltNeo4jClient {
 			driver.session().close();
 		}
 		catch (Neo4jException e) {
-			throw log.connectionFailed( databaseUri, e.neo4jErrorCode(), e.getMessage() );
+			throw log.connectionFailed( databaseUri, e.code(), e.getMessage() );
 		}
 	}
 

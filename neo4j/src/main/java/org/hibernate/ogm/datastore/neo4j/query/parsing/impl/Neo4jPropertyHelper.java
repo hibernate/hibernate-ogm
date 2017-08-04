@@ -13,7 +13,6 @@ import java.util.List;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.parsing.impl.ParserPropertyHelper;
@@ -176,10 +175,5 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 			return true;
 		}
 		return ArrayHelper.contains( identifierColumnNames, join );
-	}
-
-	private EntityKeyMetadata getKeyMetaData(String entityType) {
-		OgmEntityPersister persister = (OgmEntityPersister) getSessionFactory().getEntityPersister( entityType );
-		return persister.getEntityKeyMetadata();
 	}
 }

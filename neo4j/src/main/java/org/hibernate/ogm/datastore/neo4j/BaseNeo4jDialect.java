@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jAssociationQueries;
@@ -62,6 +63,8 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 		implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect, MultigetGridDialect {
 
 	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintValidationFailed";
+
+	protected static final Pattern TUPLE_ALREADY_EXISTS_EXCEPTION_PATTERN = Pattern.compile( ".*Node(\\(| )\\d+\\)? already exists with label.*" );
 
 	private ServiceRegistryImplementor serviceRegistry;
 
