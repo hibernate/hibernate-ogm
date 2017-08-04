@@ -58,24 +58,6 @@
                             <outputDirectory>${project.build.directory}/lib/neo4j</outputDirectory>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>guava-for-lettuce-redis</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.google.guava</groupId>
-                                    <artifactId>guava</artifactId>
-                                    <version>${lettuceGuavaVersion}</version>
-                                    <type>jar</type>
-                                </artifactItem>
-                           </artifactItems>
-                            <outputDirectory>${project.build.directory}/lib/redis</outputDirectory>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
