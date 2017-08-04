@@ -154,12 +154,12 @@
               <includes>
                   <include>org.hibernate.ogm:hibernate-ogm-neo4j</include>
                   <include>org.neo4j:neo4j</include>
-                  <include>org.neo4j:neo4j-kernel</include>
-                  <include>org.neo4j:neo4j-udc</include>
+                  <include>org.neo4j:neo4j-cypher</include>
                   <include>org.neo4j:neo4j-graph-algo</include>
                   <include>org.neo4j:neo4j-graph-matching</include>
+                  <include>org.neo4j:neo4j-kernel</include>
                   <include>org.neo4j:neo4j-jmx</include>
-                  <include>org.neo4j:neo4j-cypher</include>
+                  <include>org.neo4j:neo4j-udc</include>
              </includes>
        </dependencySet>
        <dependencySet>
@@ -168,26 +168,38 @@
               <useTransitiveFiltering>false</useTransitiveFiltering>
               <unpack>false</unpack>
               <includes>
-                  <include>org.neo4j:neo4j-io</include>
-                  <include>org.neo4j:neo4j-security</include>
-                  <include>org.neo4j:neo4j-lucene-index</include>
-                  <include>org.neo4j:neo4j-lucene-upgrade</include>
-                  <include>org.neo4j:neo4j-common</include>
-                  <include>org.neo4j:neo4j-resource</include>
-                  <include>org.scala-lang:scala-reflect</include>
-                  <include>org.scala-lang:scala-library</include>
-                  <include>org.neo4j:neo4j-collections</include>
-                  <include>org.neo4j:neo4j-primitive-collections</include>
                   <include>org.neo4j:neo4j-codegen</include>
-                  <include>org.neo4j:neo4j-unsafe</include>
-                  <include>org.neo4j:neo4j-logging</include>
-                  <include>org.neo4j:neo4j-graphdb-api</include>
+                  <include>org.neo4j:neo4j-collections</include>
+                  <include>org.neo4j:neo4j-common</include>
+                  <include>org.neo4j:neo4j-configuration</include>
                   <include>org.neo4j:neo4j-cypher-compiler-2.3</include>
                   <include>org.neo4j:neo4j-cypher-frontend-2.3</include>
-                  <include>org.neo4j:neo4j-cypher-compiler-3.0</include>
-                  <include>org.neo4j:neo4j-cypher-frontend-3.0</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-3.1</include>
+                  <include>org.neo4j:neo4j-cypher-frontend-3.1</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-3.2</include>
+                  <include>org.neo4j:neo4j-cypher-frontend-3.2</include>
+                  <include>org.neo4j:neo4j-cypher-ir-3.2</include>
+                  <include>org.neo4j:neo4j-graphdb-api</include>
+                  <include>org.neo4j:neo4j-index</include>
+                  <include>org.neo4j:neo4j-io</include>
                   <include>org.neo4j.driver:neo4j-java-driver</include>
+                  <include>org.neo4j:neo4j-logging</include>
+                  <include>org.neo4j:neo4j-lucene-index</include>
+                  <include>org.neo4j:neo4j-lucene-upgrade</include>
+                  <include>org.neo4j:neo4j-primitive-collections</include>
+                  <include>org.neo4j:neo4j-resource</include>
+                  <include>org.neo4j:neo4j-ssl</include>
+                  <include>org.neo4j:neo4j-unsafe</include>
+
+                  <include>org.bouncycastle:bcpkix-jdk15on</include>
+                  <include>org.bouncycastle:bcprov-jdk15on</include>
+
+                  <include>com.github.ben-manes.caffeine:caffeine</include>
+
+                  <include>org.scala-lang:scala-reflect</include>
+                  <include>org.scala-lang:scala-library</include>
                   <include>org.parboiled:parboiled-scala_2.11</include>
+
                   <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
                   <include>org.apache.commons:commons-lang3</include>
 

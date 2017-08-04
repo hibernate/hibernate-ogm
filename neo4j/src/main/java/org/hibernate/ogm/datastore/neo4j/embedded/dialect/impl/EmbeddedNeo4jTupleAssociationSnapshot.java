@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import static org.hibernate.ogm.util.impl.EmbeddedHelper.split;
-import static org.neo4j.graphdb.DynamicRelationshipType.withName;
+import static org.neo4j.graphdb.RelationshipType.withName;
 
 import java.util.HashMap;
 import java.util.Iterator;

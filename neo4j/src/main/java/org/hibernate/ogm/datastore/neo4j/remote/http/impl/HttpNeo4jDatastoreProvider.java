@@ -91,6 +91,7 @@ public class HttpNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 		return HttpNeo4jSchemaDefiner.class;
 	}
 
+	@Override
 	public HttpNeo4jSequenceGenerator getSequenceGenerator() {
 		return sequenceGenerator;
 	}

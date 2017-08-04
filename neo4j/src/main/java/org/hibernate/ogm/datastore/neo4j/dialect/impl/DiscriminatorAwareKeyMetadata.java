@@ -26,14 +26,17 @@ public class DiscriminatorAwareKeyMetadata implements EntityKeyMetadata {
 		this.discriminatorValue = discriminatorValue;
 	}
 
+	@Override
 	public String getTable() {
 		return delegate.getTable();
 	}
 
+	@Override
 	public String[] getColumnNames() {
 		return delegate.getColumnNames();
 	}
 
+	@Override
 	public boolean isKeyColumn(String columnName) {
 		return delegate.isKeyColumn( columnName );
 	}

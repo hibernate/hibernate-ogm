@@ -180,7 +180,7 @@
             <id>doc</id>
             <activation>
                 <!-- Needs to match activation of "doc" profile in parent pom!  -->
-                <jdk>[1.7, 1.9)</jdk>
+                <jdk>[1.8, 1.9)</jdk>
                 <property>
                     <name>skipDocs</name>
                     <value>!true</value>

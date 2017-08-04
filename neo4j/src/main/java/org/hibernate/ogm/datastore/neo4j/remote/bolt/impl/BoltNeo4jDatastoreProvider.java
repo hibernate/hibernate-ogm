@@ -21,7 +21,7 @@ import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
-import org.neo4j.driver.v1.exceptions.ClientException;
+import org.neo4j.driver.v1.exceptions.Neo4jException;
 
 /**
  * @author Davide D'Alto
@@ -70,8 +70,8 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 		try {
 			neo4jClient.validateConnection();
 		}
-		catch (ClientException e) {
-			throw log.connectionFailed( getDatabaseIdentifier().getDatabaseUri(), e.neo4jErrorCode(), e.getMessage() );
+		catch (Neo4jException e) {
+			throw log.connectionFailed( getDatabaseIdentifier().getDatabaseUri(), e.code(), e.getMessage() );
 		}
 	}
 
@@ -92,6 +92,7 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 		return BoltNeo4jDialect.class;
 	}
 
+	@Override
 	public BoltNeo4jSequenceGenerator getSequenceGenerator() {
 		return sequenceGenerator;
 	}

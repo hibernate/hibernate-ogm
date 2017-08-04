@@ -20,7 +20,6 @@ import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Lock;
@@ -131,7 +130,7 @@ public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 	 * Adds a unique constraint to make sure that each node of the same "sequence table" is unique.
 	 */
 	private void addUniqueConstraintForTableBasedSequence(IdSourceKeyMetadata generatorKeyMetadata) {
-		Label generatorKeyLabel = DynamicLabel.label( generatorKeyMetadata.getName() );
+		Label generatorKeyLabel = Label.label( generatorKeyMetadata.getName() );
 		if ( isMissingUniqueConstraint( generatorKeyLabel ) ) {
 			neo4jDb.schema().constraintFor( generatorKeyLabel ).assertPropertyIsUnique( generatorKeyMetadata.getKeyColumnName() ).create();
 		}

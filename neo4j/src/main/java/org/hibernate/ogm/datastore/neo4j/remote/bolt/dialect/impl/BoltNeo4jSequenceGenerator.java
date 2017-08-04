@@ -13,8 +13,6 @@ import java.util.List;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.RemoteNeo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
-import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.common.request.impl.RemoteStatement;
 import org.hibernate.ogm.datastore.neo4j.remote.common.request.impl.RemoteStatements;
@@ -56,8 +54,6 @@ import org.neo4j.driver.v1.util.Resource;
  * @author Gunnar Morling
  */
 public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
-
-	private static final Log logger = LoggerFactory.getLogger();
 
 	private final BoltNeo4jClient client;
 

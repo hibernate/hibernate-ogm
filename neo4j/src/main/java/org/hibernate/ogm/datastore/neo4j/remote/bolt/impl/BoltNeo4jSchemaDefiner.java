@@ -81,7 +81,7 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 				tx.success();
 			}
 			catch (ClientException e) {
-				throw log.constraintsCreationException( e.neo4jErrorCode(), e.getMessage() );
+				throw log.constraintsCreationException( e.code(), e.getMessage() );
 			}
 			finally {
 				close( tx );

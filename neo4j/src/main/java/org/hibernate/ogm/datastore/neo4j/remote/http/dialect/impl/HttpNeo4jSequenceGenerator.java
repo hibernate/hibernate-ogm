@@ -116,6 +116,7 @@ public class HttpNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 		}
 	}
 
+	@Override
 	protected Number nextValue(RemoteStatements remoteStatements) {
 		Statements statements = convert( remoteStatements );
 		List<StatementResult> results = client.executeQueriesInNewTransaction( statements ).getResults();

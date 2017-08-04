@@ -150,7 +150,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 			result.hasNext();
 		}
 		catch (ClientException e) {
-			throw log.nativeQueryException( e.neo4jErrorCode(), e.getMessage(), null );
+			throw log.nativeQueryException( e.code(), e.getMessage(), null );
 		}
 
 	}
@@ -281,7 +281,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 			tuple.setSnapshotType( SnapshotType.UPDATE );
 		}
 		catch (ClientException e) {
-			switch ( e.neo4jErrorCode() ) {
+			switch ( e.code() ) {
 				case BaseNeo4jDialect.CONSTRAINT_VIOLATION_CODE:
 					throw extractException( key, e );
 				default:
@@ -302,7 +302,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	}
 
 	private HibernateException extractException(EntityKey key, ClientException exception) {
-		if ( exception.getMessage().matches( ".*Node \\d+ already exists with label.*" ) ) {
+		if ( TUPLE_ALREADY_EXISTS_EXCEPTION_PATTERN.matcher( exception.getMessage() ).matches() ) {
 			// This is the exception we expect for this kind of error by the CompensationAPI and some unit tests
 			return new TupleAlreadyExistsException( key, exception.getMessage() );
 		}
@@ -593,6 +593,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 			this.boltClient = boltClient;
 		}
 
+		@Override
 		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
 			boolean shouldCloseTransaction = transactionContext == null;
 			Transaction tx = transaction( transactionContext );

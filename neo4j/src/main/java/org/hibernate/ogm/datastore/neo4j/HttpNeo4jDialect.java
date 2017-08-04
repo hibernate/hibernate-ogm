@@ -224,7 +224,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 	}
 
 	private HibernateException extractException(EntityKey key, ErrorResponse errorResponse) {
-		if ( errorResponse.getMessage().matches( ".*Node \\d+ already exists with label.*" ) ) {
+		if ( TUPLE_ALREADY_EXISTS_EXCEPTION_PATTERN.matcher( errorResponse.getMessage() ).matches() ) {
 			// This is the exception we expect for this kind of error by the CompensationAPI and some unit tests
 			return new TupleAlreadyExistsException( key, errorResponse.getMessage() );
 		}
@@ -501,6 +501,7 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 			this.httpClient = httpClient;
 		}
 
+		@Override
 		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
 			Long txId = transactionContext == null ? null : (Long) transactionContext.getTransactionId();
 			ClosableIterator<NodeWithEmbeddedNodes> entities = entityQueries.findEntitiesWithEmbedded( httpClient, txId );

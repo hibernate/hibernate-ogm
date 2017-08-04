@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -129,6 +130,11 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		}
 
 		@Override
+		public Transaction beginTx(long timeout, TimeUnit unit) {
+			return null;
+		}
+
+		@Override
 		public <T> TransactionEventHandler<T> registerTransactionEventHandler(TransactionEventHandler<T> handler) {
 			return null;
 		}
@@ -200,6 +206,16 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public Result execute(String query, Map<String, Object> parameters) throws QueryExecutionException {
+			return null;
+		}
+
+		@Override
+		public Result execute(String query, long timeout, TimeUnit unit) throws QueryExecutionException {
+			return null;
+		}
+
+		@Override
+		public Result execute(String query, Map<String, Object> parameters, long timeout, TimeUnit unit) throws QueryExecutionException {
 			return null;
 		}
 

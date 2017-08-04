@@ -184,7 +184,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 			result.hasNext();
 		}
 		catch (ClientException e) {
-			throw log.nativeQueryException( e.neo4jErrorCode(), e.getMessage(), null );
+			throw log.nativeQueryException( e.code(), e.getMessage(), null );
 		}
 
 	}
