@@ -11,15 +11,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Index;
 import org.hibernate.mapping.UniqueKey;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 
 import com.mongodb.client.model.IndexOptions;
-import org.bson.Document;
-import org.bson.conversions.Bson;
 
 /**
  * Definition of an index to be applied to a MongoDB collection
@@ -28,8 +26,6 @@ import org.bson.conversions.Bson;
  * @see <a href="https://docs.mongodb.com/manual/indexes/">info about indexes in MongoDB Java Driver 3.4</a>
  */
 public class MongoDBIndexSpec {
-
-	private Log log = LoggerFactory.getLogger();
 
 	/**
 	 * The MongoDB collection/table for which the index will be set

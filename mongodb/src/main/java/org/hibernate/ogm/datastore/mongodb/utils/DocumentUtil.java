@@ -26,6 +26,7 @@ public class DocumentUtil {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static List<Document> fromJsonArray(String sourceJson) {
 		Document jsonDocument = Document.parse( "{'json': " + sourceJson + "}" );
 		return (List<Document>) jsonDocument.get( "json" );
