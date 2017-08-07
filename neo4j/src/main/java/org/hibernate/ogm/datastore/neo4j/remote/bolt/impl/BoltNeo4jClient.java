@@ -34,18 +34,14 @@ public class BoltNeo4jClient {
 
 	private Driver createNeo4jDriver(RemoteNeo4jDatabaseIdentifier identifier, RemoteNeo4jConfiguration configuration) {
 		String uri = identifier.getDatabaseUri();
-		if ( configuration.isAuthenticationRequired() ) {
-			AuthToken authToken = AuthTokens.basic( configuration.getUsername(), configuration.getPassword() );
-			return GraphDatabase.driver( uri, authToken );
-		}
-		else {
-			return GraphDatabase.driver( uri );
-		}
-	}
-
-	public void validateConnection() {
 		try {
-			driver.session().close();
+			if ( configuration.isAuthenticationRequired() ) {
+				AuthToken authToken = AuthTokens.basic( configuration.getUsername(), configuration.getPassword() );
+				return GraphDatabase.driver( uri, authToken );
+			}
+			else {
+				return GraphDatabase.driver( uri );
+			}
 		}
 		catch (Neo4jException e) {
 			throw log.connectionFailed( databaseUri, e.code(), e.getMessage() );
