@@ -1059,7 +1059,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return new SingleTupleIterator( theOne, collection, entityKeyMetadata );
 	}
 
-	@SuppressWarnings("unchecked")
 	private static int doInsert(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
 		Document options = queryDesc.getOptions();
 		Boolean ordered = FALSE;
@@ -1078,12 +1077,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( queryDesc.getUpdateOrInsertMany() != null ) {
 			operationList = new ArrayList<>( queryDesc.getUpdateOrInsertMany().size() );
 			for ( Document doc : queryDesc.getUpdateOrInsertMany() ) {
-				operationList.add( new InsertOneModel( doc ) );
+				operationList.add( new InsertOneModel<>( doc ) );
 			}
 		}
 		else {
 			operationList = new ArrayList<>( 1 );
-			operationList.add( new InsertOneModel( queryDesc.getUpdateOrInsertOne() ) );
+			operationList.add( new InsertOneModel<>( queryDesc.getUpdateOrInsertOne() ) );
 		}
 		final BulkWriteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).bulkWrite( operationList, new BulkWriteOptions().ordered( ordered ) );
 
@@ -1311,7 +1310,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
 
-					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection, writeConcern )
+					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
 							.put( entityKey, insertStatement );
 					insertTuples.add( tuple );
 				}
@@ -1417,11 +1416,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return insertStatement != null ? insertStatement : snapshot.getDbObject();
 	}
 
-	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<MongoCollection<Document>, BatchInsertionTask> inserts, EntityKeyMetadata entityKeyMetadata, MongoCollection<Document> collection, WriteConcern writeConcern) {
+	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<MongoCollection<Document>, BatchInsertionTask> inserts,
+			EntityKeyMetadata entityKeyMetadata, MongoCollection<Document> collection) {
 		BatchInsertionTask insertsForCollection = inserts.get( collection );
 
 		if ( insertsForCollection == null ) {
-			insertsForCollection = new BatchInsertionTask( entityKeyMetadata, writeConcern );
+			insertsForCollection = new BatchInsertionTask( entityKeyMetadata );
 			inserts.put( collection, insertsForCollection );
 		}
 
@@ -1437,7 +1437,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			}
 
 			try {
-				collection.insertMany( entry.getValue().getAll()  );
+				collection.insertMany( entry.getValue().getAll() );
 			}
 			catch ( DuplicateKeyException | MongoBulkWriteException dke ) {
 				// This exception is used by MongoDB for all the unique indexes violation, not only the primary key
@@ -1651,12 +1651,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		private final EntityKeyMetadata entityKeyMetadata;
 		private final Map<EntityKey, Document> inserts;
-		private final WriteConcern writeConcern;
 
-		public BatchInsertionTask(EntityKeyMetadata entityKeyMetadata, WriteConcern writeConcern) {
+		public BatchInsertionTask(EntityKeyMetadata entityKeyMetadata) {
 			this.entityKeyMetadata = entityKeyMetadata;
 			this.inserts = new HashMap<EntityKey, Document>();
-			this.writeConcern = writeConcern;
 		}
 
 		public EntityKeyMetadata getEntityKeyMetadata() {
@@ -1667,10 +1665,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return new ArrayList<Document>( inserts.values() );
 		}
 
-		public Document get(EntityKey entityKey) {
-			return inserts.get( entityKey );
-
-		}
 		public boolean containsKey(EntityKey entityKey) {
 			return inserts.containsKey( entityKey );
 		}
@@ -1681,10 +1675,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		public void put(EntityKey entityKey, Document object) {
 			inserts.put( entityKey, object );
-		}
-
-		public WriteConcern getWriteConcern() {
-			return writeConcern;
 		}
 
 		public boolean isEmpty() {

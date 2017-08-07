@@ -153,7 +153,7 @@ public class MongoDBQueryDescriptorBuilder {
 			}
 			else if ( operation == Operation.INSERTMANY ) {
 				// must be array
-				Object anyDocs = parseAsObject( updateOrInsert );
+				@SuppressWarnings("unchecked")
 				List<Document> documents = (List<Document>) parseAsObject( updateOrInsert );
 				descriptor = new MongoDBQueryDescriptor(
 						collection,

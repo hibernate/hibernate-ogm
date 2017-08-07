@@ -56,8 +56,8 @@
         <protostreamVersion>3.0.7.Final</protostreamVersion>
 
         <!-- MongoDB -->
-        <mongodbDriverVersion>3.4.2</mongodbDriverVersion>
-        <mongodbVersion>3.4.1</mongodbVersion>
+        <mongodbDriverVersion>3.5.0</mongodbDriverVersion>
+        <mongodbVersion>3.4.6</mongodbVersion>
 
         <!-- Neo4j -->
         <neo4jVersion>3.2.3</neo4jVersion>
