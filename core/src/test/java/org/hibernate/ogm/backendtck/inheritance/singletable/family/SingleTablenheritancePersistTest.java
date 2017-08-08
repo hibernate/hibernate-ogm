@@ -30,9 +30,10 @@ public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
 	private Woman jane = new Woman( "Jane", "Hippotherapist" );
 	private Child susan = new Child( "Susan", "Super Mario retro Mushroom" );
 	private Child mark = new Child( "Mark", "Fidget Spinner" );
+	private Family family = new Family( "McCloud" );
 
-	private final List<Person> entities = Arrays.asList( john, jane, susan, mark );
-	private final String[] peopleNames = extractNames( entities );
+	private final List<Person> familyMembers = Arrays.asList( john, jane, susan, mark );
+	private final String[] peopleNames = extractNames( familyMembers );
 
 	private EntityManager em;
 
@@ -45,9 +46,7 @@ public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
 	public void tearDown() {
 		try {
 			em.getTransaction().begin();
-			for ( Person entity : entities ) {
-				em.remove( entity );
-			}
+			em.remove( em.find( Family.class, family.getName() ) );
 			em.getTransaction().commit();
 		}
 		finally {
@@ -136,6 +135,31 @@ public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
 		em.getTransaction().commit();
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-1294")
+	public void testPolymorphicAssociation() {
+		initDB();
+		em.getTransaction().begin();
+		Family family = em.createQuery( "FROM Family f", Family.class ).getSingleResult();
+		List<Person> members = family.getMembers();
+		assertThat( members ).hasSize( familyMembers.size() );
+		for ( Person person : members ) {
+			if ( person instanceof Man ) {
+				assertThat( ( (Man) person ).getHobby() ).isEqualTo( john.getHobby() );
+			}
+			else if ( person instanceof Woman ) {
+				assertThat( ( (Woman) person ).getJob() ).isEqualTo( jane.getJob() );
+			}
+			else if ( person instanceof Child ) {
+				assertThat( ( (Child) person ).getFavouriteToy() ).isIn( susan.getFavouriteToy(), mark.getFavouriteToy() );
+			}
+			else {
+				fail( "Unexpected result: " + person );
+			}
+		}
+		em.getTransaction().commit();
+	}
+
 	private String[] extractNames(List<Person> persons) {
 		List<String> names = new ArrayList<>();
 		for ( Person person : persons ) {
@@ -145,7 +169,6 @@ public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
 	}
 
 	private void initDB() {
-
 		List<Child> children = new ArrayList<Child>( Arrays.asList( susan, mark ) );
 
 		jane.setHusband( john );
@@ -159,19 +182,17 @@ public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
 			child.setMother( jane );
 		}
 
-		persist( entities );
-	}
-
-	private void persist(Iterable<Person> entities) {
-		em.getTransaction().begin();
-		for ( Object entity : entities ) {
-			em.persist( entity );
+		for ( Person person : familyMembers ) {
+			family.add( person );
 		}
+
+		em.getTransaction().begin();
+		em.persist( family );
 		em.getTransaction().commit();
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[]{ Child.class, Man.class, Person.class, Woman.class };
+		return new Class[]{ Child.class, Man.class, Person.class, Woman.class, Family.class };
 	}
 }

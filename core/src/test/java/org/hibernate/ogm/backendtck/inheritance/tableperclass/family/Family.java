@@ -6,32 +6,30 @@
  */
 package org.hibernate.ogm.backendtck.inheritance.tableperclass.family;
 
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.DiscriminatorType;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import org.hibernate.search.annotations.Indexed;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@DiscriminatorColumn(name = "TYPE", discriminatorType = DiscriminatorType.STRING)
 @Indexed
-class Person {
+class Family {
 
 	@Id
 	private String name;
 
-	@ManyToOne
-	private Family familyName;
+	@OneToMany(mappedBy = "familyName", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Person> members = new ArrayList<>();
 
-	public Person() {
+	public Family() {
 	}
 
-	public Person(String name) {
+	public Family(String name) {
 		this.name = name;
 	}
 
@@ -43,16 +41,21 @@ class Person {
 		this.name = name;
 	}
 
-	public Family getFamilyName() {
-		return familyName;
+	public List<Person> getMembers() {
+		return members;
 	}
 
-	public void setFamilyName(Family familyName) {
-		this.familyName = familyName;
+	public void setMembers(List<Person> members) {
+		this.members = members;
+	}
+
+	public void add(Person person) {
+		person.setFamilyName( this );
+		members.add( person );
 	}
 
 	@Override
 	public String toString() {
-		return name;
+		return "Family [name=" + name + "]";
 	}
 }
