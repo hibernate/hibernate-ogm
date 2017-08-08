@@ -242,6 +242,15 @@
         <local-cache name="DisneyGrandMother" />
         <local-cache name="DisneyGrandMother_grandChildren" />
 
+        <local-cache name="ACCOUNT" />
+        <local-cache name="ACCOUNT_ENTRY" />
+        <local-cache name="ADDRESS" />
+        <local-cache name="CONTACT_DETAIL" />
+        <local-cache name="CREDIT_CONDITION" />
+        <local-cache name="DEPOSITOR" />
+        <local-cache name="GiroAccount" />
+        <local-cache name="InstantAccessAccount" />
+
         <local-cache name="TreeNode" />
         <local-cache name="TreeNode_children" />
 
