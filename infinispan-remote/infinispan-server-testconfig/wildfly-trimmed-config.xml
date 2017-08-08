@@ -235,6 +235,7 @@
 
         <local-cache name="Man" />
         <local-cache name="Woman" />
+        <local-cache name="Family" />
 
         <local-cache name="FORUM_USER" />
         <local-cache name="ForumUser_issues" />

@@ -6,12 +6,12 @@
  */
 package org.hibernate.ogm.backendtck.inheritance.tableperclass.family;
 
-import static org.junit.Assert.fail;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.MONGODB;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_BOLT;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_HTTP;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,9 +35,10 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	private Woman jane = new Woman( "Jane", "Hippotherapist" );
 	private Child susan = new Child( "Susan", "Super Mario retro Mushroom" );
 	private Child mark = new Child( "Mark", "Fidget Spinner" );
+	private Family family = new Family( "McCloud" );
 
-	private final List<Person> entities = Arrays.asList( john, jane, susan, mark );
-	private final String[] peopleNames = extractNames( entities );
+	private final List<Person> familyMembers = Arrays.asList( john, jane, susan, mark );
+	private final String[] peopleNames = extractNames( familyMembers );
 
 	private EntityManager em;
 
@@ -50,9 +51,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	public void tearDown() {
 		try {
 			em.getTransaction().begin();
-			for ( Person entity : entities ) {
-				em.remove( entity );
-			}
+			em.remove( em.find( Family.class, family.getName() ) );
 			em.getTransaction().commit();
 		}
 		finally {
@@ -156,6 +155,34 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 		em.getTransaction().commit();
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-1294")
+	@SkipByDatastoreProvider(
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
+	public void testPolymorphicAssociation() {
+		initDB();
+		em.getTransaction().begin();
+		Family family = em.createQuery( "FROM Family f", Family.class ).getSingleResult();
+		List<Person> members = family.getMembers();
+		assertThat( members ).hasSize( familyMembers.size() );
+		for ( Person person : members ) {
+			if ( person instanceof Man ) {
+				assertThat( ( (Man) person ).getHobby() ).isEqualTo( john.getHobby() );
+			}
+			else if ( person instanceof Woman ) {
+				assertThat( ( (Woman) person ).getJob() ).isEqualTo( jane.getJob() );
+			}
+			else if ( person instanceof Child ) {
+				assertThat( ( (Child) person ).getFavouriteToy() ).isIn( susan.getFavouriteToy(), mark.getFavouriteToy() );
+			}
+			else {
+				fail( "Unexpected result: " + person );
+			}
+		}
+		em.getTransaction().commit();
+	}
+
 	private String[] extractNames(List<Person> persons) {
 		List<String> names = new ArrayList<>();
 		for ( Person person : persons ) {
@@ -165,7 +192,6 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	}
 
 	private void initDB() {
-
 		List<Child> children = new ArrayList<Child>( Arrays.asList( susan, mark ) );
 
 		jane.setHusband( john );
@@ -179,19 +205,17 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 			child.setMother( jane );
 		}
 
-		persist( entities );
-	}
-
-	private void persist(Iterable<Person> entities) {
-		em.getTransaction().begin();
-		for ( Object entity : entities ) {
-			em.persist( entity );
+		for ( Person person : familyMembers ) {
+			family.add( person );
 		}
+
+		em.getTransaction().begin();
+		em.persist( family );
 		em.getTransaction().commit();
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[]{ Child.class, Man.class, Person.class, Woman.class };
+		return new Class[]{ Family.class, Child.class, Man.class, Person.class, Woman.class };
 	}
 }
