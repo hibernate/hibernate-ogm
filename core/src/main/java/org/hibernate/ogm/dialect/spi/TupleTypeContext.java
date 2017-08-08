@@ -8,6 +8,7 @@ package org.hibernate.ogm.dialect.spi;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -36,6 +37,15 @@ public interface TupleTypeContext {
 	 * @return the columns that can be selected on the given entity
 	 */
 	List<String> getSelectableColumns();
+
+	/**
+	 * Additional columns that are not part of the entity but that are added by subclasses in a hierarchy.
+	 * <p>
+	 * A dialect can use this extra information to get the additional columns if it doesn't know in advance the type of
+	 * entity mapping the tuple, for example in query like FROM {@code From Person p} where Person is the parent type in a
+	 * hierarchy.
+	 */
+	Set<String> getPolymorphicEntityColumns();
 
 	/**
 	 * Whether the given column is part of a *-to-one association or not. If so, a dialect may choose to not persist the

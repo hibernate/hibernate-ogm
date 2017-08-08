@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
@@ -56,6 +57,7 @@ public class GridDialectOperationContexts {
 
 		private OptionsContext optionsContext = EmptyOptionsContext.INSTANCE;
 		private List<String> selectableColumns = Collections.<String>emptyList();
+		private Set<String> polymorphicEntityColumns = Collections.<String>emptySet();
 		private Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata = Collections.<String, AssociatedEntityKeyMetadata>emptyMap();
 		private Map<String, String> roles = Collections.<String, String>emptyMap();
 
@@ -66,6 +68,11 @@ public class GridDialectOperationContexts {
 
 		public TupleTypeContextBuilder selectableColumns(List<String> columns) {
 			this.selectableColumns = columns;
+			return this;
+		}
+
+		public TupleTypeContextBuilder polymorphicEntityColumns(Set<String> columns) {
+			this.polymorphicEntityColumns = columns;
 			return this;
 		}
 
@@ -80,8 +87,12 @@ public class GridDialectOperationContexts {
 		}
 
 		public TupleTypeContext buildTupleTypeContext() {
-			return new TupleTypeContextImpl( Collections.unmodifiableList( selectableColumns ), Collections.unmodifiableMap( associatedEntityMetadata ),
-					Collections.unmodifiableMap( roles ), optionsContext, null, null );
+			return new TupleTypeContextImpl(
+					Collections.unmodifiableList( selectableColumns ),
+					Collections.unmodifiableSet( polymorphicEntityColumns ),
+					Collections.unmodifiableMap( associatedEntityMetadata ),
+					Collections.unmodifiableMap( roles ),
+					optionsContext, null, null );
 		}
 	}
 
