@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -435,22 +436,42 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return mainSidePersister == inversePropertyType.getAssociatedJoinable( factory ) && mainSideProperty.equals( associatedProperty );
 	}
 
-	private List<String> selectableColumnNames(final EntityDiscriminator discriminator) {
-		List<String> columnNames = new ArrayList<String>();
+	private static List<String> selectableColumnNames(final OgmEntityPersister persister, final EntityDiscriminator discriminator) {
+		Set<String> columnNames = new HashSet<String>();
 
-		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
-			String[] property = this.getPropertyColumnNames( propertyCount );
+		for ( int propertyCount = 0; propertyCount < persister.getPropertySpan(); propertyCount++ ) {
+			String[] property = persister.getPropertyColumnNames( propertyCount );
 			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
 				columnNames.add( property[columnCount] );
 			}
 		}
 
-		if ( discriminator.getColumnName() != null ) {
+		if ( discriminator != null && discriminator.getColumnName() != null ) {
 			columnNames.add( discriminator.getColumnName() );
 		}
 
-		columnNames.addAll( getEmbeddedCollectionColumns() );
+		columnNames.addAll( persister.getEmbeddedCollectionColumns() );
 
+		return new ArrayList<>( columnNames );
+	}
+
+	private static Set<String> polymorficEntityColumns(final OgmEntityPersister persister, List<String> selectableColumnNames, final EntityDiscriminator discriminator) {
+		Set<String> columnNames = new HashSet<>();
+		if ( !persister.getEntityMetamodel().getSubclassEntityNames().isEmpty() ) {
+			@SuppressWarnings("unchecked")
+			Set<String> subclasses = persister.getEntityMetamodel().getSubclassEntityNames();
+			for ( String className : subclasses ) {
+				OgmEntityPersister subEntityPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( className );
+				if ( !subEntityPersister.equals( persister ) ) {
+					List<String> subEntityColumnNames = selectableColumnNames( subEntityPersister, null );
+					for ( String column : subEntityColumnNames ) {
+						if ( !selectableColumnNames.contains( column ) ) {
+							columnNames.add( column );
+						}
+					}
+				}
+			}
+		}
 		return columnNames;
 	}
 
@@ -592,8 +613,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 
+		List<String> selectableColumnNames = selectableColumnNames( this, discriminator );
+		Set<String> polymorphicEntityColumns = polymorficEntityColumns( this, selectableColumnNames, discriminator );
 		return new TupleTypeContextImpl(
-				selectableColumnNames( discriminator ),
+				selectableColumnNames,
+				polymorphicEntityColumns,
 				associatedEntityKeyMetadata,
 				roles,
 				optionsService.context().getEntityOptions( getMappedClass() ),

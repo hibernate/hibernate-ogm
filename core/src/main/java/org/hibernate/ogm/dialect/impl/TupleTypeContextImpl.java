@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -35,14 +36,17 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata;
 
 	private final Map<String, String> roles;
+	private final Set<String> polymorphicEntityColumns;
 
 	public TupleTypeContextImpl(List<String> selectableColumns,
+			Set<String> polymorphicEntityColumns,
 			Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata,
 			Map<String, String> roles,
 			OptionsContext optionsContext,
 			String discriminatorColumn,
 			Object discriminatorValue) {
 
+		this.polymorphicEntityColumns = Collections.unmodifiableSet( polymorphicEntityColumns );
 		this.selectableColumns = Collections.unmodifiableList( selectableColumns );
 		this.associatedEntityMetadata = Collections.unmodifiableMap( associatedEntityMetadata );
 		this.roles = Collections.unmodifiableMap( roles );
@@ -54,6 +58,11 @@ public class TupleTypeContextImpl implements TupleTypeContext {
 	@Override
 	public List<String> getSelectableColumns() {
 		return selectableColumns;
+	}
+
+	@Override
+	public Set<String> getPolymorphicEntityColumns() {
+		return polymorphicEntityColumns;
 	}
 
 	@Override
