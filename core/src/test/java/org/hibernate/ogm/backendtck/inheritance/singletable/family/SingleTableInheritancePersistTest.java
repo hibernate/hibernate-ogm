@@ -24,7 +24,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto
  */
-public class SingleTablenheritancePersistTest extends OgmJpaTestCase {
+public class SingleTableInheritancePersistTest extends OgmJpaTestCase {
 
 	private Man john = new Man( "John", "Riding Roller Coasters" );
 	private Woman jane = new Woman( "Jane", "Hippotherapist" );
