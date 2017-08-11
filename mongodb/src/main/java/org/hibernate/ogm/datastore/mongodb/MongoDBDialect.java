@@ -1338,10 +1338,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					}
 					else {
 						// The association is updated on an existing document
+						addSetToQuery( updateStatement, collectionRole, toStore );
+
 						Document document = getDocument( association, associationContext );
+
+						// The document might be null when deleting detached entities
 						if ( document != null ) {
 							MongoHelpers.setValue( document, associationKey.getMetadata().getCollectionRole(), toStore );
-							addSetToQuery( updateStatement, collectionRole, toStore );
 						}
 					}
 				}
