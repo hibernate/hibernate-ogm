@@ -46,7 +46,10 @@ public class SingleTableInheritancePersistTest extends OgmJpaTestCase {
 	public void tearDown() {
 		try {
 			em.getTransaction().begin();
-			em.remove( em.find( Family.class, family.getName() ) );
+			Family found = em.find( Family.class, family.getName() );
+			if ( found != null ) {
+				em.remove( found );
+			}
 			em.getTransaction().commit();
 		}
 		finally {
@@ -58,6 +61,21 @@ public class SingleTableInheritancePersistTest extends OgmJpaTestCase {
 	@TestForIssue(jiraKey = "OGM-1221")
 	public void testPersistEntititesWithoutErrors() {
 		initDB();
+	}
+
+	@Test
+	public void testCascadeOperation() {
+		initDB();
+
+		em.getTransaction().begin();
+		em.remove( em.find( Family.class, family.getName() ) );
+		em.getTransaction().commit();
+
+		em.clear();
+		em.getTransaction().begin();
+		List<Person> people = em.createQuery( "FROM Person p", Person.class ).getResultList();
+		assertThat( people ).isEmpty();
+		em.getTransaction().commit();
 	}
 
 	@Test
