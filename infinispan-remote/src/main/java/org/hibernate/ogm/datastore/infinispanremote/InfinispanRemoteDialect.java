@@ -225,6 +225,8 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 				// The entity contains the association
 				if ( owningEntity == null ) {
 					TuplePointer entityTuplePointer = getEmbeddingEntityTuplePointer( provider, associationKey, associationContext );
+					// We are removing an association inside an entity so this should always be an update
+					entityTuplePointer.getTuple().setSnapshotType( SnapshotType.UPDATE );
 					applyOperations( entityTuplePointer.getTuple() );
 				}
 			}
@@ -270,6 +272,8 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 		if ( !associationStoredWithinEntityEntry( associationKey, associationContext ) ) {
 			insertOrUpdateAssociationMappedAsDedicatedEntries( associationKey, association, associationContext );
 		}
+
+		association.reset();
 	}
 
 	private static TuplePointer getEmbeddingEntityTuplePointer(InfinispanRemoteDatastoreProvider provider, AssociationKey key, AssociationContext associationContext) {
@@ -375,9 +379,6 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 					throw new AssertionFailure( "Request for CLEAR operation on an association mapped to dedicated entries. Makes no sense?" );
 			}
 		}
-
-		// the snapshot has been updated so we have to clear the various operations added to the Association
-		association.reset();
 	}
 
 	private static void removeAssociationFromBridgeTable(InfinispanRemoteDatastoreProvider provider, AssociationKey key) {
