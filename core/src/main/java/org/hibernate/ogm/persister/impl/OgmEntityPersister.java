@@ -455,7 +455,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return new ArrayList<>( columnNames );
 	}
 
-	private static Set<String> polymorficEntityColumns(final OgmEntityPersister persister, List<String> selectableColumnNames, final EntityDiscriminator discriminator) {
+	private static Set<String> polymorphicEntityColumns(final OgmEntityPersister persister, List<String> selectableColumnNames, final EntityDiscriminator discriminator) {
 		Set<String> columnNames = new HashSet<>();
 		if ( !persister.getEntityMetamodel().getSubclassEntityNames().isEmpty() ) {
 			@SuppressWarnings("unchecked")
@@ -614,7 +614,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		List<String> selectableColumnNames = selectableColumnNames( this, discriminator );
-		Set<String> polymorphicEntityColumns = polymorficEntityColumns( this, selectableColumnNames, discriminator );
+		Set<String> polymorphicEntityColumns = polymorphicEntityColumns( this, selectableColumnNames, discriminator );
 		return new TupleTypeContextImpl(
 				selectableColumnNames,
 				polymorphicEntityColumns,
