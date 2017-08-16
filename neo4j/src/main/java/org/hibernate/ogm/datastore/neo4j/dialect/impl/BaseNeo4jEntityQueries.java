@@ -577,27 +577,15 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	}
 
 	public String getUpdateEmbeddedColumnQuery(Object[] keyValues, String embeddedColumn) {
-		String query = updateEmbeddedPropertyQueryCache.get( embeddedColumn );
-		if ( query == null ) {
-			query = initUpdateEmbeddedColumnQuery( keyValues, embeddedColumn );
-			String cached = updateEmbeddedPropertyQueryCache.putIfAbsent( embeddedColumn, query );
-			if ( cached != null ) {
-				query = cached;
-			}
-		}
-		return query;
+		return updateEmbeddedPropertyQueryCache.computeIfAbsent( embeddedColumn,
+				ec -> initUpdateEmbeddedColumnQuery( keyValues, ec )
+		);
 	}
 
 	public String getFindAssociationQuery(String relationshipType, AssociationKeyMetadata associationKeyMetadata) {
-		String query = findAssociationQueryCache.get( associationKeyMetadata.getCollectionRole() );
-		if ( query == null ) {
-			query = completeFindAssociationQuery( relationshipType, associationKeyMetadata );
-			String cached = findAssociationQueryCache.putIfAbsent( associationKeyMetadata.getCollectionRole(), query );
-			if ( cached != null ) {
-				query = cached;
-			}
-		}
-		return query;
+		return findAssociationQueryCache.computeIfAbsent( associationKeyMetadata.getCollectionRole(),
+				role -> completeFindAssociationQuery( relationshipType, associationKeyMetadata )
+		);
 	}
 
 	/*
