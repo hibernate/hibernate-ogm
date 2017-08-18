@@ -191,11 +191,13 @@ class EntityAssociationUpdater {
 				.context();
 
 		Class<?> entityType = persister.getPropertyTypes()[propertyIndex].getReturnedClass();
+		String entityName = persister.getFactory().getClassMetadata( entityType ).getEntityName();
+		OgmEntityPersister entityPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( entityName );
 
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( entityType, associationKeyMetadata.getCollectionRole() ),
 				serviceContext.getEntityOptions( entityType ),
-				persister.getTupleTypeContext(),
+				entityPersister.getTupleTypeContext(),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 				persister.getPropertyNames()[propertyIndex]
 		);
