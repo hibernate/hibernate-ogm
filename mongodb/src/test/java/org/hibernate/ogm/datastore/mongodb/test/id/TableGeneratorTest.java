@@ -12,8 +12,8 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.backendtck.id.GuitarPlayer;
 import org.hibernate.ogm.backendtck.id.PianoPlayer;
-import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.query.NativeQuery;
 import org.junit.Test;
 
 /**
@@ -53,7 +53,7 @@ public class TableGeneratorTest extends OgmTestCase {
 	}
 
 	private void assertCountQueryResult(OgmSession session, String queryString, long expectedCount) {
-		NoSQLQuery query = session.createNativeQuery( queryString );
+		NativeQuery query = session.createNativeQuery( queryString );
 		query.addScalar( "n" );
 		long actualCount = (Long) query.list().iterator().next();
 		assertThat( actualCount ).describedAs( "Count query didn't yield expected result" ).isEqualTo( expectedCount );

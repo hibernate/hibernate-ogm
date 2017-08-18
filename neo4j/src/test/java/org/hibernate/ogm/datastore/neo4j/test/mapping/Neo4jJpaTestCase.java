@@ -19,7 +19,6 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAsse
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelperDelegate;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -72,9 +71,8 @@ public abstract class Neo4jJpaTestCase extends OgmJpaTestCase {
 	}
 
 	private DatastoreProvider datastoreProvider() {
-		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
-		if ( emFactory != null ) {
-			SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) getFactory();
+		if ( sessionFactory != null ) {
 			DatastoreProvider datastoreProvider = sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
 			return datastoreProvider;
 		}

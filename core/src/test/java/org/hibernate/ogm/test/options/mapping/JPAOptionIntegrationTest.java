@@ -13,7 +13,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
@@ -55,7 +54,7 @@ public class JPAOptionIntegrationTest {
 	}
 
 	private OptionsServiceContext getOptionsContext(EntityManagerFactory emf) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) emf ).getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) emf;
 		return sessionFactory.getServiceRegistry().getService( OptionsService.class ).context();
 	}
 }

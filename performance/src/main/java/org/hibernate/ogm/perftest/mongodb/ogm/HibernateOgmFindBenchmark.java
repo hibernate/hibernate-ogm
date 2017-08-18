@@ -19,7 +19,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.perftest.model.AuthorWithSequence;
-import org.hibernate.ogm.query.NoSQLQuery;
+import org.hibernate.query.NativeQuery;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.Scope;
@@ -125,7 +125,7 @@ public class HibernateOgmFindBenchmark {
 			int mName = stateHolder.rand.nextInt( 26 );
 
 			Query nativeQuery = entityManager.createNativeQuery( "db.AuthorWithSequence.find( { 'mname' : '" + mName + "' } )", AuthorWithSequence.class );
-			nativeQuery.unwrap( NoSQLQuery.class ).addSynchronizedEntityClass( AuthorWithSequence.class );
+			nativeQuery.unwrap( NativeQuery.class ).addSynchronizedEntityClass( AuthorWithSequence.class );
 			nativeQuery.setMaxResults( 50 );
 
 			@SuppressWarnings("unchecked")
@@ -154,10 +154,10 @@ public class HibernateOgmFindBenchmark {
 			int mName = stateHolder.rand.nextInt( 26 );
 
 			Query nativeQuery = entityManager.createNativeQuery( "db.AuthorWithSequence.find( { 'mname' : '" + mName + "' } )", AuthorWithSequence.class );
-			nativeQuery.unwrap( NoSQLQuery.class ).addSynchronizedEntityClass( AuthorWithSequence.class );
+			nativeQuery.unwrap( NativeQuery.class ).addSynchronizedEntityClass( AuthorWithSequence.class );
 			nativeQuery.setMaxResults( 50 );
 
-			nativeQuery.unwrap( NoSQLQuery.class ).setFlushMode( FlushMode.MANUAL );
+			nativeQuery.unwrap( NativeQuery.class ).setFlushMode( FlushMode.MANUAL );
 
 			@SuppressWarnings("unchecked")
 			List<AuthorWithSequence> authors = nativeQuery.getResultList();
