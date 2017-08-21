@@ -71,7 +71,7 @@ public class AssociationContextImpl implements AssociationContext {
 
 	@Override
 	public TupleTypeContext getTupleTypeContext() {
-		return associationTypeContext.getOwnerEntityTupleTypeContext();
+		return associationTypeContext.getHostingEntityTupleTypeContext();
 	}
 
 	@Override

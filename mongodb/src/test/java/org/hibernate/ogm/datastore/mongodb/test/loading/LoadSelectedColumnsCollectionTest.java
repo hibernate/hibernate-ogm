@@ -158,12 +158,12 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 			}
 
 			@Override
-			public TupleTypeContext getOwnerEntityTupleTypeContext() {
+			public TupleTypeContext getHostingEntityTupleTypeContext() {
 				return GridDialectOperationContexts.emptyTupleTypeContext();
 			}
 
 			@Override
-			public OptionsContext getOwnerEntityOptionsContext() {
+			public OptionsContext getHostingEntityOptionsContext() {
 				return EmptyOptionsContext.INSTANCE;
 			}
 

@@ -114,12 +114,12 @@ public class GridDialectOperationContexts {
 				}
 
 				@Override
-				public TupleTypeContext getOwnerEntityTupleTypeContext() {
+				public TupleTypeContext getHostingEntityTupleTypeContext() {
 					return ownerEntityTupleTypeContext;
 				}
 
 				@Override
-				public OptionsContext getOwnerEntityOptionsContext() {
+				public OptionsContext getHostingEntityOptionsContext() {
 					return ownerEntityOptionsContext;
 				}
 

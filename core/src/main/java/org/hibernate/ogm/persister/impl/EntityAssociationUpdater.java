@@ -151,7 +151,6 @@ class EntityAssociationUpdater {
 	}
 
 	private void addNavigationalInformationForInverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] newColumnValue) {
-		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, newColumnValue );
 
 		RowKey rowKey = getInverseRowKey( associationKeyMetadata, newColumnValue );
 
@@ -159,6 +158,8 @@ class EntityAssociationUpdater {
 		for ( String column : rowKey.getColumnNames() ) {
 			associationRow.put( column, rowKey.getColumnValue( column ) );
 		}
+
+		AssociationPersister associationPersister = createInverseAssociationPersister( propertyIndex, associationKeyMetadata, newColumnValue );
 		associationPersister.getAssociation().put( rowKey, associationRow );
 
 		if ( associationPersister.getAssociationContext().getEntityTuplePointer().getTuple() == null ) {
@@ -169,7 +170,7 @@ class EntityAssociationUpdater {
 	}
 
 	private void removeNavigationalInformationFromInverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] oldColumnValue) {
-		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, oldColumnValue );
+		AssociationPersister associationPersister = createInverseAssociationPersister( propertyIndex, associationKeyMetadata, oldColumnValue );
 
 		Association association = associationPersister.getAssociationOrNull();
 
@@ -184,7 +185,7 @@ class EntityAssociationUpdater {
 		}
 	}
 
-	private AssociationPersister createAssociationPersister(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] keyColumnValues) {
+	private AssociationPersister createInverseAssociationPersister(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] keyColumnValues) {
 		OptionsServiceContext serviceContext = session.getFactory()
 				.getServiceRegistry()
 				.getService( OptionsService.class )
@@ -192,12 +193,14 @@ class EntityAssociationUpdater {
 
 		Class<?> entityType = persister.getPropertyTypes()[propertyIndex].getReturnedClass();
 		String entityName = persister.getFactory().getClassMetadata( entityType ).getEntityName();
-		OgmEntityPersister ownerPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( entityName );
+		OgmEntityPersister inverseEntityPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( entityName );
+
+		String mainSidePropertyName = persister.getPropertyNames()[propertyIndex];
 
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl.Builder( serviceContext )
 				.associationKeyMetadata( associationKeyMetadata )
-				.hostingEntityPersister( ownerPersister )
-				.mainSidePropertyName( persister.getPropertyNames()[propertyIndex] )
+				.hostingEntityPersister( inverseEntityPersister )
+				.mainSidePropertyName( mainSidePropertyName )
 				.build();
 
 		return new AssociationPersister.Builder(
@@ -205,7 +208,7 @@ class EntityAssociationUpdater {
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
-				.associationKeyMetadata(  associationKeyMetadata )
+				.associationKeyMetadata( associationKeyMetadata )
 				.keyColumnValues( keyColumnValues )
 				.session( session )
 				.associationTypeContext( associationTypeContext )
