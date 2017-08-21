@@ -192,17 +192,15 @@ class EntityAssociationUpdater {
 
 		Class<?> entityType = persister.getPropertyTypes()[propertyIndex].getReturnedClass();
 		String entityName = persister.getFactory().getClassMetadata( entityType ).getEntityName();
-		OgmEntityPersister entityPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( entityName );
+		OgmEntityPersister ownerPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( entityName );
 
-		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
-				serviceContext.getPropertyOptions( entityType, associationKeyMetadata.getCollectionRole() ),
-				serviceContext.getEntityOptions( entityType ),
-				entityPersister.getTupleTypeContext(),
-				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
-				persister.getPropertyNames()[propertyIndex]
-		);
+		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl.Builder( serviceContext )
+				.associationKeyMetadata( associationKeyMetadata )
+				.hostingEntityPersister( ownerPersister )
+				.mainSidePropertyName( persister.getPropertyNames()[propertyIndex] )
+				.build();
 
-		return new AssociationPersister(
+		return new AssociationPersister.Builder(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
@@ -210,7 +208,8 @@ class EntityAssociationUpdater {
 				.associationKeyMetadata(  associationKeyMetadata )
 				.keyColumnValues( keyColumnValues )
 				.session( session )
-				.associationTypeContext( associationTypeContext );
+				.associationTypeContext( associationTypeContext )
+				.build();
 	}
 
 	/**
