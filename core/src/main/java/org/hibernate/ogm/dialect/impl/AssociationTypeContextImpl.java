@@ -34,18 +34,25 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 
 		private AssociationKeyMetadata associationKeyMetadata;
 		private OptionsServiceContext serviceContext;
-		private OgmEntityPersister hostingPersister;
+		private OgmEntityPersister hostingEntityPersister;
 		private String mainSidePropertyName;
 
 		public Builder(OptionsServiceContext optionsServiceContext) {
 			this.serviceContext = optionsServiceContext;
 		}
 
-		public Builder hostingEntityPersister(OgmEntityPersister hostingPersister) {
-			this.hostingPersister = hostingPersister;
+		public Builder hostingEntityPersister(OgmEntityPersister ownerEntityPersister) {
+			this.hostingEntityPersister = ownerEntityPersister;
 			return this;
 		}
 
+		/**
+		 * The role of the represented association on the main side in case the current operation is invoked for the
+		 * inverse side of a bi-directional association.
+		 *
+		 * @return The role of the represented association on the main side. The association's own role will be returned in case
+		 * this operation is invoked for an uni-directional association or the main-side of a bi-directional association.
+		 */
 		public Builder mainSidePropertyName(String mainSidePropertyName) {
 			this.mainSidePropertyName = mainSidePropertyName;
 			return this;
@@ -57,9 +64,10 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 		}
 
 		public AssociationTypeContextImpl build() {
-			OptionsContext hostingPropertyOptions = serviceContext.getPropertyOptions( hostingPersister.getMappedClass(), associationKeyMetadata.getCollectionRole() );
-			OptionsContext hostingEntityOptions = serviceContext.getEntityOptions( hostingPersister.getEntityType().getReturnedClass() );
-			TupleTypeContext tupleTypeContext = hostingPersister.getTupleTypeContext();
+			OptionsContext hostingPropertyOptions = serviceContext.getPropertyOptions( hostingEntityPersister.getMappedClass(),
+					associationKeyMetadata.getCollectionRole() );
+			OptionsContext hostingEntityOptions = serviceContext.getEntityOptions( hostingEntityPersister.getEntityType().getReturnedClass() );
+			TupleTypeContext tupleTypeContext = hostingEntityPersister.getTupleTypeContext();
 
 			return new AssociationTypeContextImpl(
 					hostingPropertyOptions,
@@ -72,13 +80,13 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 
 	private AssociationTypeContextImpl(
 			OptionsContext optionsContext,
-			OptionsContext ownerEntityOptionsContext,
-			TupleTypeContext ownerEntityTupleTypeContext,
+			OptionsContext hostingEntityOptionsContext,
+			TupleTypeContext hostingEntityTupleTypeContext,
 			AssociatedEntityKeyMetadata associatedEntityKeyMetadata,
 			String roleOnMainSide) {
 		this.optionsContext = optionsContext;
-		this.hostingEntityOptionsContext = ownerEntityOptionsContext;
-		this.hostingEntityTupleTypeContext = ownerEntityTupleTypeContext;
+		this.hostingEntityOptionsContext = hostingEntityOptionsContext;
+		this.hostingEntityTupleTypeContext = hostingEntityTupleTypeContext;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.roleOnMainSide = roleOnMainSide;
 	}
@@ -89,12 +97,12 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 	}
 
 	@Override
-	public OptionsContext getOwnerEntityOptionsContext() {
+	public OptionsContext getHostingEntityOptionsContext() {
 		return hostingEntityOptionsContext;
 	}
 
 	@Override
-	public TupleTypeContext getOwnerEntityTupleTypeContext() {
+	public TupleTypeContext getHostingEntityTupleTypeContext() {
 		return hostingEntityTupleTypeContext;
 	}
 
@@ -109,12 +117,11 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 	}
 
 	/**
-	 * Provides the role of the represented association on the main side in case the current operation is invoked for
-	 * the inverse side of a bi-directional association.
+	 * Provides the role of the represented association on the main side in case the current operation is invoked for the
+	 * inverse side of a bi-directional association.
 	 *
-	 * @return The role of the represented association on the main side. The association's own role will be returned in
-	 * case this operation is invoked for an uni-directional association or the main-side of a bi-directional
-	 * association.
+	 * @return The role of the represented association on the main side. The association's own role will be returned in case
+	 * this operation is invoked for an uni-directional association or the main-side of a bi-directional association.
 	 */
 	@Override
 	public String getRoleOnMainSide() {
