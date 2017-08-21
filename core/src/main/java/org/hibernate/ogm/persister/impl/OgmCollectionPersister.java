@@ -861,19 +861,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.getService( OptionsService.class )
 				.context();
 
-		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
-				serviceContext.getPropertyOptions( getOwnerEntityPersister().getMappedClass(), associationKeyMetadata.getCollectionRole() ),
-				serviceContext.getEntityOptions( getOwnerEntityPersister().getMappedClass() ),
-				getOwnerEntityPersister().getTupleTypeContext(),
-				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
-				mainSidePropertyName
-		);
+		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl.Builder( serviceContext )
+				.associationKeyMetadata( associationKeyMetadata )
+				.hostingEntityPersister( getOwnerEntityPersister() )
+				.mainSidePropertyName( mainSidePropertyName )
+				.build();
 
 		return associationTypeContext;
 	}
 
 	private AssociationPersister getAssociationPersister(Object collectionOwner, Serializable id, SessionImplementor session) {
-		return new AssociationPersister(
+		return new AssociationPersister.Builder(
 				getOwnerEntityPersister().getMappedClass()
 			)
 			.hostingEntity( collectionOwner )
@@ -881,11 +879,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			.key( id, getKeyGridType() )
 			.associationKeyMetadata( associationKeyMetadata )
 			.associationTypeContext( associationTypeContext )
-			.session( session );
+			.session( session )
+			.build();
 	}
 
 	private AssociationPersister getAssociationPersister(Object collectionOwner, Object[] keyColumnValues, SessionImplementor session) {
-		return new AssociationPersister(
+		return new AssociationPersister.Builder(
 				getOwnerEntityPersister().getMappedClass()
 			)
 			.hostingEntity( collectionOwner )
@@ -893,7 +892,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			.keyColumnValues( keyColumnValues )
 			.associationKeyMetadata( associationKeyMetadata )
 			.associationTypeContext( associationTypeContext )
-			.session( session );
+			.session( session )
+			.build();
 	}
 
 	private TuplePointer getSharedTuplePointer(EntityKey key, Object entity, TupleContext tupleContext, SessionImplementor session) {

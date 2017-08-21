@@ -14,10 +14,10 @@ import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
-import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
@@ -96,7 +96,7 @@ public class GridDialectOperationContexts {
 		}
 	}
 
-	public static class AssociationContextBuilder {
+	private static class AssociationContextBuilder {
 
 		private OptionsContext optionsContext = EmptyOptionsContext.INSTANCE;
 		private OptionsContext ownerEntityOptionsContext = EmptyOptionsContext.INSTANCE;
@@ -105,29 +105,35 @@ public class GridDialectOperationContexts {
 		private String roleOnMainSide = null;
 		private TransactionContext transactionContext = null;
 
-		public AssociationContextBuilder optionsContext(OptionsContext optionsContext) {
-			this.optionsContext = optionsContext;
-			return this;
-		}
-
-		public AssociationContextBuilder ownerEntityOptionsContext(OptionsContext ownerEntityOptionsContext) {
-			this.ownerEntityOptionsContext = ownerEntityOptionsContext;
-			return this;
-		}
-
-		public AssociationContextBuilder ownerEntityTupleTypeContext(TupleTypeContext ownerEntityTupleTypeContext) {
-			this.ownerEntityTupleTypeContext = ownerEntityTupleTypeContext;
-			return this;
-		}
-
-		public AssociationContextBuilder transactionContext(Session session) {
-			this.transactionContext = TransactionContextHelper.transactionContext( session );
-			return this;
-		}
-
 		public AssociationContext buildAssociationContext() {
-			return new AssociationContextImpl( new AssociationTypeContextImpl( optionsContext, ownerEntityOptionsContext, ownerEntityTupleTypeContext,
-					associatedEntityKeyMetadata, roleOnMainSide ), new TuplePointer(), transactionContext );
+			AssociationTypeContext associationTypeContext = new AssociationTypeContext() {
+
+				@Override
+				public String getRoleOnMainSide() {
+					return roleOnMainSide;
+				}
+
+				@Override
+				public TupleTypeContext getOwnerEntityTupleTypeContext() {
+					return ownerEntityTupleTypeContext;
+				}
+
+				@Override
+				public OptionsContext getOwnerEntityOptionsContext() {
+					return ownerEntityOptionsContext;
+				}
+
+				@Override
+				public OptionsContext getOptionsContext() {
+					return optionsContext;
+				}
+
+				@Override
+				public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata() {
+					return associatedEntityKeyMetadata;
+				}
+			};
+			return new AssociationContextImpl( associationTypeContext, new TuplePointer(), transactionContext );
 		}
 	}
 

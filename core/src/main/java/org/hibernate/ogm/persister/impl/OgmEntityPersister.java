@@ -810,23 +810,22 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.getService( OptionsService.class )
 				.context();
 
-		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
-				serviceContext.getPropertyOptions( inversePersister.getMappedClass(), associationKeyMetadata.getCollectionRole() ),
-				serviceContext.getEntityOptions( inversePersister.getMappedClass() ),
-				inversePersister.getTupleTypeContext(),
-				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
-				getPropertyNames()[propertyIndex]
-		);
+		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl.Builder( serviceContext )
+				.associationKeyMetadata( associationKeyMetadata )
+				.hostingEntityPersister( inversePersister )
+				.mainSidePropertyName( getPropertyNames()[propertyIndex] )
+				.build();
 
-		AssociationPersister associationPersister = new AssociationPersister(
-				inversePersister.getMappedClass()
+		AssociationPersister associationPersister = new AssociationPersister.Builder(
+					inversePersister.getMappedClass()
 				)
 				.gridDialect( gridDialect )
 				.key( uniqueKey, gridUniqueKeyType )
 				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
 				.associationTypeContext( associationTypeContext )
-				.hostingEntity( session.getPersistenceContext().getEntity( new org.hibernate.engine.spi.EntityKey( (Serializable) uniqueKey, inversePersister ) ) );
+				.hostingEntity( session.getPersistenceContext().getEntity( new org.hibernate.engine.spi.EntityKey( (Serializable) uniqueKey, inversePersister ) ) )
+				.build();
 
 		final Association ids = associationPersister.getAssociationOrNull();
 
@@ -1615,13 +1614,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) getFactory()
 						.getCollectionPersister( collectionType.getRole() );
 
-				AssociationPersister associationPersister = new AssociationPersister( collectionPersister.getOwnerEntityPersister().getMappedClass() )
+				AssociationPersister associationPersister = new AssociationPersister.Builder( collectionPersister.getOwnerEntityPersister().getMappedClass() )
 						.hostingEntity( entity )
 						.gridDialect( gridDialect )
 						.key( id, collectionPersister.getKeyGridType() )
 						.associationKeyMetadata( collectionPersister.getAssociationKeyMetadata() )
 						.associationTypeContext( collectionPersister.getAssociationTypeContext() )
-						.session( session );
+						.session( session )
+						.build();
 
 				Association association = associationPersister.getAssociationOrNull();
 				if ( association != null && !association.isEmpty() ) {

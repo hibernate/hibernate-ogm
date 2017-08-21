@@ -10,8 +10,11 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
@@ -22,17 +25,60 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 public class AssociationTypeContextImpl implements AssociationTypeContext {
 
 	private final OptionsContext optionsContext;
-	private final OptionsContext ownerEntityOptionsContext;
-	private final TupleTypeContext ownerEntityTupleTypeContext;
+	private final OptionsContext hostingEntityOptionsContext;
+	private final TupleTypeContext hostingEntityTupleTypeContext;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String roleOnMainSide;
 
-	public AssociationTypeContextImpl(OptionsContext optionsContext, OptionsContext ownerEntityOptionsContext,
+	public static class Builder {
+
+		private AssociationKeyMetadata associationKeyMetadata;
+		private OptionsServiceContext serviceContext;
+		private OgmEntityPersister hostingPersister;
+		private String mainSidePropertyName;
+
+		public Builder(OptionsServiceContext optionsServiceContext) {
+			this.serviceContext = optionsServiceContext;
+		}
+
+		public Builder hostingEntityPersister(OgmEntityPersister hostingPersister) {
+			this.hostingPersister = hostingPersister;
+			return this;
+		}
+
+		public Builder mainSidePropertyName(String mainSidePropertyName) {
+			this.mainSidePropertyName = mainSidePropertyName;
+			return this;
+		}
+
+		public Builder associationKeyMetadata(AssociationKeyMetadata associationKeyMetadata) {
+			this.associationKeyMetadata = associationKeyMetadata;
+			return this;
+		}
+
+		public AssociationTypeContextImpl build() {
+			OptionsContext hostingPropertyOptions = serviceContext.getPropertyOptions( hostingPersister.getMappedClass(), associationKeyMetadata.getCollectionRole() );
+			OptionsContext hostingEntityOptions = serviceContext.getEntityOptions( hostingPersister.getEntityType().getReturnedClass() );
+			TupleTypeContext tupleTypeContext = hostingPersister.getTupleTypeContext();
+
+			return new AssociationTypeContextImpl(
+					hostingPropertyOptions,
+					hostingEntityOptions,
+					tupleTypeContext,
+					associationKeyMetadata.getAssociatedEntityKeyMetadata(),
+					mainSidePropertyName );
+		}
+	}
+
+	private AssociationTypeContextImpl(
+			OptionsContext optionsContext,
+			OptionsContext ownerEntityOptionsContext,
 			TupleTypeContext ownerEntityTupleTypeContext,
-			AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide) {
+			AssociatedEntityKeyMetadata associatedEntityKeyMetadata,
+			String roleOnMainSide) {
 		this.optionsContext = optionsContext;
-		this.ownerEntityOptionsContext = ownerEntityOptionsContext;
-		this.ownerEntityTupleTypeContext = ownerEntityTupleTypeContext;
+		this.hostingEntityOptionsContext = ownerEntityOptionsContext;
+		this.hostingEntityTupleTypeContext = ownerEntityTupleTypeContext;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.roleOnMainSide = roleOnMainSide;
 	}
@@ -44,12 +90,12 @@ public class AssociationTypeContextImpl implements AssociationTypeContext {
 
 	@Override
 	public OptionsContext getOwnerEntityOptionsContext() {
-		return ownerEntityOptionsContext;
+		return hostingEntityOptionsContext;
 	}
 
 	@Override
 	public TupleTypeContext getOwnerEntityTupleTypeContext() {
-		return ownerEntityTupleTypeContext;
+		return hostingEntityTupleTypeContext;
 	}
 
 	/**

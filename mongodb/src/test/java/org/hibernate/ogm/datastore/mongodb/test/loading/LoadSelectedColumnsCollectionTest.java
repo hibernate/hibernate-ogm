@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bson.Document;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
@@ -32,14 +33,16 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
-import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -63,7 +66,6 @@ import org.junit.Test;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -148,18 +150,40 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				)
 		);
 
-		AssociationContext associationContext = new AssociationContextImpl(
-				new AssociationTypeContextImpl(
-						OptionsContextImpl.forProperty(
-								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( getSessionFactory().getProperties(), new ClassLoaderServiceImpl() ) ),
+		AssociationTypeContext associationTypeContext = new AssociationTypeContext() {
+
+			@Override
+			public String getRoleOnMainSide() {
+				return null;
+			}
+
+			@Override
+			public TupleTypeContext getOwnerEntityTupleTypeContext() {
+				return GridDialectOperationContexts.emptyTupleTypeContext();
+			}
+
+			@Override
+			public OptionsContext getOwnerEntityOptionsContext() {
+				return EmptyOptionsContext.INSTANCE;
+			}
+
+			@Override
+			public OptionsContext getOptionsContext() {
+				return OptionsContextImpl.forProperty(
+								OptionValueSources.getDefaultSources(
+										new ConfigurationPropertyReader( getSessionFactory().getProperties(), new ClassLoaderServiceImpl() ) ),
 								Project.class,
-								"modules"
-						),
-						EmptyOptionsContext.INSTANCE,
-						GridDialectOperationContexts.emptyTupleTypeContext(),
-						new DefaultAssociatedEntityKeyMetadata( null, null ),
-						null
-				),
+								"modules" );
+			}
+
+			@Override
+			public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata() {
+				return new DefaultAssociatedEntityKeyMetadata( null, null );
+			}
+		};
+
+		AssociationContext associationContext = new AssociationContextImpl(
+				associationTypeContext,
 				new TuplePointer( new Tuple( new MongoDBTupleSnapshot( null, null ), SnapshotType.UPDATE ) ),
 				transactionContext( session )
 		);

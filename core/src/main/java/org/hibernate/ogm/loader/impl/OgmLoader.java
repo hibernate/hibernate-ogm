@@ -594,7 +594,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 			final OgmCollectionPersister persister = (OgmCollectionPersister) getCollectionPersisters()[0];
 			Object owner = session.getPersistenceContext().getCollectionOwner( id, persister );
 
-			AssociationPersister associationPersister = new AssociationPersister(
+			AssociationPersister associationPersister = new AssociationPersister.Builder(
 					persister.getOwnerEntityPersister().getMappedClass()
 				)
 				.gridDialect( gridDialect )
@@ -602,7 +602,8 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 				.associationKeyMetadata( persister.getAssociationKeyMetadata() )
 				.associationTypeContext( persister.getAssociationTypeContext() )
 				.hostingEntity( owner )
-				.session( session );
+				.session( session )
+				.build();
 
 			Association assoc = associationPersister.getAssociationOrNull();
 			if ( assoc != null ) {

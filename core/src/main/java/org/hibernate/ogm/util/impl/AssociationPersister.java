@@ -60,48 +60,78 @@ public class AssociationPersister {
 	private Boolean hostingEntityRequiresReadAfterUpdate;
 	private EntityPersister hostingEntityPersister;
 
-	public AssociationPersister(Class<?> entityType) {
-		this.hostingEntityType = entityType;
+	private AssociationPersister(Builder builder) {
+		this.hostingEntityType = builder.targetEntityType;
+		this.hostingEntity = builder.hostingEntity;
+		this.gridDialect = builder.gridDialect;
+		this.session = builder.session;
+		this.key = builder.key;
+		this.keyGridType = builder.keyGridType;
+		this.associationTypeContext = builder.associationTypeContext;
+		this.associationKeyMetadata = builder.associationKeyMetadata;
+		this.columnValues = builder.keyColumnValues;
 	}
 
-	//fluent methods for populating data
+	public static class Builder {
 
-	public AssociationPersister gridDialect(GridDialect gridDialect) {
-		this.gridDialect = gridDialect;
-		return this;
-	}
+		public Class<?> targetEntityType;
+		//fluent methods for populating data
 
-	public AssociationPersister session(SessionImplementor session) {
-		this.session = session;
-		return this;
-	}
+		public AssociationKeyMetadata associationKeyMetadata;
+		public AssociationTypeContext associationTypeContext;
+		public GridType keyGridType;
+		public Object key;
+		public SessionImplementor session;
+		public GridDialect gridDialect;
+		public Object hostingEntity;
 
-	// one of the following two methods is to be invoked, not both
+		private Object[] keyColumnValues;
 
-	public AssociationPersister key(Object key, GridType keyGridType) {
-		this.key = key;
-		this.keyGridType = keyGridType;
-		return this;
-	}
+		public Builder(Class<?> targetEntityType) {
+			this.targetEntityType = targetEntityType;
+		}
 
-	public AssociationPersister keyColumnValues(Object[] columnValues) {
-		this.columnValues = columnValues;
-		return this;
-	}
+		public Builder gridDialect(GridDialect gridDialect) {
+			this.gridDialect = gridDialect;
+			return this;
+		}
 
-	public AssociationPersister hostingEntity(Object entity) {
-		this.hostingEntity = entity;
-		return this;
-	}
+		public Builder session(SessionImplementor session) {
+			this.session = session;
+			return this;
+		}
 
-	public AssociationPersister associationTypeContext(AssociationTypeContext associationTypeContext) {
-		this.associationTypeContext = associationTypeContext;
-		return this;
-	}
+		// one of the following two methods is to be invoked, not both
 
-	public AssociationPersister associationKeyMetadata(AssociationKeyMetadata associationKeyMetadata) {
-		this.associationKeyMetadata = associationKeyMetadata;
-		return this;
+		public Builder key(Object key, GridType keyGridType) {
+			this.key = key;
+			this.keyGridType = keyGridType;
+			return this;
+		}
+
+		public Builder keyColumnValues(Object[] columnValues) {
+			this.keyColumnValues = columnValues;
+			return this;
+		}
+
+		public Builder hostingEntity(Object hostingEntity) {
+			this.hostingEntity = hostingEntity;
+			return this;
+		}
+
+		public Builder associationTypeContext(AssociationTypeContext associationTypeContext) {
+			this.associationTypeContext = associationTypeContext;
+			return this;
+		}
+
+		public Builder associationKeyMetadata(AssociationKeyMetadata associationKeyMetadata) {
+			this.associationKeyMetadata = associationKeyMetadata;
+			return this;
+		}
+
+		public AssociationPersister build() {
+			return new AssociationPersister( this );
+		}
 	}
 
 	//action methods
