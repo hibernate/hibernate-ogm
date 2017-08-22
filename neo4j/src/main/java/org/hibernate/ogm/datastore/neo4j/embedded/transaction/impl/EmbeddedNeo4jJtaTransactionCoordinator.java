@@ -12,7 +12,7 @@ import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastorePro
 import org.hibernate.ogm.datastore.neo4j.transaction.impl.BaseNeo4jJtaTransactionCoordinator;
 import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jSynchronization;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 

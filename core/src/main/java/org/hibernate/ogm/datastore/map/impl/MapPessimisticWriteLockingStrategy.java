@@ -12,7 +12,7 @@ import org.hibernate.JDBCException;
 import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -46,7 +46,8 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 	}
 
 	@Override
-	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
+	public void lock(Serializable id, Object version, Object object, int timeout, SharedSessionContractImplementor session)
+			throws StaleObjectStateException, JDBCException {
 		MapDatastoreProvider dataStore = getProvider( session );
 		EntityKey key = EntityKeyBuilder.fromData(
 				( (OgmEntityPersister) lockable ).getRootEntityKeyMetadata(),
@@ -58,7 +59,7 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 		// (Comment by Emmanuel)
 	}
 
-	protected final MapDatastoreProvider getProvider(SessionImplementor session) {
+	protected final MapDatastoreProvider getProvider(SharedSessionContractImplementor session) {
 		if ( provider == null ) {
 			DatastoreProvider service = session.getFactory().getServiceRegistry().getService( DatastoreProvider.class );
 			if ( service instanceof MapDatastoreProvider ) {

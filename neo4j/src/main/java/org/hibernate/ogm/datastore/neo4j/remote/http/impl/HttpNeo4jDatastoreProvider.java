@@ -18,7 +18,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.http.dialect.impl.HttpNeo4jSeque
 import org.hibernate.ogm.datastore.neo4j.remote.http.transaction.impl.HttpNeo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.Startable;

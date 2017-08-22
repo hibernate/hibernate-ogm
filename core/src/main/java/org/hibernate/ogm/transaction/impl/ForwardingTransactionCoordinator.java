@@ -8,9 +8,9 @@ package org.hibernate.ogm.transaction.impl;
 
 import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
-import org.hibernate.resource.transaction.SynchronizationRegistry;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.spi.SynchronizationRegistry;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 
 /**
  * A {@link TransactionCoordinator} forwarding all invocations to a delegate.

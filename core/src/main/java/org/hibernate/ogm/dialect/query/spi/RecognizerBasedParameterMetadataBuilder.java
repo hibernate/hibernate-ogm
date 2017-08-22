@@ -12,8 +12,8 @@ import java.util.Map;
 import org.hibernate.engine.query.spi.NamedParameterDescriptor;
 import org.hibernate.engine.query.spi.OrdinalParameterDescriptor;
 import org.hibernate.engine.query.spi.ParamLocationRecognizer;
-import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
+import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
  * Base class for {@link ParameterMetadataBuilder}s based on ORM's {@link ParamLocationRecognizer} SPI.
@@ -23,7 +23,7 @@ import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
 public abstract class RecognizerBasedParameterMetadataBuilder implements ParameterMetadataBuilder {
 
 	@Override
-	public ParameterMetadata buildParameterMetadata(String nativeQuery) {
+	public ParameterMetadataImpl buildParameterMetadata(String nativeQuery) {
 		ParamLocationRecognizer recognizer = new ParamLocationRecognizer();
 		parseQueryParameters( nativeQuery, recognizer );
 
@@ -49,7 +49,7 @@ public abstract class RecognizerBasedParameterMetadataBuilder implements Paramet
 			);
 		}
 
-		return new ParameterMetadata( ordinalDescriptors, namedParamDescriptorMap );
+		return new ParameterMetadataImpl( ordinalDescriptors, namedParamDescriptorMap );
 	}
 
 	/**

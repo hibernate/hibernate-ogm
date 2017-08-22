@@ -12,7 +12,7 @@ import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.LockingStrategyException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -39,8 +39,8 @@ public class ExceptionThrowingLockingStrategy implements LockingStrategy {
 	}
 
 	@Override
-	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException,
-			LockingStrategyException {
+	public void lock(Serializable id, Object version, Object object, int timeout, SharedSessionContractImplementor session)
+			throws StaleObjectStateException, LockingStrategyException {
 
 		throw LOG.unsupportedLockMode( gridDialectClass, lockMode );
 	}

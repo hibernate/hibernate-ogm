@@ -6,12 +6,12 @@
  */
 package org.hibernate.ogm.query;
 
-import org.hibernate.query.NativeQuery;
+import org.hibernate.query.spi.NativeQueryImplementor;
 
 /**
  * A native NoSQL query, in a store-specific representation.
  *
- * @author Gunnar Morling
+ * @author Guillaume Smet
  */
-public interface NoSQLQuery<T> extends NativeQuery<T> {
+public interface NoSQLQueryImplementor<T> extends NativeQueryImplementor<T>, NoSQLQuery<T> {
 }

@@ -11,13 +11,13 @@ import java.util.Set;
 
 import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
-import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
+import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
  * Interprets given native NoSQL queries.
@@ -36,7 +36,7 @@ public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 	}
 
 	@Override
-	public ParameterMetadata getParameterMetadata(String nativeQuery) {
+	public ParameterMetadataImpl getParameterMetadata(String nativeQuery) {
 		return builder.buildParameterMetadata( nativeQuery );
 	}
 

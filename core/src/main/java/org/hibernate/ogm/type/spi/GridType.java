@@ -13,7 +13,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.Experimental;
 import org.hibernate.type.ForeignKeyDirection;
@@ -204,7 +204,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the checking
 	 */
-	boolean isDirty(Object old, Object current, SessionImplementor session) throws HibernateException;
+	boolean isDirty(Object old, Object current, SharedSessionContractImplementor session) throws HibernateException;
 
 	/**
 	 * Should the parent be considered dirty, given both the old and current value?
@@ -218,7 +218,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the checking
 	 */
-	boolean isDirty(Object oldState, Object currentState, boolean[] checkable, SessionImplementor session)
+	boolean isDirty(Object oldState, Object currentState, boolean[] checkable, SharedSessionContractImplementor session)
 			throws HibernateException;
 
 	/**
@@ -236,14 +236,14 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the checking
 	 */
-	boolean isModified(Object dbState, Object currentState, boolean[] checkable, SessionImplementor session)
+	boolean isModified(Object dbState, Object currentState, boolean[] checkable, SharedSessionContractImplementor session)
 			throws HibernateException;
 
 	/**
 	 * Retrieve an instance of the mapped class from a grid resultset. Implementors
 	 * should handle possibility of null values.
 	 *
-	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object) alternative, 2-phase property initialization
+	 * @see GridType#hydrate(Tuple, String[], SharedSessionContractImplementor, Object) alternative, 2-phase property initialization
 	 * @param rs the resultset
 	 * @param names the column names
 	 * @param session the session
@@ -252,7 +252,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs while retrievin the instance
 	 */
-	Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	Object nullSafeGet(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -260,7 +260,7 @@ public interface GridType extends Serializable {
 	 * should handle possibility of null values. This method might be called if the
 	 * type is known to be a single-column type.
 	 *
-	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object) alternative, 2-phase property initialization
+	 * @see GridType#hydrate(Tuple, String[], SharedSessionContractImplementor, Object) alternative, 2-phase property initialization
 	 * @param rs the resultset
 	 * @param name the column name
 	 * @param session the session
@@ -269,7 +269,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs retrieving the instance
 	 */
-	Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -285,7 +285,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs writing the value
 	 */
-	void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 	throws HibernateException;
 
 	/**
@@ -300,7 +300,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs writing the value
 	 */
-	void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	void nullSafeSet(Tuple resultset, Object value, String[] names, SharedSessionContractImplementor session)
 	throws HibernateException;
 
 	/**
@@ -361,7 +361,7 @@ public interface GridType extends Serializable {
 	 * @param owner optional parent entity object (needed for collections)
 	 * @return the disassembled, deep cloned state
 	 */
-	Serializable disassemble(Object value, SessionImplementor session, Object owner) throws HibernateException;
+	Serializable disassemble(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException;
 
 	/**
 	 * Reconstruct the object from its cached "disassembled" state.
@@ -371,7 +371,7 @@ public interface GridType extends Serializable {
 	 * @param owner the parent entity object
 	 * @return owner the assembled object
 	 */
-	Object assemble(Serializable cached, SessionImplementor session, Object owner)
+	Object assemble(Serializable cached, SharedSessionContractImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -381,14 +381,14 @@ public interface GridType extends Serializable {
 	 * @param cached the cached result set
 	 * @param session the session
 	 */
-	void beforeAssemble(Serializable cached, SessionImplementor session);
+	void beforeAssemble(Serializable cached, SharedSessionContractImplementor session);
 
 	/**
 	 * Retrieve an instance of the mapped class, or the identifier of an entity or collection,
 	 * from a grid resultset. This is useful for 2-phase property initialization - the second
 	 * phase is a call to <tt>resolveIdentifier()</tt>.
 	 *
-	 * @see #resolve(Object, SessionImplementor, Object)
+	 * @see #resolve(Object, SharedSessionContractImplementor, Object)
 	 * @param rs the result set
 	 * @param names the column names
 	 * @param session the session
@@ -397,14 +397,14 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs
 	 */
-	Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
 	 * Map identifiers to entities or collections. This is the second phase of 2-phase property
 	 * initialization.
 	 *
-	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object)
+	 * @see GridType#hydrate(Tuple, String[], SharedSessionContractImplementor, Object)
 	 * @param value an identifier or value returned by <tt>hydrate()</tt>
 	 * @param owner the parent entity
 	 * @param session the session
@@ -412,7 +412,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs
 	 */
-	Object resolve(Object value, SessionImplementor session, Object owner)
+	Object resolve(Object value, SharedSessionContractImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -426,7 +426,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException if an error occurs
 	 */
-	Object semiResolve(Object value, SessionImplementor session, Object owner)
+	Object semiResolve(Object value, SharedSessionContractImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -456,7 +456,7 @@ public interface GridType extends Serializable {
 	Object replace(
 			Object original,
 			Object target,
-			SessionImplementor session,
+			SharedSessionContractImplementor session,
 			Object owner,
 			Map copyCache)
 	throws HibernateException;
@@ -481,7 +481,7 @@ public interface GridType extends Serializable {
 	Object replace(
 			Object original,
 			Object target,
-			SessionImplementor session,
+			SharedSessionContractImplementor session,
 			Object owner,
 			Map copyCache,
 			ForeignKeyDirection foreignKeyDirection)

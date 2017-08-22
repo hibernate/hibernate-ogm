@@ -9,7 +9,7 @@ package org.hibernate.ogm.persister.impl;
 import java.io.Serializable;
 
 import org.hibernate.Session;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -49,7 +49,7 @@ class EntityAssociationUpdater {
 	private Tuple resultset;
 	private int tableIndex;
 	private Serializable id;
-	private SessionImplementor session;
+	private SharedSessionContractImplementor session;
 	private boolean[] propertyMightRequireInverseAssociationManagement;
 
 	EntityAssociationUpdater(OgmEntityPersister persister) {
@@ -77,7 +77,7 @@ class EntityAssociationUpdater {
 		return this;
 	}
 
-	public EntityAssociationUpdater session(SessionImplementor session) {
+	public EntityAssociationUpdater session(SharedSessionContractImplementor session) {
 		this.session = session;
 		return this;
 	}

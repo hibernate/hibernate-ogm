@@ -68,7 +68,7 @@
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>11.0.0.Final</version.wildfly>
         <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
-        <hibernate-orm.module.slot>main</hibernate-orm.module.slot>
+        <hibernate-orm.module.slot>5.2</hibernate-orm.module.slot>
 
         <!-- Asciidoctor -->
         <hibernate-asciidoctor-theme.version>1.0.1.Final</hibernate-asciidoctor-theme.version>

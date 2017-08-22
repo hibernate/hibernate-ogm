@@ -13,7 +13,7 @@ import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
@@ -53,7 +53,7 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
+	public void lock(Serializable id, Object version, Object object, int timeout, SharedSessionContractImplementor session)
 			throws StaleObjectStateException, JDBCException {
 		LocalCacheManager<EK, ?, ?> cacheManager = getCacheManager();
 		KeyProvider<EK, ?, ?> keyProvider = getKeyProvider();

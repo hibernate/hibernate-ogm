@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
@@ -31,7 +31,7 @@ public interface BatchableEntityLoader extends UniqueEntityLoader {
 	 * @param lockOptions
 	 */
 	List<?> loadEntityBatch(
-			final SessionImplementor session,
+			final SharedSessionContractImplementor session,
 			final Serializable[] ids,
 			final Type idType,
 			final Object optionalObject,

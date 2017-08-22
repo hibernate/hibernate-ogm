@@ -129,6 +129,15 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
+                                    <groupId>org.hibernate</groupId>
+                                    <artifactId>hibernate-orm-modules</artifactId>
+                                    <version>${hibernateVersion}</version>
+                                    <classifier>${hibernateWildflyClassifier}</classifier>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
                                     <groupId>org.infinispan</groupId>
                                     <artifactId>infinispan-wildfly-modules</artifactId>
                                     <version>${infinispanVersion}</version>
@@ -141,7 +150,7 @@
                                     <artifactId>hibernate-search-modules</artifactId>
                                     <version>${hibernateSearchVersion}</version>
                                     <!--
-                                    We don't have a wildfly-11-dist version of the Hibernate Search 5.6 modules.
+                                    We don't have a wildfly-11-dist version of the Hibernate Search 5.7 modules.
                                     Using the ones built for WildFly 10 will do so we hardcode the classifier here
                                     for now.
                                     -->

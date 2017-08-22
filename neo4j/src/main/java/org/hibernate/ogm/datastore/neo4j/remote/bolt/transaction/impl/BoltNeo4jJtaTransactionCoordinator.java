@@ -14,7 +14,7 @@ import org.hibernate.ogm.datastore.neo4j.transaction.impl.BaseNeo4jJtaTransactio
 import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jSynchronization;
 import org.hibernate.ogm.datastore.neo4j.transaction.impl.RemoteTransactionDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Transaction;

@@ -46,19 +46,19 @@ import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.internal.SessionImpl;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
-import org.hibernate.jpa.internal.EntityManagerImpl;
-import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.internal.util.LockModeTypeHelper;
-import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
+import org.hibernate.jpa.spi.TupleBuilderTransformer;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
+import org.hibernate.query.internal.QueryImpl;
 
 /**
  * An OGM specific {@code EntityManager} implementation which delegates most method calls to the underlying ORM
@@ -68,11 +68,11 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
  */
 public class OgmEntityManager implements EntityManager {
 
-	private final EntityManagerImpl hibernateEm;
+	private final SessionImpl hibernateEm;
 	private final OgmEntityManagerFactory factory;
 	private final LockOptions lockOptions = new LockOptions();
 
-	public OgmEntityManager(OgmEntityManagerFactory factory, EntityManagerImpl hibernateEm) {
+	public OgmEntityManager(OgmEntityManagerFactory factory, SessionImpl hibernateEm) {
 		this.hibernateEm = hibernateEm;
 		this.factory = factory;
 	}
@@ -82,9 +82,10 @@ public class OgmEntityManager implements EntityManager {
 		hibernateEm.persist( entity );
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T merge(T entity) {
-		return hibernateEm.merge( entity );
+		return (T) hibernateEm.merge( entity );
 	}
 
 	@Override

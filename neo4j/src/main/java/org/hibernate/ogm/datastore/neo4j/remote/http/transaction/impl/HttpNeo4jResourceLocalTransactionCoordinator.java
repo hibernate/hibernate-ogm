@@ -25,10 +25,10 @@ import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider;
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
-import org.hibernate.resource.transaction.SynchronizationRegistry;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
+import org.hibernate.resource.transaction.spi.SynchronizationRegistry;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 

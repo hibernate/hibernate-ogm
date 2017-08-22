@@ -14,7 +14,7 @@ import org.hibernate.boot.model.relational.QualifiedName;
 import org.hibernate.boot.model.relational.QualifiedNameParser;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.TableGenerator;
@@ -271,7 +271,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	}
 
 	@Override
-	protected IdSourceKey getGeneratorKey(SessionImplementor session) {
+	protected IdSourceKey getGeneratorKey(SharedSessionContractImplementor session) {
 		defineGridTypes( session );
 
 		final String segmentName = (String) nullSafeSet(
@@ -281,13 +281,13 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 		return IdSourceKey.forTable( generatorKeyMetadata, segmentName );
 	}
 
-	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session) {
+	private Object nullSafeSet(GridType type, Object value, String columnName, SharedSessionContractImplementor session) {
 		Tuple tuple = new Tuple();
 		type.nullSafeSet( tuple, value, new String[] { columnName }, session );
 		return tuple.get( columnName );
 	}
 
-	private void defineGridTypes(SessionImplementor session) {
+	private void defineGridTypes(SharedSessionContractImplementor session) {
 		if ( identifierValueGridType == null ) {
 			ServiceRegistryImplementor registry = session.getFactory().getServiceRegistry();
 			identifierValueGridType = registry.getService( TypeTranslator.class ).getType( LongType.INSTANCE );

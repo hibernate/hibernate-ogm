@@ -9,7 +9,7 @@ package org.hibernate.ogm.loader.impl;
 import java.util.List;
 
 import org.hibernate.LockOptions;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 
 /**
@@ -31,5 +31,5 @@ public interface TupleBasedEntityLoader extends UniqueEntityLoader {
 	 * @param ogmContext The context with the information to load the entities
 	 * @return the list of entities corresponding to the given context
 	 */
-	List<Object> loadEntitiesFromTuples(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext);
+	List<Object> loadEntitiesFromTuples(SharedSessionContractImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext);
 }

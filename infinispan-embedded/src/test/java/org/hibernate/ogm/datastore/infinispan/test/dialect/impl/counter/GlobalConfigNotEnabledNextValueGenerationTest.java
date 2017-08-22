@@ -23,14 +23,12 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,8 +76,7 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
 
-		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
-		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = getFactory().unwrap( SessionFactoryImplementor.class );
 		IdentifierGenerator generator = sessionFactory.getIdentifierGenerator( GlobalConfigNotEnabledNextValueGenerationTest.EntityWithSequence.class.getName() );
 		IdSourceKeyMetadata sequenceMetadata = ( (OgmSequenceGenerator) generator ).getGeneratorKeyMetadata();
 		IdSourceKey generatorKey = IdSourceKey.forTable( sequenceMetadata, "SEQUENCE" );
@@ -95,8 +92,7 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
 
-		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
-		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = getFactory().unwrap( SessionFactoryImplementor.class );
 		IdentifierGenerator generator = sessionFactory.getIdentifierGenerator( GlobalConfigNotEnabledNextValueGenerationTest.EntityWithSequence.class.getName() );
 		IdSourceKeyMetadata tableMetadata = ( (OgmSequenceGenerator) generator ).getGeneratorKeyMetadata();
 		IdSourceKey generatorKey = IdSourceKey.forTable( tableMetadata, TABLE_ROW_KEY_NAME );

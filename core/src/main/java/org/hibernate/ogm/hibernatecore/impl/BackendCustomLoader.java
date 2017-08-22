@@ -17,7 +17,7 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
@@ -85,8 +85,10 @@ public class BackendCustomLoader extends CustomLoader {
 	}
 
 	@Override
-	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator, session.getFactory() ) );
+	protected List<?> list(SharedSessionContractImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set<Serializable> querySpaces,
+			Type[] resultTypes) throws HibernateException {
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session,
+				QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator, session.getFactory() ) );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -101,7 +103,7 @@ public class BackendCustomLoader extends CustomLoader {
 	}
 
 	// At the moment we only support the case where one entity type is returned
-	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
+	private List<Object> listOfEntities(SharedSessionContractImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
 		TupleBasedEntityLoader loader = getLoader( session, returnedClass );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
@@ -117,7 +119,7 @@ public class BackendCustomLoader extends CustomLoader {
 		return tuplesAsList;
 	}
 
-	private List<Object> listOfArrays(SessionImplementor session, Iterator<Tuple> tuples) {
+	private List<Object> listOfArrays(SharedSessionContractImplementor session, Iterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
@@ -161,7 +163,7 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private TupleBasedEntityLoader getLoader(SessionImplementor session, Class<?> entityClass) {
+	private TupleBasedEntityLoader getLoader(SharedSessionContractImplementor session, Class<?> entityClass) {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
 		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, session );
 		return loader;
@@ -185,7 +187,7 @@ public class BackendCustomLoader extends CustomLoader {
 					customQuery.getSingleEntityMetadataInformationOrNull() );
 		}
 
-		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters) {
+		public ClosableIterator<Tuple> executeQuery(SharedSessionContractImplementor session, QueryParameters queryParameters) {
 			TupleContext tupleContext = tupleContext( session, query.getSingleEntityMetadataInformationOrNull() );
 			return gridDialect.executeBackendQuery( query, queryParameters, tupleContext );
 		}

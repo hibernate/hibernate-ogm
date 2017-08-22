@@ -13,7 +13,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.Type;
@@ -60,6 +60,7 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 		return delegate.getColumnSpan( mapping );
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Class getReturnedClass() {
 		return delegate.getReturnedClass();
@@ -98,18 +99,18 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
-	public boolean isDirty(Object old, Object current, SessionImplementor session) throws HibernateException {
+	public boolean isDirty(Object old, Object current, SharedSessionContractImplementor session) throws HibernateException {
 		return delegate.isDirty( old, current, session );
 	}
 
 	@Override
-	public boolean isDirty(Object oldState, Object currentState, boolean[] checkable, SessionImplementor session)
+	public boolean isDirty(Object oldState, Object currentState, boolean[] checkable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		return delegate.isDirty( oldState, currentState, checkable, session );
 	}
 
 	@Override
-	public boolean isModified(Object dbState, Object currentState, boolean[] checkable, SessionImplementor session)
+	public boolean isModified(Object dbState, Object currentState, boolean[] checkable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		return delegate.isModified( dbState, currentState, checkable, session );
 	}
@@ -136,27 +137,27 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
-	public Serializable disassemble(Object value, SessionImplementor session, Object owner) throws HibernateException {
+	public Serializable disassemble(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return delegate.disassemble( value, session, owner );
 	}
 
 	@Override
-	public Object assemble(Serializable cached, SessionImplementor session, Object owner) throws HibernateException {
+	public Object assemble(Serializable cached, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return delegate.assemble( cached, session, owner );
 	}
 
 	@Override
-	public void beforeAssemble(Serializable cached, SessionImplementor session) {
+	public void beforeAssemble(Serializable cached, SharedSessionContractImplementor session) {
 		delegate.beforeAssemble( cached, session );
 	}
 
 	@Override
-	public Object resolve(Object value, SessionImplementor session, Object owner) throws HibernateException {
+	public Object resolve(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return delegate.resolve( value, session, owner );
 	}
 
 	@Override
-	public Object semiResolve(Object value, SessionImplementor session, Object owner) throws HibernateException {
+	public Object semiResolve(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return delegate.semiResolve( value, session, owner );
 	}
 
@@ -165,14 +166,16 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 		return this;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public Object replace(Object original, Object target, SessionImplementor session, Object owner, Map copyCache)
+	public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map copyCache)
 			throws HibernateException {
 		return delegate.replace( original, target, session, owner, copyCache );
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public Object replace(Object original, Object target, SessionImplementor session, Object owner, Map copyCache, ForeignKeyDirection foreignKeyDirection)
+	public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map copyCache, ForeignKeyDirection foreignKeyDirection)
 			throws HibernateException {
 		return delegate.replace( original, target, session, owner, copyCache, foreignKeyDirection );
 	}

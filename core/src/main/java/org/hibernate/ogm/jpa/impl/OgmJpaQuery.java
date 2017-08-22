@@ -10,8 +10,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
 import org.hibernate.jpa.HibernateQuery;
-import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
+import org.hibernate.query.internal.QueryImpl;
 
 /**
  * Hibernate OGM implementation of both {@link HibernateQuery} and {@link TypedQuery}

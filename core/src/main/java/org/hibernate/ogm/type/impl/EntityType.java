@@ -9,7 +9,7 @@ package org.hibernate.ogm.type.impl;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.internal.ForeignKeys;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.StringHelper;
@@ -36,7 +36,7 @@ public abstract class EntityType extends GridTypeDelegatingToCoreType {
 	}
 
 	//copied from org.hibernate.type.ManyToOneType#getIdentifier()
-	protected final Object getIdentifier(Object value, SessionImplementor session) throws HibernateException {
+	protected final Object getIdentifier(Object value, SharedSessionContractImplementor session) throws HibernateException {
 		if ( value == null ) {
 			return null;
 		}
@@ -97,7 +97,7 @@ public abstract class EntityType extends GridTypeDelegatingToCoreType {
 		}
 	}
 
-	protected boolean isNotEmbedded(SessionImplementor session) {
+	protected boolean isNotEmbedded(SharedSessionContractImplementor session) {
 		return false;
 	}
 

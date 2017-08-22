@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.query.spi.QueryParserService;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 
 /**
  * Recommended base class for {@link DatastoreProvider} implementations.

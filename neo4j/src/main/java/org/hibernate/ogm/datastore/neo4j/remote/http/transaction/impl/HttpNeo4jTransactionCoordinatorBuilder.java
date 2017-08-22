@@ -8,8 +8,8 @@ package org.hibernate.ogm.datastore.neo4j.remote.http.transaction.impl;
 
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
@@ -27,7 +27,7 @@ public class HttpNeo4jTransactionCoordinatorBuilder extends ForwardingTransactio
 	}
 
 	@Override
-	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, TransactionCoordinatorOptions options) {
+	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, Options options) {
 		if ( isJta() ) {
 			TransactionCoordinator coordinator = super.buildTransactionCoordinator( owner, options );
 			return new HttpNeo4jJtaTransactionCoordinator( coordinator, datastoreProvider );

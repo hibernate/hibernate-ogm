@@ -17,11 +17,10 @@ import java.util.concurrent.ConcurrentMap;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.QueryException;
-import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.hql.QueryParser;
@@ -30,6 +29,7 @@ import org.hibernate.hql.lucene.LuceneQueryParsingResult;
 import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
+import org.hibernate.query.spi.ScrollableResultsImplementor;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
@@ -69,7 +69,7 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 	}
 
 	@Override
-	public List<?> list(SessionImplementor session, QueryParameters queryParameters) throws HibernateException {
+	public List<?> list(SharedSessionContractImplementor session, QueryParameters queryParameters) throws HibernateException {
 		FullTextSession fullTextSession = Search.getFullTextSession( (Session) session );
 
 		LuceneQueryParsingResult parsingResult = getLuceneQuery( queryParameters, fullTextSession );
@@ -117,12 +117,12 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 	}
 
 	@Override
-	public ScrollableResults scroll(QueryParameters queryParameters, SessionImplementor session) throws HibernateException {
+	public ScrollableResultsImplementor scroll(QueryParameters queryParameters, SharedSessionContractImplementor session) throws HibernateException {
 		throw new UnsupportedOperationException( "Not yet implemented" );
 	}
 
 	@Override
-	public int executeUpdate(QueryParameters queryParameters, SessionImplementor session) throws HibernateException {
+	public int executeUpdate(QueryParameters queryParameters, SharedSessionContractImplementor session) throws HibernateException {
 		throw new UnsupportedOperationException( "Not yet implemented" );
 	}
 

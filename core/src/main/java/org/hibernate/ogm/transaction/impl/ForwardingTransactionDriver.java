@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.transaction.impl;
 
-import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator.TransactionDriver;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 /**

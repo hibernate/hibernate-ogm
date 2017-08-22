@@ -7,7 +7,7 @@
 package org.hibernate.ogm.type.impl;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 
@@ -21,31 +21,31 @@ public class OneToOneType extends EntityType {
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( hydrate( rs, names, session, owner ), session, owner );
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		//Nothing to do
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SharedSessionContractImplementor session)
 			throws HibernateException {
 		//nothing to do
 	}
 
 	@Override
-	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return session.getContextEntityIdentifier( owner );
 	}

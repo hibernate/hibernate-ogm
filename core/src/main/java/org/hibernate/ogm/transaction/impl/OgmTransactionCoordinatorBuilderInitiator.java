@@ -18,8 +18,8 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.transaction.emulated.impl.EmulatedLocalTransactionCoordinatorBuilder;
 import org.hibernate.ogm.transaction.jta.impl.RollbackOnCommitFailureJtaTransactionCoordinatorBuilder;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorBuilderInitiator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**

@@ -9,8 +9,9 @@ package org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl;
 import org.hibernate.ConnectionAcquisitionMode;
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.jdbc.spi.PhysicalConnectionHandlingMode;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
@@ -29,7 +30,7 @@ public class EmbeddedNeo4jTransactionCoordinatorBuilder implements TransactionCo
 	}
 
 	@Override
-	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, TransactionCoordinatorOptions options) {
+	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, Options options) {
 		if ( delegate.isJta() ) {
 			TransactionCoordinator coordinator = delegate.buildTransactionCoordinator( owner, options );
 			return new EmbeddedNeo4jJtaTransactionCoordinator( coordinator, datastoreProvider );
@@ -44,13 +45,20 @@ public class EmbeddedNeo4jTransactionCoordinatorBuilder implements TransactionCo
 		return delegate.isJta();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public ConnectionReleaseMode getDefaultConnectionReleaseMode() {
 		return delegate.getDefaultConnectionReleaseMode();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public ConnectionAcquisitionMode getDefaultConnectionAcquisitionMode() {
 		return delegate.getDefaultConnectionAcquisitionMode();
+	}
+
+	@Override
+	public PhysicalConnectionHandlingMode getDefaultConnectionHandlingMode() {
+		return delegate.getDefaultConnectionHandlingMode();
 	}
 }

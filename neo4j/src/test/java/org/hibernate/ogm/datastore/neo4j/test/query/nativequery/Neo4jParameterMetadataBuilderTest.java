@@ -8,9 +8,9 @@ package org.hibernate.ogm.datastore.neo4j.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.query.internal.ParameterMetadataImpl;
 import org.junit.Test;
 
 /**
@@ -23,7 +23,7 @@ public class Neo4jParameterMetadataBuilderTest {
 	@Test
 	public void shouldDetectParameterNames() {
 		ParameterMetadataBuilder builder = new Neo4jParameterMetadataBuilder();
-		ParameterMetadata metadata = builder.buildParameterMetadata(
+		ParameterMetadataImpl metadata = builder.buildParameterMetadata(
 				"MATCH ( n:Poem { name: {name}, author:{author} } ) RETURN n"
 		);
 
@@ -33,7 +33,7 @@ public class Neo4jParameterMetadataBuilderTest {
 	@Test
 	public void shouldIgnoreParametersInQuotes() {
 		ParameterMetadataBuilder builder = new Neo4jParameterMetadataBuilder();
-		ParameterMetadata metadata = builder.buildParameterMetadata(
+		ParameterMetadataImpl metadata = builder.buildParameterMetadata(
 				"MATCH ( n:Poem { name: {name}, author:{author}, desc:'{desc}' } ) RETURN n"
 		);
 
@@ -43,7 +43,7 @@ public class Neo4jParameterMetadataBuilderTest {
 	@Test
 	public void shouldIgnoreParametersInEscapedName() {
 		ParameterMetadataBuilder builder = new Neo4jParameterMetadataBuilder();
-		ParameterMetadata metadata = builder.buildParameterMetadata(
+		ParameterMetadataImpl metadata = builder.buildParameterMetadata(
 				"MATCH ( n:Poem { `{nameNode}`: {name}, author:{author} } ) RETURN n"
 		);
 
@@ -53,7 +53,7 @@ public class Neo4jParameterMetadataBuilderTest {
 	@Test
 	public void shouldAllowSameParameterTwice() {
 		ParameterMetadataBuilder builder = new Neo4jParameterMetadataBuilder();
-		ParameterMetadata metadata = builder.buildParameterMetadata(
+		ParameterMetadataImpl metadata = builder.buildParameterMetadata(
 				"MATCH ( n:Poem { name: {name}, author:{name} } ) RETURN n"
 		);
 
@@ -63,7 +63,7 @@ public class Neo4jParameterMetadataBuilderTest {
 	@Test
 	public void shouldAllowWhitespaceInParameterName() {
 		ParameterMetadataBuilder builder = new Neo4jParameterMetadataBuilder();
-		ParameterMetadata metadata = builder.buildParameterMetadata(
+		ParameterMetadataImpl metadata = builder.buildParameterMetadata(
 				"MATCH ( n:Poem { name: { name } } ) RETURN n"
 		);
 

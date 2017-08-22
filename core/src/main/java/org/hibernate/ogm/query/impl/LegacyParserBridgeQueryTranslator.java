@@ -27,7 +27,7 @@ import org.hibernate.type.Type;
  * A {@link QueryTranslator} which delegates most of the work to the existing JP-QL parser implementation. Specifically,
  * all methods which only depend on the structure of the incoming JP-QL query are delegated. Only those methods
  * depending on the translated query (such as
- * {@link #list(org.hibernate.engine.spi.SessionImplementor, org.hibernate.engine.spi.QueryParameters)} are handled by
+ * {@link #list(org.hibernate.engine.spi.SharedSessionContractImplementor, org.hibernate.engine.spi.QueryParameters)} are handled by
  * this class and its sub-classes. Over time, more and more methods should be implemented here rather than delegating
  * them.
  *

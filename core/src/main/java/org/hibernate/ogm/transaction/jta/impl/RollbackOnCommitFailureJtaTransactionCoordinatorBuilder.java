@@ -6,12 +6,12 @@
  */
 package org.hibernate.ogm.transaction.jta.impl;
 
-import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator.TransactionDriver;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
@@ -31,7 +31,7 @@ public class RollbackOnCommitFailureJtaTransactionCoordinatorBuilder extends For
 	}
 
 	@Override
-	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, TransactionCoordinatorOptions options) {
+	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner, Options options) {
 		return new RollbackOnCommitTransactionCoordinator( super.buildTransactionCoordinator( owner, options ) );
 	}
 

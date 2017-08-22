@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
-import org.hibernate.engine.query.spi.ParameterMetadata;
+import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
  * Implementations return metadata about the parameters contained in given native queries of the corresponding NoSQL
@@ -23,5 +23,5 @@ public interface ParameterMetadataBuilder {
 	 * @param nativeQuery the query to analyze
 	 * @return meta-data about the parameters contained in the given native query
 	 */
-	ParameterMetadata buildParameterMetadata(String nativeQuery);
+	ParameterMetadataImpl buildParameterMetadata(String nativeQuery);
 }

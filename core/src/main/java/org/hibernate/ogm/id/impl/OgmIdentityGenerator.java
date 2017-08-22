@@ -9,7 +9,7 @@ package org.hibernate.ogm.id.impl;
 import java.io.Serializable;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.IdentifierGeneratorHelper;
 
@@ -21,7 +21,7 @@ import org.hibernate.id.IdentifierGeneratorHelper;
 public class OgmIdentityGenerator implements IdentifierGenerator {
 
 	@Override
-	public Serializable generate(SessionImplementor session, Object object) throws HibernateException {
+	public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
 		// By returning this marker, the logic in ORM is advised to invoke the insert() method of the persister which
 		// does not expect an id to be present prior to insertion
 		return IdentifierGeneratorHelper.POST_INSERT_INDICATOR;
