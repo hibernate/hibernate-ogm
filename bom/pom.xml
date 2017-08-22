@@ -40,7 +40,7 @@
         <narayanaVersion>5.4.0.Final</narayanaVersion>
 
         <!-- Hibernate ORM -->
-        <hibernateVersion>5.1.9.Final</hibernateVersion>
+        <hibernateVersion>5.1.10.Final</hibernateVersion>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
         <luceneVersion>5.5.4</luceneVersion>
