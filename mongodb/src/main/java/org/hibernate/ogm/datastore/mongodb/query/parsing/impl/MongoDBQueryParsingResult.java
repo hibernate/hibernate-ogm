@@ -30,7 +30,6 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	private final Document orderBy;
 	private final List<String> unwinds;
 
-
 	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, Document query, Document projection, Document orderBy, List<String> unwinds) {
 		this.entityType = entityType;
 		this.collectionName = collectionName;

@@ -143,7 +143,7 @@ public class MongoDBQueryDescriptorBuilder {
 	}
 
 	public MongoDBQueryDescriptor build() {
-		//@todo redactor the spagetti!
+		//@todo refactor the spaghetti!
 		if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			MongoDBQueryDescriptor descriptor = null;
 

@@ -6,25 +6,24 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.fest.assertions.Fail;
+import org.fest.assertions.MapAssert;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
-import org.fest.assertions.Fail;
-import org.fest.assertions.MapAssert;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
