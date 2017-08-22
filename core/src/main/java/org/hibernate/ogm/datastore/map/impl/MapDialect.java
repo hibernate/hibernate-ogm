@@ -226,6 +226,11 @@ public class MapDialect extends BaseGridDialect implements MultigetGridDialect {
 		@Override
 		public void close() {
 		}
+
+		@Override
+		public void remove() {
+
+		}
 	}
 
 	private static Tuple createTuple(Map<EntityKey, Map<String, Object>> entityMap, EntityKey key) {

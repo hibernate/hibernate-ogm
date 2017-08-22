@@ -6,16 +6,13 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import static java.lang.Boolean.FALSE;
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -23,8 +20,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -106,10 +101,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -119,17 +110,34 @@ import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MapReduceIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.CollationAlternate;
+import com.mongodb.client.model.CollationCaseFirst;
+import com.mongodb.client.model.CollationMaxVariable;
+import com.mongodb.client.model.CollationStrength;
 import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.InsertOneModel;
+import com.mongodb.client.model.MapReduceAction;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
+
+import static java.lang.Boolean.FALSE;
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -824,6 +832,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doCount( queryDescriptor, collection );
 			case DISTINCT:
 				return doDistinct( queryDescriptor, collection );
+			case MAP_REDUCE:
+				return doMapReduce( queryDescriptor, collection );
 			case INSERT:
 			case REMOVE:
 			case UPDATE:
@@ -947,9 +957,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 */
 	private static ClosableIterator<Tuple> doDistinct(final MongoDBQueryDescriptor queryDescriptor, final MongoCollection<Document> collection) {
 		DistinctIterable<?> distinctFieldValues = collection.distinct( queryDescriptor.getDistinctFieldName(), queryDescriptor.getCriteria(), String.class );
-		if ( queryDescriptor.getCollation() != null ) {
-			distinctFieldValues = distinctFieldValues.collation( queryDescriptor.getCollation() );
-		}
+		Collation collation = getCollation( queryDescriptor.getOptions() );
+
+		distinctFieldValues = collation != null ? distinctFieldValues.collation( collation ) : distinctFieldValues;
+
 		MongoCursor<?> cursor = distinctFieldValues.iterator();
 		List<Object> documents = new ArrayList<>();
 		while ( cursor.hasNext() ) {
@@ -957,6 +968,104 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", documents ) );
 		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot, SnapshotType.UNKNOWN ) ) );
+	}
+
+	/**
+	 * do 'Map Reduce' operation
+	 * @param queryDescriptor descriptor of MongoDB map reduce query
+	 * @param collection collection on which operation will be performed
+	 * @return result iterator
+	 * @see <a href ="https://docs.mongodb.com/manual/reference/method/db.collection.mapReduce/">MapReduce</a>
+	 */
+	private static ClosableIterator<Tuple> doMapReduce(final MongoDBQueryDescriptor queryDescriptor, final MongoCollection<Document> collection) {
+
+		MapReduceIterable<Document> mapReduceIterable = collection.mapReduce( queryDescriptor.getMapFunction(), queryDescriptor.getReduceFunction() );
+		Document options = queryDescriptor.getOptions();
+		if ( options != null ) {
+			Document query = (Document) options.get( "query" );
+			Document sort = (Document) options.get( "sort" );
+			Integer limit = options.getInteger( "limit" );
+			String finalizeFunction = options.getString( "finalize" );
+			Document scope = (Document) options.get( "scope" );
+			Boolean jsMode = options.getBoolean( "jsMode" );
+			Boolean verbose = options.getBoolean( "verbose" );
+			Boolean bypassDocumentValidation = options.getBoolean( "bypassDocumentValidation" );
+			Collation collation = getCollation( (Document) options.get( "collation" ) );
+			MapReduceAction mapReduceAction = null;
+			String collectionName = null;
+			String dbName = null;
+			Boolean sharded = null;
+			Boolean nonAtomic = null;
+
+			Object out;
+			if ( ( out = options.get( "out" ) ) != null ) {
+				if ( out instanceof String ) {
+					collectionName = (String) out;
+				}
+				else if ( out instanceof Document ) {
+					Document outDocument = (Document) out;
+					if ( outDocument.containsKey( "merge" ) ) {
+						mapReduceAction = MapReduceAction.MERGE;
+						collectionName = outDocument.getString( "merge" );
+					}
+					else if ( outDocument.containsKey( "replace" ) ) {
+						mapReduceAction = MapReduceAction.REPLACE;
+						collectionName = outDocument.getString( "replace" );
+					}
+					else if ( ( (Document) out ).containsKey( "reduce" ) ) {
+						mapReduceAction = MapReduceAction.REDUCE;
+						collectionName = outDocument.getString( "reduce" );
+					}
+					dbName = outDocument.getString( "db" );
+					sharded = outDocument.getBoolean( "sharded" );
+					nonAtomic = outDocument.getBoolean( "nonAtomic" );
+				}
+			}
+			mapReduceIterable = ( query != null ) ? mapReduceIterable.filter( query ) : mapReduceIterable;
+			mapReduceIterable = ( sort != null ) ? mapReduceIterable.sort( sort ) : mapReduceIterable;
+			mapReduceIterable = ( limit != null ) ? mapReduceIterable.limit( limit ) : mapReduceIterable;
+			mapReduceIterable = ( finalizeFunction != null ) ? mapReduceIterable.finalizeFunction( finalizeFunction ) : mapReduceIterable;
+			mapReduceIterable = ( scope != null ) ? mapReduceIterable.scope( scope ) : mapReduceIterable;
+			mapReduceIterable = ( jsMode != null ) ? mapReduceIterable.jsMode( jsMode ) : mapReduceIterable;
+			mapReduceIterable = ( verbose != null ) ? mapReduceIterable.verbose( verbose ) : mapReduceIterable;
+			mapReduceIterable = ( bypassDocumentValidation != null ) ? mapReduceIterable.bypassDocumentValidation( bypassDocumentValidation ) : mapReduceIterable;
+			mapReduceIterable = ( collation != null ) ? mapReduceIterable.collation( collation ) : mapReduceIterable;
+			mapReduceIterable = ( mapReduceAction != null ) ? mapReduceIterable.action( mapReduceAction ) : mapReduceIterable;
+			mapReduceIterable = ( collectionName != null ) ? mapReduceIterable.collectionName( collectionName ) : mapReduceIterable;
+			mapReduceIterable = ( dbName != null ) ? mapReduceIterable.databaseName( dbName ) : mapReduceIterable;
+			mapReduceIterable = ( sharded != null ) ? mapReduceIterable.sharded( sharded ) : mapReduceIterable;
+			mapReduceIterable = ( nonAtomic != null ) ? mapReduceIterable.nonAtomic( nonAtomic ) : mapReduceIterable;
+		}
+
+		MongoCursor<Document> cursor = mapReduceIterable.iterator();
+		LinkedHashMap<Object, Object> documents = new LinkedHashMap<>();
+		while ( cursor.hasNext() ) {
+			Document doc = cursor.next();
+			documents.put( doc.get( "_id" ), doc.get( "value" ) );
+		}
+		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", documents ) );
+		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot, SnapshotType.UNKNOWN ) ) );
+	}
+
+	private static Collation getCollation(Document dbObject) {
+		Collation collation = null;
+		if ( dbObject != null ) {
+			String caseFirst = dbObject.getString( "caseFirst" );
+			Integer strength = dbObject.getInteger( "strength" );
+			String alternate = dbObject.getString( "alternate" );
+			String maxVariable = dbObject.getString( "maxVariable" );
+			collation =  Collation.builder()
+					.locale( (String) dbObject.get( "locale" ) )
+					.caseLevel( (Boolean) dbObject.get( "caseLevel" ) )
+					.numericOrdering( (Boolean) dbObject.get( "numericOrdering" ) )
+					.backwards( (Boolean) dbObject.get( "backwards" ) )
+					.collationCaseFirst( caseFirst == null ? null : CollationCaseFirst.fromString( caseFirst ) )
+					.collationStrength( strength == null ? null : CollationStrength.fromInt( strength ) )
+					.collationAlternate( alternate == null ? null : CollationAlternate.fromString( alternate ) )
+					.collationMaxVariable(  maxVariable == null ? null : CollationMaxVariable.fromString( maxVariable ) )
+					.build();
+		}
+		return collation;
 	}
 
 	private static ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, MongoCollection<Document> collection,
