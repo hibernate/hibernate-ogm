@@ -7,10 +7,12 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
+import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +22,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.persistence.PersistenceException;
+
+import org.hamcrest.core.CombinableMatcher;
+import org.hamcrest.core.IsInstanceOf;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -93,8 +99,9 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testFailingQuery() {
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM000024" );
+		thrown.expect( PersistenceException.class );
+		thrown.expectCause( new CombinableMatcher<Throwable>( hasMessage( startsWith( "OGM000024" ) ) )
+				.and( IsInstanceOf.instanceOf( HibernateException.class ) ) );
 		assertQuery( session, 4, session.createQuery( "from Object" ) ); // Illegal query
 	}
 
