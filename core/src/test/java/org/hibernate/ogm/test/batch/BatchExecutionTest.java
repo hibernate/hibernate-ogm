@@ -53,8 +53,10 @@ public class BatchExecutionTest extends OgmTestCase {
 	@Test
 	public void testExplicitFlushEvent() throws Exception {
 		final Session session = openSession();
+		session.beginTransaction();
 		session.persist( new Hypothesis( "hypo-1" ) );
 		session.flush();
+		session.getTransaction().commit();
 		session.close();
 
 		Assertions.assertThat( batchExecuted ).as( "Batched operations should be executed during flush" ).isTrue();
