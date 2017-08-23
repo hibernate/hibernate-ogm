@@ -18,7 +18,7 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 /**
  * Central definition of the standard set of initiators defined by OGM for the {@link SessionFactoryServiceRegistry}.
  *
- * @see OgmSessionFactoryServiceRegistryImpl
+ * @see OgmSessionFactoryServiceRegistryFactoryImpl
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmSessionFactoryServiceInitiators {

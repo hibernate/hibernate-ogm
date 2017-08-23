@@ -7,19 +7,29 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
+import javax.persistence.EntityGraph;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
+import javax.persistence.SynchronizationType;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.StatelessSessionBuilder;
 import org.hibernate.engine.spi.SessionFactoryDelegatingImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.engine.spi.OgmSessionBuilderImplementor;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
@@ -82,5 +92,76 @@ public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implemen
 				OgmSessionFactoryObjectFactory.class.getName(),
 				null
 				);
+	}
+
+	@Override
+	public EntityManager createEntityManager() {
+		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager() );
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EntityManager createEntityManager(Map map) {
+		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager( map ) );
+	}
+
+	@Override
+	public EntityManager createEntityManager(SynchronizationType synchronizationType) {
+		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager( synchronizationType ) );
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
+		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager( synchronizationType, map ) );
+	}
+
+	@Override
+	public <T> void addNamedEntityGraph(String graphName, EntityGraph<T> entityGraph) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EntityGraph findEntityGraphByName(String name) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@Override
+	public <T> List<EntityGraph<? super T>> findEntityGraphsByType(Class<T> entityClass) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> type) {
+		if ( type.isAssignableFrom( SessionFactory.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( SessionFactoryImplementor.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( SessionFactoryImpl.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( OgmSessionFactory.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( OgmSessionFactoryImplementor.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( OgmSessionFactoryImpl.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( EntityManagerFactory.class ) ) {
+			return type.cast( this );
+		}
+
+		throw new PersistenceException( "Hibernate cannot unwrap EntityManagerFactory as '" + type.getName() + "'" );
 	}
 }
