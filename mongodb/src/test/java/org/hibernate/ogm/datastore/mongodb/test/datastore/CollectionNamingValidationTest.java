@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.MappingException;
+import org.hibernate.internal.util.StringHelper;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
@@ -58,7 +59,7 @@ public class CollectionNamingValidationTest {
 	@TestForIssue(jiraKey = "OGM-900")
 	public void shouldSupportDotInCollectionName() {
 		OgmSessionFactory ogmSessionFactory = TestHelper.getDefaultTestSessionFactory( DottedNamedTable.class );
-		assertThat( ogmSessionFactory.getAllClassMetadata().containsKey( DottedNamedTable.class.getName() ) );
+		assertThat( ogmSessionFactory.getMetamodel().getEntities() ).onProperty( "name" ).contains( StringHelper.unqualify( DottedNamedTable.class.getName() ) );
 	}
 
 
