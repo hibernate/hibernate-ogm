@@ -350,12 +350,12 @@ public class OptimisticLockingTest extends OgmTestCase {
 			if ( !transaction.getRollbackOnly() ) {
 				transaction.commit();
 			}
-			else if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
+			else {
 				transaction.rollback();
 			}
 		}
 		catch (Exception e) {
-			if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
+			if ( transaction.getStatus() != TransactionStatus.NOT_ACTIVE ) {
 				transaction.rollback();
 			}
 			throw e;

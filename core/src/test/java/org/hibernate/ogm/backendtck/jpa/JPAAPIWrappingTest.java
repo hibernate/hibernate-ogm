@@ -70,7 +70,13 @@ public class JPAAPIWrappingTest extends OgmJpaTestCase {
 	public void testIllegalArgumentExceptionIfQueryDefinitionDoesNotExists() throws Exception {
 		thrown.expect( IllegalArgumentException.class );
 		EntityManager em = getFactory().createEntityManager();
-		em.createNamedQuery( "DoesNotExistsQuery" );
+		em.getTransaction().begin();
+		try {
+			em.createNamedQuery( "DoesNotExistsQuery" );
+		}
+		finally {
+			em.getTransaction().rollback();
+		}
 	}
 
 	@Override

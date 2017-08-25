@@ -38,7 +38,6 @@ import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.TestSessionFactory;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,8 +70,13 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@After
 	public void closeSession() {
-		if ( tx != null && tx.getStatus() == TransactionStatus.ACTIVE ) {
-			tx.commit();
+		if ( tx != null ) {
+			if ( tx.getRollbackOnly() ) {
+				tx.rollback();
+			}
+			else {
+				tx.commit();
+			}
 			tx = null;
 		}
 		if ( session != null ) {
