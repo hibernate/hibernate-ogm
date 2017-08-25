@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.mongodb.test.gridfs;
 import java.io.ByteArrayOutputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import javax.persistence.EntityManager;
 
 import org.hibernate.Hibernate;
@@ -50,46 +52,59 @@ public class GridFsTest extends OgmJpaTestCase {
 	private static final String ENTITY_ID = "photo1";
 
 	private EntityManager em;
+	private MongoDatabase mongoDatabase;
 
 	@Before
 	public void setUp() {
 		em = getFactory().createEntityManager();
+		mongoDatabase = getCurrentDB( em );
 	}
 
 	@After
 	public void tearDown() {
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().rollback();
+		}
 		em.clear();
 		em.close();
 	}
 
 
 	@Test
-	public void test1SaveBlob() {
-			em.getTransaction().begin();
+	public void canCreateEntityWithBlob() throws SQLException {
+		em.getTransaction().begin();
 
-			Photo photo = new Photo();
-			photo.setId( ENTITY_ID );
-			photo.setDescription( "photo1" );
-			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
-			photo.setContent( blob );
-			em.persist( photo );
-			em.getTransaction().commit();
-			MongoDatabase mongoDatabase = getCurrentDB( em );
+		Photo photo = new Photo();
+		photo.setId( ENTITY_ID );
+		photo.setDescription( "photo1" );
+		Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
+		photo.setContent( blob );
+		em.persist( photo );
+		em.getTransaction().commit();
 
-			GridFSBucket gridFSFilesBucket = GridFSBuckets.create( mongoDatabase, BUCKET_NAME );
-			MongoCursor<GridFSFile> cursor = gridFSFilesBucket.find().iterator();
-			assertThat( cursor.hasNext() ).isEqualTo( true );
-			GridFSFile savedFile = cursor.next();
-			assertThat( savedFile ).isNotNull();
-			assertThat( savedFile.getLength() ).isEqualTo( BLOB_CONTENT_1.length );
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			gridFSFilesBucket.downloadToStream( savedFile.getObjectId(), outputStream );
-			assertThat( outputStream.size() ).isEqualTo( BLOB_CONTENT_1.length );
-			assertThat( outputStream.toByteArray() ).isEqualTo( BLOB_CONTENT_1 );
+		GridFSBucket gridFSFilesBucket = GridFSBuckets.create( mongoDatabase, BUCKET_NAME );
+		MongoCursor<GridFSFile> cursor = gridFSFilesBucket.find().iterator();
+		assertThat( cursor.hasNext() ).isEqualTo( true );
+		GridFSFile savedFile = cursor.next();
+		assertThat( savedFile ).isNotNull();
+		assertThat( savedFile.getLength() ).isEqualTo( BLOB_CONTENT_1.length );
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		gridFSFilesBucket.downloadToStream( savedFile.getObjectId(), outputStream );
+		assertThat( outputStream.size() ).isEqualTo( BLOB_CONTENT_1.length );
+		assertThat( outputStream.toByteArray() ).isEqualTo( BLOB_CONTENT_1 );
+
+		em.getTransaction().begin();
+		photo = em.find( Photo.class, ENTITY_ID );
+		assertThat( photo ).isNotNull();
+		assertThat( photo.getContent() ).isNotNull();
+		Blob content = photo.getContent();
+		assertThat( content.length() ).isEqualTo( BLOB_CONTENT_1.length );
+		assertThat( content.getBytes( 1, BLOB_CONTENT_1.length ) ).isEqualTo( BLOB_CONTENT_1 );
+		em.getTransaction().commit();
 	}
 
 	@Test
-	public void test2ReadBlob() throws SQLException {
+	public void canUpdateBlobInEntity() throws SQLException {
 		em.getTransaction().begin();
 		try {
 			Photo photo = em.find( Photo.class, ENTITY_ID );
@@ -97,13 +112,36 @@ public class GridFsTest extends OgmJpaTestCase {
 			assertThat( photo.getContent() ).isNotNull();
 			Blob content = photo.getContent();
 			assertThat( content.length() ).isEqualTo( BLOB_CONTENT_1.length );
-			assertThat( content.getBytes( 0, BLOB_CONTENT_1.length  ) ).isEqualTo( BLOB_CONTENT_1 );
+			assertThat( content.getBytes( 1, BLOB_CONTENT_1.length ) ).isEqualTo( BLOB_CONTENT_1 );
+
+			Blob blob2 = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_2 );
+			photo.setContent( blob2 );
+			em.merge( photo );
+			em.getTransaction().commit();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+
+
+		em.getTransaction().begin();
+		Photo photo = em.find( Photo.class, ENTITY_ID );
+		assertThat( photo ).isNotNull();
+		assertThat( photo.getContent() ).isNotNull();
+		Blob content = photo.getContent();
+		assertThat( content.length() ).isEqualTo( BLOB_CONTENT_2.length );
+		assertThat( content.getBytes( 1, BLOB_CONTENT_2.length ) ).isEqualTo( BLOB_CONTENT_2 );
 		em.getTransaction().commit();
+
+		GridFSBucket gridFSFilesBucket = GridFSBuckets.create( mongoDatabase, BUCKET_NAME );
+		MongoCursor<GridFSFile> cursor = gridFSFilesBucket.find().iterator();
+		List<GridFSFile> files = new LinkedList<>(  );
+		for ( ; cursor.hasNext(); ) {
+			files.add( cursor.next() );
+		}
+		assertThat( files.size() ).isEqualTo( 1 );
 	}
+
 
 	private MongoDatabase getCurrentDB(EntityManager em) {
 		Session session = em.unwrap( Session.class );

@@ -1323,7 +1323,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
 					//process gridfs
-					GridFsUtil.storeContentToGridFs( currentDB,insertStatement,entityKey,optionService );
+					GridFsUtil.storeContentToGridFs( currentDB,insertStatement,entityKey,optionService,tuple, tuple.getSnapshotType() );
 
 					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection, writeConcern )
 							.put( entityKey, insertStatement );
@@ -1331,6 +1331,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
+					//process gridfs
+					GridFsUtil.storeContentToGridFs( currentDB,updateStatement,entityKey,optionService, tuple, tuple.getSnapshotType() );
 				}
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
