@@ -289,11 +289,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( operationContext );
 
 		FindIterable<Document> fi = collection.find( searchObject );
-
 		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
-		//has the document GridFS links?
 		GridFsUtil.loadContentFromGridFs( currentDB, targetDocument, key, provider.getOptionService() );
-
 		return targetDocument;
 	}
 
