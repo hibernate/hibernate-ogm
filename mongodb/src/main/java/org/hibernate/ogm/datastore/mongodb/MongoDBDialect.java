@@ -6,10 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import static java.lang.Boolean.FALSE;
-import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,8 +19,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -109,10 +103,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -133,6 +123,16 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
+
+import static java.lang.Boolean.FALSE;
+import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -540,6 +540,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document toDelete = prepareIdObject( key );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		GridFsUtil.removeFromGridFsByEntity( currentDB, provider.getOptionService(), collection, key, toDelete );
 		collection.deleteMany( toDelete );
 	}
 
