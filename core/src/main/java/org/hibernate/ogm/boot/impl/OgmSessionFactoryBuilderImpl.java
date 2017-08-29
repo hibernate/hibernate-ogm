@@ -7,12 +7,12 @@
 package org.hibernate.ogm.boot.impl;
 
 import org.hibernate.boot.SessionFactoryBuilder;
-import org.hibernate.boot.spi.AbstractDelegatingSessionFactoryBuilder;
+import org.hibernate.boot.spi.AbstractDelegatingSessionFactoryBuilderImplementor;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.boot.spi.SessionFactoryBuilderImplementor;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
+import org.hibernate.ogm.boot.OgmSessionFactoryBuilderImplementor;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
@@ -20,7 +20,8 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
  *
  * @author Gunnar Morling
  */
-public class OgmSessionFactoryBuilderImpl extends AbstractDelegatingSessionFactoryBuilder<OgmSessionFactoryBuilderImpl> implements OgmSessionFactoryBuilder {
+public class OgmSessionFactoryBuilderImpl extends AbstractDelegatingSessionFactoryBuilderImplementor<OgmSessionFactoryBuilderImplementor>
+		implements OgmSessionFactoryBuilderImplementor {
 
 	private final SessionFactoryBuilderImplementor delegate;
 	private final MetadataImplementor metadata;
@@ -33,7 +34,7 @@ public class OgmSessionFactoryBuilderImpl extends AbstractDelegatingSessionFacto
 	}
 
 	@Override
-	protected OgmSessionFactoryBuilderImpl getThis() {
+	protected OgmSessionFactoryBuilderImplementor getThis() {
 		return this;
 	}
 

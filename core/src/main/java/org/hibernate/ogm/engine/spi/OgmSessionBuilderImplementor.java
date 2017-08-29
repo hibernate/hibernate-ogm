@@ -14,5 +14,5 @@ import org.hibernate.ogm.OgmSessionFactory.OgmSessionBuilder;
  *
  * @author Gunnar Morling
  */
-public interface OgmSessionBuilderImplementor extends OgmSessionBuilder, SessionBuilderImplementor<OgmSessionBuilder> {
+public interface OgmSessionBuilderImplementor extends OgmSessionBuilder<OgmSessionBuilderImplementor>, SessionBuilderImplementor<OgmSessionBuilderImplementor> {
 }

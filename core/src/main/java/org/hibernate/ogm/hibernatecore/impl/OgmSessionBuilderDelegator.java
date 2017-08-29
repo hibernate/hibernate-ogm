@@ -13,7 +13,6 @@ import org.hibernate.engine.spi.SessionOwner;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.OgmSessionFactory.OgmSessionBuilder;
 import org.hibernate.ogm.engine.spi.OgmSessionBuilderImplementor;
 import org.hibernate.ogm.jpa.impl.OgmExceptionMapper;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.AfterCompletionAction;
@@ -23,7 +22,8 @@ import org.hibernate.resource.transaction.backend.jta.internal.synchronization.M
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmSessionBuilderDelegator extends AbstractDelegatingSessionBuilderImplementor<OgmSessionBuilder> implements OgmSessionBuilderImplementor {
+public class OgmSessionBuilderDelegator extends AbstractDelegatingSessionBuilderImplementor<OgmSessionBuilderImplementor>
+		implements OgmSessionBuilderImplementor {
 
 	private final SessionBuilderImplementor builder;
 	private final OgmSessionFactory factory;
