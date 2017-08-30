@@ -71,23 +71,23 @@ public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implemen
 
 	@Override
 	public OgmSession openTemporarySession() throws HibernateException {
-		return new OgmSessionImpl( this, (EventSource) getDelegate().openTemporarySession() );
+		return new OgmSessionImpl( this, (EventSource) delegate().openTemporarySession() );
 	}
 
 	@Override
 	public OgmSessionBuilderImplementor withOptions() {
-		return new OgmSessionBuilderDelegator( getDelegate().withOptions(), this );
+		return new OgmSessionBuilderDelegator( delegate().withOptions(), this );
 	}
 
 	@Override
 	public OgmSession openSession() throws HibernateException {
-		final Session session = getDelegate().openSession();
+		final Session session = delegate().openSession();
 		return new OgmSessionImpl( this, (EventSource) session );
 	}
 
 	@Override
 	public OgmSession getCurrentSession() throws HibernateException {
-		final Session session = getDelegate().getCurrentSession();
+		final Session session = delegate().getCurrentSession();
 		return new OgmSessionImpl( this, (EventSource) session );
 	}
 
@@ -119,24 +119,24 @@ public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implemen
 
 	@Override
 	public EntityManager createEntityManager() {
-		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager() );
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager() );
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public EntityManager createEntityManager(Map map) {
-		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager( map ) );
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager( map ) );
 	}
 
 	@Override
 	public EntityManager createEntityManager(SynchronizationType synchronizationType) {
-		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager( synchronizationType ) );
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager( synchronizationType ) );
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
-		return new OgmSessionImpl( this, (EventSource) getDelegate().createEntityManager( synchronizationType, map ) );
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager( synchronizationType, map ) );
 	}
 
 	@Override
