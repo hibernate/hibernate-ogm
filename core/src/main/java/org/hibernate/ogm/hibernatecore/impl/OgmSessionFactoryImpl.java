@@ -19,15 +19,21 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import javax.persistence.SynchronizationType;
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.StatelessSessionBuilder;
+import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.engine.spi.SessionFactoryDelegatingImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.id.UUIDGenerator;
 import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.internal.SessionFactoryRegistry;
+import org.hibernate.internal.SessionFactoryRegistry.ObjectFactoryImpl;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.engine.spi.OgmSessionBuilderImplementor;
@@ -40,8 +46,27 @@ import org.hibernate.ogm.exception.NotSupportedException;
  */
 public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implements OgmSessionFactoryImplementor {
 
+	private static final IdentifierGenerator UUID_GENERATOR = UUIDGenerator.buildSessionFactoryUniqueIdentifierGenerator();
+
+	private final String uuid;
+
 	public OgmSessionFactoryImpl(SessionFactoryImplementor delegate) {
 		super( delegate );
+
+		try {
+			uuid = (String) UUID_GENERATOR.generate( null, null );
+		}
+		catch (Exception e) {
+			throw new AssertionFailure( "Could not generate UUID" );
+		}
+
+		SessionFactoryRegistry.INSTANCE.addSessionFactory(
+				uuid,
+				delegate.getName(),
+				delegate.getSettings().isSessionFactoryNameAlsoJndiName(),
+				this,
+				delegate.getServiceRegistry().getService( JndiService.class )
+		);
 	}
 
 	@Override
@@ -84,14 +109,12 @@ public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implemen
 
 	@Override
 	public Reference getReference() throws NamingException {
-		//Expect Hibernate Core to use one StringRefAddr based address
-		String uuid = String.valueOf( getDelegate().getReference().get( 0 ).getContent() );
 		return new Reference(
-				OgmSessionFactoryImpl.class.getName(),
+				getClass().getName(),
 				new StringRefAddr( "uuid", uuid ),
-				OgmSessionFactoryObjectFactory.class.getName(),
+				ObjectFactoryImpl.class.getName(),
 				null
-				);
+		);
 	}
 
 	@Override
