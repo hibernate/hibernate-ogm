@@ -457,6 +457,14 @@ Hibernate OGM supports by default the following property types:
   { "url" : "http://www.hibernate.org/" }
 ----
 
+* `java.sql.Blob`
+
+[source, JSON]
+----
+  { "content_id" : ObjectId("567d9b60f62028750f25ef88") }
+----
+The type is used for storing binary content to GridFS. See details in <<mongodb-gridfs>>
+
 * `org.bson.types.ObjectId`
 
 [source, JSON]
@@ -3014,6 +3022,42 @@ Associations collection
   },
 
   "rows" : [ "account_1" ]
+}
+----
+====
+
+
+[[mongodb-gridfs]]
+==== GridFS Using
+GridFS is specification for working (store and load) with large files (more 16M). Details about
+GridFS you can read in https://docs.mongodb.com/manual/core/gridfs/[GridFS manual].
+
+.Mapping for an entity with using storing content in GridFS
+====
+[source, JAVA]
+----
+@Entity
+public class Photo {
+
+    @Id
+    private ObjectId id;
+    private String title;
+    @Lob
+    @GridFSBucket("photos")
+    @BinaryStorage( BinaryStorageType.GRID_FS )
+    private Blob content;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+// Stored in the Collection "Photo"
+{
+    "_id" : ObjectId("367d0b60a63123751425ef91"),
+    "title": "I am at Black Sea in Sochi",
+    "content_id" : ObjectId("567d9b60f62028750f25ef88")
 }
 ----
 ====

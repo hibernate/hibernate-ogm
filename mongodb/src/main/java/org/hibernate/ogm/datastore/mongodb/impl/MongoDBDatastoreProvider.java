@@ -106,6 +106,10 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		return true;
 	}
 
+	public OptionsService getOptionService() {
+		return serviceRegistry.getService( OptionsService.class );
+	}
+
 	@Override
 	public void start() {
 		try {

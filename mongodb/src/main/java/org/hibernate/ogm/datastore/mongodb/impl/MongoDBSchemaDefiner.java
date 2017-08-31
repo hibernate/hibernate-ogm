@@ -29,6 +29,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.mongodb.utils.TableEntityTypeMappingInfo;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -78,6 +79,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema( SchemaDefinitionContext context) {
+		TableEntityTypeMappingInfo.initMapping( context.getTableEntityTypeMapping() );
 		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
