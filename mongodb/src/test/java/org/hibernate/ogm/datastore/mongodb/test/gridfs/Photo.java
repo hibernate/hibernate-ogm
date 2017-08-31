@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.gridfs;
 
+import static org.hibernate.ogm.datastore.mongodb.options.BinaryStorageType.GRID_FS;
+import static org.hibernate.ogm.datastore.mongodb.test.gridfs.GridFsTest.BUCKET_NAME;
+
 import java.sql.Blob;
 import java.util.Objects;
 import javax.persistence.Entity;
@@ -14,9 +17,6 @@ import javax.persistence.Lob;
 
 import org.hibernate.ogm.datastore.mongodb.options.BinaryStorage;
 import org.hibernate.ogm.datastore.mongodb.options.GridFSBucket;
-
-import static org.hibernate.ogm.datastore.mongodb.options.BinaryStorageType.GRID_FS;
-import static org.hibernate.ogm.datastore.mongodb.test.gridfs.GridFsTest.BUCKET_NAME;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;

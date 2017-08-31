@@ -18,6 +18,7 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.GridFSBucketOption;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 
 import com.mongodb.client.MongoCollection;
@@ -36,7 +37,6 @@ public class GridFsUtil {
 
 	public static void storeContentToGridFs(MongoDatabase mongoDatabase, Document currentDocument,
 											EntityKey entityKey, OptionsService optionService, Tuple tuple, SnapshotType snapshotType) {
-		//@todo don't forget about WriteConcern
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
 		if ( currentDocument == null ) {
 			return;
@@ -58,45 +58,35 @@ public class GridFsUtil {
 
 	private static void loadContent(MongoDatabase mongoDatabase,  Document currentDocument, Class entityClass, String fieldName,
 									OptionsService optionService,Tuple tuple, SnapshotType snapshotType) {
-		//@todo think about cache the information
-		BinaryStorageType binaryStorageType = optionService.context()
-				.getPropertyOptions( entityClass, fieldName ).getUnique( BinaryStorageOption.class );
+		OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
+		BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
 		if ( BinaryStorageType.GRID_FS == binaryStorageType  ) {
 			//the field has GridFS configuration. Process it!
-			String gridfsBucketName = optionService.context()
-					.getPropertyOptions( entityClass, fieldName ).getUnique( GridFSBucketOption.class );
+			String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
-			GridFSBucket gridFSFilesBucket = gridfsBucketName != null ?
-					GridFSBuckets.create( mongoDatabase, gridfsBucketName ) : GridFSBuckets.create( mongoDatabase );
+			GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 			String fileName = "";
 			BinaryStream binaryStream = currentDocument.get( fieldName,BinaryStream.class );
 			ObjectId uploadId = gridFSFilesBucket.uploadFromStream( fileName, binaryStream.getInputStream() );
 			//change value of the field (BinaryStream -> ObjectId)
 			currentDocument.put( fieldName, uploadId );
 			if ( SnapshotType.UPDATE == snapshotType ) {
-				//need remove old file
-				//@todo think about load the ObjectId from DB by search
 				ObjectId oldContentObjectId = (ObjectId) tuple.get( fieldName + "_uploadId" );
 				gridFSFilesBucket.delete( oldContentObjectId );
 			}
 		}
-
 	}
 
 	public static void removeFromGridFsByEntity(MongoDatabase mongoDatabase, OptionsService optionService, MongoCollection<Document> collection,
 												EntityKey entityKey, Document searchFilter) {
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
 		for ( Field currentField : entityClass.getDeclaredFields() ) {
-			BinaryStorageType binaryStorageType = optionService.context()
-					.getPropertyOptions( entityClass, currentField.getName() ).getUnique( BinaryStorageOption.class );
+			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, currentField.getName() );
+			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
 			if ( BinaryStorageType.GRID_FS == binaryStorageType ) {
 				//the field has GridFS configuration. Process it!
-				String gridfsBucketName = optionService.context()
-						.getPropertyOptions( entityClass, currentField.getName() ).getUnique( GridFSBucketOption.class );
-
-				GridFSBucket gridFSFilesBucket = gridfsBucketName != null ?
-						GridFSBuckets.create( mongoDatabase, gridfsBucketName ) : GridFSBuckets.create( mongoDatabase );
-
+				String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
+				GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 				MongoCursor<Document> cursor = collection.find( searchFilter )
 						.projection( new Document( currentField.getName(), 1 ) ).iterator();
 				if ( cursor.hasNext() ) {
@@ -107,24 +97,26 @@ public class GridFsUtil {
 		}
 	}
 
+	private static GridFSBucket getGridFSFilesBucket(MongoDatabase mongoDatabase, String gridfsBucketName) {
+		return gridfsBucketName != null ?
+				GridFSBuckets.create( mongoDatabase, gridfsBucketName ) : GridFSBuckets.create( mongoDatabase );
+	}
+
 	public static void loadContentFromGridFs( MongoDatabase mongoDatabase, Document currentDocument, EntityKey entityKey,
 			OptionsService optionService) {
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
-		//@todo don't forget about ReadConcern
 		if ( currentDocument == null ) {
 			return;
 		}
 		for ( String fieldName : currentDocument.keySet() ) {
 			//has the field GridFS info?
-			BinaryStorageType binaryStorageType = optionService.context()
-					.getPropertyOptions( entityClass, fieldName ).getUnique( BinaryStorageOption.class );
+			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
+			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
 			if ( BinaryStorageType.GRID_FS == binaryStorageType ) {
 				//the field has GridFS configuration. Process it!
-				String gridfsBucketName = optionService.context()
-						.getPropertyOptions( entityClass, fieldName ).getUnique( GridFSBucketOption.class );
+				String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
-				GridFSBucket gridFSFilesBucket = gridfsBucketName != null ?
-						GridFSBuckets.create( mongoDatabase, gridfsBucketName ) : GridFSBuckets.create( mongoDatabase );
+				GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 
 				ObjectId uploadId = currentDocument.get( fieldName, ObjectId.class );
 				ByteArrayOutputStream fullContent = new ByteArrayOutputStream( 100_000 );
@@ -140,7 +132,8 @@ public class GridFsUtil {
 		}
 	}
 
-
-
+	private static OptionsContext getPropertyOptions( OptionsService optionService, Class entityClass, String fieldName) {
+		return optionService.context().getPropertyOptions( entityClass, fieldName );
+	}
 
 }

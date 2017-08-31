@@ -6,11 +6,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.gridfs;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.ByteArrayOutputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.Hibernate;
@@ -23,7 +26,6 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -35,8 +37,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
