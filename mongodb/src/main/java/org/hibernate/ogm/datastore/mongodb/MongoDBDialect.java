@@ -65,6 +65,7 @@ import org.hibernate.ogm.datastore.mongodb.type.GeoPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoCollectionGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BlobGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoLineStringGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiLineStringGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPointGridType;
@@ -76,6 +77,7 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridTyp
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
+import org.hibernate.ogm.datastore.mongodb.utils.GridFsUtil;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
@@ -119,6 +121,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
@@ -326,7 +329,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( operationContext );
 
 		FindIterable<Document> fi = collection.find( searchObject );
-		return fi != null ? fi.projection( projection ).first() : null;
+		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
+		GridFsUtil.loadContentFromGridFs( currentDB, targetDocument, key, provider.getOptionService() );
+		return targetDocument;
 	}
 
 	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
@@ -838,6 +843,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type == StandardBasicTypes.BINARY ) {
 			return BinaryAsBsonBinaryGridType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.BLOB ) {
+			return BlobGridType.INSTANCE;
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
@@ -1596,6 +1604,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document insertStatement = null;
 		Document updateStatement = new Document();
 		WriteConcern writeConcern = null;
+		OptionsService optionService = provider.getOptionService();
 
 		final UpdateOptions updateOptions = new UpdateOptions().upsert( true );
 		for ( Operation operation : groupedOperation.getOperations() ) {
@@ -1608,6 +1617,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
+					//process gridfs
+					GridFsUtil.storeContentToGridFs( currentDB,insertStatement,entityKey,optionService,tuple, tuple.getSnapshotType() );
 
 					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
 							.put( entityKey, insertStatement );
@@ -1615,6 +1626,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
+					//process gridfs
+					GridFsUtil.storeContentToGridFs( currentDB,updateStatement,entityKey,optionService, tuple, tuple.getSnapshotType() );
 				}
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
@@ -1921,6 +1934,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			}
 		}
 		return tuple;
+	}
+
+	public MongoDatabase getCurrentDB() {
+		return currentDB;
 	}
 
 	private static class MongoDBAggregationOutput implements ClosableIterator<Tuple> {
