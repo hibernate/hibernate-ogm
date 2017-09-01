@@ -184,6 +184,10 @@ If you're interested in such a feature, please let us know.
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
 
+hibernate.ogm.mongodb.gridfs.bucket.name::
+Defines common bucket name for GridFs using.
+
+
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
@@ -210,7 +214,7 @@ When working with the MongoDB backend, you can specify the following settings:
 * a strategy for storing associations using the `@AssociationStorage` and `@AssociationDocumentStorage` annotations
 * a strategy for storing the contents of map-typed associations using the `@MapStorage` annotation
 
-Refer to <<mongodb-associations> to learn more about the options related to storing associations.
+Refer to <<mongodb-associations>> to learn more about the options related to storing associations.
 
 The following shows an example:
 
@@ -3096,8 +3100,12 @@ public class Photo {
 
 ====
 ===== GridFS Configuration
-gridfs config.
+Entity with GridFs is configurable.
+GridFS is manageable by:
 
+* annotation `@GridFSBucket` have a parameter with bucket name. if bucket name not specified, Hibernate OGM
+uses default bucket name of MongoDB or value from property `hibernate.ogm.mongodb.gridfs.bucket.name`.
+* annotation `@BinaryStorage` specify type of binary storage. Version 5.2.0 supports 'GRID_FS' only.
 
 
 
