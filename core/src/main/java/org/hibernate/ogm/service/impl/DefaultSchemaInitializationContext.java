@@ -48,7 +48,7 @@ public class DefaultSchemaInitializationContext implements SchemaDefiner.SchemaD
 	public Set<EntityKeyMetadata> getAllEntityKeyMetadata() {
 		Set<EntityKeyMetadata> allEntityKeyMetadata = new HashSet<>();
 
-		for ( EntityPersister entityPersister : factory.getEntityPersisters().values() ) {
+		for ( EntityPersister entityPersister : factory.getMetamodel().entityPersisters().values() ) {
 			allEntityKeyMetadata.add( ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
 		}
 
@@ -59,11 +59,11 @@ public class DefaultSchemaInitializationContext implements SchemaDefiner.SchemaD
 	public Set<AssociationKeyMetadata> getAllAssociationKeyMetadata() {
 		Set<AssociationKeyMetadata> allAssociationKeyMetadata = new HashSet<>();
 
-		for ( CollectionPersister associationPersister : factory.getCollectionPersisters().values() ) {
+		for ( CollectionPersister associationPersister : factory.getMetamodel().collectionPersisters().values() ) {
 			allAssociationKeyMetadata.add( ( (OgmCollectionPersister) associationPersister ).getAssociationKeyMetadata() );
 		}
 
-		for ( EntityPersister entityPersister : factory.getEntityPersisters().values() ) {
+		for ( EntityPersister entityPersister : factory.getMetamodel().entityPersisters().values() ) {
 			for ( String property : entityPersister.getPropertyNames() ) {
 				AssociationKeyMetadata inverseOneToOneAssociationKeyMetadata = ( (OgmEntityPersister) entityPersister ).getInverseOneToOneAssociationKeyMetadata( property );
 				if ( inverseOneToOneAssociationKeyMetadata != null ) {
@@ -89,7 +89,7 @@ public class DefaultSchemaInitializationContext implements SchemaDefiner.SchemaD
 	@Override
 	public Map<String, Class<?>> getTableEntityTypeMapping() {
 		Map<String, Class<?>> mapping = new HashMap<>();
-		Map<String, EntityPersister> entityPersisters = factory.getEntityPersisters();
+		Map<String, EntityPersister> entityPersisters = factory.getMetamodel().entityPersisters();
 
 		for ( Entry<String, EntityPersister> entityPersisterEntry : entityPersisters.entrySet() ) {
 			OgmEntityPersister entityPersister = (OgmEntityPersister) entityPersisterEntry.getValue();
@@ -103,7 +103,7 @@ public class DefaultSchemaInitializationContext implements SchemaDefiner.SchemaD
 	 * Returns all the persistent id generators which potentially require the creation of an object in the schema.
 	 */
 	private Iterable<PersistentNoSqlIdentifierGenerator> getPersistentGenerators() {
-		Map<String, EntityPersister> entityPersisters = factory.getEntityPersisters();
+		Map<String, EntityPersister> entityPersisters = factory.getMetamodel().entityPersisters();
 
 		Set<PersistentNoSqlIdentifierGenerator> persistentGenerators = new HashSet<PersistentNoSqlIdentifierGenerator>( entityPersisters.size() );
 		for ( EntityPersister persister : entityPersisters.values() ) {

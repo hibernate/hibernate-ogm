@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.internal.util.MarkerObject;
 import org.hibernate.mapping.Column;
@@ -46,14 +47,16 @@ class ColumnBasedDiscriminator implements EntityDiscriminator {
 	private final Map<Object, String> subclassesByValue;
 
 	public ColumnBasedDiscriminator(final PersistentClass persistentClass, final SessionFactoryImplementor factory, final Column column) {
+		Dialect dialect = factory.getServiceRegistry().getService( JdbcServices.class ).getDialect();
+
 		forced = persistentClass.isForceDiscriminator();
-		columnName = column.getQuotedName( factory.getDialect() );
-		alias = column.getAlias( factory.getDialect(), persistentClass.getRootTable() );
+		columnName = column.getQuotedName( dialect );
+		alias = column.getAlias( dialect, persistentClass.getRootTable() );
 		discriminatorType = persistentClass.getDiscriminator().getType() == null
 				? StringType.INSTANCE
 				: persistentClass.getDiscriminator().getType();
 		value = value( persistentClass, discriminatorType );
-		sqlValue = sqlValue( persistentClass, factory.getDialect(), value, discriminatorType );
+		sqlValue = sqlValue( persistentClass, dialect, value, discriminatorType );
 		subclassesByValue = subclassesByValue( persistentClass, value, discriminatorType );
 		needed = true;
 	}

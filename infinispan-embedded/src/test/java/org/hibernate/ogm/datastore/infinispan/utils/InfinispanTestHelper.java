@@ -53,7 +53,7 @@ public class InfinispanTestHelper extends BaseGridDialectTestHelper implements G
 		int entityCount = 0;
 		Set<Cache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<Cache<?, ?>, Boolean>() );
 
-		for ( EntityPersister entityPersister : ( (SessionFactoryImplementor) sessionFactory ).getEntityPersisters().values() ) {
+		for ( EntityPersister entityPersister : ( (SessionFactoryImplementor) sessionFactory ).getMetamodel().entityPersisters().values() ) {
 			Cache<?, ?> entityCache = getEntityCache( sessionFactory, ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
 			if ( !processedCaches.contains( entityCache ) ) {
 
@@ -75,7 +75,7 @@ public class InfinispanTestHelper extends BaseGridDialectTestHelper implements G
 		int asscociationCount = 0;
 		Set<Cache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<Cache<?, ?>, Boolean>() );
 
-		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
+		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getMetamodel().collectionPersisters().values() ) {
 			Cache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
 			if ( !processedCaches.contains( associationCache ) ) {
 

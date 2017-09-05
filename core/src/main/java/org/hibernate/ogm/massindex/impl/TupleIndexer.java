@@ -228,7 +228,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 
 	private Object entity(Session session, Tuple tuple) {
 		SessionImplementor sessionImplementor = (SessionImplementor) session;
-		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
+		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( indexedType );
 
 		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, sessionImplementor );
 

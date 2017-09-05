@@ -33,7 +33,7 @@ public class TupleContextHelper {
 	 */
 	public static TupleContext tupleContext(SharedSessionContractImplementor session, EntityMetadataInformation metadata) {
 		if ( metadata != null ) {
-			OgmEntityPersister persister = (OgmEntityPersister) session.getFactory().getEntityPersister( metadata.getTypeName() );
+			OgmEntityPersister persister = (OgmEntityPersister) session.getFactory().getMetamodel().entityPersister( metadata.getTypeName() );
 			return persister.getTupleContext( session );
 		}
 		else if ( session != null ) {

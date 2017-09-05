@@ -41,6 +41,7 @@ public class HibernateOGMPersistenceProviderAdaptor implements PersistenceProvid
 	}
 
 	/* All methods below delegate to the original Hibernate ORM 5 adaptor */
+
 	@Override
 	public void injectJtaManager(JtaManager jtaManager) {
 		ormOriginalAdaptor.injectJtaManager( jtaManager );

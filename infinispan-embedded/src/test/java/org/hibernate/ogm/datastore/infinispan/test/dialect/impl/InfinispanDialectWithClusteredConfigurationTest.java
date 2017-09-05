@@ -23,6 +23,7 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.metamodel.spi.MetamodelImplementor;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
@@ -226,6 +227,10 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	private static SessionFactoryImplementor getSessionFactory() {
 		SessionFactoryImplementor sessionFactory = mock( SessionFactoryImplementor.class );
 
+		// metamodel
+		MetamodelImplementor metamodel = mock( MetamodelImplementor.class );
+		when( sessionFactory.getMetamodel() ).thenReturn( metamodel );
+
 		// entity persister
 		OgmEntityPersister foobarPersister = mock( OgmEntityPersister.class );
 		when( foobarPersister.getEntityKeyMetadata() ).thenReturn( new DefaultEntityKeyMetadata( "Foobar", new String[] {} ) );
@@ -236,12 +241,12 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		when( generator.getGeneratorKeyMetadata() ).thenReturn( DefaultIdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" ) );
 		when( foobarPersister.getIdentifierGenerator() ).thenReturn( generator );
 
-		when( sessionFactory.getEntityPersisters() ).thenReturn( Collections.<String, EntityPersister>singletonMap( "Foobar", foobarPersister ) );
+		when( metamodel.entityPersisters() ).thenReturn( Collections.<String, EntityPersister>singletonMap( "Foobar", foobarPersister ) );
 
 		// collection persister
 		OgmCollectionPersister foobarCollectionPersister = mock( OgmCollectionPersister.class );
 		when( foobarCollectionPersister.getAssociationKeyMetadata() ).thenReturn( new DefaultAssociationKeyMetadata.Builder().table( "Foobar" ).build() );
-		when( sessionFactory.getCollectionPersisters() ).thenReturn(
+		when( metamodel.collectionPersisters() ).thenReturn(
 				Collections.<String, CollectionPersister>singletonMap( "Foobar", foobarCollectionPersister ) );
 
 		// service registry

@@ -36,7 +36,7 @@ public class MongoDBPropertyHelper extends ParserPropertyHelper implements Prope
 	}
 
 	public String getColumnName(Class<?> entityType, List<String> propertyName) {
-		return getColumnName( (OgmEntityPersister) getSessionFactory().getEntityPersister( entityType.getName() ), propertyName );
+		return getColumnName( (OgmEntityPersister) getSessionFactory().getMetamodel().entityPersister( entityType ), propertyName );
 	}
 
 	public String getColumnName(String entityType, List<String> propertyPath) {

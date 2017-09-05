@@ -14,12 +14,12 @@ import java.util.List;
 
 import org.fest.assertions.Fail;
 import org.fest.assertions.MapAssert;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
+import org.hibernate.query.NativeQuery;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +73,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -89,7 +89,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'author' : 'Oscar Wilde' })";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -106,7 +106,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': 'Oscar Wilde' } }, { '$sort': {'name': -1 } } ])";
 
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -127,7 +127,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'year': { '$lt': 3333.3} } }, { '$sort': {'name': -1 } } ])";
 
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -148,7 +148,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'year': { '$gt': 0.3} } }, { '$sort': {'name': -1 } } ])";
 
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -169,7 +169,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'author': 'Oscar Wilder' } }, 'new': true })";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -187,7 +187,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".findAndModify({ 'query': {'_id': 11}, 'update': { '$set': { 'author': 'Oscar Wilder' } }, 'new': true })";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -205,7 +205,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".findAndModify({ 'query': {'_id': { '$numberLong': '11' } }, 'update': { '$set': { 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } }, 'new': true, 'upsert': true })";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			List<OscarWildePoem> result = query.list();
 
 			assertThat( result.size() ).isEqualTo( 1 );
@@ -239,7 +239,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insert({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 1 );
 
@@ -287,7 +287,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insertMany( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 2 );
 
@@ -350,7 +350,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 2 );
 
@@ -416,7 +416,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 1 );
 
@@ -464,7 +464,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 					+ "  { 'author' : 'Oscar Wilde' }, "
 					+ "  { '$inc': { 'copiesSold' : 1 } } "
 					+ ")";
-			Query query = session.createNativeQuery( nativeUpdateOneQuery );
+			NativeQuery query = session.createNativeQuery( nativeUpdateOneQuery );
 
 			int modifiedCount = query.executeUpdate();
 			assertThat( modifiedCount ).isEqualTo( 1 );
@@ -519,7 +519,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 					+ "  { 'author' : 'Oscar Wilde' }, "
 					+ "  { '$inc': { 'copiesSold' : 1 } } "
 					+ ")";
-			Query query = session.createNativeQuery( nativeUpdateManyQuery );
+			NativeQuery query = session.createNativeQuery( nativeUpdateManyQuery );
 			int modifiedCount = query.executeUpdate();
 
 			assertThat( modifiedCount ).isEqualTo( 3 );
@@ -572,7 +572,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 1 );
 
@@ -599,7 +599,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '2' } ], { 'ordered': false } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 2 );
 
@@ -646,12 +646,12 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQueryForDeleteMany = "db." + OscarWildePoem.TABLE_NAME
 					+ ".deleteMany( {'author': 'Oscar Wilde'} )";
-			Query queryDeleteMany = session.createNativeQuery( nativeQueryForDeleteMany );
+			NativeQuery queryDeleteMany = session.createNativeQuery( nativeQueryForDeleteMany );
 			int countOfDeleted = queryDeleteMany.executeUpdate();
 			assertThat( countOfDeleted ).isEqualTo( 3 );
 
 			String nativeQueryForFindDeletedEntity = "db." + OscarWildePoem.TABLE_NAME + ".find( {'author': 'Oscar Wilde'} )";
-			Query queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
+			NativeQuery queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
 			List<OscarWildePoem> listOfFoundEntity = queryFindDeletedEntity.list();
 			assertThat( listOfFoundEntity.size() ).isEqualTo( 0 );
 
@@ -671,18 +671,18 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 					+ "{ '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Second name','rating': '8' }, "
 					+ "{ '_id': { '$numberLong': '13' }, 'author': 'Oscar Wilde', 'name': 'Third name','rating': '8' } ], "
 					+ "{ 'ordered': false } )";
-			Query queryInsertMany = session.createNativeQuery( nativeQueryForInsertMany );
+			NativeQuery queryInsertMany = session.createNativeQuery( nativeQueryForInsertMany );
 			int countOfInserted = queryInsertMany.executeUpdate();
 			assertThat( countOfInserted ).isEqualTo( 3 );
 
 			String nativeQueryForDeleteManyWithOptions = "db." + OscarWildePoem.TABLE_NAME
 					+ ".deleteMany( {'rating': '8'}, { 'w': 'majority', 'wtimeout' : 100 } )";
-			Query queryDeleteManyWithOptions = session.createNativeQuery( nativeQueryForDeleteManyWithOptions );
+			NativeQuery queryDeleteManyWithOptions = session.createNativeQuery( nativeQueryForDeleteManyWithOptions );
 			int countOfDeleted = queryDeleteManyWithOptions.executeUpdate();
 			assertThat( countOfDeleted ).isEqualTo( 3 );
 
 			String nativeQueryForFindDeletedEntity = "db." + OscarWildePoem.TABLE_NAME + ".find( {'rating': '8'} )";
-			Query queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
+			NativeQuery queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
 			List<OscarWildePoem> listOfFoundEntity = queryFindDeletedEntity.list();
 			assertThat( listOfFoundEntity.size() ).isEqualTo( 0 );
 
@@ -696,7 +696,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ '$and': [{ 'author': 'Oscar Wilde' }, { 'name': 'Portia' }]})";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -713,7 +713,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author':'Oscar Wilde'}, {'name': 'Portia' }]}}, { '$sort' : { 'name' : -1 } }])";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -734,7 +734,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*', '$options': 'i'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -756,7 +756,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			String max = " '$max': { 'year' : 1881 } ";
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + max + "})";
 
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 			assertThat( result ).onProperty( "id" ).containsExactly( athanasia.getId() );
@@ -773,7 +773,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			String min = " '$min': { 'year' : 1882 } ";
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + min + "})";
 
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 			assertThat( result ).onProperty( "id" ).containsExactly( imperatrix.getId() );
@@ -797,7 +797,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			queryWithModifiers.append( ", '$comment': 'Testing comment' " );
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers.toString() + "})";
 
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 			assertThat( result ).onProperty( "id" ).containsExactly( athanasia.getId() );
@@ -816,7 +816,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			queryWithModifiers.append( ", '$explain': true " );
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers.toString() + "})";
 
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			@SuppressWarnings("unchecked")
 			List<Object[]> result = query.list();
 			// I'm not sure we can test the content because this is the result of the explain command
@@ -843,7 +843,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 					+ "," + sort
 					+ "])";
 
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			@SuppressWarnings("unchecked")
 			List<Object[]> result = query.list();
 			assertThat( result ).hasSize( 2 );
@@ -867,7 +867,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : 1 } }])";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.setMaxResults( 2 ).list();
 
@@ -884,7 +884,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'author': { '$regex': '.*'  } }}, { '$sort' : { 'name' : -1 } }])";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.setFirstResult( 1 ).list();
 
@@ -901,7 +901,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$or': [ {'author': { '$regex': 'Oscar.*'}}, {'name': { '$regex': 'Po.*'} }]}}, { '$sort' : { 'name' : -1 } }])";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.setMaxResults( 1 ).setFirstResult( 1 ).list();
 
@@ -918,7 +918,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'$and': [ {'author': { '$regex': 'oscar.*', '$options': 'i' }}, {'name': { '$regex': 'po.*', '$options': 'i'} }]}}, { '$sort' : { 'name' : -1 } }])";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -935,7 +935,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find( { '$nor' : [ { 'name' : 'Athanasia'}, { 'name' : 'Portia' }]})";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -952,7 +952,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			Transaction transaction = session.beginTransaction();
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find( { 'name' :  { '$not' : { '$eq' : 'Athanasia' }}})";
-			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 
@@ -1026,7 +1026,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
 					+ ".insert( [ { '_id': NumberLong(11), 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': NumberLong(12), 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
-			Query query = session.createNativeQuery( nativeQuery );
+			NativeQuery query = session.createNativeQuery( nativeQuery );
 			int n = query.executeUpdate();
 			assertThat( n ).isEqualTo( 2 );
 

@@ -80,7 +80,7 @@ public class ManyToOneType extends EntityType {
 	private void scheduleBatchLoadIfNeeded(Serializable id, SharedSessionContractImplementor session) throws MappingException {
 		//cannot batch fetch by unique key (property-ref associations)
 		if ( StringHelper.isEmpty( delegate.getRHSUniqueKeyPropertyName() ) && id != null ) {
-			EntityPersister persister = session.getFactory().getEntityPersister( delegate.getAssociatedEntityName() );
+			EntityPersister persister = session.getFactory().getMetamodel().entityPersister( delegate.getAssociatedEntityName() );
 			EntityKey entityKey = session.generateEntityKey( id, persister );
 			if ( !session.getPersistenceContext().containsEntity( entityKey ) ) {
 				session.getPersistenceContext().getBatchFetchQueue().addBatchLoadableEntityKey( entityKey );

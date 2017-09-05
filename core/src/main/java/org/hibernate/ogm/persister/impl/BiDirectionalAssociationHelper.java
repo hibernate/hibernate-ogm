@@ -168,6 +168,6 @@ public class BiDirectionalAssociationHelper {
 	}
 
 	private static OgmCollectionPersister getPersister(SessionFactoryImplementor factory, CollectionType type) {
-		return (OgmCollectionPersister) factory.getCollectionPersister( type.getRole() );
+		return (OgmCollectionPersister) factory.getMetamodel().collectionPersister( type.getRole() );
 	}
 }

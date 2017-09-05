@@ -56,7 +56,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 
 	@Override
 	public MongoDBQueryParsingResult getResult() {
-		OgmEntityPersister entityPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( targetType.getName() );
+		OgmEntityPersister entityPersister = (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( targetType );
 
 		Document query = appendDiscriminatorClause( entityPersister, builder.build() );
 
@@ -103,7 +103,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 			Set<Object> discriminatorValues = new HashSet<>();
 			discriminatorValues.add( discriminatorValue );
 			for ( String subclass : subclassEntityNames ) {
-				OgmEntityPersister subclassPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( subclass );
+				OgmEntityPersister subclassPersister = (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( subclass );
 				Object subDiscriminatorValue = subclassPersister.getDiscriminatorValue();
 				discriminatorValues.add( subDiscriminatorValue );
 			}

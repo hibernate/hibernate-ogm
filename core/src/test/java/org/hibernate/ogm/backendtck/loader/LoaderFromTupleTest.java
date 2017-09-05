@@ -52,7 +52,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ), SnapshotType.UPDATE );
 
 		EntityPersister persister = ( (SessionFactoryImplementor) session.getSessionFactory() )
-				.getEntityPersister( Feeling.class.getName() );
+				.getMetamodel().entityPersister( Feeling.class );
 		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { (OgmEntityPersister) persister }, 1 );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		List<Tuple> tuples = new ArrayList<Tuple>();

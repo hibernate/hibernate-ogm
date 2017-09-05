@@ -28,9 +28,12 @@ import org.hibernate.bytecode.enhance.spi.LazyPropertyInitializer;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.cache.spi.entry.CacheEntry;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.OptimisticLockStyle;
 import org.hibernate.engine.internal.Versioning;
+import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -225,8 +228,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		SessionFactoryImplementor factory = creationContext.getSessionFactory();
-
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+		JdbcServices jdbcServices = serviceRegistry.getService( JdbcServices.class );
+		JdbcEnvironment jdbcEnvironment = jdbcServices.getJdbcEnvironment();
+		Dialect dialect = jdbcServices.getDialect();
+
 		this.gridDialect = serviceRegistry.getService( GridDialect.class );
 		this.identityColumnAwareGridDialect = serviceRegistry.getService( IdentityColumnAwareGridDialect.class );
 		this.optimisticLockingAwareGridDialect = serviceRegistry.getService( OptimisticLockingAwareGridDialect.class );
@@ -241,11 +247,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			throw log.getIdentityGenerationStrategyNotSupportedException( getEntityName() );
 		}
 
-		tableName = persistentClass.getTable().getQualifiedName(
-				factory.getDialect(),
-				factory.getSettings().getDefaultCatalogName(),
-				factory.getSettings().getDefaultSchemaName()
-		);
+		tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format( persistentClass.getTable().getQualifiedTableName(), dialect );
 
 		this.discriminator = discriminator;
 
@@ -274,11 +276,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		Iterator<Table> tableIter = persistentClass.getSubclassTableClosureIterator();
 		while ( tableIter.hasNext() ) {
 			Table table = tableIter.next();
-			subclassTables.add( table.getQualifiedName(
-					factory.getDialect(),
-					factory.getSettings().getDefaultCatalogName(),
-					factory.getSettings().getDefaultSchemaName()
-			) );
+			subclassTables.add( jdbcEnvironment.getQualifiedObjectNameFormatter().format( table.getQualifiedTableName(), dialect ) );
 		}
 		subclassSpaces = ArrayHelper.toStringArray( subclassTables );
 
@@ -293,19 +291,15 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			@SuppressWarnings( "unchecked" )
 			Iterator<Table> iter = persistentClass.getSubclassTableClosureIterator();
 			while ( iter.hasNext() ) {
-				Table tab = iter.next();
-				if ( !tab.isAbstractUnionTable() ) {
-					String tableName = tab.getQualifiedName(
-							factory.getDialect(),
-							factory.getSettings().getDefaultCatalogName(),
-							factory.getSettings().getDefaultSchemaName()
-					);
+				Table table = iter.next();
+				if ( !table.isAbstractUnionTable() ) {
+					String tableName = jdbcEnvironment.getQualifiedObjectNameFormatter().format( table.getQualifiedTableName(), dialect );
 					tableNames.add( tableName );
 					String[] key = new String[idColumnSpan];
 
-					Iterator<Column> citer = tab.getPrimaryKey().getColumnIterator();
+					Iterator<Column> citer = table.getPrimaryKey().getColumnIterator();
 					for ( int k = 0; k < idColumnSpan; k++ ) {
-						key[k] = citer.next().getQuotedName( factory.getDialect() );
+						key[k] = citer.next().getQuotedName( dialect );
 					}
 					keyColumns.add( key );
 				}
@@ -462,7 +456,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			@SuppressWarnings("unchecked")
 			Set<String> subclasses = persister.getEntityMetamodel().getSubclassEntityNames();
 			for ( String className : subclasses ) {
-				OgmEntityPersister subEntityPersister = (OgmEntityPersister) persister.getFactory().getEntityPersister( className );
+				OgmEntityPersister subEntityPersister = (OgmEntityPersister) persister.getFactory().getMetamodel().entityPersister( className );
 				if ( !subEntityPersister.equals( persister ) ) {
 					List<String> subEntityColumnNames = selectableColumnNames( subEntityPersister, null );
 					for ( String column : subEntityColumnNames ) {
@@ -604,7 +598,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		for ( int index = 0; index < getPropertySpan(); index++ ) {
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
-				OgmEntityPersister associatedJoinable = (OgmEntityPersister) getFactory().getEntityPersister(
+				OgmEntityPersister associatedJoinable = (OgmEntityPersister) getFactory().getMetamodel().entityPersister(
 						( (EntityType) uniqueKeyType ).getAssociatedEntityName() );
 
 				for ( String column : getPropertyColumnNames( index ) ) {
@@ -874,7 +868,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		//TODO: inexact, what we really need to know is: are any outer joins used?
 		boolean disableForUpdate = getSubclassTableSpan() > 1 &&
 				hasSubclasses() &&
-				!getFactory().getDialect().supportsOuterJoinForUpdate();
+				!getFactory().getServiceRegistry().getService( JdbcServices.class ).getDialect().supportsOuterJoinForUpdate();
 
 		loaders.put(
 				LockMode.UPGRADE,
@@ -1614,7 +1608,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			if ( propertyMightHaveNavigationalInformation[propertyIndex] ) {
 				CollectionType collectionType = (CollectionType) getPropertyTypes()[propertyIndex];
 				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) getFactory()
-						.getCollectionPersister( collectionType.getRole() );
+						.getMetamodel().collectionPersister( collectionType.getRole() );
 
 				AssociationPersister associationPersister = new AssociationPersister.Builder( collectionPersister.getOwnerEntityPersister().getMappedClass() )
 						.hostingEntity( entity )
@@ -1955,7 +1949,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		SessionFactoryImplementor factory = getFactory();
 
 		if ( factory.getStatistics().isStatisticsEnabled() ) {
-			factory.getStatisticsImplementor().optimisticFailure( getEntityName() );
+			factory.getStatistics().optimisticFailure( getEntityName() );
 		}
 
 		throw new StaleObjectStateException( getEntityName(), id );

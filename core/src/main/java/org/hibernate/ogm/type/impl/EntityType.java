@@ -54,7 +54,7 @@ public abstract class EntityType extends GridTypeDelegatingToCoreType {
 			return ForeignKeys.getEntityIdentifierIfNotUnsaved( associatedEntityName, value, session ); //tolerates nulls
 		}
 		else {
-			final EntityPersister persister = session.getFactory().getEntityPersister( delegate.getAssociatedEntityName() );
+			final EntityPersister persister = session.getFactory().getMetamodel().entityPersister( delegate.getAssociatedEntityName() );
 
 			Object propertyValue = persister.getPropertyValue( value, uniqueKeyPropertyName );
 			// We now have the value of the property-ref we reference.  However,
@@ -76,7 +76,7 @@ public abstract class EntityType extends GridTypeDelegatingToCoreType {
 			return null;
 		}
 
-		final EntityPersister persister = sessionFactory.getEntityPersister( delegate.getAssociatedEntityName() );
+		final EntityPersister persister = sessionFactory.getMetamodel().entityPersister( delegate.getAssociatedEntityName() );
 		final String uniqueKeyPropertyName = delegate.getRHSUniqueKeyPropertyName();
 
 		if ( StringHelper.isEmpty( uniqueKeyPropertyName ) ) {

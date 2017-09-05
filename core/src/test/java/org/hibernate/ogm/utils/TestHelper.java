@@ -27,7 +27,6 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.config.spi.ConfigurationService;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.boot.OgmSessionFactoryBuilder;
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -199,7 +198,7 @@ public class TestHelper {
 
 	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
 		if ( emf != null ) {
-			dropSchemaAndDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+			dropSchemaAndDatabase( (SessionFactory) emf );
 		}
 	}
 
@@ -216,7 +215,7 @@ public class TestHelper {
 	}
 
 	public static void prepareDatabase(EntityManagerFactory emf) {
-		prepareDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+		prepareDatabase( (SessionFactory) emf );
 	}
 
 	public static void prepareDatabase(SessionFactory sessionFactory) {

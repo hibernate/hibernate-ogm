@@ -72,7 +72,7 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 					return null;
 				}
 				RootReturn rootReturn = (RootReturn) queryReturn;
-				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getEntityName() );
+				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( rootReturn.getEntityName() );
 				metadataInformation = new EntityMetadataInformation( persister.getEntityKeyMetadata(), rootReturn.getEntityName()
 				);
 			}

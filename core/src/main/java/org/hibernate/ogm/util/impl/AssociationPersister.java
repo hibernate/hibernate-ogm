@@ -284,7 +284,7 @@ public class AssociationPersister {
 
 	private OgmEntityPersister getHostingEntityPersister() {
 		if ( hostingEntityPersister == null ) {
-			hostingEntityPersister = session.getFactory().getEntityPersister( hostingEntityType.getName() );
+			hostingEntityPersister = session.getFactory().getMetamodel().entityPersister( hostingEntityType );
 		}
 
 		return (OgmEntityPersister) hostingEntityPersister;

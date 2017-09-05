@@ -16,6 +16,7 @@ import java.util.List;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.dialect.pagination.LimitHelper;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.PersistenceContext;
 import org.hibernate.engine.spi.QueryParameters;
@@ -234,7 +235,7 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				}
 			}
 			catch ( SQLException sqle ) {
-				throw session.getFactory().getSQLExceptionHelper().convert(
+				throw session.getFactory().getServiceRegistry().getService( JdbcServices.class ).getSqlExceptionHelper().convert(
 						sqle,
 						"could not load an entity batch: " + MessageHelper.infoString(
 								getEntityPersisters()[0],

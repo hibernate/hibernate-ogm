@@ -71,7 +71,7 @@ public class BatchIndexingWorkspace implements Runnable {
 	public void run() {
 		ErrorHandler errorHandler = searchIntegrator.getErrorHandler();
 		try {
-			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
+			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( indexedType );
 			final EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 
 			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler, tenantId );

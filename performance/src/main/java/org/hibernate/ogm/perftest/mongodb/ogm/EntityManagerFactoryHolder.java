@@ -15,7 +15,6 @@ import javax.transaction.TransactionManager;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.openjdk.jmh.annotations.Scope;
@@ -53,7 +52,7 @@ public class EntityManagerFactoryHolder {
 	}
 
 	private TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) factory;
 		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
 	}
 

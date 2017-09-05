@@ -63,7 +63,7 @@ public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implemen
 		SessionFactoryRegistry.INSTANCE.addSessionFactory(
 				uuid,
 				delegate.getName(),
-				delegate.getSettings().isSessionFactoryNameAlsoJndiName(),
+				delegate.getSessionFactoryOptions().isSessionFactoryNameAlsoJndiName(),
 				this,
 				delegate.getServiceRegistry().getService( JndiService.class )
 		);
