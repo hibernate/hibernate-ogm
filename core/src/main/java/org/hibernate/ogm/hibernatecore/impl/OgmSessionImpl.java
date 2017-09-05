@@ -99,6 +99,16 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 		return factory;
 	}
 
+	/**
+	 * In ORM 5.2, it is not possible anymore to call getTransaction() in a JTA environment anymore.
+	 *
+	 * A lot of our shared tests rely on this and we want to keep them working for Neo4j.
+	 */
+	@Override
+	public Transaction getTransaction() {
+		return ( (SharedSessionContractImplementor) delegate ).accessTransaction();
+	}
+
 	@Override
 	public Criteria createCriteria(Class persistentClass) {
 		//TODO plug the Lucene engine
