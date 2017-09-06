@@ -25,7 +25,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public class HashMapTestHelper implements GridDialectTestHelper {
+public class HashMapTestHelper extends AbstractGridDialectTestHelper {
 
 	@Override
 	public long getNumberOfEntities(Session session) {

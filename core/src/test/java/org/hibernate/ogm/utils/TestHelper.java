@@ -161,6 +161,9 @@ public class TestHelper {
 		return HELPER.extractEntityTuple( session, key );
 	}
 
+	public static long getNumberOfAssociations(EntityManager em) {
+		return getNumberOfAssociations( em.unwrap( Session.class ) );
+	}
 	public static long getNumberOfAssociations(Session session) {
 		return HELPER.getNumberOfAssociations( session );
 	}
@@ -210,6 +213,22 @@ public class TestHelper {
 		}
 	}
 
+	public static void prepareDatabase(EntityManagerFactory emf) {
+		prepareDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+	}
+
+	public static void prepareDatabase(SessionFactory sessionFactory) {
+		// if the factory is closed, we don't have access to the service registry
+		if ( sessionFactory != null && !sessionFactory.isClosed() ) {
+			try {
+				HELPER.prepareDatabase( sessionFactory );
+			}
+			catch ( Exception e ) {
+				log.warn( "Exception while preparing schema and database in test", e );
+			}
+		}
+	}
+
 	public static void checkCleanCache(SessionFactory sessionFactory) {
 		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
 		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
@@ -217,6 +236,7 @@ public class TestHelper {
 
 	public static Map<String, String> getDefaultTestSettings() {
 		Map<String, String> settings = new HashMap<>();
+
 		settings.put( OgmProperties.ENABLED, "true" );
 		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );

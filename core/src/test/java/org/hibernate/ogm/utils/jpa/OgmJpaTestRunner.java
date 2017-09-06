@@ -127,6 +127,7 @@ public class OgmJpaTestRunner extends SkippableTestRunner {
 		if ( isTestScopedEntityManagerFactoryRequired() ) {
 			testScopedEntityManagerFactory = buildEntityManagerFactory();
 			injectEntityManagerFactory( null, testScopedFactoryFields, testScopedEntityManagerFactory );
+			TestHelper.prepareDatabase( testScopedEntityManagerFactory );
 		}
 
 		try {
