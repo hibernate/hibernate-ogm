@@ -109,6 +109,10 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
+
+	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		DatastoreProvider datastoreProvider = getDatastoreProvider( sessionFactory );
 		delegate().dropDatabase( datastoreProvider );

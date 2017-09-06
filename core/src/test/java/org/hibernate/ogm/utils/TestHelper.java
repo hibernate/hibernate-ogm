@@ -161,6 +161,10 @@ public class TestHelper {
 		return HELPER.extractEntityTuple( session, key );
 	}
 
+	public static long getNumberOfAssociations(EntityManager em) {
+		return getNumberOfAssociations( em.unwrap( Session.class ) );
+	}
+
 	public static long getNumberOfAssociations(Session session) {
 		return HELPER.getNumberOfAssociations( session );
 	}
@@ -206,6 +210,22 @@ public class TestHelper {
 			}
 			catch ( Exception e ) {
 				log.warn( "Exception while dropping schema and database in test", e );
+			}
+		}
+	}
+
+	public static void prepareDatabase(EntityManagerFactory emf) {
+		prepareDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
+	}
+
+	public static void prepareDatabase(SessionFactory sessionFactory) {
+		// if the factory is closed, we don't have access to the service registry
+		if ( sessionFactory != null && !sessionFactory.isClosed() ) {
+			try {
+				HELPER.prepareDatabase( sessionFactory );
+			}
+			catch ( Exception e ) {
+				log.warn( "Exception while preparing schema and database in test", e );
 			}
 		}
 	}

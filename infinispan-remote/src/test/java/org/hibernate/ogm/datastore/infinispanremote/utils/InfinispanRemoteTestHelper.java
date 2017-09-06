@@ -71,6 +71,10 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
+
+	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		final Set<String> mappedCacheNames = datastoreProvider.getMappedCacheNames();
@@ -171,5 +175,4 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 		}
 		return InfinispanRemoteDatastoreProvider.class.cast( provider );
 	}
-
 }

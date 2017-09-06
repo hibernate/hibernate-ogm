@@ -229,6 +229,10 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+	}
+
+	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = getProvider( sessionFactory );
 		try {

@@ -108,6 +108,11 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+		// Nothing to do
+	}
+
+	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		// Nothing to do
 	}
