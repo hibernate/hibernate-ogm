@@ -27,18 +27,20 @@ public class QueryParameters {
 	private final RowSelection rowSelection;
 	private final Map<String, TypedGridValue> namedParameters;
 	private final List<TypedGridValue> positionalParameters;
+	private final List<String> queryHints;
 
-	public QueryParameters(RowSelection rowSelection, Map<String, TypedGridValue> namedParameters, List<TypedGridValue> positionalParameters) {
+	public QueryParameters(RowSelection rowSelection, Map<String, TypedGridValue> namedParameters, List<TypedGridValue> positionalParameters, List<String> queryHints) {
 		this.rowSelection = rowSelection;
 		this.namedParameters = namedParameters;
 		this.positionalParameters = positionalParameters;
+		this.queryHints = queryHints;
 	}
 
 	public static QueryParameters fromOrmQueryParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator, SessionFactoryImplementor sessionFactoryImplementor) {
 		RowSelection selection = RowSelection.fromOrmRowSelection( parameters.getRowSelection() );
 		Map<String, TypedGridValue> namedParameters = createNamedParameters( sessionFactoryImplementor, parameters, typeTranslator );
 		List<TypedGridValue> positionalParameters = createPositionalParameters( parameters, typeTranslator );
-		return new QueryParameters( selection, namedParameters, positionalParameters );
+		return new QueryParameters( selection, namedParameters, positionalParameters, parameters.getQueryHints() );
 	}
 
 	private static List<TypedGridValue> createPositionalParameters(org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
@@ -73,5 +75,9 @@ public class QueryParameters {
 
 	public List<TypedGridValue> getPositionalParameters() {
 		return positionalParameters;
+	}
+
+	public List<String> getQueryHints() {
+		return queryHints;
 	}
 }
