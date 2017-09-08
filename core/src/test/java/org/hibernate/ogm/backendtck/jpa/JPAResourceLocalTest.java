@@ -17,13 +17,16 @@ import javax.persistence.Persistence;
 
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.RequiresTransactionalCapabilitiesRule;
+import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@RunWith(SkippableTestRunner.class)
 public class JPAResourceLocalTest {
 
 	@Rule
