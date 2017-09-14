@@ -88,36 +88,26 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 				allCacheNames.addAll( tmpCacheManager.getCacheNames() );
 
 				GlobalConfiguration globalConfiguration = serializationConfiguration.build();
+				Configuration defaultCacheConfiguration = defaultCacheConfiguration( transactionManagerLookupDelegator, tmpCacheManager, globalConfiguration );
 
-				EmbeddedCacheManager cacheManager = new DefaultCacheManager( globalConfiguration, tmpCacheManager.getDefaultCacheConfiguration(), false );
+				EmbeddedCacheManager cacheManager = new DefaultCacheManager( globalConfiguration, defaultCacheConfiguration, false );
 
 				// override the named cache configuration defined in the configuration file to
 				// inject the platform TransactionManager
 				for ( String cacheName : allCacheNames ) {
-					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( cacheName );
-					if ( originalCfg == null ) {
-						originalCfg = tmpCacheManager.getDefaultCacheConfiguration();
+					if ( !isDefaultCacheName( globalConfiguration, cacheName ) ) {
+						Configuration config = tmpCacheManager.getCacheConfiguration( cacheName );
+						if ( config == null ) {
+							config = defaultCacheConfiguration;
+						}
+						else {
+							config = updateConfiguration( cacheName, transactionManagerLookupDelegator, config );
+						}
+						if ( config == null ) {
+							throw LOG.missingCacheConfiguration( cacheName );
+						}
+						cacheManager.defineConfiguration( cacheName, config );
 					}
-					if ( originalCfg == null ) {
-						throw LOG.missingCacheConfiguration( cacheName );
-					}
-					Configuration newCfg;
-					if ( originalCfg.transaction().transactionMode() == TransactionMode.TRANSACTIONAL ) {
-						//Inject our TransactionManager lookup delegate for transactional caches ONLY!
-						//injecting one in a non-transactional cache will have side-effects on other configuration settings.
-						newCfg = new ConfigurationBuilder()
-								.read( originalCfg )
-									.transaction()
-										.transactionManagerLookup( transactionManagerLookupDelegator )
-								.build();
-					}
-					else {
-						//But also define all other caches:
-						newCfg = new ConfigurationBuilder()
-								.read( originalCfg )
-								.build();
-					}
-					cacheManager.defineConfiguration( cacheName, newCfg );
 				}
 
 				cacheManager.start();
@@ -132,6 +122,60 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 		catch (Exception e) {
 			throw raiseConfigurationError( e, configUrl.toString() );
 		}
+	}
+
+	private static Configuration defaultCacheConfiguration(TransactionManagerLookupDelegator transactionManagerLookupDelegator, EmbeddedCacheManager tmpCacheManager, GlobalConfiguration globalConfiguration) {
+		if ( tmpCacheManager.getDefaultCacheConfiguration() != null ) {
+			String defaultCacheName = globalConfiguration.defaultCacheName().orElse( null );
+			return updateConfiguration( defaultCacheName, transactionManagerLookupDelegator, tmpCacheManager.getDefaultCacheConfiguration() );
+		}
+		return null;
+	}
+
+	private static Configuration updateConfiguration(String cacheName, TransactionManagerLookupDelegator transactionManagerLookupDelegator, Configuration configuration) {
+		Configuration newConfiguration = enableClusteringHashGroups( cacheName, configuration );
+		newConfiguration = injectTransactionManager( transactionManagerLookupDelegator, newConfiguration );
+		return newConfiguration;
+	}
+
+	private static boolean isDefaultCacheName(GlobalConfiguration globalConfiguration, String cacheName) {
+		String defaultCacheName = globalConfiguration.defaultCacheName().orElse( null );
+		return cacheName.equals( defaultCacheName );
+	}
+
+	/**
+	 * Enable the clustering.hash.groups configuration if it's not already enabled.
+	 * <p>
+	 * Infinispan requires this option enabled because we are using fine grained maps.
+	 * The function will log a warning if the property is disabled.
+	 *
+	 * @return the updated configuration
+	 */
+	private static Configuration enableClusteringHashGroups(String cacheName, Configuration configuration) {
+		if ( configuration.clustering().hash().groups().enabled() ) {
+			return configuration;
+		}
+		LOG.clusteringHashGroupsMustBeEnabled( cacheName );
+		ConfigurationBuilder builder = new ConfigurationBuilder().read( configuration );
+		builder.clustering().hash().groups().enabled();
+		return builder.build();
+	}
+
+	/**
+	 * Inject our TransactionManager lookup delegate for transactional caches ONLY!
+	 * <p>
+	 * injecting one in a non-transactional cache will have side-effects on other configuration settings.
+	 *
+	 * @return an updated version of the configuration
+	 */
+	private static Configuration injectTransactionManager(TransactionManagerLookupDelegator transactionManagerLookupDelegator, Configuration configuration) {
+		if ( configuration.transaction().transactionMode() == TransactionMode.TRANSACTIONAL ) {
+			ConfigurationBuilder builder = new ConfigurationBuilder().read( configuration );
+			builder.transaction()
+					.transactionManagerLookup( transactionManagerLookupDelegator );
+			return builder.build();
+		}
+		return configuration;
 	}
 
 	private static HibernateException raiseConfigurationError(Exception e, String cfgName) {
