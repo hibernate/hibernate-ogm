@@ -236,6 +236,70 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1311")
+	public void testInsertManyThenRemove() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertMany( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
+
+			// Try again.
+			try {
+				n = query.executeUpdate();
+				Fail.fail( "Unique key constraint violation exception expected." );
+			}
+			catch (Exception e) {
+				/* Expected */
+			}
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '12' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that they are gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '12' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testInsertMultipleThenRemove() throws Exception {
 		try ( OgmSession session = openSession() ) {
