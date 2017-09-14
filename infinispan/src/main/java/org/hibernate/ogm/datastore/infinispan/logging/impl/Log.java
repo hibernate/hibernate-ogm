@@ -41,4 +41,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1105, value = "Infinispan Externalizer mistmatch: id [%1$d] was registered but taken " +
 			"by implementation '%2$s'. Expected externalizer: '%3$s' ")
 	HibernateException externalizerIdNotMatchingType(Integer externalizerId, AdvancedExternalizer<?> registeredExternalizer, AdvancedExternalizer expectedExternalizer);
+
+	@Message(id = 1106, value = "Missing configuration for cache '%1$s' and a default configuration was not provided")
+	Exception missingCacheConfiguration(String cacheName);
 }

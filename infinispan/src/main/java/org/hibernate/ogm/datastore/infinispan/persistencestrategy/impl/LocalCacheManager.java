@@ -17,6 +17,8 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.impl.TransactionManagerLookupDelegator;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -50,6 +52,8 @@ import org.infinispan.transaction.TransactionMode;
  * @param <ISK> the identity source cache key type
  */
 public abstract class LocalCacheManager<EK, AK, ISK> {
+
+	private static final Log LOG = LoggerFactory.getLogger();
 
 	private final EmbeddedCacheManager cacheManager;
 	private final boolean isProvidedCacheManager;
@@ -93,6 +97,9 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( cacheName );
 					if ( originalCfg == null ) {
 						originalCfg = tmpCacheManager.getDefaultCacheConfiguration();
+					}
+					if ( originalCfg == null ) {
+						throw LOG.missingCacheConfiguration( cacheName );
 					}
 					Configuration newCfg;
 					if ( originalCfg.transaction().transactionMode() == TransactionMode.TRANSACTIONAL ) {
