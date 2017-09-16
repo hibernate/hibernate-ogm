@@ -29,6 +29,7 @@ Others are in separate repositories, called contrib:
  * [CouchDB](https://github.com/hibernate/hibernate-ogm-couchdb)
  * [Ehcache](https://github.com/hibernate/hibernate-ogm-ehcache)
  * [Redis](https://github.com/hibernate/hibernate-ogm-redis)
+ * [Ignite](https://github.com/hibernate/hibernate-ogm-ignite)
 
 ## Useful pointers
 

@@ -70,6 +70,7 @@ As of today, we have implemented the following datastore providers:
 * a CouchDB based datastore provider to persist data in the CouchDB document store (experimental)
 * a Cassandra based datastore provider to persist data in Apache Cassandra (experimental)
 * a Redis based datastore provider to persist data in the Redis key/value store (experimental)
+* an Ignite based datastore provider to persist data in Apache Ignite (experimental)
 
 To implement JPQL queries, Hibernate OGM parses the JPQL string
 and calls the appropriate translator functions to build a native query.
