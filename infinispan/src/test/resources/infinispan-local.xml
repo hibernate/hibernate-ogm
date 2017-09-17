@@ -43,7 +43,9 @@
         <!-- ***************************** -->
         <!--   Cache to store identifiers  -->
         <!-- ***************************** -->
-        <local-cache name="IDENTIFIERS" configuration="default-template" />
+        <local-cache name="IDENTIFIERS" configuration="default-template">
+            <transaction mode="NONE" />
+        </local-cache>
 
     </cache-container>
 </infinispan>

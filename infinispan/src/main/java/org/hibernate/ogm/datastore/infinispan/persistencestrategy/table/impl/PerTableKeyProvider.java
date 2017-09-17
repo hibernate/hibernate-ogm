@@ -74,7 +74,7 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 
 		@Override
 		public boolean test(Entry<PersistentEntityKey, Map<String, Object>> cacheEntry) {
-			return true;
+			return cacheEntry.getKey() instanceof PersistentEntityKey;
 		}
 	}
 }
