@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.infinispan;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hibernate.LockMode;
@@ -51,7 +52,9 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
+import org.infinispan.stream.CacheCollectors;
 
 /**
  * EK is the entity cache key type
@@ -217,36 +220,27 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple( ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata ) {
 		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor( entityKeyMetadata );
-		KeyMapper<EK> keyMapper = new KeyMapper<>();
-		ValueMapper<EK> valueMapper = new ValueMapper<>();
 
-		
 		for ( Bucket<EK> bucket : buckets ) {
-			Map<EK, Map<String, Object>> queryResult = bucket.getCache().entrySet()
-					.stream()
-					.filter( getKeyProvider().getFilter( entityKeyMetadata ) )
-					.collect( Collectors.toMap( keyMapper, valueMapper ) );
+			Map<EK, Map<String, Object>> queryResult = new HashMap<>();
 
+			List<CacheEntry<EK, Map<String, Object>>> collect = bucket.getCache().getAdvancedCache().cacheEntrySet()
+				.stream()
+				.filter( getKeyProvider().getFilter( entityKeyMetadata ) )
+				// also collector needs to be Serializable (for non local caches)
+				.collect( CacheCollectors.serializableCollector( () -> Collectors.toList() ) );
+
+			for ( CacheEntry<EK, Map<String, Object>> entry : collect ) {
+				queryResult.put( entry.getKey(), entry.getValue() );
+			}
+
+			// At runtime values of queryResult will be members of class org.infinispan.atomic.impl.AtomicKeySetImpl
+			// this is because of the new implementation of FineGrainedAtomicMap Infinispan class (since 9.1)
+			// query result return anyway valid keys, the values will be reloaded later by the InfinispanTupleIterator
 			InfinispanTuplesSupplier<EK> supplier = new InfinispanTuplesSupplier( bucket.getCache(), queryResult );
 			consumer.consume( supplier );
-		}
-	}
-
-	private static class KeyMapper<K> implements Function<Entry<K, Map<String, Object>>, K>{
-
-		@Override
-		public K apply(Entry<K, Map<String, Object>> t) {
-			return t.getKey();
-		}
-	}
-
-	private static class ValueMapper<K> implements Function<Entry<K, Map<String, Object>>, Map<String, Object>>{
-
-		@Override
-		public Map<String, Object> apply(Entry<K, Map<String, Object>> t) {
-			return t.getValue();
 		}
 	}
 

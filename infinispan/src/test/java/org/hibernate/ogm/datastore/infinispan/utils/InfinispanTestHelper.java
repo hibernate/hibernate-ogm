@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -18,6 +19,8 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -30,6 +33,8 @@ import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.infinispan.Cache;
+import org.infinispan.atomic.AtomicMapLookup;
+import org.infinispan.atomic.FineGrainedAtomicMap;
 
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
@@ -49,7 +54,13 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 		for ( EntityPersister entityPersister : ( (SessionFactoryImplementor) sessionFactory ).getEntityPersisters().values() ) {
 			Cache<?, ?> entityCache = getEntityCache( sessionFactory, ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
 			if ( !processedCaches.contains( entityCache ) ) {
-				entityCount += entityCache.size();
+
+				// the new implementation of FineGrainedAtomicMap creates entries also for every fields
+				// so it is necessary to skip field entries on count
+				entityCount += entityCache.getAdvancedCache().cacheEntrySet().stream()
+					.filter( cacheEntry -> cacheEntry.getKey() instanceof PersistentEntityKey )
+					.count();
+
 				processedCaches.add( entityCache );
 			}
 		}
@@ -70,7 +81,13 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
 			Cache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
 			if ( !processedCaches.contains( associationCache ) ) {
-				asscociationCount += associationCache.size();
+
+				// the new implementation of FineGrainedAtomicMap creates entries also for every association fields
+				// so it is necessary to skip field entries on count
+				asscociationCount += associationCache.getAdvancedCache().cacheEntrySet().stream()
+					.filter( cacheEntry -> cacheEntry.getKey() instanceof PersistentAssociationKey )
+					.count();
+
 				processedCaches.add( associationCache );
 			}
 		}
@@ -81,7 +98,19 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 	@Override
 	public Map<String, Object> extractEntityTuple(Session session, EntityKey key) {
 		InfinispanEmbeddedDatastoreProvider provider = getProvider( session.getSessionFactory() );
-		return getEntityCache( session.getSessionFactory(), key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
+		Cache<PersistentEntityKey, Map<String, Object>> entityCache = (Cache<PersistentEntityKey, Map<String, Object>>) getEntityCache( session.getSessionFactory(), key.getMetadata() );
+		PersistentEntityKey entityCacheKey = (PersistentEntityKey) provider.getKeyProvider().getEntityCacheKey( key );
+
+		// the new implementation of FineGrainedAtomicMap creates entries also for every fields
+		// direct extraction (without the use of FineGrainedAtomicMap) return the physical cache status (1 entry for each tuple + 1 entry for each field)
+		// the use of FineGrainedAtomicMap reassembles the tuple in the expected way
+		// see method InfinispanDialect#createTuple
+		FineGrainedAtomicMap<String, Object> fineGrainedAtomicMap = AtomicMapLookup.getFineGrainedAtomicMap( entityCache, entityCacheKey, false );
+		Map<String, Object> tupleMap = fineGrainedAtomicMap.entrySet()
+			.stream()
+			.collect( Collectors.toMap( Map.Entry::getKey, Map.Entry::getValue ) );
+
+		return tupleMap;
 	}
 
 	private static Cache<?, Map<String, Object>> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {

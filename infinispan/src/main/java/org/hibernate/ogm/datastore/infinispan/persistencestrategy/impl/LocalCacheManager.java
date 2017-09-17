@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

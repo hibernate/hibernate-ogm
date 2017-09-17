@@ -23,6 +23,7 @@
         <!--   Default cache settings    -->
         <!-- *************************** -->
         <local-cache-configuration name="default-template">
+            <locking isolation="READ_COMMITTED" />
             <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
             <expiration interval="-1"/>
         </local-cache-configuration>
@@ -42,7 +43,9 @@
         <!-- ***************************** -->
         <!--   Cache to store identifiers  -->
         <!-- ***************************** -->
-        <local-cache name="IDENTIFIERS" configuration="default-template" />
+        <local-cache name="IDENTIFIERS" configuration="default-template">
+            <transaction mode="NONE" />
+        </local-cache>
 
     </cache-container>
 </infinispan>

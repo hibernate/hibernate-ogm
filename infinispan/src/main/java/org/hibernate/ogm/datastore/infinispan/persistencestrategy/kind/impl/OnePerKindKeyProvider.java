@@ -76,6 +76,10 @@ public class OnePerKindKeyProvider implements KeyProvider<EntityKey, Association
 
 		@Override
 		public boolean test(java.util.Map.Entry<EntityKey, Map<String, Object>> cacheEntry) {
+			if ( !( cacheEntry.getKey() instanceof EntityKey ) ) {
+				return false;
+			}
+
 			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 				if ( cacheEntry.getKey().getTable().equals( entityKeyMetadata.getTable() ) ) {
 					return true;
