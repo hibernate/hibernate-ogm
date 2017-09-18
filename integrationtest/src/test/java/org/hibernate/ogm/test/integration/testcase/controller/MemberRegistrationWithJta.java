@@ -63,6 +63,11 @@ public class MemberRegistrationWithJta implements MemberRegistration {
 	}
 
 	@Override
+	public void deleteAll() {
+		RegistrationExecutor.deleteAll( em );
+	}
+
+	@Override
 	public void close() {
 	}
 

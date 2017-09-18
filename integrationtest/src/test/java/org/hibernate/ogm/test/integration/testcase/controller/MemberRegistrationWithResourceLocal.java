@@ -91,6 +91,13 @@ public class MemberRegistrationWithResourceLocal implements MemberRegistration {
 	}
 
 	@Override
+	public void deleteAll() {
+		beginTransaction();
+		RegistrationExecutor.deleteAll( em );
+		commit();
+	}
+
+	@Override
 	public void close() {
 		em.close();
 	}

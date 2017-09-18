@@ -32,7 +32,8 @@ public abstract class ModuleMemberRegistrationScenario {
 	public MemberRegistration memberRegistration;
 
 	@After
-	public void closeEntityManager() {
+	public void cleanup() {
+		memberRegistration.deleteAll();
 		memberRegistration.close();
 	}
 
