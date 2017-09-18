@@ -8,16 +8,21 @@ package org.hibernate.ogm.hibernatecore.impl;
 
 import java.lang.invoke.MethodHandles;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
+
 import org.hibernate.Criteria;
 import org.hibernate.Filter;
 import org.hibernate.HibernateException;
 import org.hibernate.NaturalIdLoadAccess;
 import org.hibernate.ScrollMode;
+import org.hibernate.Session;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionDelegatorBaseImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.jdbc.Work;
@@ -179,5 +184,29 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(String entityName) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T unwrap(Class<T> clazz) {
+		checkOpen();
+
+		if ( Session.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( SessionImplementor.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( SharedSessionContractImplementor.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( OgmSession.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( EntityManager.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+
+		throw new PersistenceException( "Hibernate OGM cannot unwrap " + clazz );
 	}
 }
