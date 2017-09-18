@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.massindex.impl;
 
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -21,6 +20,8 @@ import org.hibernate.search.backend.spi.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.exception.ErrorHandler;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.IndexedTypeSet;
 
 /**
  * Makes sure that several different BatchIndexingWorkspace(s)
@@ -34,7 +35,7 @@ public class BatchCoordinator implements Runnable {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
-	private final Class<?>[] rootEntities; // entity types to reindex excluding all subtypes of each-other
+	private final IndexedTypeSet rootIndexedTypes; // entity types to reindex excluding all subtypes of each-other
 	private final ExtendedSearchIntegrator searchFactoryImplementor;
 	private final SessionFactoryImplementor sessionFactory;
 	private final int typesToIndexInParallel;
@@ -49,12 +50,12 @@ public class BatchCoordinator implements Runnable {
 
 	private final GridDialect gridDialect;
 
-	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, ExtendedSearchIntegrator searchFactoryImplementor,
+	public BatchCoordinator(GridDialect gridDialect, IndexedTypeSet rootEntities, ExtendedSearchIntegrator searchFactoryImplementor,
 			SessionFactoryImplementor sessionFactory, int typesToIndexInParallel, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart,
 			boolean optimizeAfterPurge, MassIndexerProgressMonitor monitor, String tenantId) {
 		this.gridDialect = gridDialect;
 		this.tenantId = tenantId;
-		this.rootEntities = rootEntities.toArray( new Class<?>[rootEntities.size()] );
+		this.rootIndexedTypes = rootEntities;
 		this.searchFactoryImplementor = searchFactoryImplementor;
 		this.sessionFactory = sessionFactory;
 		this.typesToIndexInParallel = typesToIndexInParallel;
@@ -103,8 +104,8 @@ public class BatchCoordinator implements Runnable {
 	 */
 	private void doBatchWork(BatchBackend backend) throws InterruptedException {
 		ExecutorService executor = Executors.newFixedThreadPool( typesToIndexInParallel, "BatchIndexingWorkspace" );
-		for ( Class<?> type : rootEntities ) {
-			executor.execute( new BatchIndexingWorkspace( gridDialect, searchFactoryImplementor, sessionFactory, type,
+		for ( IndexedTypeIdentifier indexedTypeIdentifier : rootIndexedTypes ) {
+			executor.execute( new BatchIndexingWorkspace( gridDialect, searchFactoryImplementor, sessionFactory, indexedTypeIdentifier,
 					cacheMode, endAllSignal, monitor, backend, tenantId ) );
 		}
 		executor.shutdown();
@@ -117,11 +118,11 @@ public class BatchCoordinator implements Runnable {
 	 * @param backend
 	 */
 	private void afterBatch(BatchBackend backend) {
-		Set<Class<?>> targetedClasses = searchFactoryImplementor.getIndexedTypesPolymorphic( rootEntities );
+		IndexedTypeSet targetedTypes = searchFactoryImplementor.getIndexedTypesPolymorphic( rootIndexedTypes );
 		if ( this.optimizeAtEnd ) {
-			backend.optimize( targetedClasses );
+			backend.optimize( targetedTypes );
 		}
-		backend.flush( targetedClasses );
+		backend.flush( targetedTypes );
 	}
 
 	/**
@@ -132,13 +133,13 @@ public class BatchCoordinator implements Runnable {
 	private void beforeBatch(BatchBackend backend) {
 		if ( this.purgeAtStart ) {
 			// purgeAll for affected entities
-			Set<Class<?>> targetedClasses = searchFactoryImplementor.getIndexedTypesPolymorphic( rootEntities );
-			for ( Class<?> clazz : targetedClasses ) {
+			IndexedTypeSet targetedTypes = searchFactoryImplementor.getIndexedTypesPolymorphic( rootIndexedTypes );
+			for ( IndexedTypeIdentifier type : targetedTypes ) {
 				// needs do be in-sync work to make sure we wait for the end of it.
-				backend.doWorkInSync( new PurgeAllLuceneWork( tenantId, clazz ) );
+				backend.doWorkInSync( new PurgeAllLuceneWork( tenantId, type ) );
 			}
 			if ( this.optimizeAfterPurge ) {
-				backend.optimize( targetedClasses );
+				backend.optimize( targetedTypes );
 			}
 		}
 	}
