@@ -50,7 +50,7 @@
         <luceneVersion>5.5.5</luceneVersion>
 
         <!-- Various dependencies -->
-        <hibernateHqlParserVersion>1.4.0.Final</hibernateHqlParserVersion>
+        <hibernateHqlParserVersion>1.5.0.Final</hibernateHqlParserVersion>
         <hibernate.hql.module.slot>${hibernateHqlParserVersion}</hibernate.hql.module.slot>
         <parboiledVersion>1.1.8</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
         <asmVersion>5.2</asmVersion> <!-- used for Parboiled and Neo4j -->
