@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -33,8 +35,8 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -50,8 +52,6 @@ import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.distexec.mapreduce.Reducer;
 
 /**
  * EK is the entity cache key type
@@ -219,17 +219,35 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor( entityKeyMetadata );
+		KeyMapper<EK> keyMapper = new KeyMapper<>();
+		ValueMapper<EK> valueMapper = new ValueMapper<>();
+
+		
 		for ( Bucket<EK> bucket : buckets ) {
-			Map<EK, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
+			Map<EK, Map<String, Object>> queryResult = bucket.getCache().entrySet()
+					.stream()
+					.filter( getKeyProvider().getFilter( entityKeyMetadata ) )
+					.collect( Collectors.toMap( keyMapper, valueMapper ) );
+
 			InfinispanTuplesSupplier<EK> supplier = new InfinispanTuplesSupplier( bucket.getCache(), queryResult );
 			consumer.consume( supplier );
 		}
 	}
 
-	private Map<EK, Map<String, Object>> retrieveKeys(Cache<EK, Map<String, Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
-		MapReduceTask<EK, Map<String, Object>, EK, Map<String, Object>> queryTask = new MapReduceTask<EK, Map<String, Object>, EK, Map<String, Object>>( cache );
-		queryTask.mappedWith( getKeyProvider().getMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer<EK>() );
-		return queryTask.execute();
+	private static class KeyMapper<K> implements Function<Entry<K, Map<String, Object>>, K>{
+
+		@Override
+		public K apply(Entry<K, Map<String, Object>> t) {
+			return t.getKey();
+		}
+	}
+
+	private static class ValueMapper<K> implements Function<Entry<K, Map<String, Object>>, Map<String, Object>>{
+
+		@Override
+		public Map<String, Object> apply(Entry<K, Map<String, Object>> t) {
+			return t.getValue();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -240,15 +258,6 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	@SuppressWarnings("unchecked")
 	private KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return (KeyProvider<EK, AK, ISK>) provider.getKeyProvider();
-	}
-
-	static class TupleReducer<EK> implements Reducer<EK, Map<String, Object>> {
-
-		@Override
-		public Map<String, Object> reduce(EK reducedKey, Iterator<Map<String, Object>> iter) {
-			return iter.next();
-		}
-
 	}
 
 	private class InfinispanTuplesSupplier<SEK> implements TuplesSupplier {
@@ -263,7 +272,8 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 		@Override
 		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
-			return new InfinispanTupleIterator( cache, queryResult.entrySet().iterator() );
+			Iterator<Entry<SEK, Map<String, Object>>> iterator = queryResult.entrySet().iterator();
+			return new InfinispanTupleIterator( cache, iterator );
 		}
 	}
 
