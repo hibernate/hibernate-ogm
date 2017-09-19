@@ -22,34 +22,27 @@
         <!-- *************************** -->
         <!--   Default cache settings    -->
         <!-- *************************** -->
-        <local-cache name="DEFAULT">
-            <transaction mode="NON_XA" />
+        <local-cache-configuration name="default-template">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
             <expiration interval="-1"/>
-        </local-cache>
+        </local-cache-configuration>
+
+        <local-cache name="DEFAULT" configuration="default-template" />
 
         <!-- *************************************** -->
         <!--     Cache to store the OGM entities     -->
         <!-- *************************************** -->
-        <local-cache name="ENTITIES">
-            <transaction mode="NON_XA" />
-            <expiration interval="-1"/>
-        </local-cache>
+        <local-cache name="ENTITIES" configuration="default-template" />
 
         <!-- *********************************************** -->
         <!--   Cache to store the relations across entities  -->
         <!-- *********************************************** -->
-        <local-cache name="ASSOCIATIONS">
-            <transaction mode="NON_XA" />
-            <expiration interval="-1"/>
-        </local-cache>
+        <local-cache name="ASSOCIATIONS" configuration="default-template" />
 
         <!-- ***************************** -->
         <!--   Cache to store identifiers  -->
         <!-- ***************************** -->
-        <local-cache name="IDENTIFIERS">
-            <transaction mode="NONE" />
-            <expiration interval="-1"/>
-        </local-cache>
+        <local-cache name="IDENTIFIERS" configuration="default-template" />
 
     </cache-container>
 </infinispan>
