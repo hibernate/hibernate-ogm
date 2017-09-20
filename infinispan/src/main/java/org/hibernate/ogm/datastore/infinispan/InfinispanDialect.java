@@ -6,10 +6,13 @@
  */
 package org.hibernate.ogm.datastore.infinispan;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -33,8 +36,8 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -49,9 +52,9 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.distexec.mapreduce.Reducer;
+import org.infinispan.stream.CacheCollectors;
 
 /**
  * EK is the entity cache key type
@@ -217,19 +220,28 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
+	public void forEachTuple( ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata ) {
 		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor( entityKeyMetadata );
+
 		for ( Bucket<EK> bucket : buckets ) {
-			Map<EK, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
+			Map<EK, Map<String, Object>> queryResult = new HashMap<>();
+
+			List<CacheEntry<EK, Map<String, Object>>> collect = bucket.getCache().getAdvancedCache().cacheEntrySet()
+				.stream()
+				.filter( getKeyProvider().getFilter( entityKeyMetadata ) )
+				// also collector needs to be Serializable (for non local caches)
+				.collect( CacheCollectors.serializableCollector( () -> Collectors.toList() ) );
+
+			for ( CacheEntry<EK, Map<String, Object>> entry : collect ) {
+				queryResult.put( entry.getKey(), entry.getValue() );
+			}
+
+			// At runtime values of queryResult will be members of class org.infinispan.atomic.impl.AtomicKeySetImpl
+			// this is because of the new implementation of FineGrainedAtomicMap Infinispan class (since 9.1)
+			// query result return anyway valid keys, the values will be reloaded later by the InfinispanTupleIterator
 			InfinispanTuplesSupplier<EK> supplier = new InfinispanTuplesSupplier( bucket.getCache(), queryResult );
 			consumer.consume( supplier );
 		}
-	}
-
-	private Map<EK, Map<String, Object>> retrieveKeys(Cache<EK, Map<String, Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
-		MapReduceTask<EK, Map<String, Object>, EK, Map<String, Object>> queryTask = new MapReduceTask<EK, Map<String, Object>, EK, Map<String, Object>>( cache );
-		queryTask.mappedWith( getKeyProvider().getMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer<EK>() );
-		return queryTask.execute();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -240,15 +252,6 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	@SuppressWarnings("unchecked")
 	private KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return (KeyProvider<EK, AK, ISK>) provider.getKeyProvider();
-	}
-
-	static class TupleReducer<EK> implements Reducer<EK, Map<String, Object>> {
-
-		@Override
-		public Map<String, Object> reduce(EK reducedKey, Iterator<Map<String, Object>> iter) {
-			return iter.next();
-		}
-
 	}
 
 	private class InfinispanTuplesSupplier<SEK> implements TuplesSupplier {
@@ -263,7 +266,8 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 		@Override
 		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
-			return new InfinispanTupleIterator( cache, queryResult.entrySet().iterator() );
+			Iterator<Entry<SEK, Map<String, Object>>> iterator = queryResult.entrySet().iterator();
+			return new InfinispanTupleIterator( cache, iterator );
 		}
 	}
 

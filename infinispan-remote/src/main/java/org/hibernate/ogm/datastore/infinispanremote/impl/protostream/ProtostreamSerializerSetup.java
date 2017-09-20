@@ -28,7 +28,7 @@ public class ProtostreamSerializerSetup {
 
 	public static SerializationContext buildSerializationContext(
 			SchemaDefinitions sd, MainOgmCoDec delegate) throws DescriptorParserException, IOException {
-		Configuration cfg = new Configuration.Builder().setLogOutOfSequenceReads( true ).build();
+		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
 		SerializationContextImpl serContext = new SerializationContextImpl( cfg );
 		IdMessageMarshaller idM = new IdMessageMarshaller( delegate );
 		PayloadMessageMarshaller valueM = new PayloadMessageMarshaller( delegate );
@@ -45,7 +45,7 @@ public class ProtostreamSerializerSetup {
 
 	public static SerializationContext buildSerializationContextForSequences(
 			SchemaDefinitions sd, SequenceTableDefinition std) {
-		Configuration cfg = new Configuration.Builder().setLogOutOfSequenceReads( true ).build();
+		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
 		SerializationContextImpl serContext = new SerializationContextImpl( cfg );
 		try {
 			serContext.registerProtoFiles( sd.asFileDescriptorSource() );

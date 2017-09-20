@@ -89,7 +89,7 @@ public class ProtoBufSchemaTest {
 			}
 		}
 		catch (HibernateException he) {
-			Assert.assertTrue( "Unexpected exception message", he.getMessage().startsWith( "OGM001704" ) );
+			Assert.assertTrue( "Unexpected exception message", he.getMessage().startsWith( "OGM001716" ) );
 		}
 	}
 

@@ -7,18 +7,26 @@
 
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKeyExternalizer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
-import org.infinispan.distexec.mapreduce.Collector;
-import org.infinispan.distexec.mapreduce.Mapper;
+import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.infinispan.util.function.SerializablePredicate;
 
 /**
  * Provides the persistent keys for the "per-table" strategy. These keys don't contain the table name.
@@ -44,17 +52,29 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 	}
 
 	@Override
-	public TupleMapper getMapper(EntityKeyMetadata... entityKeyMetadatas) {
-		return TupleMapper.INSTANCE;
+	public SerializablePredicate<Entry<PersistentEntityKey, Map<String, Object>>> getFilter(EntityKeyMetadata... entityKeyMetadatas) {
+		return TupleFilter.INSTANCE;
 	}
 
-	private static class TupleMapper implements Mapper<PersistentEntityKey, Map<String, Object>, PersistentEntityKey, Map<String, Object>> {
+	@Override
+	public Set<AdvancedExternalizer<?>> getExternalizers() {
+		Set<AdvancedExternalizer<?>> externalizers = new HashSet<AdvancedExternalizer<?>>( 5 );
 
-		private static final TupleMapper INSTANCE = new TupleMapper();
+		externalizers.add( PersistentEntityKeyExternalizer.INSTANCE );
+		externalizers.add( PersistentAssociationKeyExternalizer.INSTANCE );
+		externalizers.add( RowKeyExternalizer.INSTANCE );
+		externalizers.add( PersistentIdSourceKeyExternalizer.INSTANCE );
+
+		return Collections.unmodifiableSet( externalizers );
+	}
+
+	private static class TupleFilter implements SerializablePredicate<Entry<PersistentEntityKey, Map<String, Object>>> {
+
+		private static final TupleFilter INSTANCE = new TupleFilter();
 
 		@Override
-		public void map(PersistentEntityKey key, Map<String, Object> value, Collector<PersistentEntityKey, Map<String, Object>> collector) {
-			collector.emit( key, value );
+		public boolean test(Entry<PersistentEntityKey, Map<String, Object>> cacheEntry) {
+			return cacheEntry.getKey() instanceof PersistentEntityKey;
 		}
 	}
 }

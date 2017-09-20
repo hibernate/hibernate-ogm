@@ -8,9 +8,10 @@ package org.hibernate.ogm.datastore.infinispan.logging.impl;
 
 import org.hibernate.HibernateException;
 import org.hibernate.service.spi.ServiceException;
-
 import org.infinispan.commons.marshall.AdvancedExternalizer;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -41,4 +42,12 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1105, value = "Infinispan Externalizer mistmatch: id [%1$d] was registered but taken " +
 			"by implementation '%2$s'. Expected externalizer: '%3$s' ")
 	HibernateException externalizerIdNotMatchingType(Integer externalizerId, AdvancedExternalizer<?> registeredExternalizer, AdvancedExternalizer expectedExternalizer);
+
+	@Message(id = 1106, value = "Missing configuration for cache '%1$s' and a default configuration was not provided")
+	HibernateException missingCacheConfiguration(String cacheName);
+
+	@LogMessage(level = Level.WARN)
+	@Message(id = 1107, value = "The Infinispan dialect uses fine grained maps and clustering.hash.groups must be enabled. clustering.hash.groups is now enable for cache `%1$s`."
+			+ "Enable it in your configuration to make this message disappear.")
+	void clusteringHashGroupsMustBeEnabled(String cacheName);
 }
