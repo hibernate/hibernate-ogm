@@ -30,7 +30,7 @@
         <hibernate.ogm.mongodb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.neo4j.module.slot>
         <hibernate.ogm.neo4j-internal.module.slot>${project.version}</hibernate.ogm.neo4j-internal.module.slot>
-        <infinispan.module.slot>ispn-8.2</infinispan.module.slot>
+        <infinispan.module.slot>ispn-9.1</infinispan.module.slot>
     </properties>
 
     <dependencies>
@@ -49,6 +49,12 @@
             <artifactId>hibernate-ogm-infinispan</artifactId>
             <optional>true</optional>
             <exclusions>
+                <exclusion>
+                <!-- Infinispan might use a different version than Neo4j. It is 
+                    safe to exclude it as we are going to use a module already present on WildFly -->
+                    <groupId>com.github.ben-manes.caffeine</groupId>
+                    <artifactId>caffeine</artifactId>
+                </exclusion>
                 <exclusion>
                 <!-- Hibernate Search might use a different version than Neo4j.
                      It is safe to exclude it as we are going to use a module already present on WildFly -->
