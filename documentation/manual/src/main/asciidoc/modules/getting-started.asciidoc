@@ -11,9 +11,6 @@ Before we can start, make sure you have the following tools configured:
 * Java JDK 8
 * Maven 3.2.3 or above
 
-Hibernate OGM can be used with JDK 7 too, but in this example we'll
-be using Infinispan 8, which requires JDK 8.
-
 Hibernate OGM is published in the Maven central repository.
 
 Add `org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}` to your dependency management block
