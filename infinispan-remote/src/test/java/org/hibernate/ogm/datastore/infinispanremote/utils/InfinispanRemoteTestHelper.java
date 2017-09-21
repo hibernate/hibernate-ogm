@@ -33,6 +33,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
+import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -43,12 +44,7 @@ import org.infinispan.query.dsl.Query;
 /**
  * @author Sanne Grinovero (C) 2015 Red Hat Inc.
  */
-public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
-
-	@Override
-	public long getNumberOfAssociations(Session session) {
-		return getNumberOfAssociations( session.getSessionFactory() );
-	}
+public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
@@ -64,15 +60,6 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 			totalCount += countAssociations( tableName, ownerTableName, datastoreProvider );
 		}
 		return totalCount;
-	}
-
-	@Override
-	public boolean backendSupportsTransactions() {
-		return false;
-	}
-
-	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
 	}
 
 	@Override
@@ -152,11 +139,6 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 			counter.addAndGet( increment );
 		}
 		return counter.get();
-	}
-
-	@Override
-	public long getNumberOfEntities(Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
 	}
 
 	// Various static helpers below:

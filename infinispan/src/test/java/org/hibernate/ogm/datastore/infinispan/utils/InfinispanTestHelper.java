@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
@@ -29,6 +28,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -39,12 +39,7 @@ import org.infinispan.atomic.FineGrainedAtomicMap;
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public class InfinispanTestHelper implements GridDialectTestHelper {
-
-	@Override
-	public long getNumberOfEntities(Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
-	}
+public class InfinispanTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -66,11 +61,6 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 		}
 
 		return entityCount;
-	}
-
-	@Override
-	public long getNumberOfAssociations(Session session) {
-		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -137,23 +127,8 @@ public class InfinispanTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
-		// Nothing to do
-	}
-
-	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		// Nothing to do
-	}
-
-	@Override
-	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.emptyMap();
-	}
-
-	@Override
-	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
 	}
 
 	@Override
