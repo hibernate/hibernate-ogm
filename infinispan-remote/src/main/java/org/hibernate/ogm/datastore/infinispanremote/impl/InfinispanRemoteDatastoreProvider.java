@@ -53,6 +53,8 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	// Only available during configuration
 	private InfinispanRemoteConfiguration config;
 
+	private boolean createCachesEnabled = false;
+
 	// The Hot Rod client; maintains TCP connections to the datagrid.
 	@EffectivelyFinal
 	private RemoteCacheManager hotrodClient;
@@ -112,6 +114,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.schemaCapture = config.getSchemaCaptureService();
 		this.schemaOverrideService = config.getSchemaOverrideService();
 		this.schemaPackageName = config.getSchemaPackageName();
+		this.createCachesEnabled = config.isCreateCachesEnabled();
 	}
 
 	@Override
@@ -141,6 +144,10 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		Set<String> failedCacheNames = new TreeSet<String>();
 		mappedCacheNames.forEach( cacheName -> {
 			RemoteCache<?,?> cache = hotrodClient.getCache( cacheName );
+			if ( cache == null && createCachesEnabled ) {
+				hotrodClient.administration().createCache( cacheName, null );
+				cache = hotrodClient.getCache( cacheName );
+			}
 			if ( cache == null ) {
 				failedCacheNames.add( cacheName );
 			}

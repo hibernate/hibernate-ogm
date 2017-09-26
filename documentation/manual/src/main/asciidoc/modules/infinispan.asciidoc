@@ -210,6 +210,11 @@ The following two strategies exist (values of the `org.hibernate.ogm.datastore.k
 
 +
 Defaults to `CACHE_PER_TABLE`. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
+`hibernate.ogm.datastore.create_database`::
+Accept `true` or `false`. If `true`, Hibernate OGM will create a new cache on an Infinispan Server
+when the required one is not defined, this works only if a default configuration is defined on
+the server. If set to `false` an exception is thrown when the cache is not defined.
+Defaults to `false`.
 
 [NOTE]
 ====

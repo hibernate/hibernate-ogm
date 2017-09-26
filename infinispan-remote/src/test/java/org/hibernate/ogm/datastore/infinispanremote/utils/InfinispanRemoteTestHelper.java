@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDataStoreConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
@@ -83,7 +84,7 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.emptyMap();
+		return Collections.singletonMap( OgmProperties.CREATE_DATABASE, "true" );
 	}
 
 	@Override
