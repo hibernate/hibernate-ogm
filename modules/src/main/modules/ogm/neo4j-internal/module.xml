@@ -43,6 +43,7 @@
         <!-- dependency of neo4j-ssl -->
         <resource-root path="bcpkix-jdk15on-${neo4jBouncyCastleVersion}.jar" />
         <resource-root path="bcprov-jdk15on-${neo4jBouncyCastleVersion}.jar" />
+        <resource-root path="netty-all-${neo4jNettyVersion}.jar" />
 
         <!-- dependency of neo4j-cypher-compiler -->
         <resource-root path="caffeine-${neo4jCaffeineVersion}.jar" />
