@@ -74,18 +74,6 @@
                     <proc>none</proc>
                 </configuration>
             </plugin>
-            <!-- Allow using Java8 code as Java8 is the requirement for WildFly 10 -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <configuration>
-                    <signature>
-                        <groupId>org.codehaus.mojo.signature</groupId>
-                        <artifactId>java18</artifactId>
-                        <version>1.0</version>
-                    </signature>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 

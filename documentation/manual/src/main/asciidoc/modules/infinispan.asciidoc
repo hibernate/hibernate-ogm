@@ -33,10 +33,9 @@ apply under the hood.
 
 In particular:
 
-* you can get started without having to learn Protobuf first;
-  it will still be useful to learn Protobuf to maintain your applications
+* you can get started without having to learn `Protobuf` first
 * no need to learn the Infinispan API
-* Hibernate OGM will setup and manage the HotRod client for you
+* Hibernate OGM will setup and manage the `Hot Rod client` for you
 * same API as Hibernate ORM, meaning that you can use the same tools
 
 You will still need to learn about Infinispan, all its capabilities and how to configure
@@ -211,6 +210,11 @@ The following two strategies exist (values of the `org.hibernate.ogm.datastore.k
 
 +
 Defaults to `CACHE_PER_TABLE`. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
+`hibernate.ogm.datastore.create_database`::
+If set to `true` Hibernate OGM will create any missing Cache definitions on the Infinispan Server.
+This requires the Infinispan Server configuration to have a default configuration defined, as this will be copied to the newly defined caches.
+If set to `false` an exception is thrown when a Cache is expected but not explicitly configured on the server.
+Defaults to `false`.
 
 [NOTE]
 ====
@@ -248,24 +252,21 @@ for the guru level performance tuning and customizations.
 An Infinispan configuration file is an XML file complying with the Infinispan schema;
 the basic structure is shown in the following example:
 
-.Simple structure of an infinispan xml configuration file
+.Simple example of an Infinispan configuration file
 ====
 [source, XML]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
-    xmlns="urn:infinispan:config:7.0">
+    xsi:schemaLocation="urn:infinispan:config:9.1 http://www.infinispan.org/schemas/infinispan-config-9.1.xsd"
+    xmlns="urn:infinispan:config:9.1">
 
     <cache-container name="HibernateOGM" default-cache="DEFAULT">
 
-        <!-- *************************** -->
-        <!--   Default cache settings    -->
-        <!-- *************************** -->
+        <!-- Default cache settings -->
         <local-cache name="DEFAULT">
-            <transaction mode="NON_DURABLE_XA"
-                         transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <transaction mode="NON_DURABLE_XA" />
         </local-cache>
 
         <local-cache name="User"/>
@@ -300,7 +301,7 @@ with no way to recover it.
 
 To store data permanently (out of the JVM memory) a `CacheStore` should be enabled.
 The Infinispan project provides many `CacheStore` implementations;
-a simple one is the http://infinispan.org/docs/8.2.x/user_guide/user_guide.html#_filesystem_based_cache_stores["single file store"]
+a simple one is the http://infinispan.org/docs/stable/user_guide/user_guide.html#single_file_store["Single File Store"]
 which is able to store data in simple binary files, on any read/write mounted filesystem;
 You can find many more implementations to store your data in anything
 from JDBC connected relational databases, other NoSQL engines such as MongoDB and Cassandra,
@@ -335,8 +336,7 @@ with a synchronous replication to other Infinispan nodes.
 [source, XML]
 ----
 <local-cache name="User">
-    <transaction mode="NON_DURABLE_XA"
-                 transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+    <transaction mode="NON_DURABLE_XA" />
     <eviction strategy="LIRS" max-entries="2000"/>
     <persistence passivation="true">
         <file-store
@@ -443,8 +443,8 @@ Let's see how to reconfigure this:
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
-    xmlns="urn:infinispan:config:7.0">
+    xsi:schemaLocation="urn:infinispan:config:9.1 http://www.infinispan.org/schemas/infinispan-config-9.1.xsd"
+    xmlns="urn:infinispan:config:9.1">
 
     <jgroups>
         <stack-file name="custom-stack" path="my-jgroups-conf.xml" />
@@ -456,11 +456,10 @@ Let's see how to reconfigure this:
         <!-- *************************************** -->
         <!--     Default cache used as template      -->
         <!-- *************************************** -->
-        <distrubuted-cache name="DEFAULT" mode="SYNC">
+        <distributed-cache name="DEFAULT" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
                 concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <transaction mode="NON_DURABLE_XA" />
             <state-transfer enabled="true" timeout="480000"
                 await-initial-transfer="true" />
         </distributed-cache>
@@ -469,8 +468,7 @@ Let's see how to reconfigure this:
         <replicated-cache name="User" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
                 concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <transaction mode="NON_DURABLE_XA" />
             <state-transfer enabled="true" timeout="480000"
                 await-initial-transfer="true" />
         </replicated-cache>
@@ -478,8 +476,7 @@ Let's see how to reconfigure this:
         <distributed-cache name="Order" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
                 concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <transaction mode="NON_DURABLE_XA" />
             <state-transfer enabled="true" timeout="480000"
                 await-initial-transfer="true" />
         </distributed-cache>
@@ -487,8 +484,7 @@ Let's see how to reconfigure this:
         <distributed-cache name="associations_User_Order" mode="SYNC">
             <locking striping="false" acquire-timeout="10000"
                 concurrency-level="500" write-skew="false" />
-            <transaction mode="NON_DURABLE_XA"
-                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <transaction mode="NON_DURABLE_XA" />
             <state-transfer enabled="true" timeout="480000"
                 await-initial-transfer="true" />
         </distributed-cache>

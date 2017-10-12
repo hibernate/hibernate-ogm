@@ -6,13 +6,11 @@
  */
 package org.hibernate.ogm.utils;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.map.MapDatastore;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.map.impl.MapDialect;
@@ -25,21 +23,11 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public class HashMapTestHelper implements GridDialectTestHelper {
-
-	@Override
-	public long getNumberOfEntities(Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
-	}
+public class HashMapTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		return getEntityMap( sessionFactory ).size();
-	}
-
-	@Override
-	public long getNumberOfAssociations(Session session) {
-		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -71,28 +59,8 @@ public class HashMapTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public boolean backendSupportsTransactions() {
-		return false;
-	}
-
-	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
-		// Nothing to do
-	}
-
-	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		// Nothing to do
-	}
-
-	@Override
-	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.emptyMap();
-	}
-
-	@Override
-	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
 	}
 
 	@Override

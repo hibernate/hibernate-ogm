@@ -14,7 +14,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -27,6 +26,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectOperationContexts;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.ogm.utils.TestHelper;
@@ -34,7 +34,7 @@ import org.hibernate.ogm.utils.TestHelper;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jTestHelper implements GridDialectTestHelper {
+public class Neo4jTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	static {
 		// Read host, username and password from environment variable
@@ -109,10 +109,6 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
-	}
-
-	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		DatastoreProvider datastoreProvider = getDatastoreProvider( sessionFactory );
 		delegate().dropDatabase( datastoreProvider );
@@ -140,11 +136,6 @@ public class Neo4jTestHelper implements GridDialectTestHelper {
 	private static GridDialect getDialect(SessionFactory sessionFactory) {
 		GridDialect dialect = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( GridDialect.class );
 		return dialect;
-	}
-
-	@Override
-	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
 	}
 
 	@Override

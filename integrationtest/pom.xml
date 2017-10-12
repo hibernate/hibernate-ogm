@@ -148,23 +148,12 @@
                                     </artifactItem>
                                     <artifactItem>
                                         <groupId>org.infinispan</groupId>
-                                        <artifactId>infinispan-as-embedded-modules</artifactId>
+                                        <artifactId>infinispan-wildfly-modules</artifactId>
                                         <version>${infinispanVersion}</version>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>
                                     </artifactItem>
-                                    <!--
-                                      Currently these are (mistakenly?) included in the above package org.infinispan:infinispan-as-embedded-modules
-                                      See https://issues.jboss.org/browse/ISPN-7006
-                                    <artifactItem>
-                                        <groupId>org.infinispan</groupId>
-                                        <artifactId>infinispan-as-client-modules</artifactId>
-                                        <version>${infinispanVersion}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem> -->
                                     <artifactItem>
                                         <groupId>org.hibernate</groupId>
                                         <artifactId>hibernate-search-modules</artifactId>

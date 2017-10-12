@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDataStoreConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
@@ -32,6 +33,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
+import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -42,12 +44,7 @@ import org.infinispan.query.dsl.Query;
 /**
  * @author Sanne Grinovero (C) 2015 Red Hat Inc.
  */
-public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
-
-	@Override
-	public long getNumberOfAssociations(Session session) {
-		return getNumberOfAssociations( session.getSessionFactory() );
-	}
+public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
@@ -66,15 +63,6 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public boolean backendSupportsTransactions() {
-		return false;
-	}
-
-	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
-	}
-
-	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		final Set<String> mappedCacheNames = datastoreProvider.getMappedCacheNames();
@@ -83,7 +71,7 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 
 	@Override
 	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.emptyMap();
+		return Collections.singletonMap( OgmProperties.CREATE_DATABASE, "true" );
 	}
 
 	@Override
@@ -151,11 +139,6 @@ public class InfinispanRemoteTestHelper implements GridDialectTestHelper {
 			counter.addAndGet( increment );
 		}
 		return counter.get();
-	}
-
-	@Override
-	public long getNumberOfEntities(Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
 	}
 
 	// Various static helpers below:

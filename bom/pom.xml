@@ -26,7 +26,7 @@
             See the version.wildfly property in the hibernate-ogm-parent pom
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
-        <hibernateSearchVersion>5.6.2.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>5.6.3.Final</hibernateSearchVersion>
         <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
         <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.3.0.Final</jbossLoggingVersion>
@@ -52,16 +52,16 @@
         <asmVersion>5.0.3</asmVersion> <!-- used for Parboiled and Neo4j -->
 
         <!-- Infinispan -->
-        <infinispanVersion>8.2.6.Final</infinispanVersion>
-        <protostreamVersion>3.0.7.Final</protostreamVersion>
+        <infinispanVersion>9.1.1.Final</infinispanVersion>
+        <protostreamVersion>4.1.0.Final</protostreamVersion>
 
         <!-- MongoDB -->
         <mongodbDriverVersion>3.5.0</mongodbDriverVersion>
         <mongodbVersion>3.4.6</mongodbVersion>
 
         <!-- Neo4j -->
-        <neo4jVersion>3.2.3</neo4jVersion>
-        <neo4jJavaDriverVersion>1.4.2</neo4jJavaDriverVersion>
+        <neo4jVersion>3.2.6</neo4jVersion>
+        <neo4jJavaDriverVersion>1.4.4</neo4jJavaDriverVersion>
         <neo4jScalaLibraryVersion>2.11.8</neo4jScalaLibraryVersion>
         <!-- See Parboiled dependency above -->
         <!-- See Lucene dependency above -->
@@ -70,10 +70,11 @@
         <neo4jCommonsLang3Version>3.3.2</neo4jCommonsLang3Version>
         <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
         <neo4jBouncyCastleVersion>1.53</neo4jBouncyCastleVersion>
+        <neo4jNettyVersion>4.1.15.Final</neo4jNettyVersion>
         <neo4jCaffeineVersion>2.3.3</neo4jCaffeineVersion>
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler32Version>${neo4jVersion}</neo4jCypherCompiler32Version>
-        <neo4jCypherCompiler31Version>3.1.5</neo4jCypherCompiler31Version>
+        <neo4jCypherCompiler31Version>3.1.6</neo4jCypherCompiler31Version>
         <neo4jCypherCompiler23Version>2.3.11</neo4jCypherCompiler23Version>
     </properties>
 

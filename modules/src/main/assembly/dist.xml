@@ -193,6 +193,7 @@
 
                   <include>org.bouncycastle:bcpkix-jdk15on</include>
                   <include>org.bouncycastle:bcprov-jdk15on</include>
+                  <include>io.netty:netty-all</include>
 
                   <include>com.github.ben-manes.caffeine:caffeine</include>
 

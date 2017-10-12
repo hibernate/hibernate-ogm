@@ -7,7 +7,6 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONCompare;
@@ -46,7 +46,7 @@ import com.mongodb.client.MongoDatabase;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
-public class MongoDBTestHelper implements GridDialectTestHelper {
+public class MongoDBTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -68,11 +68,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 	}
 
 	@Override
-	public long getNumberOfEntities(Session session) {
-		return getNumberOfEntities( session.getSessionFactory() );
-	}
-
-	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		MongoDatabase db = provider.getDatabase();
@@ -87,12 +82,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 
 	private boolean isSystemCollection(String collectionName) {
 		return collectionName.startsWith( "system." );
-	}
-
-
-	@Override
-	public long getNumberOfAssociations(Session session) {
-		return getNumberOfAssociations( session.getSessionFactory() );
 	}
 
 	@Override
@@ -214,11 +203,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		result.put( key.getColumnNames()[0], idValue );
 	}
 
-	@Override
-	public boolean backendSupportsTransactions() {
-		return false;
-	}
-
 	private static MongoDBDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService(
 				DatastoreProvider.class );
@@ -226,10 +210,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 			throw new RuntimeException( "Not testing with MongoDB, cannot extract underlying cache" );
 		}
 		return MongoDBDatastoreProvider.class.cast( provider );
-	}
-
-	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
 	}
 
 	@Override
@@ -241,11 +221,6 @@ public class MongoDBTestHelper implements GridDialectTestHelper {
 		catch ( MongoException ex ) {
 			throw log.unableToDropDatabase( ex, provider.getDatabase().getName() );
 		}
-	}
-
-	@Override
-	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.emptyMap();
 	}
 
 	@Override

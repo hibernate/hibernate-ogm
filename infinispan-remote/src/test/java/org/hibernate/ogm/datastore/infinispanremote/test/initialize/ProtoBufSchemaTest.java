@@ -78,10 +78,8 @@ public class ProtoBufSchemaTest {
 
 	@Test
 	public void illegalSchemaGetsRefused() throws IOException {
+		Map<String, Object> settings = settings();
 		SchemaOverride enforcedSchema = new ProvidedSchemaOverride( readResourceAsString( "IllegalFormat.protobuf" ) );
-		Map<String, Object> settings = new HashMap<>();
-		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
-		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
 		settings.put( InfinispanRemoteProperties.SCHEMA_OVERRIDE_SERVICE, enforcedSchema );
 		try {
 			try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings, Hypothesis.class, Helicopter.class ) ) {
@@ -89,15 +87,13 @@ public class ProtoBufSchemaTest {
 			}
 		}
 		catch (HibernateException he) {
-			Assert.assertTrue( "Unexpected exception message", he.getMessage().startsWith( "OGM001704" ) );
+			Assert.assertTrue( "Unexpected exception message", he.getMessage().startsWith( "OGM001716" ) );
 		}
 	}
 
 	private void assertSchemaEquals(String resourceName, Class<?>... types) throws IOException {
+		Map<String, Object> settings = settings();
 		MapSchemaCapture schemaCapture = new MapSchemaCapture();
-		Map<String, Object> settings = new HashMap<>();
-		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
-		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
 		settings.put( InfinispanRemoteProperties.SCHEMA_CAPTURE_SERVICE, schemaCapture );
 		final String generatedSchema;
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings, types ) ) {
@@ -106,6 +102,14 @@ public class ProtoBufSchemaTest {
 		Assert.assertNotNull( generatedSchema );
 		final String expectedProtobufSchema = readResourceAsString( resourceName );
 		Assert.assertEquals( expectedProtobufSchema, generatedSchema );
+	}
+
+	private Map<String, Object> settings() {
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
+		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
+		settings.put( OgmProperties.CREATE_DATABASE, true );
+		return settings;
 	}
 
 	private String readResourceAsString(String resourceName) throws IOException {
