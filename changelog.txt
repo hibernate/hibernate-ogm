@@ -1,6 +1,23 @@
 Hibernate OGM Changelog
 =======================
 
+5.2.0.Beta1 (12-10-2017)
+-------------------------
+
+** Bug
+    * OGM-1318 - core       - BatchCoordinator doesn't pass the tenantId to PurgeAllLuceneWork
+
+** Improvement
+    * OGM-1333 - core       - Upgrade Hibernate Search to 5.6.3.Final
+    * OGM-1332 - neo4j      - Upgrade Neo4j to version 3.2.6
+    * OGM-1323 - tests      - Create a base class for GridDialectTestHelper
+    * OGM-1232 - neo4j      - Upgrade Neo4j to version 3.2.5
+    * OGM-1170 - infinispan - Infinispan Remote dialect could create the Remote Cache(s) it needs automatically
+
+** Task
+    * OGM-1327 -            - Some more build and docs cleanup after baselining to JDK8
+    * OGM-1269 - infinispan - Upgrade to Infinispan 9.1.1.Final
+
 5.2.0.Alpha1 (07-09-2017)
 -------------------------
 
