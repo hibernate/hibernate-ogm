@@ -836,6 +836,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doMapReduce( queryDescriptor, collection );
 			case INSERT:
 			case REMOVE:
+			case DELETEONE:
 			case UPDATE:
 			case UPDATEONE:
 				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
@@ -866,6 +867,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
 				return doRemove( queryDescriptor, collection );
+			case DELETEONE:
+				return doDeleteOne( queryDescriptor, collection );
 			case UPDATE:
 				return doUpdate( queryDescriptor, collection );
 			case UPDATEONE:
@@ -1225,6 +1228,22 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		DeleteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).deleteMany( query );
 		if ( result.wasAcknowledged() ) {
 			return (int) result.getDeletedCount();
+		}
+		return -1; // Not sure if we should throw an exception instead?
+	}
+
+	private static int doDeleteOne(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+		Document query = queryDesc.getCriteria();
+		Document options = queryDesc.getOptions();
+		WriteConcern wc = null;
+		if ( options != null ) {
+			Document o = (Document) options.get( "writeConcern" );
+			wc = getWriteConcern( o );
+		}
+		DeleteResult deleteResult = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).deleteOne( query );
+
+		if ( deleteResult.wasAcknowledged() ) {
+			return (int) deleteResult.getDeletedCount();
 		}
 		return -1; // Not sure if we should throw an exception instead?
 	}

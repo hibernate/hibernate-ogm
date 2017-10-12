@@ -96,7 +96,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), UpdateOne(), Count(), Aggregate(), Distinct(), MapReduce() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), DeleteOne(), Update(), UpdateOne(), Count(), Aggregate(), Distinct(), MapReduce() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -109,6 +109,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
 				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
+				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
@@ -195,6 +196,17 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 						Sequence( JsonObject(), builder.setOptions( match() ) )
 					)
 				) ),
+				") "
+		);
+	}
+
+	public Rule DeleteOne() {
+		return Sequence(
+				Separator(),
+				"deleteOne ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
 	}
