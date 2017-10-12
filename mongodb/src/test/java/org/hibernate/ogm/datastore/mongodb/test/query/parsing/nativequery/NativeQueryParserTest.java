@@ -379,6 +379,36 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
+	public void shouldParseQueryUpdateOne() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.updateOne( { 'name' : 'Andy' }, { '$set': { 'score' : 3 } } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$set': { 'score' : 3 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	public void shouldParseQueryUpdateOneWithOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.updateOne( { 'name' : 'Andy' }, { '$set': { 'score' : 3 } }, { 'upsert': true, 'collation': {} } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$set': { 'score' : 3 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'upsert': true, 'collation': {} }" ) );
+	}
+
+	@Test
 	public void shouldParseQueryFindAndModify() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
