@@ -9,8 +9,11 @@ package org.hibernate.ogm.datastore.mongodb.query.impl;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.DELETEONE;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.FINDANDMODIFY;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.INSERT;
+import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.INSERTMANY;
+import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.INSERTONE;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.REMOVE;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.UPDATE;
+import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.UPDATEMANY;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.UPDATEONE;
 
 import java.io.Serializable;
@@ -213,9 +216,20 @@ public class MongoDBQueryDescriptor implements Serializable {
 	public String toString() {
 		return String.format( "MongoDBQueryDescriptor [collectionName=%s, %s=%s, %s=%s, %s%s]",
 			collectionName,
-			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
-			operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : operation == DELETEONE ? "deleteOne" : operation == UPDATEONE ? "updateOne" : "projection", projection,
-			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options );
+			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where",
+			criteria,
+			operation == UPDATE ? "update" :
+				operation == INSERT ? "insert" :
+				operation == INSERTONE ? "insertOne" :
+				operation == INSERTMANY ? "insertMany" :
+				operation == REMOVE ? "remove" :
+				operation == DELETEONE ? "deleteOne" :
+				operation == UPDATEONE ? "updateOne" :
+				operation == UPDATEMANY ? "updateMany" :
+				"projection",
+			projection,
+			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=",
+			options );
 
 	}
 }

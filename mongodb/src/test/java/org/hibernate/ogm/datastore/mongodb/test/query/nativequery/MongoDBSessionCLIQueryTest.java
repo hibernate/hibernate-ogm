@@ -512,9 +512,10 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			transaction.commit();
 
 			session.clear();
-    }
-  }
-  
+		}
+	}
+
+	@Test
 	@TestForIssue(jiraKey = "OGM-1315")
 	public void testUpdateOne() throws Exception {
 		try ( OgmSession session = openSession() ) {
@@ -528,17 +529,17 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			int modifiedCount = query.executeUpdate();
 			assertThat( modifiedCount ).isEqualTo( 1 );
-
-			// Check that it was updated.
+			// Find updated one and check that it was updated.
 			String nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
 			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
-
 			@SuppressWarnings("unchecked")
 			List<OscarWildePoem> result = query.list();
 			int modifiedElementIndex = 0;
+
+			List<Integer> initialCopiesSoldList = Arrays.asList( portia.getCopiesSold(), athanasia.getCopiesSold(), imperatrix.getCopiesSold() );
 			for ( int i = 0; i < result.size(); i++ ) {
-				Integer copiesSold = result.get( i ).getCopiesSold();
-				if ( !Arrays.asList( 15, 37, 48 ).contains( copiesSold ) ) {
+				Integer currentCopiesSold = result.get( i ).getCopiesSold();
+				if ( !initialCopiesSoldList.contains( currentCopiesSold ) ) {
 					modifiedElementIndex = i;
 					break;
 				}
@@ -560,12 +561,65 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			// And check that it same as was.
 			nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'name' : '" + modifiedPoem.getName() + "' })";
 			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
-
 			result = query.list();
+
 			assertThat( result.size() ).isEqualTo( 1 );
-			assertThat( Arrays.asList( portia, athanasia, imperatrix ) )
+			assertThat( initialCopiesSoldList ).contains( result.get( 0 ).getCopiesSold() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue( jiraKey = "1316")
+	public void testUpdateMany() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String nativeUpdateManyQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateMany("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : 1 } } "
+					+ ")";
+			Query query = session.createNativeQuery( nativeUpdateManyQuery );
+			int modifiedCount = query.executeUpdate();
+
+			assertThat( modifiedCount ).isEqualTo( 3 );
+
+			// Check that it was updated.
+			String nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			List<Integer> initialRatingsList = Arrays.asList( portia.getCopiesSold(), athanasia.getCopiesSold(), imperatrix.getCopiesSold() );
+
+			assertThat( result.size() ).isEqualTo( initialRatingsList.size() );
+			assertThat( result )
 					.onProperty( "copiesSold" )
-					.contains( result.get( 0 ).getCopiesSold() );
+					.containsOnly( initialRatingsList.get( 0 ) + 1,
+								initialRatingsList.get( 1 ) + 1,
+								initialRatingsList.get( 2 ) + 1 );
+
+			// Need to update back to original state because subsequent tests assume the initial dataset.
+			session.clear();
+			nativeUpdateManyQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateMany("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : -1 } }, "
+					+ "  { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } "
+					+ ")";
+			query = session.createNativeQuery( nativeUpdateManyQuery );
+
+			modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 3 );
+
+			// And check that it same as was.
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+
+			assertThat( result.size() ).isEqualTo( 3 );
+			assertThat( result )
+					.onProperty( "copiesSold" )
+					.containsOnly( initialRatingsList.toArray() );
 
 			transaction.commit();
 		}

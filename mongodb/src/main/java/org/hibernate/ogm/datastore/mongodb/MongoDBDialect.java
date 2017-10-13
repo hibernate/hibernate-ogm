@@ -839,6 +839,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case DELETEONE:
 			case UPDATE:
 			case UPDATEONE:
+			case UPDATEMANY:
 				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
@@ -873,6 +874,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doUpdate( queryDescriptor, collection );
 			case UPDATEONE:
 				return doUpdateOne( queryDescriptor, collection );
+			case UPDATEMANY:
+				return doUpdateMany( queryDescriptor, collection );
 			case FIND:
 			case FINDONE:
 			case FINDANDMODIFY:
@@ -1290,7 +1293,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern writeConcern = null;
 		if ( options != null ) {
 			Document wc = (Document) options.get( "writeConcern" );
-			writeConcern = getWriteConcern( wc );
+			writeConcern = ( wc != null ) ? getWriteConcern( wc ) : null;
 
 			upsert = (Boolean) options.get( "upsert" );
 			upsert = ( upsert != null ) ? upsert : FALSE;
@@ -1308,6 +1311,37 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		if ( updateResult.wasAcknowledged() ) {
 			return (int) updateResult.getModifiedCount();
+		}
+		return -1;
+	}
+
+	private static int doUpdateMany(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+		Document query = queryDesc.getCriteria();
+		Document update = queryDesc.getUpdateOrInsertOne();
+		Document options = queryDesc.getOptions();
+		Boolean upsert = FALSE;
+		Collation collation = null;
+		WriteConcern writeConcern = null;
+		if ( options != null ) {
+			upsert = (Boolean) options.get( "upsert" );
+			upsert = ( upsert != null ) ? upsert : FALSE;
+
+			Document wc = (Document) options.get( "writeConcern" );
+			writeConcern = ( wc != null ) ? getWriteConcern( wc ) : null;
+
+			Document col = (Document) options.get( "collation" );
+			collation = ( col != null ) ? getCollation( col ) : null;
+		}
+		UpdateOptions updateOptions = new UpdateOptions()
+				.upsert( upsert )
+				.collation( collation );
+
+		UpdateResult result = collection
+				.withWriteConcern( ( writeConcern != null ? writeConcern : collection.getWriteConcern() ) )
+				.updateMany( query, update, updateOptions );
+
+		if ( result.wasAcknowledged() ) {
+			return (int) result.getModifiedCount();
 		}
 		return -1;
 	}
