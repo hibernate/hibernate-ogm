@@ -7,13 +7,13 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
+
+import com.mongodb.util.JSON;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
-
-import com.mongodb.util.JSON;
 
 /**
  * A parser for MongoDB queries which can be given in one of the following representations:
@@ -66,7 +66,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule ParsedQuery() {
-		return Sequence( Db(),  Collection(),  Operation() );
+		return Sequence( Db(), Collection(), Operation() );
 	}
 
 	/**
@@ -96,7 +96,23 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), DeleteOne(), Update(), UpdateOne(), Count(), Aggregate(), Distinct(), MapReduce() );
+		return FirstOf(
+				Find(),
+				FindOne(),
+				FindAndModify(),
+				Insert(),
+				InsertOne(),
+				InsertMany(),
+				Remove(),
+				DeleteOne(),
+				DeleteMany(),
+				Update(),
+				UpdateOne(),
+				Count(),
+				Aggregate(),
+				Distinct(),
+				MapReduce()
+		);
 		// TODO There are many more query types than what we support.
 	}
 
@@ -110,6 +126,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
+				Sequence( DeleteMany(), builder.setOperation( Operation.DELETEMANY ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
@@ -190,11 +207,12 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"remove ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ",
-					FirstOf(
-						Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
-						Sequence( JsonObject(), builder.setOptions( match() ) )
-					)
+				Optional( Sequence(
+						", ",
+						FirstOf(
+								Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
+								Sequence( JsonObject(), builder.setOptions( match() ) )
+						)
 				) ),
 				") "
 		);
@@ -204,6 +222,17 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence(
 				Separator(),
 				"deleteOne ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule DeleteMany() {
+		return Sequence(
+				Separator(),
+				"deleteMany ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
@@ -242,23 +271,27 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	public Rule AggregateArray() {
 		return Sequence(
 				"[ ",
-					Sequence(
+				Sequence(
 						AggregateObject(),
-						ZeroOrMore( Sequence( ", ", AggregateObject() ) ) ),
-				"] " );
+						ZeroOrMore( Sequence( ", ", AggregateObject() ) )
+				),
+				"] "
+		);
 	}
 
 	public Rule AggregateObject() {
 		return Sequence(
 				ZeroOrMore( WhiteSpace() ).skipNode(),
-				"{ ", AggregatePair(), "} " );
+				"{ ", AggregatePair(), "} "
+		);
 	}
 
 	public Rule AggregatePair() {
 		return Sequence(
 				JsonString(), builder.push( currentIndex(), match() ),
 				": ",
-				Value(), builder.addPipeline( builder.pop(), match() ) );
+				Value(), builder.addPipeline( builder.pop(), match() )
+		);
 	}
 
 	public Rule Count() {
@@ -321,7 +354,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule PrimitiveValue() {
 		return FirstOf( JsonString(), JsonNumber(), "true ", "false ", "null ",
-				"Infinity ", "NaN ", "undefined " );
+						"Infinity ", "NaN ", "undefined "
+		);
 	}
 
 	public Rule BooleanValue() {
@@ -362,16 +396,35 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	@SuppressSubnodes
 	public Rule BsonFunctionCall() {
 		return Sequence( Optional( "new " ), SupportedBsonFunction(), ZeroOrMore( WhiteSpace() ), "( ",
-				FirstOf(
-						Sequence( PrimitiveValue(), ZeroOrMore( Sequence( ", ", PrimitiveValue() ) ) ),
-						Optional( PrimitiveValue() )
-				)
-				, ") " );
+						 FirstOf(
+								 Sequence( PrimitiveValue(), ZeroOrMore( Sequence( ", ", PrimitiveValue() ) ) ),
+								 Optional( PrimitiveValue() )
+						 )
+				, ") "
+		);
 	}
 
 	public Rule SupportedBsonFunction() {
-		return FirstOf( "BinData", "Date", "HexData", "ISODate", "NumberInt", "NumberLong", "ObjectId", "Timestamp", "RegExp", "DBPointer",
-				"UUID", "GUID", "CSUUID", "CSGUID", "JUUID", "JGUID", "PYUUID", "PYGUID" );
+		return FirstOf(
+				"BinData",
+				"Date",
+				"HexData",
+				"ISODate",
+				"NumberInt",
+				"NumberLong",
+				"ObjectId",
+				"Timestamp",
+				"RegExp",
+				"DBPointer",
+				"UUID",
+				"GUID",
+				"CSUUID",
+				"CSGUID",
+				"JUUID",
+				"JGUID",
+				"PYUUID",
+				"PYGUID"
+		);
 	}
 
 	public Rule Character() {

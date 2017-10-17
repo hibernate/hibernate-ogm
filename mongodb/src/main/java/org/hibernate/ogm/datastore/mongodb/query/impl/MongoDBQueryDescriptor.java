@@ -6,18 +6,19 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.impl;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+
+import org.bson.Document;
+
+import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.DELETEMANY;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.DELETEONE;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.FINDANDMODIFY;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.REMOVE;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation.UPDATEONE;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-
-import org.bson.Document;
 
 /**
  * Describes a query to be executed against MongoDB.
@@ -29,6 +30,7 @@ import org.bson.Document;
 public class MongoDBQueryDescriptor implements Serializable {
 	/**
 	 * Enum with operations
+	 *
 	 * @see <a href="https://docs.mongodb.com/manual/reference/method/js-collection/">list of operations in mongo shell</a>
 	 */
 	public enum Operation {
@@ -40,6 +42,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		INSERTMANY,
 		REMOVE,
 		DELETEONE,
+		DELETEMANY,
 		UPDATE,
 		UPDATEONE,
 		UPDATEMANY,
@@ -105,7 +108,19 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.reduceFunction = null;
 	}
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Document projection, Document orderBy, Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds, String distinctFieldName, String mapFunction, String reduceFunction) {
+	public MongoDBQueryDescriptor(
+			String collectionName,
+			Operation operation,
+			Document criteria,
+			Document projection,
+			Document orderBy,
+			Document options,
+			Document updateOrInsertOne,
+			List<Document> updateOrInsertMany,
+			List<String> unwinds,
+			String distinctFieldName,
+			String mapFunction,
+			String reduceFunction) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
@@ -180,6 +195,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 	public Document getUpdateOrInsertOne() {
 		return updateOrInsertOne;
 	}
+
 	public List<Document> getUpdateOrInsertMany() {
 		return updateOrInsertMany;
 	}
@@ -211,11 +227,26 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format( "MongoDBQueryDescriptor [collectionName=%s, %s=%s, %s=%s, %s%s]",
-			collectionName,
-			operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where", criteria,
-			operation == UPDATE ? "update" : operation == INSERT ? "insert" : operation == REMOVE ? "remove" : operation == DELETEONE ? "deleteOne" : operation == UPDATEONE ? "updateOne" : "projection", projection,
-			operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=", options );
+		return String.format(
+				"MongoDBQueryDescriptor [collectionName=%s, %s=%s, %s=%s, %s%s]",
+				collectionName,
+				operation == FINDANDMODIFY ? "document" : operation == INSERT ? "document(s)" : "where",
+				criteria,
+				operation == UPDATE ?
+						"update" :
+						operation == INSERT ?
+								"insert" :
+								operation == REMOVE ?
+										"remove" :
+										operation == DELETEONE ?
+												"deleteOne" :
+												operation == DELETEMANY ?
+														"deleteMany" :
+														operation == UPDATEONE ? "updateOne" : "projection",
+				projection,
+				operation == UPDATE || operation == INSERT || operation == REMOVE ? "" : "options=",
+				options
+		);
 
 	}
 }
