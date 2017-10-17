@@ -416,7 +416,7 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1265")
+	@TestForIssue(jiraKey = "OGM-1314")
 	public void shouldParseQueryDeleteMany() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
@@ -430,7 +430,7 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1265")
+	@TestForIssue(jiraKey = "OGM-1314")
 	public void shouldParseQueryDeleteManyWithFilter() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
@@ -445,7 +445,7 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1265")
+	@TestForIssue(jiraKey = "OGM-1314")
 	public void shouldParseQueryDeleteManyWithFilterAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(

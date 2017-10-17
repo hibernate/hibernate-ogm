@@ -540,7 +540,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1265")
+	@TestForIssue(jiraKey = "OGM-1314")
 	public void testInsertManyThenDeleteMany() {
 		try (OgmSession session = openSession()) {
 			Transaction transaction = session.beginTransaction();
@@ -566,7 +566,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1265")
+	@TestForIssue(jiraKey = "OGM-1314")
 	public void testInsertManyThenDeleteManyWithOptions() {
 		try (OgmSession session = openSession()) {
 			Transaction transaction = session.beginTransaction();
