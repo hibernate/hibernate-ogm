@@ -60,7 +60,6 @@ import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
 import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallImpl;
-import org.hibernate.procedure.ProcedureCall;
 
 /**
  * An OGM specific {@code EntityManager} implementation which delegates most method calls to the underlying ORM

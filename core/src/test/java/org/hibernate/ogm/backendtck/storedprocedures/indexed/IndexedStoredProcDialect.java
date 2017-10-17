@@ -9,7 +9,6 @@ package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;

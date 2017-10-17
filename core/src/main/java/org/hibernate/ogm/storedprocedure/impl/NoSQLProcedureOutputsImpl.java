@@ -7,12 +7,8 @@
 package org.hibernate.ogm.storedprocedure.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
-import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;

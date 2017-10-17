@@ -9,6 +9,7 @@ package org.hibernate.ogm.jpa.impl;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
 import javax.persistence.StoredProcedureQuery;
@@ -20,35 +21,28 @@ import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.jpa.spi.HibernateEntityManagerImplementor;
 import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallImpl;
 import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureOutputImpl;
-import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureOutputsImpl;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureCallMemento;
-import org.hibernate.result.NoMoreReturnsException;
-import org.hibernate.result.Output;
-import org.hibernate.result.ResultSetOutput;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
+
 	private static final Log log = LoggerFactory.make();
 	private Set<ParameterRegistration<?>> parameterRegistrations = new LinkedHashSet<>();
 	private NoSQLProcedureCallImpl procedureCall;
 	private HibernateEntityManagerImplementor entityManager;
 
-	public OgmJpaStoredProcedureQuery(
-			NoSQLProcedureCallImpl procedureCall,
-			EntityManager entityManager) {
+	public OgmJpaStoredProcedureQuery(NoSQLProcedureCallImpl procedureCall, EntityManager entityManager) {
 		super( procedureCall, convert( entityManager ) );
 		this.procedureCall = procedureCall;
 		this.entityManager = convert( entityManager );
 	}
 
-	public OgmJpaStoredProcedureQuery(
-			ProcedureCallMemento memento,
-			EntityManager entityManager) {
+	public OgmJpaStoredProcedureQuery(ProcedureCallMemento memento, EntityManager entityManager) {
 		super( memento, convert( entityManager ) );
 	}
 
@@ -61,28 +55,23 @@ public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public StoredProcedureQuery registerStoredProcedureParameter(
-			int position, Class type, ParameterMode mode) {
+	public StoredProcedureQuery registerStoredProcedureParameter(int position, Class type, ParameterMode mode) {
 		entityManager().checkOpen( true );
-		parameterRegistrations.add(  procedureCall.registerParameter( position, type, mode ) );
+		parameterRegistrations.add( procedureCall.registerParameter( position, type, mode ) );
 		return this;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public StoredProcedureQuery registerStoredProcedureParameter(
-			String parameterName, Class type, ParameterMode mode) {
+	public StoredProcedureQuery registerStoredProcedureParameter(String parameterName, Class type, ParameterMode mode) {
 		entityManager().checkOpen( true );
-		parameterRegistrations.add(  procedureCall.registerParameter( parameterName, type, mode ) );
+		parameterRegistrations.add( procedureCall.registerParameter( parameterName, type, mode ) );
 		return this;
 	}
 
-
-
-
 	@Override
 	public StoredProcedureQueryImpl setParameter(int position, Object value) {
-		log.debugf( "set value %s for parameter index : %d",value, position );
+		log.debugf( "set value %s for parameter index : %d", value, position );
 		checkOpen( true );
 
 		try {
@@ -113,17 +102,18 @@ public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
 		throw new IllegalArgumentException( "Parameter with that position [" + parameterPosition + "] did not exist" );
 	}
 
-
-	/* (non-Javadoc)
-		 * @see org.hibernate.jpa.internal.StoredProcedureQueryImpl#execute()
-		 */
+	/*
+	 * (non-Javadoc)
+	 * @see org.hibernate.jpa.internal.StoredProcedureQueryImpl#execute()
+	 */
 	@Override
 	public boolean execute() {
 		// TODO Auto-generated method stub
 		return super.execute();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.hibernate.jpa.internal.StoredProcedureQueryImpl#getUpdateCount()
 	 */
 	@Override
@@ -132,7 +122,8 @@ public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
 		return super.getUpdateCount();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.hibernate.jpa.internal.StoredProcedureQueryImpl#getResultList()
 	 */
 	@Override
@@ -141,7 +132,8 @@ public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
 		return super.getResultList();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.hibernate.jpa.internal.StoredProcedureQueryImpl#getSingleResult()
 	 */
 	@Override
@@ -162,9 +154,9 @@ public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
 	@Override
 	public int getMaxResults() {
 		// if have not ParameterMode.REF_CURSOR
-boolean hasOutParameters = false;
+		boolean hasOutParameters = false;
 		for ( ParameterRegistration parameterRegistration : parameterRegistrations ) {
-			//parameterRegistration.getMode().equals( ParameterMode.REF_CURSOR )
+			// parameterRegistration.getMode().equals( ParameterMode.REF_CURSOR )
 			if ( parameterRegistration.getMode().equals( ParameterMode.OUT ) ) {
 				hasOutParameters = true;
 
@@ -172,7 +164,6 @@ boolean hasOutParameters = false;
 		}
 		int result = 0;
 		if ( hasOutParameters ) {
-
 
 		}
 		return result;
