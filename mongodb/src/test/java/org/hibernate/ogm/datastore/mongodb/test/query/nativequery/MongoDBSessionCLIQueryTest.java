@@ -8,22 +8,24 @@ package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.fest.assertions.Fail;
-import org.fest.assertions.MapAssert;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
+import org.fest.assertions.Fail;
+import org.fest.assertions.MapAssert;
 
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
@@ -236,6 +238,70 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1311")
+	public void testInsertManyThenRemove() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertMany( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Friedrich Schiller', 'name': 'An die Freude', 'rating': '1' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
+
+			// Try again.
+			try {
+				n = query.executeUpdate();
+				Fail.fail( "Unique key constraint violation exception expected." );
+			}
+			catch (Exception e) {
+				/* Expected */
+			}
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'An die Freude' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 12 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Friedrich Schiller" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "An die Freude" );
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '12' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that they are gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '12' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testInsertMultipleThenRemove() throws Exception {
 		try ( OgmSession session = openSession() ) {
@@ -298,6 +364,311 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result.size() ).isEqualTo( 0 );
 
 			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1310")
+	public void testInsertOneThenRemove() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// Try again.
+			try {
+				n = query.executeUpdate();
+				Fail.fail( "Unique key constraint violation exception expected." );
+			}
+			catch (Exception e) {
+				/* Expected */
+			}
+
+			// Check that it was inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { 'name': 'The one and wildest' } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result.get( 0 ).getId() ).isEqualTo( 11 );
+			assertThat( result.get( 0 ).getAuthor() ).isEqualTo( "Oscar Wilder" );
+			assertThat( result.get( 0 ).getName() ).isEqualTo( "The one and wildest" );
+
+			// Need to remove here because subsequent tests assume the initial dataset.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".remove({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertThenDeleteOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertThenDeleteOneWithOptions() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ '_id': { '$numberLong': '11' } }, { 'w': 'majority', 'wtimeout' : 100 })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// Check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertMultipleThenDeleteOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '2' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
+
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".count({ 'name' : 'Collection' })";
+			Object foundCount = session.createNativeQuery( nativeQuery ).uniqueResult();
+
+			assertThat( foundCount ).isEqualTo( 2L );
+
+			// Try to delete first
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+
+			// Try to delete second
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+
+			session.clear();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1315")
+	public void testUpdateOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String nativeUpdateOneQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateOne("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : 1 } } "
+					+ ")";
+			Query query = session.createNativeQuery( nativeUpdateOneQuery );
+
+			int modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 1 );
+			// Find updated one and check that it was updated.
+			String nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			int modifiedElementIndex = 0;
+
+			List<Integer> initialCopiesSoldList = Arrays.asList( portia.getCopiesSold(), athanasia.getCopiesSold(), imperatrix.getCopiesSold() );
+			for ( int i = 0; i < result.size(); i++ ) {
+				Integer currentCopiesSold = result.get( i ).getCopiesSold();
+				if ( !initialCopiesSoldList.contains( currentCopiesSold ) ) {
+					modifiedElementIndex = i;
+					break;
+				}
+			}
+			OscarWildePoem modifiedPoem = result.get( modifiedElementIndex );
+
+			// Need to update back to original state because subsequent tests assume the initial dataset.
+			session.clear();
+			nativeUpdateOneQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateOne("
+					+ "  { 'name' : '" + modifiedPoem.getName() + "' }, "
+					+ "  { '$inc': { 'copiesSold' : -1 } } "
+					+ ")";
+			query = session.createNativeQuery( nativeUpdateOneQuery );
+
+			modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 1 );
+
+			// And check that it same as was.
+			nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'name' : '" + modifiedPoem.getName() + "' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( initialCopiesSoldList ).contains( result.get( 0 ).getCopiesSold() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue( jiraKey = "1316")
+	public void testUpdateMany() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String nativeUpdateManyQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateMany("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : 1 } } "
+					+ ")";
+			Query query = session.createNativeQuery( nativeUpdateManyQuery );
+			int modifiedCount = query.executeUpdate();
+
+			assertThat( modifiedCount ).isEqualTo( 3 );
+
+			// Check that it was updated.
+			String nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			List<Integer> initialRatingsList = Arrays.asList( portia.getCopiesSold(), athanasia.getCopiesSold(), imperatrix.getCopiesSold() );
+
+			assertThat( result.size() ).isEqualTo( initialRatingsList.size() );
+			assertThat( result )
+					.onProperty( "copiesSold" )
+					.containsOnly( initialRatingsList.get( 0 ) + 1,
+								initialRatingsList.get( 1 ) + 1,
+								initialRatingsList.get( 2 ) + 1 );
+
+			// Need to update back to original state because subsequent tests assume the initial dataset.
+			session.clear();
+			nativeUpdateManyQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateMany("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : -1 } }, "
+					+ "  { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } "
+					+ ")";
+			query = session.createNativeQuery( nativeUpdateManyQuery );
+
+			modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 3 );
+
+			// And check that it same as was.
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+
+			assertThat( result.size() ).isEqualTo( 3 );
+			assertThat( result )
+					.onProperty( "copiesSold" )
+					.containsOnly( initialRatingsList.toArray() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void testReplaceOneWithOptions() throws Exception {
+		try (OgmSession session = openSession()) {
+			final Transaction transaction = session.beginTransaction();
+
+			// execute replaceOne operation and check that there was modified only one document
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME +
+					".replaceOne(" +
+					"  { '_id': { '$numberLong' : '1' } }, " +
+					"  { " +
+					"    'year' : 1878, " +
+					"    'author' : 'Oscar Wilde', " +
+					"    'name' : 'Ravenna', " +
+					"    'rating' : '5', " +
+					"    'copiesSold' : 45, " +
+					"    'mediums' : [ " +
+					"      'audible', " +
+					"      'ebook', " +
+					"      'paperback' " +
+					"    ] " +
+					"  }, " +
+					"  { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } " +
+					")";
+			Query query = session.createNativeQuery( nativeQuery );
+			final int modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 1 );
+
+			// assert that document with _id 1 replaced with 'Ravenna' poem
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { '_id' : { '$numberLong' : '1' } } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked") final List<OscarWildePoem> result = query.list();
+			final OscarWildePoem oscarWildePoem = result.get( 0 );
+			assertThat( oscarWildePoem.getYear() ).isEqualTo( 1878 );
+			assertThat( oscarWildePoem.getAuthor() ).isEqualTo( "Oscar Wilde" );
+			assertThat( oscarWildePoem.getName() ).isEqualTo( "Ravenna" );
+			assertThat( oscarWildePoem.getRating() ).isEqualTo( (byte) 5 );
+			assertThat( oscarWildePoem.getCopiesSold() ).isEqualTo( 45 );
+			assertThat( oscarWildePoem.getMediums().toArray() ).isEqualTo(
+					new String[] { "audible", "ebook", "paperback" } );
+
+			transaction.commit();
+			session.clear();
 		}
 	}
 

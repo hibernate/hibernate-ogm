@@ -7,13 +7,13 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
+
+import com.mongodb.util.JSON;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
-
-import com.mongodb.util.JSON;
 
 /**
  * A parser for MongoDB queries which can be given in one of the following representations:
@@ -35,6 +35,8 @@ import com.mongodb.util.JSON;
  * <li>remove(criteria, options)</li>
  * <li>update(criteria, update)</li>
  * <li>update(criteria, update, options)</li>
+ * <li>replaceOne(criteria, replacement)</li>
+ * <li>replaceOne(criteria, replacement, options)</li>
  * <li>count()</li>
  * <li>count(criteria)</li>
  * <li>aggregate(criteria)</li>
@@ -96,7 +98,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate(), Distinct(), MapReduce() );
+		return FirstOf(
+				Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), DeleteOne(),
+				Update(), UpdateOne(), UpdateMany(), ReplaceOne(), Count(), Aggregate(), Distinct(), MapReduce()
+		);
 		// TODO There are many more query types than what we support.
 	}
 
@@ -109,7 +114,11 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
 				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
+				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
+				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
+				Sequence( UpdateMany(), builder.setOperation( Operation.UPDATEMANY ) ),
+				Sequence( ReplaceOne(), builder.setOperation( Operation.REPLACEONE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
 				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
 				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) ),
@@ -198,10 +207,57 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		);
 	}
 
+	public Rule DeleteOne() {
+		return Sequence(
+				Separator(),
+				"deleteOne ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
 	public Rule Update() {
 		return Sequence(
 				Separator(),
 				"update ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule UpdateOne() {
+		return Sequence(
+				Separator(),
+				"updateOne ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule UpdateMany() {
+		return Sequence(
+				Separator(),
+				"updateMany ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule ReplaceOne() {
+		return Sequence(
+				Separator(),
+				"replaceOne ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),

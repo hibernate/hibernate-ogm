@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.parsing.nativequery;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
@@ -21,8 +23,6 @@ import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 
 /**
@@ -351,6 +351,47 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void shouldParseQueryDeleteOne() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.deleteOne( { } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DELETEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new Document() );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void shouldParseQueryDeleteOneWithFilter() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.deleteOne( { 'item': 'card', 'qty': 15 } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DELETEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void shouldParseQueryDeleteOneWithFilterAndOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.deleteOne( { 'item': 'card', 'qty': 15 }, { 'w': 'majority', 'wtimeout' : 100 } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DELETEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'w': 'majority', 'wtimeout' : 100 }" ) );
+	}
+
+	@Test
 	public void shouldParseQueryUpdate() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
@@ -376,6 +417,155 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name': 'Andy' }" ) );
 		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'rating': 1, 'score': 1 }" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'upsert': true }" ) );
+	}
+
+	@Test
+	public void shouldParseQueryUpdateOne() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.updateOne( { 'name' : 'Andy' }, { '$set': { 'score' : 3 } } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$set': { 'score' : 3 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	public void shouldParseQueryUpdateOneWithOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.updateOne( { 'name' : 'Andy' }, { '$set': { 'score' : 3 } }, { 'upsert': true, 'collation': {} } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$set': { 'score' : 3 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'upsert': true, 'collation': {} }" ) );
+	}
+
+	@Test
+	public void shouldParseQueryUpdateMany() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.updateMany( { 'name': 'Andy' }, { '$mul': { 'score': 5 } } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEMANY );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name': 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$mul': { 'score': 5 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	public void shouldParseQueryUpdateManyWithOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.updateMany( { 'name' : 'Andy' }, { '$mul': { 'score': 5 } }, { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEMANY );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$mul': { 'score': 5 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } }" ) );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void shouldParseQueryReplaceOneEmptyCriteriaEmptyReplacementNoOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() ).run( "db.Order.replaceOne( { }, { } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void shouldParseQueryReplaceOneEmptyCriteriaWithReplacementNoOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() ).run( "db.Order.replaceOne( { }, { 'name' : 'Lulu', 'age' : 18, 'score' : 22 } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo(
+				Document.parse( "{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void shouldParseQueryReplaceOneWithCriteriaWithReplacementNoOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() ).run(
+				"db.Order.replaceOne( { 'name' : 'Andy' }, { 'name' : 'Lulu', 'age' : 18, 'score' : 22 } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo(
+				Document.parse( "{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void shouldParseQueryReplaceOneWithCriteriaWithReplacementWithOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() ).run(
+				"db.Order.replaceOne( { 'name' : 'Andy' }, { 'name' : 'Lulu', 'age' : 18, 'score' : 22 }, " +
+						"{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo(
+				Document.parse( "{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse(
+				"{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } }" ) );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void shouldParseQueryReplaceOneWithWhitespaces() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() ).run(
+				"  db  .  Order  . \t\n replaceOne(   \t\n{   'name' :   'Andy'  \t\n },   " +
+						"{   'name'   :   'Lulu',   'age'   :   18, 'score' :   22   }   )  " );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo(
+				Document.parse( "{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
 	}
 
 	@Test
@@ -472,7 +662,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithSeveralConditions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ReportingParseRunner<MongoDBQueryDescriptorBuilder> runner = new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() );
+		ReportingParseRunner<MongoDBQueryDescriptorBuilder> runner = new ReportingParseRunner<>( parser.Query() );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  runner
 				.run( "db.Order.find( { \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" } )" );
 

@@ -18,6 +18,7 @@ import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -29,13 +30,28 @@ import org.junit.Test;
 )
 public class PostLoadTest extends OgmJpaTestCase {
 
+	private EntityManager em;
+
+	@Before
+	public void setUp() {
+		em = getFactory().createEntityManager();
+	}
+
+	@After
+	@Override
+	public void removeEntities() throws Exception {
+		em.getTransaction().begin();
+		em.remove( em.find( Zoo.class, 1 ) );
+		em.getTransaction().commit();
+		em.close();
+	}
+
 	/**
 	 * Load an entity with an embedded collection which uses a @PostLoad annotated method
 	 * to record the collection size
 	 */
 	@Test
 	public void testFieldSetInPostLoad() {
-		EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
 
 		Zoo zoo = new Zoo();
@@ -58,12 +74,10 @@ public class PostLoadTest extends OgmJpaTestCase {
 		assertEquals( 3, zoo.getNrOfAnimals() );
 
 		em.getTransaction().commit();
-		em.close();
 	}
 
 	@Test
 	public void testFieldSetInPostLoadByListener() {
-		EntityManager em = getFactory().createEntityManager();
 		em.getTransaction().begin();
 
 		Zoo zoo = new Zoo();
@@ -86,7 +100,6 @@ public class PostLoadTest extends OgmJpaTestCase {
 		assertEquals( 3, zoo.getNrOfAnimalsByListener() );
 
 		em.getTransaction().commit();
-		em.close();
 	}
 
 	private Animal createAnimal(String name) {
@@ -94,16 +107,6 @@ public class PostLoadTest extends OgmJpaTestCase {
 		animal.setName( name );
 
 		return animal;
-	}
-
-	@After
-	@Override
-	public void removeEntities() throws Exception {
-		EntityManager em = getFactory().createEntityManager();
-		em.getTransaction().begin();
-		em.remove( em.find( Zoo.class, 1 ) );
-		em.getTransaction().commit();
-		em.close();
 	}
 
 	@Override
