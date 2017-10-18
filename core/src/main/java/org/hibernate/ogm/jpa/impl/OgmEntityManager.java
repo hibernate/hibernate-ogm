@@ -527,7 +527,7 @@ public class OgmEntityManager implements EntityManager {
 		hibernateEm.checkOpen( true );
 		NoSQLProcedureCallImpl procedureCall = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName );
 		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
-		return new OgmJpaStoredProcedureQuery( procedureCall, hibernateEm );
+		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
@@ -536,7 +536,7 @@ public class OgmEntityManager implements EntityManager {
 		NoSQLProcedureCallImpl procedureCall = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultClasses );
 
 		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
-		return new OgmJpaStoredProcedureQuery( procedureCall, hibernateEm );
+		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
@@ -544,7 +544,7 @@ public class OgmEntityManager implements EntityManager {
 		hibernateEm.checkOpen( true );
 		NoSQLProcedureCallImpl procedureCall  = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultSetMappings );
 		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
-		return new OgmJpaStoredProcedureQuery( procedureCall, hibernateEm );
+		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override

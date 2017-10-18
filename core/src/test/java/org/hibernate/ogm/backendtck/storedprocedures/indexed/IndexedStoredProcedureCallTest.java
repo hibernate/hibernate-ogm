@@ -18,7 +18,7 @@ import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.jpa.impl.OgmJpaStoredProcedureQuery;
+import org.hibernate.ogm.jpa.impl.OgmStoredProcedureQuery;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
@@ -68,7 +68,7 @@ public class IndexedStoredProcedureCallTest {
 
 
 		StoredProcedureQuery call1 = em.createStoredProcedureQuery( "testproc1" );
-		assertThat( call1 ).isInstanceOfAny( OgmJpaStoredProcedureQuery.class );
+		assertThat( call1 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		assertThat( call1.getParameters() ).hasSize( 0 );
 		assertThat( call1.execute() ).isEqualTo( true );
 		assertThat( result.get() ).isEqualTo( 10 );
@@ -88,14 +88,11 @@ public class IndexedStoredProcedureCallTest {
 				}
 			} );
 			StoredProcedureQuery call2 = em.createStoredProcedureQuery( "testproc2" );
-			assertThat( call2 ).isInstanceOfAny( OgmJpaStoredProcedureQuery.class );
+			assertThat( call2 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 			call2.registerStoredProcedureParameter( 0,Integer.class, ParameterMode.IN );
 			call2.setParameter( 0, 1 );
 			Integer singleResult = (Integer) call2.getSingleResult();
 			assertThat( singleResult ).isNotNull();
 			assertThat( singleResult ).isEqualTo( 1 );
-
 	}
-
-
 }

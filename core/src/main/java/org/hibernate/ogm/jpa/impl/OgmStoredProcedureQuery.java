@@ -29,20 +29,20 @@ import org.hibernate.procedure.ProcedureCallMemento;
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-public class OgmJpaStoredProcedureQuery extends StoredProcedureQueryImpl {
+public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 
 	private static final Log log = LoggerFactory.make();
 	private Set<ParameterRegistration<?>> parameterRegistrations = new LinkedHashSet<>();
 	private NoSQLProcedureCallImpl procedureCall;
 	private HibernateEntityManagerImplementor entityManager;
 
-	public OgmJpaStoredProcedureQuery(NoSQLProcedureCallImpl procedureCall, EntityManager entityManager) {
+	public OgmStoredProcedureQuery(NoSQLProcedureCallImpl procedureCall, EntityManager entityManager) {
 		super( procedureCall, convert( entityManager ) );
 		this.procedureCall = procedureCall;
 		this.entityManager = convert( entityManager );
 	}
 
-	public OgmJpaStoredProcedureQuery(ProcedureCallMemento memento, EntityManager entityManager) {
+	public OgmStoredProcedureQuery(ProcedureCallMemento memento, EntityManager entityManager) {
 		super( memento, convert( entityManager ) );
 	}
 
