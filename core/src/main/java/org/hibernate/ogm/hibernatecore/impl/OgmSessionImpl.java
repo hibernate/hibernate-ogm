@@ -178,39 +178,27 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public ProcedureCall getNamedProcedureCall(String name) {
-		log.infof( "getNamedProcedureCall with name %s", name );
 		errorIfClosed();
 		checkTransactionSynchStatus();
-
-		if ( log.isTraceEnabled() ) {
-			log.tracev( "NoSQL stored procedure: {0}", name );
-		}
+		log.tracev( "NoSQL stored procedure: {0}", name );
 		return new NoSQLProcedureCallImpl( this, name );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName) {
-		log.infof( "1. createStoredProcedureCall with name %s",procedureName );
-
-		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
 		errorIfClosed();
 		checkTransactionSynchStatus();
 
-		if ( log.isTraceEnabled() ) {
-			log.tracev( "NoSQL stored procedure: {0}", procedureName );
-		}
+		log.tracev( "NoSQL stored procedure: {0}", procedureName );
 		return new NoSQLProcedureCallImpl( this, procedureName );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, Class... resultClasses) {
-		log.infof( "2. createStoredProcedureCall with name %s",procedureName );
 		errorIfClosed();
 		checkTransactionSynchStatus();
 
-		if ( log.isTraceEnabled() ) {
-			log.tracev( "NoSQL stored procedure: {0}", procedureName );
-		}
+		log.tracev( "NoSQL stored procedure: {0}", procedureName );
 		NoSQLProcedureCallImpl procedureCall = new NoSQLProcedureCallImpl( this,procedureName );
 		for ( int i = 0; i < resultClasses.length; i++ ) {
 			procedureCall.addSynchronizedEntityClass( resultClasses[i] );
@@ -220,13 +208,10 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, String... resultSetMappings) {
-		log.infof( "3. createStoredProcedureCall with name %s",procedureName );
 		errorIfClosed();
 		checkTransactionSynchStatus();
 
-		if ( log.isTraceEnabled() ) {
-			log.tracev( "NoSQL stored procedure: {0}", procedureName );
-		}
+		log.tracev( "NoSQL stored procedure: {0}", procedureName );
 		NoSQLProcedureCallImpl procedureCall = new NoSQLProcedureCallImpl( this,procedureName );
 		for ( int i = 0; i < resultSetMappings.length; i++ ) {
 			//procedureCall.ad resultSetMappings[i] );
@@ -290,9 +275,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 		errorIfClosed();
 		checkTransactionSynchStatus();
 
-		if ( log.isTraceEnabled() ) {
-			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
-		}
+		log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
 
 		BackendCustomLoader loader = new BackendCustomLoader( (BackendCustomQuery<?>) customQuery, getFactory() );
 		autoFlushIfRequired( loader.getQuerySpaces() );
