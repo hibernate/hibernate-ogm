@@ -12,19 +12,20 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.fest.assertions.Fail;
-import org.fest.assertions.MapAssert;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
+import org.fest.assertions.Fail;
+import org.fest.assertions.MapAssert;
 
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
@@ -622,6 +623,52 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 					.containsOnly( initialRatingsList.toArray() );
 
 			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void testReplaceOneWithOptions() throws Exception {
+		try (OgmSession session = openSession()) {
+			final Transaction transaction = session.beginTransaction();
+
+			// execute replaceOne operation and check that there was modified only one document
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME +
+					".replaceOne(" +
+					"  { '_id': { '$numberLong' : '1' } }, " +
+					"  { " +
+					"    'year' : 1878, " +
+					"    'author' : 'Oscar Wilde', " +
+					"    'name' : 'Ravenna', " +
+					"    'rating' : '5', " +
+					"    'copiesSold' : 45, " +
+					"    'mediums' : [ " +
+					"      'audible', " +
+					"      'ebook', " +
+					"      'paperback' " +
+					"    ] " +
+					"  }, " +
+					"  { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } " +
+					")";
+			Query query = session.createNativeQuery( nativeQuery );
+			final int modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 1 );
+
+			// assert that document with _id 1 replaced with 'Ravenna' poem
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne( { '_id' : { '$numberLong' : '1' } } )";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked") final List<OscarWildePoem> result = query.list();
+			final OscarWildePoem oscarWildePoem = result.get( 0 );
+			assertThat( oscarWildePoem.getYear() ).isEqualTo( 1878 );
+			assertThat( oscarWildePoem.getAuthor() ).isEqualTo( "Oscar Wilde" );
+			assertThat( oscarWildePoem.getName() ).isEqualTo( "Ravenna" );
+			assertThat( oscarWildePoem.getRating() ).isEqualTo( (byte) 5 );
+			assertThat( oscarWildePoem.getCopiesSold() ).isEqualTo( 45 );
+			assertThat( oscarWildePoem.getMediums().toArray() ).isEqualTo(
+					new String[] { "audible", "ebook", "paperback" } );
+
+			transaction.commit();
+			session.clear();
 		}
 	}
 

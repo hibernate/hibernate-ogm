@@ -24,8 +24,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -107,10 +105,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -138,6 +132,12 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -840,6 +840,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case UPDATE:
 			case UPDATEONE:
 			case UPDATEMANY:
+			case REPLACEONE:
 				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
@@ -876,6 +877,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doUpdateOne( queryDescriptor, collection );
 			case UPDATEMANY:
 				return doUpdateMany( queryDescriptor, collection );
+			case REPLACEONE:
+				return doReplaceOne( queryDescriptor, collection );
 			case FIND:
 			case FINDONE:
 			case FINDANDMODIFY:
@@ -1343,6 +1346,41 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( result.wasAcknowledged() ) {
 			return (int) result.getModifiedCount();
 		}
+		return -1;
+	}
+
+	private static int doReplaceOne(final MongoDBQueryDescriptor queryDescriptor, final MongoCollection<Document> collection) {
+		final Document query = queryDescriptor.getCriteria();
+		final Document update = queryDescriptor.getUpdateOrInsertOne();
+		final Document options = queryDescriptor.getOptions();
+
+		Boolean upsert = FALSE;
+		Collation collation = null;
+		WriteConcern writeConcern = null;
+
+		if ( options != null ) {
+			upsert = (Boolean) options.get( "upsert" );
+			upsert = ( upsert != null ) ? upsert : FALSE;
+
+			final Document wc = (Document) options.get( "writeConcern" );
+			writeConcern = ( wc != null ) ? getWriteConcern( wc ) : null;
+
+			final Document col = (Document) options.get( "collation" );
+			collation = ( col != null ) ? getCollation( col ) : null;
+		}
+
+		final UpdateOptions updateOptions = new UpdateOptions()
+				.upsert( upsert )
+				.collation( collation );
+
+		final UpdateResult result = collection
+				.withWriteConcern( ( writeConcern != null ? writeConcern : collection.getWriteConcern() ) )
+				.replaceOne( query, update, updateOptions );
+
+		if ( result.wasAcknowledged() ) {
+			return (int) result.getModifiedCount();
+		}
+
 		return -1;
 	}
 
