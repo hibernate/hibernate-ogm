@@ -9,6 +9,8 @@ package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -20,6 +22,7 @@ import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.jpa.impl.OgmStoredProcedureQuery;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
 
@@ -70,7 +73,7 @@ public class IndexedStoredProcedureCallTest {
 		StoredProcedureQuery call1 = em.createStoredProcedureQuery( "testproc1" );
 		assertThat( call1 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		assertThat( call1.getParameters() ).hasSize( 0 );
-		assertThat( call1.execute() ).isEqualTo( true );
+		assertThat( call1.execute() ).isEqualTo( false );
 		assertThat( result.get() ).isEqualTo( 10 );
 	}
 
@@ -83,8 +86,12 @@ public class IndexedStoredProcedureCallTest {
 		//function with one parameter and returned simpe value
 			IndexedStoredProcDialect.FUNCTIONS.put( "testproc2", new IndexedStoredProcedure() {
 				@Override
-				public Object execute(Object[] params) {
-					return params[0];
+				public ClosableIterator<Tuple> execute(Object[] params) {
+					List<Tuple> result = new ArrayList<>( 1 );
+					Tuple resultTuple = new Tuple(  );
+					resultTuple.put( "result",params[0] );
+					result.add( resultTuple );
+					return CollectionHelper.newClosableIterator( result );
 				}
 			} );
 			StoredProcedureQuery call2 = em.createStoredProcedureQuery( "testproc2" );
@@ -94,5 +101,36 @@ public class IndexedStoredProcedureCallTest {
 			Integer singleResult = (Integer) call2.getSingleResult();
 			assertThat( singleResult ).isNotNull();
 			assertThat( singleResult ).isEqualTo( 1 );
+	}
+	/**
+	 * Testing a call of stored procedure (function)
+	 * @throws Exception
+	 */
+	@Test
+	public void dynamicCallOfStoredProcedureWithParametersAndListEntityResult() throws Exception {
+		//function with one parameter and returned entity
+		IndexedStoredProcDialect.FUNCTIONS.put( "testproc3", new IndexedStoredProcedure() {
+			@Override
+			public ClosableIterator<Tuple> execute(Object[] params) {
+				List<Tuple> result = new ArrayList<>( 1 );
+				Tuple resultTuple = new Tuple(  );
+				resultTuple.put( "id",params[0] );
+				resultTuple.put( "title",params[1] );
+				result.add( resultTuple );
+				return CollectionHelper.newClosableIterator( result );
+			}
+		} );
+		StoredProcedureQuery call3 = em.createStoredProcedureQuery( "testproc3",Car.class );
+		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		call3.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
+		call3.registerStoredProcedureParameter( 1,String.class, ParameterMode.IN);
+		call3.registerStoredProcedureParameter( 2,String.class, ParameterMode.IN);
+		call3.setParameter( 1, "id" );
+		call3.setParameter( 2, "title" );
+		List<Car> listResult = call3.getResultList();
+		assertThat( listResult ).isNotNull();
+		assertThat( listResult.size() ).isEqualTo( 1 );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id","title" ) );
+
 	}
 }

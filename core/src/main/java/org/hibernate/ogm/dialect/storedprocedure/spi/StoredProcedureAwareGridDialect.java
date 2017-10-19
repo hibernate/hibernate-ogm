@@ -11,6 +11,7 @@ import java.util.Map;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * A facet for {@link GridDialect} implementations which support the execution of stored procedures.
@@ -47,7 +48,7 @@ public interface StoredProcedureAwareGridDialect extends GridDialect {
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
 
-	Object callStoredProcedure( String storedProcedureName, Object[] params, TupleContext tupleContext);
+	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, Object[] params, TupleContext tupleContext);
 
 	/**
 	 * Returns the result of a stored procedure executed on the backend.
@@ -60,6 +61,6 @@ public interface StoredProcedureAwareGridDialect extends GridDialect {
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
 
-	Object callStoredProcedure(	String storedProcedureName, Map<String,Object> params, TupleContext tupleContext);
+	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, Map<String,Object> params, TupleContext tupleContext);
 
 }

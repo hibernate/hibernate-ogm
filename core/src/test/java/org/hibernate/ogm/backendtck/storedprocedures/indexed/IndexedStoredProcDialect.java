@@ -9,6 +9,7 @@ package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -48,13 +49,13 @@ public class IndexedStoredProcDialect extends BaseGridDialect implements StoredP
 	}
 
 	@Override
-	public Object callStoredProcedure(String storedProcedureName, Object[] params, TupleContext tupleContext) {
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Object[] params, TupleContext tupleContext) {
 		log.infof( "Try to call procedure %s",storedProcedureName );
 		return FUNCTIONS.get( storedProcedureName ).execute( params );
 	}
 
 	@Override
-	public Object callStoredProcedure(String storedProcedureName, Map<String, Object> params,
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Map<String, Object> params,
 			TupleContext tupleContext) {
 		throw new UnsupportedOperationException( "The dialect is not support named parameters!" );
 	}

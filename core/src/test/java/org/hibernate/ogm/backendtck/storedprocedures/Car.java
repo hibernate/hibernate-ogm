@@ -20,6 +20,14 @@ public class Car {
 
 	private String title;
 
+	public Car() {
+	}
+
+	public Car(String id, String title) {
+		this.id = id;
+		this.title = title;
+	}
+
 	public String getId() {
 		return id;
 	}
