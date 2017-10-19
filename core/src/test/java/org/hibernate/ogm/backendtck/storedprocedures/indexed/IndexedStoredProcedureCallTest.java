@@ -123,8 +123,8 @@ public class IndexedStoredProcedureCallTest {
 		StoredProcedureQuery call3 = em.createStoredProcedureQuery( "testproc3",Car.class );
 		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		call3.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
-		call3.registerStoredProcedureParameter( 1,String.class, ParameterMode.IN);
-		call3.registerStoredProcedureParameter( 2,String.class, ParameterMode.IN);
+		call3.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
+		call3.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
 		call3.setParameter( 1, "id" );
 		call3.setParameter( 2, "title" );
 		List<Car> listResult = call3.getResultList();

@@ -85,14 +85,6 @@ public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 
 	@Override
 	public ProcedureOutputs getOutputs() {
-		log.infof( "gridDialect : %s", gridDialect );
-		for ( ParameterRegistration<?> r : getRegisteredParameters() ) {
-			log.infof( "ParameterRegistration name : %s", r.getName() );
-			log.infof( "ParameterRegistration position : %d", r.getPosition() );
-		}
-		//gridDialect.callStoredProcedure( getProcedureName(), null );
-		// BackendStoredProcLoader loader = new BackendStoredProcLoader( );
-
 		return new NoSQLProcedureOutputsImpl( this );
 	}
 

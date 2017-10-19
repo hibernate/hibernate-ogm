@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.storedprocedure.impl;
 
+import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +19,10 @@ import javax.persistence.ParameterMode;
 import org.hibernate.LockOptions;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
+import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Log;
@@ -69,43 +73,42 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 		else {
 			List parameters = new ArrayList( procedureCall.getRegisteredParameters().size() );
 			for ( ParameterRegistration parameterRegistration : procedureCall.getRegisteredParameters() ) {
-				//@todo will we supports out and in_out parameters?
+				// @todo will we supports out and in_out parameters?
 				if ( parameterRegistration.getMode() != ParameterMode.REF_CURSOR ) {
 					parameters.add( parameterRegistration.getBind().getValue() );
 				}
 			}
 			log.infof( "indexed parameters: %s", parameters );
-			ClosableIterator<Tuple> result = procedureCall.getGridDialect().callStoredProcedure( procedureCall.getProcedureName(),
-																		 parameters.toArray() , null );
-
+			TupleContext tupleContext = null;
+			OgmEntityPersister entityPersister = null;
+			String entityName = null;
 			if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
 				String querySpace = procedureCall.getSynchronizedQuerySpaces().iterator().next();
-				EntityPersister entityPersister = null;
+
 				for ( Map.Entry<String, EntityPersister> entry : procedureCall.getSession().getFactory()
 						.getEntityPersisters().entrySet() ) {
-					log.infof( "getEntityName: %s", entry.getValue().getEntityName() );
-					log.infof( "getRootEntityName: %s", entry.getValue().getRootEntityName() );
-					log.infof( "getQuerySpaces(): %s", entry.getValue().getQuerySpaces() );
-
 					List<Serializable> querySpaces = Arrays.asList( entry.getValue().getQuerySpaces() );
-
 					if ( querySpaces.contains( querySpace ) ) {
-						entityPersister = entry.getValue();
+						entityPersister = (OgmEntityPersister) entry.getValue();
+						entityName = entry.getKey();
 					}
-
 				}
+				tupleContext = tupleContext( procedureCall.getSession(), new EntityMetadataInformation( entityPersister.getEntityKeyMetadata(), entityName ) );
+			}
 
+			ClosableIterator<Tuple> result = procedureCall.getGridDialect().callStoredProcedure( procedureCall.getProcedureName(), parameters.toArray(),
+					tupleContext );
+
+			if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
 				entityList = listOfEntities( procedureCall.getSession(), entityPersister.getMappedClass(), result );
 			}
 			else if ( result == null ) {
-				//call a procedure without result
+				// call a procedure without result
 				return null;
-
 			}
 			else {
 				entityList = getTuplesAsList( result );
 			}
-
 
 		}
 		//copy data from iterator
