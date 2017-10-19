@@ -25,7 +25,6 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureCallMemento;
-import org.hibernate.type.Type;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
