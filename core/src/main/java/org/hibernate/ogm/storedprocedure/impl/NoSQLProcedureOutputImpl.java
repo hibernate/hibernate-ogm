@@ -9,7 +9,7 @@ package org.hibernate.ogm.storedprocedure.impl;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.result.ResultSetOutput;
@@ -19,29 +19,28 @@ import org.hibernate.result.ResultSetOutput;
  */
 public class NoSQLProcedureOutputImpl implements ResultSetOutput {
 	private static final Log log = LoggerFactory.make();
-	private Object result;
+	private List<?> resultList = new LinkedList();
 
-	public NoSQLProcedureOutputImpl(Object result) {
-		this.result = result;
+	public NoSQLProcedureOutputImpl(List<?> resultList) {
+		this.resultList = resultList;
 	}
 
 	@Override
 	public boolean isResultSet() {
-		log.info( "I am called!" );
-		return result instanceof ClosableIterator;
+
+		return !resultList.isEmpty() && !isTuple();
+	}
+
+	private boolean isTuple() {
+		return resultList.get( 0 ) instanceof Tuple;
 	}
 
 	@Override
 	public List getResultList() {
 		log.info( "I am called!" );
 		if ( isResultSet() ) {
-			List result = new LinkedList();
-			ClosableIterator iterator = (ClosableIterator) result;
-			while ( iterator.hasNext() ) {
-				result.add( iterator.next() );
-			}
-			iterator.close();
-			return result;
+
+			return resultList;
 		}
 
 		return null;
@@ -50,6 +49,10 @@ public class NoSQLProcedureOutputImpl implements ResultSetOutput {
 	@Override
 	public Object getSingleResult() {
 		log.info( "I am called!" );
-		return result;
+		//@todo check ... it can be not a Tuple
+		//it is primitive result
+		Tuple firstTuple = (Tuple) resultList.get( 0 );
+		String firstFieldName = firstTuple.getColumnNames().iterator().next();
+		return  firstTuple.get( firstFieldName );
 	}
 }

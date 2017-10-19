@@ -317,12 +317,12 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public Object callStoredProcedure(String storedProcedureName, Object[] params, TupleContext tupleContext) {
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Object[] params, TupleContext tupleContext) {
 		return storedProcedureAwareGridDialect.callStoredProcedure( storedProcedureName,params,tupleContext );
 	}
 
 	@Override
-	public Object callStoredProcedure(String storedProcedureName, Map<String, Object> params,
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Map<String, Object> params,
 			TupleContext tupleContext) {
 		return storedProcedureAwareGridDialect.callStoredProcedure( storedProcedureName,params,tupleContext );
 	}

@@ -85,8 +85,6 @@ public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 
 	@Override
 	public ProcedureOutputs getOutputs() {
-		log.info( "I am here!" );
-
 		log.infof( "gridDialect : %s", gridDialect );
 		for ( ParameterRegistration<?> r : getRegisteredParameters() ) {
 			log.infof( "ParameterRegistration name : %s", r.getName() );

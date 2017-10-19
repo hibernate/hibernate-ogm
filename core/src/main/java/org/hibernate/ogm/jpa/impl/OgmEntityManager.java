@@ -526,7 +526,6 @@ public class OgmEntityManager implements EntityManager {
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
 		hibernateEm.checkOpen( true );
 		NoSQLProcedureCallImpl procedureCall = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName );
-		//throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
 		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
