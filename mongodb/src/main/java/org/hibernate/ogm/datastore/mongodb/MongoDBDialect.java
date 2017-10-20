@@ -24,8 +24,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -107,10 +105,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -138,6 +132,12 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -864,7 +864,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case INSERT:
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
-				return doRemove( queryDescriptor, collection );
+			case DELETEMANY:
+				return doRemove( queryDescriptor, collection, Boolean.FALSE );
+			case DELETEONE:
+				return doRemove( queryDescriptor, collection, Boolean.TRUE );
 			case UPDATE:
 				return doUpdate( queryDescriptor, collection );
 			case FIND:
@@ -1204,22 +1207,20 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return -1; // Not sure if we should throw an exception instead?
 	}
 
-	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection, boolean deleteOne) {
 		Document query = queryDesc.getCriteria();
 		Document options = queryDesc.getOptions();
-		Boolean justOne = FALSE;
+		Boolean justOne = deleteOne;
 		WriteConcern wc = null;
 		if ( options != null ) {
 			justOne = (Boolean) options.get( "justOne" );
-			justOne = ( justOne != null ) ? justOne : FALSE;
-			if ( justOne ) { // IMPROVE See https://jira.mongodb.org/browse/JAVA-759
-				throw new UnsupportedOperationException( "Using 'justOne' in a remove query is not yet supported." );
-			}
+			justOne = ( justOne != null ) ? justOne : deleteOne;
 			Document o = (Document) options.get( "writeConcern" );
 			wc = getWriteConcern( o );
 		}
 
-		DeleteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).deleteMany( query );
+		MongoCollection<Document> collectionWithConcern = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) );
+		DeleteResult result = justOne ? collectionWithConcern.deleteOne( query ) : collectionWithConcern.deleteMany( query );
 		if ( result.wasAcknowledged() ) {
 			return (int) result.getDeletedCount();
 		}

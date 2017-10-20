@@ -313,6 +313,50 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void shouldParseQueryDeleteOne() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() )
+				.run( "db.Order.deleteOne( { } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DELETEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( new Document() );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void shouldParseQueryDeleteOneWithFilter() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() )
+				.run( "db.Order.deleteOne( { 'item': 'card', 'qty': 15 } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DELETEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void shouldParseQueryDeleteOneWithFilterAndOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() )
+				.run( "db.Order.deleteOne( { 'item': 'card', 'qty': 15 }, { 'w': 'majority', 'wtimeout' : 100 } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DELETEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'item': 'card', 'qty': 15 }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'w': 'majority', 'wtimeout' : 100 }" ) );
+	}
+
+	@Test
 	public void shouldParseQueryWithEmptyRemove() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )

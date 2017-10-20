@@ -302,6 +302,108 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertThenDeleteOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertThenDeleteOneWithOptions() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ '_id': { '$numberLong': '11' } }, { 'w': 'majority', 'wtimeout' : 100 })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// Check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertMultipleThenDeleteOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '2' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
+
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".count({ 'name' : 'Collection' })";
+			Object foundCount = session.createNativeQuery( nativeQuery ).uniqueResult();
+
+			assertThat( foundCount ).isEqualTo( 2L );
+
+			// Try to delete first
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+
+			// Try to delete second
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+
+			session.clear();
+		}
+	}
+
+	@Test
 	public void testFindWithAnd() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();

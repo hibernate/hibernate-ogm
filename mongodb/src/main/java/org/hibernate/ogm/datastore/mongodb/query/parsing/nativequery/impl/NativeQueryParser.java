@@ -33,6 +33,8 @@ import com.mongodb.util.JSON;
  * <li>insert(document or array, options)</li>
  * <li>remove(criteria)</li>
  * <li>remove(criteria, options)</li>
+ * <li>deleteOne(criteria)</li>
+ * <li>deleteOne(criteria, options)</li>
  * <li>update(criteria, update)</li>
  * <li>update(criteria, update, options)</li>
  * <li>count()</li>
@@ -96,7 +98,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate(), Distinct(), MapReduce() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), DeleteOne(), Update(), Count(), Aggregate(), Distinct(), MapReduce() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -109,6 +111,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
 				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
+				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
 				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
@@ -194,6 +197,16 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 						Sequence( JsonObject(), builder.setOptions( match() ) )
 					)
 				) ),
+				") "
+		);
+	}
+	public Rule DeleteOne() {
+		return Sequence(
+				Separator(),
+				"deleteOne ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				") "
 		);
 	}
