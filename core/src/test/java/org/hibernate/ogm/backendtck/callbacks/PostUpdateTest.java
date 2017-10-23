@@ -6,18 +6,17 @@
  */
 package org.hibernate.ogm.backendtck.callbacks;
 
-import javax.persistence.EntityManager;
-
-import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import javax.persistence.EntityManager;
+
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PostUpdateTest extends OgmJpaTestCase {
 
@@ -65,6 +64,8 @@ public class PostUpdateTest extends OgmJpaTestCase {
 		assertFalse( bus.isPostUpdated() );
 		bus.setField( UPDATED );
 
+		em.merge( bus );
+
 		em.getTransaction().commit();
 
 		assertTrue( bus.isPostUpdated() );
@@ -102,6 +103,7 @@ public class PostUpdateTest extends OgmJpaTestCase {
 		assertFalse( bus.isPostUpdatedByListener() );
 
 		bus.setField( UPDATED );
+		em.merge( bus );
 		em.getTransaction().commit();
 
 		assertTrue( bus.isPostUpdatedByListener() );
