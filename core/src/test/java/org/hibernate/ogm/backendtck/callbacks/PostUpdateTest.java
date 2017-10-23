@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.backendtck.callbacks;
 
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -13,11 +15,13 @@ import static org.junit.Assert.assertTrue;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+@SkipByGridDialect(value = { INFINISPAN,INFINISPAN_REMOTE }, comment = "The dialect has strangenesses with 'postupdate' callback")
 public class PostUpdateTest extends OgmJpaTestCase {
 
 	private static final String INITIAL = "initial";
