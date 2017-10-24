@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-
 /**
  * Default implementation of {@link SchemaDefiner}. Specific implementations can override those hooks they're
  * interested in. Also provides utility methods useful for implementors.
@@ -16,12 +15,18 @@ package org.hibernate.ogm.datastore.spi;
 public class BaseSchemaDefiner implements SchemaDefiner {
 
 	@Override
-	public void validateMapping(SchemaDefinitionContext context) {
-		// No-op
+	public void initializeSchema(SchemaDefinitionContext context) {
 	}
 
 	@Override
-	public void initializeSchema(SchemaDefinitionContext context) {
-		// No-op
+	public void createSchema(SchemaDefinitionContext context) {
+	}
+
+	@Override
+	public void validateSchema(SchemaDefinitionContext context) {
+	}
+
+	@Override
+	public void dropSchema(SchemaDefinitionContext context) {
 	}
 }

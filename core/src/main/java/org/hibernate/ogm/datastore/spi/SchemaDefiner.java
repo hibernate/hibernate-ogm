@@ -39,19 +39,17 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 public interface SchemaDefiner extends Service {
 
 	/**
-	 * Validates the mapped objects such as entities, id generators etc. against any specific requirements of the
-	 * current datastore.
-	 *
-	 * @param context Provides access to metadata describing the schema to be validated
-	 */
-	void validateMapping(SchemaDefinitionContext context);
-
-	/**
 	 * Initializes the schema in the datastore.
 	 *
 	 * @param context Provides access to metadata describing the schema to be initialized
 	 */
 	void initializeSchema(SchemaDefinitionContext context);
+
+	void createSchema(SchemaDefinitionContext context);
+
+	void validateSchema(SchemaDefinitionContext context);
+
+	void dropSchema(SchemaDefinitionContext context);
 
 	/**
 	 * Provides contextual information about the schema objects to be created. Schema initialization should primarily be
