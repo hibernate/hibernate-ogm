@@ -181,7 +181,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	public ProcedureCall getNamedProcedureCall(String name) {
 		errorIfClosed();
 		checkTransactionSynchStatus();
-		log.tracev( "NoSQL stored procedure: {0}", name );
 		return new NoSQLProcedureCallImpl( this, name );
 	}
 
@@ -189,8 +188,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	public ProcedureCall createStoredProcedureCall(String procedureName) {
 		errorIfClosed();
 		checkTransactionSynchStatus();
-
-		log.tracev( "NoSQL stored procedure: {0}", procedureName );
 		return new NoSQLProcedureCallImpl( this, procedureName );
 	}
 
@@ -198,26 +195,14 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	public ProcedureCall createStoredProcedureCall(String procedureName, Class... resultClasses) {
 		errorIfClosed();
 		checkTransactionSynchStatus();
-
-		log.tracev( "NoSQL stored procedure: {0}", procedureName );
-		NoSQLProcedureCallImpl procedureCall = new NoSQLProcedureCallImpl( this,procedureName );
-		for ( int i = 0; i < resultClasses.length; i++ ) {
-			procedureCall.addSynchronizedEntityClass( resultClasses[i] );
-		}
-		return procedureCall;
+		return new NoSQLProcedureCallImpl( this,procedureName,resultClasses );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, String... resultSetMappings) {
 		errorIfClosed();
 		checkTransactionSynchStatus();
-
-		log.tracev( "NoSQL stored procedure: {0}", procedureName );
-		NoSQLProcedureCallImpl procedureCall = new NoSQLProcedureCallImpl( this,procedureName );
-		for ( int i = 0; i < resultSetMappings.length; i++ ) {
-			//procedureCall.ad resultSetMappings[i] );
-		}
-		return procedureCall;
+		return new NoSQLProcedureCallImpl( this,procedureName,resultSetMappings );
 	}
 
 	//Event Source methods

@@ -6,29 +6,25 @@
  */
 package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 
-import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
-import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
+import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Properties;
+
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.ParameterMode;
-import javax.persistence.Persistence;
 import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.jpa.impl.OgmStoredProcedureQuery;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.CollectionHelper;
-import org.hibernate.ogm.utils.PackagingRule;
-import org.hibernate.ogm.utils.TestHelper;
-
+import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -36,28 +32,22 @@ import org.junit.Test;
  *
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-public class IndexedStoredProcedureCallTest {
 
-	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/stored-proc-ogm.xml", Car.class );
+public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 
-	private EntityManagerFactory emf;
 	private EntityManager em;
 
 	@Before
 	public void setUp() {
-		emf = Persistence.createEntityManagerFactory( "stored-proc-ogm", TestHelper.getDefaultTestSettings() );
-		em = emf.createEntityManager();
+			em = getFactory().createEntityManager();
 	}
 
 	@After
 	public void tearDown() {
-		dropSchemaAndDatabase( emf );
 		em.close();
-		emf.close();
 	}
 
-	@Test
+	/*@Test
 	public void dynamicCallOfStoredProcedureWithoutParametersAndResult() throws Exception {
 		// no parameters, no results
 		final AtomicInteger result = new AtomicInteger( 1 );
@@ -75,7 +65,7 @@ public class IndexedStoredProcedureCallTest {
 		assertThat( call1.getParameters() ).hasSize( 0 );
 		assertThat( call1.execute() ).isEqualTo( false );
 		assertThat( result.get() ).isEqualTo( 10 );
-	}
+	} */
 
 	/**
 	 * Testing a call of stored procedure (function)
@@ -83,18 +73,8 @@ public class IndexedStoredProcedureCallTest {
 	 */
 	@Test
 	public void dynamicCallOfStoredProcedureWithParametersAndOneResult() throws Exception {
-		//function with one parameter and returned simpe value
-			IndexedStoredProcDialect.FUNCTIONS.put( "testproc2", new IndexedStoredProcedure() {
-				@Override
-				public ClosableIterator<Tuple> execute(Object[] params) {
-					List<Tuple> result = new ArrayList<>( 1 );
-					Tuple resultTuple = new Tuple(  );
-					resultTuple.put( "result",params[0] );
-					result.add( resultTuple );
-					return CollectionHelper.newClosableIterator( result );
-				}
-			} );
-			StoredProcedureQuery call2 = em.createStoredProcedureQuery( "testproc2" );
+
+			StoredProcedureQuery call2 = em.createStoredProcedureQuery( "testSimpleValue" );
 			assertThat( call2 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 			call2.registerStoredProcedureParameter( 0,Integer.class, ParameterMode.IN );
 			call2.setParameter( 0, 1 );
@@ -108,19 +88,8 @@ public class IndexedStoredProcedureCallTest {
 	 */
 	@Test
 	public void dynamicCallOfStoredProcedureWithParametersAndListEntityResult() throws Exception {
-		//function with one parameter and returned entity
-		IndexedStoredProcDialect.FUNCTIONS.put( "testproc3", new IndexedStoredProcedure() {
-			@Override
-			public ClosableIterator<Tuple> execute(Object[] params) {
-				List<Tuple> result = new ArrayList<>( 1 );
-				Tuple resultTuple = new Tuple(  );
-				resultTuple.put( "id",params[0] );
-				resultTuple.put( "title",params[1] );
-				result.add( resultTuple );
-				return CollectionHelper.newClosableIterator( result );
-			}
-		} );
-		StoredProcedureQuery call3 = em.createStoredProcedureQuery( "testproc3",Car.class );
+
+		StoredProcedureQuery call3 = em.createStoredProcedureQuery( "testResultSet",Car.class );
 		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		call3.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
 		call3.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
@@ -132,5 +101,83 @@ public class IndexedStoredProcedureCallTest {
 		assertThat( listResult.size() ).isEqualTo( 1 );
 		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id","title" ) );
 
+		StoredProcedureQuery call4 = em.createStoredProcedureQuery( "testResultSet","carMapping" );
+		assertThat( call4 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		call4.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
+		call4.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
+		call4.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+		call4.setParameter( 1, "id1" );
+		call4.setParameter( 2, "title1" );
+		listResult = call4.getResultList();
+		assertThat( listResult ).isNotNull();
+		assertThat( listResult.size() ).isEqualTo( 1 );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id1","title1" ) );
+	}
+
+	@Test
+	public void staticCallOfStoredProcedureWithParametersAndListEntityResult() throws Exception {
+		//function with one parameter and returned entity
+
+
+		StoredProcedureQuery call3 = em.createNamedStoredProcedureQuery( "testproc4_1" );
+		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		call3.setParameter( 1, "id" );
+		call3.setParameter( 2, "title" );
+		List<Car> listResult = call3.getResultList();
+		assertThat( listResult ).isNotNull();
+		assertThat( listResult.size() ).isEqualTo( 1 );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id", "title" ) );
+
+		StoredProcedureQuery call4 = em.createNamedStoredProcedureQuery( "testproc4_2" );
+		assertThat( call4 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		call4.setParameter( 1, "id1" );
+		call4.setParameter( 2, "title1" );
+		listResult = call4.getResultList();
+		assertThat( listResult ).isNotNull();
+		assertThat( listResult.size() ).isEqualTo( 1 );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id1", "title1" ) );
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+
+		Properties properties = info.getProperties();
+
+		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.HASHMAP ) ) {
+			// we are in 'core' module. we need to set specified dialect for execute stored procedures
+			properties.setProperty( OgmProperties.DATASTORE_PROVIDER, IndexedStoredProcProvider.class.getName() );
+
+			// function with one parameter and result as list of entities
+			IndexedStoredProcDialect.FUNCTIONS.put( "testResultSet", new IndexedStoredProcedure() {
+
+				@Override
+				public ClosableIterator<Tuple> execute(Object[] params) {
+					List<Tuple> result = new ArrayList<>( 1 );
+					Tuple resultTuple = new Tuple();
+					resultTuple.put( "id", params[0] );
+					resultTuple.put( "title", params[1] );
+					result.add( resultTuple );
+					return CollectionHelper.newClosableIterator( result );
+				}
+			} );
+			// function with one parameter and returned simple value
+			IndexedStoredProcDialect.FUNCTIONS.put( "testSimpleValue", new IndexedStoredProcedure() {
+
+				@Override
+				public ClosableIterator<Tuple> execute(Object[] params) {
+					List<Tuple> result = new ArrayList<>( 1 );
+					Tuple resultTuple = new Tuple();
+					resultTuple.put( "result", params[0] );
+					result.add( resultTuple );
+					return CollectionHelper.newClosableIterator( result );
+				}
+			} );
+
+		}
+	}
+
+	@Override
+	protected Class<?>[] getAnnotatedClasses() {
+		return new Class[] { Car.class };
 	}
 }

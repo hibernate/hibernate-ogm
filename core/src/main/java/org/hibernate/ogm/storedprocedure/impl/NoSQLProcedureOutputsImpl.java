@@ -82,6 +82,15 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 			TupleContext tupleContext = null;
 			OgmEntityPersister entityPersister = null;
 			String entityName = null;
+
+			if ( procedureCall.getMemento() != null ) {
+				//need get info from memento!
+
+				for ( String querySpace : procedureCall.getMemento().getSynchronizedQuerySpaces() ) {
+					procedureCall.addSynchronizedQuerySpace( querySpace );
+				}
+			}
+
 			if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
 				String querySpace = procedureCall.getSynchronizedQuerySpaces().iterator().next();
 
