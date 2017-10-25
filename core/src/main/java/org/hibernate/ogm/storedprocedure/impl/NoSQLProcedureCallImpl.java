@@ -19,6 +19,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureOutputs;
 import org.hibernate.procedure.internal.ProcedureCallImpl;
+import org.hibernate.procedure.internal.ProcedureCallMementoImpl;
 import org.hibernate.procedure.spi.ParameterStrategy;
 
 /**
@@ -31,6 +32,7 @@ public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 	private ParameterStrategy parameterStrategy = ParameterStrategy.UNKNOWN;
 	private List<NoSQLProcedureParameterRegistration<?>> registeredParameters = new ArrayList<NoSQLProcedureParameterRegistration<?>>();
 	private StoredProcedureAwareGridDialect gridDialect;
+	private ProcedureCallMementoImpl memento;
 
 	public NoSQLProcedureCallImpl(SessionImplementor session, String procedureName) {
 		super( session, procedureName );
@@ -117,7 +119,15 @@ public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 		return getSession().getFactory().getServiceRegistry().getService( StoredProcedureAwareGridDialect.class );
 	}
 
-	protected StoredProcedureAwareGridDialect getGridDialect() {
+	public StoredProcedureAwareGridDialect getGridDialect() {
 		return gridDialect;
+	}
+
+	public ProcedureCallMementoImpl getMemento() {
+		return memento;
+	}
+
+	public void setMemento(ProcedureCallMementoImpl memento) {
+		this.memento = memento;
 	}
 }

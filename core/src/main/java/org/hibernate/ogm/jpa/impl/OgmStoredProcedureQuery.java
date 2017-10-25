@@ -9,7 +9,6 @@ package org.hibernate.ogm.jpa.impl;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
 import javax.persistence.StoredProcedureQuery;
@@ -24,7 +23,8 @@ import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureOutputImpl;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;
-import org.hibernate.procedure.ProcedureCallMemento;
+import org.hibernate.procedure.internal.ProcedureCallMementoImpl;
+import org.hibernate.procedure.internal.ProcedureCallMementoImpl.ParameterMemento;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
@@ -35,6 +35,7 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 	private Set<ParameterRegistration<?>> parameterRegistrations = new LinkedHashSet<>();
 	private NoSQLProcedureCallImpl procedureCall;
 	private HibernateEntityManagerImplementor entityManager;
+	private ProcedureCallMementoImpl procedureCallMemento;
 
 	public OgmStoredProcedureQuery(NoSQLProcedureCallImpl procedureCall, EntityManager entityManager) {
 		super( procedureCall, convert( entityManager ) );
@@ -42,8 +43,24 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 		this.entityManager = convert( entityManager );
 	}
 
-	public OgmStoredProcedureQuery(ProcedureCallMemento memento, EntityManager entityManager) {
-		super( memento, convert( entityManager ) );
+	public OgmStoredProcedureQuery(NoSQLProcedureCallImpl procedureCall, EntityManager entityManager, ProcedureCallMementoImpl procedureCallMemento) {
+		this( procedureCall, entityManager );
+		this.procedureCallMemento = procedureCallMemento;
+		initProcedureCallByMemento();
+		procedureCall.setMemento( procedureCallMemento );
+	}
+
+	private void initProcedureCallByMemento() {
+		// register parameters
+		for ( ParameterMemento parameterMemento : procedureCallMemento.getParameterDeclarations() ) {
+
+			if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
+				// @todo supports named position!
+			}
+			else {
+				registerStoredProcedureParameter( parameterMemento.getPosition() - 1, parameterMemento.getType(), parameterMemento.getMode() );
+			}
+		}
 	}
 
 	private static AbstractEntityManagerImpl convert(EntityManager em) {

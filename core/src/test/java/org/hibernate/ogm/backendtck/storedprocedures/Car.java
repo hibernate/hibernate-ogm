@@ -8,13 +8,34 @@ package org.hibernate.ogm.backendtck.storedprocedures;
 
 import java.util.Objects;
 import javax.persistence.Entity;
+import javax.persistence.EntityResult;
 import javax.persistence.Id;
+import javax.persistence.NamedStoredProcedureQueries;
+import javax.persistence.NamedStoredProcedureQuery;
+import javax.persistence.ParameterMode;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.StoredProcedureParameter;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 @Entity
+@NamedStoredProcedureQueries({
+		@NamedStoredProcedureQuery(name = "testproc4_1", procedureName = "testResultSet", parameters = {
+				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
+		}, resultClasses = Car.class),
+		@NamedStoredProcedureQuery(name = "testproc4_2", procedureName = "testResultSet", parameters = {
+				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
+		}, resultSetMappings = "carMapping")
+})
+
+@SqlResultSetMapping(name = "carMapping", entities = { @EntityResult(entityClass = Car.class) })
 public class Car {
+
 	@Id
 	private String id;
 
