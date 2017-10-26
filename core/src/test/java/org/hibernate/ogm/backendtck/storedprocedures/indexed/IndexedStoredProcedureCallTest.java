@@ -15,7 +15,6 @@ import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
 import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
 import javax.persistence.StoredProcedureQuery;
@@ -32,6 +31,7 @@ import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,14 +85,19 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 	 */
 	@Test
 	public void dynamicCallOfStoredProcedureWithParametersAndOneResult() throws Exception {
-
-			StoredProcedureQuery call2 = em.createStoredProcedureQuery( TEST_SIMPLE_VALUE_STORED_PROC );
-			assertThat( call2 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-			call2.registerStoredProcedureParameter( 0,Integer.class, ParameterMode.IN );
-			call2.setParameter( 0, 1 );
-			Integer singleResult = (Integer) call2.getSingleResult();
-			assertThat( singleResult ).isNotNull();
+		StoredProcedureQuery call2 = em.createStoredProcedureQuery( TEST_SIMPLE_VALUE_STORED_PROC );
+		assertThat( call2 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		call2.registerStoredProcedureParameter( 0, Integer.class, ParameterMode.IN );
+		call2.setParameter( 0, 1 );
+		Number singleResult = (Number) call2.getSingleResult();
+		assertThat( singleResult ).isNotNull();
+		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.MONGODB ) ) {
+			//MongoDB can't returns Integer. It returns double :-(
+			assertThat( singleResult ).isEqualTo( 1.0d );
+		}
+		else {
 			assertThat( singleResult ).isEqualTo( 1 );
+		}
 	}
 	/**
 	 * Testing a call of stored procedure (function)
@@ -173,7 +178,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 				}
 			} );
 			// function with one parameter and returned simple value
-			IndexedStoredProcDialect.FUNCTIONS.put( "testSimpleValue", new IndexedStoredProcedure() {
+			IndexedStoredProcDialect.FUNCTIONS.put( TEST_SIMPLE_VALUE_STORED_PROC, new IndexedStoredProcedure() {
 
 				@Override
 				public ClosableIterator<Tuple> execute(Object[] params) {
