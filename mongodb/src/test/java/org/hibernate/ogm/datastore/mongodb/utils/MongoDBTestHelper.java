@@ -7,12 +7,18 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
+import static org.hibernate.ogm.backendtck.storedprocedures.indexed.IndexedStoredProcedureCallTest.TEST_RESULT_SET_STORED_PROC;
+import static org.hibernate.ogm.backendtck.storedprocedures.indexed.IndexedStoredProcedureCallTest.TEST_SIMPLE_VALUE_STORED_PROC;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.BsonDocument;
+import org.bson.BsonJavaScript;
 import org.bson.Document;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -293,5 +299,33 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return MongoDB.class;
+	}
+
+	/**
+	 * prepare database for testing
+	 * @param sessionFactory session factory
+	 * @see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java">working to stored procedures</a>
+	 */
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+		// create stored procedures for test IndexedStoredProcedureCallTest
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		MongoDatabase mongoDatabase = provider.getDatabase();
+
+		BsonDocument simpleValueFunction = new BsonDocument( "value", new BsonJavaScript( "function(x1) { return x1; }" ) );
+		BsonDocument resultSetFunction = new BsonDocument( "value",
+				new BsonJavaScript( "function(id,title) { return {\"result\":[{\"id\":id,\"title\":title}]}; }" ) );
+		UpdateOptions options = new UpdateOptions().upsert( true );
+
+		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", TEST_SIMPLE_VALUE_STORED_PROC ),
+				new Document( "$set", simpleValueFunction ), options );
+
+		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", TEST_RESULT_SET_STORED_PROC ),
+				new Document( "$set", resultSetFunction ), options );
+
+		Document result = mongoDatabase.runCommand( new Document( "$eval", "db.loadServerScripts()" ) );
+		log.infof( "database preparation result: %s", result.toJson() );
+
+		super.prepareDatabase( sessionFactory );
 	}
 }

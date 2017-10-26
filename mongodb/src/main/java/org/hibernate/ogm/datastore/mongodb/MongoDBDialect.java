@@ -24,9 +24,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
@@ -86,6 +85,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -108,10 +108,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -139,6 +135,12 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -167,7 +169,8 @@ import com.mongodb.client.result.UpdateResult;
  * @author Thorsten Möller &lt;thorsten.moeller@sbi.ch&gt;
  * @author Guillaume Smet
  */
-public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect,
+		StoredProcedureAwareGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -1700,6 +1703,84 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+
+	@Override
+	public boolean supportsNamedPosition() {
+		return false;
+	}
+
+	/**
+	 * call stored procedure
+	 * @param storedProcedureName name of stored procedure.
+	 * @param params - array with values
+	 * @param tupleContext the tuple context
+	 *@see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java"> example</a>
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Object[] params,
+			TupleContext tupleContext) {
+		StringBuffer commandLine = new StringBuffer( storedProcedureName ).append( "(" );
+		for ( Object param : params ) {
+			if ( param instanceof String ) {
+				commandLine.append( '\'' ).append( param.toString() ).append( '\'' );
+			}
+			else {
+				commandLine.append( param.toString() );
+			}
+			commandLine.append( "," );
+		}
+		commandLine.setLength( commandLine.length() - 1 );
+		commandLine.append( ")" );
+		Document result = provider.getDatabase().runCommand( new Document( "$eval", commandLine.toString() ) );
+		Double ok = result.getDouble( "ok" );
+		if ( ok.intValue() != 1 ) {
+			// return not ok! throw exception?
+		}
+		Object retvar = result.get( "retval" );
+		List<Tuple> resultTuples = null;
+		if ( retvar instanceof Document ) {
+			String firstRetValTag = ( (Document) retvar ).keySet().iterator().next();
+			Object firstRetVal = ( (Document) retvar ).get( firstRetValTag );
+			if ( firstRetVal instanceof List ) {
+				//it is collection of entities
+				List<Document> documents = (List<Document>) firstRetVal;
+				resultTuples = new ArrayList<>( documents.size() );
+				for ( Document doc : documents ) {
+					resultTuples.add( convert( doc ) );
+				}
+			}
+			else {
+				throw new NotYetImplementedException( "Not supported type " + firstRetVal.getClass() );
+			}
+		}
+		else {
+			//it is simple value
+			Tuple tuple = new Tuple( );
+			tuple.put( "result", retvar );
+			resultTuples = Collections.singletonList( tuple );
+		}
+
+		return CollectionHelper.newClosableIterator( resultTuples );
+	}
+
+	private Tuple convert(Document document) {
+		Tuple tuple = new Tuple();
+		if ( document != null ) {
+			for ( Map.Entry<String, Object> entry : document.entrySet() ) {
+				tuple.put( entry.getKey(), entry.getValue() );
+			}
+		}
+		return tuple;
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Map<String, Object> params,
+			TupleContext tupleContext) {
+		throw new UnsupportedOperationException( "Named parameters not supported by the dialect! Use indexed parameters." );
 	}
 
 	private static class MongoDBAggregationOutput implements ClosableIterator<Tuple> {
