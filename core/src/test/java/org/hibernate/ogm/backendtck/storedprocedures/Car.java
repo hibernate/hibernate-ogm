@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.backendtck.storedprocedures;
 
+import static org.hibernate.ogm.backendtck.storedprocedures.indexed.IndexedStoredProcedureCallTest.TEST_RESULT_SET_STORED_PROC;
+
 import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.EntityResult;
@@ -21,12 +23,12 @@ import javax.persistence.StoredProcedureParameter;
  */
 @Entity
 @NamedStoredProcedureQueries({
-		@NamedStoredProcedureQuery(name = "testproc4_1", procedureName = "testResultSet", parameters = {
+		@NamedStoredProcedureQuery(name = "testproc4_1", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
 				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
 		}, resultClasses = Car.class),
-		@NamedStoredProcedureQuery(name = "testproc4_2", procedureName = "testResultSet", parameters = {
+		@NamedStoredProcedureQuery(name = "testproc4_2", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
 				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
