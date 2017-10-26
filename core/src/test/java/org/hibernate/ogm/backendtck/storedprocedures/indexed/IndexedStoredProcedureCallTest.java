@@ -7,6 +7,10 @@
 package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +26,11 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.jpa.impl.OgmStoredProcedureQuery;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.CollectionHelper;
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestForIssue;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +41,12 @@ import org.junit.Test;
  *
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-
+@SkipByGridDialect(value = {INFINISPAN,INFINISPAN_REMOTE,NEO4J_EMBEDDED,NEO4J_REMOTE}, comment = "These dialects not supports stored procedures")
+@TestForIssue( jiraKey = {"OGM-359"})
 public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 
+	public static final String TEST_SIMPLE_VALUE_STORED_PROC = "testSimpleValue";
+	public static final String TEST_RESULT_SET_STORED_PROC = "testResultSet";
 	private EntityManager em;
 
 	@Before
@@ -74,7 +86,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 	@Test
 	public void dynamicCallOfStoredProcedureWithParametersAndOneResult() throws Exception {
 
-			StoredProcedureQuery call2 = em.createStoredProcedureQuery( "testSimpleValue" );
+			StoredProcedureQuery call2 = em.createStoredProcedureQuery( TEST_SIMPLE_VALUE_STORED_PROC );
 			assertThat( call2 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 			call2.registerStoredProcedureParameter( 0,Integer.class, ParameterMode.IN );
 			call2.setParameter( 0, 1 );
@@ -89,7 +101,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 	@Test
 	public void dynamicCallOfStoredProcedureWithParametersAndListEntityResult() throws Exception {
 
-		StoredProcedureQuery call3 = em.createStoredProcedureQuery( "testResultSet",Car.class );
+		StoredProcedureQuery call3 = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, Car.class );
 		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		call3.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
 		call3.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
@@ -101,7 +113,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		assertThat( listResult.size() ).isEqualTo( 1 );
 		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id","title" ) );
 
-		StoredProcedureQuery call4 = em.createStoredProcedureQuery( "testResultSet","carMapping" );
+		StoredProcedureQuery call4 = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, "carMapping" );
 		assertThat( call4 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		call4.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
 		call4.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
@@ -148,7 +160,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 			properties.setProperty( OgmProperties.DATASTORE_PROVIDER, IndexedStoredProcProvider.class.getName() );
 
 			// function with one parameter and result as list of entities
-			IndexedStoredProcDialect.FUNCTIONS.put( "testResultSet", new IndexedStoredProcedure() {
+			IndexedStoredProcDialect.FUNCTIONS.put( TEST_RESULT_SET_STORED_PROC, new IndexedStoredProcedure() {
 
 				@Override
 				public ClosableIterator<Tuple> execute(Object[] params) {
