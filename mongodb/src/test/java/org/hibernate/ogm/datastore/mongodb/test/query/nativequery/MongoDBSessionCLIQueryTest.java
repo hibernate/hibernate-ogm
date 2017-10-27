@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -407,6 +408,115 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			result = query.list();
 			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@TestForIssue(jiraKey = "OGM-1315")
+	public void testUpdateOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String nativeUpdateOneQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateOne("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : 1 } } "
+					+ ")";
+			Query query = session.createNativeQuery( nativeUpdateOneQuery );
+
+			int modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 1 );
+			// Find updated one and check that it was updated.
+			String nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			int modifiedElementIndex = 0;
+
+			List<Integer> initialCopiesSoldList = Arrays.asList( portia.getCopiesSold(), athanasia.getCopiesSold(), imperatrix.getCopiesSold() );
+			for ( int i = 0; i < result.size(); i++ ) {
+				Integer currentCopiesSold = result.get( i ).getCopiesSold();
+				if ( !initialCopiesSoldList.contains( currentCopiesSold ) ) {
+					modifiedElementIndex = i;
+					break;
+				}
+			}
+			OscarWildePoem modifiedPoem = result.get( modifiedElementIndex );
+
+			// Need to update back to original state because subsequent tests assume the initial dataset.
+			session.clear();
+			nativeUpdateOneQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateOne("
+					+ "  { 'name' : '" + modifiedPoem.getName() + "' }, "
+					+ "  { '$inc': { 'copiesSold' : -1 } } "
+					+ ")";
+			query = session.createNativeQuery( nativeUpdateOneQuery );
+
+			modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 1 );
+
+			// And check that it same as was.
+			nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'name' : '" + modifiedPoem.getName() + "' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( initialCopiesSoldList ).contains( result.get( 0 ).getCopiesSold() );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue( jiraKey = "1316")
+	public void testUpdateMany() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			String nativeUpdateManyQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateMany("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : 1 } } "
+					+ ")";
+			Query query = session.createNativeQuery( nativeUpdateManyQuery );
+			int modifiedCount = query.executeUpdate();
+
+			assertThat( modifiedCount ).isEqualTo( 3 );
+
+			// Check that it was updated.
+			String nativeFindQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({ 'author' : 'Oscar Wilde' })";
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+			List<Integer> initialRatingsList = Arrays.asList( portia.getCopiesSold(), athanasia.getCopiesSold(), imperatrix.getCopiesSold() );
+
+			assertThat( result.size() ).isEqualTo( initialRatingsList.size() );
+			assertThat( result )
+					.onProperty( "copiesSold" )
+					.containsOnly( initialRatingsList.get( 0 ) + 1,
+							initialRatingsList.get( 1 ) + 1,
+							initialRatingsList.get( 2 ) + 1 );
+
+			// Need to update back to original state because subsequent tests assume the initial dataset.
+			session.clear();
+			nativeUpdateManyQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".updateMany("
+					+ "  { 'author' : 'Oscar Wilde' }, "
+					+ "  { '$inc': { 'copiesSold' : -1 } }, "
+					+ "  { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } "
+					+ ")";
+			query = session.createNativeQuery( nativeUpdateManyQuery );
+
+			modifiedCount = query.executeUpdate();
+			assertThat( modifiedCount ).isEqualTo( 3 );
+
+			// And check that it same as was.
+			query = session.createNativeQuery( nativeFindQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+
+			assertThat( result.size() ).isEqualTo( 3 );
+			assertThat( result )
+					.onProperty( "copiesSold" )
+					.containsOnly( initialRatingsList.toArray() );
 
 			transaction.commit();
 		}

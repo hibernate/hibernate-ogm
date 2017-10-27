@@ -838,6 +838,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case INSERT:
 			case REMOVE:
 			case UPDATE:
+			case UPDATEONE:
+			case UPDATEMANY:
 			case REPLACEONE:
 				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
 			default:
@@ -867,10 +869,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
 				return doRemove( queryDescriptor, collection );
-			case UPDATE:
-				return doUpdate( queryDescriptor, collection );
 			case REPLACEONE:
 				return doReplaceOne( queryDescriptor, collection );
+			case UPDATE:
+			case UPDATEONE:
+			case UPDATEMANY:
+				return doUpdate( queryDescriptor, collection, queryDescriptor.getOperation() );
 			case FIND:
 			case FINDONE:
 			case FINDANDMODIFY:
@@ -1230,7 +1234,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return -1; // Not sure if we should throw an exception instead?
 	}
 
-	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+	private static int doUpdate(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection, MongoDBQueryDescriptor.Operation operation) {
 		Document query = queryDesc.getCriteria();
 		Document update = queryDesc.getUpdateOrInsertOne();
 		Document options = queryDesc.getOptions();
@@ -1247,11 +1251,20 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		UpdateOptions updateOptions = new UpdateOptions().upsert( upsert );
 		UpdateResult result = null;
-		if ( multi ) {
-			result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateMany( query, update, updateOptions );
-		}
-		else {
-			result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateOne( query, update, updateOptions );
+		switch ( operation ) {
+			case UPDATEONE:
+				result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateOne( query, update, updateOptions );
+				break;
+			case UPDATEMANY:
+				result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateMany( query, update, updateOptions );
+				break;
+			case UPDATE:
+				if ( multi ) {
+					result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateMany( query, update, updateOptions );
+				}
+				else {
+					result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).updateOne( query, update, updateOptions );
+				}
 		}
 
 		if ( result.wasAcknowledged() ) {

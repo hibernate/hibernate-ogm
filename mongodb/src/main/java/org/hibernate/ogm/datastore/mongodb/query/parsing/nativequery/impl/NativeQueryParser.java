@@ -96,7 +96,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), ReplaceOne(), Aggregate(), Distinct(), MapReduce() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), UpdateOne(), UpdateMany(), ReplaceOne(), Count(), Aggregate(), Distinct(), MapReduce() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -110,6 +110,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
+				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
+				Sequence( UpdateMany(), builder.setOperation( Operation.UPDATEMANY ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
 				Sequence( ReplaceOne(), builder.setOperation( Operation.REPLACEONE ) ),
 				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
@@ -203,6 +205,29 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence(
 				Separator(),
 				"update ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+	public Rule UpdateOne() {
+		return Sequence(
+				Separator(),
+				"updateOne ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule UpdateMany() {
+		return Sequence(
+				Separator(),
+				"updateMany ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
