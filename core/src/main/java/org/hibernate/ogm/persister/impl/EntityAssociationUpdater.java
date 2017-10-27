@@ -40,7 +40,7 @@ import org.hibernate.pretty.MessageHelper;
  */
 class EntityAssociationUpdater {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final OgmEntityPersister persister;
 

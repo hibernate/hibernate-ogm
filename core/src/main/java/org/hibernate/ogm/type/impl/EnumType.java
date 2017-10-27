@@ -25,7 +25,7 @@ import org.hibernate.type.CustomType;
 //TODO It would probably be better to implement all of this as a subclass of BasicGridType
 public class EnumType extends GridTypeDelegatingToCoreType {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private org.hibernate.type.EnumType coreEnumType;
 	private final boolean isOrdinal;

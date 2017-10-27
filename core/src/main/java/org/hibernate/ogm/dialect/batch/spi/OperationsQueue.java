@@ -39,7 +39,7 @@ public class OperationsQueue {
 		}
 	};
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Queue<Operation> operations = new LinkedList<Operation>();
 

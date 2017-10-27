@@ -19,7 +19,7 @@ public class EmptyTransactionContext implements TransactionContext {
 
 	public static TransactionContext INSTANCE = new EmptyTransactionContext();
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private EmptyTransactionContext() {
 	}

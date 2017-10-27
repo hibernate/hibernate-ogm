@@ -26,7 +26,7 @@ public class Executors {
 
 	public static final int QUEUE_MAX_LENGTH = 1000;
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final String THREAD_GROUP_PREFIX = "Hibernate OGM: ";
 
 	/**

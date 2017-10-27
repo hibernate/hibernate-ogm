@@ -34,7 +34,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
  */
 public class ConfigurationContextImpl implements ConfigurationContext {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Contains all options configured via this and other configuration contexts.

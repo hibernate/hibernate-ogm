@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class OgmEntityEntryState implements EntityEntryExtraState {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private EntityEntryExtraState next;
 	private final TuplePointer tuplePointer = new TuplePointer();

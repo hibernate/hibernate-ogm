@@ -31,7 +31,7 @@ import org.hibernate.search.exception.ErrorHandler;
  */
 public class BatchCoordinator implements Runnable {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Class<?>[] rootEntities; // entity types to reindex excluding all subtypes of each-other
 	private final ExtendedSearchIntegrator searchFactoryImplementor;

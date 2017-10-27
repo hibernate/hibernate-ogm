@@ -37,7 +37,7 @@ import org.hibernate.usertype.UserType;
  */
 public class TypeTranslatorImpl implements TypeTranslator {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	// ORM Type to OGM GridType relation
 	private final Map<Type, GridType> typeConverter;

@@ -16,7 +16,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class FileHelper {
 
-	private static final Log logger = LoggerFactory.make();
+	private static final Log logger = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Attempts to delete a file. If the file is a directory delete recursively all content.

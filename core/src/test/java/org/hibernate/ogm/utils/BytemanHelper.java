@@ -26,7 +26,7 @@ import org.jboss.byteman.rule.helper.Helper;
  */
 public class BytemanHelper extends Helper {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final String DEFAULT_COUNTER = "__DEFAULT_COUNTER_";
 	private static final Map<String, AtomicInteger> counters = new ConcurrentHashMap<>();

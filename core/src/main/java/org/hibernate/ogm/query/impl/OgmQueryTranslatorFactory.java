@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class OgmQueryTranslatorFactory implements QueryTranslatorFactory {
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public QueryTranslator createQueryTranslator(String queryIdentifier, String queryString, Map filters, SessionFactoryImplementor factory,

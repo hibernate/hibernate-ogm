@@ -34,7 +34,7 @@ public class CustomDateType extends AbstractGenericBasicType<Date> {
 
 	public static final CustomDateType INSTANCE = new CustomDateType();
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	public CustomDateType() {
 		super( CustomDateTypeDescriptor.INSTANCE, JdbcDateTypeDescriptor.INSTANCE );

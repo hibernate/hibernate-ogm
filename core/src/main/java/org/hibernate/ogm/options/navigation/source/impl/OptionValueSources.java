@@ -29,7 +29,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class OptionValueSources {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private OptionValueSources() {
 	}

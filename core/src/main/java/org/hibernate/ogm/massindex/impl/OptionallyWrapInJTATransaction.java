@@ -36,7 +36,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
  */
 public class OptionallyWrapInJTATransaction implements ModelConsumer {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final SessionFactoryImplementor factory;
 	private final SessionAwareRunnable delegate;

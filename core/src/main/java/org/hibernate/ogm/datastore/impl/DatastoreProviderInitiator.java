@@ -29,7 +29,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final String DEFAULT_DATASTORE_PROVIDER = "infinispan_embedded";
 
 	@Override

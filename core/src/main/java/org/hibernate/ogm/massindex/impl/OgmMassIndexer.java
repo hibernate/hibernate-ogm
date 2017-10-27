@@ -32,7 +32,7 @@ import org.hibernate.search.spi.SearchIntegrator;
  */
 public class OgmMassIndexer implements MassIndexerWithTenant {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final ExtendedSearchIntegrator searchIntegrator;
 	private final SessionFactoryImplementor sessionFactory;

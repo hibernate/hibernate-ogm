@@ -26,7 +26,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 abstract class PropertyReaderContextBase<T> implements PropertyReaderContext<T> {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Object configuredValue;
 	private final String propertyName;

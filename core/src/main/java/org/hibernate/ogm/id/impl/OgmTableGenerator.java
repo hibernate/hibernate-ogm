@@ -103,7 +103,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	public static final String SEGMENT_VALUE_PARAM = TableGenerator.SEGMENT_VALUE_PARAM;
 	public static final String DEF_SEGMENT_VALUE = TableGenerator.DEF_SEGMENT_VALUE;
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private Type identifierType;
 	private volatile GridType identifierValueGridType;

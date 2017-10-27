@@ -22,7 +22,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class InfinispanConfiguration {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
 

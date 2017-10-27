@@ -34,7 +34,7 @@ import org.hibernate.type.Type;
  */
 public abstract class LegacyParserBridgeQueryTranslator implements QueryTranslator {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	protected final QueryTranslatorImpl delegate;
 

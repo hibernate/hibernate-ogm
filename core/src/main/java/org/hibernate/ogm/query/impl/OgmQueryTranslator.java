@@ -59,7 +59,7 @@ import antlr.collections.AST;
  */
 public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final String query;
 	private final SessionFactoryImplementor sessionFactory;

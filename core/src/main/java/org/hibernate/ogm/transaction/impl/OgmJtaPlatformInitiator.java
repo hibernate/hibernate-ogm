@@ -27,7 +27,7 @@ public class OgmJtaPlatformInitiator implements StandardServiceInitiator<JtaPlat
 	public static final OgmJtaPlatformInitiator INSTANCE = new OgmJtaPlatformInitiator();
 	public static final String JBOSS_TM_CLASS_NAME = "com.arjuna.ats.jta.TransactionManager";
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public Class<JtaPlatform> getServiceInitiated() {

@@ -33,7 +33,7 @@ public enum DatastoreProviderType {
 	NEO4J_HTTP( "org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider" ),
 	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider" );
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private String datastoreProviderClassName;
 

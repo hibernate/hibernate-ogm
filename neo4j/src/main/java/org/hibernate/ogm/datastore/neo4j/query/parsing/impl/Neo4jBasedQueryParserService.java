@@ -24,7 +24,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 

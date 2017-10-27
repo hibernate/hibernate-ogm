@@ -18,7 +18,7 @@ import javax.transaction.TransactionManager;
 
 public class DogBreedRunner {
 
-	private static final Log logger = LoggerFactory.make();
+	private static final Log logger = LoggerFactory.make( MethodHandles.lookup() );
 
 	public static void main(String[] args) {
 

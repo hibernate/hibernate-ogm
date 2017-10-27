@@ -21,7 +21,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class ConfigurableImpl implements Configurable {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private final AppendableConfigurationContext context;
 
 	public ConfigurableImpl() {

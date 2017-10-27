@@ -28,7 +28,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T> {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	public SimplePropertyReaderContext(ClassLoaderService classLoaderService, Map<?, ?> configurationValues, String propertyName, Class<T> clazz) {
 		super( classLoaderService, configurationValues.get( propertyName ), propertyName, clazz );

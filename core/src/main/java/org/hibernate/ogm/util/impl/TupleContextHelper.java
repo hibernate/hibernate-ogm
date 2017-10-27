@@ -19,7 +19,7 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
  */
 public class TupleContextHelper {
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Given a {@link SessionImplementor} returns the {@link TupleContext} associated to an entity.

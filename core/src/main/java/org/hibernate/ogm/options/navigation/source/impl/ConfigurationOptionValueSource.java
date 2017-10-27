@@ -52,7 +52,7 @@ public class ConfigurationOptionValueSource implements OptionValueSource {
 	 */
 	private static class ConfigurationBasedOptionContainer implements OptionsContainer {
 
-		private static final Log log = LoggerFactory.make();
+		private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 		private final ConfigurationPropertyReader propertyReader;
 

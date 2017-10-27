@@ -22,7 +22,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
  * @author Emmanuel Bernard emmanuel@hibernate.org
  */
 public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDescriptor {
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final AttributeConverter converter;
 	private final GridTypeToGridTypeDescriptorAdapter delegate;

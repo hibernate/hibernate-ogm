@@ -27,7 +27,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class DefaultClassPropertyReaderContext<T> extends PropertyReaderContextBase<T> implements ClassPropertyReaderContext<T> {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final ClassLoaderService classLoaderService;
 	private Class<? extends T> defaultImplementation;

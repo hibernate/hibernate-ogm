@@ -20,7 +20,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class IndexDirectoryManager {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Returns the target directory of the build.

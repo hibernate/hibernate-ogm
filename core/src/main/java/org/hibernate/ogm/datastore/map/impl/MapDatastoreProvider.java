@@ -48,7 +48,7 @@ import org.hibernate.service.spi.Stoppable;
  */
 public final class MapDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final ConcurrentMap<EntityKey, Map<String, Object>> entitiesKeyValueStorage = newConcurrentHashMap();
 	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = newConcurrentHashMap();

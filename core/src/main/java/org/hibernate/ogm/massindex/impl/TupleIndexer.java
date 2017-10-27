@@ -52,7 +52,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
  */
 public class TupleIndexer implements SessionAwareRunnable {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final SessionFactoryImplementor sessionFactory;
 	private final Map<Class<?>, EntityIndexBinding> entityIndexBindings;

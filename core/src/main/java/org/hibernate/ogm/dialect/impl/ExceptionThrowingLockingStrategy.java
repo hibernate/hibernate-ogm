@@ -27,7 +27,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class ExceptionThrowingLockingStrategy implements LockingStrategy {
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Class<? extends GridDialect> gridDialectClass;
 	private final LockMode lockMode;

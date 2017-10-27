@@ -67,7 +67,7 @@ import org.hibernate.type.Type;
  */
 public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, TupleBasedEntityLoader {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final OgmEntityPersister[] entityPersisters;
 	private final OgmCollectionPersister[] collectionPersisters;

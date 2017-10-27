@@ -64,7 +64,7 @@ import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoo
  */
 public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSession, EventSource {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final EventSource delegate;
 	private final OgmSessionFactoryImpl factory;

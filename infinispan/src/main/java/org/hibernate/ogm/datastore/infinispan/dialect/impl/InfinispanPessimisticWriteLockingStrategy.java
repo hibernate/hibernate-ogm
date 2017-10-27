@@ -32,7 +32,7 @@ import org.infinispan.AdvancedCache;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStrategy {
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	protected final GridType identifierGridType;
 

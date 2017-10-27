@@ -33,7 +33,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class BackendCustomQuery<T extends Serializable> implements CustomQuery, Serializable {
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final String queryString;
 	private final T queryObject;

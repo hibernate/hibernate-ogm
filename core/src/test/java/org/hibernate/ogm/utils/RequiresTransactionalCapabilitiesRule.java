@@ -21,7 +21,7 @@ import org.junit.runners.model.Statement;
  */
 public class RequiresTransactionalCapabilitiesRule implements TestRule {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public Statement apply(final Statement base, final Description description) {

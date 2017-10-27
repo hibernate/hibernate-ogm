@@ -26,7 +26,7 @@ public class SchemaDefinerInitiator implements SessionFactoryServiceInitiator<Sc
 
 	public static final SchemaDefinerInitiator INSTANCE = new SchemaDefinerInitiator();
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public Class<SchemaDefiner> getServiceInitiated() {

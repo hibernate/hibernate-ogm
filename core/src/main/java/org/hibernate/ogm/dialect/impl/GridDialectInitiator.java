@@ -36,7 +36,7 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 
 	public static final GridDialectInitiator INSTANCE = new GridDialectInitiator();
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private GridDialectInitiator() {
 	}

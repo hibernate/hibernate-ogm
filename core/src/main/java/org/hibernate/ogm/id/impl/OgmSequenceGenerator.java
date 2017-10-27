@@ -63,7 +63,7 @@ import org.hibernate.type.Type;
  */
 public class OgmSequenceGenerator extends OgmGeneratorBase implements ExportableProducer {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private Type type;
 	private Properties params;

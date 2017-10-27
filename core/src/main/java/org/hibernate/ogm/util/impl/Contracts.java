@@ -15,7 +15,7 @@ import org.hibernate.AssertionFailure;
  */
 public final class Contracts {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private Contracts() {
 	}

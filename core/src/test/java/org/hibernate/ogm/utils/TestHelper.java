@@ -53,7 +53,7 @@ import com.sun.tools.javac.util.ServiceLoader;
  */
 public class TestHelper {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final String TX_CONTROL_CLASS_NAME = "com.arjuna.ats.arjuna.coordinator.TxControl";
 	private static final GridDialectTestHelper HELPER = determineGridDialectTestHelper();
 	private static final GridDialectType GRID_DIALECT_TYPE = determineGridDialectType();

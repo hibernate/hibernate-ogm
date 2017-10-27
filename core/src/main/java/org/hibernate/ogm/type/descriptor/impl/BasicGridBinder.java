@@ -21,7 +21,7 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
  * @author Emmanuel Bernard
  */
 public abstract class BasicGridBinder<X> implements GridValueBinder<X> {
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final WrapperOptions DEFAULT_OPTIONS = new WrapperOptions() {
 
 		@Override

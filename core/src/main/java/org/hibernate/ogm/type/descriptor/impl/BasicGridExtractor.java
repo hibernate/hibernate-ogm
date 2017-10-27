@@ -20,7 +20,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
  */
 public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final JavaTypeDescriptor<J> javaTypeDescriptor;
 	private final boolean wrap;

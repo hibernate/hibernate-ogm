@@ -80,7 +80,7 @@ import org.junit.runners.model.TestClass;
  */
 public class OgmTestRunner extends SkippableTestRunner {
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Set<Field> testScopedFactoryFields;
 	private final Set<Field> testMethodScopedFactoryFields;

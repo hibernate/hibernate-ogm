@@ -41,7 +41,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  */
 public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable> {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final EventContextManager eventContext;
 

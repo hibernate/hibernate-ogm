@@ -43,7 +43,7 @@ public class HostParser {
 	// regex: ^\[(.+)\]$
 	private static final Pattern NAKED_IPV6_PATTERN = Pattern.compile( "^\\[(.+)\\]$" );
 
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Accepts a comma separated list of host / ports.

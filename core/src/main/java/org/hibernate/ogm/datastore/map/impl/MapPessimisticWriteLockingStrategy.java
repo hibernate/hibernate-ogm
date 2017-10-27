@@ -29,7 +29,7 @@ import org.hibernate.persister.entity.Lockable;
  */
 public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	protected final Lockable lockable;
 	protected final LockMode lockMode;

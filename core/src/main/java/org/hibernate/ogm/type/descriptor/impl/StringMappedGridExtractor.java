@@ -16,7 +16,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
  */
 public class StringMappedGridExtractor<J> implements GridValueExtractor<J> {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<J> javaTypeDescriptor;

@@ -30,7 +30,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
  */
 public class AnnotationOptionValueSource implements OptionValueSource {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public OptionsContainer getGlobalOptions() {

@@ -120,7 +120,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 * OGM.
 	 */
 	private static final int DEFAULT_MULTIGET_BATCH_SIZE = 50;
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final EntityDiscriminator discriminator;
 

@@ -79,7 +79,7 @@ import org.hibernate.type.Type;
  */
 public class OgmCollectionPersister extends AbstractCollectionPersister implements CollectionPhysicalModel {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final GridType keyGridType;
 	private final GridType elementGridType;
