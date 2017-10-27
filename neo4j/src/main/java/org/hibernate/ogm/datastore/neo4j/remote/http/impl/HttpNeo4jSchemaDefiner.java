@@ -45,7 +45,7 @@ import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
  */
 public class HttpNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	protected void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {

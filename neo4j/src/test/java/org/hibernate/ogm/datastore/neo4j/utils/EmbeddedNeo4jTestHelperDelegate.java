@@ -36,7 +36,7 @@ public class EmbeddedNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate 
 
 	public static final EmbeddedNeo4jTestHelperDelegate INSTANCE = new EmbeddedNeo4jTestHelperDelegate();
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final Map<String, String> hibernateProperties = PropertiesReader.getHibernateProperties();
 

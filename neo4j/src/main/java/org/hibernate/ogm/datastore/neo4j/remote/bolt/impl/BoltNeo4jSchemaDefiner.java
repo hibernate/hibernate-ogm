@@ -49,7 +49,7 @@ import org.neo4j.driver.v1.util.Resource;
  */
 public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	protected void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {

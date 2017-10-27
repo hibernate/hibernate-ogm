@@ -30,7 +30,7 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 
 	private static final String BOLT_PROTOCOL = "bolt";
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private BoltNeo4jClient client;
 

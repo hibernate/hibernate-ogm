@@ -16,7 +16,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 
 public class HotRodClientBuilder {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private InfinispanRemoteConfiguration config;
 

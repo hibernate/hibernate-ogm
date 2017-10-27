@@ -33,7 +33,7 @@ import org.bson.Document;
  */
 public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<Document, MongoDBQueryParsingResult> {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;

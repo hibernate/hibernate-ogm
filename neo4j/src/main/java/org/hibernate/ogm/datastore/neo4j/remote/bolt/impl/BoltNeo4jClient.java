@@ -22,7 +22,7 @@ import org.neo4j.driver.v1.exceptions.Neo4jException;
  */
 public class BoltNeo4jClient {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Driver driver;
 

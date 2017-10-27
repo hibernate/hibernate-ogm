@@ -39,7 +39,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class EmbeddedNeo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
-	private static Log LOG = LoggerFactory.getLogger();
+	private static Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private GraphDatabaseService neo4jDb;
 

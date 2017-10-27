@@ -85,7 +85,7 @@ import org.neo4j.driver.v1.types.Relationship;
  */
 public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, BoltNeo4jAssociationQueries> implements RemoteNeo4jDialect {
 
-	public static final Log log = LoggerFactory.getLogger();
+	public static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final BoltNeo4jSequenceGenerator sequenceGenerator;
 

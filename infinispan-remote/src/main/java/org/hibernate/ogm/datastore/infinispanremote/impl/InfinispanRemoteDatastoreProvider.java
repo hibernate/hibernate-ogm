@@ -43,7 +43,7 @@ import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 				implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * The org.infinispan.commons.marshall.Marshaller instance which shall be used

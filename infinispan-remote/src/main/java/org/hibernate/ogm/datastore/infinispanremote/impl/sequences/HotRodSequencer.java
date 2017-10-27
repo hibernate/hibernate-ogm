@@ -39,7 +39,7 @@ import org.infinispan.protostream.SerializationContext;
  */
 public final class HotRodSequencer {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final int START_EXPONENTIAL_FALLBACK = 10;
 

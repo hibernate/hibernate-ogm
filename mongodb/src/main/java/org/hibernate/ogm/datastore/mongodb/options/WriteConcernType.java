@@ -59,7 +59,7 @@ public enum WriteConcernType {
 	 */
 	CUSTOM( null );
 
-	private static Log log = LoggerFactory.getLogger();
+	private static Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final WriteConcern writeConcern;
 

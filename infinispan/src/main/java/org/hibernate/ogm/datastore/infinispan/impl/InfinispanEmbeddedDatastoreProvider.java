@@ -46,7 +46,7 @@ import static org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.Ex
 public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {
 
-	private static final Log LOG = LoggerFactory.getLogger();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private JtaPlatform jtaPlatform;
 	private JndiService jndiService;

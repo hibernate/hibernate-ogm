@@ -38,7 +38,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 
 	public static final BoltNeo4jTestHelperDelegate INSTANCE = new BoltNeo4jTestHelperDelegate();
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private BoltNeo4jTestHelperDelegate() {
 	}

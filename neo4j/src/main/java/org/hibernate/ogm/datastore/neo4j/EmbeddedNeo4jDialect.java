@@ -82,7 +82,7 @@ import org.neo4j.kernel.api.exceptions.schema.UniquePropertyValueValidationExcep
  */
 public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQueries, EmbeddedNeo4jAssociationQueries> {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final GraphDatabaseService dataBase;
 

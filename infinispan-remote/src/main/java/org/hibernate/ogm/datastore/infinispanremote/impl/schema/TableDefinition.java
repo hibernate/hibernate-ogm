@@ -29,7 +29,7 @@ import org.infinispan.protostream.SerializationContext;
 
 public final class TableDefinition implements ProtobufTypeExporter, ProtobufEntryExporter {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final String tableName;
 	private final String protobufTypeName;

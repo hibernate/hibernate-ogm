@@ -42,7 +42,7 @@ import org.hibernate.ogm.type.spi.TypeTranslator;
  */
 public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegate<StringBuilder, Neo4jQueryParsingResult> {
 
-	private static final Log LOG = LoggerFactory.getLogger();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Neo4jPropertyHelper propertyHelper;
 	private final SessionFactoryImplementor sessionFactory;

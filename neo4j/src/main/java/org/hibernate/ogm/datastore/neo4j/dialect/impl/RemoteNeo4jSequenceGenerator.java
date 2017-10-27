@@ -50,7 +50,7 @@ public abstract class RemoteNeo4jSequenceGenerator extends BaseNeo4jSequenceGene
 			+ " SET n." + SEQUENCE_VALUE_PROPERTY + " = coalesce(n." + SEQUENCE_VALUE_PROPERTY + ", {initialValue}) + {increment}"
 			+ " RETURN n." + SEQUENCE_VALUE_PROPERTY;
 
-	private static final Log logger = LoggerFactory.getLogger();
+	private static final Log logger = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final BoundedConcurrentHashMap<String, RemoteStatements> queryCache;
 

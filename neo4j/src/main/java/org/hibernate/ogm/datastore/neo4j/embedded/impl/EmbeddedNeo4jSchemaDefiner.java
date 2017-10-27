@@ -45,7 +45,7 @@ import org.neo4j.graphdb.schema.ConstraintType;
  */
 public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	protected void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {

@@ -57,7 +57,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
  */
 public class HttpNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final HttpNeo4jClient client;
 

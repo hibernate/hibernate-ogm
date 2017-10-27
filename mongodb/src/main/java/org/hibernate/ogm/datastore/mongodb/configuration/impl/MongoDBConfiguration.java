@@ -43,7 +43,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	public static final String DEFAULT_AUTHENTICATION_DATABASE = "admin";
 
 	private static final int DEFAULT_PORT = 27017;
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final WriteConcern writeConcern;
 	private final ReadPreference readPreference;

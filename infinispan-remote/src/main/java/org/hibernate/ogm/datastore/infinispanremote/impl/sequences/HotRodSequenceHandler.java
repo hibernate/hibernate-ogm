@@ -37,7 +37,7 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
  */
 public class HotRodSequenceHandler {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final InfinispanRemoteDatastoreProvider provider;
 	private final ConcurrentMap<String,SequencesPerCache> sequencesPerCache = new ConcurrentHashMap<>();

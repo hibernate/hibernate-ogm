@@ -21,7 +21,7 @@ import org.infinispan.protostream.impl.SerializationContextImpl;
 
 public class ProtostreamSerializerSetup {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private ProtostreamSerializerSetup() {
 		//Not to be constructed

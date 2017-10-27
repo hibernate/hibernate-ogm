@@ -46,7 +46,7 @@ import org.hibernate.service.spi.Stoppable;
  */
 public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private ServiceRegistryImplementor serviceRegistry;
 

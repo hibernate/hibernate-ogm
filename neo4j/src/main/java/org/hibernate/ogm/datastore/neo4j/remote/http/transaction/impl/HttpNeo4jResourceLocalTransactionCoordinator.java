@@ -41,7 +41,7 @@ import org.hibernate.resource.transaction.spi.TransactionStatus;
  */
 public class HttpNeo4jResourceLocalTransactionCoordinator implements TransactionCoordinator {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final TransactionCoordinatorBuilder transactionCoordinatorBuilder;
 	private final TransactionCoordinatorOwner owner;

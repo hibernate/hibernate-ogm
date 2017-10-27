@@ -35,7 +35,7 @@ import org.junit.Test;
  */
 public class MongoDBQueryParsingTest extends OgmTestCase {
 
-	private Log log = LoggerFactory.getLogger();
+	private Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private QueryParser queryParser;
 

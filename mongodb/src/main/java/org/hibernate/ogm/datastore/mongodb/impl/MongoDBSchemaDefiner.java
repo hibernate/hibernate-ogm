@@ -62,7 +62,7 @@ import org.bson.Document;
  */
 public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final int INDEX_CREATION_ERROR_CODE = 85;
 

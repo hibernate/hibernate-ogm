@@ -32,7 +32,7 @@ import org.infinispan.protostream.FileDescriptorSource;
 
 public class SchemaDefinitions {
 
-	private static final Log LOG = LoggerFactory.getLogger();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final String packageName;
 	private final Map<String,TableDefinition> definitionsByTableName = new HashMap<>();

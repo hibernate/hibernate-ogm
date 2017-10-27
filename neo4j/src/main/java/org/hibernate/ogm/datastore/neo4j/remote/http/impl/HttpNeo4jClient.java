@@ -35,7 +35,7 @@ public class HttpNeo4jClient implements AutoCloseable {
 
 	private static final int OK_STATUS_CODE = Response.Status.OK.getStatusCode();
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Size of the client connection pool used by the RestEasy HTTP client

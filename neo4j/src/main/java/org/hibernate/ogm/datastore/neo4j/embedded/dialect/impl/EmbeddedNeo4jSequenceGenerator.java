@@ -58,7 +58,7 @@ import org.neo4j.graphdb.schema.ConstraintType;
  */
 public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 
-	private static final Log logger = LoggerFactory.getLogger();
+	private static final Log logger = LoggerFactory.make( MethodHandles.lookup() );
 	/**
 	 * Query for creating SEQUENCE nodes.
 	 */

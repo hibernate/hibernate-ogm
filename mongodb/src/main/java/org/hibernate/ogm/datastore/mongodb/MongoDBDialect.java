@@ -175,7 +175,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public static final String TABLE_FIELDNAME = "table";
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 

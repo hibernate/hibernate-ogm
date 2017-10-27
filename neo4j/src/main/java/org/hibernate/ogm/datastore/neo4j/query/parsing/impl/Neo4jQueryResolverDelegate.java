@@ -24,7 +24,7 @@ import java.lang.invoke.MethodHandles;
  */
 public class Neo4jQueryResolverDelegate implements QueryResolverDelegate {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Persister space: keep track of aliases and entity names.

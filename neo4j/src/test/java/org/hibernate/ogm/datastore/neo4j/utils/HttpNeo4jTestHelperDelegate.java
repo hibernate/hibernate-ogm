@@ -42,7 +42,7 @@ class HttpNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 
 	public static final HttpNeo4jTestHelperDelegate INSTANCE = new HttpNeo4jTestHelperDelegate();
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private HttpNeo4jTestHelperDelegate() {
 	}

@@ -53,7 +53,7 @@ import org.infinispan.transaction.TransactionMode;
  */
 public abstract class LocalCacheManager<EK, AK, ISK> {
 
-	private static final Log LOG = LoggerFactory.getLogger();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final EmbeddedCacheManager cacheManager;
 	private final boolean isProvidedCacheManager;

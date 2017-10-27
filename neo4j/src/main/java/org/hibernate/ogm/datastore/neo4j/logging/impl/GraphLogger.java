@@ -24,7 +24,7 @@ import org.neo4j.graphdb.Relationship;
  */
 public final class GraphLogger {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private GraphLogger() {
 	}

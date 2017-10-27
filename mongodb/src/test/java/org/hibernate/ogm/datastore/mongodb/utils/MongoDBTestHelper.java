@@ -49,7 +49,7 @@ import com.mongodb.client.MongoDatabase;
  */
 public class MongoDBTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	static {
 		// Read host and port from environment variable

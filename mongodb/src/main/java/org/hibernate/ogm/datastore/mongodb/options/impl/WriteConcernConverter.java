@@ -21,7 +21,7 @@ import org.hibernate.ogm.options.spi.OptionValuePair;
  */
 public class WriteConcernConverter implements AnnotationConverter<WriteConcern> {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public OptionValuePair<?> convert(WriteConcern annotation) {

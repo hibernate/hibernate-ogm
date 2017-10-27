@@ -28,7 +28,7 @@ import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
  */
 public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 

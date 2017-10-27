@@ -81,7 +81,7 @@ import org.hibernate.ogm.model.spi.TupleOperation;
  */
 public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, HttpNeo4jAssociationQueries> implements RemoteNeo4jDialect {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	// The API does not return the number of updates
 	private static final int UNKNOWN_UPDATES = -1;

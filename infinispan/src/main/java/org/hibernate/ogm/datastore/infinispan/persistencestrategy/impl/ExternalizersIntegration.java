@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public final class ExternalizersIntegration {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final Map<Integer, AdvancedExternalizer<?>> ogmExternalizers = initializeOgmExternalizers();
 
 	private ExternalizersIntegration() {

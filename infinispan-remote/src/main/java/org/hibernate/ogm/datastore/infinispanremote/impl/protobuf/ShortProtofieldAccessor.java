@@ -18,7 +18,7 @@ import org.infinispan.protostream.MessageMarshaller.ProtoStreamWriter;
  */
 public final class ShortProtofieldAccessor extends BaseProtofieldAccessor<Short> implements ProtofieldAccessor<Short> {
 
-	private static final Log LOG = LoggerFactory.getLogger();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	public ShortProtofieldAccessor(int fieldNumber, String name, boolean nullable, String columnName) {
 		super( fieldNumber, name, nullable, columnName,

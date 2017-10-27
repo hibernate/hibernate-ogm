@@ -80,7 +80,7 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 		}
 	}
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	protected void createUniqueConstraints(DatastoreProvider provider, Database database) {
 		List<UniqueConstraintDetails> constraints = new ArrayList<>();

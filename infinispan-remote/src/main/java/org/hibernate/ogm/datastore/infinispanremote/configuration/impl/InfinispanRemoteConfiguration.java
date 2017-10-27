@@ -60,7 +60,7 @@ import org.infinispan.client.hotrod.impl.ConfigurationProperties;
  */
 public class InfinispanRemoteConfiguration {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * The prefix used by many configuration properties for Hot Rod

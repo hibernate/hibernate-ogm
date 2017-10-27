@@ -20,7 +20,7 @@ import java.lang.invoke.MethodHandles;
  */
 public class VersionChecker {
 
-	private static final Log LOG = LoggerFactory.getLogger();
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	/**
 	 * Consumes the version field from the given input and raises an exception if the record is in a newer version,

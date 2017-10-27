@@ -45,7 +45,7 @@ import org.neo4j.driver.v1.util.Resource;
  */
 public class BoltNeo4jResourceLocalTransactionCoordinator implements TransactionCoordinator {
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	public Session session;
 

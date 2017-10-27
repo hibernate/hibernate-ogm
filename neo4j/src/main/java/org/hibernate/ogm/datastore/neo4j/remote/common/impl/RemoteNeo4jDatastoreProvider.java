@@ -28,7 +28,7 @@ import org.hibernate.service.spi.Stoppable;
  */
 public abstract class RemoteNeo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
-	private static final Log logger = LoggerFactory.getLogger();
+	private static final Log logger = LoggerFactory.make( MethodHandles.lookup() );
 
 	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
 
