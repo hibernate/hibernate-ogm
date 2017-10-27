@@ -413,6 +413,132 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertThenDeleteOneWithOptions() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insertOne({ '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilder', 'name': 'The one and wildest', 'rating': '1' } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ '_id': { '$numberLong': '11' } }, { 'w': 'majority', 'wtimeout' : 100 })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// Check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ '_id': { '$numberLong': '11' } })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1313")
+	public void testInsertMultipleThenDeleteOne() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( [ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '1' }, { '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Collection', 'rating': '2' } ], { 'ordered': false } )";
+			Query query = session.createNativeQuery( nativeQuery );
+			int n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 2 );
+
+			// Check that all were inserted.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".count({ 'name' : 'Collection' })";
+			Object foundCount = session.createNativeQuery( nativeQuery ).uniqueResult();
+
+			assertThat( foundCount ).isEqualTo( 2L );
+
+			// Try to delete first
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> result = query.list();
+			assertThat( result.size() ).isEqualTo( 1 );
+
+			// Try to delete second
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".deleteOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery );
+			n = query.executeUpdate();
+			assertThat( n ).isEqualTo( 1 );
+
+			// And check that it is gone.
+			nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".findOne({ 'name': 'Collection' })";
+			query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			result = query.list();
+			assertThat( result.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+
+			session.clear();
+		}
+	}
+	@Test
+	@TestForIssue(jiraKey = "OGM-1314")
+	public void testInsertManyThenDeleteMany() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQueryForDeleteMany = "db." + OscarWildePoem.TABLE_NAME
+					+ ".deleteMany( {'author': 'Oscar Wilde'} )";
+			Query queryDeleteMany = session.createNativeQuery( nativeQueryForDeleteMany );
+			int countOfDeleted = queryDeleteMany.executeUpdate();
+			assertThat( countOfDeleted ).isEqualTo( 3 );
+
+			String nativeQueryForFindDeletedEntity = "db." + OscarWildePoem.TABLE_NAME + ".find( {'author': 'Oscar Wilde'} )";
+			Query queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> listOfFoundEntity = queryFindDeletedEntity.list();
+			assertThat( listOfFoundEntity.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1314")
+	public void testInsertManyThenDeleteManyWithOptions() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQueryForInsertMany = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( "
+					+ "[ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilde', 'name': 'First name', 'rating': '8' }, "
+					+ "{ '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Second name','rating': '8' }, "
+					+ "{ '_id': { '$numberLong': '13' }, 'author': 'Oscar Wilde', 'name': 'Third name','rating': '8' } ], "
+					+ "{ 'ordered': false } )";
+			Query queryInsertMany = session.createNativeQuery( nativeQueryForInsertMany );
+			int countOfInserted = queryInsertMany.executeUpdate();
+			assertThat( countOfInserted ).isEqualTo( 3 );
+
+			String nativeQueryForDeleteManyWithOptions = "db." + OscarWildePoem.TABLE_NAME
+					+ ".deleteMany( {'rating': '8'}, { 'w': 'majority', 'wtimeout' : 100 } )";
+			Query queryDeleteManyWithOptions = session.createNativeQuery( nativeQueryForDeleteManyWithOptions );
+			int countOfDeleted = queryDeleteManyWithOptions.executeUpdate();
+			assertThat( countOfDeleted ).isEqualTo( 3 );
+
+			String nativeQueryForFindDeletedEntity = "db." + OscarWildePoem.TABLE_NAME + ".find( {'rating': '8'} )";
+			Query queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> listOfFoundEntity = queryFindDeletedEntity.list();
+			assertThat( listOfFoundEntity.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
 	public void testFindWithAnd() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
