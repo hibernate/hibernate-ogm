@@ -6,9 +6,8 @@
  */
 package org.hibernate.ogm.dialect.storedprocedure.spi;
 
-import java.util.Map;
-
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -42,25 +41,14 @@ public interface StoredProcedureAwareGridDialect extends GridDialect {
 	 * Tne method uses for storages that supports name position
 	 *
 	 * @param storedProcedureName name of stored procedure.
-	 * @param params - array with values
+	 * @param queryParameters parameters passed for this query
 	 * @param tupleContext the tuple context
 	 *
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
 
-	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, Object[] params, TupleContext tupleContext);
+	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, QueryParameters queryParameters, TupleContext tupleContext);
 
-	/**
-	 * Returns the result of a stored procedure executed on the backend.
-	 * Tne method uses for storages that supports name position
-	 *
-	 * @param storedProcedureName name of stored procedure.
-	 * @param params - map with pair "name"-"value"
-	 * @param tupleContext the tuple context
-	 *
-	 * @return an {@link ClosableIterator} with the result of the query
-	 */
 
-	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, Map<String,Object> params, TupleContext tupleContext);
 
 }
