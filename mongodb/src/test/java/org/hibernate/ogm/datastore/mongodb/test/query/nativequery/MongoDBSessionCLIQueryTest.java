@@ -402,6 +402,57 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			session.clear();
 		}
 	}
+	@Test
+	@TestForIssue(jiraKey = "OGM-1314")
+	public void testInsertManyThenDeleteMany() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQueryForDeleteMany = "db." + OscarWildePoem.TABLE_NAME
+					+ ".deleteMany( {'author': 'Oscar Wilde'} )";
+			Query queryDeleteMany = session.createNativeQuery( nativeQueryForDeleteMany );
+			int countOfDeleted = queryDeleteMany.executeUpdate();
+			assertThat( countOfDeleted ).isEqualTo( 3 );
+
+			String nativeQueryForFindDeletedEntity = "db." + OscarWildePoem.TABLE_NAME + ".find( {'author': 'Oscar Wilde'} )";
+			Query queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> listOfFoundEntity = queryFindDeletedEntity.list();
+			assertThat( listOfFoundEntity.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1314")
+	public void testInsertManyThenDeleteManyWithOptions() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQueryForInsertMany = "db." + OscarWildePoem.TABLE_NAME
+					+ ".insert( "
+					+ "[ { '_id': { '$numberLong': '11' }, 'author': 'Oscar Wilde', 'name': 'First name', 'rating': '8' }, "
+					+ "{ '_id': { '$numberLong': '12' }, 'author': 'Oscar Wilde', 'name': 'Second name','rating': '8' }, "
+					+ "{ '_id': { '$numberLong': '13' }, 'author': 'Oscar Wilde', 'name': 'Third name','rating': '8' } ], "
+					+ "{ 'ordered': false } )";
+			Query queryInsertMany = session.createNativeQuery( nativeQueryForInsertMany );
+			int countOfInserted = queryInsertMany.executeUpdate();
+			assertThat( countOfInserted ).isEqualTo( 3 );
+
+			String nativeQueryForDeleteManyWithOptions = "db." + OscarWildePoem.TABLE_NAME
+					+ ".deleteMany( {'rating': '8'}, { 'w': 'majority', 'wtimeout' : 100 } )";
+			Query queryDeleteManyWithOptions = session.createNativeQuery( nativeQueryForDeleteManyWithOptions );
+			int countOfDeleted = queryDeleteManyWithOptions.executeUpdate();
+			assertThat( countOfDeleted ).isEqualTo( 3 );
+
+			String nativeQueryForFindDeletedEntity = "db." + OscarWildePoem.TABLE_NAME + ".find( {'rating': '8'} )";
+			Query queryFindDeletedEntity = session.createNativeQuery( nativeQueryForFindDeletedEntity ).addEntity( OscarWildePoem.class );
+			List<OscarWildePoem> listOfFoundEntity = queryFindDeletedEntity.list();
+			assertThat( listOfFoundEntity.size() ).isEqualTo( 0 );
+
+			transaction.commit();
+		}
+	}
 
 	@Test
 	public void testFindWithAnd() throws Exception {

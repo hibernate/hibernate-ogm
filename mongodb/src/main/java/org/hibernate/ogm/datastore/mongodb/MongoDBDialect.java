@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -105,6 +107,10 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -132,12 +138,6 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -836,6 +836,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doMapReduce( queryDescriptor, collection );
 			case INSERT:
 			case REMOVE:
+			case DELETEMANY:
+			case DELETEONE:
 			case UPDATE:
 				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
 			default:
@@ -865,9 +867,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doInsert( queryDescriptor, collection );
 			case REMOVE:
 			case DELETEMANY:
-				return doRemove( queryDescriptor, collection, Boolean.FALSE );
 			case DELETEONE:
-				return doRemove( queryDescriptor, collection, Boolean.TRUE );
+				return doRemove( queryDescriptor, collection, queryDescriptor.getOperation() );
 			case UPDATE:
 				return doUpdate( queryDescriptor, collection );
 			case FIND:
@@ -1207,20 +1208,32 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return -1; // Not sure if we should throw an exception instead?
 	}
 
-	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection, boolean deleteOne) {
+	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection, MongoDBQueryDescriptor.Operation operation) {
 		Document query = queryDesc.getCriteria();
 		Document options = queryDesc.getOptions();
-		Boolean justOne = deleteOne;
+		Boolean justOne = FALSE;
 		WriteConcern wc = null;
 		if ( options != null ) {
 			justOne = (Boolean) options.get( "justOne" );
-			justOne = ( justOne != null ) ? justOne : deleteOne;
+			justOne = ( justOne != null ) ? justOne : FALSE;
 			Document o = (Document) options.get( "writeConcern" );
 			wc = getWriteConcern( o );
 		}
-
 		MongoCollection<Document> collectionWithConcern = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) );
-		DeleteResult result = justOne ? collectionWithConcern.deleteOne( query ) : collectionWithConcern.deleteMany( query );
+		DeleteResult result = null;
+
+		switch ( operation ) {
+			case REMOVE:
+				result = justOne ? collectionWithConcern.deleteOne( query ) : collectionWithConcern.deleteMany( query );
+				break;
+			case DELETEONE:
+				result = collectionWithConcern.deleteOne( query ) ;
+				break;
+			case DELETEMANY:
+				result =  collectionWithConcern.deleteMany( query );
+				break;
+		}
+
 		if ( result.wasAcknowledged() ) {
 			return (int) result.getDeletedCount();
 		}
