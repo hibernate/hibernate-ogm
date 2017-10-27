@@ -51,11 +51,13 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BlobGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
+import org.hibernate.ogm.datastore.mongodb.utils.GridFsUtil;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
@@ -98,6 +100,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
@@ -294,7 +297,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( operationContext );
 
 		FindIterable<Document> fi = collection.find( searchObject );
-		return fi != null ? fi.projection( projection ).first() : null;
+		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
+		GridFsUtil.loadContentFromGridFs( currentDB, targetDocument, key, provider.getOptionService() );
+		return targetDocument;
 	}
 
 	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
@@ -543,6 +548,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document toDelete = prepareIdObject( key );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		GridFsUtil.removeFromGridFsByEntity( currentDB, provider.getOptionService(), collection, key, toDelete );
 		collection.deleteMany( toDelete );
 	}
 
@@ -771,6 +777,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type == StandardBasicTypes.BINARY ) {
 			return BinaryAsBsonBinaryGridType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.BLOB ) {
+			return BlobGridType.INSTANCE;
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
@@ -1409,6 +1418,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document insertStatement = null;
 		Document updateStatement = new Document();
 		WriteConcern writeConcern = null;
+		OptionsService optionService = provider.getOptionService();
 
 		final UpdateOptions updateOptions = new UpdateOptions().upsert( true );
 		for ( Operation operation : groupedOperation.getOperations() ) {
@@ -1421,13 +1431,17 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
+					//process gridfs
+					GridFsUtil.storeContentToGridFs( currentDB,insertStatement,entityKey,optionService,tuple, tuple.getSnapshotType() );
 
-					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
+					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection, writeConcern )
 							.put( entityKey, insertStatement );
 					insertTuples.add( tuple );
 				}
 				else {
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
+					//process gridfs
+					GridFsUtil.storeContentToGridFs( currentDB,updateStatement,entityKey,optionService, tuple, tuple.getSnapshotType() );
 				}
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
@@ -1529,11 +1543,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<MongoCollection<Document>, BatchInsertionTask> inserts,
-			EntityKeyMetadata entityKeyMetadata, MongoCollection<Document> collection) {
+			EntityKeyMetadata entityKeyMetadata, MongoCollection<Document> collection, WriteConcern writeConcern) {
 		BatchInsertionTask insertsForCollection = inserts.get( collection );
 
 		if ( insertsForCollection == null ) {
-			insertsForCollection = new BatchInsertionTask( entityKeyMetadata );
+			insertsForCollection = new BatchInsertionTask( entityKeyMetadata, writeConcern );
 			inserts.put( collection, insertsForCollection );
 		}
 
@@ -1634,6 +1648,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	public MongoDatabase getCurrentDB() {
+		return currentDB;
 	}
 
 	private static class MongoDBAggregationOutput implements ClosableIterator<Tuple> {
@@ -1763,10 +1781,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		private final EntityKeyMetadata entityKeyMetadata;
 		private final Map<EntityKey, Document> inserts;
+		private final WriteConcern writeConcern;
 
-		public BatchInsertionTask(EntityKeyMetadata entityKeyMetadata) {
+		public BatchInsertionTask(EntityKeyMetadata entityKeyMetadata, WriteConcern writeConcern) {
 			this.entityKeyMetadata = entityKeyMetadata;
 			this.inserts = new HashMap<EntityKey, Document>();
+			this.writeConcern = writeConcern;
 		}
 
 		public EntityKeyMetadata getEntityKeyMetadata() {
@@ -1777,6 +1797,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return new ArrayList<Document>( inserts.values() );
 		}
 
+		public Document get(EntityKey entityKey) {
+			return inserts.get( entityKey );
+
+		}
 		public boolean containsKey(EntityKey entityKey) {
 			return inserts.containsKey( entityKey );
 		}
@@ -1787,6 +1811,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		public void put(EntityKey entityKey, Document object) {
 			inserts.put( entityKey, object );
+		}
+
+		public WriteConcern getWriteConcern() {
+			return writeConcern;
 		}
 
 		public boolean isEmpty() {
