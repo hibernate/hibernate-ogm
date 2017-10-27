@@ -36,15 +36,14 @@ public class NoSQLProcedureParameterRegistration<T> implements ParameterRegistra
 	private int startIndex;
 	private Type hibernateType;
 
-	public NoSQLProcedureParameterRegistration(
-			NoSQLProcedureCallImpl procedureCall,
-			Integer position,
+	public NoSQLProcedureParameterRegistration(NoSQLProcedureCallImpl procedureCall,Integer position,
 			String name, ParameterMode mode, Class<T> type) {
 		this.procedureCall = procedureCall;
 		this.position = position;
 		this.name = name;
 		this.mode = mode;
 		this.type = type;
+		this.hibernateType = procedureCall.getSession().getFactory().getTypeResolver().heuristicType( type.getName() );
 	}
 
 	@Override

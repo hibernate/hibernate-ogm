@@ -51,7 +51,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 
 	@Before
 	public void setUp() {
-			em = getFactory().createEntityManager();
+		em = getFactory().createEntityManager();
 	}
 
 	@After

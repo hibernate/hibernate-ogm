@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.storedprocedure.impl;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.hibernate.ogm.model.spi.Tuple;
@@ -19,16 +18,17 @@ import org.hibernate.result.ResultSetOutput;
  */
 public class NoSQLProcedureOutputImpl implements ResultSetOutput {
 	private static final Log log = LoggerFactory.make();
-	private List<?> resultList = new LinkedList();
+	private final List<?> resultList;
+	private final boolean isResultRefCursor;
 
-	public NoSQLProcedureOutputImpl(List<?> resultList) {
+	public NoSQLProcedureOutputImpl(List<?> resultList, boolean isResultRefCursor) {
 		this.resultList = resultList;
+		this.isResultRefCursor = isResultRefCursor;
 	}
 
 	@Override
 	public boolean isResultSet() {
-
-		return !resultList.isEmpty() && !isTuple();
+		return isResultRefCursor;
 	}
 
 	private boolean isTuple() {
@@ -37,20 +37,16 @@ public class NoSQLProcedureOutputImpl implements ResultSetOutput {
 
 	@Override
 	public List getResultList() {
-		log.info( "I am called!" );
 		if ( isResultSet() ) {
-
 			return resultList;
 		}
-
 		return null;
 	}
 
 	@Override
 	public Object getSingleResult() {
-		log.info( "I am called!" );
-		//@todo check ... it can be not a Tuple
 		//it is primitive result
+		//@todo check for empty.
 		Tuple firstTuple = (Tuple) resultList.get( 0 );
 		String firstFieldName = firstTuple.getColumnNames().iterator().next();
 		return  firstTuple.get( firstFieldName );

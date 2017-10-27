@@ -6,10 +6,14 @@
  */
 package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
+import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -49,15 +53,13 @@ public class IndexedStoredProcDialect extends BaseGridDialect implements StoredP
 	}
 
 	@Override
-	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Object[] params, TupleContext tupleContext) {
-		log.infof( "Try to call procedure %s",storedProcedureName );
-		return FUNCTIONS.get( storedProcedureName ).execute( params );
-	}
-
-	@Override
-	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Map<String, Object> params,
-			TupleContext tupleContext) {
-		throw new UnsupportedOperationException( "The dialect is not support named parameters!" );
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, QueryParameters queryParameters, TupleContext tupleContext) {
+		List<TypedGridValue> positionalParameters = queryParameters.getPositionalParameters();
+		List<Object> values = new ArrayList<>( positionalParameters.size() );
+		for ( TypedGridValue positionalPram : positionalParameters ) {
+			values.add( positionalPram.getValue() );
+		}
+		return FUNCTIONS.get( storedProcedureName ).execute( values.toArray() );
 	}
 
 	@Override

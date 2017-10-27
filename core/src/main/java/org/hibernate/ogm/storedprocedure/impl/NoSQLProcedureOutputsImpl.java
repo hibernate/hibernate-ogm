@@ -9,28 +9,35 @@ package org.hibernate.ogm.storedprocedure.impl;
 import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.persistence.ParameterMode;
 
 import org.hibernate.LockOptions;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
+import org.hibernate.ogm.dialect.query.spi.RowSelection;
+import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureOutputs;
 import org.hibernate.result.Output;
+import org.hibernate.type.Type;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
@@ -38,9 +45,13 @@ import org.hibernate.result.Output;
 public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 	private static final Log log = LoggerFactory.make();
 	private final NoSQLProcedureCallImpl procedureCall;
+	private final TypeTranslator typeTranslator;
+	private SessionFactoryImplementor sessionFactory;
 
 	public NoSQLProcedureOutputsImpl(NoSQLProcedureCallImpl procedureCall) {
 		this.procedureCall = procedureCall;
+		this.sessionFactory = procedureCall.getSession().getFactory();
+		this.typeTranslator = sessionFactory.getServiceRegistry().getService( TypeTranslator.class );
 	}
 
 	@Override
@@ -64,21 +75,39 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 	@Override
 	public Output getCurrent() {
 		// the result can be entity or single value result
+		boolean isResultRefCursor = false;
 		List<?> entityList = null;
+		final RowSelection rowSelection = new RowSelection( 1,1 );
+		QueryParameters queryParameters = null;
+		List<TypedGridValue> positionalParameters = new LinkedList<>(  );
+		Map<String, TypedGridValue> namedParameters = new HashMap<>(  );
+
 
 		if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
 //
 
 		}
 		else {
-			List parameters = new ArrayList( procedureCall.getRegisteredParameters().size() );
 			for ( ParameterRegistration parameterRegistration : procedureCall.getRegisteredParameters() ) {
 				// @todo will we supports out and in_out parameters?
 				if ( parameterRegistration.getMode() != ParameterMode.REF_CURSOR ) {
-					parameters.add( parameterRegistration.getBind().getValue() );
+					Object value = ( (NoSQLProcedureParameterRegistration) parameterRegistration ).getBind().getValue();
+					Type hibernateType = ( (NoSQLProcedureParameterRegistration) parameterRegistration )
+							.getHibernateType();
+					TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue(
+							new TypedValue( hibernateType, value ), typeTranslator, sessionFactory );
+					positionalParameters.add( typedGridValue );
+				}
+				else {
+					isResultRefCursor = true;
 				}
 			}
-			log.infof( "indexed parameters: %s", parameters );
+
+			queryParameters = new QueryParameters( rowSelection, namedParameters,positionalParameters,null );
+
+
+
+			log.infof( "indexed parameters: %s", positionalParameters );
 			TupleContext tupleContext = null;
 			OgmEntityPersister entityPersister = null;
 			String entityName = null;
@@ -105,8 +134,7 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 				tupleContext = tupleContext( procedureCall.getSession(), new EntityMetadataInformation( entityPersister.getEntityKeyMetadata(), entityName ) );
 			}
 
-			ClosableIterator<Tuple> result = procedureCall.getGridDialect().callStoredProcedure( procedureCall.getProcedureName(), parameters.toArray(),
-					tupleContext );
+			ClosableIterator<Tuple> result = procedureCall.getGridDialect().callStoredProcedure( procedureCall.getProcedureName(), queryParameters, tupleContext );
 
 			if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
 				entityList = listOfEntities( procedureCall.getSession(), entityPersister.getMappedClass(), result );
@@ -121,7 +149,7 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 
 		}
 		//copy data from iterator
-		return new NoSQLProcedureOutputImpl( entityList );
+		return new NoSQLProcedureOutputImpl( entityList,isResultRefCursor );
 	}
 	//@todo dublicate code from BackendCustomLoader
 	private List<Object> listOfEntities(SessionImplementor session, Class<?> returnedClass, ClosableIterator<Tuple> tuples) {
