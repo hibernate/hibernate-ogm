@@ -6,23 +6,27 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.logging.impl;
 
+import java.lang.invoke.MethodHandles.Lookup;
+
 import org.jboss.logging.Logger;
 
 /**
  * Factory for obtaining {@link Logger} instances.
+ *
+ * @author Davide D'Alto
  */
 public class LoggerFactory {
 
-	private static final CallerProvider callerProvider = new CallerProvider();
-
-	public static Log getLogger() {
-		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
+	private LoggerFactory() {
+		// now allowed
 	}
 
-	private static class CallerProvider extends SecurityManager {
+	public static Log make(Lookup creationContext) {
+		return make( Log.class, creationContext );
+	}
 
-		public Class<?> getCallerClass() {
-			return getClassContext()[2];
-		}
+	public static <T> T make(Class<T> logClass, Lookup creationContext) {
+		final String className = creationContext.lookupClass().getName();
+		return Logger.getMessageLogger( logClass, className );
 	}
 }
