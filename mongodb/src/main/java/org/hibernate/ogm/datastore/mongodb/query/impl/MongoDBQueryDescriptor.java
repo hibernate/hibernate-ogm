@@ -37,6 +37,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		INSERTONE,
 		INSERTMANY,
 		REMOVE,
+		DELETEONE,
+		DELETEMANY,
 		UPDATE,
 		UPDATEONE,
 		UPDATEMANY,

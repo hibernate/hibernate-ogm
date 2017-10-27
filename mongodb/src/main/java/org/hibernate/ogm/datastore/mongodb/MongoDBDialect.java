@@ -837,6 +837,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doMapReduce( queryDescriptor, collection );
 			case INSERT:
 			case REMOVE:
+			case DELETEMANY:
+			case DELETEONE:
 			case UPDATE:
 			case UPDATEONE:
 			case UPDATEMANY:
@@ -867,10 +869,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case INSERTONE:
 			case INSERT:
 				return doInsert( queryDescriptor, collection );
-			case REMOVE:
-				return doRemove( queryDescriptor, collection );
 			case REPLACEONE:
 				return doReplaceOne( queryDescriptor, collection );
+			case REMOVE:
+			case DELETEMANY:
+			case DELETEONE:
+				return doRemove( queryDescriptor, collection, queryDescriptor.getOperation() );
 			case UPDATE:
 			case UPDATEONE:
 			case UPDATEMANY:
@@ -1212,7 +1216,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return -1; // Not sure if we should throw an exception instead?
 	}
 
-	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection) {
+	private static int doRemove(final MongoDBQueryDescriptor queryDesc, final MongoCollection<Document> collection, MongoDBQueryDescriptor.Operation operation) {
 		Document query = queryDesc.getCriteria();
 		Document options = queryDesc.getOptions();
 		Boolean justOne = FALSE;
@@ -1220,14 +1224,24 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( options != null ) {
 			justOne = (Boolean) options.get( "justOne" );
 			justOne = ( justOne != null ) ? justOne : FALSE;
-			if ( justOne ) { // IMPROVE See https://jira.mongodb.org/browse/JAVA-759
-				throw new UnsupportedOperationException( "Using 'justOne' in a remove query is not yet supported." );
-			}
 			Document o = (Document) options.get( "writeConcern" );
 			wc = getWriteConcern( o );
 		}
+		MongoCollection<Document> collectionWithConcern = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) );
+		DeleteResult result = null;
 
-		DeleteResult result = collection.withWriteConcern( ( wc != null ? wc : collection.getWriteConcern() ) ).deleteMany( query );
+		switch ( operation ) {
+			case REMOVE:
+				result = justOne ? collectionWithConcern.deleteOne( query ) : collectionWithConcern.deleteMany( query );
+				break;
+			case DELETEONE:
+				result = collectionWithConcern.deleteOne( query ) ;
+				break;
+			case DELETEMANY:
+				result =  collectionWithConcern.deleteMany( query );
+				break;
+		}
+
 		if ( result.wasAcknowledged() ) {
 			return (int) result.getDeletedCount();
 		}
