@@ -379,6 +379,27 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1317")
+	public void shouldParseQueryReplaceOneWithCriteriaWithReplacementWithOptions() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>(
+				parser.Query() ).run(
+						"db.Order.replaceOne( { 'name' : 'Andy' }, { 'name' : 'Lulu', 'age' : 18, 'score' : 22 }, " +
+								"{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } } )" );
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
+		assertThat( queryDescriptor.getOptions() )
+				.isEqualTo( Document.parse( "{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } }" ) );
+	}
+
+
+
+	@Test
 	public void shouldParseQueryFindAndModify() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
