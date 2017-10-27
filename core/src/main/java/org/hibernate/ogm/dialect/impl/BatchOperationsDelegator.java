@@ -28,6 +28,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Wraps a {@link BatchableGridDialect} intercepting the operation and populating the queue that the delegate

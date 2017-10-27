@@ -20,6 +20,7 @@ import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Provides the list of {@link OptionValueSource}s to be considered by default when creating an

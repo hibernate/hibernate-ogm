@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.jboss.byteman.rule.Rule;
 import org.jboss.byteman.rule.helper.Helper;
 

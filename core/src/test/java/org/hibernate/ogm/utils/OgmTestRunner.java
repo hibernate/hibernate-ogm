@@ -23,6 +23,7 @@ import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.utils.TestSessionFactory.Scope;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkField;

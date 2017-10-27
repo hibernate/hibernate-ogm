@@ -26,6 +26,7 @@ import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;

@@ -18,6 +18,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;

@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.impl;
 
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * This enumeration describes all available datastore providers by providing some shortcuts.

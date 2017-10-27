@@ -17,6 +17,7 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.QueryResolverDelegate;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;

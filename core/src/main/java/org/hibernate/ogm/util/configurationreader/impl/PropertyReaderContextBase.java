@@ -16,6 +16,7 @@ import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 /**

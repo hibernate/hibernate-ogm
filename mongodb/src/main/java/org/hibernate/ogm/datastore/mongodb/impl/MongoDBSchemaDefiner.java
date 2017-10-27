@@ -29,6 +29,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;

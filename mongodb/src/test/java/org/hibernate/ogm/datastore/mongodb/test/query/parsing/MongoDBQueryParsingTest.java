@@ -15,6 +15,7 @@ import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBProcessingChain;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryParsingResult;
 import org.hibernate.ogm.datastore.mongodb.test.query.parsing.model.IndexedEntity;

@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.AssociationKeyExternalizer;

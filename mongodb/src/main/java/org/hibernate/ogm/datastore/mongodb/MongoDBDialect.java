@@ -43,6 +43,7 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;

@@ -18,6 +18,7 @@ import org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**

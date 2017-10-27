@@ -15,6 +15,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * A {@link OptionValueSource} which provides access to options configured using a property in {@code persistence.xml}

@@ -13,6 +13,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**

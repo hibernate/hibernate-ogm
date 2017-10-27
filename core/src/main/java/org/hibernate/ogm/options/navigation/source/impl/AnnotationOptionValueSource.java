@@ -20,6 +20,7 @@ import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.util.impl.ReflectionHelper;
 
 /**

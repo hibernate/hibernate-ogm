@@ -16,6 +16,7 @@ import org.hibernate.hql.spi.QueryTranslatorFactory;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Creates {@link QueryTranslator}s. Depending on whether the underlying datastore supports queries itself, a translator

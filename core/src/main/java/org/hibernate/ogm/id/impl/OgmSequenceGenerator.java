@@ -28,6 +28,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 

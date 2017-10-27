@@ -10,6 +10,7 @@ import com.mongodb.WriteConcern;
 
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Write concern options for MongoDB. Represents the non-deprecated constants from {@link WriteConcern}.

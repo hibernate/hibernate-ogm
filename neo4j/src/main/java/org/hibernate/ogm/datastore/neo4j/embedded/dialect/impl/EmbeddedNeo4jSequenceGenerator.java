@@ -14,6 +14,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jSequenceGenerator
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;

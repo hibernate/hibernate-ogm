@@ -11,6 +11,7 @@ import java.net.URL;
 
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 
 /**

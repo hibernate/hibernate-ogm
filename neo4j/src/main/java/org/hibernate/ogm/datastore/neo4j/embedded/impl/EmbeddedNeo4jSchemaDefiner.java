@@ -14,6 +14,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;

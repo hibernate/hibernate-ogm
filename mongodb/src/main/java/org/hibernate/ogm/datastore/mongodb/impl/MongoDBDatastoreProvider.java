@@ -24,6 +24,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;

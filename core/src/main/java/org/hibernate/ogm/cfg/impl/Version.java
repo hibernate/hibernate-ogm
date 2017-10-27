@@ -7,6 +7,7 @@
 package org.hibernate.ogm.cfg.impl;
 
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Display the version number on touch

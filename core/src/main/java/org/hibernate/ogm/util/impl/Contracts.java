@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.lang.invoke.MethodHandles;
+
 import org.hibernate.AssertionFailure;
 
 /**

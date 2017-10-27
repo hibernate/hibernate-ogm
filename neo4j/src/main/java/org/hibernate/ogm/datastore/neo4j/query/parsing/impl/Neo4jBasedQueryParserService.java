@@ -18,6 +18,7 @@ import org.hibernate.ogm.query.spi.QueryParsingResult;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;

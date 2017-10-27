@@ -11,6 +11,7 @@ import java.io.ObjectInput;
 
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Helps with checking the version of persisted keys.

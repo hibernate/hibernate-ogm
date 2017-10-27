@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.logging.impl;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.literal;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 
 import org.neo4j.graphdb.Label;

@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.lang.invoke.MethodHandles;
+
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.TransactionContext;

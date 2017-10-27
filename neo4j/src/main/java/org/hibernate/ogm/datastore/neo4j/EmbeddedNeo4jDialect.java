@@ -32,6 +32,7 @@ import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastorePro
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;

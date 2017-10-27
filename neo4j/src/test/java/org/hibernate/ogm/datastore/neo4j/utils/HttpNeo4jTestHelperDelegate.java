@@ -16,6 +16,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.neo4j.HttpNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.ErrorResponse;

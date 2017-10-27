@@ -18,6 +18,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.sql.InFragment;
 import org.hibernate.type.DiscriminatorType;
 import org.hibernate.type.StringType;

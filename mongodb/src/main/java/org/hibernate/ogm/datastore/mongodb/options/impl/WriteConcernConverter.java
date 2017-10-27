@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.options.impl;
 
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcern;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.options.spi.AnnotationConverter;

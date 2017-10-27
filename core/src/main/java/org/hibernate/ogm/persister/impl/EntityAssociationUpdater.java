@@ -25,6 +25,7 @@ import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;

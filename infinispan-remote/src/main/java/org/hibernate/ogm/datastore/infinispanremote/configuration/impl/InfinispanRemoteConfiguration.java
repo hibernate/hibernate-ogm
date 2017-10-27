@@ -24,6 +24,7 @@ import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;

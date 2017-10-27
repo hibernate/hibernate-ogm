@@ -83,6 +83,7 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.util.impl.TransactionContextHelper;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;

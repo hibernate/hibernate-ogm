@@ -10,6 +10,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.BoltNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.transaction.impl.BoltNeo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jConfiguration;

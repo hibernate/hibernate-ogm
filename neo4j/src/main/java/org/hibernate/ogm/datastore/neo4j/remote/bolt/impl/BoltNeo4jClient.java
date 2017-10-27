@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.remote.bolt.impl;
 
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jConfiguration;
 import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jDatabaseIdentifier;
 import org.neo4j.driver.v1.AuthToken;

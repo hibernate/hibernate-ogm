@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.configuration.impl.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.PersistenceStrategy;

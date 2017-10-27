@@ -14,6 +14,7 @@ import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastorePr
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Configuration for {@link InfinispanEmbeddedDatastoreProvider}.

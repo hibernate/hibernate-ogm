@@ -13,6 +13,7 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDef
 import org.hibernate.ogm.datastore.infinispanremote.impl.sequences.SequenceIdMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.config.Configuration;

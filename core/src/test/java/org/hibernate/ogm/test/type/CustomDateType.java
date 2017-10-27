@@ -17,6 +17,7 @@ import org.hibernate.ogm.type.descriptor.impl.GridValueExtractor;
 import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.JdbcDateTypeDescriptor;

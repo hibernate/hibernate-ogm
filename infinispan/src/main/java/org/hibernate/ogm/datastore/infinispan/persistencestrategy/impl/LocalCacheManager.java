@@ -18,6 +18,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.impl.TransactionManagerLookupDelegator;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;

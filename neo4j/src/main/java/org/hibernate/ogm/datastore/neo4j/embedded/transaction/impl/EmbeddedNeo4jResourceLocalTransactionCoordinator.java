@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;

@@ -16,6 +16,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.batchindexing.impl.SimpleIndexingProgressMonitor;

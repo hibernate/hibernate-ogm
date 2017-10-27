@@ -31,6 +31,7 @@ import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 

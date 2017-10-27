@@ -20,6 +20,7 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMa
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamSerializerSetup;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 import org.infinispan.client.hotrod.RemoteCache;

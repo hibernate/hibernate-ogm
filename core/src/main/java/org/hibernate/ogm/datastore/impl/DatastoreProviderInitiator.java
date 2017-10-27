@@ -17,6 +17,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 import org.hibernate.ogm.util.configurationreader.spi.ShortNameResolver;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**

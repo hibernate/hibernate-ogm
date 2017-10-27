@@ -48,6 +48,7 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;

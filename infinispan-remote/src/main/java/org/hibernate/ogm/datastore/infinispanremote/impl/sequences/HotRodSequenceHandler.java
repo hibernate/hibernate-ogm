@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStr
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 
 /**

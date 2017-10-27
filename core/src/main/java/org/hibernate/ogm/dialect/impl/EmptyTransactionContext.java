@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.impl;
 import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * A {@link TransactionContext} that can be used when the dialect does not need to know the transaction id.

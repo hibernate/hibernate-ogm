@@ -19,6 +19,7 @@ import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jAssociatedNodesHelper;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jEntityQueries;

@@ -52,6 +52,7 @@ import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;

@@ -40,6 +40,7 @@ import org.hibernate.search.indexes.interceptor.IndexingOverride;
 import org.hibernate.search.spi.InstanceInitializer;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Component of batch-indexing pipeline, using chained producer-consumers.

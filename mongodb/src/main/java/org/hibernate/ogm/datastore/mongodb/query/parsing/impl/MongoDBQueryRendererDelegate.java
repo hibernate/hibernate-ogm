@@ -20,6 +20,7 @@ import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.StringHelper;
 

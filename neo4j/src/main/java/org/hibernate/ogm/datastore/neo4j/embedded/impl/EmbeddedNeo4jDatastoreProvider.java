@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequ
 import org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl.EmbeddedNeo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;

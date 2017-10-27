@@ -21,6 +21,7 @@ import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.util.impl.ReflectionHelper;
 
 /**

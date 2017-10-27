@@ -23,6 +23,7 @@ import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Extension point allowing any NoSQL native query with named and positional parameters

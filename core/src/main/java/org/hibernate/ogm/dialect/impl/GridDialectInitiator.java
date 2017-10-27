@@ -23,6 +23,7 @@ import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**

@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Parser for the host property.

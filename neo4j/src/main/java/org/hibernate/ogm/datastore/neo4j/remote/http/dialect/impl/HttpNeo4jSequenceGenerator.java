@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.RemoteNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.common.request.impl.RemoteStatement;
 import org.hibernate.ogm.datastore.neo4j.remote.common.request.impl.RemoteStatements;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;

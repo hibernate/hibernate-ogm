@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.infinispanremote.impl.protobuf;
 
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.infinispan.protostream.MessageMarshaller.ProtoStreamReader;
 import org.infinispan.protostream.MessageMarshaller.ProtoStreamWriter;
 

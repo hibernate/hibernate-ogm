@@ -10,6 +10,7 @@ import org.hibernate.ogm.examples.gettingstarted.domain.Breed;
 import org.hibernate.ogm.examples.gettingstarted.domain.Dog;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

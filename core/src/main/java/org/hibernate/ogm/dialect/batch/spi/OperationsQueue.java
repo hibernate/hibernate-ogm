@@ -16,6 +16,7 @@ import java.util.Set;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * A queue for {@link Operation}s.

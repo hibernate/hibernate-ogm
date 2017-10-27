@@ -17,6 +17,7 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.QueryResolverDelegate;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Query resolver delegate targeting MongoDB queries. Very basic implementation atm., need to decide on

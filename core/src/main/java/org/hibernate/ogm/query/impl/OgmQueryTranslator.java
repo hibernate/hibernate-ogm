@@ -39,6 +39,7 @@ import org.hibernate.ogm.query.spi.QueryParsingResult;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 

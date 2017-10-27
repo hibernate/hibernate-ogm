@@ -13,6 +13,7 @@ import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContextImpl;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 
 
 /**

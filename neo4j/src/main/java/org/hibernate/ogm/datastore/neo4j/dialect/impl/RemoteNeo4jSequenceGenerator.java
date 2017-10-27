@@ -14,6 +14,7 @@ import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.common.request.impl.RemoteStatement;
 import org.hibernate.ogm.datastore.neo4j.remote.common.request.impl.RemoteStatements;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
