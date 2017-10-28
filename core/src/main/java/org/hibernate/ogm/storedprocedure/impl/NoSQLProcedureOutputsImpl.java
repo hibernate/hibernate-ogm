@@ -10,10 +10,12 @@ import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.persistence.ParameterMode;
 
 import org.hibernate.LockOptions;
@@ -44,6 +46,8 @@ import org.hibernate.type.Type;
  */
 public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 	private static final Log log = LoggerFactory.make();
+	private static final Set<ParameterMode> SUPPORTED_MODES = EnumSet.of( ParameterMode.IN , ParameterMode.REF_CURSOR );
+	private static final RowSelection ROW_SELECTION = new RowSelection( 1, 1 );
 	private final NoSQLProcedureCallImpl procedureCall;
 	private final TypeTranslator typeTranslator;
 	private SessionFactoryImplementor sessionFactory;
@@ -56,100 +60,97 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 
 	@Override
 	public <T> T getOutputParameterValue(ParameterRegistration<T> parameterRegistration) {
-		return null;
+		throw new UnsupportedOperationException( "Out parameters not supported yet!" );
 	}
 
 	@Override
 	public Object getOutputParameterValue(String name) {
-		//return procedureCall.getParameterRegistration( name ).extract( callableStatement );
-		return null;
+		throw new UnsupportedOperationException( "Out parameters not supported yet!" );
 	}
 
 	@Override
 	public Object getOutputParameterValue(int position) {
-		//return procedureCall.getParameterRegistration( position ).extract( callableStatement );
-		return null;
+		throw new UnsupportedOperationException( "Out parameters not supported yet!" );
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Output getCurrent() {
 		// the result can be entity or single value result
 		boolean isResultRefCursor = false;
 		List<?> entityList = null;
-		final RowSelection rowSelection = new RowSelection( 1,1 );
+
 		QueryParameters queryParameters = null;
-		List<TypedGridValue> positionalParameters = new LinkedList<>(  );
-		Map<String, TypedGridValue> namedParameters = new HashMap<>(  );
+		List<TypedGridValue> positionalParameters = new LinkedList<>();
+		Map<String, TypedGridValue> namedParameters = new HashMap<>();
 
 
-		if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
-//
-
-		}
-		else {
-			for ( ParameterRegistration parameterRegistration : procedureCall.getRegisteredParameters() ) {
-				// @todo will we supports out and in_out parameters?
+		for ( ParameterRegistration parameterRegistration : procedureCall.getRegisteredParameters() ) {
+			NoSQLProcedureParameterRegistration nosqlParameterRegistration = (NoSQLProcedureParameterRegistration) parameterRegistration;
+			if ( SUPPORTED_MODES.contains( parameterRegistration.getMode() ) ) {
 				if ( parameterRegistration.getMode() != ParameterMode.REF_CURSOR ) {
-					Object value = ( (NoSQLProcedureParameterRegistration) parameterRegistration ).getBind().getValue();
-					Type hibernateType = ( (NoSQLProcedureParameterRegistration) parameterRegistration )
-							.getHibernateType();
-					TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue(
-							new TypedValue( hibernateType, value ), typeTranslator, sessionFactory );
-					positionalParameters.add( typedGridValue );
+					Object value = nosqlParameterRegistration.getBind().getValue();
+					Type hibernateType = nosqlParameterRegistration.getHibernateType();
+					TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue( new TypedValue( hibernateType, value ),
+							typeTranslator, sessionFactory );
+					if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
+						namedParameters.put( nosqlParameterRegistration.getName(), typedGridValue );
+					}
+					else {
+						positionalParameters.add( typedGridValue );
+					}
 				}
 				else {
 					isResultRefCursor = true;
 				}
 			}
-
-			queryParameters = new QueryParameters( rowSelection, namedParameters,positionalParameters,null );
-
-
-
-			log.infof( "indexed parameters: %s", positionalParameters );
-			TupleContext tupleContext = null;
-			OgmEntityPersister entityPersister = null;
-			String entityName = null;
-
-			if ( procedureCall.getMemento() != null ) {
-				//need get info from memento!
-
-				for ( String querySpace : procedureCall.getMemento().getSynchronizedQuerySpaces() ) {
-					procedureCall.addSynchronizedQuerySpace( querySpace );
-				}
-			}
-
-			if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
-				String querySpace = procedureCall.getSynchronizedQuerySpaces().iterator().next();
-
-				for ( Map.Entry<String, EntityPersister> entry : procedureCall.getSession().getFactory()
-						.getEntityPersisters().entrySet() ) {
-					List<Serializable> querySpaces = Arrays.asList( entry.getValue().getQuerySpaces() );
-					if ( querySpaces.contains( querySpace ) ) {
-						entityPersister = (OgmEntityPersister) entry.getValue();
-						entityName = entry.getKey();
-					}
-				}
-				tupleContext = tupleContext( procedureCall.getSession(), new EntityMetadataInformation( entityPersister.getEntityKeyMetadata(), entityName ) );
-			}
-
-			ClosableIterator<Tuple> result = procedureCall.getGridDialect().callStoredProcedure( procedureCall.getProcedureName(), queryParameters, tupleContext );
-
-			if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
-				entityList = listOfEntities( procedureCall.getSession(), entityPersister.getMappedClass(), result );
-			}
-			else if ( result == null ) {
-				// call a procedure without result
-				return null;
-			}
 			else {
-				entityList = getTuplesAsList( result );
+				throw new UnsupportedOperationException( String.format( "Parameter Mode %s not supported yet!", nosqlParameterRegistration.getMode() ) );
 			}
-
 		}
+
+		queryParameters = new QueryParameters( ROW_SELECTION, namedParameters, positionalParameters, null );
+
+		TupleContext tupleContext = null;
+		OgmEntityPersister entityPersister = null;
+		String entityName = null;
+
+		if ( procedureCall.getMemento() != null ) {
+			for ( String querySpace : procedureCall.getMemento().getSynchronizedQuerySpaces() ) {
+				procedureCall.addSynchronizedQuerySpace( querySpace );
+			}
+		}
+
+		if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
+			String querySpace = procedureCall.getSynchronizedQuerySpaces().iterator().next();
+
+			for ( Map.Entry<String, EntityPersister> entry : procedureCall.getSession().getFactory().getEntityPersisters().entrySet() ) {
+				List<Serializable> querySpaces = Arrays.asList( entry.getValue().getQuerySpaces() );
+				if ( querySpaces.contains( querySpace ) ) {
+					entityPersister = (OgmEntityPersister) entry.getValue();
+					entityName = entry.getKey();
+				}
+			}
+			tupleContext = tupleContext( procedureCall.getSession(), new EntityMetadataInformation( entityPersister.getEntityKeyMetadata(), entityName ) );
+		}
+
+		ClosableIterator<Tuple> result = procedureCall.getGridDialect().callStoredProcedure( procedureCall.getProcedureName(), queryParameters, tupleContext );
+
+		if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
+			entityList = listOfEntities( procedureCall.getSession(), entityPersister.getMappedClass(), result );
+		}
+		else if ( result == null ) {
+			// call a procedure without result
+			return null;
+		}
+		else {
+			entityList = getTuplesAsList( result );
+		}
+
+
 		//copy data from iterator
-		return new NoSQLProcedureOutputImpl( entityList,isResultRefCursor );
+		return new NoSQLProcedureOutputImpl( entityList, isResultRefCursor );
 	}
 	//@todo dublicate code from BackendCustomLoader
 	private List<Object> listOfEntities(SessionImplementor session, Class<?> returnedClass, ClosableIterator<Tuple> tuples) {
