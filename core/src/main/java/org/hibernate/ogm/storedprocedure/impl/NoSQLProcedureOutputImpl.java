@@ -31,10 +31,6 @@ public class NoSQLProcedureOutputImpl implements ResultSetOutput {
 		return isResultRefCursor;
 	}
 
-	private boolean isTuple() {
-		return resultList.get( 0 ) instanceof Tuple;
-	}
-
 	@Override
 	public List getResultList() {
 		if ( isResultSet() ) {
