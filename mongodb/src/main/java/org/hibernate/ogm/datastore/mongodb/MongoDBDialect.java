@@ -73,6 +73,7 @@ import org.hibernate.ogm.dialect.query.spi.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -102,6 +103,7 @@ import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
+import org.hibernate.ogm.type.impl.StringType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.type.MaterializedBlobType;
@@ -111,6 +113,7 @@ import org.hibernate.type.Type;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoCommandException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
@@ -135,6 +138,8 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.parboiled.Parboiled;
@@ -1714,31 +1719,37 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	/**
 	 * call stored procedure
 	 * @param storedProcedureName name of stored procedure.
-	 * @param params - array with values
+	 * @param params - query parameters
 	 * @param tupleContext the tuple context
-	 *@see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java"> example</a>
+	 * @see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java"> example</a>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Object[] params,
-			TupleContext tupleContext) {
-		StringBuffer commandLine = new StringBuffer( storedProcedureName ).append( "(" );
-		for ( Object param : params ) {
-			if ( param instanceof String ) {
-				commandLine.append( '\'' ).append( param.toString() ).append( '\'' );
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, QueryParameters params, TupleContext tupleContext) {
+		StringBuilder commandLine = new StringBuilder( storedProcedureName ).append( "(" );
+
+		List<TypedGridValue> positionalParameters = params.getPositionalParameters();
+		for ( TypedGridValue param : positionalParameters ) {
+			if ( param.getType() instanceof StringType ) {
+				String escapedValue = StringEscapeUtils.escapeJava( (String) param.getValue() );
+				commandLine.append( '\'' ).append( escapedValue ).append( '\'' );
 			}
 			else {
-				commandLine.append( param.toString() );
+				commandLine.append( param.getValue() );
 			}
 			commandLine.append( "," );
 		}
 		commandLine.setLength( commandLine.length() - 1 );
 		commandLine.append( ")" );
-		Document result = provider.getDatabase().runCommand( new Document( "$eval", commandLine.toString() ) );
-		Double ok = result.getDouble( "ok" );
-		if ( ok.intValue() != 1 ) {
-			// return not ok! throw exception?
+		Document result = null;
+		try {
+			result = provider.getDatabase().runCommand( new Document( "$eval", commandLine.toString() ) );
+		}
+		catch (MongoCommandException mce) {
+			BsonDocument response = mce.getResponse();
+			throw log.unableToExecuteCommand( commandLine.toString(), response.getString( "errmsg" ).getValue(),
+					response.getString( "codeName" ).getValue(), mce );
 		}
 		Object retvar = result.get( "retval" );
 		List<Tuple> resultTuples = null;
@@ -1775,12 +1786,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			}
 		}
 		return tuple;
-	}
-
-	@Override
-	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, Map<String, Object> params,
-			TupleContext tupleContext) {
-		throw new UnsupportedOperationException( "Named parameters not supported by the dialect! Use indexed parameters." );
 	}
 
 	private static class MongoDBAggregationOutput implements ClosableIterator<Tuple> {
