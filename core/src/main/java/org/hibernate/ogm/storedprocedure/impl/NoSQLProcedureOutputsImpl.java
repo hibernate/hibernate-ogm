@@ -10,6 +10,7 @@ import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -110,7 +111,7 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 			}
 		}
 
-		queryParameters = new QueryParameters( ROW_SELECTION, namedParameters, positionalParameters, null );
+		queryParameters = new QueryParameters( ROW_SELECTION, namedParameters, positionalParameters, Collections.<String>emptyList() );
 
 		TupleContext tupleContext = null;
 		OgmEntityPersister entityPersister = null;
