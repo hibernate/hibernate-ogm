@@ -18,7 +18,7 @@ import org.jboss.logging.Logger;
 public class LoggerFactory {
 
 	private LoggerFactory() {
-		// now allowed
+		// not allowed
 	}
 
 	public static Log make(Lookup creationContext) {
