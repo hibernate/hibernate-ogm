@@ -24,8 +24,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.bson.BsonDocument;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
-import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
@@ -110,6 +113,10 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -138,14 +145,6 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.bson.BsonDocument;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -1751,13 +1750,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			throw log.unableToExecuteCommand( commandLine.toString(), response.getString( "errmsg" ).getValue(),
 					response.getString( "codeName" ).getValue(), mce );
 		}
-		Object retvar = result.get( "retval" );
+		Object retvalObj = result.get( "retval" );
 		List<Tuple> resultTuples = null;
-		if ( retvar instanceof Document ) {
-			String firstRetValTag = ( (Document) retvar ).keySet().iterator().next();
-			Object firstRetVal = ( (Document) retvar ).get( firstRetValTag );
+		if ( retvalObj instanceof Document ) {
+			Document retval =  (Document) retvalObj;//it is must be array
+			if ( retval.size() > 1 ) {
+				//many results!
+				throw new UnsupportedOperationException( "Stored procedure returns many result objects!" );
+			}
+			String firstRetValTag = retval.keySet().iterator().next();
+			Object firstRetVal = retval.get( firstRetValTag );
 			if ( firstRetVal instanceof List ) {
-				//it is collection of entities
+				// it is collection of entities
 				List<Document> documents = (List<Document>) firstRetVal;
 				resultTuples = new ArrayList<>( documents.size() );
 				for ( Document doc : documents ) {
@@ -1765,13 +1769,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 			}
 			else {
-				throw new NotYetImplementedException( "Not supported type " + firstRetVal.getClass() );
+				throw log.resultSetMustBeRepresentedAsList( storedProcedureName, firstRetVal.getClass().getName() );
 			}
 		}
 		else {
 			//it is simple value
 			Tuple tuple = new Tuple( );
-			tuple.put( "result", retvar );
+			tuple.put( "result", retvalObj );
 			resultTuples = Collections.singletonList( tuple );
 		}
 
