@@ -37,7 +37,7 @@ import java.lang.invoke.MethodHandles;
  */
 public class OptionallyWrapInJTATransaction implements ModelConsumer {
 
-	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+	private static final Log log = LoggerFactory.make( Log.class, MethodHandles.lookup() );
 
 	private final SessionFactoryImplementor factory;
 	private final SessionAwareRunnable delegate;
