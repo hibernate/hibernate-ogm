@@ -838,6 +838,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case INSERT:
 			case REMOVE:
 			case UPDATE:
+			case REPLACEONE:
 				throw log.updateQueryMustBeExecutedViaExecuteUpdate( queryDescriptor );
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
@@ -868,6 +869,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				return doRemove( queryDescriptor, collection );
 			case UPDATE:
 				return doUpdate( queryDescriptor, collection );
+			case REPLACEONE:
+				return doReplaceOne( queryDescriptor, collection );
 			case FIND:
 			case FINDONE:
 			case FINDANDMODIFY:
@@ -1258,6 +1261,39 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return (int) result.getModifiedCount();
 		}
 		return -1; // Not sure if we should throw an exception instead?
+	}
+
+	private static int doReplaceOne(final MongoDBQueryDescriptor queryDescriptor, final MongoCollection<Document> collection) {
+		final Document query = queryDescriptor.getCriteria();
+		final Document update = queryDescriptor.getUpdateOrInsertOne();
+		final Document options = queryDescriptor.getOptions();
+
+		Boolean upsert = FALSE;
+		Collation collation = null;
+		WriteConcern writeConcern = null;
+
+		if ( options != null ) {
+			upsert = (Boolean) options.get( "upsert" );
+			upsert = ( upsert != null ) ? upsert : FALSE;
+
+			final Document wc = (Document) options.get( "writeConcern" );
+			writeConcern = ( wc != null ) ? getWriteConcern( wc ) : null;
+
+			final Document col = (Document) options.get( "collation" );
+			collation = ( col != null ) ? getCollation( col ) : null;
+		}
+
+		final UpdateOptions updateOptions = new UpdateOptions().upsert( upsert ).collation( collation );
+
+		final UpdateResult result = collection
+				.withWriteConcern( ( writeConcern != null ? writeConcern : collection.getWriteConcern() ) )
+				.replaceOne( query, update, updateOptions );
+
+		if ( result.wasAcknowledged() ) {
+			return (int) result.getModifiedCount();
+		}
+
+		return -1;
 	}
 
 	private static ClosableIterator<Tuple> doCount(MongoDBQueryDescriptor query, MongoCollection<Document> collection) {

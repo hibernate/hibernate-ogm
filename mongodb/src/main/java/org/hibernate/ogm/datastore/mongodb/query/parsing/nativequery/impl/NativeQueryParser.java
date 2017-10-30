@@ -96,7 +96,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), Aggregate(), Distinct(), MapReduce() );
+		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), Update(), Count(), ReplaceOne(), Aggregate(), Distinct(), MapReduce() );
 		// TODO There are many more query types than what we support.
 	}
 
@@ -111,6 +111,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
 				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
 				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
+				Sequence( ReplaceOne(), builder.setOperation( Operation.REPLACEONE ) ),
 				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
 				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) ),
 				Sequence( MapReduce(), builder.setOperation( Operation.MAP_REDUCE ) )
@@ -202,6 +203,18 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence(
 				Separator(),
 				"update ",
+				"( ",
+				JsonObject(), builder.setCriteria( match() ), ", ",
+				JsonObject(), builder.setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule ReplaceOne() {
+		return Sequence(
+				Separator(),
+				"replaceOne ",
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
