@@ -1731,7 +1731,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		List<TypedGridValue> positionalParameters = params.getPositionalParameters();
 		for ( TypedGridValue param : positionalParameters ) {
 			if ( param.getType() instanceof StringType ) {
-				String escapedValue = StringEscapeUtils.escapeJava( (String) param.getValue() );
+				//need for escape char "'"
+				String escapedValue = StringEscapeUtils.escapeEcmaScript( (String) param.getValue() );
 				commandLine.append( '\'' ).append( escapedValue ).append( '\'' );
 			}
 			else {
