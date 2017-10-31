@@ -27,7 +27,6 @@ import org.hibernate.procedure.spi.ParameterStrategy;
  */
 public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 	private static final Log log = LoggerFactory.make();
-	private final boolean globalParameterPassNullsSetting = true;
 
 	private ParameterStrategy parameterStrategy = ParameterStrategy.UNKNOWN;
 	private List<NoSQLProcedureParameterRegistration<?>> registeredParameters = new ArrayList<NoSQLProcedureParameterRegistration<?>>();
