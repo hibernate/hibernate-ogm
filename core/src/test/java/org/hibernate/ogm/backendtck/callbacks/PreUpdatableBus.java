@@ -13,7 +13,7 @@ import javax.persistence.PreUpdate;
 import org.hibernate.ogm.backendtck.callbacks.PreUpdatableBus.PreUpdatableBusEventListener;
 
 @Entity
-@EntityListeners( PreUpdatableBusEventListener.class )
+@EntityListeners(PreUpdatableBusEventListener.class)
 public class PreUpdatableBus extends Bus {
 
 	private String field;
@@ -21,28 +21,28 @@ public class PreUpdatableBus extends Bus {
 	private boolean preUpdated;
 	private boolean preUpdatedByListener;
 
-	public void setField(String field) {
-		this.field = field;
-	}
-
-	public void setPreUpdated(boolean preUpdated) {
-		this.preUpdated = preUpdated;
-	}
-
-	public void setPreUpdatedByListener(boolean preUpdatedByListener) {
-		this.preUpdatedByListener = preUpdatedByListener;
-	}
-
 	public String getField() {
 		return field;
+	}
+
+	public void setField(String field) {
+		this.field = field;
 	}
 
 	public boolean isPreUpdated() {
 		return preUpdated;
 	}
 
+	public void setPreUpdated(boolean preUpdated) {
+		this.preUpdated = preUpdated;
+	}
+
 	public boolean isPreUpdatedByListener() {
 		return preUpdatedByListener;
+	}
+
+	public void setPreUpdatedByListener(boolean preUpdatedByListener) {
+		this.preUpdatedByListener = preUpdatedByListener;
 	}
 
 	@PreUpdate

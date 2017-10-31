@@ -9,33 +9,30 @@ package org.hibernate.ogm.backendtck.callbacks;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.PreRemove;
-import javax.persistence.Transient;
 
 import org.hibernate.ogm.backendtck.callbacks.PreRemovableBus.PreRemovableBusEventListener;
 
 @Entity
-@EntityListeners( PreRemovableBusEventListener.class )
+@EntityListeners(PreRemovableBusEventListener.class)
 public class PreRemovableBus extends Bus {
 
 	private boolean preRemoveInvoked;
 	private boolean preRemoveInvokedByListener;
 
-	public void setPreRemoveInvoked(boolean preRemoveInvoked) {
-		this.preRemoveInvoked = preRemoveInvoked;
-	}
-
-	public void setPreRemoveInvokedByListener(boolean preRemoveInvokedByListener) {
-		this.preRemoveInvokedByListener = preRemoveInvokedByListener;
-	}
-
-	@Transient
 	public boolean isPreRemoveInvoked() {
 		return preRemoveInvoked;
 	}
 
-	@Transient
+	public void setPreRemoveInvoked(boolean preRemoveInvoked) {
+		this.preRemoveInvoked = preRemoveInvoked;
+	}
+
 	public boolean isPreRemoveInvokedByListener() {
 		return preRemoveInvokedByListener;
+	}
+
+	public void setPreRemoveInvokedByListener(boolean preRemoveInvokedByListener) {
+		this.preRemoveInvokedByListener = preRemoveInvokedByListener;
 	}
 
 	@PreRemove

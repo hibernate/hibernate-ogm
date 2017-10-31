@@ -9,7 +9,6 @@ package org.hibernate.ogm.backendtck.callbacks;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.PrePersist;
-import javax.persistence.Transient;
 
 import org.hibernate.ogm.backendtck.callbacks.PrePersistableBus.PrePersistableBusEventListener;
 
@@ -20,22 +19,20 @@ public class PrePersistableBus extends Bus {
 	private boolean prePersisted;
 	private boolean prePersistedByListener;
 
-	public void setPrePersisted(boolean persisted) {
-		this.prePersisted = persisted;
-	}
-
-	public void setPrePersistedByListener(boolean prePersistedByListener) {
-		this.prePersistedByListener = prePersistedByListener;
-	}
-
-	@Transient
 	public boolean isPrePersisted() {
 		return prePersisted;
 	}
 
-	@Transient
+	public void setPrePersisted(boolean prePersisted) {
+		this.prePersisted = prePersisted;
+	}
+
 	public boolean isPrePersistedByListener() {
 		return prePersistedByListener;
+	}
+
+	public void setPrePersistedByListener(boolean prePersistedByListener) {
+		this.prePersistedByListener = prePersistedByListener;
 	}
 
 	@PrePersist

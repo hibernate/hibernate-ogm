@@ -9,38 +9,35 @@ package org.hibernate.ogm.backendtck.callbacks;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.PostRemove;
-import javax.persistence.Transient;
 
 import org.hibernate.ogm.backendtck.callbacks.PostRemovableBus.PostRemovableBusEventListener;
 
 @Entity
-@EntityListeners( PostRemovableBusEventListener.class )
+@EntityListeners(PostRemovableBusEventListener.class)
 public class PostRemovableBus extends Bus {
 
-	private boolean isPostRemoveInvoked;
-	private boolean isPostRemoveInvokedByListener;
+	private boolean postRemoveInvoked;
+	private boolean postRemoveInvokedByListener;
 
 	public void setPostRemoveInvoked(boolean postRemoveInvoked) {
-		isPostRemoveInvoked = postRemoveInvoked;
+		this.postRemoveInvoked = postRemoveInvoked;
+	}
+
+	public boolean isPostRemoveInvoked() {
+		return postRemoveInvoked;
 	}
 
 	public void setPostRemoveInvokedByListener(boolean postRemoveInvokedByListener) {
-		isPostRemoveInvokedByListener = postRemoveInvokedByListener;
+		this.postRemoveInvokedByListener = postRemoveInvokedByListener;
 	}
 
-	@Transient
-	public boolean isPostRemoveInvoked() {
-		return isPostRemoveInvoked;
-	}
-
-	@Transient
 	public boolean isPostRemoveInvokedByListener() {
-		return isPostRemoveInvokedByListener;
+		return postRemoveInvokedByListener;
 	}
 
 	@PostRemove
 	public void postRemove() {
-		this.isPostRemoveInvoked = true;
+		this.postRemoveInvoked = true;
 	}
 
 	public static class PostRemovableBusEventListener {

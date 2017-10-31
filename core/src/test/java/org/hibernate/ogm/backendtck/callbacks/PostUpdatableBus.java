@@ -13,36 +13,35 @@ import javax.persistence.PostUpdate;
 import org.hibernate.ogm.backendtck.callbacks.PostUpdatableBus.PostUpdatableBusEventListener;
 
 @Entity
-@EntityListeners( PostUpdatableBusEventListener.class )
+@EntityListeners(PostUpdatableBusEventListener.class)
 public class PostUpdatableBus extends Bus {
 
 	private String field;
-
 	private boolean postUpdated;
 	private boolean postUpdatedByListener;
 
-	public void setField(String field) {
-		this.field = field;
-	}
-
-	public void setPostUpdated(boolean postUpdated) {
-		this.postUpdated = postUpdated;
-	}
-
-	public void setPostUpdatedByListener(boolean postUpdatedByListener) {
-		this.postUpdatedByListener = postUpdatedByListener;
-	}
-
 	public String getField() {
 		return field;
+	}
+
+	public void setField(String field) {
+		this.field = field;
 	}
 
 	public boolean isPostUpdated() {
 		return postUpdated;
 	}
 
+	public void setPostUpdated(boolean postUpdated) {
+		this.postUpdated = postUpdated;
+	}
+
 	public boolean isPostUpdatedByListener() {
 		return postUpdatedByListener;
+	}
+
+	public void setPostUpdatedByListener(boolean postUpdatedByListener) {
+		this.postUpdatedByListener = postUpdatedByListener;
 	}
 
 	@PostUpdate

@@ -9,7 +9,6 @@ package org.hibernate.ogm.backendtck.callbacks;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.PostPersist;
-import javax.persistence.Transient;
 
 import org.hibernate.ogm.backendtck.callbacks.PostPersistableBus.PostPersistableBusEventListener;
 
@@ -17,30 +16,28 @@ import org.hibernate.ogm.backendtck.callbacks.PostPersistableBus.PostPersistable
 @EntityListeners(PostPersistableBusEventListener.class)
 public class PostPersistableBus extends Bus {
 
-	private boolean isPostPersisted;
-	private boolean isPostPersistedByListener;
+	private boolean postPersisted;
+	private boolean postPersistedByListener;
+
+	public boolean isPostPersisted() {
+		return postPersisted;
+	}
 
 	public void setPostPersisted(boolean postPersisted) {
-		isPostPersisted = postPersisted;
+		this.postPersisted = postPersisted;
+	}
+
+	public boolean isPostPersistedByListener() {
+		return postPersistedByListener;
 	}
 
 	public void setPostPersistedByListener(boolean postPersistedByListener) {
-		isPostPersistedByListener = postPersistedByListener;
-	}
-
-	@Transient
-	public boolean isPostPersisted() {
-		return isPostPersisted;
-	}
-
-	@Transient
-	public boolean isPostPersistedByListener() {
-		return isPostPersistedByListener;
+		this.postPersistedByListener = postPersistedByListener;
 	}
 
 	@PostPersist
 	public void postPersist() {
-		this.isPostPersisted = true;
+		this.postPersisted = true;
 	}
 
 	public static class PostPersistableBusEventListener {
