@@ -12,7 +12,6 @@ import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.persistence.EntityManager;
@@ -21,10 +20,7 @@ import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.jpa.impl.OgmStoredProcedureQuery;
-import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
@@ -41,7 +37,7 @@ import org.junit.Test;
  *
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-@SkipByGridDialect(value = {INFINISPAN,INFINISPAN_REMOTE,NEO4J_EMBEDDED,NEO4J_REMOTE}, comment = "These dialects not supports stored procedures")
+@SkipByGridDialect(value = {INFINISPAN,INFINISPAN_REMOTE,NEO4J_EMBEDDED,NEO4J_REMOTE}, comment = "These dialects not support stored procedures")
 @TestForIssue( jiraKey = {"OGM-359"})
 public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 
@@ -80,16 +76,16 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 	} */
 
 	/**
-	 * Testing a call of stored procedure (function)
+	 * Testing a call of stored procedure (function) that returns one result
 	 * @throws Exception
 	 */
 	@Test
-	public void dynamicCallOfStoredProcedureWithParametersAndOneResult() throws Exception {
-		StoredProcedureQuery call2 = em.createStoredProcedureQuery( TEST_SIMPLE_VALUE_STORED_PROC );
-		assertThat( call2 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		call2.registerStoredProcedureParameter( 0, Integer.class, ParameterMode.IN );
-		call2.setParameter( 0, 1 );
-		Number singleResult = (Number) call2.getSingleResult();
+	public void testSingleResultDynamicCall() throws Exception {
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_SIMPLE_VALUE_STORED_PROC );
+		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		storedProcedureQuery.registerStoredProcedureParameter( 0, Integer.class, ParameterMode.IN );
+		storedProcedureQuery.setParameter( 0, 1 );
+		Number singleResult = (Number) storedProcedureQuery.getSingleResult();
 		assertThat( singleResult ).isNotNull();
 		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.MONGODB ) ) {
 			//MongoDB can't returns Integer. It returns double :-(
@@ -100,59 +96,78 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		}
 	}
 	/**
-	 * Testing a call of stored procedure (function)
+	 * Testing a  dynamic call of stored procedure (function) that returns cursor.
+	 * Transformation to resultset is by mapping class.
 	 * @throws Exception
 	 */
 	@Test
-	public void dynamicCallOfStoredProcedureWithParametersAndListEntityResult() throws Exception {
+	public void testResultSetDynamicCallWithResultClass() throws Exception {
 
-		StoredProcedureQuery call3 = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, Car.class );
-		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		call3.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
-		call3.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
-		call3.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		call3.setParameter( 1, "id" );
-		call3.setParameter( 2, "title" );
-		List<Car> listResult = call3.getResultList();
-		assertThat( listResult ).isNotNull();
-		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id","title" ) );
-
-		StoredProcedureQuery call4 = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, "carMapping" );
-		assertThat( call4 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		call4.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
-		call4.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
-		call4.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		call4.setParameter( 1, "id1" );
-		call4.setParameter( 2, "title1" );
-		listResult = call4.getResultList();
-		assertThat( listResult ).isNotNull();
-		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id1","title1" ) );
-	}
-
-	@Test
-	public void staticCallOfStoredProcedureWithParametersAndListEntityResult() throws Exception {
-		//function with one parameter and returned entity
-
-
-		StoredProcedureQuery call3 = em.createNamedStoredProcedureQuery( "testproc4_1" );
-		assertThat( call3 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		call3.setParameter( 1, "id" );
-		call3.setParameter( 2, "title" );
-		List<Car> listResult = call3.getResultList();
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, Car.class );
+		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+		storedProcedureQuery.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
+		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+		storedProcedureQuery.setParameter( 1, "id" );
+		storedProcedureQuery.setParameter( 2, "title" );
+		List<Car> listResult = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
 		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id", "title" ) );
+	}
+	/**
+	 * Testing a  dynamic call of stored procedure (function) that returns cursor.
+	 * Transformation to resultset is by result set mapping.
+	 * @throws Exception
+	 */
 
-		StoredProcedureQuery call4 = em.createNamedStoredProcedureQuery( "testproc4_2" );
-		assertThat( call4 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		call4.setParameter( 1, "id1" );
-		call4.setParameter( 2, "title1" );
-		listResult = call4.getResultList();
+	@Test
+	public void testResultSetDynamicCallWithResultMapping() throws Exception {
+
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, "carMapping" );
+		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		storedProcedureQuery.registerStoredProcedureParameter( 0,Void.class, ParameterMode.REF_CURSOR );
+		storedProcedureQuery.registerStoredProcedureParameter( 1, String.class, ParameterMode.IN );
+		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+		storedProcedureQuery.setParameter( 1, "id1" );
+		storedProcedureQuery.setParameter( 2, "title'1" );
+		List<Car> listResult = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id1", "title1" ) );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id1","title'1" ) );
+	}
+
+	/**
+	 * Testing a  static call of stored procedure (function) that returns cursor.
+	 * Transformation to resultset is by result class.
+	 * @throws Exception
+	 */
+	@Test
+	public void testResultSetStaticCallWithResultClass() throws Exception {
+		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "testproc4_1" );
+		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		storedProcedureQuery.setParameter( 1, "id" );
+		storedProcedureQuery.setParameter( 2, "title" );
+		List<Car> listResult = storedProcedureQuery.getResultList();
+		assertThat( listResult ).isNotNull();
+		assertThat( listResult.size() ).isEqualTo( 1 );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id", "title" ) );
+	}
+
+	/**
+	 * Testing a  static call of stored procedure (function) that returns cursor.
+	 * Transformation to resultset is by result set mapping.
+	 * @throws Exception
+	 */
+	public void testResultSetStaticCallWithResultMapping() throws Exception {
+		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "testproc4_2" );
+		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
+		storedProcedureQuery.setParameter( 1, "id2" );
+		storedProcedureQuery.setParameter( 2, "title'2" );
+		List<Car> listResult  = storedProcedureQuery.getResultList();
+		assertThat( listResult ).isNotNull();
+		assertThat( listResult.size() ).isEqualTo( 1 );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id2", "title'2" ) );
 	}
 
 	@Override
@@ -161,35 +176,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		Properties properties = info.getProperties();
 
 		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.HASHMAP ) ) {
-			// we are in 'core' module. we need to set specified dialect for execute stored procedures
 			properties.setProperty( OgmProperties.DATASTORE_PROVIDER, IndexedStoredProcProvider.class.getName() );
-
-			// function with one parameter and result as list of entities
-			IndexedStoredProcDialect.FUNCTIONS.put( TEST_RESULT_SET_STORED_PROC, new IndexedStoredProcedure() {
-
-				@Override
-				public ClosableIterator<Tuple> execute(Object[] params) {
-					List<Tuple> result = new ArrayList<>( 1 );
-					Tuple resultTuple = new Tuple();
-					resultTuple.put( "id", params[0] );
-					resultTuple.put( "title", params[1] );
-					result.add( resultTuple );
-					return CollectionHelper.newClosableIterator( result );
-				}
-			} );
-			// function with one parameter and returned simple value
-			IndexedStoredProcDialect.FUNCTIONS.put( TEST_SIMPLE_VALUE_STORED_PROC, new IndexedStoredProcedure() {
-
-				@Override
-				public ClosableIterator<Tuple> execute(Object[] params) {
-					List<Tuple> result = new ArrayList<>( 1 );
-					Tuple resultTuple = new Tuple();
-					resultTuple.put( "result", params[0] );
-					result.add( resultTuple );
-					return CollectionHelper.newClosableIterator( result );
-				}
-			} );
-
 		}
 	}
 
