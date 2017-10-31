@@ -836,6 +836,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case MAP_REDUCE:
 				return doMapReduce( queryDescriptor, collection );
 			case INSERT:
+			case INSERTONE:
+			case INSERTMANY:
 			case REMOVE:
 			case DELETEMANY:
 			case DELETEONE:
