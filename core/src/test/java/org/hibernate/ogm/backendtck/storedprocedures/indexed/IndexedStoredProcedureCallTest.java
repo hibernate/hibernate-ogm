@@ -7,25 +7,23 @@
 package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.util.List;
-import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.ParameterMode;
 import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.jpa.impl.OgmStoredProcedureQuery;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import org.junit.After;
@@ -37,7 +35,7 @@ import org.junit.Test;
  *
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-@SkipByGridDialect(value = {INFINISPAN,INFINISPAN_REMOTE,NEO4J_EMBEDDED,NEO4J_REMOTE}, comment = "These dialects not support stored procedures")
+@SkipByGridDialect(value = {HASHMAP,INFINISPAN,INFINISPAN_REMOTE,NEO4J_EMBEDDED,NEO4J_REMOTE}, comment = "These dialects not support stored procedures")
 @TestForIssue( jiraKey = {"OGM-359"})
 public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 
@@ -170,15 +168,7 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id2", "title'2" ) );
 	}
 
-	@Override
-	protected void configure(GetterPersistenceUnitInfo info) {
 
-		Properties properties = info.getProperties();
-
-		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.HASHMAP ) ) {
-			properties.setProperty( OgmProperties.DATASTORE_PROVIDER, IndexedStoredProcProvider.class.getName() );
-		}
-	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
