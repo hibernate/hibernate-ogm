@@ -7,7 +7,7 @@
 package org.hibernate.ogm.dialect.query.spi;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,7 +57,7 @@ public class QueryParameters {
 	}
 
 	private static Map<String, TypedGridValue> createNamedParameters(SessionFactoryImplementor factory, org.hibernate.engine.spi.QueryParameters parameters, TypeTranslator typeTranslator) {
-		Map<String, TypedGridValue> namedParameters = new HashMap<>();
+		Map<String, TypedGridValue> namedParameters = new LinkedHashMap<>( parameters.getNamedParameters().size() );
 		for ( Entry<String, TypedValue> parameter : parameters.getNamedParameters().entrySet() ) {
 			TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue( parameter.getValue(), typeTranslator, factory );
 			namedParameters.put( parameter.getKey(), typedGridValue );
