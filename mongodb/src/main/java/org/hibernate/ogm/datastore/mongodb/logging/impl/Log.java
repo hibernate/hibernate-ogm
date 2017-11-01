@@ -131,4 +131,12 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1236, value = "The options for index %2$s of collection %1$s are not a valid JSON object.")
 	HibernateException invalidOptionsFormatForIndex(String collection, String indexName, @Cause Exception e);
 
+	@Message(id = 1237, value = "Unable to execute command \"%s\". Error message : %s. Code name: %s")
+	HibernateException unableToExecuteCommand(String command, String errorMessage,String codeMessage, @Cause Exception e);
+
+	@Message(id = 1238, value = "Procedure \"%s\" returns %s but must java.util.List")
+	HibernateException resultSetMustBeRepresentedAsList(String procedureName, String resultClass);
+
+
+
 }
