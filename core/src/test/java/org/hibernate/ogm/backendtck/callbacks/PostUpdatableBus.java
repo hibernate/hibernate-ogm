@@ -20,6 +20,14 @@ public class PostUpdatableBus extends Bus {
 	private boolean postUpdated;
 	private boolean postUpdatedByListener;
 
+	public PostUpdatableBus() {
+	}
+
+	public PostUpdatableBus(int id, String field) {
+		super( id );
+		this.field = field;
+	}
+
 	public String getField() {
 		return field;
 	}

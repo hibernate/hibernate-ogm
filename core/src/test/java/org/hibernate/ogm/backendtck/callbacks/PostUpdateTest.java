@@ -6,22 +6,22 @@
  */
 package org.hibernate.ogm.backendtck.callbacks;
 
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import javax.persistence.EntityManager;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import org.hibernate.ogm.utils.SkipByGridDialect;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-@SkipByGridDialect(value = { INFINISPAN,INFINISPAN_REMOTE }, comment = "The dialect has strangenesses with 'postupdate' callback")
 public class PostUpdateTest extends OgmJpaTestCase {
 
 	private static final String INITIAL = "initial";
@@ -37,95 +37,93 @@ public class PostUpdateTest extends OgmJpaTestCase {
 	@After
 	@Override
 	public void removeEntities() throws Exception {
-		em.getTransaction().begin();
-		em.remove( em.find( PostUpdatableBus.class, 1 ) );
-		em.getTransaction().commit();
-		em.close();
+		try {
+			inTx( em, ( EntityManager em ) -> em.remove( em.find( PostUpdatableBus.class, 1 ) ) );
+		}
+		finally {
+			em.close();
+		}
 	}
 
-	/**
-	 * Update an entity which uses a @PostUpdate annotated method
-	 * to set boolean field to 'true'.
-	 */
 	@Test
-	public void testFieldSetInPostUpdate() {
-		em.getTransaction().begin();
+	public void testFieldSetInPostUpdateAnnotation() {
+		// Persist
+		inTx( em, ( EntityManager em ) -> em.persist( new PostUpdatableBus( 1, INITIAL ) ) );
 
-		PostUpdatableBus bus = new PostUpdatableBus();
-		bus.setId( 1 );
-		bus.setField( INITIAL );
+		// Update
+		Function<EntityManager, PostUpdatableBus> function = new Function<EntityManager, PostUpdatableBus>() {
 
-		em.persist( bus );
-		em.getTransaction().commit();
-		em.clear();
+			@Override
+			public PostUpdatableBus apply(EntityManager t) {
+				PostUpdatableBus bus = em.find( PostUpdatableBus.class, 1 );
+				assertEquals( bus.getField(), INITIAL );
+				assertFalse( bus.isPostUpdated() );
+				bus.setField( UPDATED );
+				return bus;
+			}
+		};
 
-		em.getTransaction().begin();
-
-		bus = em.find( PostUpdatableBus.class, bus.getId() );
-
-		assertNotNull( bus );
-		assertEquals( bus.getField(), INITIAL );
-		assertFalse( bus.isPostUpdated() );
-		bus.setField( UPDATED );
-
-		em.merge( bus );
-
-		em.getTransaction().commit();
-
-		assertTrue( bus.isPostUpdated() );
-		em.clear();
-
-		em.getTransaction().begin();
-
-		bus = em.find( PostUpdatableBus.class, bus.getId() );
-		assertNotNull( bus );
-		assertEquals( bus.getField(), UPDATED );
-		// @PostUpdate executed after the database UPDATE operation
-		assertFalse( bus.isPostUpdated() );
-
-		em.getTransaction().commit();
+		PostUpdatableBus postUpdatedBus = inTx( em, function );
+		assertTrue( postUpdatedBus.isPostUpdated() );
 	}
 
 	@Test
 	public void testFieldSetInPostUpdateByListener() {
-		em.getTransaction().begin();
+		// Persist
+		inTx( em, ( EntityManager em ) -> em.persist( new PostUpdatableBus( 1, INITIAL ) ) );
 
-		PostUpdatableBus bus = new PostUpdatableBus();
-		bus.setId( 1 );
-		bus.setField( INITIAL );
+		// Update
+		Function<EntityManager, PostUpdatableBus> function = new Function<EntityManager, PostUpdatableBus>() {
 
-		em.persist( bus );
-		em.getTransaction().commit();
-		em.clear();
+			@Override
+			public PostUpdatableBus apply(EntityManager t) {
+				PostUpdatableBus bus = em.find( PostUpdatableBus.class, 1 );
+				assertEquals( bus.getField(), INITIAL );
+				assertFalse( bus.isPostUpdatedByListener() );
+				bus.setField( UPDATED );
+				return bus;
+			}
+		};
 
-		em.getTransaction().begin();
+		PostUpdatableBus postUpdatedBus = inTx( em, function );
+		assertTrue( postUpdatedBus.isPostUpdatedByListener() );
+	}
 
-		bus = em.find( PostUpdatableBus.class, bus.getId() );
+	public static <T extends Bus> T inTx(EntityManager em, Function<EntityManager, T> consumer) {
+		EntityTransaction tx = em.getTransaction();
+		try {
+			tx.begin();
+			T bus = consumer.apply( em );
+			tx.commit();
+			em.clear();
+			return bus;
+		}
+		catch (HibernateException hex) {
+			if ( tx != null && tx.isActive() ) {
+				tx.rollback();
+			}
+			throw hex;
+		}
+	}
 
-		assertNotNull( bus );
-		assertEquals( bus.getField(), INITIAL );
-		assertFalse( bus.isPostUpdatedByListener() );
-
-		bus.setField( UPDATED );
-		em.merge( bus );
-		em.getTransaction().commit();
-
-		assertTrue( bus.isPostUpdatedByListener() );
-
-		em.clear();
-
-		em.getTransaction().begin();
-
-		bus = em.find( PostUpdatableBus.class, bus.getId() );
-		assertNotNull( bus );
-		assertEquals( bus.getField(), UPDATED );
-		assertFalse( bus.isPostUpdatedByListener() );
-
-		em.getTransaction().commit();
+	public static void inTx(EntityManager em, Consumer<EntityManager> consumer) {
+		EntityTransaction tx = em.getTransaction();
+		try {
+			tx.begin();
+			consumer.accept( em );
+			tx.commit();
+			em.clear();
+		}
+		catch (HibernateException hex) {
+			if ( tx != null && tx.isActive() ) {
+				tx.rollback();
+			}
+			throw hex;
+		}
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { PostUpdatableBus.class };
+		return new Class<?>[]{ PostUpdatableBus.class };
 	}
 }

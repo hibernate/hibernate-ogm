@@ -64,7 +64,6 @@ public class PreUpdateTest extends OgmJpaTestCase {
 		assertFalse( bus.isPreUpdated() );
 
 		bus.setField( UPDATED );
-		em.merge( bus );
 		em.getTransaction().commit();
 
 		assertTrue( bus.isPreUpdated() );
@@ -105,7 +104,6 @@ public class PreUpdateTest extends OgmJpaTestCase {
 		assertFalse( bus.isPreUpdatedByListener() );
 
 		bus.setField( UPDATED );
-		em.merge( bus );
 		em.getTransaction().commit();
 
 		assertTrue( bus.isPreUpdatedByListener() );

@@ -18,6 +18,10 @@ public class Bus {
 	public Bus() {
 	}
 
+	public Bus(Integer id) {
+		this.id = id;
+	}
+
 	public Integer getId() {
 		return id;
 	}
