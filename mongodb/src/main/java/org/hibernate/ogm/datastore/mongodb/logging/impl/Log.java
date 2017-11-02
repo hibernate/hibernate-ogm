@@ -136,7 +136,4 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1238, value = "Procedure \"%s\" returns %s but must java.util.List")
 	HibernateException resultSetMustBeRepresentedAsList(String procedureName, String resultClass);
-
-
-
 }
