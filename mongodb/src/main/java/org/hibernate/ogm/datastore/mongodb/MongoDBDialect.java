@@ -1711,7 +1711,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 
 	@Override
-	public boolean supportsNamedPosition() {
+	public boolean supportsNamedParameters() {
 		return false;
 	}
 

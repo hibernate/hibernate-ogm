@@ -52,7 +52,7 @@ public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 	}
 
 	private void defineParameterStrategy() {
-		if ( this.gridDialect.supportsNamedPosition() ) {
+		if ( this.gridDialect.supportsNamedParameters() ) {
 			parameterStrategy = ParameterStrategy.NAMED;
 		}
 		else {

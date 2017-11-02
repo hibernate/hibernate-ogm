@@ -312,8 +312,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public boolean supportsNamedPosition() {
-		return storedProcedureAwareGridDialect.supportsNamedPosition();
+	public boolean supportsNamedParameters() {
+		return storedProcedureAwareGridDialect.supportsNamedParameters();
 	}
 
 	@Override
