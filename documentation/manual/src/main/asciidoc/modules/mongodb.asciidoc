@@ -3487,7 +3487,9 @@ If stored procedure call description contains `ParameterMode.REF_CURSOR` then do
 ----
 {
   "result" : [
-  {"id":1,"title":"title"}
+  {"id":1,"title":"title1"},
+  {"id":2,"title":"title2"},
+  {"id":3,"title":"title3"}
   ]
 }
 ----
