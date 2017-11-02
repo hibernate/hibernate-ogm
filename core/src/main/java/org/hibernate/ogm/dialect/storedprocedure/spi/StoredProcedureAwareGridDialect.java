@@ -16,14 +16,12 @@ import org.hibernate.ogm.model.spi.Tuple;
  * A facet for {@link GridDialect} implementations which support the execution of stored procedures.
  *
  * Cases of stored procedures are :
- * <ou>
+ * <ol>
  *     <li>procedure without any input or output parameters</li>
  *	   <li>function with many input parameters and one returned value</li>
- * </ou>
+ *	   <li>function with many input parameters and result set</li>
+ * </ol>
  *
- *
- * @see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java">Example for MongoDB</a>
- * @see <a href="http://orientdb.com/docs/2.0/orientdb.wiki/Functions.html">Example for OrientDB</a>
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public interface StoredProcedureAwareGridDialect extends GridDialect {
@@ -33,7 +31,7 @@ public interface StoredProcedureAwareGridDialect extends GridDialect {
 	 *
 	 * @return
 	 */
-	boolean supportsNamedPosition();
+	boolean supportsNamedParameters();
 
 
 	/**
@@ -48,7 +46,4 @@ public interface StoredProcedureAwareGridDialect extends GridDialect {
 	 */
 
 	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, QueryParameters queryParameters, TupleContext tupleContext);
-
-
-
 }

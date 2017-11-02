@@ -96,7 +96,7 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 					Type hibernateType = nosqlParameterRegistration.getHibernateType();
 					TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue( new TypedValue( hibernateType, value ),
 							typeTranslator, sessionFactory );
-					if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
+					if ( procedureCall.getGridDialect().supportsNamedParameters() ) {
 						namedParameters.put( nosqlParameterRegistration.getName(), typedGridValue );
 					}
 					else {

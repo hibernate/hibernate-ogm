@@ -54,7 +54,7 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 	private void initProcedureCallByMemento() {
 		// register parameters
 		for ( ParameterMemento parameterMemento : procedureCallMemento.getParameterDeclarations() ) {
-			if ( procedureCall.getGridDialect().supportsNamedPosition() ) {
+			if ( procedureCall.getGridDialect().supportsNamedParameters() ) {
 				registerStoredProcedureParameter( parameterMemento.getName(), parameterMemento.getType(), parameterMemento.getMode() );
 			}
 			else {
