@@ -7,6 +7,8 @@
 package org.hibernate.ogm.backendtck.storedprocedures;
 
 import static org.hibernate.ogm.backendtck.storedprocedures.indexed.IndexedStoredProcedureCallTest.TEST_RESULT_SET_STORED_PROC;
+import static org.hibernate.ogm.backendtck.storedprocedures.named.NamedStoredProcedureCallTest.TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME;
+import static org.hibernate.ogm.backendtck.storedprocedures.named.NamedStoredProcedureCallTest.TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME;
 
 import java.util.Objects;
 import javax.persistence.Entity;
@@ -32,6 +34,16 @@ import javax.persistence.StoredProcedureParameter;
 				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
+		}, resultSetMappings = "carMapping"),
+		@NamedStoredProcedureQuery(name = "testproc4_3", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
+				@StoredProcedureParameter(name = "result", mode = ParameterMode.REF_CURSOR, type = Void.class),
+				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, mode = ParameterMode.IN, type = String.class)
+		}, resultClasses = Car.class),
+		@NamedStoredProcedureQuery(name = "testproc4_4", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
+				@StoredProcedureParameter(name = "result", mode = ParameterMode.REF_CURSOR, type = Void.class),
+				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, mode = ParameterMode.IN, type = String.class)
 		}, resultSetMappings = "carMapping")
 })
 
