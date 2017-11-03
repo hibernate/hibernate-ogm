@@ -53,26 +53,6 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		em.close();
 	}
 
-	/*@Test
-	public void dynamicCallOfStoredProcedureWithoutParametersAndResult() throws Exception {
-		// no parameters, no results
-		final AtomicInteger result = new AtomicInteger( 1 );
-		IndexedStoredProcDialect.FUNCTIONS.put( "testproc1", new IndexedStoredProcedure() {
-			@Override
-			public ClosableIterator<Tuple> execute(Object[] params) {
-				result.set( 10 );
-				return null;
-			}
-		} );
-
-
-		StoredProcedureQuery call1 = em.createStoredProcedureQuery( "testproc1" );
-		assertThat( call1 ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		assertThat( call1.getParameters() ).hasSize( 0 );
-		assertThat( call1.execute() ).isEqualTo( false );
-		assertThat( result.get() ).isEqualTo( 10 );
-	} */
-
 	/**
 	 * Testing a call of stored procedure (function) that returns one result
 	 * @throws Exception
