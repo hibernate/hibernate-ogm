@@ -194,20 +194,21 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public int getMaxResults() {
-		// if have not ParameterMode.REF_CURSOR
-		boolean hasOutParameters = false;
-		for ( ParameterRegistration parameterRegistration : parameterRegistrations ) {
-			// parameterRegistration.getMode().equals( ParameterMode.REF_CURSOR )
-			if ( parameterRegistration.getMode().equals( ParameterMode.OUT ) ) {
-				hasOutParameters = true;
-
-			}
-		}
 		int result = 0;
-		if ( hasOutParameters ) {
-
+		for ( ParameterRegistration parameterRegistration : parameterRegistrations ) {
+			switch ( parameterRegistration.getMode() ) {
+				case REF_CURSOR:
+					result = 1;
+					break;
+				case OUT:
+				case INOUT:
+					throw new UnsupportedOperationException( "Out parameters not supported!" );
+				default:
+					break;
+			}			
 		}
 		return result;
 	}
