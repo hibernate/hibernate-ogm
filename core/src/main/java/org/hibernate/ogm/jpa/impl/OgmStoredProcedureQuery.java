@@ -208,7 +208,7 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 					throw new UnsupportedOperationException( "Out parameters not supported!" );
 				default:
 					break;
-			}			
+			}
 		}
 		return result;
 	}
