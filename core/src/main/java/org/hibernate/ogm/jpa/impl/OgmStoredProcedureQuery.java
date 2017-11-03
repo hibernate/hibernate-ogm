@@ -20,7 +20,7 @@ import org.hibernate.jpa.internal.StoredProcedureQueryImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.jpa.spi.HibernateEntityManagerImplementor;
 import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallImpl;
-import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureOutputImpl;
+import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureResultSetOutputImpl;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ParameterRegistration;
@@ -132,7 +132,7 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 	@Override
 	public List getResultList() {
 		try {
-			final NoSQLProcedureOutputImpl rtn = (NoSQLProcedureOutputImpl) outputs().getCurrent();
+			final NoSQLProcedureResultSetOutputImpl rtn = (NoSQLProcedureResultSetOutputImpl) outputs().getCurrent();
 			log.debugf( "getSynchronizedQuerySpaces: %s", this.procedureCall.getSynchronizedQuerySpaces() );
 
 			return rtn.getResultList();
@@ -149,7 +149,7 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 	@Override
 	public Object getSingleResult() {
 		try {
-			final NoSQLProcedureOutputImpl rtn = (NoSQLProcedureOutputImpl) outputs().getCurrent();
+			final NoSQLProcedureResultSetOutputImpl rtn = (NoSQLProcedureResultSetOutputImpl) outputs().getCurrent();
 			return rtn.getSingleResult();
 		}
 		catch (HibernateException he) {

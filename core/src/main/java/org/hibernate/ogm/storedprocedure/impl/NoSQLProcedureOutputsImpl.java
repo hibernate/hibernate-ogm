@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.storedprocedure.impl;
 
+import static org.hibernate.ogm.util.impl.CustomLoaderHelper.getTuplesAsList;
+import static org.hibernate.ogm.util.impl.CustomLoaderHelper.listOfEntities;
 import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
 
 import java.io.Serializable;
@@ -20,17 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import javax.persistence.ParameterMode;
 
-import org.hibernate.LockOptions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.RowSelection;
 import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.loader.impl.OgmLoadingContext;
-import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
 import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
@@ -152,28 +150,9 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 
 
 		//copy data from iterator
-		return new NoSQLProcedureOutputImpl( entityList, isResultRefCursor );
-	}
-	//@todo dublicate code from BackendCustomLoader
-	private List<Object> listOfEntities(SessionImplementor session, Class<?> returnedClass, ClosableIterator<Tuple> tuples) {
-		TupleBasedEntityLoader loader = getLoader( session, returnedClass );
-		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
-		ogmLoadingContext.setTuples( getTuplesAsList( tuples ) );
-		return loader.loadEntitiesFromTuples( session, LockOptions.NONE, ogmLoadingContext );
+		return new NoSQLProcedureResultSetOutputImpl( entityList, isResultRefCursor );
 	}
 
-	private List<Tuple> getTuplesAsList(ClosableIterator<Tuple> tuples) {
-		List<Tuple> tuplesAsList = new LinkedList<>();
-		while ( tuples.hasNext() ) {
-			tuplesAsList.add( tuples.next() );
-		}
-		return tuplesAsList;
-	}
-	private TupleBasedEntityLoader getLoader(SessionImplementor session, Class<?> entityClass) {
-		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
-		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, session );
-		return loader;
-	}
 
 	@Override
 	public boolean goToNext() {

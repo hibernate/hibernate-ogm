@@ -15,14 +15,15 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.result.ResultSetOutput;
 
 /**
+ * Models a return that is a result set for NoSQL stored procedure.
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-public class NoSQLProcedureOutputImpl implements ResultSetOutput {
+public class NoSQLProcedureResultSetOutputImpl implements ResultSetOutput {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private final List<?> resultList;
 	private final boolean isResultRefCursor;
 
-	public NoSQLProcedureOutputImpl(List<?> resultList, boolean isResultRefCursor) {
+	public NoSQLProcedureResultSetOutputImpl(List<?> resultList, boolean isResultRefCursor) {
 		this.resultList = resultList;
 		this.isResultRefCursor = isResultRefCursor;
 	}
