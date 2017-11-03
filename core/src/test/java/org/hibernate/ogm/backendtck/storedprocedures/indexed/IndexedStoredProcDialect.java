@@ -6,11 +6,11 @@
  */
 package org.hibernate.ogm.backendtck.storedprocedures.indexed;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
@@ -31,17 +31,14 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class IndexedStoredProcDialect extends BaseGridDialect implements StoredProcedureAwareGridDialect {
 
-	public static final Map<String, IndexedStoredProcedure> FUNCTIONS = new HashMap<>(  );
+	public static final Map<String, Function<Object[],ClosableIterator<Tuple>>> FUNCTIONS = new HashMap<>(  );
 
-	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private IndexedStoredProcProvider provider;
 
 	public IndexedStoredProcDialect(IndexedStoredProcProvider provider) {
@@ -60,7 +57,7 @@ public class IndexedStoredProcDialect extends BaseGridDialect implements StoredP
 		for ( TypedGridValue positionalPram : positionalParameters ) {
 			values.add( positionalPram.getValue() );
 		}
-		return FUNCTIONS.get( storedProcedureName ).execute( values.toArray() );
+		return FUNCTIONS.get( storedProcedureName ).apply( values.toArray() );
 	}
 
 	@Override

@@ -6,9 +6,9 @@
  */
 package org.hibernate.ogm.backendtck.storedprocedures.named;
 
-import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
@@ -29,17 +29,14 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class NamedStoredProcDialect extends BaseGridDialect implements StoredProcedureAwareGridDialect {
 
-	public static final Map<String, NamedStoredProcedure> FUNCTIONS = new HashMap<>(  );
+	public static final Map<String, Function<Map<String,Object>,ClosableIterator<Tuple>>> FUNCTIONS = new HashMap<>(  );
 
-	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private NamedStoredProcProvider provider;
 
 	public NamedStoredProcDialect(NamedStoredProcProvider provider) {
@@ -58,7 +55,7 @@ public class NamedStoredProcDialect extends BaseGridDialect implements StoredPro
 		for ( Map.Entry<String,TypedGridValue> namedParam : queryParameters.getNamedParameters().entrySet() ) {
 			values.put( namedParam.getKey(), namedParam.getValue().getValue() );
 		}
-		return FUNCTIONS.get( storedProcedureName ).execute( values );
+		return FUNCTIONS.get( storedProcedureName ).apply( values );
 	}
 
 	@Override

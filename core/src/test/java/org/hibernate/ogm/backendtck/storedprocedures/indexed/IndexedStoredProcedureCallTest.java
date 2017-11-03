@@ -150,8 +150,6 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id2", "title'2" ) );
 	}
 
-
-
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class[] { Car.class };

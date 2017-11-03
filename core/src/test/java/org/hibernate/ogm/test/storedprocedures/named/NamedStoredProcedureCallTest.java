@@ -13,9 +13,7 @@ import java.util.Properties;
 
 import org.hibernate.ogm.backendtck.storedprocedures.named.NamedStoredProcDialect;
 import org.hibernate.ogm.backendtck.storedprocedures.named.NamedStoredProcProvider;
-import org.hibernate.ogm.backendtck.storedprocedures.named.NamedStoredProcedure;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
@@ -30,29 +28,21 @@ public class NamedStoredProcedureCallTest extends org.hibernate.ogm.backendtck.s
 		Properties properties = info.getProperties();
 		properties.setProperty( OgmProperties.DATASTORE_PROVIDER, NamedStoredProcProvider.class.getName() );
 		// function with one parameter and result as list of entities
-		NamedStoredProcDialect.FUNCTIONS.put( TEST_RESULT_SET_STORED_PROC, new NamedStoredProcedure() {
-
-			@Override
-			public ClosableIterator<Tuple> execute(Map<String, Object> params) {
-				List<Tuple> result = new ArrayList<>( 1 );
-				Tuple resultTuple = new Tuple();
-				resultTuple.put( "id", params.get( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME ) );
-				resultTuple.put( "title", params.get( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME ) );
-				result.add( resultTuple );
-				return CollectionHelper.newClosableIterator( result );
-			}
+		NamedStoredProcDialect.FUNCTIONS.put( TEST_RESULT_SET_STORED_PROC, ( Map<String, Object> params ) -> {
+			List<Tuple> result = new ArrayList<>( 1 );
+			Tuple resultTuple = new Tuple();
+			resultTuple.put( "id", params.get( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME ) );
+			resultTuple.put( "title", params.get( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME ) );
+			result.add( resultTuple );
+			return CollectionHelper.newClosableIterator( result );
 		} );
 		// function with one parameter and returned simple value
-		NamedStoredProcDialect.FUNCTIONS.put( TEST_SIMPLE_VALUE_STORED_PROC, new NamedStoredProcedure() {
-
-			@Override
-			public ClosableIterator<Tuple> execute(Map<String, Object> params) {
-				List<Tuple> result = new ArrayList<>( 1 );
-				Tuple resultTuple = new Tuple();
-				resultTuple.put( "result", params.get( TEST_SIMPLE_VALUE_STORED_PROC_PARAM_NAME ) );
-				result.add( resultTuple );
-				return CollectionHelper.newClosableIterator( result );
-			}
+		NamedStoredProcDialect.FUNCTIONS.put( TEST_SIMPLE_VALUE_STORED_PROC, ( Map<String, Object> params ) -> {
+			List<Tuple> result = new ArrayList<>( 1 );
+			Tuple resultTuple = new Tuple();
+			resultTuple.put( "result", params.get( TEST_SIMPLE_VALUE_STORED_PROC_PARAM_NAME ) );
+			result.add( resultTuple );
+			return CollectionHelper.newClosableIterator( result );
 		} );
 	}
 }

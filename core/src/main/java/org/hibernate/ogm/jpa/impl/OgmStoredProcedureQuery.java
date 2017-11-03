@@ -86,6 +86,24 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 		return this;
 	}
 
+	public StoredProcedureQueryImpl setParameter(String name, Object value) {
+		log.debugf( "set value %s for parameter name : %d", value, name );
+		checkOpen( true );
+
+		try {
+			findNoSQLParameterRegistration( name ).bindValue( value );
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
 	@Override
 	public StoredProcedureQueryImpl setParameter(int position, Object value) {
 		log.debugf( "set value %s for parameter index : %d", value, position );
@@ -105,6 +123,7 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 		return this;
 	}
 
+
 	private <X> ParameterRegistration<X> findNoSQLParameterRegistration(int parameterPosition) {
 		if ( parameterRegistrations != null ) {
 			for ( ParameterRegistration<?> param : parameterRegistrations ) {
@@ -117,6 +136,20 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 			}
 		}
 		throw new IllegalArgumentException( "Parameter with that position [" + parameterPosition + "] did not exist" );
+	}
+
+	private <X> ParameterRegistration<X> findNoSQLParameterRegistration(String parameterName) {
+		if ( parameterRegistrations != null ) {
+			for ( ParameterRegistration<?> param : parameterRegistrations ) {
+				if ( param.getName() == null ) {
+					continue;
+				}
+				if ( parameterName.equals( param.getName() ) ) {
+					return (ParameterRegistration<X>) param;
+				}
+			}
+		}
+		throw new IllegalArgumentException( "Parameter with that name [" + parameterName + "] did not exist" );
 	}
 
 	@Override
