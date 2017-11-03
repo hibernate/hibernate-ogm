@@ -47,7 +47,7 @@ public class NamedStoredProcDialect extends BaseGridDialect implements StoredPro
 	}
 
 	@Override
-	public boolean supportsNamedParameters() {
+	public boolean supportsNamedPosition() {
 		return true;
 	}
 
