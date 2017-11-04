@@ -325,7 +325,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 	private void loadServerScripts(MongoDatabase mongoDatabase) {
 		BsonDocument simpleValueFunction = new BsonDocument( "value", new BsonJavaScript( "function(x1) { return x1; }" ) );
 		BsonDocument resultSetFunction = new BsonDocument( "value",
-				new BsonJavaScript( "function(id,title) { return {\"result\": [ {\"id\":id,\"title\":title} ] }; }" ) );
+				new BsonJavaScript( "function(id,title) { return {\"result\": [ {\"id\":NumberInt(id),\"title\":title} ] }; }" ) );
 		UpdateOptions options = new UpdateOptions().upsert( true );
 
 		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", TEST_SIMPLE_VALUE_STORED_PROC ),
