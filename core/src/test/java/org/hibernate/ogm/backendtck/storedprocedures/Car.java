@@ -27,22 +27,22 @@ import javax.persistence.StoredProcedureParameter;
 @NamedStoredProcedureQueries({
 		@NamedStoredProcedureQuery(name = "testproc4_1", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
 				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
-				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = Integer.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
 		}, resultClasses = Car.class),
 		@NamedStoredProcedureQuery(name = "testproc4_2", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
 				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
-				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = Integer.class),
 				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
 		}, resultSetMappings = "carMapping"),
 		@NamedStoredProcedureQuery(name = "testproc4_3", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
 				@StoredProcedureParameter(name = "result", mode = ParameterMode.REF_CURSOR, type = Void.class),
-				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, mode = ParameterMode.IN, type = Integer.class),
 				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, mode = ParameterMode.IN, type = String.class)
 		}, resultClasses = Car.class),
 		@NamedStoredProcedureQuery(name = "testproc4_4", procedureName = TEST_RESULT_SET_STORED_PROC, parameters = {
 				@StoredProcedureParameter(name = "result", mode = ParameterMode.REF_CURSOR, type = Void.class),
-				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, mode = ParameterMode.IN, type = String.class),
+				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, mode = ParameterMode.IN, type = Integer.class),
 				@StoredProcedureParameter(name = TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, mode = ParameterMode.IN, type = String.class)
 		}, resultSetMappings = "carMapping")
 })
@@ -51,23 +51,23 @@ import javax.persistence.StoredProcedureParameter;
 public class Car {
 
 	@Id
-	private String id;
+	private Integer id;
 
 	private String title;
 
 	public Car() {
 	}
 
-	public Car(String id, String title) {
+	public Car(Integer id, String title) {
 		this.id = id;
 		this.title = title;
 	}
 
-	public String getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 

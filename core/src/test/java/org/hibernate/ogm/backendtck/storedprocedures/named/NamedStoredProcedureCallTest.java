@@ -82,14 +82,14 @@ public class NamedStoredProcedureCallTest extends OgmJpaTestCase {
 		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, Car.class );
 		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, String.class, ParameterMode.IN );
+		storedProcedureQuery.registerStoredProcedureParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, Integer.class, ParameterMode.IN );
 		storedProcedureQuery.registerStoredProcedureParameter( "title", String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, "id" );
+		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, 1 );
 		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, "title" );
 		List<Car> listResult = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id", "title" ) );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( 1, "title" ) );
 	}
 
 	/**
@@ -104,14 +104,14 @@ public class NamedStoredProcedureCallTest extends OgmJpaTestCase {
 		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, "carMapping" );
 		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
 		storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, String.class, ParameterMode.IN );
+		storedProcedureQuery.registerStoredProcedureParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, Integer.class, ParameterMode.IN );
 		storedProcedureQuery.registerStoredProcedureParameter( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, "id1" );
+		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, 2 );
 		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, "title'1" );
 		List<Car> listResult = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id1","title'1" ) );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( 2,"title'1" ) );
 	}
 
 	/**
@@ -123,12 +123,12 @@ public class NamedStoredProcedureCallTest extends OgmJpaTestCase {
 	public void testResultSetStaticCallWithResultClass() throws Exception {
 		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "testproc4_3" );
 		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, "id" );
+		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, 1 );
 		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, "title" );
 		List<Car> listResult = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id", "title" ) );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( 1, "title" ) );
 	}
 
 	/**
@@ -139,12 +139,12 @@ public class NamedStoredProcedureCallTest extends OgmJpaTestCase {
 	public void testResultSetStaticCallWithResultMapping() throws Exception {
 		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "testproc4_4" );
 		assertThat( storedProcedureQuery ).isInstanceOfAny( OgmStoredProcedureQuery.class );
-		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, "id2" );
+		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_ID_PARAM_NAME, 2 );
 		storedProcedureQuery.setParameter( TEST_RESULT_SET_STORED_PROC_TITLE_PARAM_NAME, "title'2" );
 		List<Car> listResult  = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
-		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( "id2", "title'2" ) );
+		assertThat( listResult.get( 0 ) ).isEqualTo( new Car( 2, "title'2" ) );
 	}
 
 	@Override
