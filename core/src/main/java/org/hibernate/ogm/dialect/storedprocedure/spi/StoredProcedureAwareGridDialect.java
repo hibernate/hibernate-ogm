@@ -18,7 +18,7 @@ import org.hibernate.ogm.model.spi.Tuple;
  * Cases of stored procedures are :
  * <ol>
  *     <li>procedure without any input or output parameters</li>
- *	   <li>function with many input parameters and one returned value</li>
+ *	   <li>function with many input parameters and one returned value (primitive)</li>
  *	   <li>function with many input parameters and result set</li>
  * </ol>
  *
@@ -27,16 +27,15 @@ import org.hibernate.ogm.model.spi.Tuple;
 public interface StoredProcedureAwareGridDialect extends GridDialect {
 
 	/**
-	 * Is data storage supports parameter position by name (true) or by index (false)
+	 * Does data storage support parameter position by name or by index?
 	 *
-	 * @return
+	 * @return true if the data storage supports parameter position by name
 	 */
 	boolean supportsNamedParameters();
 
 
 	/**
 	 * Returns the result of a stored procedure executed on the backend.
-	 * Tne method uses for storages that supports name position
 	 *
 	 * @param storedProcedureName name of stored procedure.
 	 * @param queryParameters parameters passed for this query
