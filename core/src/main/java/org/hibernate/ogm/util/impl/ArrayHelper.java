@@ -74,7 +74,7 @@ public class ArrayHelper {
 	 * @param first the first array
 	 * @param second the second array
 	 * @param <T> the type of the element in the array
-	 * @return a new array created adding the element in the second array after the first one,
+	 * @return a new array created adding the element in the second array after the first one
 	 */
 	public static <T> T[] concat(T[] first, T... second) {
 		int firstLength = first.length;
@@ -110,5 +110,22 @@ public class ArrayHelper {
 			currentLength += entry.length;
 		}
 		return joined;
+	}
+
+	/**
+	 * Concats an element and an array.
+	 *
+	 * @param firstElement the first element
+	 * @param array the array
+	 * @param <T> the type of the element in the array
+	 * @return a new array created adding the element in the second array after the first element
+	 */
+	public static <T> T[] concat(T firstElement, T... array) {
+		@SuppressWarnings("unchecked")
+		T[] result = (T[]) Array.newInstance( firstElement.getClass(), 1 + array.length );
+		result[0] = firstElement;
+		System.arraycopy( array, 0, result, 1, array.length );
+
+		return result;
 	}
 }

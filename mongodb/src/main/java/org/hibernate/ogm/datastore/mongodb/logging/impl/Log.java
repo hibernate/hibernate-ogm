@@ -131,4 +131,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1236, value = "The options for index %2$s of collection %1$s are not a valid JSON object.")
 	HibernateException invalidOptionsFormatForIndex(String collection, String indexName, @Cause Exception e);
 
+	@Message(id = 1237, value = "Invalid GeoJSON type %1$s. Expecting %2$s.")
+	HibernateException invalidGeoJsonType(String actualType, String expectedType);
+
 }

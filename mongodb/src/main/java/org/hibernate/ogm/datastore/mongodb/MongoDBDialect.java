@@ -10,6 +10,7 @@ import static java.lang.Boolean.FALSE;
 import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.getColumnSharedPrefixOfAssociatedEntityLink;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,7 +44,6 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
@@ -51,7 +51,19 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
+import org.hibernate.ogm.datastore.mongodb.type.GeoLineString;
+import org.hibernate.ogm.datastore.mongodb.type.GeoMultiLineString;
+import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPoint;
+import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPolygon;
+import org.hibernate.ogm.datastore.mongodb.type.GeoPoint;
+import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoLineStringGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiLineStringGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPointGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPolygonGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPointGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPolygonGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
@@ -792,6 +804,24 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else if ( type instanceof MaterializedBlobType ) {
 			MaterializedBlobType exposedType = (MaterializedBlobType) type;
 			return new SerializableAsBinaryGridType<>( exposedType.getJavaTypeDescriptor() );
+		}
+		else if ( type.getReturnedClass() == GeoPoint.class ) {
+			return GeoPointGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == GeoMultiPoint.class ) {
+			return GeoMultiPointGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == GeoLineString.class ) {
+			return GeoLineStringGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == GeoMultiLineString.class ) {
+			return GeoMultiLineStringGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == GeoPolygon.class ) {
+			return GeoPolygonGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == GeoMultiPolygon.class ) {
+			return GeoMultiPolygonGridType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}

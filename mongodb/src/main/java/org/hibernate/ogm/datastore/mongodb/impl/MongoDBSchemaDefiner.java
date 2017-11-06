@@ -27,6 +27,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexSpec;
+import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexType;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
@@ -266,7 +267,8 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 		// if a text index already exists in the collection, MongoDB silently ignores the creation of the new text index
 		// so we might as well log a warning about it
-		if ( indexSpec.isTextIndex() && preexistingTextIndex != null && !preexistingTextIndex.equalsIgnoreCase( indexSpec.getIndexName() ) ) {
+		if ( MongoDBIndexType.TEXT.equals( indexSpec.getIndexType() )
+				&& preexistingTextIndex != null && !preexistingTextIndex.equalsIgnoreCase( indexSpec.getIndexName() ) ) {
 			throw log.unableToCreateTextIndex( collection.getNamespace().getCollectionName(), indexSpec.getIndexName(), preexistingTextIndex );
 		}
 

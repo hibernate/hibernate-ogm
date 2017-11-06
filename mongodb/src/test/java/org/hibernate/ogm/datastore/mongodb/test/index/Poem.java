@@ -19,7 +19,7 @@ import org.hibernate.ogm.options.shared.IndexOptions;
  * @author Guillaume Smet
  */
 @Entity
-@Table(name = "T_POEM", indexes = {
+@Table(name = Poem.COLLECTION_NAME, indexes = {
 		@Index(columnList = "author ASC", name = "author_idx"),
 		@Index(columnList = "name DESC", name = "name_idx"),
 		@Index(columnList = "author, name", name = "author_name_idx", unique = true),
@@ -35,7 +35,10 @@ import org.hibernate.ogm.options.shared.IndexOptions;
 })
 public class Poem {
 
+	public static final String COLLECTION_NAME = "T_POEM";
+
 	private String id;
+
 	private String name;
 
 	private String author;
