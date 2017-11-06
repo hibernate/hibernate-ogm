@@ -114,8 +114,9 @@ public class NoSQLProcedureParameterRegistration<T> implements ParameterRegistra
 
 	@Override
 	public void bindValue(T value, TemporalType explicitTemporalType) {
-
+		this.bind = new ParameterBindImpl<T>( value, explicitTemporalType );
 	}
+
 	private void validateBindability() {
 		if ( ! canBind() ) {
 			throw new ParameterMisuseException( "Cannot bind value to non-input parameter : " + this );

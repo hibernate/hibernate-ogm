@@ -13,7 +13,9 @@ import static org.hibernate.ogm.util.impl.TupleContextHelper.tupleContext;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.ParameterMode;
+import javax.persistence.TemporalType;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
@@ -39,6 +42,7 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ParameterRegistration;
 import org.hibernate.procedure.ProcedureOutputs;
 import org.hibernate.result.Output;
+import org.hibernate.type.TimestampType;
 import org.hibernate.type.Type;
 
 /**
@@ -73,6 +77,45 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 		throw new UnsupportedOperationException( "Out parameters not supported yet!" );
 	}
 
+	private Object processByTemporalType(TemporalType temporalType, Object value ) {
+		Calendar calendar = null;
+		if ( value instanceof Calendar ) {
+			calendar = (Calendar) value;
+		}
+		else {
+			calendar = Calendar.getInstance();
+			calendar.setTime( (Date) value );
+		}
+		switch ( temporalType ) {
+			case TIMESTAMP:
+				break;
+			case DATE:
+				//remove time part.
+				calendar.set( Calendar.HOUR_OF_DAY,0 );
+				calendar.set( Calendar.MINUTE,0 );
+				calendar.set( Calendar.SECOND,0 );
+				calendar.set( Calendar.MILLISECOND,0 );
+				break;
+			case TIME:
+				//remove date part
+				//see https://docs.oracle.com/javase/6/docs/api/java/sql/Time.html
+				calendar.set( Calendar.YEAR,1970 );
+				calendar.set( Calendar.DAY_OF_YEAR, 1 );
+		}
+		/*
+		java.lang.ClassCastException: java.util.GregorianCalendar cannot be cast to java.util.Date
+	at org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor.unwrap(JdbcTimestampTypeDescriptor.java:24)
+	at org.hibernate.ogm.type.descriptor.impl.PassThroughGridTypeDescriptor$1.doBind(PassThroughGridTypeDescriptor.java:26)
+	at org.hibernate.ogm.type.descriptor.impl.BasicGridBinder.bind(BasicGridBinder.java:65)
+	at org.hibernate.ogm.type.impl.AbstractGenericBasicType.nullSafeSet(AbstractGenericBasicType.java:239)
+	at org.hibernate.ogm.type.impl.AbstractGenericBasicType.nullSafeSet(AbstractGenericBasicType.java:234)
+	at org.hibernate.ogm.type.impl.AbstractGenericBasicType.convertToBackendType(AbstractGenericBasicType.java:256)
+	at org.hibernate.ogm.dialect.query.spi.TypedGridValue.fromOrmTypedValue(TypedGridValue.java:32)
+		 */
+		// convert to Data in any way
+		return calendar.getTime();
+	}
+
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -92,8 +135,13 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 				if ( parameterRegistration.getMode() != ParameterMode.REF_CURSOR ) {
 					Object value = nosqlParameterRegistration.getBind().getValue();
 					Type hibernateType = nosqlParameterRegistration.getHibernateType();
-					TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue( new TypedValue( hibernateType, value ),
-							typeTranslator, sessionFactory );
+					TemporalType temporalType = nosqlParameterRegistration.getBind().getExplicitTemporalType();
+					if ( hibernateType instanceof TimestampType ) {
+						//need a process date
+						value = processByTemporalType( temporalType, value );
+					}
+					TypedGridValue typedGridValue = TypedGridValue.fromOrmTypedValue( new TypedValue( hibernateType, value ), typeTranslator, sessionFactory );
+
 					if ( procedureCall.getGridDialect().supportsNamedParameters() ) {
 						namedParameters.put( nosqlParameterRegistration.getName(), typedGridValue );
 					}
@@ -151,6 +199,14 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 
 		//copy data from iterator
 		return new NoSQLProcedureResultSetOutputImpl( entityList, isResultRefCursor );
+	}
+
+	private Date convert(Date date, TemporalType temporalType) {
+		return date;
+	}
+
+	private Calendar convert(Calendar calendar, TemporalType temporalType) {
+		return calendar;
 	}
 
 

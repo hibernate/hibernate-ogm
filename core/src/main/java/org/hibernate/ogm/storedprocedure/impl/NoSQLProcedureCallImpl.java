@@ -69,6 +69,7 @@ public class NoSQLProcedureCallImpl extends ProcedureCallImpl {
 		return resList;
 	}
 
+
 	@Override
 	public <T> ParameterRegistration<T> registerParameter(String name, Class<T> type, ParameterMode mode) {
 		NoSQLProcedureParameterRegistration<T> parameterRegistration = new

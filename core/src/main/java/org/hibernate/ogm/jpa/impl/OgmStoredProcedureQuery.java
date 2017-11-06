@@ -7,12 +7,16 @@
 package org.hibernate.ogm.jpa.impl;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.EntityManager;
+import javax.persistence.Parameter;
 import javax.persistence.ParameterMode;
 import javax.persistence.StoredProcedureQuery;
+import javax.persistence.TemporalType;
 
 import org.hibernate.HibernateException;
 import org.hibernate.QueryParameterException;
@@ -123,6 +127,166 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 		return this;
 	}
 
+	@Override
+	public <T> StoredProcedureQueryImpl setParameter(Parameter<T> param, T value) {
+
+		log.debugf( "set value %s for parameter: %s", value, param );
+		checkOpen( true );
+		//check value's type
+		if ( !( param.getParameterType() == value.getClass() ) ) {
+			throw log.invalidValueType( param.getParameterType(), value.getClass() );
+		}
+
+		try {
+			if ( procedureCall.getGridDialect().supportsNamedParameters() ) {
+				setParameter( param.getName(), value );
+			}
+			else {
+				setParameter( param.getPosition(), value );
+			}
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setParameter(Parameter<Calendar> param, Calendar value, TemporalType temporalType) {
+		checkOpen( true );
+		//check value's type
+		if ( !( param.getParameterType() == value.getClass() ) ) {
+			throw log.invalidValueType( param.getParameterType(), value.getClass() );
+		}
+
+		try {
+			if ( procedureCall.getGridDialect().supportsNamedParameters() ) {
+				setParameter( param.getName(), value, temporalType );
+			}
+			else {
+				setParameter( param.getPosition(), value, temporalType );
+			}
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setParameter(Parameter<Date> param, Date value, TemporalType temporalType) {
+		checkOpen( true );
+		//check value's type
+		if ( !( param.getParameterType() == value.getClass() ) ) {
+			throw log.invalidValueType( param.getParameterType(), value.getClass() );
+		}
+
+		try {
+			if ( procedureCall.getGridDialect().supportsNamedParameters() ) {
+				setParameter( param.getName(), value, temporalType );
+			}
+			else {
+				setParameter( param.getPosition(), value, temporalType );
+			}
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setParameter(String name, Calendar value, TemporalType temporalType) {
+		log.debugf( "set value %s for parameter name : %d", value, name );
+		checkOpen( true );
+
+		try {
+			findNoSQLParameterRegistration( name ).bindValue( value, temporalType );
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setParameter(String name, Date value, TemporalType temporalType) {
+		checkOpen( true );
+
+		try {
+			findNoSQLParameterRegistration( name ).bindValue( value, temporalType );
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setParameter(int position, Calendar value, TemporalType temporalType) {
+		checkOpen( true );
+
+		try {
+			findNoSQLParameterRegistration( position ).bindValue( value, temporalType );
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setParameter(int position, Date value, TemporalType temporalType) {
+		checkOpen( true );
+
+		try {
+			findNoSQLParameterRegistration( position ).bindValue( value, temporalType );
+		}
+		catch (QueryParameterException e) {
+			entityManager().markForRollbackOnly();
+			throw new IllegalArgumentException( e.getMessage(), e );
+		}
+		catch (HibernateException he) {
+			throw entityManager.convert( he );
+		}
+
+		return this;
+	}
+
+	@Override
+	public StoredProcedureQueryImpl setHint(String hintName, Object value) {
+		return super.setHint( hintName, value );
+	}
 
 	private <X> ParameterRegistration<X> findNoSQLParameterRegistration(int parameterPosition) {
 		if ( parameterRegistrations != null ) {
@@ -166,8 +330,6 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 	public List getResultList() {
 		try {
 			final NoSQLProcedureResultSetOutputImpl rtn = (NoSQLProcedureResultSetOutputImpl) outputs().getCurrent();
-			log.debugf( "getSynchronizedQuerySpaces: %s", this.procedureCall.getSynchronizedQuerySpaces() );
-
 			return rtn.getResultList();
 		}
 		catch (HibernateException he) {
@@ -211,5 +373,20 @@ public class OgmStoredProcedureQuery extends StoredProcedureQueryImpl {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public Object getOutputParameterValue(int position) {
+		throw new UnsupportedOperationException( "Out parameters not supported!" );
+	}
+
+	@Override
+	public Object getOutputParameterValue(String parameterName) {
+		throw new UnsupportedOperationException( "Out parameters not supported!" );
+	}
+
+	@Override
+	public Set getParameters() {
+		return parameterRegistrations;
 	}
 }

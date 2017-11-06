@@ -14,7 +14,9 @@ import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.util.List;
+
 import javax.persistence.EntityManager;
+import javax.persistence.Parameter;
 import javax.persistence.ParameterMode;
 import javax.persistence.StoredProcedureQuery;
 
@@ -25,7 +27,6 @@ import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,7 +111,23 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
 		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
 		storedProcedureQuery.setParameter( 1, 1 );
-		storedProcedureQuery.setParameter( 2, "title'1" );
+		storedProcedureQuery.setParameter( new Parameter<String>() {
+
+			@Override
+			public String getName() {
+				return null;
+			}
+
+			@Override
+			public Integer getPosition() {
+				return 2;
+			}
+
+			@Override
+			public Class<String> getParameterType() {
+				return String.class;
+			}
+		}, "title'1" );
 		List<Car> listResult = storedProcedureQuery.getResultList();
 		assertThat( listResult ).isNotNull();
 		assertThat( listResult.size() ).isEqualTo( 1 );
@@ -153,5 +170,9 @@ public class IndexedStoredProcedureCallTest extends OgmJpaTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class[] { Car.class };
+	}
+
+	protected EntityManager getEntityManager() {
+		return this.em;
 	}
 }
