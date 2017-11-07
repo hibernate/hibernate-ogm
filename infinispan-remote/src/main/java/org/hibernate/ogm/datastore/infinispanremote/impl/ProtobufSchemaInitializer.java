@@ -31,8 +31,44 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 	@Override
 	public void initializeSchema(SchemaDefinitionContext context) {
 		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
-		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
+		InfinispanRemoteDatastoreProvider datastoreProvider = infinispanRemoteProvider( serviceRegistry );
+
+		SchemaDefinitions sd = createSchemaDefinitions( context, datastoreProvider );
+		datastoreProvider.deploy( sd );
+		datastoreProvider.register( sd );
+	}
+
+	private InfinispanRemoteDatastoreProvider infinispanRemoteProvider(ServiceRegistryImplementor serviceRegistry) {
 		InfinispanRemoteDatastoreProvider datastoreProvider = (InfinispanRemoteDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		return datastoreProvider;
+	}
+
+	@Override
+	public void createSchema(SchemaDefinitionContext context) {
+		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
+		InfinispanRemoteDatastoreProvider datastoreProvider = infinispanRemoteProvider( serviceRegistry );
+
+		SchemaDefinitions sd = createSchemaDefinitions( context, datastoreProvider );
+		datastoreProvider.createCaches( sd );
+		datastoreProvider.validate( sd );
+	}
+
+	@Override
+	public void validateSchema(SchemaDefinitionContext context) {
+		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
+		InfinispanRemoteDatastoreProvider datastoreProvider = infinispanRemoteProvider( serviceRegistry );
+
+		SchemaDefinitions sd = createSchemaDefinitions( context, datastoreProvider );
+		datastoreProvider.validate( sd );
+	}
+
+	@Override
+	public void dropSchema(SchemaDefinitionContext context) {
+	}
+
+	private SchemaDefinitions createSchemaDefinitions(SchemaDefinitionContext context, InfinispanRemoteDatastoreProvider datastoreProvider) {
+		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
+		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
 		String protobufPackageName = datastoreProvider.getProtobufPackageName();
 		SchemaDefinitions sd = new SchemaDefinitions( protobufPackageName );
 		for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
@@ -45,11 +81,10 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		for ( IdSourceKeyMetadata iddSourceKeyMetadata : context.getAllIdSourceKeyMetadata() ) {
 			sd.createSequenceSchemaDefinition( iddSourceKeyMetadata, datastoreProvider.getProtobufPackageName() );
 		}
-		datastoreProvider.registerSchemaDefinitions( sd );
+		return sd;
 	}
 
-	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd,
-			Table table, TypeTranslator typeTranslator, String protobufPackageName) {
+	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd, Table table, TypeTranslator typeTranslator, String protobufPackageName) {
 		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName );
 		if ( table.hasPrimaryKey() ) {
 			for ( Column pkColumn : table.getPrimaryKey().getColumns() ) {
@@ -61,6 +96,7 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 				td.markAsPrimaryKey( name );
 			}
 		}
+		@SuppressWarnings("unchecked")
 		Iterator<Column> columnIterator = table.getColumnIterator();
 		while ( columnIterator.hasNext() ) {
 			Column column = columnIterator.next();
@@ -81,10 +117,5 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 			td.addColumnnDefinition( column, gridType, type );
 		}
 		sd.registerTableDefinition( td );
-	}
-
-	@Override
-	public void validateMapping(SchemaDefinitionContext context) {
-		//TODO something interesting to do here?
 	}
 }
