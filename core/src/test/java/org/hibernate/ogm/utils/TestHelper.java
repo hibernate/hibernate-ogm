@@ -9,6 +9,7 @@ package org.hibernate.ogm.utils;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -42,7 +43,6 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.sun.tools.javac.util.ServiceLoader;

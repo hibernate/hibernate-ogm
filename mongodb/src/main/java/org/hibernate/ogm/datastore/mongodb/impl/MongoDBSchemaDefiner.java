@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.bson.Document;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.NamingHelper;
 import org.hibernate.boot.model.relational.Database;
@@ -50,7 +51,6 @@ import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
 
 /**
  * Performs sanity checks of the mapped objects.
