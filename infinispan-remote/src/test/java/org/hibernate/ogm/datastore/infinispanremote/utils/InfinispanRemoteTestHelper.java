@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDataStoreConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
@@ -71,7 +71,7 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 
 	@Override
 	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.singletonMap( OgmProperties.CREATE_DATABASE, "true" );
+		return Collections.singletonMap( AvailableSettings.SCHEMA_GEN_DATABASE_ACTION, "create-drop" );
 	}
 
 	@Override

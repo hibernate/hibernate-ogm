@@ -33,6 +33,18 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
 		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
 		InfinispanRemoteDatastoreProvider datastoreProvider = (InfinispanRemoteDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+
+		SchemaDefinitions sd = createSchemaDefinitions( context, typeTranslator, datastoreProvider );
+		datastoreProvider.deploy( sd );
+		boolean cacheCreationEnabled = isCreateRequired( context );
+		if ( cacheCreationEnabled ) {
+			datastoreProvider.createCaches( sd );
+		}
+		datastoreProvider.validate( sd );
+		datastoreProvider.register( sd );
+	}
+
+	private SchemaDefinitions createSchemaDefinitions(SchemaDefinitionContext context, TypeTranslator typeTranslator, InfinispanRemoteDatastoreProvider datastoreProvider) {
 		String protobufPackageName = datastoreProvider.getProtobufPackageName();
 		SchemaDefinitions sd = new SchemaDefinitions( protobufPackageName );
 		for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
@@ -45,11 +57,10 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		for ( IdSourceKeyMetadata iddSourceKeyMetadata : context.getAllIdSourceKeyMetadata() ) {
 			sd.createSequenceSchemaDefinition( iddSourceKeyMetadata, datastoreProvider.getProtobufPackageName() );
 		}
-		datastoreProvider.registerSchemaDefinitions( sd );
+		return sd;
 	}
 
-	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd,
-			Table table, TypeTranslator typeTranslator, String protobufPackageName) {
+	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd, Table table, TypeTranslator typeTranslator, String protobufPackageName) {
 		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName );
 		if ( table.hasPrimaryKey() ) {
 			for ( Column pkColumn : table.getPrimaryKey().getColumns() ) {
@@ -61,6 +72,7 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 				td.markAsPrimaryKey( name );
 			}
 		}
+		@SuppressWarnings("unchecked")
 		Iterator<Column> columnIterator = table.getColumnIterator();
 		while ( columnIterator.hasNext() ) {
 			Column column = columnIterator.next();
@@ -81,10 +93,5 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 			td.addColumnnDefinition( column, gridType, type );
 		}
 		sd.registerTableDefinition( td );
-	}
-
-	@Override
-	public void validateMapping(SchemaDefinitionContext context) {
-		//TODO something interesting to do here?
 	}
 }

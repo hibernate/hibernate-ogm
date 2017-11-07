@@ -6,9 +6,12 @@
  */
 package org.hibernate.ogm.backendtck.jpa;
 
+import java.util.Map;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Rule;
@@ -25,12 +28,13 @@ public class JPAStandaloneORMAndOGMTest {
 	@Test
 	//Test for OGM-416 (avoid StackOverFlow when both an OGM and ORM PU are used
 	public void testJTAStandaloneNoOgm() throws Exception {
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory(
-				"ogm", TestHelper.getDefaultTestSettings()
-		);
+		Map<String, String> settings = TestHelper.getDefaultTestSettings();
+		settings.put( AvailableSettings.HBM2DDL_AUTO, "none"  );
+
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", settings );
 		emf.close();
-		emf = Persistence.createEntityManagerFactory( "no-ogm" );
+
+		emf = Persistence.createEntityManagerFactory( "no-ogm", settings );
 		emf.close();
 	}
-
 }

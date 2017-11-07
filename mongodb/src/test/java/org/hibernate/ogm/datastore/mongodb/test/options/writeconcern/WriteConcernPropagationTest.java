@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bson.Document;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -34,7 +35,6 @@ import org.junit.Test;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.client.model.UpdateOptions;
-import org.bson.Document;
 
 /**
  * Tests that the configured write concern is applied when performing operations against MongoDB.
@@ -47,7 +47,9 @@ public class WriteConcernPropagationTest {
 
 	@After
 	public void closeSessionFactory() {
-		sessions.close();
+		if ( sessions != null ) {
+			sessions.close();
+		}
 	}
 
 	@Test
@@ -314,6 +316,7 @@ public class WriteConcernPropagationTest {
 	private void setupSessionFactory(MongoDBDatastoreProvider provider, AssociationStorageType associationStorage) {
 		Map<String, Object> settings = new HashMap<>();
 
+		settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop" );
 		settings.put( OgmProperties.DATASTORE_PROVIDER, provider );
 		if ( associationStorage != null ) {
 			settings.put( DocumentStoreProperties.ASSOCIATIONS_STORE, associationStorage );

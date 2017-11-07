@@ -18,6 +18,7 @@ import org.hibernate.ogm.util.Experimental;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.tool.schema.Action;
 
 /**
  * Contract for implementing schema creation and validation routines.
@@ -62,6 +63,7 @@ public interface SchemaDefiner extends Service {
 	 */
 	interface SchemaDefinitionContext {
 		Database getDatabase();
+		Action getAction();
 		Set<EntityKeyMetadata> getAllEntityKeyMetadata();
 		Set<AssociationKeyMetadata> getAllAssociationKeyMetadata();
 		Set<IdSourceKeyMetadata> getAllIdSourceKeyMetadata();

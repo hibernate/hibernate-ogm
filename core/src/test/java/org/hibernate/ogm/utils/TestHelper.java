@@ -9,6 +9,7 @@ package org.hibernate.ogm.utils;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -25,7 +26,6 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Environment;
 import org.hibernate.engine.config.spi.ConfigurationService;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -43,7 +43,6 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.sun.tools.javac.util.ServiceLoader;
@@ -239,7 +238,6 @@ public class TestHelper {
 	public static Map<String, String> getDefaultTestSettings() {
 		Map<String, String> settings = new HashMap<>();
 		settings.put( OgmProperties.ENABLED, "true" );
-		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
 		settings.putAll( HELPER.getAdditionalConfigurationProperties() );
 		return settings;

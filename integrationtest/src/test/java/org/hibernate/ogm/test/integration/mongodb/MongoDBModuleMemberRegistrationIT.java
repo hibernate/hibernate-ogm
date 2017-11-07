@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.ErrorHandler.RollbackContext;
 import org.hibernate.ogm.compensation.operation.CreateTuple;
@@ -90,6 +91,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 			propertiesContext.createProperty().name( OgmProperties.PASSWORD ).value( password );
 		}
 		return propertiesContext
+					.createProperty().name( AvailableSettings.SCHEMA_GEN_DATABASE_ACTION ).value( "create-drop" ).up()
 					.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( MongoDB.DATASTORE_PROVIDER_NAME ).up()
 					.createProperty().name( OgmProperties.DATABASE ).value( "ogm_test_database" ).up()
 					.createProperty().name( OgmProperties.CREATE_DATABASE ).value( "true" ).up()

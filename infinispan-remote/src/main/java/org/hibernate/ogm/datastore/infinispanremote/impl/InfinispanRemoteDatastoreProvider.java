@@ -45,6 +45,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
+	//FIXME make this name configurable & give it a sensible default:
+	private static final String GENERATED_PROTOBUF_NAME = "Hibernate_OGM_Generated_schema.proto";
+
 	/**
 	 * The org.infinispan.commons.marshall.Marshaller instance which shall be used
 	 * by our Hot Rod client.
@@ -53,8 +56,6 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	// Only available during configuration
 	private InfinispanRemoteConfiguration config;
-
-	private boolean createCachesEnabled = false;
 
 	// The Hot Rod client; maintains TCP connections to the datagrid.
 	@EffectivelyFinal
@@ -115,7 +116,6 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.schemaCapture = config.getSchemaCaptureService();
 		this.schemaOverrideService = config.getSchemaOverrideService();
 		this.schemaPackageName = config.getSchemaPackageName();
-		this.createCachesEnabled = config.isCreateCachesEnabled();
 	}
 
 	@Override
@@ -128,27 +128,20 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		return ProtobufSchemaInitializer.class;
 	}
 
-	public void registerSchemaDefinitions(SchemaDefinitions sd) {
-		this.sd = sd;
-		sd.validateSchema();
-		RemoteCache<String,String> protobufCache = getProtobufCache();
-		//FIXME make this name configurable & give it a sensible default:
-		final String generatedProtobufName = "Hibernate_OGM_Generated_schema.proto";
-		sd.deploySchema( generatedProtobufName, protobufCache, schemaCapture, schemaOverrideService );
-		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
-		setMappedCacheNames( sd );
-		startAndValidateCaches();
-		perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
+	public void deploy(SchemaDefinitions sd) {
+		sd.deploySchema( GENERATED_PROTOBUF_NAME, getProtobufCache(), schemaCapture, schemaOverrideService );
 	}
 
-	private void startAndValidateCaches() {
+	private HotRodSequenceHandler createSequenceHandler(SchemaDefinitions sd, OgmProtoStreamMarshaller marshaller) {
+		HotRodSequenceHandler sequenceHandler = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
+		return sequenceHandler;
+	}
+
+	public void validate(SchemaDefinitions sd) {
+		sd.validateSchema();
 		Set<String> failedCacheNames = new TreeSet<String>();
-		mappedCacheNames.forEach( cacheName -> {
-			RemoteCache<?,?> cache = hotrodClient.getCache( cacheName );
-			if ( cache == null && createCachesEnabled ) {
-				hotrodClient.administration().createCache( cacheName, null );
-				cache = hotrodClient.getCache( cacheName );
-			}
+		sd.getTableNames().forEach( cacheName -> {
+			RemoteCache<?, ?> cache = hotrodClient.getCache( cacheName );
 			if ( cache == null ) {
 				failedCacheNames.add( cacheName );
 			}
@@ -161,8 +154,20 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		}
 	}
 
-	private void setMappedCacheNames(SchemaDefinitions sd) {
+	public void register(SchemaDefinitions sd) {
+		this.sd = sd;
 		this.mappedCacheNames = sd.getTableNames();
+		this.sequences = createSequenceHandler( sd, marshaller );
+		this.perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
+	}
+
+	public void createCaches(SchemaDefinitions sd) {
+		sd.getTableNames().forEach( cacheName -> {
+			RemoteCache<?, ?> cache = hotrodClient.getCache( cacheName );
+			if ( cache == null ) {
+				hotrodClient.administration().createCache( cacheName, null );
+			}
+		} );
 	}
 
 	private RemoteCache<String, String> getProtobufCache() {

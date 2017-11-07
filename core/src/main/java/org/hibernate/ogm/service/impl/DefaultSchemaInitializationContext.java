@@ -23,6 +23,7 @@ import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.tool.schema.Action;
 
 /**
  * The one and only implementation of {@link SchemaDefiner.SchemaDefinitionContext}.
@@ -33,10 +34,17 @@ public class DefaultSchemaInitializationContext implements SchemaDefiner.SchemaD
 
 	private final Database database;
 	private final SessionFactoryImplementor factory;
+	private final Action action;
 
-	public DefaultSchemaInitializationContext(Database database, SessionFactoryImplementor factory) {
+	public DefaultSchemaInitializationContext(Database database, Action action, SessionFactoryImplementor factory) {
 		this.database = database;
 		this.factory = factory;
+		this.action = action;
+	}
+
+	@Override
+	public Action getAction() {
+		return action;
 	}
 
 	@Override

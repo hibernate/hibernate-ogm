@@ -24,4 +24,15 @@ public class BaseSchemaDefiner implements SchemaDefiner {
 	public void initializeSchema(SchemaDefinitionContext context) {
 		// No-op
 	}
+
+	protected boolean isCreateRequired(SchemaDefinitionContext context) {
+		switch ( context.getAction() ) {
+			case CREATE:
+			case CREATE_ONLY:
+			case CREATE_DROP:
+				return true;
+			default:
+				return false;
+		}
+	}
 }
