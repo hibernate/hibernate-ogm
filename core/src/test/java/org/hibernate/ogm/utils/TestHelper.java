@@ -239,8 +239,8 @@ public class TestHelper {
 	public static Map<String, String> getDefaultTestSettings() {
 		Map<String, String> settings = new HashMap<>();
 		settings.put( OgmProperties.ENABLED, "true" );
-		settings.put( Environment.HBM2DDL_AUTO, "none" );
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
+		settings.put( Environment.HBM2DDL_AUTO, "create-drop" );
 		settings.putAll( HELPER.getAdditionalConfigurationProperties() );
 		return settings;
 	}
@@ -293,6 +293,7 @@ public class TestHelper {
 	public static <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Map<String, Object> settings, Class<D> datastoreType) {
 		ConfigurableImpl configurable = new ConfigurableImpl();
 		settings.put( InternalProperties.OGM_OPTION_CONTEXT, configurable.getContext() );
+		settings.put( Environment.HBM2DDL_AUTO, "create-drop" );
 		return configurable.configureOptionsFor( datastoreType );
 	}
 

@@ -314,6 +314,7 @@ public class WriteConcernPropagationTest {
 	private void setupSessionFactory(MongoDBDatastoreProvider provider, AssociationStorageType associationStorage) {
 		Map<String, Object> settings = new HashMap<>();
 
+		settings.put( org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO, "create-drop" );
 		settings.put( OgmProperties.DATASTORE_PROVIDER, provider );
 		if ( associationStorage != null ) {
 			settings.put( DocumentStoreProperties.ASSOCIATIONS_STORE, associationStorage );

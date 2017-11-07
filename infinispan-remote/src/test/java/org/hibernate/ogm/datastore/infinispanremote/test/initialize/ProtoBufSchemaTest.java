@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.backendtck.id.Actor;
@@ -30,6 +31,7 @@ import org.hibernate.ogm.datastore.infinispanremote.schema.spi.ProvidedSchemaOve
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.datastore.infinispanremote.utils.RemoteHotRodServerRule;
 import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.tool.schema.Action;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -108,7 +110,7 @@ public class ProtoBufSchemaTest {
 		Map<String, Object> settings = new HashMap<>();
 		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
 		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
-		settings.put( OgmProperties.CREATE_DATABASE, true );
+		settings.put( AvailableSettings.SCHEMA_GEN_DATABASE_ACTION, Action.CREATE_DROP );
 		return settings;
 	}
 
