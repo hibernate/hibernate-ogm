@@ -9,6 +9,7 @@ package org.hibernate.ogm.test.integration.neo4j.embedded;
 import java.io.File;
 import java.io.InputStream;
 
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
@@ -52,6 +53,7 @@ public class EmbeddedNeo4jJtaModuleMemberRegistrationIT extends Neo4jModuleMembe
 				.provider( HibernateOgmPersistence.class.getName() )
 				.getOrCreateProperties();
 		PersistenceDescriptor persistenceDescriptor = propertiesContext
+				.createProperty().name( AvailableSettings.SCHEMA_GEN_DATABASE_ACTION ).value( "create-drop" ).up()
 				.createProperty().name( Neo4jProperties.DATASTORE_PROVIDER ).value( Neo4j.EMBEDDED_DATASTORE_PROVIDER_NAME ).up()
 				.createProperty()
 				.name( Neo4jProperties.DATABASE_PATH )

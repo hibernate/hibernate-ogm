@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.test.integration.infinispan;
 
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.ogm.test.integration.testcase.MagiccardsDatabaseScenario;
 import org.hibernate.ogm.test.integration.testcase.controller.MagicCardsCollectionBean;
 import org.hibernate.ogm.test.integration.testcase.model.MagicCard;
@@ -46,6 +47,7 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 					.name( "primary" )
 					.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 					.getOrCreateProperties()
+						.createProperty().name( AvailableSettings.SCHEMA_GEN_DATABASE_ACTION ).value( "create-drop" ).up()
 						.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 						.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan_embedded" ).up()
 						.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()

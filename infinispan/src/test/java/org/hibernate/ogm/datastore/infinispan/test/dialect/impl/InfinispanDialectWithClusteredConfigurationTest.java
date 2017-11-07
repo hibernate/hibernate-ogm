@@ -51,6 +51,7 @@ import org.hibernate.ogm.service.impl.DefaultSchemaInitializationContext;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.tool.schema.Action;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,8 +80,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		dialect1 = new InfinispanDialect( provider1 );
 		dialect2 = new InfinispanDialect( provider2 );
 
-		provider1.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, sessionFactory1 ) );
-		provider2.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, sessionFactory2 ) );
+		provider1.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, Action.CREATE, sessionFactory1 ) );
+		provider2.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, Action.CREATE, sessionFactory2 ) );
 	}
 
 	@AfterClass
