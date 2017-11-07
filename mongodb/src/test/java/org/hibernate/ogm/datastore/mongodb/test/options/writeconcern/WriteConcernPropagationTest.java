@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bson.Document;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -34,7 +35,6 @@ import org.junit.Test;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.client.model.UpdateOptions;
-import org.bson.Document;
 
 /**
  * Tests that the configured write concern is applied when performing operations against MongoDB.
