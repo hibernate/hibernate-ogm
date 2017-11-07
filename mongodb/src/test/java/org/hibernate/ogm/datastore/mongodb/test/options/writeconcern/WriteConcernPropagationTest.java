@@ -47,7 +47,9 @@ public class WriteConcernPropagationTest {
 
 	@After
 	public void closeSessionFactory() {
-		sessions.close();
+		if ( sessions != null ) {
+			sessions.close();
+		}
 	}
 
 	@Test
