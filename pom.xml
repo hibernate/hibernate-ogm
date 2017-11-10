@@ -795,7 +795,7 @@
                 <jdk>9</jdk>
             </activation>
             <properties>
-                <additionalRuntimeArgLine>--add-modules java.xml.bind</additionalRuntimeArgLine>
+                <additionalRuntimeArgLine>-Djdk.attach.allowAttachSelf=true --add-modules java.xml.bind</additionalRuntimeArgLine>
             </properties>
         </profile>
         <profile>

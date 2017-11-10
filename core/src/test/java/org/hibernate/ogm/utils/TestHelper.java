@@ -44,9 +44,9 @@ import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
+import java.util.ServiceLoader;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-import com.sun.tools.javac.util.ServiceLoader;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
