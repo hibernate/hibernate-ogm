@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.HashMap;
 import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -23,6 +24,7 @@ import org.hibernate.jpa.spi.AbstractQueryImpl;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, TypedQuery<X> {
+	private Map<String, Object> currentHints = new HashMap<>(  );
 
 	public OgmJpaQuery(org.hibernate.Query query, EntityManager em) {
 		super( query, convert( em ) );
@@ -32,25 +34,23 @@ public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, Type
 	@Override
 	public AbstractQueryImpl<X> setHint(String hintName, Object value) {
 		AbstractQueryImpl<X> queryImpl = super.setHint( hintName, value );
-		Map<String, Object> currentHints = queryImpl.getHints();
+		if ( queryImpl.getHints() != null ) {
+			currentHints.putAll( queryImpl.getHints() );
+		}
 		if ( !currentHints.containsKey( hintName ) ) {
 			// add hint
 			currentHints.put( hintName, value );
 		}
 		return queryImpl;
-
 	}
 
 	@Override
 	public Query getHibernateQuery() {
 		org.hibernate.Query hibernateQuery = super.getHibernateQuery();
 		// copy hints to hibernate query
-		Map<String, Object> currentHints = getHints();
-		if ( currentHints != null ) {
-			for ( String hintName : currentHints.keySet() ) {
-				if ( !isStandartHint( hintName ) ) {
-					hibernateQuery.addQueryHint( hintName );
-				}
+		for ( String hintName : currentHints.keySet() ) {
+			if ( !isStandartHint( hintName ) ) {
+				hibernateQuery.addQueryHint( hintName );
 			}
 		}
 		return hibernateQuery;
