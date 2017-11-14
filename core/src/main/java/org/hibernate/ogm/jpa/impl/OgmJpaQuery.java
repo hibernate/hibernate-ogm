@@ -46,9 +46,11 @@ public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, Type
 		org.hibernate.Query hibernateQuery = super.getHibernateQuery();
 		// copy hints to hibernate query
 		Map<String, Object> currentHints = getHints();
-		for ( String hintName : currentHints.keySet() ) {
-			if ( !isStandartHint( hintName ) ) {
-				hibernateQuery.addQueryHint( hintName );
+		if ( currentHints != null ) {
+			for ( String hintName : currentHints.keySet() ) {
+				if ( !isStandartHint( hintName ) ) {
+					hibernateQuery.addQueryHint( hintName );
+				}
 			}
 		}
 		return hibernateQuery;
