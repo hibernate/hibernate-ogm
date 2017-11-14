@@ -6,12 +6,16 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import org.hibernate.Query;
 import org.hibernate.jpa.HibernateQuery;
+import org.hibernate.jpa.QueryHints;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
+import org.hibernate.jpa.spi.AbstractQueryImpl;
 
 /**
  * Hibernate OGM implementation of both {@link HibernateQuery} and {@link TypedQuery}
@@ -22,6 +26,36 @@ public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, Type
 
 	public OgmJpaQuery(org.hibernate.Query query, EntityManager em) {
 		super( query, convert( em ) );
+	}
+
+
+	@Override
+	public AbstractQueryImpl<X> setHint(String hintName, Object value) {
+		AbstractQueryImpl<X> queryImpl = super.setHint( hintName, value );
+		Map<String, Object> currentHints = queryImpl.getHints();
+		if ( !currentHints.containsKey( hintName ) ) {
+			// add hint
+			currentHints.put( hintName, value );
+		}
+		return queryImpl;
+
+	}
+
+	@Override
+	public Query getHibernateQuery() {
+		org.hibernate.Query hibernateQuery = super.getHibernateQuery();
+		// copy hints to hibernate query
+		Map<String, Object> currentHints = getHints();
+		for ( String hintName : currentHints.keySet() ) {
+			if ( !isStandartHint( hintName ) ) {
+				hibernateQuery.addQueryHint( hintName );
+			}
+		}
+		return hibernateQuery;
+	}
+
+	private boolean isStandartHint(String hintName) {
+		return QueryHints.getDefinedHints().contains( hintName );
 	}
 
 	private static AbstractEntityManagerImpl convert(EntityManager em) {
