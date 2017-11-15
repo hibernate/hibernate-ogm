@@ -45,7 +45,7 @@
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
         <arquillianVersion>1.1.5.Final</arquillianVersion>
         <jmhVersion>1.0</jmhVersion>
-        <bytemanVersion>3.0.10</bytemanVersion>
+        <bytemanVersion>4.0.0-BETA5</bytemanVersion>
 
         <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
