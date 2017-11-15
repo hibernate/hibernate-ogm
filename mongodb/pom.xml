@@ -74,6 +74,12 @@
             <artifactId>parboiled-java</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commonslang3Version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->

@@ -58,6 +58,7 @@
         <!-- MongoDB -->
         <mongodbDriverVersion>3.5.0</mongodbDriverVersion>
         <mongodbVersion>3.4.6</mongodbVersion>
+        <commonslang3Version>3.5</commonslang3Version>
 
         <!-- Neo4j -->
         <neo4jVersion>3.2.6</neo4jVersion>
