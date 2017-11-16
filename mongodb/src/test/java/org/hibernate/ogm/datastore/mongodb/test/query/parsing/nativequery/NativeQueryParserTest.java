@@ -316,9 +316,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1313")
 	public void shouldParseQueryDeleteOne() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>(
-				parser.Query() )
-						.run( "db.Order.deleteOne( { } )" );
+		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+				.run( "db.Order.deleteOne( { } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );

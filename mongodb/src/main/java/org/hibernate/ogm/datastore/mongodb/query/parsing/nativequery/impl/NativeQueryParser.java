@@ -318,10 +318,9 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptor> {
 	@SuppressSubnodes
 	public Rule Identifier() {
 		return Sequence(
-				FirstOf( SpecialIdentifierCharacter(), Letter()),
-				ZeroOrMore( FirstOf( SpecialIdentifierCharacter(), Letter(), Digit() )),
-				ZeroOrMore( WhiteSpace() )
-		);
+				FirstOf( SpecialIdentifierCharacter(), Letter() ),
+				ZeroOrMore( FirstOf( SpecialIdentifierCharacter(), Letter(), Digit() ) ),
+				ZeroOrMore( WhiteSpace() ) );
 	}
 
 	public Rule Arguments() {
