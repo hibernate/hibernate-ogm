@@ -279,4 +279,9 @@ public class MongoDBQueryDescriptorBuilder {
 	public StackedOperation pop() {
 		return stack.pop();
 	}
+
+	public List<Document> getPipeline() {
+		return pipeline;
+	}
+
 }
