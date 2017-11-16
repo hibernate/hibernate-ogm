@@ -6,12 +6,22 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.bson.Document;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
+import org.parboiled.Action;
 import org.parboiled.BaseParser;
+import org.parboiled.Context;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
+import org.parboiled.buffers.InputBuffer;
+import org.parboiled.errors.ParseError;
 
 import com.mongodb.util.JSON;
 
@@ -57,41 +67,272 @@ import com.mongodb.util.JSON;
  * @author Guillaume Smet
  */
 @BuildParseTree
-public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder> {
+public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptor> {
 
-	final MongoDBQueryDescriptorBuilder builder;
+	// TODO There are many more query types than what we support.
+	protected static List<String> RESERVED = Arrays.asList(
+			"findOne", "findAndModify", "find", "insertOne", "insertMany", "insert",
+			"remove", "deleteOne", "deleteMany", "updateOne", "updateMany", "update",
+			"replaceOne", "count", "aggregate", "distinct", "mapReduce" );
+	protected MongoDBQueryDescriptorBuilder builder = new MongoDBQueryDescriptorBuilder();
+	protected CliQueryInfo cliQueryInfo = new CliQueryInfo();
 
-	public NativeQueryParser() {
-		this.builder = new MongoDBQueryDescriptorBuilder();
+	private static class CliQueryInfo {
+		String operationName;
+		String collectionName;
+		List<String> pathExpression = new ArrayList<>();
+		List<String> arguments = new ArrayList<>();
 	}
+	private Action<MongoDBQueryDescriptor> processPathExpression = context -> {
+		List<String> identifiers = cliQueryInfo.pathExpression;
+		if ( identifiers.size() <= 2 ) {
+			context.getParseErrors().add(
+					createParseError(
+							context, 2, "CLI query should match 'db.<COLLECTION>.<OPERATION>'"
+							)
+					);
+			return false;
+		}
+		if ( !"db".equals( identifiers.get( 0 ) ) ) {
+			context.getParseErrors().add(
+					createParseError(
+							context, 2, "First identifier should be 'db'"
+							)
+					);
+			return false;
+		}
+		cliQueryInfo.operationName = identifiers.get( identifiers.size() - 1 );
+		cliQueryInfo.collectionName = String.join( ".", identifiers.subList( 1, identifiers.size() - 1 ) );
+		if ( RESERVED.contains( cliQueryInfo.collectionName ) ) {
+			context.getParseErrors().add(
+					createParseError(
+							context,
+							identifiers.size(),
+							"Collection name should be different from the allowed operations"
+							)
+					);
+			return false;
+		}
+
+		return true;
+	};
+
+	private Action<MongoDBQueryDescriptor> processCliQueryInfo = context -> {
+		builder.setCollection( cliQueryInfo.collectionName );
+		switch ( cliQueryInfo.operationName ) {
+			case "find": {
+				builder.setOperation( Operation.FIND );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setProjection( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "findOne": {
+				builder.setOperation( Operation.FINDONE );
+				if ( cliQueryInfo.arguments.size() > 0 ) {
+					builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				}
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setProjection( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "findAndModify": {
+				builder.setOperation( Operation.FINDANDMODIFY );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				break;
+			}
+			case "insert": {
+				builder.setOperation( Operation.INSERT );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "insertOne": {
+				builder.setOperation( Operation.INSERTONE );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "insertMany": {
+				builder.setOperation( Operation.INSERTMANY );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "remove": {
+				builder.setOperation( Operation.REMOVE );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					if ( cliQueryInfo.arguments.get( 1 ).equalsIgnoreCase( "true" ) ) {
+						builder.setOptions( "{ 'justOne': " + cliQueryInfo.arguments.get( 1 ) + " }" );
+					}
+					else {
+						builder.setOptions( cliQueryInfo.arguments.get( 1 ) );
+					}
+				}
+				break;
+			}
+			case "deleteOne": {
+				builder.setOperation( Operation.DELETEONE );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "deleteMany": {
+				builder.setOperation( Operation.DELETEMANY );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 1 ) );
+				}
+				break;
+			}
+			case "update": {
+				builder.setOperation( Operation.UPDATE );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 1 ) );
+				if ( cliQueryInfo.arguments.size() > 2 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 2 ) );
+				}
+				break;
+			}
+			case "updateOne": {
+				builder.setOperation( Operation.UPDATEONE );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 1 ) );
+				if ( cliQueryInfo.arguments.size() > 2 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 2 ) );
+				}
+				break;
+			}
+			case "updateMany": {
+				builder.setOperation( Operation.UPDATEMANY );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 1 ) );
+				if ( cliQueryInfo.arguments.size() > 2 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 2 ) );
+				}
+				break;
+			}
+			case "replaceOne": {
+				builder.setOperation( Operation.REPLACEONE );
+				builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				builder.setUpdateOrInsert( cliQueryInfo.arguments.get( 1 ) );
+				if ( cliQueryInfo.arguments.size() > 2 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 2 ) );
+				}
+				break;
+			}
+			case "aggregate": {
+				builder.setOperation( Operation.AGGREGATE_PIPELINE );
+				Document array = Document.parse( "{ 'dummy':" + cliQueryInfo.arguments.get( 0 ) + "}" );
+				ArrayList keys = (ArrayList) array.get( "dummy" );
+				keys.forEach( key -> {
+					builder.getPipeline().add( (Document) key );
+				} );
+				break;
+			}
+			case "count": {
+				builder.setOperation( Operation.COUNT );
+				if ( cliQueryInfo.arguments.size() > 0 ) {
+					builder.setCriteria( cliQueryInfo.arguments.get( 0 ) );
+				}
+				break;
+			}
+			case "distinct": {
+				builder.setOperation( Operation.DISTINCT );
+				builder.setDistinctFieldName( JSON.parse( cliQueryInfo.arguments.get( 0 ) ).toString() );
+				if ( cliQueryInfo.arguments.size() > 1 ) {
+					builder.setCriteria( cliQueryInfo.arguments.get( 1 ) );
+				}
+				if ( cliQueryInfo.arguments.size() > 2 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 2 ) );
+				}
+				break;
+			}
+			case "mapReduce": {
+				builder.setOperation( Operation.MAP_REDUCE );
+				builder.setMapFunction( JSON.parse( cliQueryInfo.arguments.get( 0 ) ).toString() );
+				builder.setReduceFunction( JSON.parse( cliQueryInfo.arguments.get( 1 ) ).toString() );
+				if ( cliQueryInfo.arguments.size() > 2 ) {
+					builder.setOptions( cliQueryInfo.arguments.get( 2 ) );
+				}
+				break;
+			}
+			default: {
+				context.getParseErrors().add( createParseError( context, 0, "Unknown operation" + cliQueryInfo.operationName ) );
+				return false;
+			}
+		}
+		return true;
+	};
 
 	public Rule Query() {
-		return Sequence( FirstOf( ParsedQuery(), CriteriaOnlyFindQuery() ), EOI, push( builder ) );
-	}
-
-	public Rule ParsedQuery() {
-		return Sequence( Db(),  Collection(),  Operation() );
+		return Sequence(
+				FirstOf( CriteriaOnlyFindQuery(), CliQuery() ),
+				EOI,
+				push( builder.build() )
+				);
 	}
 
 	/**
-	 * A find query only given as criterion. Leave it to MongoDB's own parser to handle it.
+	 * A find query only given as criterion.
 	 *
 	 * @return the {@link Rule} to identify a find query only
 	 */
 	public Rule CriteriaOnlyFindQuery() {
-		return Sequence( ZeroOrMore( ANY ), builder.setOperation( Operation.FIND ), builder.setCriteria( match() ) );
+		return Sequence( JsonObject(), builder.setOperation( Operation.FIND ), builder.setCriteria( match() ) );
 	}
 
-	@SuppressNode
-	public Rule Db() {
-		return Sequence( ZeroOrMore( WhiteSpace() ), "db ", Separator() );
+	/**
+	 * MongoDB CLI query.
+	 *
+	 * @return the {@link Rule} to identify a find query only
+	 */
+	public Rule CliQuery() {
+		return Sequence(
+				ZeroOrMore( WhiteSpace() ),
+				PathExpression(), processPathExpression,
+				ZeroOrMore( WhiteSpace() ),
+				"( ", Arguments(), ") ", processCliQueryInfo
+				);
+	}
+
+	public Rule PathExpression() {
+		return Sequence( IdentiferInPath(), ZeroOrMore( Separator(), IdentiferInPath() ) );
+	}
+
+	public Rule IdentiferInPath() {
+		return Sequence( Identifier(), cliQueryInfo.pathExpression.add( match().trim() ) );
 	}
 
 	@SuppressSubnodes
-	public Rule Collection() {
-		return Sequence( OneOrMore( TestNot( Reserved() ), ANY ), builder.setCollection( match() ) );
-		//TODO OGM-949 it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
-		// cf. https://docs.mongodb.org/manual/faq/developers/#are-there-any-restrictions-on-the-names-of-collections
+	public Rule Identifier() {
+		return Sequence(
+				FirstOf( SpecialIdentifierCharacter(), Letter()),
+				ZeroOrMore( FirstOf( SpecialIdentifierCharacter(), Letter(), Digit() )),
+				ZeroOrMore( WhiteSpace() )
+		);
+	}
+
+	public Rule Arguments() {
+		return Optional( Sequence( Argument(), ZeroOrMore( ", ", Argument() ) ) );
+	}
+
+	public Rule Argument() {
+		return Sequence(
+				Value(),
+				cliQueryInfo.arguments.add( match() )
+				);
 	}
 
 	@SuppressNode
@@ -99,245 +340,13 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		return Sequence( ZeroOrMore( WhiteSpace() ), ". " );
 	}
 
-	public Rule Reserved() {
-		return FirstOf( Find(), FindOne(), FindAndModify(), Insert(), InsertOne(), InsertMany(), Remove(), DeleteOne(), DeleteMany(), Update(), UpdateOne(), UpdateMany(), ReplaceOne(), Count(), Aggregate(), Distinct(), MapReduce() );
-		// TODO There are many more query types than what we support.
-	}
 
-	public Rule Operation() {
-		return FirstOf(
-				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
-				Sequence( FindOne(), builder.setOperation( Operation.FINDONE ) ),
-				Sequence( FindAndModify(), builder.setOperation( Operation.FINDANDMODIFY ) ),
-				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
-				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
-				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
-				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
-				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
-				Sequence( DeleteMany(), builder.setOperation( Operation.DELETEMANY ) ),
-				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
-				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
-				Sequence( UpdateMany(), builder.setOperation( Operation.UPDATEMANY ) ),
-				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
-				Sequence( ReplaceOne(), builder.setOperation( Operation.REPLACEONE ) ),
-				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
-				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) ),
-				Sequence( MapReduce(), builder.setOperation( Operation.MAP_REDUCE ) )
-		);
-	}
-
-	public Rule Find() {
-		return Sequence(
-				Separator(),
-				"find ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule FindOne() {
-		return Sequence(
-				Separator(),
-				"findOne ",
-				"( ",
-				Optional( JsonObject(), builder.setCriteria( match() ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule FindAndModify() {
-		return Sequence(
-				Separator(),
-				"findAndModify ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				") "
-		);
-	}
-
-	public Rule Insert() {
-		return Sequence(
-				Separator(),
-				"insert ",
-				"( ",
-				JsonComposite(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule InsertOne() {
-		return Sequence(
-				Separator(),
-				"insertOne ",
-				"( ",
-				JsonComposite(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule InsertMany() {
-		return Sequence(
-				Separator(),
-				"insertMany ",
-				"( ",
-				JsonComposite(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule Remove() {
-		return Sequence(
-				Separator(),
-				"remove ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ",
-					FirstOf(
-						Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
-						Sequence( JsonObject(), builder.setOptions( match() ) )
-					)
-				) ),
-				") "
-		);
-	}
-	public Rule DeleteOne() {
-		return Sequence(
-				Separator(),
-				"deleteOne ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-	public Rule DeleteMany() {
-		return Sequence(
-				Separator(),
-				"deleteMany ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule Update() {
-		return Sequence(
-				Separator(),
-				"update ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-	public Rule UpdateOne() {
-		return Sequence(
-				Separator(),
-				"updateOne ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule UpdateMany() {
-		return Sequence(
-				Separator(),
-				"updateMany ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule ReplaceOne() {
-		return Sequence(
-				Separator(),
-				"replaceOne ",
-				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule Aggregate() {
-		return Sequence( Separator(), "aggregate ", "( ", AggregateArray(), ") " );
-	}
-
-	public Rule AggregateArray() {
-		return Sequence(
-				"[ ",
-					Sequence(
-						AggregateObject(),
-						ZeroOrMore( Sequence( ", ", AggregateObject() ) ) ),
-				"] " );
-	}
-
-	public Rule AggregateObject() {
-		return Sequence(
-				ZeroOrMore( WhiteSpace() ).skipNode(),
-				"{ ", AggregatePair(), "} " );
-	}
-
-	public Rule AggregatePair() {
-		return Sequence(
-				JsonString(), builder.push( currentIndex(), match() ),
-				": ",
-				Value(), builder.addPipeline( builder.pop(), match() ) );
-	}
-
-	public Rule Count() {
-		return Sequence(
-				Separator(),
-				"count ",
-				"( ",
-				Optional( Sequence( JsonComposite(), builder.setCriteria( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule Distinct() {
-		return Sequence(
-				Separator(),
-				"distinct ",
-				"( ",
-				Sequence( JsonString(), builder.setDistinctFieldName( JSON.parse( match() ).toString() ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
-
-	public Rule MapReduce() {
-		return Sequence(
-				Separator(),
-				"mapReduce ",
-				"( ",
-				Sequence( JsonString(), builder.setMapFunction( JSON.parse( match() ).toString() ) ),
-				Sequence( ", ", JsonString(), builder.setReduceFunction( JSON.parse( match() ).toString() ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
-				") "
-		);
-	}
 
 	public Rule JsonComposite() {
 		return FirstOf( JsonObject(), JsonArray() );
 	}
 
+	@SuppressNode
 	public Rule JsonObject() {
 		return Sequence(
 				ZeroOrMore( WhiteSpace() ).skipNode(),
@@ -345,13 +354,13 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				FirstOf(
 						Sequence( Pair(), ZeroOrMore( Sequence( ", ", Pair() ) ) ),
 						Optional( Pair() )
-				).suppressNode(),
+						).suppressNode(),
 				"} "
-		);
+				);
 	}
 
 	public Rule Pair() {
-		return Sequence( JsonString(), ": ", Value() );
+		return Sequence( FirstOf( JsonString(), Identifier() ) , ": ", Value() );
 	}
 
 	public Rule Value() {
@@ -360,11 +369,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule PrimitiveValue() {
 		return FirstOf( JsonString(), JsonNumber(), "true ", "false ", "null ",
-				"Infinity ", "NaN ", "undefined " );
-	}
-
-	public Rule BooleanValue() {
-		return FirstOf( "true", "false" );
+				"Infinity ", "NaN ", "undefined "
+				);
 	}
 
 	@SuppressNode
@@ -378,9 +384,9 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				FirstOf(
 						Sequence( Value(), ZeroOrMore( Sequence( ", ", Value() ) ) ),
 						Optional( Value() )
-				),
+						),
 				"] "
-		);
+				);
 	}
 
 	@SuppressSubnodes
@@ -404,13 +410,32 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				FirstOf(
 						Sequence( PrimitiveValue(), ZeroOrMore( Sequence( ", ", PrimitiveValue() ) ) ),
 						Optional( PrimitiveValue() )
-				)
-				, ") " );
+						)
+				, ") "
+				);
 	}
 
 	public Rule SupportedBsonFunction() {
-		return FirstOf( "BinData", "Date", "HexData", "ISODate", "NumberInt", "NumberLong", "ObjectId", "Timestamp", "RegExp", "DBPointer",
-				"UUID", "GUID", "CSUUID", "CSGUID", "JUUID", "JGUID", "PYUUID", "PYGUID" );
+		return FirstOf(
+				"BinData",
+				"Date",
+				"HexData",
+				"ISODate",
+				"NumberInt",
+				"NumberLong",
+				"ObjectId",
+				"Timestamp",
+				"RegExp",
+				"DBPointer",
+				"UUID",
+				"GUID",
+				"CSUUID",
+				"CSGUID",
+				"JUUID",
+				"JGUID",
+				"PYUUID",
+				"PYGUID"
+				);
 	}
 
 	public Rule Character() {
@@ -419,6 +444,13 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule SingleQuotedStringCharacter() {
 		return FirstOf( SingleQuotedStringEscapedChar(), SingleQuotedStringNormalChar() );
+	}
+
+	public Rule Letter() {
+		return FirstOf( CharRange( 'a', 'z' ), CharRange( 'A', 'Z' ) );
+	}
+	public Rule SpecialIdentifierCharacter() {
+		return FirstOf( '$', '_' );
 	}
 
 	public Rule EscapedChar() {
@@ -484,4 +516,28 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 			return String( string );
 		}
 	}
+
+	private ParseError createParseError(Context context, int errorLength, String errorMessage) {
+		return new ParseError() {
+			public InputBuffer getInputBuffer() {
+				return context.getInputBuffer();
+			}
+
+			public int getStartIndex() {
+				return context.getStartIndex();
+			}
+
+			public int getEndIndex() {
+				return getStartIndex() + errorLength;
+			}
+
+			public String getErrorMessage() {
+				return errorMessage;
+			}
+		};
+	}
+
+
+
+
 }
