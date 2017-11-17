@@ -17,9 +17,8 @@ import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
+
 
 /**
  * Unit test for {@link NativeQueryParser}.
@@ -35,7 +34,7 @@ public class NativeQueryParserTest {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		String match = "{ '$match': {'author' : 'Oscar Wilde' } }";
 		String sort = "{ '$sort': {'name' : -1 } }";
-		ParsingResult<MongoDBQueryDescriptor> run = new ReportingParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.aggregate([" + match + ", " + sort + " ])" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -43,9 +42,10 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
 		assertThat( queryDescriptor.getPipeline() )
-				.containsExactly(
-						Document.parse( match ),
-						Document.parse( sort ) );
+			.containsExactly(
+					Document.parse( match ),
+					Document.parse( sort )
+					);
 	}
 
 	@Test
@@ -56,25 +56,35 @@ public class NativeQueryParserTest {
 		String unwind = "{'$unwind': '$clicks'}";
 		String group = "{ '$group': {'_id' : '$_id' ,'clicks' : {'$push':'$clicks'} ,'token' : { '$push': '$TOKEN' } } }";
 		String sort = "{ '$sort': { '_id' : -1 } }";
-		String nativeQuery = "db.UserFactualContent.aggregate([" + match + "," + unwind + "," + group + "," + sort + "])";
-		ParsingResult<MongoDBQueryDescriptor> run = new ReportingParseRunner<MongoDBQueryDescriptor>( parser.Query() ).run( nativeQuery );
+		String nativeQuery = "db.UserFactualContent.aggregate(["
+						+ match
+						+ "," + unwind
+						+ "," + group
+						+ "," + sort
+						+ "])";
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() ).run( nativeQuery );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "UserFactualContent" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.AGGREGATE_PIPELINE );
-		assertThat( queryDescriptor.getPipeline() ).containsExactly( Document.parse( match ), Document.parse( unwind ), Document.parse( group ),
-				Document.parse( sort ) );
+		assertThat( queryDescriptor.getPipeline() )
+			.containsExactly(
+					Document.parse( match )
+					, Document.parse( unwind )
+					, Document.parse( group )
+					, Document.parse( sort )
+					);
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-1247")
 	public void shouldParseDistinctQueryWithFieldOnly() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() ).run( "db.Order.distinct('item')" );
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+				.run( "db.Order.distinct('item')" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
-
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
 		assertThat( queryDescriptor.getCriteria() ).isNull();
@@ -88,14 +98,13 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1247")
 	public void shouldParseDistinctQueryWithCriteriaAndCollation() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.distinct('item',{'orderId': { '$in': ['XYZ123', '123']}},{'collation' : {'locale' : 'fr'}})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DISTINCT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ 'orderId' : { '$in': ['XYZ123', '123'] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'orderId' : { '$in': ['XYZ123', '123'] } }" ) );
 		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{'collation' : {'locale' : 'fr'}}" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
@@ -106,7 +115,7 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1247")
 	public void shouldParseDistinctQueryWithCollationOnly() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.distinct('item', {}, {'collation' : {'locale' : 'fr'}})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -126,7 +135,7 @@ public class NativeQueryParserTest {
 		String mapFunction = "function() { emit(this.cust_id, this.price); }";
 		String reduceFuntion = "function(keyCustId, valuesPrices) { return Array.sum(valuesPrices); }";
 		String query = "db.Order.mapReduce('" + mapFunction + "','" + reduceFuntion + "')";
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( query );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -144,7 +153,7 @@ public class NativeQueryParserTest {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1246")
 	public void shouldParseComplexMapReduceQuery() {
-		// https://docs.mongodb.com/manual/tutorial/map-reduce-examples/
+		//https://docs.mongodb.com/manual/tutorial/map-reduce-examples/
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		String mapFunction = "function() { for (var idx = 0; idx < this.items.length; idx++) { var key = this.items[idx].sku; var value = { count: 1, qty: this.items[idx].qty }; emit(key, value); } }";
 		String reduceFuntion = "function(keySKU, countObjVals) { reducedVal = { count: 0, qty: 0 }; for (var idx = 0; idx < countObjVals.length; idx++) { reducedVal.count += countObjVals[idx].count; reducedVal.qty += countObjVals[idx].qty; } return reducedVal; }";
@@ -161,7 +170,7 @@ public class NativeQueryParserTest {
 				"			'collation' : {'locale' : 'fr'} }";
 
 		String query = "db.Order.mapReduce('" + mapFunction + "','" + reduceFuntion + "'," + options + ")";
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( query );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -179,7 +188,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseSimplifiedFindQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "{ \"foo\" : true }" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -194,7 +203,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseObjectsWithNoQuotesInKeys() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -209,7 +218,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseSimpleQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find({\"foo\":true})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -224,7 +233,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseSimpleQueryUsingSingleQuotes() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find( { 'foo' : true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -239,7 +248,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithEmptyFind() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find({})" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -249,7 +258,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryInsertSingleDocument() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.insertOne( { 'item': 'card', 'qty': 15 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -261,7 +270,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryInsertSingleDocumentAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.insertOne( { 'item': 'card', 'qty': 15 }, { 'ordered': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -275,20 +284,19 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryInsertMultipleDocuments() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.insertMany( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.INSERTMANY );
 		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isNull();
-		assertThat( queryDescriptor.getUpdateOrInsertMany() ).isEqualTo( DocumentUtil.fromJsonArray(
-				"[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertMany() ).isEqualTo( DocumentUtil.fromJsonArray( "[ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ]" ) );
 	}
 
 	@Test
 	public void shouldParseQueryInsertUnkwounDocuments() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.insert( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ] )" );
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
@@ -301,7 +309,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryInsertMultipleDocumentsAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.insertMany( [ { '_id': 11, 'item': 'pencil', 'qty': 50, 'type': 'no.2' }, { 'item': 'pen', 'qty': 20 }, { 'item': 'eraser', 'qty': 25 } ], { 'ordered': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -316,7 +324,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1313")
 	public void shouldParseQueryDeleteOne() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.deleteOne( { } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -329,7 +338,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1313")
 	public void shouldParseQueryDeleteOneWithFilter() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.deleteOne( { 'item': 'card', 'qty': 15 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -343,7 +353,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1313")
 	public void shouldParseQueryDeleteOneWithFilterAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.deleteOne( { 'item': 'card', 'qty': 15 }, { 'w': 'majority', 'wtimeout' : 100 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -357,7 +368,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1314")
 	public void shouldParseQueryDeleteMany() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.deleteMany( { } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -370,7 +382,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1314")
 	public void shouldParseQueryDeleteManyWithFilter() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.deleteMany( { 'item': 'card', 'qty': 15 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -384,7 +397,8 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1314")
 	public void shouldParseQueryDeleteManyWithFilterAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.deleteMany( { 'item': 'card', 'qty': 15 }, { 'w': 'majority', 'wtimeout' : 100 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -397,7 +411,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithEmptyRemove() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.remove( 	{\n 	}\n 	)" ); // Include superfluous whitespace.
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -409,7 +423,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithEmptyRemoveAndOptionalJustOne() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.remove({},true)" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -422,7 +436,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithEmptyRemoveAndOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.remove( { }, { 'justOne': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -435,7 +449,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryUpdate() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.update( { 'name': 'Andy' }, { 'rating': 1, 'score': 1 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -449,7 +463,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryUpdateWithOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.update( { 'name': 'Andy' }, { 'rating': 1, 'score': 1 }, { 'upsert': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -464,8 +478,9 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-1317")
 	public void shouldParseQueryReplaceOneWithCriteriaWithReplacementWithOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() ).run(
-				"db.Order.replaceOne( { 'name' : 'Andy' }, { 'name' : 'Lulu', 'age' : 18, 'score' : 22 }, " +
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() ).run(
+						"db.Order.replaceOne( { 'name' : 'Andy' }, { 'name' : 'Lulu', 'age' : 18, 'score' : 22 }, " +
 						"{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -473,17 +488,17 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.REPLACEONE );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
-		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse(
-				"{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse(
-				"{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } }" ) );
+		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ 'name' : 'Lulu', 'age' : 18, 'score' : 22 }" ) );
+		assertThat( queryDescriptor.getOptions() )
+		.isEqualTo( Document.parse( "{ 'upsert': true, 'writeConcern': { 'w': 'majority', 'wtimeout' : 100 }, 'collation': { 'locale': 'fr_CA' } }" ) );
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1315")
+	@TestForIssue( jiraKey = "OGM-1315" )
 	public void shouldParseQueryUpdateOne() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.updateOne( { 'name' : 'Andy' }, { '$set': { 'score' : 3 } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -496,10 +511,11 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1315")
+	@TestForIssue( jiraKey = "OGM-1315" )
 	public void shouldParseQueryUpdateOneWithOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>(
+				parser.Query() )
 				.run( "db.Order.updateOne( { 'name' : 'Andy' }, { '$set': { 'score' : 3 } }, { 'upsert': true, 'collation': {} } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -512,10 +528,10 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1316")
+	@TestForIssue( jiraKey = "OGM-1316" )
 	public void shouldParseQueryUpdateMany() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.updateMany( { 'name': 'Andy' }, { '$mul': { 'score': 5 } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -527,10 +543,10 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	@TestForIssue(jiraKey = "OGM-1316")
+	@TestForIssue( jiraKey = "OGM-1316" )
 	public void shouldParseQueryUpdateManyWithOptions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.updateMany( { 'name' : 'Andy' }, { '$mul': { 'score': 5 } }, { 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -539,14 +555,13 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.UPDATEMANY );
 		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ 'name' : 'Andy' }" ) );
 		assertThat( queryDescriptor.getUpdateOrInsertOne() ).isEqualTo( Document.parse( "{ '$mul': { 'score': 5 } }" ) );
-		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse(
-				"{ 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } }" ) );
+		assertThat( queryDescriptor.getOptions() ).isEqualTo( Document.parse( "{ 'upsert': true, 'writeConcern': {'w': 'majority', 'wtimeout' : 100 } }" ) );
 	}
 
 	@Test
 	public void shouldParseQueryFindAndModify() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.findAndModify( { 'query': { 'name': 'Andy' }, 'sort': { 'rating': 1 }, 'update': { '$inc': { 'score': 1 } }, 'upsert': true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -562,7 +577,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryFindOneWithoutCriteriaNorProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.findOne(  )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -577,7 +592,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryFindOneWithoutProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.findOne( { \"foo\" : true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -592,7 +607,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryFindOneWithCriteriaAndProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.findOne( { \"foo\" : true }, { \"foo\" : 1 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -607,7 +622,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithProjection() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find( { \"foo\" : true }, { \"foo\" : 1 } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -622,7 +637,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithWhitespace() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "  db  .  Order  .  find  (  {  \"  foo  \"  :  true  }  ,  {  \"foo\"  :  1  }  )  " );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -637,8 +652,8 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseQueryWithSeveralConditions() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ReportingParseRunner<MongoDBQueryDescriptor> runner = new ReportingParseRunner<MongoDBQueryDescriptor>( parser.Query() );
-		ParsingResult<MongoDBQueryDescriptor> run = runner.run( "db.Order.find( { \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" } )" );
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+				.run( "db.Order.find( { \"foo\" : true, \"bar\" : 42, \"baz\" : \"qux\" } )" );
 
 		assertThat( run.hasErrors() ).isFalse();
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -653,7 +668,8 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseCountQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() ).run( "db.Order.count()" );
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+				.run( "db.Order.count()" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
@@ -667,7 +683,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseCountQueryWithCriteria() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.count( { 'foo' : true } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -682,15 +698,14 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseCountQueryWithLogicalOperatorOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.count( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -698,15 +713,14 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseCountQueryWithLogicalOperatorAND() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.count( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -714,15 +728,14 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseCountQueryWithLogicalOperatorNOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.count( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -730,7 +743,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseCountQueryWithLogicalOperatorNOT() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.count( { '$not': { 'foo' : false } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -745,15 +758,14 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseFindQueryWithLogicalOperatorOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find( { '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$or': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -761,15 +773,14 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldParseFindQueryWithLogicalOperatorAND() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find( { '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$and': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -777,15 +788,14 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldFindCountQueryWithLogicalOperatorNOR() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find( { '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
 
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.FIND );
-		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse(
-				"{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( Document.parse( "{ '$nor': [ { 'foo' : true }, { 'bar' : '42' } ] } }" ) );
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
@@ -793,7 +803,7 @@ public class NativeQueryParserTest {
 	@Test
 	public void shouldFindeCountQueryWithLogicalOperatorNOT() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.Order.find( { '$not': { 'foo' : false } } )" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
@@ -809,7 +819,7 @@ public class NativeQueryParserTest {
 	@TestForIssue(jiraKey = "OGM-900")
 	public void shouldSupportDotInCollectionName() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptor> run = new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> run =  new BasicParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( "db.POEM.COM.count()" );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue;
