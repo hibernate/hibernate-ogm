@@ -49,7 +49,6 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStora
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
-import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
@@ -897,13 +896,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public MongoDBQueryDescriptor parseNativeQuery(String nativeQuery) {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-		ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+		ParsingResult<MongoDBQueryDescriptor> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptor>( parser.Query() )
 				.run( nativeQuery );
 		if ( parseResult.hasErrors() ) {
 			throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
 		}
 
-		return parseResult.resultValue.build();
+		return parseResult.resultValue;
 	}
 
 	@Override
