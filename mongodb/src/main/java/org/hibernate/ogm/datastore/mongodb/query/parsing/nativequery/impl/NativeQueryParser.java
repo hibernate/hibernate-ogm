@@ -7,13 +7,14 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
+
+import com.mongodb.util.JSON;
+import org.bson.json.JsonReader;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
-
-import com.mongodb.util.JSON;
 
 /**
  * A parser for MongoDB queries which can be given in one of the following representations:
@@ -55,18 +56,16 @@ import com.mongodb.util.JSON;
  * @author Gunnar Morling
  * @author Thorsten Möller
  * @author Guillaume Smet
+ * @author Dmitrii Masherov
  */
 @BuildParseTree
 public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder> {
-
-	final MongoDBQueryDescriptorBuilder builder;
-
-	public NativeQueryParser() {
-		this.builder = new MongoDBQueryDescriptorBuilder();
+	public Rule Query() {
+		return Sequence( push( new MongoDBQueryDescriptorBuilder() ),  Optional( CliQueryOrJsonFindQuery() ) );
 	}
 
-	public Rule Query() {
-		return Sequence( FirstOf( ParsedQuery(), CriteriaOnlyFindQuery() ), EOI, push( builder ) );
+	public Rule CliQueryOrJsonFindQuery() {
+		return Sequence( FirstOf( ParsedQuery(), CriteriaOnlyFindQuery() ), peek().setQueryValid( true ), EOI );
 	}
 
 	public Rule ParsedQuery() {
@@ -79,19 +78,32 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	 * @return the {@link Rule} to identify a find query only
 	 */
 	public Rule CriteriaOnlyFindQuery() {
-		return Sequence( ZeroOrMore( ANY ), builder.setOperation( Operation.FIND ), builder.setCriteria( match() ) );
+		return Sequence( !peek().isCliQuery(), JsonParameter( JsonObject() ) , peek().setOperation( Operation.FIND ), peek().setCriteria( match() ) );
 	}
+
 
 	@SuppressNode
 	public Rule Db() {
-		return Sequence( ZeroOrMore( WhiteSpace() ), "db ", Separator() );
+		return Sequence( ZeroOrMore( WhiteSpace() ), "db ", peek().setCliQuery( true ), Separator() );
 	}
 
 	@SuppressSubnodes
 	public Rule Collection() {
-		return Sequence( OneOrMore( TestNot( Reserved() ), ANY ), builder.setCollection( match() ) );
+		return Sequence( PathExpression(), peek().setCollection( match() ), Separator() );
 		//TODO OGM-949 it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
 		// cf. https://docs.mongodb.org/manual/faq/developers/#are-there-any-restrictions-on-the-names-of-collections
+	}
+
+	public Rule PathExpression() {
+		return Sequence( Ident(), ZeroOrMore( Separator(), Ident(), TestNot( "( " ) ) );
+	}
+
+	@SuppressSubnodes
+	public Rule Ident() {
+		return Sequence(
+				IdentCharacter(),
+				ZeroOrMore( FirstOf( IdentCharacter(), Digit() ) ),
+				ZeroOrMore( WhiteSpace() ) );
 	}
 
 	@SuppressNode
@@ -106,176 +118,196 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule Operation() {
 		return FirstOf(
-				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
-				Sequence( FindOne(), builder.setOperation( Operation.FINDONE ) ),
-				Sequence( FindAndModify(), builder.setOperation( Operation.FINDANDMODIFY ) ),
-				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
-				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
-				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
-				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
-				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
-				Sequence( DeleteMany(), builder.setOperation( Operation.DELETEMANY ) ),
-				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
-				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
-				Sequence( UpdateMany(), builder.setOperation( Operation.UPDATEMANY ) ),
-				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
-				Sequence( ReplaceOne(), builder.setOperation( Operation.REPLACEONE ) ),
-				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
-				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) ),
-				Sequence( MapReduce(), builder.setOperation( Operation.MAP_REDUCE ) )
+				Find(),
+				FindOne(),
+				FindAndModify(),
+				Insert(),
+				InsertOne(),
+				InsertMany(),
+				Remove(),
+				DeleteOne(),
+				DeleteMany(),
+				Update(),
+				UpdateOne(),
+				UpdateMany(),
+				Count(),
+				ReplaceOne(),
+				Aggregate(),
+				Distinct(),
+				MapReduce(),
+				Sequence( Optional( Ident(), peek().setOperationName( match() ) ), ACTION( false ) )
 		);
 	}
 
 	public Rule Find() {
 		return Sequence(
-				Separator(),
 				"find ",
+				peek().setOperation( Operation.FIND ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setProjection( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule FindOne() {
 		return Sequence(
-				Separator(),
 				"findOne ",
+				peek().setOperation( Operation.FINDONE ),
 				"( ",
-				Optional( JsonObject(), builder.setCriteria( match() ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
+				Optional( JsonParameter( JsonObject() ), peek().setCriteria( match() ) ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setProjection( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule FindAndModify() {
 		return Sequence(
-				Separator(),
 				"findAndModify ",
+				peek().setOperation( Operation.FINDANDMODIFY ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule Insert() {
 		return Sequence(
-				Separator(),
 				"insert ",
+				peek().setOperation( Operation.INSERT ),
 				"( ",
-				JsonComposite(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonComposite() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule InsertOne() {
 		return Sequence(
-				Separator(),
 				"insertOne ",
+				peek().setOperation( Operation.INSERTONE ),
 				"( ",
-				JsonComposite(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonComposite() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule InsertMany() {
 		return Sequence(
-				Separator(),
 				"insertMany ",
+				peek().setOperation( Operation.INSERTMANY ),
 				"( ",
-				JsonComposite(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonComposite() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule Remove() {
 		return Sequence(
-				Separator(),
 				"remove ",
+				peek().setOperation( Operation.REMOVE ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ),
 				Optional( Sequence( ", ",
 					FirstOf(
-						Sequence( BooleanValue(), builder.setOptions( "{ 'justOne': " + match() + " }" ) ),
-						Sequence( JsonObject(), builder.setOptions( match() ) )
+						Sequence( BooleanValue(), peek().setOptions( "{ 'justOne': " + match() + " }" ) ),
+						Sequence( JsonParameter( JsonObject() ), peek().setOptions( match() ) )
 					)
 				) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 	public Rule DeleteOne() {
 		return Sequence(
-				Separator(),
 				"deleteOne ",
+				peek().setOperation( Operation.DELETEONE ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 	public Rule DeleteMany() {
 		return Sequence(
-				Separator(),
 				"deleteMany ",
+				peek().setOperation( Operation.DELETEMANY ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule Update() {
 		return Sequence(
-				Separator(),
 				"update ",
+				peek().setOperation( Operation.UPDATE ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ), ", ",
+				JsonParameter( JsonObject() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 	public Rule UpdateOne() {
 		return Sequence(
-				Separator(),
 				"updateOne ",
+				peek().setOperation( Operation.UPDATEONE ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ), ", ",
+				JsonParameter( JsonObject() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule UpdateMany() {
 		return Sequence(
-				Separator(),
 				"updateMany ",
+				peek().setOperation( Operation.UPDATEMANY ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ), ", ",
+				JsonParameter( JsonObject() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule ReplaceOne() {
 		return Sequence(
-				Separator(),
 				"replaceOne ",
+				peek().setOperation( Operation.REPLACEONE ),
 				"( ",
-				JsonObject(), builder.setCriteria( match() ), ", ",
-				JsonObject(), builder.setUpdateOrInsert( match() ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				JsonParameter( JsonObject() ), peek().setCriteria( match() ), ", ",
+				JsonParameter( JsonObject() ), peek().setUpdateOrInsert( match() ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule Aggregate() {
-		return Sequence( Separator(), "aggregate ", "( ", AggregateArray(), ") " );
+		return Sequence(
+				"aggregate ",
+				peek().setOperation( Operation.AGGREGATE_PIPELINE ),
+				"( ", AggregateArray(),
+				peek().setParametersValid( true ),
+				") "
+		);
 	}
 
 	public Rule AggregateArray() {
@@ -295,42 +327,52 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule AggregatePair() {
 		return Sequence(
-				JsonString(), builder.push( currentIndex(), match() ),
+				JsonString(), peek().push( currentIndex(), match() ),
 				": ",
-				Value(), builder.addPipeline( builder.pop(), match() ) );
+				Value(), peek().addPipeline( peek().pop(), match() ) );
 	}
 
 	public Rule Count() {
 		return Sequence(
-				Separator(),
 				"count ",
+				peek().setOperation( Operation.COUNT ),
 				"( ",
-				Optional( Sequence( JsonComposite(), builder.setCriteria( match() ) ) ),
+				Optional( Sequence( JsonParameter( JsonComposite() ), peek().setCriteria( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule Distinct() {
 		return Sequence(
-				Separator(),
 				"distinct ",
+				peek().setOperation( Operation.DISTINCT ),
 				"( ",
-				Sequence( JsonString(), builder.setDistinctFieldName( JSON.parse( match() ).toString() ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				Sequence( JsonString(), peek().setDistinctFieldName( readStringFromJson( match() ) ) ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setCriteria( match() ) ) ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
 		);
 	}
 
 	public Rule MapReduce() {
 		return Sequence(
-				Separator(),
 				"mapReduce ",
+				peek().setOperation( Operation.MAP_REDUCE ),
 				"( ",
-				Sequence( JsonString(), builder.setMapFunction( JSON.parse( match() ).toString() ) ),
-				Sequence( ", ", JsonString(), builder.setReduceFunction( JSON.parse( match() ).toString() ) ),
-				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				Sequence( JsonString(), peek().setMapFunction( readStringFromJson( match() ) ) ),
+				Sequence( ", ", JsonString(), peek().setReduceFunction( readStringFromJson( match() ) ) ),
+				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
 				") "
+		);
+	}
+
+	public Rule JsonParameter(Rule Parameter) {
+		return FirstOf(
+				Parameter,
+				Sequence( ZeroOrMore( ANY ), peek().setInvalidJsonParameter( match() ), ACTION( false )  )
 		);
 	}
 
@@ -351,7 +393,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Pair() {
-		return Sequence( JsonString(), ": ", Value() );
+		return Sequence( FirstOf( JsonString(), Ident() ), ": ", Value() );
 	}
 
 	public Rule Value() {
@@ -411,6 +453,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	public Rule SupportedBsonFunction() {
 		return FirstOf( "BinData", "Date", "HexData", "ISODate", "NumberInt", "NumberLong", "ObjectId", "Timestamp", "RegExp", "DBPointer",
 				"UUID", "GUID", "CSUUID", "CSGUID", "JUUID", "JGUID", "PYUUID", "PYGUID" );
+	}
+
+	public Rule IdentCharacter() {
+		return FirstOf( '$', '_', CharRange( 'a', 'z' ), CharRange( 'A', 'Z' ) );
 	}
 
 	public Rule Character() {
@@ -482,6 +528,12 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		}
 		else {
 			return String( string );
+		}
+	}
+
+	String readStringFromJson(String json) {
+		try ( JsonReader jsonReader = new JsonReader( json ) ) {
+			return jsonReader.readString();
 		}
 	}
 }
