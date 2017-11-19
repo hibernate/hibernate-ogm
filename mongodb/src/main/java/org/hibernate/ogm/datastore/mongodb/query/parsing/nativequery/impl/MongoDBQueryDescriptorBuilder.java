@@ -18,6 +18,7 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Ope
 import org.hibernate.ogm.util.impl.StringHelper;
 
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -30,6 +31,16 @@ public class MongoDBQueryDescriptorBuilder {
 
 	private String collection;
 	private Operation operation;
+
+	/**
+	 * Helper fields for recording the states of the parser
+	 */
+	private boolean isCliQuery;
+	private String invalidJsonInPrefix;
+	private boolean everyParameterIsValid;
+	private String operationName;
+	private boolean isQueryValid;
+
 	/**
 	 * Overloaded to be the 'document' for a FINDANDMODIFY query (which is a kind of criteria),
 	 */
@@ -102,6 +113,35 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
+	public boolean isCliQuery() {
+		return isCliQuery;
+	}
+
+	public boolean setCliQuery(boolean isCliQuery) {
+		this.isCliQuery = isCliQuery;
+		return true;
+	}
+
+	public boolean setInvalidJsonInPrefix(String invalidJsonInPrefix) {
+		this.invalidJsonInPrefix = invalidJsonInPrefix;
+		return true;
+	}
+
+	public boolean setEveryParameterIsValid(boolean everyParameterIsValid) {
+		this.everyParameterIsValid = everyParameterIsValid;
+		return true;
+	}
+
+	public boolean setOperationName(String operationName) {
+		this.operationName = operationName;
+		return true;
+	}
+
+	public boolean setQueryValid(boolean isQueryValid) {
+		this.isQueryValid = isQueryValid;
+		return true;
+	}
+
 	public boolean setCriteria(String criteria) {
 		this.criteria = criteria;
 		return true;
@@ -142,7 +182,46 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
-	public MongoDBQueryDescriptor build() {
+	public MongoDBQueryDescriptor build() throws NativeQueryParseException {
+		if ( !isQueryValid ) {
+			// the input is CLI query: it starts with 'db'
+			if ( isCliQuery ) {
+				// db ???
+				if ( collection == null ) {
+					throw new NativeQueryParseException( "Cli query should match the format db.collection.oper()" );
+				}
+				// db . collection ???
+				if ( operation == null && operationName == null ) {
+					throw new NativeQueryParseException( "Cli query should match the format db.collection.oper()" );
+				}
+				// db . collection . UNSUPPORTED
+				if ( operation == null ) {
+					throw new NativeQueryParseException( "Operation '" + operationName + "' is unsupported" );
+				}
+				// db . collection . operation ( ???
+				if ( invalidJsonInPrefix != null ) {
+					try {
+						Document.parse( invalidJsonInPrefix );
+					}
+					catch (JsonParseException e ) {
+						throw new NativeQueryParseException( e );
+					}
+				}
+				// db . collection . operation ( ???
+				if ( !everyParameterIsValid ) {
+					throw new NativeQueryParseException( "Parameters are invalid for " + operationName );
+				}
+				throw new NativeQueryParseException( "Missing ')'" );
+			}
+			// the input is not a json object: might be error in { ... } or does not start with '{'
+			try {
+				Document.parse( invalidJsonInPrefix );
+			}
+			catch (JsonParseException e ) {
+				throw new NativeQueryParseException( e );
+			}
+		}
+
 		//@todo refactor the spaghetti!
 		if ( operation != Operation.AGGREGATE_PIPELINE ) {
 			MongoDBQueryDescriptor descriptor = null;

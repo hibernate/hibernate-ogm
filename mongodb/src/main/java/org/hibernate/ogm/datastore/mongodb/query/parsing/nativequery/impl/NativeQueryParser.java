@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
+
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
@@ -55,6 +56,7 @@ import com.mongodb.util.JSON;
  * @author Gunnar Morling
  * @author Thorsten Möller
  * @author Guillaume Smet
+ * @author Dmitrii Masherov
  */
 @BuildParseTree
 public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder> {
@@ -66,7 +68,11 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Query() {
-		return Sequence( FirstOf( ParsedQuery(), CriteriaOnlyFindQuery() ), EOI, push( builder ) );
+		return Sequence( Optional( QueryCliOrSimple() ), push( builder ) );
+	}
+
+	public Rule QueryCliOrSimple() {
+		return Sequence( FirstOf( ParsedQuery(), CriteriaOnlyFindQuery() ), builder.setQueryValid( true ), EOI );
 	}
 
 	public Rule ParsedQuery() {
@@ -79,19 +85,33 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	 * @return the {@link Rule} to identify a find query only
 	 */
 	public Rule CriteriaOnlyFindQuery() {
-		return Sequence( ZeroOrMore( ANY ), builder.setOperation( Operation.FIND ), builder.setCriteria( match() ) );
+		return Sequence( !builder.isCliQuery(), JsonObject() , builder.setOperation( Operation.FIND ), builder.setCriteria( match() )
+		);
 	}
+
 
 	@SuppressNode
 	public Rule Db() {
-		return Sequence( ZeroOrMore( WhiteSpace() ), "db ", Separator() );
+		return Sequence( ZeroOrMore( WhiteSpace() ), "db ", builder.setCliQuery( true ), Separator() );
 	}
 
 	@SuppressSubnodes
 	public Rule Collection() {
-		return Sequence( OneOrMore( TestNot( Reserved() ), ANY ), builder.setCollection( match() ) );
+		return Sequence( PathExpression(), builder.setCollection( match() ), Separator() );
 		//TODO OGM-949 it should not be just ANY matcher as they are some restrictions in the Collection naming in Mongo
 		// cf. https://docs.mongodb.org/manual/faq/developers/#are-there-any-restrictions-on-the-names-of-collections
+	}
+
+	public Rule PathExpression() {
+		return Sequence( Ident(), ZeroOrMore( Separator(), Ident(), TestNot( "( " ) ) );
+	}
+
+	@SuppressSubnodes
+	public Rule Ident() {
+		return Sequence(
+				IdentCharacter(),
+				ZeroOrMore( FirstOf( IdentCharacter(), Digit() ) ),
+				ZeroOrMore( WhiteSpace() ) );
 	}
 
 	@SuppressNode
@@ -106,95 +126,102 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule Operation() {
 		return FirstOf(
-				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
-				Sequence( FindOne(), builder.setOperation( Operation.FINDONE ) ),
-				Sequence( FindAndModify(), builder.setOperation( Operation.FINDANDMODIFY ) ),
-				Sequence( Insert(), builder.setOperation( Operation.INSERT ) ),
-				Sequence( InsertOne(), builder.setOperation( Operation.INSERTONE ) ),
-				Sequence( InsertMany(), builder.setOperation( Operation.INSERTMANY ) ),
-				Sequence( Remove(), builder.setOperation( Operation.REMOVE ) ),
-				Sequence( DeleteOne(), builder.setOperation( Operation.DELETEONE ) ),
-				Sequence( DeleteMany(), builder.setOperation( Operation.DELETEMANY ) ),
-				Sequence( Update(), builder.setOperation( Operation.UPDATE ) ),
-				Sequence( UpdateOne(), builder.setOperation( Operation.UPDATEONE ) ),
-				Sequence( UpdateMany(), builder.setOperation( Operation.UPDATEMANY ) ),
-				Sequence( Count(), builder.setOperation( Operation.COUNT ) ),
-				Sequence( ReplaceOne(), builder.setOperation( Operation.REPLACEONE ) ),
-				Sequence( Aggregate(), builder.setOperation( Operation.AGGREGATE_PIPELINE ) ),
-				Sequence( Distinct(), builder.setOperation( Operation.DISTINCT ) ),
-				Sequence( MapReduce(), builder.setOperation( Operation.MAP_REDUCE ) )
+				Find(),
+				FindOne(),
+				FindAndModify(),
+				Insert(),
+				InsertOne(),
+				InsertMany(),
+				Remove(),
+				DeleteOne(),
+				DeleteMany(),
+				Update(),
+				UpdateOne(),
+				UpdateMany(),
+				Count(),
+				ReplaceOne(),
+				Aggregate(),
+				Distinct(),
+				MapReduce(),
+				Sequence( Optional( Ident(), builder.setOperationName( match() ) ), ACTION( false ) )
 		);
 	}
 
 	public Rule Find() {
 		return Sequence(
-				Separator(),
 				"find ",
+				builder.setOperation( Operation.FIND ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule FindOne() {
 		return Sequence(
-				Separator(),
 				"findOne ",
+				builder.setOperation( Operation.FINDONE ),
 				"( ",
 				Optional( JsonObject(), builder.setCriteria( match() ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setProjection( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule FindAndModify() {
 		return Sequence(
-				Separator(),
 				"findAndModify ",
+				builder.setOperation( Operation.FINDANDMODIFY ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule Insert() {
 		return Sequence(
-				Separator(),
 				"insert ",
+				builder.setOperation( Operation.INSERT ),
 				"( ",
 				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule InsertOne() {
 		return Sequence(
-				Separator(),
 				"insertOne ",
+				builder.setOperation( Operation.INSERTONE ),
 				"( ",
 				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule InsertMany() {
 		return Sequence(
-				Separator(),
 				"insertMany ",
+				builder.setOperation( Operation.INSERTMANY ),
 				"( ",
 				JsonComposite(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule Remove() {
 		return Sequence(
-				Separator(),
 				"remove ",
+				builder.setOperation( Operation.REMOVE ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ",
@@ -203,79 +230,92 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 						Sequence( JsonObject(), builder.setOptions( match() ) )
 					)
 				) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 	public Rule DeleteOne() {
 		return Sequence(
-				Separator(),
 				"deleteOne ",
+				builder.setOperation( Operation.DELETEONE ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 	public Rule DeleteMany() {
 		return Sequence(
-				Separator(),
 				"deleteMany ",
+				builder.setOperation( Operation.DELETEMANY ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule Update() {
 		return Sequence(
-				Separator(),
 				"update ",
+				builder.setOperation( Operation.UPDATE ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 	public Rule UpdateOne() {
 		return Sequence(
-				Separator(),
 				"updateOne ",
+				builder.setOperation( Operation.UPDATEONE ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule UpdateMany() {
 		return Sequence(
-				Separator(),
 				"updateMany ",
+				builder.setOperation( Operation.UPDATEMANY ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule ReplaceOne() {
 		return Sequence(
-				Separator(),
 				"replaceOne ",
+				builder.setOperation( Operation.REPLACEONE ),
 				"( ",
 				JsonObject(), builder.setCriteria( match() ), ", ",
 				JsonObject(), builder.setUpdateOrInsert( match() ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule Aggregate() {
-		return Sequence( Separator(), "aggregate ", "( ", AggregateArray(), ") " );
+		return Sequence(
+				"aggregate ",
+				builder.setOperation( Operation.AGGREGATE_PIPELINE ),
+				"( ", AggregateArray(),
+				builder.setEveryParameterIsValid( true ),
+				") "
+		);
 	}
 
 	public Rule AggregateArray() {
@@ -302,34 +342,37 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	public Rule Count() {
 		return Sequence(
-				Separator(),
 				"count ",
+				builder.setOperation( Operation.COUNT ),
 				"( ",
 				Optional( Sequence( JsonComposite(), builder.setCriteria( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule Distinct() {
 		return Sequence(
-				Separator(),
 				"distinct ",
+				builder.setOperation( Operation.DISTINCT ),
 				"( ",
 				Sequence( JsonString(), builder.setDistinctFieldName( JSON.parse( match() ).toString() ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
 
 	public Rule MapReduce() {
 		return Sequence(
-				Separator(),
 				"mapReduce ",
+				builder.setOperation( Operation.MAP_REDUCE ),
 				"( ",
 				Sequence( JsonString(), builder.setMapFunction( JSON.parse( match() ).toString() ) ),
 				Sequence( ", ", JsonString(), builder.setReduceFunction( JSON.parse( match() ).toString() ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
+				builder.setEveryParameterIsValid( true ),
 				") "
 		);
 	}
@@ -339,7 +382,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule JsonObject() {
-		return Sequence(
+		return FirstOf(
+			Sequence(
 				ZeroOrMore( WhiteSpace() ).skipNode(),
 				"{ ",
 				FirstOf(
@@ -347,11 +391,13 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 						Optional( Pair() )
 				).suppressNode(),
 				"} "
+			),
+			Sequence( ZeroOrMore( ANY ), builder.setInvalidJsonInPrefix( match() ), ACTION( false )  )
 		);
 	}
 
 	public Rule Pair() {
-		return Sequence( JsonString(), ": ", Value() );
+		return Sequence( FirstOf( JsonString(), Ident() ), ": ", Value() );
 	}
 
 	public Rule Value() {
@@ -411,6 +457,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	public Rule SupportedBsonFunction() {
 		return FirstOf( "BinData", "Date", "HexData", "ISODate", "NumberInt", "NumberLong", "ObjectId", "Timestamp", "RegExp", "DBPointer",
 				"UUID", "GUID", "CSUUID", "CSGUID", "JUUID", "JGUID", "PYUUID", "PYGUID" );
+	}
+
+	public Rule IdentCharacter() {
+		return FirstOf( '$', '_', CharRange( 'a', 'z' ), CharRange( 'A', 'Z' ) );
 	}
 
 	public Rule Character() {

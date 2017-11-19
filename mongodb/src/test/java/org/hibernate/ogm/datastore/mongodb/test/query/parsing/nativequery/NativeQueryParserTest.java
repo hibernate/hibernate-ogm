@@ -10,13 +10,17 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParseException;
 import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
 import org.hibernate.ogm.utils.TestForIssue;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import org.bson.Document;
+import org.bson.json.JsonParseException;
 import org.parboiled.Parboiled;
+import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParseTreeUtils;
@@ -823,5 +827,142 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
 
+	@Test
+	public void shouldRecognizeUnsupportedOperation() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( " db.Order.fidn() " );
 
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Operation 'fidn' is unsupported" );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeInvalidJsonObjectInOperation() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( "db.Order.findOne( { 'foo' true } )" );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class );
+			assertThat( e.getCause() ).isInstanceOf( JsonParseException.class );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeMissingDot() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( "dbOrder.find( { 'name': 'Andy' } )" );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Cli query should match the format db.collection.oper()" );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeMissingCollectionName() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.find( { 'name': 'Andy' } )" );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Cli query should match the format db.collection.oper()" );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeMissingBrackets() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( "db.Person.find( { 'name': 'Andy' } " );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Missing ')'" );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeInvalidJSON() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( "{ \"foo\" true }" );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class );
+			assertThat( e.getCause() ).isInstanceOf( JsonParseException.class );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeInvalidJSONAsParameter() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( "db.Person.find( { 'name: 'Andy' } ) " );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class );
+			assertThat( e.getCause() ).isInstanceOf( JsonParseException.class );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeInvalidJSONArrayAsParameter() {
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( "db.Order.aggregate([  ])" );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Parameters are invalid for aggregate" );
+		}
+	}
+
+	@Test
+	public void shouldRecognizeMissingDBPart() { // ????
+		try {
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "Order.update( { 'name': 'Andy' }, { '$mul': { 'score': 5 } } )" );
+
+			run.resultValue.build();
+			Assert.fail( "An exception was expected" );
+		}
+		catch (Exception e) {
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class );
+			assertThat( e.getCause() ).isInstanceOf( JsonParseException.class );
+		}
+	}
 }
