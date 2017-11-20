@@ -8,13 +8,13 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 
+import com.mongodb.util.JSON;
+import org.bson.json.JsonReader;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
-
-import com.mongodb.util.JSON;
 
 /**
  * A parser for MongoDB queries which can be given in one of the following representations:
@@ -356,7 +356,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"distinct ",
 				builder.setOperation( Operation.DISTINCT ),
 				"( ",
-				Sequence( JsonString(), builder.setDistinctFieldName( JSON.parse( match() ).toString() ) ),
+				Sequence( JsonString(), builder.setDistinctFieldName( readStringFromJson( match() ) ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setCriteria( match() ) ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				builder.setEveryParameterIsValid( true ),
@@ -369,8 +369,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"mapReduce ",
 				builder.setOperation( Operation.MAP_REDUCE ),
 				"( ",
-				Sequence( JsonString(), builder.setMapFunction( JSON.parse( match() ).toString() ) ),
-				Sequence( ", ", JsonString(), builder.setReduceFunction( JSON.parse( match() ).toString() ) ),
+				Sequence( JsonString(), builder.setMapFunction( readStringFromJson( match() ) ) ),
+				Sequence( ", ", JsonString(), builder.setReduceFunction( readStringFromJson( match() ) ) ),
 				Optional( Sequence( ", ", JsonObject(), builder.setOptions( match() ) ) ),
 				builder.setEveryParameterIsValid( true ),
 				") "
@@ -532,6 +532,11 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		}
 		else {
 			return String( string );
+		}
+	}
+	String readStringFromJson(String json) {
+		try (JsonReader jsonReader = new JsonReader(json) ){
+			return jsonReader.readString();
 		}
 	}
 }
