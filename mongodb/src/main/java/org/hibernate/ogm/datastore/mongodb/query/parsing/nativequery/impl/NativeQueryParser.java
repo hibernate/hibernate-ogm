@@ -534,8 +534,9 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 			return String( string );
 		}
 	}
+
 	String readStringFromJson(String json) {
-		try (JsonReader jsonReader = new JsonReader(json) ){
+		try ( JsonReader jsonReader = new JsonReader( json ) ) {
 			return jsonReader.readString();
 		}
 	}
