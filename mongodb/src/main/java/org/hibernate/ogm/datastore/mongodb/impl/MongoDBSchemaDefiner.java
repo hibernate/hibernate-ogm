@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -69,7 +69,20 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 	private List<MongoDBIndexSpec> indexSpecs = new ArrayList<>();
 
 	@Override
-	public void validateMapping(SchemaDefinitionContext context) {
+	public void initializeSchema( SchemaDefinitionContext context) {
+		validateMappingAndCreateIndexSpecs( context );
+
+		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
+		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
+
+		// indexSpecs is populated during the validation of the mapping
+		for ( MongoDBIndexSpec indexSpec : indexSpecs ) {
+			createIndex( provider.getDatabase(), indexSpec );
+		}
+	}
+
+	private void validateMappingAndCreateIndexSpecs(SchemaDefinitionContext context) {
 		validateGenerators( context.getAllIdSourceKeyMetadata() );
 		validateEntityCollectionNames( context.getAllEntityKeyMetadata() );
 		validateAssociationNames( context.getAllAssociationKeyMetadata() );
@@ -78,14 +91,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	@Override
-	public void initializeSchema( SchemaDefinitionContext context) {
-		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
-		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
-		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
-
-		for ( MongoDBIndexSpec indexSpec : indexSpecs ) {
-			createIndex( provider.getDatabase(), indexSpec );
-		}
+	public void createSchema(SchemaDefinitionContext context) {
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {
