@@ -41,6 +41,13 @@ public abstract class RemoteNeo4jSequenceGenerator extends BaseNeo4jSequenceGene
 			+ " RETURN n";
 
 	/**
+	 * Query for validating SEQUENCE nodes.
+	 */
+	protected static final String SEQUENCE_VALIDATION_QUERY =
+			"MATCH (n:" + NodeLabel.SEQUENCE.name() + " {" + SEQUENCE_NAME_PROPERTY + ": {sequenceName}} )"
+			+ " RETURN n";
+
+	/**
 	 * Query for retrieving the next value from SEQUENCE nodes.
 	 */
 	protected static final String SEQUENCE_VALUE_QUERY =
@@ -180,4 +187,6 @@ public abstract class RemoteNeo4jSequenceGenerator extends BaseNeo4jSequenceGene
 	}
 
 	public abstract void createSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata);
+
+	public abstract void validateSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata);
 }

@@ -59,6 +59,13 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	}
 
 	@Override
+	protected void validateSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {
+		BoltNeo4jDatastoreProvider boltProvider = (BoltNeo4jDatastoreProvider) provider;
+		BoltNeo4jSequenceGenerator sequenceGenerator = boltProvider.getSequenceGenerator();
+		sequenceGenerator.validateSequences( sequences, allIdSourceKeyMetadata );
+	}
+
+	@Override
 	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
 		List<Statement> statements = new ArrayList<>();
 		for ( UniqueConstraintDetails constraint : constraints ) {

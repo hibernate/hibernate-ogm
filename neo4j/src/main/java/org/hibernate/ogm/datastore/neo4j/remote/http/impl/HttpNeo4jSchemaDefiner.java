@@ -48,6 +48,10 @@ public class HttpNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
+	protected void validateSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {
+	}
+
+	@Override
 	protected void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {
 		HttpNeo4jSequenceGenerator sequenceGenerator = ( (HttpNeo4jDatastoreProvider) provider ).getSequenceGenerator();
 		sequenceGenerator.createSequences( sequences, allIdSourceKeyMetadata );

@@ -78,10 +78,10 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 	 *
 	 * @param sequences the generators to process
 	 */
-	public List<Statement> createSequencesStatements(Iterable<Sequence> sequences) {
+	public List<Statement> createSequencesStatements(String query, Iterable<Sequence> sequences) {
 		List<Statement> statements = new ArrayList<Statement>();
 		for ( Sequence sequence : sequences ) {
-			addSequence( statements, sequence );
+			addSequence( statements, query, sequence );
 		}
 		return statements;
 	}
@@ -100,8 +100,8 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 		return statement;
 	}
 
-	private void addSequence(List<Statement> statements, Sequence sequence) {
-		Statement statement = new Statement( SEQUENCE_CREATION_QUERY, Collections.<String, Object>singletonMap( SEQUENCE_NAME_QUERY_PARAM, sequence.getName().render() ) );
+	private void addSequence(List<Statement> statements, String query, Sequence sequence) {
+		Statement statement = new Statement( query, Collections.<String, Object>singletonMap( SEQUENCE_NAME_QUERY_PARAM, sequence.getName().render() ) );
 		statements.add( statement );
 	}
 
@@ -136,19 +136,26 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 		return statements;
 	}
 
+	@Override
+	public void createSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
+		createUniqueConstraints( sequences, idSourceKeyMetadata );
+
+		List<Statement> statements = createSequencesStatements( SEQUENCE_CREATION_QUERY, sequences );
+		execute( statements );
+	}
+
+	@Override
+	public void validateSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
+		List<Statement> statements = createSequencesStatements( SEQUENCE_VALIDATION_QUERY, sequences );
+		StatementResult result = execute( statements );
+		System.out.println( result );
+	}
+
 	private void createUniqueConstraints(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
 		List<Statement> statements = new ArrayList<Statement>();
 		createSequencesConstraintsStatements( statements, sequences );
 		createUniqueConstraintsForTableSequences( statements, idSourceKeyMetadata );
 
-		execute( statements );
-	}
-
-	@Override
-	public void createSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
-		createUniqueConstraints( sequences, idSourceKeyMetadata );
-
-		List<Statement> statements = createSequencesStatements( sequences );
 		execute( statements );
 	}
 

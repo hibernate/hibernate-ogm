@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 import static org.neo4j.graphdb.Label.label;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +29,6 @@ import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -82,6 +82,73 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
+	@Override
+	public void initializeSchema(SchemaDefinitionContext context) {
+		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
+		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+		DatastoreProvider provider = registry.getService( DatastoreProvider.class );
+
+		createEntityConstraints( provider, context.getDatabase(), sessionFactoryImplementor.getProperties() );
+	}
+
+	@Override
+	public void createSchema(SchemaDefinitionContext context) {
+		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
+		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+		DatastoreProvider provider = registry.getService( DatastoreProvider.class );
+		List<Sequence> sequences = sequences( context.getDatabase() );
+
+		createSequences( sequences, context.getAllIdSourceKeyMetadata(), provider );
+	}
+
+	@Override
+	public void validateSchema(SchemaDefinitionContext context) {
+		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
+		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+		DatastoreProvider provider = registry.getService( DatastoreProvider.class );
+		List<Sequence> sequences = sequences( context.getDatabase() );
+
+		validateSequences( sequences, context.getAllIdSourceKeyMetadata(), provider );
+	}
+
+	private boolean isAppliedToForeignColumns(Table table, Constraint constraint) {
+		List<?> constraintColumns = constraint.getColumns();
+		for ( Iterator<?> iterator = table.getForeignKeyIterator(); iterator.hasNext(); ) {
+			ForeignKey foreignKey = (ForeignKey) iterator.next();
+			List<?> foreignKeyColumns = foreignKey.getColumns();
+			for ( Object object : foreignKeyColumns ) {
+				if ( constraintColumns.contains( object ) ) {
+					// This constraint requires a foreign column
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	protected List<Sequence> sequences(Database database) {
+		List<Sequence> sequences = new ArrayList<>();
+		for ( Namespace namespace : database.getNamespaces() ) {
+			for ( Sequence sequence : namespace.getSequences() ) {
+				sequences.add( sequence );
+			}
+		}
+		return sequences;
+	}
+
+	protected void createEntityConstraints(DatastoreProvider provider, Database database, Properties properties) {
+		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy
+				.interpret( properties.get( Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
+
+		log.debugf( "%1$s property set to %2$s", Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY, constraintMethod );
+		if ( constraintMethod == UniqueConstraintSchemaUpdateStrategy.SKIP ) {
+			log.tracef( "Skipping generation of unique constraints" );
+		}
+		else {
+			createUniqueConstraints( provider, database );
+		}
+	}
+
 	protected void createUniqueConstraints(DatastoreProvider provider, Database database) {
 		List<UniqueConstraintDetails> constraints = new ArrayList<>();
 		for ( Namespace namespace : database.getNamespaces() ) {
@@ -124,21 +191,6 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 		}
 	}
 
-	private boolean isAppliedToForeignColumns(Table table, Constraint constraint) {
-		List<?> constraintColumns = constraint.getColumns();
-		for ( Iterator<?> iterator = table.getForeignKeyIterator(); iterator.hasNext(); ) {
-			ForeignKey foreignKey = (ForeignKey) iterator.next();
-			List<?> foreignKeyColumns = foreignKey.getColumns();
-			for ( Object object : foreignKeyColumns ) {
-				if ( constraintColumns.contains( object ) ) {
-					// This constraint requires a foreign column
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	private void logMultipleColumnsWarning(Table table, Constraint constraint) {
 		StringBuilder builder = new StringBuilder();
 		for ( Iterator<Column> columnIterator = constraint.getColumnIterator(); columnIterator.hasNext(); ) {
@@ -150,41 +202,9 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 		log.constraintSpanningMultipleColumns( constraint.getName(), table.getName(), columns );
 	}
 
-	protected List<Sequence> sequences(Database database) {
-		List<Sequence> sequences = new ArrayList<>();
-		for ( Namespace namespace : database.getNamespaces() ) {
-			for ( Sequence sequence : namespace.getSequences() ) {
-				sequences.add( sequence );
-			}
-		}
-		return sequences;
-	}
-
-	protected void createEntityConstraints(DatastoreProvider provider, Database database, Properties properties) {
-		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy
-				.interpret( properties.get( Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
-
-		log.debugf( "%1$s property set to %2$s", Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY, constraintMethod );
-		if ( constraintMethod == UniqueConstraintSchemaUpdateStrategy.SKIP ) {
-			log.tracef( "Skipping generation of unique constraints" );
-		}
-		else {
-			createUniqueConstraints( provider, database );
-		}
-	}
-
-	@Override
-	public void initializeSchema(SchemaDefinitionContext context) {
-		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
-		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
-		DatastoreProvider provider = registry.getService( DatastoreProvider.class );
-		List<Sequence> sequences = sequences( context.getDatabase() );
-
-		createSequences( sequences, context.getAllIdSourceKeyMetadata(), provider );
-		createEntityConstraints( provider, context.getDatabase(), sessionFactoryImplementor.getProperties() );
-	}
-
 	protected abstract void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider);
+
+	protected abstract void validateSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider);
 
 	protected abstract void createUniqueConstraintsIfMissing( DatastoreProvider provider, List<UniqueConstraintDetails> constraints );
 }

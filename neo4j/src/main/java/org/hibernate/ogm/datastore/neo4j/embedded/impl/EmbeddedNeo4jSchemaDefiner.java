@@ -48,6 +48,10 @@ public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
+	protected void validateSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {
+	}
+
+	@Override
 	protected void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider) {
 		EmbeddedNeo4jDatastoreProvider neo4jProvider = (EmbeddedNeo4jDatastoreProvider) provider;
 		neo4jProvider.getSequenceGenerator().createSequences( sequences );

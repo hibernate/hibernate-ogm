@@ -149,6 +149,10 @@ public class HttpNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 		validateSequencesCreation( response );
 	}
 
+	@Override
+	public void validateSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
+	}
+
 	private void createUniqueConstraints(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
 		Statements statements = new Statements();
 		createSequencesConstraintsStatements( statements, sequences );
