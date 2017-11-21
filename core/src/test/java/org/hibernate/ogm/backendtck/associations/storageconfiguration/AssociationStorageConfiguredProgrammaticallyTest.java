@@ -211,25 +211,29 @@ public class AssociationStorageConfiguredProgrammaticallyTest extends Associatio
 	@After
 	public void removeCloudAndSnowflakes() {
 		if ( sessions != null ) {
-			try ( Session session = sessions.openSession() ) {
-				Transaction transaction = session.beginTransaction();
+			try {
+				try ( Session session = sessions.openSession() ) {
+					Transaction transaction = session.beginTransaction();
 
-				if ( cloud != null ) {
-					Cloud cloudToDelete = (Cloud) session.get( Cloud.class, cloud.getId() );
-					for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
-						session.delete( current );
+					if ( cloud != null ) {
+						Cloud cloudToDelete = (Cloud) session.get( Cloud.class, cloud.getId() );
+						for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
+							session.delete( current );
+						}
+						for ( SnowFlake current : cloudToDelete.getBackupSnowFlakes() ) {
+							session.delete( current );
+						}
+						session.delete( cloudToDelete );
 					}
-					for ( SnowFlake current : cloudToDelete.getBackupSnowFlakes() ) {
-						session.delete( current );
-					}
-					session.delete( cloudToDelete );
+
+					transaction.commit();
 				}
-
-				transaction.commit();
+				assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+				assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 			}
-
-			assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-			assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+			finally {
+				sessions.close();
+			}
 		}
 	}
 
