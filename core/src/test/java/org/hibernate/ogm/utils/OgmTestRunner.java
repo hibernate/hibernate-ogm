@@ -115,6 +115,7 @@ public class OgmTestRunner extends SkippableTestRunner {
 		if ( isTestScopedSessionFactoryRequired() ) {
 			testScopedSessionFactory = buildSessionFactory();
 			injectSessionFactory( null, testScopedFactoryFields, testScopedSessionFactory );
+			TestHelper.prepareDatabase( testScopedSessionFactory );
 		}
 
 		try {
@@ -134,6 +135,7 @@ public class OgmTestRunner extends SkippableTestRunner {
 		// create test method scoped SF if required; it will be injected in createTest()
 		if ( isTestMethodScopedSessionFactoryRequired( method ) ) {
 			testMethodScopedSessionFactory = buildSessionFactory();
+			TestHelper.prepareDatabase( testScopedSessionFactory );
 		}
 
 		try {

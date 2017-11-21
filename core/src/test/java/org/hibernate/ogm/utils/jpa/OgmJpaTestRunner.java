@@ -147,6 +147,7 @@ public class OgmJpaTestRunner extends SkippableTestRunner {
 		// create test method scoped SF if required; it will be injected in createTest()
 		if ( isTestMethodScopedEntityManagerFactoryRequired( method ) ) {
 			testMethodScopedEntityManagerFactory = buildEntityManagerFactory();
+			TestHelper.prepareDatabase( testScopedEntityManagerFactory );
 		}
 
 		try {
@@ -155,6 +156,7 @@ public class OgmJpaTestRunner extends SkippableTestRunner {
 		finally {
 			if ( testMethodScopedEntityManagerFactory != null ) {
 				cleanUpPendingTransactionIfRequired( testMethodScopedEntityManagerFactory );
+				TestHelper.dropSchemaAndDatabase( testScopedEntityManagerFactory );
 				testMethodScopedEntityManagerFactory.close();
 			}
 		}
