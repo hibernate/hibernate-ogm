@@ -6,25 +6,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.MongoException;
-import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
@@ -37,6 +26,11 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * Provides access to a MongoDB instance
@@ -71,7 +65,6 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
-
 		try {
 			this.config = new MongoDBConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
 		}
@@ -122,22 +115,12 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 	}
 
-	protected MongoClient createMongoClient(MongoDBConfiguration config) {
-		MongoClientOptions clientOptions = config.buildOptions();
-		List<MongoCredential> credentials = config.buildCredentials();
-		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
-		try {
-			List<ServerAddress> serverAddresses = new ArrayList<>( config.getHosts().size() );
-			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {
-				serverAddresses.add( new ServerAddress( hostAndPort.getHost(), hostAndPort.getPort() ) );
-			}
-			return credentials == null
-					? new MongoClient( serverAddresses, clientOptions )
-					: new MongoClient( serverAddresses, credentials, clientOptions );
-		}
-		catch (RuntimeException e) {
-			throw log.unableToInitializeMongoDB( e );
-		}
+	/*
+	 * I'm going to keep this method for now because users have no other way to pass an instance of a mongo client without
+	 * the creation of a brand new dialect.
+	 */
+	protected MongoClient createMongoClient(MongoDBConfiguration mongoDBConfiguration) {
+		return new MongoDBClientBuilder( mongoDBConfiguration ).build();
 	}
 
 	@Override
@@ -148,6 +131,10 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	public MongoDatabase getDatabase() {
 		return mongoDb;
+	}
+
+	public MongoDBConfiguration getMongoClientConfiguration() {
+		return config;
 	}
 
 	private MongoDatabase extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
