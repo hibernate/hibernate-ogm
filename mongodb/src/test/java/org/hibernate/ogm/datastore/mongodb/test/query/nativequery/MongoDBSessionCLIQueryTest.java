@@ -12,12 +12,14 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.bson.Document;
 import org.fest.assertions.Fail;
 import org.fest.assertions.MapAssert;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.junit.After;
@@ -25,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.client.MongoCollection;
 
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
@@ -57,6 +60,10 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			delete( session, athanasia );
 			delete( session, imperatrix );
 			tx.commit();
+		}
+		MongoCollection<Document> collection = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase().getCollection( "WILDE_MAP_REDUCE" );
+		if ( collection != null ) {
+			collection.drop();
 		}
 	}
 

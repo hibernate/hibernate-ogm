@@ -204,7 +204,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		result.put( key.getColumnNames()[0], idValue );
 	}
 
-	private static MongoDBDatastoreProvider getProvider(SessionFactory sessionFactory) {
+	public static MongoDBDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService(
 				DatastoreProvider.class );
 		if ( !( MongoDBDatastoreProvider.class.isInstance( provider ) ) ) {
