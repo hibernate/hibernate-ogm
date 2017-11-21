@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bson.Document;
+import org.hibernate.HibernateException;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.NamingHelper;
 import org.hibernate.boot.model.relational.Database;
@@ -28,6 +29,7 @@ import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexSpec;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
@@ -92,6 +94,34 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 	@Override
 	public void createSchema(SchemaDefinitionContext context) {
+	}
+
+	@Override
+	public void dropSchema(SchemaDefinitionContext context) {
+		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		MongoDatabase database = provider.getDatabase();
+		dropCollection( database, MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
+
+		context.getAllAssociationKeyMetadata().stream().forEach(
+				metadata -> dropCollection( database, metadata.getTable() ) );
+		context.getAllAssociationKeyMetadata().stream().forEach(
+				metadata -> dropCollection( database, MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX + metadata.getTable() ) );
+		context.getAllEntityKeyMetadata().stream().forEach(
+				metadata -> dropCollection( database, metadata.getTable() ) );
+		context.getAllIdSourceKeyMetadata().stream().forEach(
+				metadata -> dropCollection( database, metadata.getName() ) );
+	}
+
+	private void dropCollection(MongoDatabase database, String collectionName) {
+		try {
+			validateAsMongoDBCollectionName( collectionName );
+			MongoCollection<Document> collection = database.getCollection( collectionName );
+			collection.drop();
+		}
+		catch (HibernateException e) {
+			// Invalid collection name: the collection has not been created in the first place
+		}
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {
