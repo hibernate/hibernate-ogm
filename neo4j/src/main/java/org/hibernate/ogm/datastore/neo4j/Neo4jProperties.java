@@ -54,6 +54,14 @@ public final class Neo4jProperties implements OgmProperties {
 	 */
 	public static final String ESTABLISH_CONNECTION_TIMEOUT = "hibernate.ogm.neo4j.client.establish_connection_timeout";
 
+	/**
+	 * The size of the client connection pool used by the RestEasy HTTP client
+	 * <p>
+	 *     Default value is 10
+	 * </p>
+	 */
+	public static final String REST_CONNECTION_POOL_SIZE = "hibernate.ogm.neo4j.client.rest.connection_pool_size";
+
 	private Neo4jProperties() {
 	}
 }

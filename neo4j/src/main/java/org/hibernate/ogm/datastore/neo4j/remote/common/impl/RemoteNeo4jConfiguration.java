@@ -25,6 +25,11 @@ public class RemoteNeo4jConfiguration {
 	public static final int DEFAULT_BOLT_PORT = 7687;
 
 	/**
+	 * Default Size of the client connection pool used by the RestEasy HTTP client
+	 */
+	public static final int DEFAULT_REST_CONNECTION_POOL_SIZE = 10;
+
+	/**
 	 * The default host to connect to in case the {@link OgmProperties#HOST} property is not set
 	 */
 	private static final String DEFAULT_HOST = "localhost";
@@ -41,6 +46,7 @@ public class RemoteNeo4jConfiguration {
 	private final Long connectionCheckoutTimeout;
 	private final Long connectionTTL;
 	private final boolean authenticationRequired;
+	private final Integer clientRestPoolSize;
 
 	public RemoteNeo4jConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
@@ -69,6 +75,8 @@ public class RemoteNeo4jConfiguration {
 				.withDefault( false )
 				.getValue();
 		this.authenticationRequired = this.username != null;
+		this.clientRestPoolSize = propertyReader.property( Neo4jProperties.REST_CONNECTION_POOL_SIZE, Integer.class )
+				.withDefault( DEFAULT_REST_CONNECTION_POOL_SIZE ).getValue();
 	}
 
 	/**
@@ -149,5 +157,13 @@ public class RemoteNeo4jConfiguration {
 	 */
 	public boolean isAuthenticationRequired() {
 		return authenticationRequired;
+	}
+
+	/**
+	 * @see Neo4jProperties#REST_CONNECTION_POOL_SIZE
+	 * @return the size of REST connection pool
+	 */
+	public Integer getClientRestPoolSize() {
+		return clientRestPoolSize;
 	}
 }

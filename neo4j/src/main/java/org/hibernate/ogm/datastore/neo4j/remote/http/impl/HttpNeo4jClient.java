@@ -37,10 +37,7 @@ public class HttpNeo4jClient implements AutoCloseable {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
-	/**
-	 * Size of the client connection pool used by the RestEasy HTTP client
-	 */
-	private static final int CONNECTION_POOL_SIZE = 10;
+
 
 	/**
 	 * Client for accessing the server
@@ -86,7 +83,7 @@ public class HttpNeo4jClient implements AutoCloseable {
 		clientBuilder.register( XStreamRequestHeaderFilter.INSTANCE );
 
 		// using a connection pool size > 1 causes a thread-safe pool implementation to be used under the hoods
-		return clientBuilder.connectionPoolSize( CONNECTION_POOL_SIZE ).build();
+		return clientBuilder.connectionPoolSize( configuration.getClientRestPoolSize() ).build();
 	}
 
 	public void validateConnection() {
