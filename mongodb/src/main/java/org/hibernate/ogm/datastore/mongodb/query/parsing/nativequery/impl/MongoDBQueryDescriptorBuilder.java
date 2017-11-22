@@ -36,8 +36,8 @@ public class MongoDBQueryDescriptorBuilder {
 	 * Helper fields for recording the states of the parser
 	 */
 	private boolean isCliQuery;
-	private String invalidJsonInPrefix;
-	private boolean everyParameterIsValid;
+	private String invalidJsonParameter;
+	private boolean areParametersValid;
 	private String operationName;
 	private boolean isQueryValid;
 
@@ -122,13 +122,13 @@ public class MongoDBQueryDescriptorBuilder {
 		return true;
 	}
 
-	public boolean setInvalidJsonInPrefix(String invalidJsonInPrefix) {
-		this.invalidJsonInPrefix = invalidJsonInPrefix;
+	public boolean setInvalidJsonParameter(String invalidJsonParameter) {
+		this.invalidJsonParameter = invalidJsonParameter;
 		return true;
 	}
 
-	public boolean setEveryParameterIsValid(boolean everyParameterIsValid) {
-		this.everyParameterIsValid = everyParameterIsValid;
+	public boolean setParametersValid(boolean areParametersValid) {
+		this.areParametersValid = areParametersValid;
 		return true;
 	}
 
@@ -188,34 +188,36 @@ public class MongoDBQueryDescriptorBuilder {
 			if ( isCliQuery ) {
 				// db ???
 				if ( collection == null ) {
-					throw new NativeQueryParseException( "Cli query should match the format db.collection.oper()" );
+					throw new NativeQueryParseException( "Cli query should match the format db.collection.operation(<arguments>)" );
 				}
 				// db . collection ???
 				if ( operation == null && operationName == null ) {
-					throw new NativeQueryParseException( "Cli query should match the format db.collection.oper()" );
+					throw new NativeQueryParseException( "Cli query should match the format db.collection.operation(<arguments>)" );
 				}
 				// db . collection . UNSUPPORTED
 				if ( operation == null ) {
 					throw new NativeQueryParseException( "Operation '" + operationName + "' is unsupported" );
 				}
 				// db . collection . operation ( ???
-				if ( invalidJsonInPrefix != null ) {
+				if ( invalidJsonParameter != null ) {
 					try {
-						Document.parse( invalidJsonInPrefix );
+						Document.parse( invalidJsonParameter );
 					}
 					catch (JsonParseException e ) {
 						throw new NativeQueryParseException( e );
 					}
 				}
 				// db . collection . operation ( ???
-				if ( !everyParameterIsValid ) {
+				if ( !areParametersValid ) {
 					throw new NativeQueryParseException( "Parameters are invalid for " + operationName );
 				}
-				throw new NativeQueryParseException( "Missing ')'" );
+				else {
+					throw new NativeQueryParseException( "Missing ')'" );
+				}
 			}
 			// the input is not a json object: might be error in { ... } or does not start with '{'
 			try {
-				Document.parse( invalidJsonInPrefix );
+				Document.parse( invalidJsonParameter );
 			}
 			catch (JsonParseException e ) {
 				throw new NativeQueryParseException( e );

@@ -869,7 +869,7 @@ public class NativeQueryParserTest {
 			Assert.fail( "An exception was expected" );
 		}
 		catch (Exception e) {
-			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Cli query should match the format db.collection.oper()" );
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Cli query should match the format db.collection.operation(<arguments>)" );
 		}
 	}
 
@@ -884,7 +884,7 @@ public class NativeQueryParserTest {
 			Assert.fail( "An exception was expected" );
 		}
 		catch (Exception e) {
-			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Cli query should match the format db.collection.oper()" );
+			assertThat( e ).isInstanceOf( NativeQueryParseException.class ).hasMessage( "Cli query should match the format db.collection.operation(<arguments>)" );
 		}
 	}
 
@@ -951,7 +951,7 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
-	public void shouldRecognizeMissingDBPart() { // ????
+	public void shouldRecognizeMissingDBPart() {
 		try {
 			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 			ParsingResult<MongoDBQueryDescriptorBuilder> run = new BasicParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
