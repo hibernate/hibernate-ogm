@@ -65,7 +65,7 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
-		final Set<String> mappedCacheNames = datastoreProvider.getMappedCacheNames();
+		final Set<String> mappedCacheNames = datastoreProvider.getCacheTemplatesByName().keySet();
 		mappedCacheNames.forEach( cacheName -> datastoreProvider.getCache( cacheName ).clear() );
 	}
 
