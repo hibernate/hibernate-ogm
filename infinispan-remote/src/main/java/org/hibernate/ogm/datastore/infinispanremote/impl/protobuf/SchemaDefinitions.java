@@ -100,6 +100,16 @@ public class SchemaDefinitions {
 		return Collections.unmodifiableSet( unionSet );
 	}
 
+	public Map<String, String> getCacheTemplateByName() {
+		Map<String, String> map = new HashMap<>();
+		definitionsByTableName.values().forEach( definition -> map.put(
+				definition.getTableName(),
+				definition.getCacheTemplate()
+		) );
+		idSchemaPerName.keySet().forEach( tableName -> map.put( tableName, null ) );
+		return map;
+	}
+
 	public Map<String,ProtoDataMapper> generateSchemaMappingAdapters(InfinispanRemoteDatastoreProvider provider,
 			SchemaDefinitions sd, OgmProtoStreamMarshaller marshaller) {
 		Map<String,ProtoDataMapper> adaptersCollector = new HashMap<>();
