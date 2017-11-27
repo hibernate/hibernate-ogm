@@ -54,7 +54,10 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 	}
 
 	private String getCacheTemplate(Map tableEntityTypeMapping, String tableName) {
-		Class entity = tableEntityTypeMapping.get( tableName ).getClass();
+		Class entity = (Class) tableEntityTypeMapping.get( tableName );
+		if ( entity == null ) {
+			return null;
+		}
 		CacheTemplate cacheTemplate = (CacheTemplate) entity.getAnnotation( CacheTemplate.class );
 		if ( cacheTemplate == null ) {
 			return null;
