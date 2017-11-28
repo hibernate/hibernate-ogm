@@ -161,7 +161,7 @@ public class RemoteNeo4jConfiguration {
 
 	/**
 	 * @see Neo4jProperties#CONNECTION_POOL_SIZE
-	 * @return the size of REST connection pool
+	 * @return the size of connection pool
 	 */
 	public Integer getClientRestPoolSize() {
 		return clientRestPoolSize;
