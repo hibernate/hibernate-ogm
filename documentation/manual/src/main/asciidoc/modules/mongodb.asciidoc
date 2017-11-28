@@ -1563,6 +1563,47 @@ Wife collection as JSON in MongoDB
 ----
 ====
 
+.Bidirectional one-to-one (Mapping to the same Entity)
+====
+[source, JAVA]
+----
+@Entity
+public class Person {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Person spouse;
+
+    // getters, setters ...
+}
+----
+
+Person (husband) collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "alex",
+  "name" : "Alex",
+  "spouse" : "bea"
+}
+----
+
+Person (wife) collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "bea",
+  "name" : "Bea",
+  "spouse" : "alex"
+}
+----
+====
+
 .Unidirectional many-to-one
 ====
 [source, JAVA]
