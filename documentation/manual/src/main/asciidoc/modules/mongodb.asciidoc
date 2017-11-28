@@ -3489,3 +3489,117 @@ The drawback is that you need to store the Lucene indexes somewhere
 (file system, infinispan grid, etc).
 Have a look at the Infinispan section (<<ogm-infinispan-indexstorage>>)
 for more info on how to use Hibernate Search.
+
+=== Geospatial support
+
+==== Geospatial fields
+
+Our MongoDB integration supports the ability to declare geospatial fields by using specific Java types that will be
+automatically converted to GeoJSON objects stored in MongoDB.
+
+We currently support the following types:
+
+ * `GeoPoint`, stored as a GeoJSON Point
+ * `GeoMultiPoint`, stored as a GeoJSON MultiPoint
+ * `GeoLineString`, stored as a GeoJSON LineString
+ * `GeoMultiLineString`, stored as a GeoJSON MultiLineString
+ * `GeoPolygon`, stored as a GeoJSON Polygon
+ * `GeoMultiPolygon`, stored as a GeoJSON MultiPolygon
+
+You can find more information about these types and their constraints in the
+https://docs.mongodb.com/manual/reference/geojson/[MongoDB documentation].
+
+.Declaring a geospatial field
+====
+[source, JAVA]
+----
+@Entity
+public class Restaurant {
+
+    // [...]
+
+    private GeoPoint location;
+}
+----
+====
+
+These Java types come with handy constructors and helpers to help manipulate them.
+
+.Instantiating a polygon
+====
+[source, JAVA]
+----
+GeoPolygon polygon = new GeoPolygon(
+        new GeoPoint( 4.814922, 45.7753612 ),
+        new GeoPoint( 4.8160825, 45.7327172 ),
+        new GeoPoint( 4.9281299, 45.7211302 ),
+        new GeoPoint( 4.8706127, 45.786724 ),
+        new GeoPoint( 4.814922, 45.7753612 )
+);
+----
+====
+
+==== Geospatial indexes and queries
+
+To be able to run optimized queries on geospatial fields, you need to declare spatial indexes.
+
+You can leverage your usual annotations to declare the indexes directly on your entities.
+
+.Declaring a geospatial index
+====
+[source, JAVA]
+----
+@Entity
+@Table(indexes = {
+		@Index(columnList = "location", name = "location_spatial_idx")
+})
+@IndexOptions(
+		@IndexOption(forIndex = "location_spatial_idx", options = "{ _type: '2dsphere' }")
+)
+public class Restaurant {
+
+    // [...]
+
+    private GeoPoint location;
+}
+----
+====
+
+Note that you need to precise the type of the index using an `@IndexOption` annotation.
+
+The next step is to execute a geospatial query using a native query.
+
+.Finding entities around a point
+====
+[source, JAVA]
+----
+GeoPoint geoPoint = new GeoPoint( 4.8520035, 45.7498209 );
+
+Query query = session
+        .createNativeQuery( "{ location: { $near: { $geometry: " + geoPoint.toBsonDocument() + ", $maxDistance: 500 } } }" )
+        .addEntity( Restaurant.class );
+List<Restaurant> result = query.list();
+----
+====
+
+.Finding entities within a polygon
+====
+[source, JAVA]
+----
+GeoPolygon geoPolygon = new GeoPolygon(
+        new GeoPoint( 4.814922, 45.7753612 ),
+        new GeoPoint( 4.8160825, 45.7327172 ),
+        new GeoPoint( 4.9281299, 45.7211302 ),
+        new GeoPoint( 4.8706127, 45.786724 ),
+        new GeoPoint( 4.814922, 45.7753612 )
+);
+
+Query query = session
+        .createNativeQuery( "{ location: { $geoWithin: { $geometry: " + geoPolygon.toBsonDocument() + " } } }" )
+        .addEntity( Restaurant.class );
+List<Restaurant> result = query.list();
+----
+====
+
+To learn more about MongoDB spatial indexes and queries, please refer to the
+https://docs.mongodb.com/manual/geospatial-queries/[MongoDB documentation].
