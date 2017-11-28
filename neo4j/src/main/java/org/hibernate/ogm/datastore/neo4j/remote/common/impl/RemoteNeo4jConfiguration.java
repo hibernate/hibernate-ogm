@@ -75,7 +75,7 @@ public class RemoteNeo4jConfiguration {
 				.withDefault( false )
 				.getValue();
 		this.authenticationRequired = this.username != null;
-		this.clientRestPoolSize = propertyReader.property( Neo4jProperties.REST_CONNECTION_POOL_SIZE, Integer.class )
+		this.clientRestPoolSize = propertyReader.property( Neo4jProperties.CONNECTION_POOL_SIZE, Integer.class )
 				.withDefault( DEFAULT_REST_CONNECTION_POOL_SIZE ).getValue();
 	}
 
@@ -160,7 +160,7 @@ public class RemoteNeo4jConfiguration {
 	}
 
 	/**
-	 * @see Neo4jProperties#REST_CONNECTION_POOL_SIZE
+	 * @see Neo4jProperties#CONNECTION_POOL_SIZE
 	 * @return the size of REST connection pool
 	 */
 	public Integer getClientRestPoolSize() {
