@@ -6,10 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl;
 
-import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
-
-import com.mongodb.util.JSON;
 import org.bson.json.JsonReader;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.BuildParseTree;
@@ -20,7 +18,7 @@ import org.parboiled.annotations.SuppressSubnodes;
  * A parser for MongoDB queries which can be given in one of the following representations:
  * <ul>
  * <li>Criteria-only find query, e.g. <code>{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }</code>. It is
- * left to MongoDB's own {@link JSON} parser to interpret such queries.
+ * left to MongoDB's own JSON parser to interpret such queries.
  * <li>As "invocation" of the MongoDB shell API (CLI), e.g.
  * <code>db.WILDE_POEM.find({ '$query' : { 'name' : 'Athanasia' }, '$orderby' : { 'name' : 1 } })</code>. Currently the
  * following API methods are supported:
@@ -531,7 +529,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 		}
 	}
 
-	String readStringFromJson(String json) {
+	protected String readStringFromJson(String json) {
 		try ( JsonReader jsonReader = new JsonReader( json ) ) {
 			return jsonReader.readString();
 		}
