@@ -88,7 +88,6 @@ import org.hibernate.ogm.dialect.query.spi.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
-import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
@@ -115,10 +114,10 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
-import org.hibernate.ogm.type.impl.StringType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.type.MaterializedBlobType;
@@ -1740,78 +1739,83 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
-
-	@Override
-	public boolean supportsNamedParameters() {
-		return false;
-	}
-
 	/**
-	 * call stored procedure
+	 * In MongoDB the equivalent of a stored procedure is a stored javascript.
+	 *
 	 * @param storedProcedureName name of stored procedure.
 	 * @param params - query parameters
 	 * @param tupleContext the tuple context
 	 * @see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java"> example</a>
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, QueryParameters params, TupleContext tupleContext) {
-		StringBuilder commandLine = new StringBuilder( storedProcedureName ).append( "(" );
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, ProcedureQueryParameters params, TupleContext tupleContext) {
+		validate( params );
+		StringBuilder commandLine = createCallStoreProcedureCommand( storedProcedureName, params );
+		Document result = callStoredProcedure( commandLine );
+		Object resultValue = result.get( "retval" );
+		List<Tuple> resultTuples = extractTuples( resultValue );
+		return CollectionHelper.newClosableIterator( resultTuples );
+	}
 
-		List<TypedGridValue> positionalParameters = params.getPositionalParameters();
-		for ( TypedGridValue param : positionalParameters ) {
-			if ( param.getType() instanceof StringType ) {
-				//need for escape char "'"
-				String escapedValue = StringEscapeUtils.escapeEcmaScript( (String) param.getValue() );
-				commandLine.append( '\'' ).append( escapedValue ).append( '\'' );
+	private List<Tuple> extractTuples(Object retvalObj) {
+		if ( retvalObj instanceof Document ) {
+			Document retval = (Document) retvalObj;
+			if ( retval.size() > 1 ) {
+				throw new UnsupportedOperationException( "Stored procedure returns many result objects!" );
 			}
-			else {
-				commandLine.append( param.getValue() );
+			String firstRetValTag = retval.keySet().iterator().next();
+			Object firstRetVal = retval.get( firstRetValTag );
+			@SuppressWarnings("unchecked")
+			Iterable<Document> documents = (Iterable<Document>) firstRetVal;
+			List<Tuple> resultTuples = new ArrayList<>();
+			for ( Document doc : documents ) {
+				resultTuples.add( convert( doc ) );
 			}
-			commandLine.append( "," );
+			return resultTuples;
 		}
-		commandLine.setLength( commandLine.length() - 1 );
-		commandLine.append( ")" );
-		Document result = null;
+		else {
+			Tuple tuple = new Tuple();
+			tuple.put( "result", retvalObj );
+			return Collections.singletonList( tuple );
+		}
+	}
+
+	private Document callStoredProcedure(StringBuilder commandLine) {
 		try {
-			result = provider.getDatabase().runCommand( new Document( "$eval", commandLine.toString() ) );
+			Document result = provider.getDatabase().runCommand( new Document( "$eval", commandLine.toString() ) );
+			return result;
 		}
 		catch (MongoCommandException mce) {
 			BsonDocument response = mce.getResponse();
 			throw log.unableToExecuteCommand( commandLine.toString(), response.getString( "errmsg" ).getValue(),
 					response.getString( "codeName" ).getValue(), mce );
 		}
-		Object retvalObj = result.get( "retval" );
-		List<Tuple> resultTuples = null;
-		if ( retvalObj instanceof Document ) {
-			Document retval =  (Document) retvalObj;//it is must be array
-			if ( retval.size() > 1 ) {
-				//many results!
-				throw new UnsupportedOperationException( "Stored procedure returns many result objects!" );
-			}
-			String firstRetValTag = retval.keySet().iterator().next();
-			Object firstRetVal = retval.get( firstRetValTag );
-			if ( firstRetVal instanceof List ) {
-				// it is collection of entities
-				List<Document> documents = (List<Document>) firstRetVal;
-				resultTuples = new ArrayList<>( documents.size() );
-				for ( Document doc : documents ) {
-					resultTuples.add( convert( doc ) );
-				}
+	}
+
+	private StringBuilder createCallStoreProcedureCommand(String storedProcedureName, ProcedureQueryParameters params) {
+		StringBuilder commandLine = new StringBuilder( storedProcedureName ).append( "(" );
+		List<Object> positionalParameters = params.getPositionalParameters();
+		for ( Object paramValue : positionalParameters ) {
+			if ( paramValue instanceof String ) {
+				//need for escape char "'"
+				String escapedValue = StringEscapeUtils.escapeEcmaScript( (String) paramValue );
+				commandLine.append( '\'' ).append( escapedValue ).append( '\'' );
 			}
 			else {
-				throw log.resultSetMustBeRepresentedAsList( storedProcedureName, firstRetVal.getClass().getName() );
+				commandLine.append( paramValue );
 			}
+			commandLine.append( "," );
 		}
-		else {
-			//it is simple value
-			Tuple tuple = new Tuple( );
-			tuple.put( "result", retvalObj );
-			resultTuples = Collections.singletonList( tuple );
-		}
+		commandLine.setLength( commandLine.length() - 1 );
+		commandLine.append( ")" );
+		return commandLine;
+	}
 
-		return CollectionHelper.newClosableIterator( resultTuples );
+	private void validate(ProcedureQueryParameters params) {
+		if ( !params.getNamedParameters().isEmpty() ) {
+			throw log.dialectDoesNotSupportNamedParametersForStoredProcedures( getClass() );
+		}
 	}
 
 	private Tuple convert(Document document) {

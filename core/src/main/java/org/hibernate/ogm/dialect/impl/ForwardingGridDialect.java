@@ -42,6 +42,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.Lockable;
@@ -312,13 +313,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public boolean supportsNamedParameters() {
-		return storedProcedureAwareGridDialect.supportsNamedParameters();
-	}
-
-	@Override
-	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, QueryParameters queryParameters,
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, ProcedureQueryParameters queryParameters,
 			TupleContext tupleContext) {
-		return storedProcedureAwareGridDialect.callStoredProcedure( storedProcedureName,queryParameters,tupleContext );
+		return storedProcedureAwareGridDialect.callStoredProcedure( storedProcedureName, queryParameters,tupleContext );
 	}
 }

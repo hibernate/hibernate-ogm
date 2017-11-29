@@ -7,10 +7,10 @@
 package org.hibernate.ogm.dialect.storedprocedure.spi;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.query.spi.QueryParameters;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 
 /**
  * A facet for {@link GridDialect} implementations which support the execution of stored procedures.
@@ -27,14 +27,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 public interface StoredProcedureAwareGridDialect extends GridDialect {
 
 	/**
-	 * Does data storage support parameter position by name or by index?
-	 *
-	 * @return true if the data storage supports parameter position by name
-	 */
-	boolean supportsNamedParameters();
-
-
-	/**
 	 * Returns the result of a stored procedure executed on the backend.
 	 *
 	 * @param storedProcedureName name of stored procedure.
@@ -43,6 +35,5 @@ public interface StoredProcedureAwareGridDialect extends GridDialect {
 	 *
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-
-	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, QueryParameters queryParameters, TupleContext tupleContext);
+	ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext);
 }

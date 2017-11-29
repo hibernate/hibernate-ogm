@@ -60,8 +60,9 @@ import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
-import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallImpl;
-import org.hibernate.procedure.internal.ProcedureCallMementoImpl;
+import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallMemento;
+import org.hibernate.procedure.ProcedureCall;
+import org.hibernate.procedure.ProcedureCallMemento;
 
 /**
  * An OGM specific {@code EntityManager} implementation which delegates most method calls to the underlying ORM
@@ -524,30 +525,39 @@ public class OgmEntityManager implements EntityManager {
 		hibernateEm.checkOpen( true );
 		OgmSessionFactoryImplementor sessionFactory = (OgmSessionFactoryImplementor) factory.getSessionFactory();
 		NamedQueryRepository namedQueryRepository = sessionFactory.getNamedQueryRepository();
-		ProcedureCallMementoImpl procedureCallMemento = (ProcedureCallMementoImpl) namedQueryRepository.getNamedProcedureCallMemento( name );
+		ProcedureCallMemento memento = (ProcedureCallMemento) namedQueryRepository.getNamedProcedureCallMemento( name );
+		memento = new NoSQLProcedureCallMemento( memento );
 
-		NoSQLProcedureCallImpl procedureCall = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureCallMemento.getProcedureName() );
-		return new OgmStoredProcedureQuery( procedureCall, hibernateEm,procedureCallMemento );
+		if ( memento == null ) {
+			throw new IllegalArgumentException( "No @NamedStoredProcedureQuery was found with that name : " + name );
+		}
+		OgmStoredProcedureQuery storedProcedureQuery = new OgmStoredProcedureQuery( memento, hibernateEm );
+		if ( memento.getHintsMap() != null ) {
+			for ( Map.Entry<String, Object> hintEntry : memento.getHintsMap().entrySet() ) {
+				storedProcedureQuery.setHint( hintEntry.getKey(), hintEntry.getValue() );
+			}
+		}
+		return storedProcedureQuery;
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
 		hibernateEm.checkOpen( true );
-		NoSQLProcedureCallImpl procedureCall = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName );
+		ProcedureCall procedureCall = (ProcedureCall) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName );
 		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
 		hibernateEm.checkOpen( true );
-		NoSQLProcedureCallImpl procedureCall = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultClasses );
+		ProcedureCall procedureCall = (ProcedureCall) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultClasses );
 		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
 		hibernateEm.checkOpen( true );
-		NoSQLProcedureCallImpl procedureCall  = (NoSQLProcedureCallImpl) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultSetMappings );
+		ProcedureCall procedureCall = (ProcedureCall) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultSetMappings );
 		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
