@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commonslang3Version}</version>
+            <version>${mongodbCommonslang3Version}</version>
         </dependency>
 
         <dependency>

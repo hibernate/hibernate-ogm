@@ -14,12 +14,12 @@ import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 
 /**
  * A facet for {@link GridDialect} implementations which support the execution of stored procedures.
- *
- * Cases of stored procedures are :
+ * <p>
+ * Cases of stored procedures are:
  * <ol>
- *     <li>procedure without any input or output parameters</li>
- *	   <li>function with many input parameters and one returned value (primitive)</li>
- *	   <li>function with many input parameters and result set</li>
+ * <li>procedure without any input or output parameters</li>
+ * <li>function with many input parameters and one returned value (primitive)</li>
+ * <li>function with many input parameters and result set</li>
  * </ol>
  *
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
