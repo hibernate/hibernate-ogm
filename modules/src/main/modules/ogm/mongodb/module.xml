@@ -9,6 +9,7 @@
     <resources>
         <resource-root path="hibernate-ogm-mongodb-${project.version}.jar" />
         <resource-root path="mongo-java-driver-${mongodbDriverVersion}.jar" />
+        <resource-root path="commons-lang3-${mongodbCommonslang3Version}.jar" />
     </resources>
     <dependencies>
         <module name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}" />
