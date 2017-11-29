@@ -7,16 +7,13 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
-import static org.hibernate.ogm.backendtck.storedprocedures.indexed.IndexedStoredProcedureCallTest.TEST_RESULT_SET_STORED_PROC;
-import static org.hibernate.ogm.backendtck.storedprocedures.indexed.IndexedStoredProcedureCallTest.TEST_SIMPLE_VALUE_STORED_PROC;
-
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.mongodb.client.model.UpdateOptions;
 import org.bson.BsonDocument;
 import org.bson.BsonJavaScript;
 import org.bson.Document;
@@ -24,6 +21,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
@@ -32,7 +30,6 @@ import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -48,6 +45,7 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -301,40 +299,35 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		return MongoDB.class;
 	}
 
-	/**
-	 * prepare database for testing
-	 *
-	 * The method contains all actions that needs for  prepare datastorare for testing.
-	 * @param sessionFactory session factory
-	 * */
 	@Override
 	public void prepareDatabase(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		MongoDatabase mongoDatabase = provider.getDatabase();
-
 		loadServerScripts( mongoDatabase );
-		super.prepareDatabase( sessionFactory );
 	}
 
 	/**
-	 * load server-side scripts for testing support of StoredProcedureAwareGridDialect
+	 * Load server side scripts to test stored procedures with MongoDB.
+	 *
 	 * @param mongoDatabase database for testing
+	 * @see Car
 	 * @see org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect
 	 * @see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java">working to stored procedures</a>
 	 */
 	private void loadServerScripts(MongoDatabase mongoDatabase) {
-		BsonDocument simpleValueFunction = new BsonDocument( "value", new BsonJavaScript( "function(x1) { return x1; }" ) );
+		BsonDocument simpleValueFunction = new BsonDocument( "value",
+				new BsonJavaScript( "function(x1) { return x1; }" ) );
 		BsonDocument resultSetFunction = new BsonDocument( "value",
 				new BsonJavaScript( "function(id,title) { return {\"result\": [ {\"id\":NumberInt(id),\"title\":title} ] }; }" ) );
 		UpdateOptions options = new UpdateOptions().upsert( true );
 
-		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", TEST_SIMPLE_VALUE_STORED_PROC ),
+		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", Car.TEST_SIMPLE_VALUE_STORED_PROC ),
 				new Document( "$set", simpleValueFunction ), options );
 
-		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", TEST_RESULT_SET_STORED_PROC ),
+		mongoDatabase.getCollection( "system.js" ).updateOne( new Document( "_id", Car.TEST_RESULT_SET_STORED_PROC ),
 				new Document( "$set", resultSetFunction ), options );
 
 		Document result =  mongoDatabase.runCommand( new Document( "$eval", "db.loadServerScripts()" ) );
-		log.infof( "database preparation result: %s", result.toJson() );
+		log.infof( "Server side scripts evaluated: %s", result.toJson() );
 	}
 }
