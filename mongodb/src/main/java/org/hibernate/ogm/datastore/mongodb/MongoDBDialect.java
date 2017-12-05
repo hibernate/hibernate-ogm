@@ -311,7 +311,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collection.find( query ).projection( projection ).iterator();
 	}
 
-	private static Document getPrReojection(OperationContext operationContext) {
+	private static Document getProjection(OperationContext operationContext) {
 		Set<String> columns = new HashSet<>();
 		columns.addAll( operationContext.getTupleTypeContext().getPolymorphicEntityColumns() );
 		columns.addAll( operationContext.getTupleTypeContext().getSelectableColumns() );
