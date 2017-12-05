@@ -83,7 +83,7 @@ public class HttpNeo4jClient implements AutoCloseable {
 		clientBuilder.register( XStreamRequestHeaderFilter.INSTANCE );
 
 		// using a connection pool size > 1 causes a thread-safe pool implementation to be used under the hoods
-		return clientBuilder.connectionPoolSize( configuration.getClientRestPoolSize() ).build();
+		return clientBuilder.connectionPoolSize( configuration.getClientPoolSize() ).build();
 	}
 
 	public void validateConnection() {

@@ -39,7 +39,7 @@ public class BoltNeo4jClient {
 	private Driver createNeo4jDriver(RemoteNeo4jDatabaseIdentifier identifier, RemoteNeo4jConfiguration configuration) {
 		String uri = identifier.getDatabaseUri();
 		Config.ConfigBuilder configBuilder = Config.build();
-		configBuilder.withMaxIdleSessions( configuration.getClientRestPoolSize()  );
+		configBuilder.withMaxIdleSessions( configuration.getClientPoolSize()  );
 		try {
 			if ( configuration.isAuthenticationRequired() ) {
 				AuthToken authToken = AuthTokens.basic( configuration.getUsername(), configuration.getPassword() );
