@@ -186,6 +186,10 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		return cacheTemplatesByName;
 	}
 
+	public Set<String> getMappedCacheNames() {
+		return cacheTemplatesByName.keySet();
+	}
+
 	public ProtoStreamMappingAdapter getDataMapperForCache(String cacheName) {
 		return perCacheSchemaMappers.get( cacheName );
 	}

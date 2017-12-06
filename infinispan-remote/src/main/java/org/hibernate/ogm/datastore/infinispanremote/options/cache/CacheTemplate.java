@@ -11,8 +11,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.impl.CacheTemplateConverter;
+
+import org.hibernate.ogm.options.spi.MappingOption;
+
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE) //on class level
+@Target(ElementType.TYPE)
+@MappingOption( CacheTemplateConverter.class )
 public @interface CacheTemplate {
 	String value();
 }

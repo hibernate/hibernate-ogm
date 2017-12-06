@@ -17,9 +17,11 @@ import org.hibernate.mapping.Value;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.impl.CacheTemplateOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -34,6 +36,7 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 	public void initializeSchema(SchemaDefinitionContext context) {
 		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
 		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
+		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		Map tableEntityTypeMapping = context.getTableEntityTypeMapping();
 		InfinispanRemoteDatastoreProvider datastoreProvider = (InfinispanRemoteDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 		String protobufPackageName = datastoreProvider.getProtobufPackageName();
@@ -42,7 +45,7 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 			for ( Table table : namespace.getTables() ) {
 				if ( table.isPhysicalTable() ) {
 					createTableDefinition( context.getSessionFactory(), sd, table, typeTranslator, protobufPackageName,
-											getCacheTemplate( tableEntityTypeMapping, table.getName() )
+											getCacheTemplate( tableEntityTypeMapping, optionsService, table.getName() )
 					);
 				}
 			}
@@ -53,12 +56,13 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		datastoreProvider.registerSchemaDefinitions( sd );
 	}
 
-	private String getCacheTemplate(Map tableEntityTypeMapping, String tableName) {
+	private String getCacheTemplate(Map tableEntityTypeMapping, OptionsService optionsService, String tableName) {
 		Class entity = (Class) tableEntityTypeMapping.get( tableName );
 		if ( entity == null ) {
 			return null;
 		}
-		CacheTemplate cacheTemplate = (CacheTemplate) entity.getAnnotation( CacheTemplate.class );
+		CacheTemplate cacheTemplate = optionsService.context().getEntityOptions( entity )
+				.getUnique(	CacheTemplateOption.class );
 		if ( cacheTemplate == null ) {
 			return null;
 		}
