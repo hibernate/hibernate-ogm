@@ -226,7 +226,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			searchObjects[i] = prepareIdObjectValue( keys[i].getColumnNames(), keys[i].getColumnValues() );
 		}
 
-		MongoCursor<Document> cursor = this.getObjects( keys[0].getMetadata(), searchObjects, tupleContext );
+		MongoCursor<Tuple> cursor = this.getObjects( keys[0].getMetadata(), searchObjects, tupleContext );
 		try {
 			return tuplesResult( keys, searchObjects, tupleContext, cursor );
 		}
@@ -241,14 +241,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * This method assumes that the entries in the cursor might not be in the same order as the keys and some keys might
 	 * not have a matching result in the db.
 	 */
-	private static List<Tuple> tuplesResult(EntityKey[] keys, Object[] searchObjects, TupleContext tupleContext, MongoCursor<Document> cursor) {
+	private static List<Tuple> tuplesResult(EntityKey[] keys, Object[] searchObjects, TupleContext tupleContext, MongoCursor<Tuple> cursor) {
 		// The list is initialized with null because some keys might not have a corresponding value in the cursor
 		Tuple[] tuples = new Tuple[searchObjects.length];
 		while ( cursor.hasNext() ) {
-			Document document = cursor.next();
+			Tuple tuple = cursor.next();
 			for ( int i = 0; i < searchObjects.length; i++ ) {
-				if ( document.get( ID_FIELDNAME ).equals( searchObjects[i] ) ) {
-					tuples[i] = createTuple( keys[i], tupleContext, document );
+				if ( tuple.get( ID_FIELDNAME ).equals( searchObjects[i] ) ) {
+					//tuples[i] = createTuple( keys[i], tupleContext, document );
+					MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+					snapshot.setKeyMetadata( keys[0].getMetadata() );
+					tuple.setSnapshotType( SnapshotType.UPDATE );
+					tuples[i] = tuple;
 					// We assume there are no duplicated keys
 					break;
 				}
@@ -269,18 +273,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return null;
 		}
 	}
-	private static void initTuple(EntityKey key, OperationContext operationContext, Tuple found) {
+	private static Tuple initTuple(EntityKey key, OperationContext operationContext, Tuple found) {
 		if ( found != null ) {
 			MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) found.getSnapshot();
 			snapshot.setKeyMetadata( key.getMetadata() );
 			found.setSnapshotType( SnapshotType.UPDATE );
+			return found;
 			//return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata() ), SnapshotType.UPDATE );
 		}
 		else if ( isInTheInsertionQueue( key, operationContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
-			//@todo correct it!
-			//return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata() ), SnapshotType.INSERT );
+			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata() ), SnapshotType.INSERT );
 		}
+		return null;
 	}
 
 	@Override
@@ -326,11 +331,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return fi != null ? fi.projection( projection ).first() : null;
 	}
 
-	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
-			tupleContext) {
+	private MongoCursor<Tuple> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext	tupleContext) {
 		ReadPreference readPreference = getReadPreference( tupleContext );
 
-		MongoCollection<Document> collection = readPreference != null ? getCollection( entityKeyMetadata ).withReadPreference( readPreference ) : getCollection( entityKeyMetadata );
+		MongoCollection<Tuple> collection = readPreference != null ? getCollection( entityKeyMetadata, Tuple.class ).withReadPreference( readPreference ) : getCollection( entityKeyMetadata,Tuple.class );
 
 		Document projection = getProjection( tupleContext );
 
@@ -410,7 +414,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return idObject;
 		}
 	}
-
+@Deprecated
 	private MongoCollection<Document> getCollection(String table) {
 		return currentDB.getCollection( table );
 	}
@@ -425,9 +429,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private <TDocument> MongoCollection<TDocument> getCollection( EntityKey key , Class<TDocument> documentClass) {
 		return getCollection( key.getTable(), documentClass );
 	}
-
+	@Deprecated
 	private MongoCollection<Document> getCollection(EntityKeyMetadata entityKeyMetadata) {
 		return getCollection( entityKeyMetadata.getTable() );
+	}
+	private  <TDocument> MongoCollection<TDocument> getCollection(EntityKeyMetadata entityKeyMetadata, Class<TDocument> documentClass) {
+		return getCollection( entityKeyMetadata.getTable(),documentClass );
 	}
 
 	private MongoCollection<Document> getAssociationCollection(AssociationKey key, AssociationStorageStrategy storageStrategy) {
