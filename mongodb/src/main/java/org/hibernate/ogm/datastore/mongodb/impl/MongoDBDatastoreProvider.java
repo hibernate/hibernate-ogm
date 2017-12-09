@@ -17,6 +17,8 @@ import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -126,6 +128,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		MongoClientOptions clientOptions = config.buildOptions();
 		List<MongoCredential> credentials = config.buildCredentials();
 		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
+
 		try {
 			List<ServerAddress> serverAddresses = new ArrayList<>( config.getHosts().size() );
 			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {
