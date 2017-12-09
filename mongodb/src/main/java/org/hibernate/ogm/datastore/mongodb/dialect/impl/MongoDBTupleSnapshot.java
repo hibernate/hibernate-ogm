@@ -27,8 +27,8 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
-	private final Document dbObject;
-	private final EntityKeyMetadata keyMetadata;
+	private Document dbObject;
+	private EntityKeyMetadata keyMetadata;
 
 	public MongoDBTupleSnapshot(Document dbObject, EntityKeyMetadata meta) {
 		this.dbObject = dbObject;
@@ -83,5 +83,17 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	private Object getValue(Document dbObject, String column) {
 		Object valueOrNull = MongoHelpers.getValueOrNull( dbObject, column );
 		return valueOrNull;
+	}
+
+	public EntityKeyMetadata getKeyMetadata() {
+		return keyMetadata;
+	}
+
+	public void setKeyMetadata(EntityKeyMetadata keyMetadata) {
+		this.keyMetadata = keyMetadata;
+	}
+
+	public void setDbObject(Document dbObject) {
+		this.dbObject = dbObject;
 	}
 }

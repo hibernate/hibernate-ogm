@@ -23,6 +23,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.codec.TupleCodec;
+import org.hibernate.ogm.datastore.mongodb.codec.TupleCodecProvider;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
@@ -125,10 +127,16 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	}
 
 	protected MongoClient createMongoClient(MongoDBConfiguration config) {
-		MongoClientOptions clientOptions = config.buildOptions();
 		List<MongoCredential> credentials = config.buildCredentials();
-		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
 
+		CodecRegistry defaultCodecRegistry = MongoClient.getDefaultCodecRegistry();
+		CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+				CodecRegistries.fromCodecs( new TupleCodec() ),
+				CodecRegistries.fromProviders( new TupleCodecProvider() ),
+				defaultCodecRegistry );
+
+		MongoClientOptions clientOptions = MongoClientOptions.builder().codecRegistry( codecRegistry ).build();
+		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
 		try {
 			List<ServerAddress> serverAddresses = new ArrayList<>( config.getHosts().size() );
 			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {

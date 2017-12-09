@@ -25,8 +25,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -120,10 +118,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -151,6 +145,12 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -210,8 +210,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public Tuple getTuple(EntityKey key, OperationContext operationContext) {
-		Document found = this.getObject( key, operationContext );
-		return createTuple( key, operationContext, found );
+		Tuple found = this.getObject( key, operationContext );
+		initTuple( key, operationContext, found );
+		return found;
 	}
 
 	@Override
@@ -255,7 +256,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		return Arrays.asList( tuples );
 	}
-
+@Deprecated
 	private static Tuple createTuple(EntityKey key, OperationContext operationContext, Document found) {
 		if ( found != null ) {
 			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata() ), SnapshotType.UPDATE );
@@ -266,6 +267,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else {
 			return null;
+		}
+	}
+	private static void initTuple(EntityKey key, OperationContext operationContext, Tuple found) {
+		if ( found != null ) {
+			MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) found.getSnapshot();
+			snapshot.setKeyMetadata( key.getMetadata() );
+			found.setSnapshotType( SnapshotType.UPDATE );
+			//return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata() ), SnapshotType.UPDATE );
+		}
+		else if ( isInTheInsertionQueue( key, operationContext ) ) {
+			// The key has not been inserted in the db but it is in the queue
+			//@todo correct it!
+			//return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata() ), SnapshotType.INSERT );
 		}
 	}
 
@@ -301,14 +315,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private Document getObject(EntityKey key, OperationContext operationContext) {
+	private Tuple getObject(EntityKey key, OperationContext operationContext) {
 		ReadPreference readPreference = getReadPreference( operationContext );
 
-		MongoCollection<Document> collection = readPreference != null ? getCollection( key ).withReadPreference( readPreference ) : getCollection( key ) ;
+		MongoCollection<Tuple> collection = readPreference != null ? getCollection( key, Tuple.class ).withReadPreference( readPreference ) : getCollection( key,Tuple.class ) ;
 		Document searchObject = prepareIdObject( key );
 		Document projection = getProjection( operationContext );
 
-		FindIterable<Document> fi = collection.find( searchObject );
+		FindIterable<Tuple> fi = collection.find( searchObject );
 		return fi != null ? fi.projection( projection ).first() : null;
 	}
 
@@ -401,8 +415,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return currentDB.getCollection( table );
 	}
 
+	private <TDocument> MongoCollection<TDocument> getCollection(String table, Class<TDocument> documentClass) {
+		return currentDB.getCollection( table, documentClass );
+	}
+
 	private MongoCollection<Document> getCollection( EntityKey key ) {
 		return getCollection( key.getTable() );
+	}
+	private <TDocument> MongoCollection<TDocument> getCollection( EntityKey key , Class<TDocument> documentClass) {
+		return getCollection( key.getTable(), documentClass );
 	}
 
 	private MongoCollection<Document> getCollection(EntityKeyMetadata entityKeyMetadata) {
@@ -1458,7 +1479,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public void executeBatch(OperationsQueue queue) {
 		if ( !queue.isClosed() ) {
 			Operation operation = queue.poll();
-			Map<MongoCollection<Document>, BatchInsertionTask> inserts = new HashMap<MongoCollection<Document>, BatchInsertionTask>();
+			Map<MongoCollection<Tuple>, BatchInsertionTask> inserts = new HashMap<>();
 
 			List<Tuple> insertTuples = new ArrayList<Tuple>();
 
@@ -1486,9 +1507,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private void executeBatchRemove(Map<MongoCollection<Document>, BatchInsertionTask> inserts, RemoveTupleOperation tupleOperation) {
+	private void executeBatchRemove(Map<MongoCollection<Tuple>, BatchInsertionTask> inserts, RemoveTupleOperation tupleOperation) {
 		EntityKey entityKey = tupleOperation.getEntityKey();
-		MongoCollection<Document> collection = getCollection( entityKey );
+		MongoCollection<Tuple> collection = getCollection( entityKey, Tuple.class );
 		BatchInsertionTask batchedInserts = inserts.get( collection );
 
 		if ( batchedInserts != null && batchedInserts.containsKey( entityKey ) ) {
@@ -1499,11 +1520,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private void executeBatchUpdate(Map<MongoCollection<Document>, BatchInsertionTask> inserts, List<Tuple> insertTuples,
+	private void executeBatchUpdate(Map<MongoCollection<Tuple>, BatchInsertionTask> inserts, List<Tuple> insertTuples,
 			GroupedChangesToEntityOperation groupedOperation) {
 		EntityKey entityKey = groupedOperation.getEntityKey();
-		MongoCollection<Document> collection = getCollection( entityKey );
-		Document insertStatement = null;
+		MongoCollection<Tuple> collection = getCollection( entityKey,Tuple.class );
+		Tuple insertStatement = null;
 		Document updateStatement = new Document();
 		WriteConcern writeConcern = null;
 
@@ -1516,11 +1537,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( tupleOperation.getTupleContext() ) );
 
 				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
-					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
-					insertStatement = objectForInsert( tuple, document );
+					//Document updatedSnapshot =  objectForInsert( tuple, snapshot.getDbObject() );
+					snapshot.setDbObject(  objectForInsert( tuple, snapshot.getDbObject() ) );
 
 					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
-							.put( entityKey, insertStatement );
+							.put( entityKey, tuple );
 					insertTuples.add( tuple );
 				}
 				else {
@@ -1542,7 +1563,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					writeConcern = mergeWriteConcern( writeConcern, getWriteConcern( associationContext ) );
 					if ( insertStatement != null ) {
 						// The association is updated in a new document
-						MongoHelpers.setValue( insertStatement, collectionRole, rows );
+						//@todo correct it!!!!!
+						//MongoHelpers.setValue( insertStatement, collectionRole, rows );
 					}
 					else {
 						// The association is updated on an existing document
@@ -1625,8 +1647,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return insertStatement != null ? insertStatement : snapshot.getDbObject();
 	}
 
-	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<MongoCollection<Document>, BatchInsertionTask> inserts,
-			EntityKeyMetadata entityKeyMetadata, MongoCollection<Document> collection) {
+	private static BatchInsertionTask getOrCreateBatchInsertionTask(Map<MongoCollection<Tuple>, BatchInsertionTask> inserts,
+			EntityKeyMetadata entityKeyMetadata, MongoCollection<Tuple> collection) {
 		BatchInsertionTask insertsForCollection = inserts.get( collection );
 
 		if ( insertsForCollection == null ) {
@@ -1637,9 +1659,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return insertsForCollection;
 	}
 
-	private static void flushInserts(Map<MongoCollection<Document>, BatchInsertionTask> inserts) {
-		for ( Map.Entry<MongoCollection<Document>, BatchInsertionTask> entry : inserts.entrySet() ) {
-			MongoCollection<Document> collection = entry.getKey();
+	private static void flushInserts(Map<MongoCollection<Tuple>, BatchInsertionTask> inserts) {
+		for ( Map.Entry<MongoCollection<Tuple>, BatchInsertionTask> entry : inserts.entrySet() ) {
+			MongoCollection<Tuple> collection = entry.getKey();
 			if ( entry.getValue().isEmpty() ) {
 				// has been emptied due to subsequent removals before flushes
 				continue;
@@ -1859,30 +1881,30 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static class BatchInsertionTask {
 
 		private final EntityKeyMetadata entityKeyMetadata;
-		private final Map<EntityKey, Document> inserts;
+		private final Map<EntityKey, Tuple> inserts;
 
 		public BatchInsertionTask(EntityKeyMetadata entityKeyMetadata) {
 			this.entityKeyMetadata = entityKeyMetadata;
-			this.inserts = new HashMap<EntityKey, Document>();
+			this.inserts = new HashMap<>();
 		}
 
 		public EntityKeyMetadata getEntityKeyMetadata() {
 			return entityKeyMetadata;
 		}
 
-		public List<Document> getAll() {
-			return new ArrayList<Document>( inserts.values() );
+		public List<Tuple> getAll() {
+			return new ArrayList<Tuple>( inserts.values() );
 		}
 
 		public boolean containsKey(EntityKey entityKey) {
 			return inserts.containsKey( entityKey );
 		}
 
-		public Document remove(EntityKey entityKey) {
+		public Tuple remove(EntityKey entityKey) {
 			return inserts.remove( entityKey );
 		}
 
-		public void put(EntityKey entityKey, Document object) {
+		public void put(EntityKey entityKey, Tuple object) {
 			inserts.put( entityKey, object );
 		}
 
