@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jDatabaseI
 
 import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
+import org.neo4j.driver.v1.Config;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
 import org.neo4j.driver.v1.exceptions.Neo4jException;
@@ -37,13 +38,15 @@ public class BoltNeo4jClient {
 
 	private Driver createNeo4jDriver(RemoteNeo4jDatabaseIdentifier identifier, RemoteNeo4jConfiguration configuration) {
 		String uri = identifier.getDatabaseUri();
+		Config.ConfigBuilder configBuilder = Config.build();
+		configBuilder.withMaxIdleSessions( configuration.getClientPoolSize()  );
 		try {
 			if ( configuration.isAuthenticationRequired() ) {
 				AuthToken authToken = AuthTokens.basic( configuration.getUsername(), configuration.getPassword() );
-				return GraphDatabase.driver( uri, authToken );
+				return GraphDatabase.driver( uri, authToken, configBuilder.toConfig() );
 			}
 			else {
-				return GraphDatabase.driver( uri );
+				return GraphDatabase.driver( uri, configBuilder.toConfig() );
 			}
 		}
 		catch (Neo4jException e) {
