@@ -104,6 +104,8 @@ The authentication username for the remote server.
 Hibernate OGM will try to authenticate only if this property is set.
 hibernate.ogm.datastore.password (optional)::
 The password to use when connecting remotely.
+hibernate.ogm.neo4j.client.connection_pool_size (optional)::
+Size of connection pool. Default value is 10.
 
 [NOTE]
 ====
