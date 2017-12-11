@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.infinispanremote.impl;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -15,9 +16,12 @@ import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.impl.CacheTemplateOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -32,13 +36,17 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 	public void initializeSchema(SchemaDefinitionContext context) {
 		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
 		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
+		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
+		Map tableEntityTypeMapping = context.getTableEntityTypeMapping();
 		InfinispanRemoteDatastoreProvider datastoreProvider = (InfinispanRemoteDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 		String protobufPackageName = datastoreProvider.getProtobufPackageName();
 		SchemaDefinitions sd = new SchemaDefinitions( protobufPackageName );
 		for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
 			for ( Table table : namespace.getTables() ) {
 				if ( table.isPhysicalTable() ) {
-					createTableDefinition( context.getSessionFactory(), sd, table, typeTranslator, protobufPackageName );
+					createTableDefinition( context.getSessionFactory(), sd, table, typeTranslator, protobufPackageName,
+											getCacheTemplate( tableEntityTypeMapping, optionsService, table.getName() )
+					);
 				}
 			}
 		}
@@ -48,9 +56,22 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		datastoreProvider.registerSchemaDefinitions( sd );
 	}
 
+	private String getCacheTemplate(Map tableEntityTypeMapping, OptionsService optionsService, String tableName) {
+		Class entity = (Class) tableEntityTypeMapping.get( tableName );
+		if ( entity == null ) {
+			return null;
+		}
+		CacheTemplate cacheTemplate = optionsService.context().getEntityOptions( entity )
+				.getUnique(	CacheTemplateOption.class );
+		if ( cacheTemplate == null ) {
+			return null;
+		}
+		return cacheTemplate.value();
+	}
+
 	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd,
-			Table table, TypeTranslator typeTranslator, String protobufPackageName) {
-		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName );
+			Table table, TypeTranslator typeTranslator, String protobufPackageName, String cacheTemplate ) {
+		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName, cacheTemplate );
 		if ( table.hasPrimaryKey() ) {
 			for ( Column pkColumn : table.getPrimaryKey().getColumns() ) {
 				String name = pkColumn.getName();
