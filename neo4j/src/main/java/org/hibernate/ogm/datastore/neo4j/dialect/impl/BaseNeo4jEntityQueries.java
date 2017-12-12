@@ -36,8 +36,14 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 	 * The alias used when a query returns an entity as result.
 	 */
 	public static final String ENTITY_ALIAS = "owner";
-	public static final String EMBEDDED_ALIAS = "emb";
-	public static final String EMBEDDED_REL = "r";
+	public static final String FIRST_EMBEDDED_ALIAS = "emb";
+
+	/*
+	 * For performance reasons the query uses two optional match clauses to get embeddeds
+	 */
+	public static final String EMBEDDED_ALIAS = "emb_2";
+	public static final String FIRST_EMBEDDED_REL_ALIAS = "r";
+	public static final String EMBEDDED_REL_ALIAS = "r2";
 
 	private static final int CACHE_CAPACITY = 1000;
 	private static final int CACHE_CONCURRENCY_LEVEL = 20;
@@ -172,10 +178,6 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			escapeIdentifier( queryBuilder, entityKeyMetadata.getColumnNames()[0] );
 			queryBuilder.append( " IN {0}" );
 			appendGetEmbeddedNodesIfNeeded( includeEmbedded, queryBuilder );
-			if ( includeEmbedded ) {
-				queryBuilder.append( ", " );
-				queryBuilder.append( EMBEDDED_ALIAS );
-			}
 		}
 		return queryBuilder.toString();
 	}
@@ -435,12 +437,18 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		return queryBuilder.toString();
 	}
 
+	/*
+	 * Example:
+	 *
+	 * MATCH (owner:ENTITY:table {id: {0}})
+	 * OPTIONAL MATCH (owner)-[r]->(emb)
+	 * OPTIONAL MATCH (emb)-[r2*]->(emb_2)
+	 * RETURN owner, r, e, r2, emb_2
+	 */
 	private static String initFindEntityQueryWithEmbeddedEndNode(EntityKeyMetadata entityKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder();
 		appendMatchOwnerEntityNode( queryBuilder, entityKeyMetadata );
 		appendGetEmbeddedNodesIfNeeded( true, queryBuilder );
-		queryBuilder.append( ", " );
-		queryBuilder.append( EMBEDDED_ALIAS );
 		return queryBuilder.toString();
 	}
 
@@ -449,7 +457,14 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 			appendOptionalMatchOwnerEmbeddedNodes( queryBuilder );
 			queryBuilder.append( " RETURN " );
 			queryBuilder.append( ENTITY_ALIAS );
-			queryBuilder.append( ", r" );
+			queryBuilder.append( ", " );
+			queryBuilder.append( FIRST_EMBEDDED_REL_ALIAS );
+			queryBuilder.append( ", " );
+			queryBuilder.append( FIRST_EMBEDDED_ALIAS );
+			queryBuilder.append( ", " );
+			queryBuilder.append( EMBEDDED_REL_ALIAS );
+			queryBuilder.append( ", " );
+			queryBuilder.append( EMBEDDED_ALIAS );
 		}
 		else {
 			queryBuilder.append( " RETURN " );
@@ -457,10 +472,30 @@ public abstract class BaseNeo4jEntityQueries extends BaseNeo4jQueries {
 		}
 	}
 
+	/*
+	 * Looks something like:
+	 *
+	 * OPTIONAL MATCH (owner)-[r]->(emb)
+	 * OPTIONAL MATCH (emb)-[r2*]->(emb_2)
+	 *
+	 * The reason we make this split to the path towards the embedded nodes is
+	 * to make the query faster.
+	 */
 	private static void appendOptionalMatchOwnerEmbeddedNodes(StringBuilder queryBuilder) {
 		queryBuilder.append( " OPTIONAL MATCH (" );
 		queryBuilder.append( ENTITY_ALIAS );
-		queryBuilder.append( ") -[r*]->(" );
+		queryBuilder.append( ") -[" );
+		queryBuilder.append( FIRST_EMBEDDED_REL_ALIAS );
+		queryBuilder.append( "]->(" );
+		queryBuilder.append( FIRST_EMBEDDED_ALIAS );
+		queryBuilder.append( ":" );
+		queryBuilder.append( NodeLabel.EMBEDDED );
+		queryBuilder.append( ")" );
+		queryBuilder.append( " OPTIONAL MATCH (" );
+		queryBuilder.append( FIRST_EMBEDDED_ALIAS );
+		queryBuilder.append( ")-[" );
+		queryBuilder.append( EMBEDDED_REL_ALIAS );
+		queryBuilder.append( "*]->(" );
 		queryBuilder.append( EMBEDDED_ALIAS );
 		queryBuilder.append( ":" );
 		queryBuilder.append( NodeLabel.EMBEDDED );
