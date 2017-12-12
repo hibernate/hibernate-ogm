@@ -122,28 +122,35 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 			Map<Long, Map<String, Collection<Node>>> nodes = new HashMap<>();
 			while ( results.hasNext() ) {
 				Record record = results.next();
-				Node owner = record.get( BoltNeo4jEntityQueries.ENTITY_ALIAS ).asNode();
-				Value value = record.get( BoltNeo4jEntityQueries.EMBEDDED_ALIAS );
-				Node embeddedNode = value.isNull() ? null : value.asNode();
+				Node owner = asNode( record, BaseNeo4jEntityQueries.ENTITY_ALIAS );
+				Relationship firstEmbeddedRel = asRelationship( record, BaseNeo4jEntityQueries.FIRST_EMBEDDED_REL_ALIAS );
+				Node firstEmbeddedNode = asNode( record, BaseNeo4jEntityQueries.FIRST_EMBEDDED_ALIAS );
+
 				Map<String, Collection<Node>> embeddedNodesMap = nodes.get( owner.id() );
 				if ( embeddedNodesMap == null ) {
 					embeddedNodesMap = new HashMap<>();
 					nodes.put( owner.id(), embeddedNodesMap );
 					owners.add( owner );
 				}
-				if ( embeddedNode != null ) {
+
+				if ( firstEmbeddedRel != null ) {
+					// Save the first embedded node, the one connected to the owner
 					StringBuilder builder = new StringBuilder();
-					List<Object> embeddedObjects = asList( record );
-					for ( Object object : embeddedObjects ) {
-						builder.append( "." );
-						builder.append( ( (Relationship) object ).type() );
+					builder.append( "." );
+					builder.append( firstEmbeddedRel.type() );
+					collectEmbeddedNode( firstEmbeddedNode, embeddedNodesMap, builder );
+
+					// Save other embedded nodes, the ones connected to the first embedded node
+					// The distance between the first one and the last might be made by multiple relationships
+					List<Relationship> embeddedRelationships = asList( record, BaseNeo4jEntityQueries.EMBEDDED_REL_ALIAS );
+					if ( !embeddedRelationships.isEmpty() ) {
+						Node lastEmbeddedNode = asNode( record, BaseNeo4jEntityQueries.EMBEDDED_ALIAS );
+						for ( Relationship embeddedRel : embeddedRelationships ) {
+							builder.append( "." );
+							builder.append( embeddedRel.type() );
+						}
+						collectEmbeddedNode( lastEmbeddedNode, embeddedNodesMap, builder );
 					}
-					String path = builder.substring( 1 );
-					if ( !embeddedNodesMap.containsKey(  path ) ) {
-						Collection<Node> embeddedNodes = new ArrayList<>();
-						embeddedNodesMap.put( path, embeddedNodes );
-					}
-					embeddedNodesMap.get( path ).add( embeddedNode );
 				}
 			}
 			if ( keys == null ) {
@@ -171,6 +178,35 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 			}
 		}
 		return EMPTY_NODES;
+	}
+
+	private void collectEmbeddedNode(Node embeddedNode, Map<String, Collection<Node>> embeddedNodesMap, StringBuilder builder) {
+		String path = builder.substring( 1 );
+		if ( !embeddedNodesMap.containsKey(  path ) ) {
+			Collection<Node> embeddedNodes = new ArrayList<>();
+			embeddedNodesMap.put( path, embeddedNodes );
+		}
+		Collection<Node> collection = embeddedNodesMap.get( path );
+		if ( !collection.contains( embeddedNode ) ) {
+			// Two nodes are equals only if they have the same internal id
+			collection.add( embeddedNode );
+		}
+	}
+
+	private Relationship asRelationship(Record record, String alias) {
+		Value value = record.get( alias );
+		if ( value.isNull() ) {
+			return null;
+		}
+		return value.asRelationship();
+	}
+
+	private Node asNode(Record record, String alias) {
+		Value value = record.get( alias );
+		if ( value.isNull() ) {
+			return null;
+		}
+		return value.asNode();
 	}
 
 	private int findKeyIndex(EntityKey[] keys, Node owner) {
@@ -303,11 +339,13 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 	}
 
-	private List<Object> asList(Record embeddeds) {
-		if ( embeddeds.get( 1 ).isNull() ) {
+	@SuppressWarnings("unchecked")
+	private <T> List<T> asList(Record embeddeds, String alias) {
+		Value value = embeddeds.get( alias );
+		if ( value.isNull() ) {
 			return Collections.emptyList();
 		}
-		return embeddeds.get( 1 ).asList();
+		return (List<T>) value.asList();
 	}
 
 	private void addTargetEmbeddedProperties(Map<String, Object> targetNode, Record row) {

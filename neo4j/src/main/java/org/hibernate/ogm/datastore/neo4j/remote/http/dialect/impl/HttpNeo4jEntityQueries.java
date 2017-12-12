@@ -104,9 +104,10 @@ public class HttpNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 					currentNode = findEmbeddedNode( allNodes, currentRelationship.getEndNode() );
 					currentRelationship = findRelationship( embeddedRelationships, currentRelationship.getEndNode() );
+
+					String path = builder.substring( 1 );
+					collectEmbeddedNode( embeddedNodesMap, path, currentNode );
 				}
-				String path = builder.substring( 1 );
-				saveEmbeddedNode( embeddedNodesMap, path, currentNode );
 			}
 		}
 	}
@@ -120,10 +121,13 @@ public class HttpNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		return null;
 	}
 
-	private void saveEmbeddedNode(Map<String, Collection<Node>> embeddedNodesMap, String path, Node embeddedNode) {
+	private void collectEmbeddedNode(Map<String, Collection<Node>> embeddedNodesMap, String path, Node embeddedNode) {
 		if ( !embeddedNode.getProperties().isEmpty() ) {
 			if ( embeddedNodesMap.containsKey( path ) ) {
-				embeddedNodesMap.get( path ).add( embeddedNode );
+				Collection<Node> collection = embeddedNodesMap.get( path );
+				if ( !collection.contains( embeddedNode ) ) {
+					collection.add( embeddedNode );
+				}
 			}
 			else {
 				Set<Node> embeddedNodes = new HashSet<>();
