@@ -182,11 +182,8 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 
 	private void collectEmbeddedNode(Node embeddedNode, Map<String, Collection<Node>> embeddedNodesMap, StringBuilder builder) {
 		String path = builder.substring( 1 );
-		if ( !embeddedNodesMap.containsKey(  path ) ) {
-			Collection<Node> embeddedNodes = new ArrayList<>();
-			embeddedNodesMap.put( path, embeddedNodes );
-		}
-		Collection<Node> collection = embeddedNodesMap.get( path );
+		Collection<Node> collection = embeddedNodesMap
+				.computeIfAbsent( path, ( k ) -> ( new ArrayList<Node>() ) );
 		if ( !collection.contains( embeddedNode ) ) {
 			// Two nodes are equals only if they have the same internal id
 			collection.add( embeddedNode );
