@@ -253,5 +253,10 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		public ResourceIterable<String> getAllPropertyKeys() {
 			return null;
 		}
+
+		@Override
+		public Long createNodeId() {
+			return null;
+		}
 	}
 }
