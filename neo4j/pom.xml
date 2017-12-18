@@ -61,6 +61,27 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
+            <exclusions>
+             <exclusion>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-lang3</artifactId>
+             </exclusion>
+             <exclusion>
+              <groupId>org.parboiled</groupId>
+              <artifactId>parboiled-scala_2.11</artifactId>
+             </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${neo4jCommonsLang3Version}</version>
+        </dependency>
+
+        <dependency>
+              <groupId>org.parboiled</groupId>
+              <artifactId>parboiled-scala_2.11</artifactId>
         </dependency>
 
         <dependency>
