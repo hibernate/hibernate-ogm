@@ -60,7 +60,7 @@
         <mongodbVersion>3.4.6</mongodbVersion>
 
         <!-- Neo4j -->
-        <neo4jVersion>3.2.6</neo4jVersion>
+        <neo4jVersion>3.2.8</neo4jVersion>
         <neo4jJavaDriverVersion>1.4.4</neo4jJavaDriverVersion>
         <neo4jScalaLibraryVersion>2.11.8</neo4jScalaLibraryVersion>
         <!-- See Parboiled dependency above -->
