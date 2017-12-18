@@ -144,6 +144,7 @@
              <includes>
                  <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
                  <include>org.mongodb:mongo-java-driver</include>
+                 <include>org.apache.commons:commons-lang3</include>
               </includes>
        </dependencySet>
        <dependencySet>

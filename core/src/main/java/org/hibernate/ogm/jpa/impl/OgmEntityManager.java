@@ -46,6 +46,7 @@ import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.internal.NamedQueryRepository;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
@@ -59,6 +60,9 @@ import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
+import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallMemento;
+import org.hibernate.procedure.ProcedureCall;
+import org.hibernate.procedure.ProcedureCallMemento;
 
 /**
  * An OGM specific {@code EntityManager} implementation which delegates most method calls to the underlying ORM
@@ -518,22 +522,43 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		OgmSessionFactoryImplementor sessionFactory = (OgmSessionFactoryImplementor) factory.getSessionFactory();
+		NamedQueryRepository namedQueryRepository = sessionFactory.getNamedQueryRepository();
+		ProcedureCallMemento memento = (ProcedureCallMemento) namedQueryRepository.getNamedProcedureCallMemento( name );
+		memento = new NoSQLProcedureCallMemento( memento );
+
+		if ( memento == null ) {
+			throw new IllegalArgumentException( "No @NamedStoredProcedureQuery was found with that name : " + name );
+		}
+		OgmStoredProcedureQuery storedProcedureQuery = new OgmStoredProcedureQuery( memento, hibernateEm );
+		if ( memento.getHintsMap() != null ) {
+			for ( Map.Entry<String, Object> hintEntry : memento.getHintsMap().entrySet() ) {
+				storedProcedureQuery.setHint( hintEntry.getKey(), hintEntry.getValue() );
+			}
+		}
+		return storedProcedureQuery;
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		ProcedureCall procedureCall = (ProcedureCall) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName );
+		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		ProcedureCall procedureCall = (ProcedureCall) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultClasses );
+		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override
 	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		hibernateEm.checkOpen( true );
+		ProcedureCall procedureCall = (ProcedureCall) ( (Session) getDelegate() ).createStoredProcedureCall( procedureName, resultSetMappings );
+		return new OgmStoredProcedureQuery( procedureCall, hibernateEm );
 	}
 
 	@Override

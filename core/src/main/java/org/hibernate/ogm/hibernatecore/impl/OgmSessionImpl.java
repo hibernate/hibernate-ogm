@@ -50,11 +50,14 @@ import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
+import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallMemento;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ProcedureCall;
+import org.hibernate.procedure.ProcedureCallMemento;
+import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
 
 /**
@@ -178,22 +181,36 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public ProcedureCall getNamedProcedureCall(String name) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		errorIfClosed();
+
+		final ProcedureCallMemento memento = factory.getNamedQueryRepository().getNamedProcedureCallMemento( name );
+		if ( memento == null ) {
+			throw new IllegalArgumentException(
+					"Could not find named stored procedure call with that registration name : " + name
+			);
+		}
+		return new NoSQLProcedureCallImpl( this, new NoSQLProcedureCallMemento( memento ) );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		errorIfClosed();
+		checkTransactionSynchStatus();
+		return new NoSQLProcedureCallImpl( this, procedureName );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, Class... resultClasses) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		errorIfClosed();
+		checkTransactionSynchStatus();
+		return new NoSQLProcedureCallImpl( this, procedureName, resultClasses );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, String... resultSetMappings) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		errorIfClosed();
+		checkTransactionSynchStatus();
+		return new NoSQLProcedureCallImpl( this, procedureName, resultSetMappings );
 	}
 
 	//Event Source methods
