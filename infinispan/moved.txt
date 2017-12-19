@@ -1,0 +1,10 @@
+The dialect for Infinispan Embedded has been renamed in version 5.2 to
+hibernate-ogm-infinispan-embedded
+
+The updated Maven artifact coordinates are:
+
+	<groupId>org.hibernate.ogm</groupId>
+	<artifactId>hibernate-ogm-infinispan</artifactId>
+
+For any questions and feedback, please get in touch
+ - http://hibernate.org/community/
