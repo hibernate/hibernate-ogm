@@ -105,7 +105,8 @@
                     <doctitle>Hibernate OGM ${project.version}</doctitle>
                     <windowtitle>Hibernate OGM ${project.version}</windowtitle>
                     <bottom>
-                        <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://redhat.com">Red Hat, Inc.</a>, Emmanuel Bernard and various contributors.  All Rights Reserved.]]></bottom>
+                        <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.redhat.com/">Red Hat, Inc.</a> and others. Licensed under the GNU Lesser General Public License (LGPL), version 2.1 or later.]]>
+                    </bottom>
                 </configuration>
                 <executions>
                     <execution>
