@@ -30,8 +30,8 @@
             <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/infinispan/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan/${hibernate.ogm.infinispan.module.slot}</outputDirectory>
+             <source>${module.xml.basedir}/ogm/infinispan-embedded/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.infinispan-embedded.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -40,8 +40,8 @@
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.aliases.basedir}/ogm/infinispan/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan/main</outputDirectory>
+             <source>${module.xml.aliases.basedir}/ogm/infinispan-embedded/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-embedded/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -120,11 +120,11 @@
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/infinispan/${hibernate.ogm.infinispan.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.infinispan-embedded.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
-                <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-embedded</include>
             </includes>
         </dependencySet>
         <dependencySet>

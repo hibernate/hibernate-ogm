@@ -162,7 +162,7 @@ To add the dependencies for the Hibernate OGM extensions for Infinispan Embedded
 ----
 <dependency>
     <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     <version>{hibernate-ogm-version}</version>
 </dependency>
 ----
