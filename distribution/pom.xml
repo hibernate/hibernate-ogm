@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-infinispan</artifactId>
+            <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
             <exclusions>
                 <exclusion>
                     <artifactId>jboss-logging</artifactId>

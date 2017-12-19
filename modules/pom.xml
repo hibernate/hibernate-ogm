@@ -25,7 +25,7 @@
         <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
         <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
         <hibernate.ogm.jipijapa.module.slot>${project.version}</hibernate.ogm.jipijapa.module.slot>
-        <hibernate.ogm.infinispan.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan.module.slot>
+        <hibernate.ogm.infinispan-embedded.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan-embedded.module.slot>
         <hibernate.ogm.infinispan-remote.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan-remote.module.slot>
         <hibernate.ogm.mongodb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.neo4j.module.slot>
@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-infinispan</artifactId>
+            <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
             <optional>true</optional>
             <exclusions>
                 <exclusion>

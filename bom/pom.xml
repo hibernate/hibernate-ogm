@@ -381,7 +381,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>hibernate-ogm-infinispan</artifactId>
+                <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

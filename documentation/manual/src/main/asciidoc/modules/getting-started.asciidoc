@@ -14,7 +14,7 @@ Before we can start, make sure you have the following tools configured:
 Hibernate OGM is published in the Maven central repository.
 
 Add `org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}` to your dependency management block
-and `org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}`
+and `org.hibernate.ogm:hibernate-ogm-infinispan-embedded:{hibernate-ogm-version}`
 to your project dependencies:
 
 [source, XML]
@@ -35,7 +35,7 @@ to your project dependencies:
 <dependencies>
     <dependency>
         <groupId>org.hibernate.ogm</groupId>
-        <artifactId>hibernate-ogm-infinispan</artifactId>
+        <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     </dependency>
 </dependencies>
 ----
@@ -132,7 +132,7 @@ The final list of dependencies should look like this:
     <!-- Hibernate OGM Infinispan module; pulls in the OGM core module -->
     <dependency>
         <groupId>org.hibernate.ogm</groupId>
-        <artifactId>hibernate-ogm-infinispan</artifactId>
+        <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     </dependency>
 
     <1-- Optional, needed to run JPQL queries on some datastores -->

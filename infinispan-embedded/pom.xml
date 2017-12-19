@@ -16,7 +16,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     <packaging>jar</packaging>
 
     <name>Hibernate OGM for Infinispan</name>

@@ -25,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-infinispan</artifactId>
+            <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
