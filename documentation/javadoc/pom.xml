@@ -94,7 +94,6 @@
                         </tag>
                     </tags>
                     <docfilessubdirs>true</docfilessubdirs>
-                    <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                     <links>
                         <link>https://docs.oracle.com/javase/8/docs/api/</link>
                         <link>http://docs.jboss.org/hibernate/orm/5.1/javadocs/</link>
