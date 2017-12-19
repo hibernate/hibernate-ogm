@@ -19,8 +19,8 @@
     <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     <packaging>jar</packaging>
 
-    <name>Hibernate OGM for Infinispan</name>
-    <description>Persist objects in Infinispan</description>
+    <name>Hibernate OGM for Infinispan Embedded</name>
+    <description>Persist objects in Infinispan Embedded</description>
 
     <dependencies>
         <dependency>
