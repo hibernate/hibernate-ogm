@@ -385,8 +385,8 @@
                         </tags>
                         <links>
                             <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                            <link>http://docs.jboss.org/hibernate/orm/5.1/javadocs/</link>
-                            <link>http://docs.jboss.org/hibernate/search/5.6/api/</link>
+                            <link>http://docs.jboss.org/hibernate/orm/5.2/javadocs/</link>
+                            <link>http://docs.jboss.org/hibernate/search/5.8/api/</link>
                             <link>http://lucene.apache.org/core/5_5_4/core/</link>
                         </links>
                         <bottom>
