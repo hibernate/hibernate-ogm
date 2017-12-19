@@ -81,7 +81,7 @@
                     </additionalDependencies>
                     <sourcepath>
                         ${basedir}/../../core/src/main/java;
-                        ${basedir}/../../infinispan/src/main/java;
+                        ${basedir}/../../infinispan-embedded/src/main/java;
                         ${basedir}/../../mongodb/src/main/java;
                         ${basedir}/../../neo4j/src/main/java;
                     </sourcepath>
