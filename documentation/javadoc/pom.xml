@@ -96,10 +96,10 @@
                     <docfilessubdirs>true</docfilessubdirs>
                     <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                     <links>
-                        <link>http://docs.oracle.com/javase/7/docs/api/</link>
-                        <link>http://docs.jboss.org/hibernate/orm/5.0/javadocs/</link>
-                        <link>http://docs.jboss.org/hibernate/search/5.5/api/</link>
-                        <link>http://lucene.apache.org/core/5_3_1/core/</link>
+                        <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                        <link>http://docs.jboss.org/hibernate/orm/5.1/javadocs/</link>
+                        <link>http://docs.jboss.org/hibernate/search/5.6/api/</link>
+                        <link>http://lucene.apache.org/core/5_5_4/core/</link>
                     </links>
                     <packagesheader>Hibernate OGM Packages</packagesheader>
                     <doctitle>Hibernate OGM ${project.version}</doctitle>
