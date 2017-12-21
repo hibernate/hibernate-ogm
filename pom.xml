@@ -346,6 +346,15 @@
                     <version>2.10.3</version>
                     <configuration>
                         <quiet>true</quiet>
+                        <!--
+                        For some reason the 'javadoc' goal (used in individual projects to generate the javadoc)
+                        targets the report output directory, while the 'jar' goal (used in the javadoc module
+                        to aggregate the javadoc) searches for pre-existing javadoc in the non-report output directory...
+                        As a result, the jar goal displays some warnings about the javadoc not being found and
+                        regenerates it. This sets the report output directory to the same path as the non-report one,
+                        which solves the problem.
+                         -->
+                        <reportOutputDirectory>${project.build.directory}/apidocs</reportOutputDirectory>
                         <additionalDependencies>
                             <additionalDependency>
                                 <groupId>org.jboss.logging</groupId>
@@ -376,12 +385,6 @@
                             <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.redhat.com/">Red Hat, Inc.</a> and others. Licensed under the GNU Lesser General Public License (LGPL), version 2.1 or later.]]>
                         </bottom>
                     </configuration>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals><goal>jar</goal></goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -865,6 +868,23 @@
             <modules>
                 <module>documentation</module>
             </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.3</version>
+                        <executions>
+                            <execution>
+                                <id>generate-javadoc</id>
+                                <goals>
+                                    <goal>javadoc-no-fork</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>distro</id>

@@ -69,26 +69,36 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <sourcepath>
-                        ${basedir}/../../core/src/main/java;
-                        ${basedir}/../../infinispan-embedded/src/main/java;
-                        ${basedir}/../../infinispan-remote/src/main/java;
-                        ${basedir}/../../mongodb/src/main/java;
-                        ${basedir}/../../neo4j/src/main/java;
-                    </sourcepath>
-                    <docfilessubdirs>true</docfilessubdirs>
-                    <packagesheader>Hibernate OGM Packages</packagesheader>
-                    <doctitle>Hibernate OGM ${project.version}</doctitle>
-                    <windowtitle>Hibernate OGM ${project.version}</windowtitle>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>create-javadocs</id>
-                        <phase>install</phase>
+                        <!--
+                        Skip the execution defined in the parent pom,
+                        because we call the javadoc plugin with a different goal.
+                        -->
+                        <id>generate-javadoc</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-javadoc</id>
                         <goals>
-                            <goal>javadoc</goal>
+                            <goal>jar</goal>
                         </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <sourcepath>
+                                ${basedir}/../../core/src/main/java;
+                                ${basedir}/../../infinispan-embedded/src/main/java;
+                                ${basedir}/../../infinispan-remote/src/main/java;
+                                ${basedir}/../../mongodb/src/main/java;
+                                ${basedir}/../../neo4j/src/main/java;
+                            </sourcepath>
+                            <docfilessubdirs>true</docfilessubdirs>
+                            <packagesheader>Hibernate OGM Packages</packagesheader>
+                            <doctitle>Hibernate OGM ${project.version}</doctitle>
+                            <windowtitle>Hibernate OGM ${project.version}</windowtitle>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
