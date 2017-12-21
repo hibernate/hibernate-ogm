@@ -367,7 +367,8 @@
                                 <version>${jbossJtaAPIVersion}</version>
                             </dependency>
                         </additionalDependencies>
-                        <show>public</show>
+                        <!-- Exclude implementation classes from the javadoc -->
+                        <excludePackageNames>*.impl,*.impl.*</excludePackageNames>
                         <tags>
                             <tag>
                                 <name>experimental</name>
