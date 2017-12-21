@@ -21,22 +21,23 @@ env:
     - NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
+  - BUILD_OPTIONS='-s settings-example.xml'
 install:
   - $NEO4J_HOME/bin/neo4j start
   # The Maven install provided by Travis is outdated, use Maven wrapper to get the latest version
   - mvn -N io.takari:maven:wrapper
   - ./mvnw -v
   # first run to download all the Maven dependencies without logging
-  - travis_wait ./mvnw -B -q -s settings-example.xml -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -DskipDistro=true install
+  - travis_wait ./mvnw $BUILD_OPTIONS -B -q -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -DskipDistro=true install
   # we run checkstyle first to fail fast if there is a styling error
-  - ./mvnw -s settings-example.xml -DskipDistro=true checkstyle:check
+  - ./mvnw $BUILD_OPTIONS -DskipDistro=true checkstyle:check
 before_script:
   # When Neo4j is started the first time, it requires the change of the default password
   - curl -vX POST http://neo4j:neo4j@$NEO4J_HOSTNAME:$NEO4J_PORT/user/neo4j/password -d"password=$NEO4J_PASSWORD"
 script:
-  - ./mvnw -s settings-example.xml clean install
-  - ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-http clean install
-  - NEO4J_PORT=7687 ./mvnw -s settings-example.xml -pl neo4j -Pneo4j-bolt clean install
+  - ./mvnw $BUILD_OPTIONS clean install
+  - ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-http clean install
+  - NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-bolt clean install
 before_cache:
   # Do not put Hibernate OGM artifacts into the cache
   - rm -r $HOME/.m2/repository/org/hibernate/ogm/
