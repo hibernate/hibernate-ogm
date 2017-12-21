@@ -344,6 +344,38 @@
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>2.10.3</version>
+                    <configuration>
+                        <quiet>true</quiet>
+                        <additionalDependencies>
+                            <additionalDependency>
+                                <groupId>org.jboss.logging</groupId>
+                                <artifactId>jboss-logging-annotations</artifactId>
+                                <version>${jbossLoggingProcessorVersion}</version>
+                            </additionalDependency>
+                            <dependency>
+                                <groupId>org.jboss.spec.javax.transaction</groupId>
+                                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                                <version>${jbossJtaAPIVersion}</version>
+                            </dependency>
+                        </additionalDependencies>
+                        <show>public</show>
+                        <tags>
+                            <tag>
+                                <name>experimental</name>
+                                <placement>a</placement>
+                                <head>Experimental</head>
+                            </tag>
+                        </tags>
+                        <links>
+                            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                            <link>http://docs.jboss.org/hibernate/orm/5.1/javadocs/</link>
+                            <link>http://docs.jboss.org/hibernate/search/5.6/api/</link>
+                            <link>http://lucene.apache.org/core/5_5_4/core/</link>
+                        </links>
+                        <bottom>
+                            <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.redhat.com/">Red Hat, Inc.</a> and others. Licensed under the GNU Lesser General Public License (LGPL), version 2.1 or later.]]>
+                        </bottom>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
