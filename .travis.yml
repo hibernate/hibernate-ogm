@@ -35,6 +35,7 @@ before_script:
 script:
   # we run checkstyle first to fail fast if there is a styling error
   - ./mvnw $BUILD_OPTIONS -DskipDistro=true checkstyle:check
+    && BUILD_OPTIONS+=' -Dcheckstyle.skip'
     && ./mvnw $BUILD_OPTIONS clean install
     && ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-http clean install
     && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-bolt clean install
