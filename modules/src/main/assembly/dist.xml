@@ -5,7 +5,7 @@
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
 <assembly>
-    <id>wildfly-10-dist</id>
+    <id>${hibernateWildflyClassifier}</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -85,7 +85,7 @@
             <filtered>true</filtered>
         </file>
 
-        <!-- HSEARCH 5.5 using ORM 5.1 -->
+        <!-- HSEARCH using the version of ORM we require for OGM -->
         <file>
             <source>${module.xml.basedir}/org/hibernate/search/orm/module.xml</source>
             <outputDirectory>/org/hibernate/search/orm/${hibernate-search.module.slot}</outputDirectory>

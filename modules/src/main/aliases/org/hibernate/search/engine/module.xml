@@ -10,8 +10,8 @@
     we can use the same property hibernate-search.module.slot for hibernate-search-orm 
     and hibernate-search-engine.
 
-    WildFly 10 ships with Hibernate ORM 5.0 and Hibernate Search 5.5.4, to make it work with OGM 5.1
-    we need to add the ORM 5.1 module and the Search 5.6.1 module. The user can then select these modules
+    WildFly 11 ships with Hibernate ORM 5.1 and Hibernate Search 5.5.4, to make it work with OGM 5.1
+    we just need to add the Search 5.6.x module. The user can then select these modules
     using the property wildfly.jpa.hibernate.search.module.
 
     This module is referenced in the org.hibernate.search.orm and the org.hibernate.hql modules. Make
