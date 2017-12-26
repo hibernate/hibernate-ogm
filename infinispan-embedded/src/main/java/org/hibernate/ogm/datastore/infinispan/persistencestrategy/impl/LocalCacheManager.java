@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
@@ -18,16 +19,15 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.impl.TransactionManagerLookupDelegator;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
+
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.SerializationConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.manager.DefaultCacheManager;
@@ -46,6 +46,7 @@ import org.infinispan.transaction.TransactionMode;
  * @author Sanne Grinovero
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
+ * @author Fabio Massimo Ercoli
  *
  * @param <EK> the entity cache key type
  * @param <AK> the association cache key type
@@ -80,8 +81,8 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 				EmbeddedCacheManager tmpCacheManager = new DefaultCacheManager( configurationBuilderHolder, false );
 
 				// override global configuration from the config file to inject externalizers
-				SerializationConfigurationBuilder serializationConfiguration = new GlobalConfigurationBuilder()
-					.read( tmpCacheManager.getCacheManagerConfiguration() )
+				SerializationConfigurationBuilder serializationConfiguration = configurationBuilderHolder
+					.getGlobalConfigurationBuilder()
 					.serialization();
 
 				ExternalizersIntegration.registerOgmExternalizers( serializationConfiguration );
