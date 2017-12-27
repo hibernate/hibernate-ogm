@@ -130,18 +130,18 @@
                                         <outputDirectory>${project.build.directory}</outputDirectory>
                                     </artifactItem>
                                     <artifactItem>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>hibernate-ogm-modules</artifactId>
-                                        <classifier>${hibernateWildflyClassifier}</classifier>
-                                        <version>${project.version}</version>
+                                        <groupId>org.infinispan</groupId>
+                                        <artifactId>infinispan-wildfly-modules</artifactId>
+                                        <version>${infinispanVersion}</version>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>
                                     </artifactItem>
                                     <artifactItem>
-                                        <groupId>org.infinispan</groupId>
-                                        <artifactId>infinispan-wildfly-modules</artifactId>
-                                        <version>${infinispanVersion}</version>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>hibernate-ogm-modules</artifactId>
+                                        <classifier>${hibernateWildflyClassifier}</classifier>
+                                        <version>${project.version}</version>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${jboss.home}/modules</outputDirectory>
