@@ -14,7 +14,7 @@ This is the most comprehensive formal source of information.
 Of course, it is not perfect:
 feel free to come and ask for help,
 comment or propose improvements in our
-https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM forum].
+https://discourse.hibernate.org/c/hibernate-ogm[Hibernate OGM forum].
 
 You can also:
 
