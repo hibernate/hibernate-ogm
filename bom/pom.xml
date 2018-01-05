@@ -47,7 +47,7 @@
         <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
-        <luceneVersion>5.5.4</luceneVersion>
+        <luceneVersion>5.5.5</luceneVersion>
 
         <!-- Various dependencies -->
         <hibernateHqlParserVersion>1.4.0.Final</hibernateHqlParserVersion>
