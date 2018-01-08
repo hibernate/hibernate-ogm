@@ -308,12 +308,6 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 		}
 	}
 
-	/**
-	 * With the introduction of Infinispan clustered counter
-	 * SequenceGenerator strategy is now supported
-	 *
-	 * @return true
-	 */
 	@Override
 	public boolean supportsSequences() {
 		return true;

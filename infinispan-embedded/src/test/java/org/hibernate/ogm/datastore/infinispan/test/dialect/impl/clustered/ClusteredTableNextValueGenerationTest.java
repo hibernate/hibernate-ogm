@@ -15,12 +15,6 @@ import org.junit.Test;
 /**
  * Test that the generation of sequences is thread safe.
  *
- * Defined in {@link TableNextValueGenerationTest}
- * executed with Infinispan transport enabled
- * <p>
- * Infinispan clustered counter used for high consistency Source-Id generator
- * are available only with transport enabled.
- *
  * @see TableNextValueGenerationTest
  * @author Fabio Massimo Ercoli (C) 2017 Red Hat Inc.
  */

@@ -489,6 +489,9 @@ Let's see how to reconfigure this:
                 await-initial-transfer="true" />
         </distributed-cache>
 
+        <!-- Clustered Counters are defined at runtime by InfinispanDialect -->
+        <counters xmlns="urn:infinispan:config:counters:9.1" num-owners="1" reliability="CONSISTENT" />
+
     </cache-container>
 
 </infinispan>
@@ -510,6 +513,14 @@ and the networking stack for the sake of completeness, but you don't have to!
 
 Start with the default configuration and see if that fits you.
 You can fine tune these setting when you are closer to going in production.
+====
+
+====
+
+In order to enable `Clustered Counter` support we have defined a `counters` tag.
+Cluster counter support it is used to implement a reliable and consist stategy to generate unique source ID value.
+Cluster counter configuration require jGroups tranport defined configuration.
+
 ====
 
 [[ogm-infinispan-storage-principles]]

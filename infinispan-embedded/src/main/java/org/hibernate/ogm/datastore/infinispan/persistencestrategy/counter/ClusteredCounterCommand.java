@@ -6,11 +6,14 @@
  */
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutionException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import org.infinispan.counter.EmbeddedCounterManagerFactory;
 import org.infinispan.counter.api.CounterConfiguration;
@@ -24,6 +27,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author Fabio Massimo Ercoli (C) 2017 Red Hat Inc.
  */
 public class ClusteredCounterCommand {
+
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	public Number nextValue(EmbeddedCacheManager cacheManager, NextValueRequest request) {
 
@@ -46,7 +51,7 @@ public class ClusteredCounterCommand {
 					.build() );
 
 			if ( definedByCurrentThread ) {
-				return new Long( request.getInitialValue() );
+				return Long.valueOf( request.getInitialValue() );
 			}
 
 		}
@@ -57,7 +62,9 @@ public class ClusteredCounterCommand {
 			return strongCounter.addAndGet( request.getIncrement() ).get();
 		}
 		catch (ExecutionException | InterruptedException e) {
-			throw new HibernateException( "Interrupting Operation " + e.getMessage(), e );
+			String message = "Exception while incrementing the sequence " + counterName ;
+			log.error( message );
+			throw new HibernateException( message + " : " + e.getMessage(), e );
 		}
 
 	}
