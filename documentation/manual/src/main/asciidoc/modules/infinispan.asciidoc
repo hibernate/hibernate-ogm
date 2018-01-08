@@ -518,8 +518,8 @@ You can fine tune these setting when you are closer to going in production.
 ====
 
 In order to enable `Clustered Counter` support we have defined a `counters` tag.
-Cluster counter support it is used to implement a reliable and consist stategy to generate unique source ID value.
-Cluster counter configuration require jGroups tranport defined configuration.
+Cluster counter support it is used to implement a reliable and consistent stategy to generate unique source ID values.
+Cluster counter configuration requires JGroups tranport defined configuration.
 
 ====
 
