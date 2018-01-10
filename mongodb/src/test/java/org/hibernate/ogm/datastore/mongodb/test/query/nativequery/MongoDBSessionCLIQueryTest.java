@@ -121,6 +121,48 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testAggregateWithLessThan() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'year': { '$lt': 3333.3} } }, { '$sort': {'name': -1 } } ])";
+
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly(
+					portia.getId(),
+					imperatrix.getId(),
+					athanasia.getId()
+			);
+
+			transaction.commit();
+		}
+	}
+
+	@Test
+	public void testAggregateGreaterThan() throws Exception {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".aggregate([{ '$match': {'year': { '$gt': 0.3} } }, { '$sort': {'name': -1 } } ])";
+
+			Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> result = query.list();
+
+			assertThat( result ).onProperty( "id" ).containsExactly(
+					portia.getId(),
+					imperatrix.getId(),
+					athanasia.getId()
+			);
+
+			transaction.commit();
+		}
+	}
+
+	@Test
 	public void testFindAndModify() throws Exception {
 		try ( OgmSession session = openSession() ) {
 			Transaction transaction = session.beginTransaction();
