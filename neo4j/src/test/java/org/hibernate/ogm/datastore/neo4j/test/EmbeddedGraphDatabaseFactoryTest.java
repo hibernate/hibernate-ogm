@@ -6,16 +6,13 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 
-import org.fest.util.Files;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jGraphDatabaseFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.EmbeddedNeo4jTestHelperDelegate;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,11 +28,6 @@ public class EmbeddedGraphDatabaseFactoryTest {
 	@Before
 	public void setup() {
 		dbLocation = EmbeddedNeo4jTestHelperDelegate.dbLocation();
-	}
-
-	@After
-	public void tearDown() {
-		Files.delete( new File( dbLocation ) );
 	}
 
 	@Test
