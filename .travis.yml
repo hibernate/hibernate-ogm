@@ -38,8 +38,8 @@ script:
   - ./mvnw $BUILD_OPTIONS -DskipDistro=true checkstyle:check
     && BUILD_OPTIONS+=' -Dcheckstyle.skip'
     && ./mvnw $BUILD_OPTIONS clean install
-    && ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-http clean install
-    && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-bolt clean install
+    && ./mvnw $BUILD_OPTIONS -pl core,neo4j -Pneo4j-http clean install
+    && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl core,neo4j -Pneo4j-bolt clean install
 before_cache:
   # Do not put Hibernate OGM artifacts into the cache
   - rm -r $HOME/.m2/repository/org/hibernate/ogm/
