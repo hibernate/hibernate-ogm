@@ -37,9 +37,9 @@ script:
   # we run checkstyle first to fail fast if there is a styling error
   - ./mvnw $BUILD_OPTIONS -DskipDistro=true checkstyle:check
     && BUILD_OPTIONS+=' -Dcheckstyle.skip'
-    && ./mvnw $BUILD_OPTIONS clean install
-    && ./mvnw $BUILD_OPTIONS -pl core,neo4j -Pneo4j-http clean install
-    && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl core,neo4j -Pneo4j-bolt clean install
+    && ./mvnw $BUILD_OPTIONS help:active-profiles clean install
+    && ./mvnw $BUILD_OPTIONS -pl core,neo4j -Pneo4j-http help:active-profiles clean install
+    && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl core,neo4j -Pneo4j-bolt help:active-profiles clean install
 before_cache:
   # Do not put Hibernate OGM artifacts into the cache
   - rm -r $HOME/.m2/repository/org/hibernate/ogm/
