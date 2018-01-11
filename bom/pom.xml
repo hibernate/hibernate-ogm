@@ -410,6 +410,13 @@
                 <artifactId>hibernate-ogm-neo4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-modules</artifactId>
+                <version>${project.version}</version>
+                <classifier>wildfly-11-dist</classifier>
+                <type>zip</type>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
