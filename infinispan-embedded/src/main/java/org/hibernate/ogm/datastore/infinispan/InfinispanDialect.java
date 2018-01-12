@@ -22,6 +22,7 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter.ClusteredCounterCommand;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
@@ -54,6 +55,7 @@ import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stream.CacheCollectors;
 
 /**
@@ -62,6 +64,7 @@ import org.infinispan.stream.CacheCollectors;
  * ISK is the identity source cache key type
  *
  * @author Emmanuel Bernard
+ * @author Fabio Massimo Ercoli
  */
 public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
@@ -192,6 +195,14 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	@Override
 	//TODO should we use GridTypes here?
 	public Number nextValue(NextValueRequest request) {
+
+		// if transport is defined on Infinispan cache manager
+		// we can use clustered counter to generate next value
+		EmbeddedCacheManager cacheManager = getCacheManager().getCacheManager();
+		if ( cacheManager.getTransport() != null ) {
+			return new ClusteredCounterCommand().nextValue( cacheManager, request );
+		}
+
 		final AdvancedCache<ISK, Object> identifierCache = getCacheManager()
 				.getIdSourceCache( request.getKey().getMetadata() )
 				.getAdvancedCache();
@@ -296,4 +307,10 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 		public void close() {
 		}
 	}
+
+	@Override
+	public boolean supportsSequences() {
+		return true;
+	}
+
 }

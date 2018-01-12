@@ -96,6 +96,19 @@
             <outputDirectory>/org/hibernate/search/engine/${hibernate-search.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
+
+        <!-- INFINISPAN clustered counter module is not present on 9.1.4 Wildfly distribution. -->
+        <!-- Will be available from Infinispan 9.2.0. -->
+        <file>
+            <source>${module.xml.basedir}/org/infinispan/core/module.xml</source>
+            <outputDirectory>/org/infinispan/core/${infinispan.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${module.xml.basedir}/org/infinispan/counter/module.xml</source>
+            <outputDirectory>/org/infinispan/counter/${infinispan.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
     </files>
 
     <dependencySets>
@@ -243,5 +256,18 @@
                 <include>org.ow2.asm:asm-util</include>
             </includes>
        </dependencySet>
+
+        <!-- INFINISPAN -->
+        <!-- INFINISPAN clustered counter module is not present on 9.1.4 Wildfly distribution. -->
+        <!-- Will be available from Infinispan 9.2.0. -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/infinispan/counter/${infinispan.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.infinispan:infinispan-clustered-counter</include>
+            </includes>
+        </dependencySet>
     </dependencySets>
 </assembly>

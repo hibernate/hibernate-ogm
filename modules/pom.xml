@@ -68,6 +68,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-counter</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>hibernate-ogm-infinispan-remote</artifactId>
             <optional>true</optional>

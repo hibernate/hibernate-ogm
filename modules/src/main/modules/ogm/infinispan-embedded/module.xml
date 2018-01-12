@@ -15,6 +15,7 @@
 
         <module name="org.infinispan" slot="${infinispan.module.slot}" />
         <module name="org.infinispan.commons" slot="${infinispan.module.slot}" />
+        <module name="org.infinispan.counter" slot="${infinispan.module.slot}" optional="true" />
         <module name="javax.api" />
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
