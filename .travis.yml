@@ -20,7 +20,8 @@ env:
     - NEO4J_VERSION=$(xmlstarlet sel -N maven=http://maven.apache.org/POM/4.0.0 -t -m '/maven:project/maven:properties' -v maven:neo4jVersion bom/pom.xml)
     - NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
-  - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
+  - echo "Neo4j version $NEO4J_VERSION"
+  - curl --progress-bar http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz
   - BUILD_OPTIONS='-s settings-example.xml'
 install:
   - $NEO4J_HOME/bin/neo4j start
@@ -36,9 +37,9 @@ script:
   # we run checkstyle first to fail fast if there is a styling error
   - ./mvnw $BUILD_OPTIONS -DskipDistro=true checkstyle:check
     && BUILD_OPTIONS+=' -Dcheckstyle.skip'
-    && ./mvnw $BUILD_OPTIONS clean install
-    && ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-http clean install
-    && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-bolt clean install
+    && ./mvnw $BUILD_OPTIONS help:active-profiles clean install
+    && ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-http help:active-profiles clean install
+    && NEO4J_PORT=7687 ./mvnw $BUILD_OPTIONS -pl neo4j -Pneo4j-bolt help:active-profiles clean install
 before_cache:
   # Do not put Hibernate OGM artifacts into the cache
   - rm -r $HOME/.m2/repository/org/hibernate/ogm/
