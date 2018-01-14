@@ -11,6 +11,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
@@ -28,7 +29,8 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFactory {
-	private static GraphDatabaseService graphDatabaseService;
+	private static final Map<String, GraphDatabaseService> GRAPH_DATABASE_SERVICE_MAP = new ConcurrentHashMap<>();
+	private static Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private File dbLocation;
 
@@ -56,26 +58,29 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 
 	@Override
 	public GraphDatabaseService create() {
-		if ( graphDatabaseService != null ) {
-			return graphDatabaseService;
+		final String dbLocationAbsolutePath = dbLocation.getAbsolutePath();
+		return GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String path ) -> {
+			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
+			return buildGraphDatabaseService();
+		} );
+
+	}
+
+	private GraphDatabaseService buildGraphDatabaseService() {
+		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( dbLocation );
+		setConfigurationFromLocation( builder, configurationLocation );
+		setConfigurationFromProperties( builder, configuration );
+		final ClassLoader neo4JClassLoader = builder.getClass().getClassLoader();
+		final Thread currentThread = Thread.currentThread();
+		final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+		try {
+			//Neo4J relies on the context classloader to load its own extensions:
+			//Allow it to load even the ones we're not exposing directly to end users.
+			currentThread.setContextClassLoader( neo4JClassLoader );
+			return builder.newGraphDatabase();
 		}
-		else {
-			GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( dbLocation );
-			setConfigurationFromLocation( builder, configurationLocation );
-			setConfigurationFromProperties( builder, configuration );
-			final ClassLoader neo4JClassLoader = builder.getClass().getClassLoader();
-			final Thread currentThread = Thread.currentThread();
-			final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-			try {
-				//Neo4J relies on the context classloader to load its own extensions:
-				//Allow it to load even the ones we're not exposing directly to end users.
-				currentThread.setContextClassLoader( neo4JClassLoader );
-				graphDatabaseService = builder.newGraphDatabase();
-				return graphDatabaseService;
-			}
-			finally {
-				currentThread.setContextClassLoader( contextClassLoader );
-			}
+		finally {
+			currentThread.setContextClassLoader( contextClassLoader );
 		}
 	}
 
@@ -86,7 +91,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 	}
 
 	private Map<String, String> convert(Map<?, ?> properties) {
-		Map<String, String> neo4jConfiguration = new HashMap<String, String>();
+		Map<String, String> neo4jConfiguration = new HashMap<>();
 		for ( Map.Entry<?, ?> entry : properties.entrySet() ) {
 			neo4jConfiguration.put( String.valueOf( entry.getKey() ), String.valueOf( entry.getValue() ) );
 		}
@@ -100,6 +105,6 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 	}
 
 	static void clearGraphDatabaseService() {
-		graphDatabaseService = null;
+		GRAPH_DATABASE_SERVICE_MAP.clear();
 	}
 }
