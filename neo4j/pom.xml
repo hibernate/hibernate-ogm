@@ -18,6 +18,9 @@
 
     <name>Hibernate OGM for Neo4j</name>
     <description>Persist objects in Neo4j</description>
+    <properties>
+        <jdkTargetForProcessor>1.8</jdkTargetForProcessor>
+    </properties>
 
     <build>
         <testResources>
@@ -41,6 +44,25 @@
             </plugin>
             <plugin>
                  <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.ow2.asm</groupId>
+                        <artifactId>asm-all</artifactId>
+                        <version>5.0.3</version>
+                        <scope>compile</scope>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <signature>
+                        <groupId>org.codehaus.mojo.signature</groupId>
+                        <artifactId>java18</artifactId>
+                        <version>1.0</version>
+                    </signature>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -170,6 +192,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 
     <profiles>
         <!-- Executes the tests against an embedded Neo4j -->
