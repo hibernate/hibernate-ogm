@@ -81,6 +81,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 			service =  builder.newGraphDatabase();
 		}
 		catch (Exception e) {
+			LOG.error( "Cannot create new GraphDatabaseService!",e );
 			throw LOG.cannotCreateNewGraphDatabaseServiceException( e );
 		}
 		finally {
