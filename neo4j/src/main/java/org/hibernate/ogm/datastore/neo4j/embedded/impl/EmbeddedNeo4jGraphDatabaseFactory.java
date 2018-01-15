@@ -11,7 +11,6 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
@@ -29,7 +28,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFactory {
-	private static final Map<String, GraphDatabaseService> GRAPH_DATABASE_SERVICE_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, GraphDatabaseService> GRAPH_DATABASE_SERVICE_MAP = new HashMap<>();
 	private static Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private File dbLocation;
@@ -61,11 +60,24 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		LOG.infof( "1. Try  create new service instance for dbPath  %s", dbLocation );
 		final String dbLocationAbsolutePath = dbLocation.getAbsolutePath();
 		LOG.infof( "2. Try  create new service instance for dbPath  %s", dbLocationAbsolutePath );
+
+		if ( !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath ) )  {
+			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
+				if ( !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath ) )  {
+					LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
+					GraphDatabaseService service = buildGraphDatabaseService();
+					LOG.infof( " Create dnew service %s instance for dbPath  %s",service, dbLocationAbsolutePath );
+					GRAPH_DATABASE_SERVICE_MAP.put( dbLocationAbsolutePath, service );
+				}
+			}
+		}
+/*
+
 		return GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String path ) -> {
 			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
 			return buildGraphDatabaseService();
-		} );
-
+		} ); */
+		return  GRAPH_DATABASE_SERVICE_MAP.get( dbLocationAbsolutePath );
 	}
 
 	private GraphDatabaseService buildGraphDatabaseService() {
