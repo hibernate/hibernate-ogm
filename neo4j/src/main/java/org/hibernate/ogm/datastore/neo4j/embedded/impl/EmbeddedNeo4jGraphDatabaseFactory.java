@@ -58,7 +58,9 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 
 	@Override
 	public GraphDatabaseService create() {
+		LOG.infof( "1. Try  create new service instance for dbPath  %s", dbLocation );
 		final String dbLocationAbsolutePath = dbLocation.getAbsolutePath();
+		LOG.infof( "2. Try  create new service instance for dbPath  %s", dbLocationAbsolutePath );
 		return GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String path ) -> {
 			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
 			return buildGraphDatabaseService();
