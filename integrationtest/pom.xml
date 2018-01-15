@@ -11,7 +11,8 @@
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
-        <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
+        <wildFlyServerName>wildfly-${version.wildfly}</wildFlyServerName>
+        <jboss.home>${project.build.directory}/${wildFlyServerName}</jboss.home>
         <infinispan-server.home>${project.build.directory}/infinispan-server-${infinispanVersion}</infinispan-server.home>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -49,9 +50,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -97,76 +98,72 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.build</groupId>
+                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>server-provisioning</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <config-file>server-provisioning.xml</config-file>
+                            <server-name>${wildFlyServerName}</server-name>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.infinispan</groupId>
+                                    <artifactId>infinispan-wildfly-modules</artifactId>
+                                    <version>${infinispanVersion}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.hibernate</groupId>
+                                    <artifactId>hibernate-search-modules</artifactId>
+                                    <version>${hibernateSearchVersion}</version>
+                                    <!--
+                                    We don't have a wildfly-11-dist version of the Hibernate Search 5.6 modules.
+                                    Using the ones built for WildFly 10 will do so we hardcode the classifier here
+                                    for now.
+                                    -->
+                                    <classifier>wildfly-10-dist</classifier>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                </artifactItem>
+                                <!-- Set this last as we need to overwrite some Search modules to force an upgrade -->
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>hibernate-ogm-modules</artifactId>
+                                    <classifier>${hibernateWildflyClassifier}</classifier>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>unpack</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                                <goal>unpack</goal>
-                            </goals>
-                            <configuration>
-                                <artifactItems>
-                                    <artifactItem>
-                                        <groupId>org.wildfly</groupId>
-                                        <artifactId>wildfly-dist</artifactId>
-                                        <version>${version.wildfly}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${project.build.directory}</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>hibernate-ogm-modules</artifactId>
-                                        <classifier>${hibernateWildflyClassifier}</classifier>
-                                        <version>${project.version}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>org.infinispan</groupId>
-                                        <artifactId>infinispan-wildfly-modules</artifactId>
-                                        <version>${infinispanVersion}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>org.hibernate</groupId>
-                                        <artifactId>hibernate-search-modules</artifactId>
-                                        <version>${hibernateSearchVersion}</version>
-                                        <!--
-                                        We don't have a wildfly-11-dist version of the Hibernate Search 5.6 modules.
-                                        Using the ones built for WildFly 10 will do so we hardcode the classifier here
-                                        for now.
-                                        -->
-                                        <classifier>wildfly-10-dist</classifier>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                </artifactItems>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <dependencies>
