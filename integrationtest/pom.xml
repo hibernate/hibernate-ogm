@@ -13,7 +13,9 @@
     <properties>
         <wildFlyServerName>wildfly-${version.wildfly}</wildFlyServerName>
         <jboss.home>${project.build.directory}/${wildFlyServerName}</jboss.home>
-        <infinispan-server.home>${project.build.directory}/infinispan-server-${infinispanVersion}</infinispan-server.home>
+        <infinispanServerName>infinispan-server</infinispanServerName>
+        <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
+
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
@@ -447,25 +449,18 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
+                        <groupId>org.wildfly.build</groupId>
+                        <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>unpack-infinispan-server</id>
-                                <phase>process-test-resources</phase>
+                                <id>infinispan-server-provisioning</id>
                                 <goals>
-                                    <goal>unpack</goal>
+                                    <goal>build</goal>
                                 </goals>
+                                <phase>compile</phase>
                                 <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.infinispan.server</groupId>
-                                            <artifactId>infinispan-server-build</artifactId>
-                                            <version>${infinispanVersion}</version>
-                                            <type>zip</type>
-                                            <outputDirectory>${project.build.directory}/node1</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
+                                    <config-file>infinispan-server-provisioning.xml</config-file>
+                                    <server-name>${infinispanServerName}</server-name>
                                 </configuration>
                             </execution>
                         </executions>
@@ -482,7 +477,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/node1/infinispan-server-${infinispanVersion}/standalone/configuration</outputDirectory>
+                                    <outputDirectory>${infinispan-server.home}/standalone/configuration</outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>

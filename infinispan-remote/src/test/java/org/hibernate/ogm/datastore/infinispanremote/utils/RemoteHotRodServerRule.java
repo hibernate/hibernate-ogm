@@ -20,7 +20,6 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -69,9 +68,8 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 		// e.g. the usage as JUnit Rule concurrently with the usage as global test listener in Surefire.
 		synchronized ( running ) {
 			if ( running.compareAndSet( false, true ) ) {
-				String InfinispanVersion = RemoteCache.class.getPackage().getImplementationVersion();
 				StandaloneCommandBuilder builder = StandaloneCommandBuilder
-						.of( "target/node1/infinispan-server-" + InfinispanVersion );
+						.of( "target/infinispan-server" );
 				builder
 					.setServerReadOnlyConfiguration( "wildfly-trimmed-config.xml" );
 				if ( portOffset != 0 ) {
