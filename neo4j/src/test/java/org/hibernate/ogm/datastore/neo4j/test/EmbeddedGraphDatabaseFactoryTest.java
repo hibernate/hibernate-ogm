@@ -65,8 +65,9 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
+
 	@Test
-	public void testInstantiationTwoFactoriesForOnePath()  {
+	public void testInstantiationTwoFactoriesForOnePath() {
 		//create first factory
 		EmbeddedNeo4jGraphDatabaseFactory factory1 = new EmbeddedNeo4jGraphDatabaseFactory();
 		Properties properties = new Properties();
@@ -80,13 +81,14 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		factory2.initialize( properties );
 		GraphDatabaseService graphDatabaseService2 = factory2.create();
 
-		assertTrue("Two instances must be same!", graphDatabaseService1 == graphDatabaseService2);
+		assertTrue( "Two instances must be same!", graphDatabaseService1 == graphDatabaseService2 );
 
 		graphDatabaseService1.shutdown();
 		graphDatabaseService2.shutdown();
 	}
+
 	@Test
-	public void testInstantiationTwoFactoriesForTwoPaths()  {
+	public void testInstantiationTwoFactoriesForTwoPaths() {
 		//create first factory
 		EmbeddedNeo4jGraphDatabaseFactory factory1 = new EmbeddedNeo4jGraphDatabaseFactory();
 		Properties properties1 = new Properties();
@@ -98,12 +100,12 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		//create second factory
 		EmbeddedNeo4jGraphDatabaseFactory factory2 = new EmbeddedNeo4jGraphDatabaseFactory();
 		Properties properties2 = new Properties();
-		properties2.put( Neo4jProperties.DATABASE_PATH, dbLocation+"2" );
+		properties2.put( Neo4jProperties.DATABASE_PATH, dbLocation + "2" );
 		properties2.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().toExternalForm() );
 		factory2.initialize( properties2 );
 		GraphDatabaseService graphDatabaseService2 = factory2.create();
 
-		assertFalse("Two instances must not be same!", graphDatabaseService1 == graphDatabaseService2);
+		assertFalse( "Two instances must not be same!", graphDatabaseService1 == graphDatabaseService2 );
 
 		graphDatabaseService1.shutdown();
 		graphDatabaseService2.shutdown();

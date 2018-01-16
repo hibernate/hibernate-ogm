@@ -112,7 +112,18 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		}
 	}
 
-	static void clearGraphDatabaseService() {
-		GRAPH_DATABASE_SERVICE_MAP.clear();
+	static void clearGraphDatabaseService(GraphDatabaseService neo4jDb) {
+		String key = null;
+		for ( String currentKey : GRAPH_DATABASE_SERVICE_MAP.keySet() ) {
+			if ( GRAPH_DATABASE_SERVICE_MAP.get( currentKey ) == neo4jDb ) {
+				key = currentKey;
+				break;
+			}
+		}
+		synchronized (GRAPH_DATABASE_SERVICE_MAP) {
+			GRAPH_DATABASE_SERVICE_MAP.remove( key );
+			neo4jDb.shutdown();
+		}
+
 	}
 }
