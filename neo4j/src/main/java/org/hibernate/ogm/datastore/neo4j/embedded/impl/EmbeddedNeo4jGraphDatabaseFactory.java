@@ -112,7 +112,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		}
 	}
 
-	static void clearGraphDatabaseService(GraphDatabaseService neo4jDb) {
+	static void removeGraphDatabaseService(GraphDatabaseService neo4jDb) {
 		String key = null;
 		for ( String currentKey : GRAPH_DATABASE_SERVICE_MAP.keySet() ) {
 			if ( GRAPH_DATABASE_SERVICE_MAP.get( currentKey ) == neo4jDb ) {
@@ -122,7 +122,6 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		}
 		synchronized (GRAPH_DATABASE_SERVICE_MAP) {
 			GRAPH_DATABASE_SERVICE_MAP.remove( key );
-			neo4jDb.shutdown();
 		}
 
 	}

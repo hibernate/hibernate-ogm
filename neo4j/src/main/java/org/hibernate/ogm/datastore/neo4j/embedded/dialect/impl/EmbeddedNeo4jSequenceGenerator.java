@@ -148,16 +148,11 @@ public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 	 * @param identifierGenerators the generators to process
 	 */
 	private void addSequences(Iterable<Sequence> sequences) {
-		Transaction tx = null;
-		try {
-			tx = neo4jDb.beginTx();
+		try ( Transaction tx = neo4jDb.beginTx() ) {
 			for ( Sequence sequence : sequences ) {
 				addSequence( sequence );
 			}
 			tx.success();
-		}
-		finally {
-			tx.close();
 		}
 	}
 
