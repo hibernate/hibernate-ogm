@@ -11,6 +11,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
@@ -28,7 +29,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFactory {
-	private static final Map<String, GraphDatabaseService> GRAPH_DATABASE_SERVICE_MAP = new HashMap<>();
+	private static final Map<String, GraphDatabaseService> GRAPH_DATABASE_SERVICE_MAP = new ConcurrentHashMap<>();
 	private static Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
 	private File dbLocation;
@@ -57,16 +58,20 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 	@Override
 	public GraphDatabaseService create() {
 		final String dbLocationAbsolutePath = dbLocation.getAbsolutePath();
-		if ( !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath ) )  {
-			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
-				if ( !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath ) )  {
-					LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
-					GraphDatabaseService service = buildGraphDatabaseService();
-					GRAPH_DATABASE_SERVICE_MAP.put( dbLocationAbsolutePath, service );
-				}
-			}
-		}
-		return  GRAPH_DATABASE_SERVICE_MAP.get( dbLocationAbsolutePath );
+//		if ( !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath ) )  {
+//			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
+//				if ( !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath ) )  {
+//					LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
+//					GraphDatabaseService service = buildGraphDatabaseService();
+//					GRAPH_DATABASE_SERVICE_MAP.put( dbLocationAbsolutePath, service );
+//				}
+//			}
+//		}
+		//return  GRAPH_DATABASE_SERVICE_MAP.get( dbLocationAbsolutePath );
+		return GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( dbPath ) -> {
+			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
+			return buildGraphDatabaseService();
+		} );
 	}
 
 	private GraphDatabaseService buildGraphDatabaseService() {
@@ -112,7 +117,8 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		}
 	}
 
-	static void removeGraphDatabaseService(GraphDatabaseService neo4jDb) {
+	static void shutdownGraphDatabaseService(GraphDatabaseService neo4jDb) {
+		LOG.info( " Shutdown service instance" );
 		String key = null;
 		for ( String currentKey : GRAPH_DATABASE_SERVICE_MAP.keySet() ) {
 			if ( GRAPH_DATABASE_SERVICE_MAP.get( currentKey ) == neo4jDb ) {
@@ -120,9 +126,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 				break;
 			}
 		}
-		synchronized (GRAPH_DATABASE_SERVICE_MAP) {
-			GRAPH_DATABASE_SERVICE_MAP.remove( key );
-		}
-
+		GRAPH_DATABASE_SERVICE_MAP.remove( key );
+		neo4jDb.shutdown();
 	}
 }
