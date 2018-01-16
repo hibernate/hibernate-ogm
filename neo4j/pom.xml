@@ -34,6 +34,12 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!--
+                       see https://www.igorkromin.net/index.php/2017/08/17/how-to-enable-the-full-stack-trace-in-mavens-surefire-plugin-for-junit-testing/
+                       and
+                       http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#trimStackTrace
+                        -->
+                    <trimStackTrace>false</trimStackTrace>
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
