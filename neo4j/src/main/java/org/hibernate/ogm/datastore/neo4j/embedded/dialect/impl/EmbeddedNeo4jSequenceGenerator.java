@@ -8,19 +8,21 @@ package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
 import static java.util.Collections.singletonMap;
 
+import java.lang.invoke.MethodHandles;
+
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.BaseNeo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Lock;
@@ -91,9 +93,8 @@ public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 	}
 
 	public void createUniqueConstraintsForTableSequences(Iterable<IdSourceKeyMetadata> tableIdGenerators) {
-		Transaction tx = null;
-		try {
-			tx = neo4jDb.beginTx();
+		try ( Transaction tx = neo4jDb.beginTx() ) {
+			logger.infof( "Transaction: %s",tx );
 
 			for ( IdSourceKeyMetadata idSourceKeyMetadata : tableIdGenerators ) {
 				if ( idSourceKeyMetadata.getType() == IdSourceType.TABLE ) {
@@ -103,15 +104,11 @@ public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 
 			tx.success();
 		}
-		finally {
-			tx.close();
-		}
 	}
 
 	private void addUniqueConstraintForSequences() {
-		Transaction tx = null;
-		try {
-			tx = neo4jDb.beginTx();
+		try ( Transaction tx = neo4jDb.beginTx() ) {
+			logger.infof( "Transaction: %s",tx );
 
 			if ( isMissingUniqueConstraint( NodeLabel.SEQUENCE ) ) {
 				neo4jDb.schema()
@@ -121,9 +118,6 @@ public class EmbeddedNeo4jSequenceGenerator extends BaseNeo4jSequenceGenerator {
 			}
 
 			tx.success();
-		}
-		finally {
-			tx.close();
 		}
 	}
 
