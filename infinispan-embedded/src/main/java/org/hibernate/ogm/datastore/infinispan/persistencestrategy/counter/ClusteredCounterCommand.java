@@ -46,7 +46,7 @@ public class ClusteredCounterCommand {
 					.build() );
 
 			if ( definedByCurrentThread ) {
-				return new Long( request.getInitialValue() );
+				return Long.valueOf( request.getInitialValue() );
 			}
 
 		}
