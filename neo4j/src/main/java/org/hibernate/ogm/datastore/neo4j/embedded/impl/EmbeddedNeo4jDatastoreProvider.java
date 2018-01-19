@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
@@ -15,7 +16,6 @@ import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jSequ
 import org.hibernate.ogm.datastore.neo4j.embedded.transaction.impl.EmbeddedNeo4jTransactionCoordinatorBuilder;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -29,6 +29,7 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -72,7 +73,7 @@ public class EmbeddedNeo4jDatastoreProvider extends BaseDatastoreProvider implem
 
 	@Override
 	public void stop() {
-		neo4jDb.shutdown();
+		EmbeddedNeo4jGraphDatabaseFactory.shutdownGraphDatabaseService( neo4jDb );
 	}
 
 	@Override
