@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
@@ -60,16 +61,17 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 	@Override
 	public GraphDatabaseService create() {
 		final String dbLocationAbsolutePath = dbLocation.getAbsolutePath();
-		boolean isNew = !GRAPH_DATABASE_SERVICE_MAP.containsKey( dbLocationAbsolutePath );
+		AtomicBoolean isNew = new AtomicBoolean( false );
 		FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String dbPath ) -> {
 			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
 			GraphDatabaseService service = buildGraphDatabaseService();
 			FactoryHolder holder = new FactoryHolder();
 			holder.setCounter( 1 );
 			holder.setGraphDatabaseService( service );
+			isNew.set( true );
 			return holder;
 		} );
-		if ( !isNew ) {
+		if ( !isNew.get() ) {
 			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
 				boolean isAvailable = factoryHolder.getGraphDatabaseService().isAvailable( 100 );
 				if ( isAvailable ) {
