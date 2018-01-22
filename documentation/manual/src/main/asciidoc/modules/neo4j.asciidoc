@@ -719,6 +719,26 @@ public class BankAccount {
 image::neo4j-bi-many-to-many-example.png[align="center", depth="", scalefit="1"]
 ====
 
+.Bidirectional one-to-one, one-to-many (Mapping to the same Entity)
+====
+[source, JAVA]
+----
+@Entity
+public class Person {
+
+	@Id
+	private String name;
+	@OneToOne
+	private Person spouse;
+	@OneToMany
+	private List<Person> children;
+
+    // getters, setters ...
+}
+----
+
+image::neo4j-bi-one-to-one-many-to-many-same-entity-example.png[align="center", depth="", scalefit="0.75"]
+====
 ==== Auto-generated Values
 
 Hibernate OGM supports the table generation strategy as well as the sequence generation strategy with Neo4j.
