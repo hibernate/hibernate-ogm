@@ -6,12 +6,14 @@
  */
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutionException;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-
 import org.infinispan.counter.EmbeddedCounterManagerFactory;
 import org.infinispan.counter.api.CounterConfiguration;
 import org.infinispan.counter.api.CounterManager;
@@ -25,16 +27,23 @@ import org.infinispan.manager.EmbeddedCacheManager;
  */
 public class ClusteredCounterCommand {
 
-	public Number nextValue(EmbeddedCacheManager cacheManager, NextValueRequest request) {
+	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
+	private final EmbeddedCacheManager cacheManager;
+
+	public ClusteredCounterCommand(EmbeddedCacheManager cacheManager) {
+		this.cacheManager = cacheManager;
+	}
+
+	public void validate() {
+		if ( cacheManager.getTransport() == null ) {
+			throw LOG.counterCannotBeCreatedForLocalCaches();
+		}
+	}
+
+	public Number nextValue(NextValueRequest request) {
 
 		CounterManager counterManager = EmbeddedCounterManagerFactory.asCounterManager( cacheManager );
-
-		// for @SequenceGenerator counter name will be the sequenceName
-		// for @TableGenerator counter name will be the columnValue
-		String counterName =
-			( IdSourceKeyMetadata.IdSourceType.SEQUENCE.equals( request.getKey().getMetadata().getType() ) ) ?
-				request.getKey().getTable() :
-				request.getKey().getColumnValue();
+		String counterName = counterName( request );
 
 		if ( !counterManager.isDefined( counterName ) ) {
 
@@ -48,7 +57,6 @@ public class ClusteredCounterCommand {
 			if ( definedByCurrentThread ) {
 				return Long.valueOf( request.getInitialValue() );
 			}
-
 		}
 
 		StrongCounter strongCounter = counterManager.getStrongCounter( counterName );
@@ -62,4 +70,14 @@ public class ClusteredCounterCommand {
 
 	}
 
+	private String counterName(NextValueRequest request) {
+		String counterName = isSequence( request )
+				? request.getKey().getTable() // @SequenceGenerator
+				: request.getKey().getColumnValue(); // @TableGenerator
+		return counterName;
+	}
+
+	private boolean isSequence(NextValueRequest request) {
+		return IdSourceKeyMetadata.IdSourceType.SEQUENCE.equals( request.getKey().getMetadata().getType() );
+	}
 }

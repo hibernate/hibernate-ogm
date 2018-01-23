@@ -22,7 +22,6 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter.ClusteredCounterCommand;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
@@ -49,13 +48,10 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.persister.entity.Lockable;
-import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stream.CacheCollectors;
 
 /**
@@ -76,7 +72,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 	/**
 	 * Get a strategy instance which knows how to acquire a database-level lock
-	 * of the specified mode for this dialect.
+	 * of the specified/mode for this dialect.
 	 *
 	 * @param lockable The persister for the entity to be locked.
 	 * @param lockMode The type of lock to be acquired.
@@ -193,41 +189,8 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	//TODO should we use GridTypes here?
 	public Number nextValue(NextValueRequest request) {
-
-		// if transport is defined on Infinispan cache manager
-		// we can use clustered counter to generate next value
-		EmbeddedCacheManager cacheManager = getCacheManager().getCacheManager();
-		if ( cacheManager.getTransport() != null ) {
-			return new ClusteredCounterCommand().nextValue( cacheManager, request );
-		}
-
-		final AdvancedCache<ISK, Object> identifierCache = getCacheManager()
-				.getIdSourceCache( request.getKey().getMetadata() )
-				.getAdvancedCache();
-		ISK cacheKey = getKeyProvider().getIdSourceCacheKey( request.getKey() );
-		boolean done;
-		Number value;
-
-		do {
-			//skip locking proposed by Sanne
-			value = (Number) identifierCache.withFlags( Flag.SKIP_LOCKING ).get( cacheKey );
-
-			if ( value == null ) {
-				value = Long.valueOf( request.getInitialValue() );
-				final Number oldValue = (Number) identifierCache.putIfAbsent( cacheKey, value );
-				if ( oldValue != null ) {
-					value = oldValue;
-				}
-			}
-
-			Number newValue = value.longValue() + request.getIncrement();
-			done = identifierCache.replace( cacheKey, value, newValue );
-		}
-		while ( !done );
-
-		return value;
+		return provider.getCounter().nextValue( request );
 	}
 
 	@Override

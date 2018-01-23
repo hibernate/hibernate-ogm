@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl;
 
+import static org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.ExternalizersIntegration.validateExternalizersPresent;
+
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,7 +18,7 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.configuration.impl.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter.ClusteredCounterCommand;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.PersistenceStrategy;
@@ -32,8 +35,6 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 import org.infinispan.manager.EmbeddedCacheManager;
-
-import static org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.ExternalizersIntegration.validateExternalizersPresent;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
@@ -54,6 +55,8 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 	private final InfinispanConfiguration config = new InfinispanConfiguration();
 
 	private PersistenceStrategy<?, ?, ?> persistenceStrategy;
+
+	private ClusteredCounterCommand counter;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -104,6 +107,7 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 		// clear resources
 		this.externalCacheManager = null;
 		this.jtaPlatform = null;
+		this.counter = new ClusteredCounterCommand( persistenceStrategy.getCacheManager().getCacheManager() );
 	}
 
 	public LocalCacheManager<?, ?, ?> getCacheManager() {
@@ -135,5 +139,9 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 	@Override
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
 		return CacheInitializer.class;
+	}
+
+	public ClusteredCounterCommand getCounter() {
+		return counter;
 	}
 }
