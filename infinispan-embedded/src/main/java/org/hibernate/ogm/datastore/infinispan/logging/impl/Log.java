@@ -50,4 +50,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1107, value = "The Infinispan dialect uses fine grained maps: `clustering.hash.groups` must be enabled. `clustering.hash.groups` is now enabled for cache `%1$s`."
 			+ " Enable this property explicitly in your configuration to resolve this warning.")
 	void clusteringHashGroupsMustBeEnabled(String cacheName);
+
+	@Message(id = 1108, value = "Sequences or di generation is not supported for local caches")
+	HibernateException counterCannotBeCreatedForLocalCaches();
 }
