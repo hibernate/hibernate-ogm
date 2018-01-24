@@ -43,6 +43,7 @@ public class CachePerKindConfiguredViaOptionCacheMappingTest extends CacheMappin
 
 	@Override
 	protected void configure(Map<String, Object> cfg) {
+		super.configure( cfg );
 		cfg.put( OgmProperties.OPTION_CONFIGURATOR, new OptionConfigurator() {
 
 			@Override

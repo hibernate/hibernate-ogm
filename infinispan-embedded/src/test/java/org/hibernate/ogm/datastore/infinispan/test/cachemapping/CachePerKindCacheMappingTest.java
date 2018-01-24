@@ -40,6 +40,7 @@ public class CachePerKindCacheMappingTest extends CacheMappingTestBase {
 
 	@Override
 	protected void configure(Map<String, Object> cfg) {
+		super.configure( cfg );
 		cfg.put( InfinispanProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
 	}
 }

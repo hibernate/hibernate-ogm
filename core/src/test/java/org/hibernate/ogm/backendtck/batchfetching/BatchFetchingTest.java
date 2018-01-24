@@ -24,6 +24,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.utils.InvokedOperationsLoggingDialect;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.stat.Statistics;
 import org.junit.Test;
 
@@ -224,6 +225,7 @@ public class BatchFetchingTest extends OgmTestCase {
 	@Override
 	protected void configure(Map<String, Object> cfg) {
 		cfg.put( OgmProperties.GRID_DIALECT, InvokedOperationsLoggingDialect.class );
+		TestHelper.enableCountersForInfinispan( cfg );
 	}
 
 	private InvokedOperationsLoggingDialect getOperationsLogger() {

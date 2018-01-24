@@ -22,8 +22,8 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.junit.Test;
 
 /**
@@ -62,7 +62,6 @@ public class SequenceNextValueGenerationTest extends TestNextValueGeneration {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.INFINISPAN)
 	public void testIncrements() throws InterruptedException {
 		final IdSourceKey generatorKey = buildIdGeneratorKey( ThreadSafetyEntity.class, THREAD_SAFETY_SEQUENCE );
 		final NextValueRequest nextValueRequest = new NextValueRequest( generatorKey, THREAD_SAFETY_INCREMENT, THREAD_SAFETY_FIRST_VALUE );
@@ -85,6 +84,11 @@ public class SequenceNextValueGenerationTest extends TestNextValueGeneration {
 			assertThat( allGeneratedValues[k] ).as( "Unexpected value generated, index: " + k ).isEqualTo( expectedValue );
 			expectedValue += THREAD_SAFETY_INCREMENT;
 		}
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 
 	@Override

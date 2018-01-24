@@ -19,6 +19,7 @@ import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -137,7 +138,6 @@ public class AssociationMassIndexerTest extends OgmJpaTestCase {
 	protected void configure(GetterPersistenceUnitInfo info) {
 		super.configure( info );
 		info.getProperties().setProperty( "hibernate.search.default.directory_provider", "ram" );
-		// Infinispan requires to be set to distribution mode for this test to pass
-		info.getProperties().setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 }

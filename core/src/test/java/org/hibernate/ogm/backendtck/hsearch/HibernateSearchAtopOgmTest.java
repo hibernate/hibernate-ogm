@@ -16,6 +16,8 @@ import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -85,6 +87,11 @@ public class HibernateSearchAtopOgmTest extends OgmJpaTestCase {
 		}
 		entityManager.getTransaction().commit();
 		entityManager.close();
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 
 	@Override

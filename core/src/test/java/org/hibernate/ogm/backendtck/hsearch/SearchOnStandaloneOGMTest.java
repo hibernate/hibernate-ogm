@@ -9,6 +9,7 @@ package org.hibernate.ogm.backendtck.hsearch;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.search.Query;
 import org.hibernate.Session;
@@ -16,6 +17,7 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
@@ -58,6 +60,11 @@ public class SearchOnStandaloneOGMTest extends OgmTestCase {
 		}
 		transaction.commit();
 		fts.close();
+	}
+
+	@Override
+	protected void configure(Map<String, Object> cfg) {
+		TestHelper.enableCountersForInfinispan( cfg );
 	}
 
 	@Override

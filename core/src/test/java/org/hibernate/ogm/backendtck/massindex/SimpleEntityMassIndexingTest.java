@@ -23,6 +23,7 @@ import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
@@ -128,7 +129,6 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 	@Override
 	protected void configure(Map<String, Object> settings) {
 		settings.put( "hibernate.search.default.directory_provider", "ram" );
-		// Infinispan requires to be set to distribution mode for this test to pass
-		settings.put( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
+		TestHelper.enableCountersForInfinispan( settings );
 	}
 }

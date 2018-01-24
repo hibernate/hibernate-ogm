@@ -8,6 +8,8 @@ package org.hibernate.ogm.backendtck.id;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +60,11 @@ public class AutoIdGeneratorTest extends OgmJpaTestCase {
 		assertThat( dvcs ).isNotNull();
 		assertThat( dvcs.getId() ).isEqualTo( 2 );
 		em.getTransaction().commit();
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 
 	@Override

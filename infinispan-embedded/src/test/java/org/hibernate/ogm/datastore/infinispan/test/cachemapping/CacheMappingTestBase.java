@@ -18,6 +18,7 @@ import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.infinispan.Cache;
 import org.junit.Test;
 
@@ -77,6 +78,11 @@ public abstract class CacheMappingTestBase extends OgmTestCase {
 		return (InfinispanEmbeddedDatastoreProvider) getSessionFactory()
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
+	}
+
+	@Override
+	protected void configure(Map<String, Object> cfg) {
+		TestHelper.enableCountersForInfinispan( cfg );
 	}
 
 	@Override

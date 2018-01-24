@@ -416,4 +416,17 @@ public class TestHelper {
 		}
 	}
 
+	/**
+	 * If a tests uses sequences or auto-generated id, it requires counters in Infinispan Embedded.
+	 * At the moment counters only work in clustered mode. Once we have counters for local caches as well,
+	 * we can remove this method.
+	 *
+	 * @see <a href="https://hibernate.atlassian.net/browse/OGM-1376">OGM-1376</a>
+	 */
+	@SuppressWarnings("unchecked")
+	public static void enableCountersForInfinispan(@SuppressWarnings("rawtypes") Map cfg) {
+		// Infinispan requires to be set to distribution mode for this test to pass
+		cfg.put( "hibernate.ogm.infinispan.configuration_resource_name", "infinispan-dist.xml" );
+	}
+
 }

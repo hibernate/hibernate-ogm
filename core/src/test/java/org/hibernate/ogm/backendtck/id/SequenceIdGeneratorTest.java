@@ -11,6 +11,8 @@ import javax.persistence.EntityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -83,6 +85,11 @@ public class SequenceIdGeneratorTest extends OgmJpaTestCase {
 		assertThat( secondActor.getName() ).isEqualTo( "Johnny Depp" );
 		em.remove( secondActor );
 		em.getTransaction().commit();
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 
 	@Override

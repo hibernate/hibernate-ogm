@@ -8,9 +8,12 @@ package org.hibernate.ogm.backendtck.id;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Map;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 /**
@@ -48,6 +51,11 @@ public class AutoIdGeneratorWithSessionTest extends OgmTestCase {
 		assertThat( dvcs.getId() ).isEqualTo( 2 );
 		transaction.commit();
 		session.close();
+	}
+
+	@Override
+	protected void configure(Map<String, Object> cfg) {
+		TestHelper.enableCountersForInfinispan( cfg );
 	}
 
 	@Override
