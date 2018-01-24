@@ -85,7 +85,12 @@
         </distributed-cache>
 
         <!-- Clustered Counters are defined at runtime by InfinispanDialect -->
-        <counters xmlns="urn:infinispan:config:counters:9.1" num-owners="1" reliability="CONSISTENT" />
+        <counters xmlns="urn:infinispan:config:counters:9.1" num-owners="1" reliability="CONSISTENT">
+            <strong-counter name="my-counter" initial-value="0" storage="VOLATILE">
+                <!-- only set an upper-bound or lower-bound if you want to apply boundaries! -->
+                <lower-bound value="0" />
+            </strong-counter>
+        </counters>
 
     </cache-container>
 
