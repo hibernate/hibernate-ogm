@@ -22,8 +22,6 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.junit.Test;
 
 /**
@@ -56,7 +54,6 @@ public class TableNextValueGenerationTest extends TestNextValueGeneration {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.INFINISPAN)
 	public void testIncrements() throws InterruptedException {
 		final IdSourceKey generatorKey = buildIdGeneratorKey( ThreadSafetyEntity.class, THREAD_SAFETY_SEQUENCE );
 		final NextValueRequest nextValueRequest = new NextValueRequest( generatorKey, THREAD_SAFETY_INCREMENT, THREAD_SAFETY_FIRST_VALUE );
