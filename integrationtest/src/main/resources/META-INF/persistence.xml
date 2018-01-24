@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <persistence-unit name="mongodb-local" transaction-type="JTA">
+        <!-- Use the Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
+            <property name="hibernate.ogm.datastore.create_database" value="true"/>
+            <property name="hibernate.ogm.datastore.provider" value="mongodb"/>
+            <property name="hibernate.ogm.datastore.host" value="localhost"/>
+            <property name="hibernate.ogm.datastore.database" value="mongodb"/>
+        </properties>
+    </persistence-unit>
+    <persistence-unit name="neo4j-local-bolt" transaction-type="JTA">
+        <!-- Use the Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
+            <property name="hibernate.ogm.datastore.create_database" value="true"/>
+            <property name="hibernate.ogm.datastore.provider" value="neo4j_bolt"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="neo4j-embedded" transaction-type="JTA">
+        <!-- Use the Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
+            <property name="hibernate.ogm.datastore.create_database" value="true"/>
+            <property name="hibernate.ogm.datastore.provider" value="neo4j_embedded"/>
+            <property name="hibernate.ogm.neo4j.database_path" value="C:\data\neo4j_db"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="infinispan-embedded" transaction-type="JTA">
+        <!-- Use the Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <!-- Here you will pick which NoSQL technology to use, and configure it;
+                 in this example we start a local in-memory Infinispan node. -->
+            <property name="hibernate.ogm.datastore.provider" value="infinispan_embedded"/>
+            <property name="hibernate.ogm.infinispan.configuration_resource_name" value="infinispan-local.xml"/>
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="infinispan-with-hotrod">
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <property name="hibernate.ogm.datastore.provider"
+                      value="infinispan_remote" />
+            <property name="hibernate.ogm.infinispan_remote.configuration_resource_name"
+                      value="hotrodclient.properties" />
+        </properties>
+    </persistence-unit>
+</persistence>

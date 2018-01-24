@@ -1,1 +1,1 @@
-org.hibernate.ogm.test.integration.infinispanremote.HotRodServerLifecycleManager
+org.hibernate.ogm.test.integration.wildfly.infinispanremote.HotRodServerLifecycleManager
