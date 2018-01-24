@@ -12,6 +12,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
@@ -29,6 +30,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -92,8 +94,9 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 	 * @param entityTypes meta-data of all the entity types registered with the current session factory
 	 * @param associationTypes meta-data of all the association types registered with the current session factory
 	 * @param idSourceTypes meta-data of all the id source types registered with the current session factory
+	 * @param namespaces from the database currently in use
 	 */
-	public void initializePersistenceStrategy(CacheMappingType cacheMappingType, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
+	public void initializePersistenceStrategy(CacheMappingType cacheMappingType, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes, Iterable<Namespace> namespaces) {
 		persistenceStrategy = PersistenceStrategy.getInstance(
 				cacheMappingType,
 				externalCacheManager,
@@ -104,10 +107,32 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 				idSourceTypes
 		);
 
+		boolean requiresCounter = hasSequences( namespaces ) || hasIdGeneration( idSourceTypes );
+		if ( requiresCounter ) {
+			this.counter = new ClusteredCounterCommand( persistenceStrategy.getCacheManager().getCacheManager() );
+		}
+
 		// clear resources
 		this.externalCacheManager = null;
 		this.jtaPlatform = null;
-		this.counter = new ClusteredCounterCommand( persistenceStrategy.getCacheManager().getCacheManager() );
+	}
+
+	private boolean hasIdGeneration(Set<IdSourceKeyMetadata> idSourceKeys) {
+		for ( IdSourceKeyMetadata idSourceKeyMetadata : idSourceKeys ) {
+			if ( idSourceKeyMetadata.getType() == IdSourceType.TABLE ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean hasSequences(Iterable<Namespace> namespaces) {
+		for ( Namespace namespace : namespaces ) {
+			if ( namespace.getSequences().iterator().hasNext() ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public LocalCacheManager<?, ?, ?> getCacheManager() {

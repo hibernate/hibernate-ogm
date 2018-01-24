@@ -32,9 +32,10 @@ public class ClusteredCounterCommand {
 
 	public ClusteredCounterCommand(EmbeddedCacheManager cacheManager) {
 		this.cacheManager = cacheManager;
+		validate();
 	}
 
-	public void validate() {
+	private void validate() {
 		if ( cacheManager.getTransport() == null ) {
 			throw LOG.counterCannotBeCreatedForLocalCaches();
 		}

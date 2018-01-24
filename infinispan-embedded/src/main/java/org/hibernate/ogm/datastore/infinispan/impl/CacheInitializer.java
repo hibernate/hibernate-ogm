@@ -30,7 +30,8 @@ public class CacheInitializer extends BaseSchemaDefiner {
 				optionsService.context().getGlobalOptions().getUnique( CacheMappingOption.class ),
 				context.getAllEntityKeyMetadata(),
 				context.getAllAssociationKeyMetadata(),
-				context.getAllIdSourceKeyMetadata()
+				context.getAllIdSourceKeyMetadata(),
+				context.getDatabase().getNamespaces()
 		);
 	}
 }
