@@ -49,9 +49,8 @@ public class RemoteAuthenticationFailureTest {
 				connectToRemoteDatastore( properties );
 				fail( "Credentials should be invalid" );
 			}
-			catch (Exception e) {
+			catch (HibernateException e) {
 				// Unable to start datastore provider
-				assertThat( e ).isInstanceOf( HibernateException.class );
 				assertThat( e.getMessage() ).startsWith( "OGM000071" );
 				assertThat( e.getCause().getMessage() ).startsWith( "OGM001419" );
 				assertThat( e.getCause().getMessage() ).contains( "Unauthorized" );
