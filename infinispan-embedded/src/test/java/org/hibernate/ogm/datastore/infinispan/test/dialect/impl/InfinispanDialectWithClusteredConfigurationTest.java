@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.boot.model.relational.Database;
+import org.hibernate.boot.model.relational.Namespace;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -78,9 +80,15 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		provider2 = (InfinispanEmbeddedDatastoreProvider) sessionFactory2.getServiceRegistry().getService( DatastoreProvider.class );
 		dialect1 = new InfinispanDialect( provider1 );
 		dialect2 = new InfinispanDialect( provider2 );
+		provider1.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( database(), sessionFactory1 ) );
+		provider2.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( database(), sessionFactory2 ) );
+	}
 
-		provider1.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, sessionFactory1 ) );
-		provider2.getSchemaDefinerType().newInstance().initializeSchema( new DefaultSchemaInitializationContext( null, sessionFactory2 ) );
+	private static Database database() {
+		Database database = mock( Database.class );
+		Iterable<Namespace> namespaces = Collections.emptyList();
+		when( database.getNamespaces() ).thenReturn( namespaces );
+		return database;
 	}
 
 	@AfterClass
