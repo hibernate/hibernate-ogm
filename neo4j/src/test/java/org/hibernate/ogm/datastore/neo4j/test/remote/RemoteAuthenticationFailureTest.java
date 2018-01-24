@@ -16,8 +16,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderType;
 import org.hibernate.ogm.datastore.neo4j.remote.common.impl.RemoteNeo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.hibernate.ogm.datastore.neo4j.utils.PropertiesReader;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -28,6 +30,11 @@ import org.junit.Test;
 public class RemoteAuthenticationFailureTest {
 
 	private final Map<String, String> properties = new HashMap<String, String>( 2 );
+
+	@BeforeClass
+	public static void initEnvironment() {
+		Neo4jTestHelper.initEnvironment();
+	}
 
 	@Before
 	public void setup() {
