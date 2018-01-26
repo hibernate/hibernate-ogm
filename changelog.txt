@@ -1,6 +1,63 @@
 Hibernate OGM Changelog
 =======================
 
+5.2.0.CR1 (26-01-2018)
+-------------------------
+
+** Bug
+    * OGM-1379 - build, tests                     - RemoteAuthenticationFailureTest doesn't connect to the right port with maven
+    * OGM-1371 - mongodb                          - MongoDB native query parser does not recognize fractional number starting with 0
+    * OGM-1353 - infinispan                       - Infinispan sequence generation is not thread safe
+    * OGM-1340 - core                             - Module 'core' not build by JDK 9
+    * OGM-1212 - infinispan                       - The strategy used by Infinispan Embedded to increment IDs is not safe against concurrent updates
+
+** Improvement
+    * OGM-1378 - neo4j                            - Upgrade Neo4j to 3.3.2
+    * OGM-1377 - neo4j                            - Make RemoteAuthenticationFailureTest failures more informative
+    * OGM-1369 - core                             - Update to Hibernate Search 5.6.4.Final
+    * OGM-1368 - infinispan                       - Update to Infinispan 9.1.4
+    * OGM-1365 - neo4j                            - Update to Neo4j Java Driver 1.5.0
+    * OGM-1364 - mongodb                          - Upgrade to MongoDB Driver 3.6.1
+    * OGM-1356 - infinispan                       - Upgrade to protostream 4.1.3
+    * OGM-1355 - infinispan                       - Upgrade to Infinispan 9.1.3
+    * OGM-1354 - mongodb                          - Upgrade MongoDB Driver to version 3.6.0
+    * OGM-1351 - infinispan, mongodb, neo4j       - Upgrade Neo4j to version 3.3.1
+    * OGM-1345 - mongodb                          - Make the MongoDB native query parser stateless
+    * OGM-1344 - neo4j                            - Inefficient query for retrieving embedded nodes in Neo4j
+    * OGM-1338 - core, infinispan, mongodb, neo4j - Avoid high initialization cost of static logger instances
+    * OGM-1301 - mongodb                          - Improve error reporting of the MongoDB NativeQueryParser
+    * OGM-1172 -                                  - Decide whether to default the package name in ISPN Remote or not
+    * OGM-1073 - neo4j                            - Make the Http connection pool configurable for Neo4j remote
+
+** New Feature
+    * OGM-1339 - mongodb                          - Provide a way to define Geospatial indexes for MongoDB
+    * OGM-1265 - mongodb                          - Add new operations to native CLI in MongoDB
+
+** Sub-task
+    * OGM-1341 -                                  - Upgrade to latest Byteman 4.x so we can test on JDK9
+    * OGM-1317 -                                  - Add support of operation 'replaceOne'
+    * OGM-1316 -                                  - Add support of operation 'updateMany'
+    * OGM-1315 -                                  - Add support of operation 'updateOne'
+    * OGM-1314 -                                  - Add support of operation 'deleteMany'
+    * OGM-1313 -                                  - Add support of operation 'deleteOne'
+    * OGM-1311 -                                  - Add support of operation 'insertMany'
+    * OGM-1310 -                                  - Add support of operation 'insertOne'
+
+** Task
+    * OGM-1374 - build, infinispan                - Use Server Provisioning plugin to setup Infinispan Server instances for integration tests
+    * OGM-1373 - build                            - Use Server Provisioning plugin to setup WildFly based integration tests
+    * OGM-1372 - build                            - Put the distribution files to upload into distribution/target/dir so that release scripts find them
+    * OGM-1370 - build                            - Upgrade to Apache Lucene 5.5.5
+    * OGM-1363 - build                            - Remove internal classes from the Javadoc
+    * OGM-1362 - build                            - Generate the javadoc per module and then aggregate it, instead of doing everything in the javadoc module
+    * OGM-1361 - build                            - Build the modules for WildFly 11
+    * OGM-1360 - build                            - Optimize the Travis build (caching, unnecessary plugin executions)
+    * OGM-1359 - build                            - Clarify the build output in the Travis build
+    * OGM-1348 - build                            - Various adjusments to the Javadoc
+    * OGM-1342 - build                            - Update Maven plugins to be compatible with JDK9
+    * OGM-1202 -                                  - Deprecate and rename the hibernate-ogm-infinispan Maven id
+    * OGM-946 - core                             - Test all the Entity listeners and Callback methods annotation
+
 5.2.0.Beta1 (12-10-2017)
 -------------------------
 
