@@ -71,6 +71,8 @@ When connecting to an _Infinispan Server_ over the _Hot Rod client_, the archite
 is similar to having Hibernate connect to traditional database: the data is stored
 on the _Infinispan Server_ nodes, and Hibernate OGM uses a client with a pool of
 TCP connections to talk to the server.
+But the Hot Rod client is not transactional, see the limitation described here:
+(<<storage-principles-of-infinispan-dataprovider>>).
 
 Another important difference, is that when connecting to _Infinispan Server_ via
 _Hot Rod_ the data is encoded using _Google Protobuf_, which requires a schema.
@@ -2339,6 +2341,8 @@ The deployed schemas can be fetched from the Infinispan Server; Hibernate OGM al
 logs the generated schemas at `INFO` level in the logging category
 `org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions`.
 
+[[storage-principles-of-infinispan-dataprovider]]
+
 ==== Storage Principles of the Infinispan Remote dataprovider
 
 This is actually very simple.
@@ -2358,6 +2362,23 @@ While we can use relations based on foreign keys, Infinispan has no notion of re
 Hibernate is able to maintain the integrity as it won't "forget" stale references, but since
 the storage doesn't support transactions either it is possible to interrupt Hibernate OGM
 during such maintenance and introduce breaks of integrity.
+
+When integrity could be broken::
+When the unit of work involves several operations we might risk to have a partial writes
+(updates, deletes, inserts); due to the fact that the Hot Rod client is not transactional
+some operation would be flushed to data store, other not.
+For instance let's imagine you create a new entity, remove an old one and update an association
+from the old to the new one in a single transaction,
+this would correspond to three different remote invocations: an Entity insert, an Entity delete
+and an Association update.
+If there were network problems during the third invocation,
+we could have a partial write in which only the first and the second operations
+would be actually stored on the remote storage and this could lead to a breaking referential
+integrity of the association.
+
+How to detect broken integrity::
+Unfortunately, at the moment the only way to detect a referential integrity error is to
+inspect the logs for error messages or periodically monitor the associations cache.
 
 A key. And a Value.::
 In a key/value store the two elements _key_ and _value_ are different, separate objects.
