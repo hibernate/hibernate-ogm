@@ -46,7 +46,7 @@ Bug Reports:
 Support:
 
  * The hibernate-ogm tag on Stackoverflow: <http://stackoverflow.com/questions/tagged/hibernate-ogm>
- * Our forum: <https://github.com/hibernate/hibernate-ogm>
+ * Our forum: <https://discourse.hibernate.org/c/hibernate-ogm>
 
 ## Build instructions
 
