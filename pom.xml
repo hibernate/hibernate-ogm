@@ -538,8 +538,9 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <argLine>${additionalRuntimeArgLine}</argLine>
                         <systemPropertyVariables>
-                           <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
-                           <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                            <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
+                            <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                            <project.build.directory>${project.build.directory}</project.build.directory>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>

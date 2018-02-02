@@ -8,7 +8,6 @@ package org.hibernate.ogm.utils;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -429,10 +428,6 @@ public class TestHelper {
 
 		// Infinispan requires to be set to distribution mode for this test to pass
 		cfg.put( "hibernate.ogm.infinispan.configuration_resource_name", "infinispan-dist.xml" );
-
-		// remove any persistent clustered counter files
-		File file = new File( System.getProperty( "java.io.tmpdir" ) + "counters" );
-		FileHelper.delete( file );
 
 	}
 

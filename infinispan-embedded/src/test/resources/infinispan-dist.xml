@@ -25,7 +25,7 @@
         <jmx duplicate-domains="true" />
 
         <global-state>
-            <persistent-location path="${java.io.tmpdir}/counters"/>
+            <persistent-location path="${project.build.directory}/counters"/>
         </global-state>
 
         <!-- *************************************** -->
