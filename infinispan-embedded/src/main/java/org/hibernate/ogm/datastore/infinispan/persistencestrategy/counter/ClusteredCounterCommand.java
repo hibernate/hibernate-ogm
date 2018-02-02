@@ -52,7 +52,7 @@ public class ClusteredCounterCommand {
 			boolean definedByCurrentThread = counterManager.defineCounter( counterName,
 				CounterConfiguration.builder( CounterType.UNBOUNDED_STRONG )
 					.initialValue( request.getInitialValue() )
-					.storage( Storage.VOLATILE )
+					.storage( Storage.PERSISTENT )
 					.build() );
 
 			if ( definedByCurrentThread ) {
