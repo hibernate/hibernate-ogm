@@ -3369,11 +3369,6 @@ documents and not managed entities.
 
 ===== CLI Syntax
 
-[WARNING]
-====
-Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
-====
-
 Hibernate OGM can execute native queries expressed using the MongoDB CLI syntax with some limitations.
 Currently `find()`, `findOne()`, `findAndModify()`, and `count()` queries are supported. Furthermore, three
 types of write queries are supported via the CLI syntax: `insert()`, `remove()`, and `update()`. Other query
