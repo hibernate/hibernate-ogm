@@ -19,6 +19,10 @@
         <transport stack="default-udp" />
         <jmx duplicate-domains="true" />
 
+        <global-state>
+            <persistent-location path="${java.io.tmpdir}/counters"/>
+        </global-state>
+
         <!-- *************************************** -->
         <!--     Default cache used as template      -->
         <!-- *************************************** -->

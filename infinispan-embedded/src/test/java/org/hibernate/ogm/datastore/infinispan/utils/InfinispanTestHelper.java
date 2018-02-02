@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.infinispan.utils;
 
+import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -28,7 +30,10 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
+import org.hibernate.ogm.utils.FileHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -40,6 +45,8 @@ import org.infinispan.atomic.FineGrainedAtomicMap;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public class InfinispanTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
+
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
@@ -128,7 +135,13 @@ public class InfinispanTestHelper extends BaseGridDialectTestHelper implements G
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		// Nothing to do
+		// remove any persistent clustered counter files
+		File file = new File( System.getProperty( "project.build.directory" ) + File.separator + "counters" );
+		boolean delete = FileHelper.delete( file );
+
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Try to remove temporary files: " + file + " deleted: " + delete );
+		}
 	}
 
 	@Override
