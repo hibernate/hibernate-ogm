@@ -425,8 +425,10 @@ public class TestHelper {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void enableCountersForInfinispan(@SuppressWarnings("rawtypes") Map cfg) {
+
 		// Infinispan requires to be set to distribution mode for this test to pass
 		cfg.put( "hibernate.ogm.infinispan.configuration_resource_name", "infinispan-dist.xml" );
+
 	}
 
 }
