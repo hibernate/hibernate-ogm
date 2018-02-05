@@ -1,6 +1,24 @@
 Hibernate OGM Changelog
 =======================
 
+5.2.0.Final (05-02-2018)
+-------------------------
+
+** Bug
+    * OGM-1384 - infinispan                - Storage of Infinispan counters need to be Storage.PERSISTENT
+
+** Improvement
+    * OGM-1386 - mongodb                   - Upgrade MongoDB driver to 3.6.2
+    * OGM-1385 - documentation, infinispan - Add paragraph about counters in the Infinispan dialect
+    * OGM-1262 - documentation             - Remove from the documentation everything that is not experimental anymore for 5.2 Final
+
+** New Feature
+    * OGM-983 - ignite                    - Create integration with Apache Ignite (and GridGain)
+
+** Task
+    * OGM-1381 - infinispan                - Upgrade to Infinispan 9.1.5.Final
+    * OGM-1206 - documentation, infinispan - Highlight the referential integrity problem better in the Hot Rod documentation
+
 5.2.0.CR1 (26-01-2018)
 -------------------------
 
