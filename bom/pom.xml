@@ -61,7 +61,7 @@
 
         <!-- MongoDB -->
         <mongodbVersion>3.4.6</mongodbVersion>
-        <mongodbDriverVersion>3.6.1</mongodbDriverVersion>
+        <mongodbDriverVersion>3.6.2</mongodbDriverVersion>
 
         <!-- Neo4j -->
         <neo4jVersion>3.3.2</neo4jVersion>
