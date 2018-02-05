@@ -48,6 +48,10 @@ public class ClusteredCounterCommand {
 
 		if ( !counterManager.isDefined( counterName ) ) {
 
+			// global configuration is mandatory in order to define
+			// a clustered counter with persistent storage
+			validateGlobalConfiguration();
+
 			// try to define new counter at runtime
 			boolean definedByCurrentThread = counterManager.defineCounter( counterName,
 				CounterConfiguration.builder( CounterType.UNBOUNDED_STRONG )
@@ -69,6 +73,16 @@ public class ClusteredCounterCommand {
 			throw new HibernateException( "Interrupting Operation " + e.getMessage(), e );
 		}
 
+	}
+
+	private void validateGlobalConfiguration() {
+		boolean globalConfigIsEnabled = cacheManager.getGlobalComponentRegistry()
+			.getGlobalConfiguration().globalState()
+			.enabled();
+
+		if ( !globalConfigIsEnabled ) {
+			throw LOG.counterCannotBeCreatedWithoutGlobalConfiguration();
+		}
 	}
 
 	private String counterName(NextValueRequest request) {
