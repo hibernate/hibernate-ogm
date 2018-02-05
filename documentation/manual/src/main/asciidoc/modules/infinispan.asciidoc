@@ -661,7 +661,123 @@ public class News {
 |===
 ====
 
-====== Identifier generation strategies
+[[infinispan-embedded-id-generation-strategies]]
+
+====== Identifier generation strategies for Infinispan Embedded
+
+The Infinispan Embedded dialect will use
+http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Infinispan clustered counters]
+for the generation of ids and sequences.
+
+If the clusterd counter is not already defined, Hibernate OGM will create it using a default
+configuration. The following is probably the simplest case for which a counter is created:
+
+.Example of the default counter
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue
+    private long id;
+
+    // getters, setters ...
+}
+----
+====
+
+In this case Hibernate OGM will create a strong persitent counter with name `hibernate_sequence`
+and initial value of 0.
+
+[NOTE]
+====
+The default configuration will create `PERSISTENT` Infinispan counters.
+You need to define in the infinispan configuration a location where to store these counters
+using the following property:
+
+[source, XML]
+----
+<infinispan>
+    ...
+    <cache-container>
+
+        <global-state>
+            <persistent-location path="/counters"/>
+        </global-state>
+
+        ...
+    </cache-container>
+</infinispan>
+----
+
+An exception is thrown if the property is missing.
+====
+
+You can ovveride some of this properties with `@SequenceGenerator` or `@TableGenerator`.
+
+.Counter defined using `@SequenceGenerator` 
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen1")
+    @SequenceGenerator( name = "gen1",
+                        sequenceName = "GuitarPlayerCounter",
+                        initialValue = 5 )
+    private long id;
+
+    // getters, setters ...
+}
+----
+====
+
+This will create a counter with name `GuitarPlayerCounter` and initial value of 5.
+
+There is no real difference if you use `@TableGenerator`, except that the counter name
+is defined using the attribute `pkColumnValue`.
+
+Note that if you need more control over a counter you can still redefine it in the Infinispan
+configuration file. The following is an example of how you can define a `VOLATILE` counter:
+
+.Create a VOLATILE counter
+====
+[source, XML]
+----
+<infinispan>
+...
+    <cache-container>
+
+    ...
+
+        <!-- Clustered Counters are defined at runtime by InfinispanDialect -->
+        <counters xmlns="urn:infinispan:config:counters:9.1"
+            num-owners="4" reliability="CONSISTENT">
+
+            <strong-counter name="GuitarPlayerCounter"
+                initial-value="0" storage="VOLATILE">
+
+                <lower-bound value="0" />
+            </strong-counter>
+        </counters>
+    </cache-container>
+</infinispan
+----
+====
+
+In this last case Hibernate OGM won't create a counter but it will use the one defined in the
+Infinispan configuration.
+
+I will leave the details about counters configuration to the
+http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Infinispan documentation].
+
+[[infinispan-remote-id-generation-strategies]]
+
+====== Identifier generation strategies for Infinispan Remote via Hot Rod
 
 Since Infinispan has not native sequence nor identity column support,
 these are simulated using the table strategy, however their default values vary.
@@ -2519,3 +2635,7 @@ When deploying the _Protobuf Schema_, we should also automatically define and st
 the needed Caches if they are not defined.
 This is currently not allowed over the Hot Rod protocol.
 
+Id generation and sequences for local caches::
+When using the the Infinispan Embedded dialect, the generation of id or sequences only works
+for clustered caches. This is because the version of Infinispan included doesn't support
+counters for local caches.
