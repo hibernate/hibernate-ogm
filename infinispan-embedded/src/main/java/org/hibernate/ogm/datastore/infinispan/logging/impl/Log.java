@@ -51,10 +51,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 			+ " Enable this property explicitly in your configuration to resolve this warning.")
 	void clusteringHashGroupsMustBeEnabled(String cacheName);
 
-	@Message(id = 1108, value = "Sequences or id generation is not supported for local caches")
+	@Message(id = 1108, value = "Sequences or di generation is not supported for local caches")
 	HibernateException counterCannotBeCreatedForLocalCaches();
 
-	@Message(id = 1109, value = "Sequences or id generation is not supported if global configuration is not enabled")
+	@Message(id = 1109, value = "Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration")
 	HibernateException counterCannotBeCreatedWithoutGlobalConfiguration();
 
 }

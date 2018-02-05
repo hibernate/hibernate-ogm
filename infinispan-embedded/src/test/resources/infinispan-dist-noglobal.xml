@@ -7,7 +7,9 @@
   -->
 
 <!--
-    This is a testing configuration, running in clustered mode.
+    This is a testing configuration, running in clustered mode, without a global configuration defined.
+    This configuration is applied to GlobalConfigNotEnabledNextValueGenerationTest
+    in order to test the validation exception and message on missing global configuration.
 -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -26,69 +28,36 @@
 
         <!-- No global config! -->
 
-        <!-- *************************************** -->
-        <!--     Default cache used as template      -->
-        <!-- *************************************** -->
-        <distributed-cache name="DEFAULT" mode="SYNC">
+        <distributed-cache-configuration name="OGM-template">
             <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false"  isolation="REPEATABLE_READ"/>
+                concurrency-level="500" write-skew="false" isolation="REPEATABLE_READ"/>
             <transaction mode="NON_XA" />
             <eviction max-entries="-1" strategy="NONE" />
             <expiration max-idle="-1" />
             <indexing index="NONE" />
             <state-transfer enabled="true" timeout="480000"
                 await-initial-transfer="true" />
-        </distributed-cache>
+        </distributed-cache-configuration>
+
+        <!-- *************************************** -->
+        <!--     Default cache used as template      -->
+        <!-- *************************************** -->
+        <distributed-cache name="DEFAULT" mode="SYNC" configuration="OGM-template" />
 
         <!-- *************************************** -->
         <!--     Cache to store the OGM entities     -->
         <!-- *************************************** -->
-        <distributed-cache name="ENTITIES" mode="SYNC">
-            <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false" isolation="REPEATABLE_READ"/>
-            <transaction mode="NON_XA" />
-            <eviction max-entries="-1" strategy="NONE" />
-            <expiration max-idle="-1" />
-            <indexing index="NONE" />
-            <state-transfer enabled="true" timeout="480000"
-                await-initial-transfer="true" />
-        </distributed-cache>
+        <distributed-cache name="ENTITIES" mode="SYNC" configuration="OGM-template" />
 
         <!-- *********************************************** -->
         <!--   Cache to store the relations across entities  -->
         <!-- *********************************************** -->
-        <distributed-cache name="ASSOCIATIONS" mode="SYNC">
-            <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false" isolation="REPEATABLE_READ"/>
-            <transaction mode="NON_XA" />
-            <eviction max-entries="-1" strategy="NONE" />
-            <expiration max-idle="-1" />
-            <indexing index="NONE" />
-            <state-transfer enabled="true" timeout="480000"
-                await-initial-transfer="true" />
-        </distributed-cache>
+        <distributed-cache name="ASSOCIATIONS" mode="SYNC" configuration="OGM-template" />
 
         <!-- ***************************** -->
         <!--   Cache to store identifiers  -->
         <!-- ***************************** -->
-        <distributed-cache name="IDENTIFIERS" mode="SYNC">
-            <locking striping="false" acquire-timeout="10000"
-                concurrency-level="500" write-skew="false"  isolation="REPEATABLE_READ"/>
-            <transaction mode="NON_XA" />
-            <eviction max-entries="-1" strategy="NONE" />
-            <expiration max-idle="-1" />
-            <indexing index="NONE" />
-            <state-transfer enabled="true" timeout="480000"
-                await-initial-transfer="true" />
-        </distributed-cache>
-
-        <!-- Clustered Counters are defined at runtime by InfinispanDialect -->
-        <counters xmlns="urn:infinispan:config:counters:9.1" num-owners="1" reliability="CONSISTENT">
-            <strong-counter name="my-counter" initial-value="0" storage="VOLATILE">
-                <!-- only set an upper-bound or lower-bound if you want to apply boundaries! -->
-                <lower-bound value="0" />
-            </strong-counter>
-        </counters>
+        <distributed-cache name="IDENTIFIERS" mode="SYNC" configuration="OGM-template" />
 
     </cache-container>
 

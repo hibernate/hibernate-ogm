@@ -76,7 +76,7 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 	public void testExceptionWithSequencesGenerator() throws Exception {
 
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001109: Sequences or id generation is not supported if global configuration is not enabled" );
+		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
 
 		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
 		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
@@ -93,7 +93,7 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 	public void testExceptionWithTableGenerator() throws Exception {
 
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001109: Sequences or id generation is not supported if global configuration is not enabled" );
+		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
 
 		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
 		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
@@ -114,7 +114,6 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 		@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
 		@SequenceGenerator(name = "gen", sequenceName = SEQUENCE_NAME, initialValue = SEQUENCE_INITIAL_VALUE)
 		Long id;
-
 	}
 
 	@Entity

@@ -50,7 +50,7 @@ public class LocalCacheNextValueGenerationTest {
 	@Test
 	public void testExceptionWithSequencesGenerator() throws Exception {
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001108: Sequences or id generation is not supported for local caches" );
+		thrown.expectMessage( "OGM001108: Sequences or di generation is not supported for local caches" );
 
 		startAndCloseFactory( EntityWithSequence.class );
 	}
@@ -58,7 +58,7 @@ public class LocalCacheNextValueGenerationTest {
 	@Test
 	public void testExceptionWithTableGenerator() throws Exception {
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001108: Sequences or id generation is not supported for local caches" );
+		thrown.expectMessage( "OGM001108: Sequences or di generation is not supported for local caches" );
 
 		startAndCloseFactory( EntityWithTableGenerator.class );
 	}
