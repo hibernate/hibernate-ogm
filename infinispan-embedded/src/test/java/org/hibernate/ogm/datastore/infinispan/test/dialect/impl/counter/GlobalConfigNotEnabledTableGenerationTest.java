@@ -12,7 +12,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
@@ -22,13 +21,14 @@ import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
+import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,13 +38,15 @@ import org.junit.rules.ExpectedException;
  * If the global state config is missing or disabled a validation error is issued.
  * Hibernate message id 1109. The global state config is mandatory for Storage.PERSISTENT counters.
  *
+ * If the dialect needs to create runtime clustered counter, an Infinispan global configuration is mandatory.
+ * In case of TableGenerator strategy the counters are created  at runtime at first use.
+ *
  * @author Fabio Massimo Ercoli
- * @see <a href="https://hibernate.atlassian.net/browse/OGM-1376">OGM-1384</a>
+ * @see <a href="https://hibernate.atlassian.net/browse/OGM-1384">OGM-1384</a>
  */
 @TestForIssue(jiraKey = { "OGM-1384" })
-public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCase {
+public class GlobalConfigNotEnabledTableGenerationTest extends OgmJpaTestCase {
 
-	private static final String SEQUENCE_NAME = "SEQUENCE";
 	private static final String TABLE_ROW_KEY_NAME = "TABLE_ROW_KEY";
 	private static final int SEQUENCE_INITIAL_VALUE = 0;
 
@@ -60,8 +62,7 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { GlobalConfigNotEnabledNextValueGenerationTest.EntityWithSequence.class,
-			GlobalConfigNotEnabledNextValueGenerationTest.EntityWithTableGenerator.class };
+		return new Class<?>[] { GlobalConfigNotEnabledTableGenerationTest.EntityWithTableGenerator.class };
 	}
 
 	@Before
@@ -71,45 +72,20 @@ public class GlobalConfigNotEnabledNextValueGenerationTest extends OgmJpaTestCas
 	}
 
 	@Test
-	public void testExceptionWithSequencesGenerator() throws Exception {
-
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
-
-		SessionFactoryImplementor sessionFactory = getFactory().unwrap( SessionFactoryImplementor.class );
-		IdentifierGenerator generator = sessionFactory.getIdentifierGenerator( GlobalConfigNotEnabledNextValueGenerationTest.EntityWithSequence.class.getName() );
-		IdSourceKeyMetadata sequenceMetadata = ( (OgmSequenceGenerator) generator ).getGeneratorKeyMetadata();
-		IdSourceKey generatorKey = IdSourceKey.forTable( sequenceMetadata, "SEQUENCE" );
-
-		dialect.nextValue( new NextValueRequest( generatorKey, 1, 0 ) );
-		fail( "expected exception was not raised" );
-
-	}
-
-	@Test
 	public void testExceptionWithTableGenerator() throws Exception {
 
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
 
 		SessionFactoryImplementor sessionFactory = getFactory().unwrap( SessionFactoryImplementor.class );
-		IdentifierGenerator generator = sessionFactory.getIdentifierGenerator( GlobalConfigNotEnabledNextValueGenerationTest.EntityWithSequence.class.getName() );
-		IdSourceKeyMetadata tableMetadata = ( (OgmSequenceGenerator) generator ).getGeneratorKeyMetadata();
+		IdentifierGenerator generator = sessionFactory.getIdentifierGenerator( GlobalConfigNotEnabledTableGenerationTest.EntityWithTableGenerator.class.getName() );
+		IdSourceKeyMetadata tableMetadata = ( (OgmTableGenerator) generator ).getGeneratorKeyMetadata();
 		IdSourceKey generatorKey = IdSourceKey.forTable( tableMetadata, TABLE_ROW_KEY_NAME );
 
 		dialect.nextValue( new NextValueRequest( generatorKey, 1, 0 ) );
-		fail( "expected exception was not raised" );
 
-	}
+		fail( "expected exception on next value invocation was not raised" );
 
-	@Entity
-	@Table(name = "SEQUENCE_GENERATOR")
-	private static class EntityWithSequence {
-
-		@Id
-		@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
-		@SequenceGenerator(name = "gen", sequenceName = SEQUENCE_NAME, initialValue = SEQUENCE_INITIAL_VALUE)
-		Long id;
 	}
 
 	@Entity
