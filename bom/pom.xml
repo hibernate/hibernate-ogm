@@ -40,7 +40,7 @@
         <narayanaVersion>5.5.30.Final</narayanaVersion>
 
         <!-- Hibernate ORM -->
-        <hibernateVersion>5.2.12.Final</hibernateVersion>
+        <hibernateVersion>5.2.13.Final</hibernateVersion>
 
         <!-- Hibernate Search -->
         <hibernateSearchVersion>5.8.2.Final</hibernateSearchVersion>
