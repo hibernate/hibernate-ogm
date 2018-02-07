@@ -48,7 +48,6 @@ public class SearchIntegrationIT extends MagiccardsDatabaseScenario {
 					.getOrCreateProperties()
 						.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 						.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan_embedded" ).up()
-						.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
 						.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
 				.up().up();
 	}
