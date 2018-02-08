@@ -85,18 +85,6 @@
             <filtered>true</filtered>
         </file>
 
-        <!-- HSEARCH using the version of ORM we require for OGM -->
-        <file>
-            <source>${module.xml.basedir}/org/hibernate/search/orm/module.xml</source>
-            <outputDirectory>/org/hibernate/search/orm/${hibernate-search.module.slot}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>${module.xml.aliases.basedir}/org/hibernate/search/engine/module.xml</source>
-            <outputDirectory>/org/hibernate/search/engine/${hibernate-search.module.slot}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-
         <!-- INFINISPAN clustered counter module is not present on 9.1.4 Wildfly distribution. -->
         <!-- Will be available from Infinispan 9.2.0. -->
         <file>
