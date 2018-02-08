@@ -43,7 +43,7 @@
         <hibernateVersion>5.2.13.Final</hibernateVersion>
 
         <!-- Hibernate Search -->
-        <hibernateSearchVersion>5.8.2.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>5.9.0.Final</hibernateSearchVersion>
         <hibernate-search.module.slot>${hibernateSearchVersion}-orm52</hibernate-search.module.slot>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
