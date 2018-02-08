@@ -146,16 +146,6 @@
                                     <outputDirectory>${jboss.home}/modules</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.hibernate</groupId>
-                                    <artifactId>hibernate-search-modules</artifactId>
-                                    <version>${hibernateSearchVersion}</version>
-                                    <classifier>${hibernateWildflyClassifier}</classifier>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                </artifactItem>
-                                <!-- Set this last as we need to overwrite some Search modules to force an upgrade -->
-                                <artifactItem>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>hibernate-ogm-modules</artifactId>
                                     <classifier>${hibernateWildflyClassifier}</classifier>
