@@ -41,6 +41,7 @@
 
         <!-- Hibernate ORM -->
         <hibernateVersion>5.2.13.Final</hibernateVersion>
+        <hibernate-orm.module.slot>5.2</hibernate-orm.module.slot>
 
         <!-- Hibernate Search -->
         <hibernateSearchVersion>5.9.0.Final</hibernateSearchVersion>
