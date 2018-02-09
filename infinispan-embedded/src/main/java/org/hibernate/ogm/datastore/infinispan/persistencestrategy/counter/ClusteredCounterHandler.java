@@ -43,10 +43,10 @@ public abstract class ClusteredCounterHandler {
 	/**
 	 * The method creates the counter only if the counter is not already created.
 	 *
-	 * @param initialValue		initial value for the counter
-	 * @param counterManager	counterManager service
-	 * @param counterName		unique name for the counter
-	 * @return					true if the counter is created by current thread, false otherwise
+	 * @param initialValue initial value for the counter
+	 * @param counterManager counterManager service
+	 * @param counterName unique name for the counter
+	 * @return true if the counter is created by current thread, false otherwise
 	 */
 	protected boolean defineCounterIfNotExists(int initialValue, CounterManager counterManager, String counterName) {
 

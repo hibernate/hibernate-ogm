@@ -176,7 +176,6 @@ public class InfinispanEmbeddedDatastoreProvider extends BaseDatastoreProvider i
 	}
 
 	public Number nextValue(NextValueRequest request) {
-		// choose the right handler
 
 		if ( request.getKey().getMetadata().getType().equals( IdSourceType.TABLE ) ) {
 			return tableClusterHandler.nextValue( request );

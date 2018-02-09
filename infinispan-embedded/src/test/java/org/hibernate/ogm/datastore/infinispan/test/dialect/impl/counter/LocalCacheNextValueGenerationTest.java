@@ -41,7 +41,7 @@ public class LocalCacheNextValueGenerationTest extends StartAndCloseInfinispanEm
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001108: Sequences or di generation is not supported for local caches" );
 
-		startAndCloseFactory( EntityWithSequence.class, "infinispan-local.xml"   );
+		startAndCloseFactory( EntityWithSequence.class, "infinispan-local.xml" );
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class LocalCacheNextValueGenerationTest extends StartAndCloseInfinispanEm
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001108: Sequences or di generation is not supported for local caches" );
 
-		startAndCloseFactory( EntityWithTableGenerator.class, "infinispan-local.xml"  );
+		startAndCloseFactory( EntityWithTableGenerator.class, "infinispan-local.xml" );
 	}
 
 	@Entity

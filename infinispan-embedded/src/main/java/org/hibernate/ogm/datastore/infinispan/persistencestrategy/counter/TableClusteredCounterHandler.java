@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutionException;
 
-import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -45,20 +44,18 @@ public class TableClusteredCounterHandler extends ClusteredCounterHandler {
 		boolean definedByCurrentThread = defineCounterIfNotExists( request.getInitialValue(), counterManager, counterName );
 		if ( definedByCurrentThread ) {
 
-			if ( LOG.isTraceEnabled() ) {
-				LOG.tracev( "Clustered Counter created for Sequence {0}.", counterName );
-			}
-
+			LOG.tracev( "Clustered Counter created for Sequence %1$s.", counterName );
 			return Long.valueOf( request.getInitialValue() );
 		}
 
 		StrongCounter strongCounter = counterManager.getStrongCounter( counterName );
 		try {
-			// consistent "single unit" increment && get
+			// consistent "single unit", potentially distributed, increment && get
 			return strongCounter.addAndGet( request.getIncrement() ).get();
 		}
 		catch (ExecutionException | InterruptedException e) {
-			throw new HibernateException( "Interrupting Operation " + e.getMessage(), e );
+			LOG.exceptionGeneratingValueForCounter( counterName );
+			return null;
 		}
 
 	}

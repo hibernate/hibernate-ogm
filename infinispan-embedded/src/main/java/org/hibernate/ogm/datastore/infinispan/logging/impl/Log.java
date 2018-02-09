@@ -57,4 +57,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1109, value = "Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration")
 	HibernateException counterCannotBeCreatedWithoutGlobalConfiguration();
 
+	@Message(id = 1110, value = "Exception generating value for counter '%1$s'.")
+	HibernateException exceptionGeneratingValueForCounter(String counterName);
+
 }

@@ -50,7 +50,6 @@ public class GlobalConfigNotEnabledSequenceGenerationTest extends StartAndCloseI
 		thrown.expectMessage( "OGM001109: Counter is not defined and cannot be created. Global persistent-location is missing in the Infinispan configuration" );
 
 		startAndCloseFactory( GlobalConfigNotEnabledSequenceGenerationTest.EntityWithSequence.class, "infinispan-dist-noglobal.xml" );
-
 	}
 
 	@Entity

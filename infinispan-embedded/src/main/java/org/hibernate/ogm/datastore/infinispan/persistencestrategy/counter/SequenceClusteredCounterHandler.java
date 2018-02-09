@@ -10,11 +10,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.hibernate.HibernateException;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+
 import org.infinispan.counter.EmbeddedCounterManagerFactory;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.counter.api.StrongCounter;
@@ -70,7 +70,8 @@ public class SequenceClusteredCounterHandler extends ClusteredCounterHandler {
 			return counter.addAndGet( request.getIncrement() ).get();
 		}
 		catch (ExecutionException | InterruptedException e) {
-			throw new HibernateException( "Interrupting Operation " + e.getMessage(), e );
+			LOG.exceptionGeneratingValueForCounter( counter.getName() );
+			return null;
 		}
 
 	}
