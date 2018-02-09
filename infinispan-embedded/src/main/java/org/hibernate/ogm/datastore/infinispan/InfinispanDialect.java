@@ -190,7 +190,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		return provider.getCounter().nextValue( request );
+		return provider.nextValue( request );
 	}
 
 	@Override

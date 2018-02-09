@@ -8,7 +8,7 @@
 
 <!--
     This is a testing configuration, running in clustered mode, without a global configuration defined.
-    This configuration is applied to GlobalConfigNotEnabledNextValueGenerationTest
+    This configuration is applied to GlobalConfigNotEnabledTableGenerationTest and GlobalConfigNotEnabledSequenceGenerationTest
     in order to test the validation exception and message on missing global configuration.
 -->
 <infinispan

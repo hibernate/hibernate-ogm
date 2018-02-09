@@ -6,11 +6,6 @@
  */
 package org.hibernate.ogm.datastore.infinispan.test.dialect.impl.counter;
 
-import static org.fest.assertions.Fail.fail;
-
-import java.util.Map;
-import java.util.Properties;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,14 +15,8 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.TestHelper;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,7 +31,7 @@ import org.junit.rules.ExpectedException;
  * @author Davide D'Alto
  */
 @TestForIssue(jiraKey = { "OGM-1353", "OGM-1376" })
-public class LocalCacheNextValueGenerationTest {
+public class LocalCacheNextValueGenerationTest extends StartAndCloseInfinispanEmbeddedFactoryBaseTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -52,7 +41,7 @@ public class LocalCacheNextValueGenerationTest {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001108: Sequences or di generation is not supported for local caches" );
 
-		startAndCloseFactory( EntityWithSequence.class );
+		startAndCloseFactory( EntityWithSequence.class, "infinispan-local.xml" );
 	}
 
 	@Test
@@ -60,33 +49,7 @@ public class LocalCacheNextValueGenerationTest {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "OGM001108: Sequences or di generation is not supported for local caches" );
 
-		startAndCloseFactory( EntityWithTableGenerator.class );
-	}
-
-	private void startAndCloseFactory(Class<?> annotatedClass) {
-		Map<String, String> defaultTestSettings = TestHelper.getDefaultTestSettings();
-		defaultTestSettings.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-local.xml" );
-
-		Properties properties = new Properties();
-		properties.putAll( defaultTestSettings );
-
-		Configuration configuration = new OgmConfiguration();
-		configuration.addAnnotatedClass( annotatedClass ).addProperties( properties );
-
-		StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
-		builder.applySettings( configuration.getProperties() );
-		StandardServiceRegistry serviceRegistry = builder.build();
-
-		SessionFactory sessionFactory = null;
-		try {
-			sessionFactory = configuration.buildSessionFactory( serviceRegistry );
-			fail( "expected exception was not raised" );
-		}
-		finally {
-			if ( sessionFactory != null ) {
-				sessionFactory.close();
-			}
-		}
+		startAndCloseFactory( EntityWithTableGenerator.class, "infinispan-local.xml" );
 	}
 
 	@Entity
