@@ -7,21 +7,25 @@
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.counter;
 
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ExecutionException;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-
+import org.infinispan.counter.EmbeddedCounterManagerFactory;
 import org.infinispan.counter.api.CounterConfiguration;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.counter.api.CounterType;
 import org.infinispan.counter.api.Storage;
+import org.infinispan.counter.api.StrongCounter;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
  * Provides access to Infinispan Clustered Counter feature.
  * Used by the dialect to implement a reliable ID generator.
  *
+ * @author Davide D'Alto
  * @author Fabio Massimo Ercoli
  */
 public abstract class ClusteredCounterHandler {
@@ -41,46 +45,33 @@ public abstract class ClusteredCounterHandler {
 	}
 
 	/**
-	 * The method creates the counter only if the counter is not already created.
+	 * Create a counter if one is not defined already, otherwise return the existing one.
 	 *
-	 * @param initialValue initial value for the counter
-	 * @param counterManager counterManager service
 	 * @param counterName unique name for the counter
-	 * @return true if the counter is created by current thread, false otherwise
+	 * @param initialValue initial value for the counter
+	 * @return a {@link StrongCounter}
 	 */
-	protected boolean defineCounterIfNotExists(int initialValue, CounterManager counterManager, String counterName) {
+	protected StrongCounter getCounterOrCreateIt(String counterName, int initialValue) {
+		CounterManager counterManager = EmbeddedCounterManagerFactory.asCounterManager( cacheManager );
+		if ( !counterManager.isDefined( counterName ) ) {
+			LOG.tracef( "Counter %s is not defined, creating it", counterName );
 
-		// if counter is already present, skipping defining
-		if ( counterManager.isDefined( counterName ) ) {
+			// global configuration is mandatory in order to define
+			// a new clustered counter with persistent storage
+			validateGlobalConfiguration();
 
-			if ( LOG.isTraceEnabled() ) {
-				LOG.tracev( "Counter {0} is already defined on Infinispan data store: Skip creation", counterName );
-			}
-			return false;
+			counterManager.defineCounter( counterName,
+				CounterConfiguration.builder(
+					CounterType.UNBOUNDED_STRONG )
+						.initialValue( initialValue )
+						.storage( Storage.PERSISTENT )
+						.build() );
+
+			LOG.tracef( "Counter %s is not defined, creating it", counterName );
 		}
 
-		// global configuration is mandatory in order to define
-		// a new clustered counter with persistent storage
-		validateGlobalConfiguration();
-
-		// for some executions it is possible that two or more threads will try to define concurrently the same counter:
-		// definedByCurrentThread will be true if the counter will be created by current thread
-		boolean definedByCurrentThread = counterManager.defineCounter( counterName,
-			CounterConfiguration.builder(
-				CounterType.UNBOUNDED_STRONG )
-					.initialValue( initialValue )
-					.storage( Storage.PERSISTENT )
-					.build() );
-
-		if ( LOG.isDebugEnabled() && definedByCurrentThread ) {
-			LOG.debugv( "Counter {0} defined by current thread", counterName );
-		}
-		else if ( LOG.isDebugEnabled() ) {
-			LOG.debugv( "Counter {0} defined by other concurrent thread", counterName );
-		}
-
-		return definedByCurrentThread;
-
+		StrongCounter strongCounter = counterManager.getStrongCounter( counterName );
+		return strongCounter;
 	}
 
 	private void validateGlobalConfiguration() {
@@ -93,6 +84,15 @@ public abstract class ClusteredCounterHandler {
 		}
 	}
 
-	public abstract Number nextValue(NextValueRequest request);
+	protected Number nextValue(NextValueRequest request, StrongCounter strongCounter) {
+		try {
+			Long newValue = strongCounter.addAndGet( request.getIncrement() ).get();
+			return newValue - request.getIncrement();
+		}
+		catch (ExecutionException | InterruptedException e) {
+			throw new HibernateException( "Interrupting Operation " + e.getMessage(), e );
+		}
+	}
 
+	public abstract Number nextValue(NextValueRequest request);
 }
