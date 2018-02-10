@@ -26,8 +26,16 @@ public class TableClusteredCounterHandler extends ClusteredCounterHandler {
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		String counterName = request.getKey().getColumnValue();
+		String counterName = counterName( request );
 		StrongCounter strongCounter = getCounterOrCreateIt( counterName, request.getInitialValue() );
 		return nextValue( request, strongCounter );
+	}
+
+	private String counterName(NextValueRequest request) {
+		StringBuilder builder = new StringBuilder();
+		builder.append( request.getKey().getTable() );
+		builder.append( "." );
+		builder.append( request.getKey().getColumnValue() );
+		return builder.toString();
 	}
 }
