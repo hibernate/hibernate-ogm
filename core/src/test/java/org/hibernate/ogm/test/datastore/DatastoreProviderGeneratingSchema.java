@@ -6,11 +6,6 @@
  */
 package org.hibernate.ogm.test.datastore;
 
-import java.util.Iterator;
-
-import org.hibernate.boot.model.relational.Namespace;
-import org.hibernate.mapping.Column;
-import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
@@ -32,8 +27,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
- * Example of datastore provider using metadata to generate some hypothetical
- * schema.
+ * Example of datastore provider using metadata to generate some hypothetical schema.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
@@ -51,32 +45,17 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 
 	public static class TestSchemaDefiner extends BaseSchemaDefiner {
 
+		public static boolean schemaInitialized = false;
+
 		@Override
 		public void initializeSchema(SchemaDefinitionContext context) {
-			for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
-				for ( Table table : namespace.getTables() ) {
-					if ( table.isPhysicalTable() ) {
-						String tableName = table.getQuotedName();
-						// do something with table
-						Iterator<Column> columns = table.getColumnIterator();
-						while ( columns.hasNext() ) {
-							Column column = columns.next();
-							String columnName = column.getCanonicalName();
-							// do something with column
-						}
-						//TODO handle unique constraints?
-					}
-				}
-			}
-
-			throw new RuntimeException( "STARTED!" );
+			schemaInitialized = true;
 		}
 	}
 
 	public static class Dialect extends BaseGridDialect {
 
 		public Dialect(DatastoreProviderGeneratingSchema provider) {
-
 		}
 
 		@Override
