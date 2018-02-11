@@ -7,9 +7,9 @@
 package org.hibernate.ogm.loader.nativeloader.impl;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
@@ -23,7 +23,7 @@ import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+import org.hibernate.param.ParameterBinder;
 
 /**
  * Extension point allowing any NoSQL native query with named and positional parameters
@@ -109,9 +109,8 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 	}
 
 	@Override
-	public Map<?, ?> getNamedParameterBindPoints() {
-		// TODO: Should this actually be something more sensible?
-		return Collections.emptyMap();
+	public List<ParameterBinder> getParameterValueBinders() {
+		return Collections.emptyList();
 	}
 
 	@Override
