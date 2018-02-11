@@ -25,6 +25,7 @@ public abstract class RecognizerBasedParameterMetadataBuilder implements Paramet
 	public ParameterMetadataImpl buildParameterMetadata(String nativeQuery) {
 		ParamLocationRecognizer recognizer = new ParamLocationRecognizer( 0 );
 		parseQueryParameters( nativeQuery, recognizer );
+		recognizer.complete();
 
 		final Map<Integer, OrdinalParameterDescriptor> ordinalDescriptors = recognizer.getOrdinalParameterDescriptionMap();
 		final Map<String, NamedParameterDescriptor> namedDescriptors = recognizer.getNamedParameterDescriptionMap();
