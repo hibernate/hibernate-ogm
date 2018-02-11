@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.remote.http.transaction.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +20,9 @@ import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.jdbc.WorkExecutor;
 import org.hibernate.jdbc.WorkExecutorVisitable;
+import org.hibernate.jpa.JpaCompliance;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider;
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
@@ -46,6 +47,7 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 	private final TransactionCoordinatorBuilder transactionCoordinatorBuilder;
 	private final TransactionCoordinatorOwner owner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
+	private final JpaCompliance jpaCompliance;
 
 	private Neo4jTransactionDriver physicalTransactionDelegate;
 
@@ -69,6 +71,12 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 		this.observers = new ArrayList<>();
 		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 		this.owner = owner;
+
+		this.jpaCompliance = owner.getJdbcSessionOwner()
+				.getJdbcSessionContext()
+				.getSessionFactory()
+				.getSessionFactoryOptions()
+				.getJpaCompliance();
 	}
 
 	@Override
@@ -111,6 +119,11 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 	@Override
 	public IsolationDelegate createIsolationDelegate() {
 		return new Neo4jIsolationDelegate( provider );
+	}
+
+	@Override
+	public JpaCompliance getJpaCompliance() {
+		return jpaCompliance;
 	}
 
 	private class Neo4jIsolationDelegate implements IsolationDelegate {
