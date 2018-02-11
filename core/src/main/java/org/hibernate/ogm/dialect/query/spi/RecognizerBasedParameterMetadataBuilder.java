@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.engine.query.spi.NamedParameterDescriptor;
@@ -24,33 +23,21 @@ public abstract class RecognizerBasedParameterMetadataBuilder implements Paramet
 
 	@Override
 	public ParameterMetadataImpl buildParameterMetadata(String nativeQuery) {
-		ParamLocationRecognizer recognizer = new ParamLocationRecognizer();
+		// At the moment we don't care about JDBC base count for positional parameters because
+		// we don't have a dialect that supports them.
+		// After a quick inspection it seems that only with Neo4j would be easy to make it work,
+		// and even in that scenario I'm not sure it will matter.
+		// I think it makes sense to keep track of the JPA compliance problems in separate issues.
+		// In this case after solving OGM-1407
+		int jdbcStyleOrdinalCountBase = 0;
+		ParamLocationRecognizer recognizer = new ParamLocationRecognizer( jdbcStyleOrdinalCountBase );
 		parseQueryParameters( nativeQuery, recognizer );
 		recognizer.complete();
 
-		final int size = recognizer.getOrdinalParameterLocationList().size();
-		final OrdinalParameterDescriptor[] ordinalDescriptors = new OrdinalParameterDescriptor[ size ];
-		for ( int i = 0; i < size; i++ ) {
-			final Integer position = recognizer.getOrdinalParameterLocationList().get( i );
-			ordinalDescriptors[i] = new OrdinalParameterDescriptor( i, null, position );
-		}
+		final Map<Integer, OrdinalParameterDescriptor> ordinalDescriptors = recognizer.getOrdinalParameterDescriptionMap();
+		final Map<String, NamedParameterDescriptor> namedDescriptors = recognizer.getNamedParameterDescriptionMap();
 
-		final Map<String, NamedParameterDescriptor> namedParamDescriptorMap = new HashMap<String, NamedParameterDescriptor>();
-		final Map<String, ParamLocationRecognizer.NamedParameterDescription> map = recognizer.getNamedParameterDescriptionMap();
-		for ( final String name : map.keySet() ) {
-			final ParamLocationRecognizer.NamedParameterDescription description = map.get( name );
-			namedParamDescriptorMap.put(
-					name,
-					new NamedParameterDescriptor(
-							name,
-							null,
-							description.buildPositionsArray(),
-							description.isJpaStyle()
-					)
-			);
-		}
-
-		return new ParameterMetadataImpl( ordinalDescriptors, namedParamDescriptorMap );
+		return new ParameterMetadataImpl( ordinalDescriptors, namedDescriptors );
 	}
 
 	/**
