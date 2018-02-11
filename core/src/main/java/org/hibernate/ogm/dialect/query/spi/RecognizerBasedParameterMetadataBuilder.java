@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.engine.query.spi.NamedParameterDescriptor;
@@ -24,32 +23,13 @@ public abstract class RecognizerBasedParameterMetadataBuilder implements Paramet
 
 	@Override
 	public ParameterMetadataImpl buildParameterMetadata(String nativeQuery) {
-		ParamLocationRecognizer recognizer = new ParamLocationRecognizer();
+		ParamLocationRecognizer recognizer = new ParamLocationRecognizer( 0 );
 		parseQueryParameters( nativeQuery, recognizer );
 
-		final int size = recognizer.getOrdinalParameterLocationList().size();
-		final OrdinalParameterDescriptor[] ordinalDescriptors = new OrdinalParameterDescriptor[ size ];
-		for ( int i = 0; i < size; i++ ) {
-			final Integer position = recognizer.getOrdinalParameterLocationList().get( i );
-			ordinalDescriptors[i] = new OrdinalParameterDescriptor( i, null, position );
-		}
+		final Map<Integer, OrdinalParameterDescriptor> ordinalDescriptors = recognizer.getOrdinalParameterDescriptionMap();
+		final Map<String, NamedParameterDescriptor> namedDescriptors = recognizer.getNamedParameterDescriptionMap();
 
-		final Map<String, NamedParameterDescriptor> namedParamDescriptorMap = new HashMap<String, NamedParameterDescriptor>();
-		final Map<String, ParamLocationRecognizer.NamedParameterDescription> map = recognizer.getNamedParameterDescriptionMap();
-		for ( final String name : map.keySet() ) {
-			final ParamLocationRecognizer.NamedParameterDescription description = map.get( name );
-			namedParamDescriptorMap.put(
-					name,
-					new NamedParameterDescriptor(
-							name,
-							null,
-							description.buildPositionsArray(),
-							description.isJpaStyle()
-					)
-			);
-		}
-
-		return new ParameterMetadataImpl( ordinalDescriptors, namedParamDescriptorMap );
+		return new ParameterMetadataImpl( ordinalDescriptors, namedDescriptors );
 	}
 
 	/**
