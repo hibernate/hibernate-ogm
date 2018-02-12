@@ -11,7 +11,7 @@
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
-        <wildFlyServerName>wildfly-${version.wildfly}</wildFlyServerName>
+        <wildFlyServerName>wildfly-${wildflyVersion}</wildFlyServerName>
         <jboss.home>${project.build.directory}/${wildFlyServerName}</jboss.home>
         <infinispanServerName>infinispan-server</infinispanServerName>
         <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
@@ -131,7 +131,7 @@
                                 <artifactItem>
                                     <groupId>org.hibernate</groupId>
                                     <artifactId>hibernate-orm-modules</artifactId>
-                                    <version>${hibernateVersion}</version>
+                                    <version>${hibernateOrmVersion}</version>
                                     <classifier>${hibernateWildflyClassifier}</classifier>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>

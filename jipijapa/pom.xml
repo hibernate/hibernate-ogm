@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>jipijapa-hibernate5</artifactId>
-            <version>${version.wildfly}</version>
+            <version>${wildflyVersion}</version>
             <exclusions>
                 <!-- Exclusions needed to make dependency convergence happy:
                     WildFly and Hibernate ORM aren't necessarily aligned on Jandex usage;

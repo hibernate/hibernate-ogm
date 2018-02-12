@@ -23,7 +23,7 @@
 
         <!--
             These dependencies should be aligned with the ones from the WildFly version we support
-            See the version.wildfly property in the hibernate-ogm-parent pom
+            See the wildflyVersion property in the hibernate-ogm-parent pom
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
 
@@ -40,19 +40,19 @@
         <narayanaVersion>5.5.30.Final</narayanaVersion>
 
         <!-- Hibernate ORM -->
-        <hibernateVersion>5.2.13.Final</hibernateVersion>
-        <hibernate-orm.module.slot>5.2</hibernate-orm.module.slot>
+        <hibernateOrmVersion>5.2.13.Final</hibernateOrmVersion>
+        <hibernateOrmModuleSlot>5.2</hibernateOrmModuleSlot>
 
         <!-- Hibernate Search -->
         <hibernateSearchVersion>5.9.0.Final</hibernateSearchVersion>
-        <hibernate-search.module.slot>5.9</hibernate-search.module.slot>
+        <hibernateSearchModuleSlot>5.9</hibernateSearchModuleSlot>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
         <luceneVersion>5.5.5</luceneVersion>
 
         <!-- Various dependencies -->
         <hibernateHqlParserVersion>1.5.0.Final</hibernateHqlParserVersion>
-        <hibernate.hql.module.slot>${hibernateHqlParserVersion}</hibernate.hql.module.slot>
+        <hibernateHqlModuleSlot>${hibernateHqlParserVersion}</hibernateHqlModuleSlot>
         <parboiledVersion>1.1.8</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
         <asmVersion>5.2</asmVersion> <!-- used for Parboiled and Neo4j -->
 
@@ -217,7 +217,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${hibernateOrmVersion}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -232,7 +232,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${hibernateOrmVersion}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -247,7 +247,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${hibernateOrmVersion}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -258,12 +258,12 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-infinispan</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${hibernateOrmVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-java8</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${hibernateOrmVersion}</version>
             </dependency>
 
             <!-- Hibernate Search -->

@@ -66,7 +66,7 @@
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
-        <version.wildfly>11.0.0.Final</version.wildfly>
+        <wildflyVersion>11.0.0.Final</wildflyVersion>
         <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
 
         <!-- Asciidoctor -->
@@ -308,8 +308,8 @@
                             <goal>parse-version</goal>
                         </goals>
                         <configuration>
-                            <propertyPrefix>hibernateParsedVersion</propertyPrefix>
-                            <versionString>${hibernateVersion}</versionString>
+                            <propertyPrefix>hibernateOrmParsedVersion</propertyPrefix>
+                            <versionString>${hibernateOrmVersion}</versionString>
                         </configuration>
                     </execution>
                     <execution>

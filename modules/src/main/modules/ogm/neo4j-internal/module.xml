@@ -5,7 +5,7 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.neo4j-internal.module.slot}">
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.neo4j.internal" slot="${hibernateOgmNeo4jInternalModuleSlot}">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -65,10 +65,10 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
 
-        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}"/>
+        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernateOgmModuleSlot}"/>
 
         <!-- neo4j-lucene-index requires the API in the Kernel -->
-        <module name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.neo4j.module.slot}"/>
+        <module name="org.hibernate.ogm.neo4j" slot="${hibernateOgmNeo4jModuleSlot}"/>
 
         <!-- It requires sun.misc.Unsafe -->
         <module name="sun.jdk" />
