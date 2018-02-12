@@ -69,8 +69,8 @@
         <version.wildfly>11.0.0.Final</version.wildfly>
         <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
 
-        <!-- This slot property is used by the modules porject and the integration tests -->
-        <hibernate-search.module.slot>5.9</hibernate-search.module.slot>
+        <!-- This slot property is used by the modules project and the integration tests -->
+        <hibernate-search.module.slot>${hibernateSearchFamilyVersion}</hibernate-search.module.slot>
 
         <!-- Asciidoctor -->
         <hibernate-asciidoctor-theme.version>1.0.1.Final</hibernate-asciidoctor-theme.version>
