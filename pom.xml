@@ -69,6 +69,9 @@
         <version.wildfly>11.0.0.Final</version.wildfly>
         <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
 
+        <!-- This slot property is used by the modules porject and the integration tests -->
+        <hibernate-search.module.slot>5.9</hibernate-search.module.slot>
+
         <!-- Asciidoctor -->
         <hibernate-asciidoctor-theme.version>1.0.1.Final</hibernate-asciidoctor-theme.version>
         <asciidoctor-maven-plugin.version>1.5.3</asciidoctor-maven-plugin.version>
