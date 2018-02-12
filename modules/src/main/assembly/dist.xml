@@ -15,86 +15,86 @@
     <files>
         <!-- OGM -->
         <file>
-            <source>${hibernate.ogm.module.xml}</source>
-            <outputDirectory>/org/hibernate/ogm/${hibernate.ogm.module.slot}</outputDirectory>
+            <source>${hibernateOgmModuleXml}</source>
+            <outputDirectory>/org/hibernate/ogm/${hibernateOgmModuleSlot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${module.xml.aliases.basedir}/ogm/core/module.xml</source>
+            <source>${moduleXmlAliasesBasedir}/ogm/core/module.xml</source>
             <outputDirectory>/org/hibernate/ogm/main</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${module.xml.basedir}/ogm/jipijapa/module.xml</source>
-            <outputDirectory>/org/hibernate/ogm/jipijapa/${hibernate.ogm.jipijapa.module.slot}</outputDirectory>
+            <source>${moduleXmlBasedir}/ogm/jipijapa/module.xml</source>
+            <outputDirectory>/org/hibernate/ogm/jipijapa/${hibernateOgmJipijapaModuleSlot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/infinispan-embedded/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.infinispan-embedded.module.slot}</outputDirectory>
+             <source>${moduleXmlBasedir}/ogm/infinispan-embedded/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-embedded/${hibernateOgmInfinispanEmbeddedModuleSlot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/infinispan-remote/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan-remote/${hibernate.ogm.infinispan-remote.module.slot}</outputDirectory>
+             <source>${moduleXmlBasedir}/ogm/infinispan-remote/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-remote/${hibernateOgmInfinispanRemoteModuleSlot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.aliases.basedir}/ogm/infinispan-embedded/module.xml</source>
+             <source>${moduleXmlAliasesBasedir}/ogm/infinispan-embedded/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/infinispan-embedded/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.aliases.basedir}/ogm/infinispan-remote/module.xml</source>
+             <source>${moduleXmlAliasesBasedir}/ogm/infinispan-remote/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/infinispan-remote/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
+             <source>${moduleXmlBasedir}/ogm/mongodb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/mongodb/${hibernateOgmMongodbModuleSlot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.aliases.basedir}/ogm/mongodb/module.xml</source>
+             <source>${moduleXmlAliasesBasedir}/ogm/mongodb/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/neo4j/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+             <source>${moduleXmlBasedir}/ogm/neo4j/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/neo4j/${hibernateOgmNeo4jModuleSlot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.aliases.basedir}/ogm/neo4j/module.xml</source>
+             <source>${moduleXmlAliasesBasedir}/ogm/neo4j/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/neo4j/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/neo4j-internal/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/neo4j/internal/${hibernate.ogm.neo4j-internal.module.slot}</outputDirectory>
+             <source>${moduleXmlBasedir}/ogm/neo4j-internal/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/neo4j/internal/${hibernateOgmNeo4jInternalModuleSlot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
-            <source>${module.xml.basedir}/hql/module.xml</source>
-            <outputDirectory>/org/hibernate/hql/${hibernate.hql.module.slot}</outputDirectory>
+            <source>${moduleXmlBasedir}/hql/module.xml</source>
+            <outputDirectory>/org/hibernate/hql/${hibernateHqlModuleSlot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${module.xml.basedir}/org/parboiled/module.xml</source>
-            <outputDirectory>/org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
+            <source>${moduleXmlBasedir}/org/parboiled/module.xml</source>
+            <outputDirectory>/org/hibernate/ogm/internal/parboiled/${hibernateOgmModuleSlot}</outputDirectory>
             <filtered>true</filtered>
         </file>
 
         <!-- INFINISPAN clustered counter module is not present on 9.1.4 Wildfly distribution. -->
         <!-- Will be available from Infinispan 9.2.0. -->
         <file>
-            <source>${module.xml.basedir}/org/infinispan/core/module.xml</source>
-            <outputDirectory>/org/infinispan/core/${infinispan.module.slot}</outputDirectory>
+            <source>${moduleXmlBasedir}/org/infinispan/core/module.xml</source>
+            <outputDirectory>/org/infinispan/core/${infinispanModuleSlot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${module.xml.basedir}/org/infinispan/counter/module.xml</source>
-            <outputDirectory>/org/infinispan/counter/${infinispan.module.slot}</outputDirectory>
+            <source>${moduleXmlBasedir}/org/infinispan/counter/module.xml</source>
+            <outputDirectory>/org/infinispan/counter/${infinispanModuleSlot}</outputDirectory>
             <filtered>true</filtered>
         </file>
     </files>
@@ -103,7 +103,7 @@
         <!-- OGM -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/${hibernate.ogm.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/${hibernateOgmModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -112,7 +112,7 @@
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/jipijapa/${hibernate.ogm.jipijapa.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/jipijapa/${hibernateOgmJipijapaModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -121,7 +121,7 @@
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.infinispan-embedded.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/infinispan-embedded/${hibernateOgmInfinispanEmbeddedModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -130,7 +130,7 @@
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/infinispan-remote/${hibernate.ogm.infinispan-remote.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/infinispan-remote/${hibernateOgmInfinispanRemoteModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -139,7 +139,7 @@
         </dependencySet>
         <dependencySet>
              <useProjectArtifact>false</useProjectArtifact>
-             <outputDirectory>org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
+             <outputDirectory>org/hibernate/ogm/mongodb/${hibernateOgmMongodbModuleSlot}</outputDirectory>
              <useTransitiveFiltering>false</useTransitiveFiltering>
              <unpack>false</unpack>
              <includes>
@@ -149,7 +149,7 @@
        </dependencySet>
        <dependencySet>
               <useProjectArtifact>false</useProjectArtifact>
-              <outputDirectory>org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+              <outputDirectory>org/hibernate/ogm/neo4j/${hibernateOgmNeo4jModuleSlot}</outputDirectory>
               <useTransitiveFiltering>false</useTransitiveFiltering>
               <unpack>false</unpack>
               <includes>
@@ -165,7 +165,7 @@
        </dependencySet>
        <dependencySet>
               <useProjectArtifact>false</useProjectArtifact>
-              <outputDirectory>org/hibernate/ogm/neo4j/internal/${hibernate.ogm.neo4j-internal.module.slot}</outputDirectory>
+              <outputDirectory>org/hibernate/ogm/neo4j/internal/${hibernateOgmNeo4jInternalModuleSlot}</outputDirectory>
               <useTransitiveFiltering>false</useTransitiveFiltering>
               <unpack>false</unpack>
               <includes>
@@ -221,7 +221,7 @@
        <!-- HQL -->
        <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/hql/${hibernate.hql.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/hql/${hibernateHqlModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -232,7 +232,7 @@
        </dependencySet>
        <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/internal/parboiled/${hibernateOgmModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -250,7 +250,7 @@
         <!-- Will be available from Infinispan 9.2.0. -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/infinispan/counter/${infinispan.module.slot}</outputDirectory>
+            <outputDirectory>org/infinispan/counter/${infinispanModuleSlot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>

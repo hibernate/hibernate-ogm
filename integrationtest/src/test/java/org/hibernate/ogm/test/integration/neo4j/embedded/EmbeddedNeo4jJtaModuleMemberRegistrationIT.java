@@ -39,7 +39,7 @@ public class EmbeddedNeo4jJtaModuleMemberRegistrationIT extends Neo4jModuleMembe
 				.Builder( EmbeddedNeo4jJtaModuleMemberRegistrationIT.class )
 				.addClasses( Neo4jModuleMemberRegistrationScenario.class )
 				.persistenceXml( persistenceXml() )
-				.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.neo4j:${hibernate-ogm.module.slot} services" )
+				.manifestDependencies( "org.hibernate.ogm:${hibernateOgmModuleSlot} services, org.hibernate.ogm.neo4j:${hibernateOgmModuleSlot} services" )
 				.createDeployment();
 	}
 
@@ -58,7 +58,7 @@ public class EmbeddedNeo4jJtaModuleMemberRegistrationIT extends Neo4jModuleMembe
 				.value( neo4jFolder() )
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
+				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernateSearchModuleSlot}" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}

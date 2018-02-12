@@ -4,7 +4,7 @@
 		<feature-pack
 			groupId="org.wildfly"
 			artifactId="wildfly-feature-pack"
-			version="${version.wildfly}" />
+			version="${wildflyVersion}" />
 
 		<feature-pack
 			groupId="org.hibernate"

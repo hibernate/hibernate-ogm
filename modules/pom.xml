@@ -20,18 +20,20 @@
     <description>Hibernate OGM modules creation to use in WildFly</description>
 
     <properties>
-        <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
-        <module.xml.aliases.basedir>${basedir}/src/main/aliases</module.xml.aliases.basedir>
-        <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
-        <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
-        <hibernate.ogm.jipijapa.module.slot>${project.version}</hibernate.ogm.jipijapa.module.slot>
-        <hibernate.ogm.infinispan-embedded.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan-embedded.module.slot>
-        <hibernate.ogm.infinispan-remote.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.infinispan-remote.module.slot>
-        <hibernate.ogm.mongodb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.mongodb.module.slot>
-        <hibernate.ogm.neo4j.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.neo4j.module.slot>
-        <hibernate.ogm.neo4j-internal.module.slot>${project.version}</hibernate.ogm.neo4j-internal.module.slot>
-        <infinispan.module.slot>ispn-9.1</infinispan.module.slot>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+
+        <moduleXmlBasedir>${basedir}/src/main/modules</moduleXmlBasedir>
+        <moduleXmlAliasesBasedir>${basedir}/src/main/aliases</moduleXmlAliasesBasedir>
+
+        <hibernateOgmModuleXml>${moduleXmlBasedir}/ogm/core/module.xml</hibernateOgmModuleXml>
+        <hibernateOgmModuleSlot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernateOgmModuleSlot>
+        <hibernateOgmJipijapaModuleSlot>${project.version}</hibernateOgmJipijapaModuleSlot>
+        <hibernateOgmInfinispanEmbeddedModuleSlot>${hibernateOgmModuleSlot}</hibernateOgmInfinispanEmbeddedModuleSlot>
+        <hibernateOgmInfinispanRemoteModuleSlot>${hibernateOgmModuleSlot}</hibernateOgmInfinispanRemoteModuleSlot>
+        <hibernateOgmMongodbModuleSlot>${hibernateOgmModuleSlot}</hibernateOgmMongodbModuleSlot>
+        <hibernateOgmNeo4jModuleSlot>${hibernateOgmModuleSlot}</hibernateOgmNeo4jModuleSlot>
+        <hibernateOgmNeo4jInternalModuleSlot>${project.version}</hibernateOgmNeo4jInternalModuleSlot>
+        <infinispanModuleSlot>ispn-9.1</infinispanModuleSlot>
     </properties>
 
     <dependencies>

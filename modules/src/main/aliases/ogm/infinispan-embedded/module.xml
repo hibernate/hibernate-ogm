@@ -7,4 +7,4 @@
   -->
 <module-alias xmlns="urn:jboss:module:1.1"
     name="org.hibernate.ogm.infinispan" slot="main"
-    target-name="org.hibernate.ogm.infinispan" target-slot="${hibernate.ogm.infinispan.module.slot}" />
+    target-name="org.hibernate.ogm.infinispan" target-slot="${hibernate.ogm.infinispanModuleSlot}" />
