@@ -1,6 +1,26 @@
 Hibernate OGM Changelog
 =======================
 
+5.3.0.CR1 (12-02-2018)
+-------------------------
+
+** Bug
+    * OGM-1397 - infinispan        - Counter name should also contain the table and not only the columname in InfinispanEmbedded
+
+** Improvement
+    * OGM-1398 - build             - Move slots properties outside the BOM
+    * OGM-1389 - build             - Upgrade Hibernate Search to 5.9.0.Final
+    * OGM-1388 - infinispan, tests - Rename package infinispan to infinispanembedded in integrationtest module
+    * OGM-1387 - infinispan, tests - Integration test with Infinispan embedded is not using the Infinispan configuration file
+    * OGM-1380 - infinispan        - Create the counters at start up in Infinispan Embedded
+    * OGM-1229 - core              - Upgrade ORM to version 5.2
+
+** Task
+    * OGM-1395 - build             - Upgrade the WildFly Provisioning maven plugin to 1.2.7.Final
+    * OGM-1330 - build             - Update dependencies aligned with WildFly version to the versions shipped with WildFly 11
+    * OGM-1320 - core              - Upgrade Hibernate Search to 5.8.2.Final
+    * OGM-1319 - core              - Upgrade HQL Parser to 1.5.0.Final
+
 5.2.0.Final (05-02-2018)
 -------------------------
 
