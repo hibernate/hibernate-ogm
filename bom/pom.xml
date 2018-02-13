@@ -64,7 +64,7 @@
         <mongodbDriverVersion>3.6.2</mongodbDriverVersion>
 
         <!-- Neo4j -->
-        <neo4jVersion>3.3.2</neo4jVersion>
+        <neo4jVersion>3.3.3</neo4jVersion>
         <neo4jJavaDriverVersion>1.5.0</neo4jJavaDriverVersion>
         <neo4jScalaLibraryVersion>2.11.11</neo4jScalaLibraryVersion>
         <!-- See Parboiled dependency above -->
@@ -78,9 +78,9 @@
         <neo4jCaffeineVersion>2.3.3</neo4jCaffeineVersion>
         <!-- Neo4j supports different versions of Cypher -->
         <neo4jCypherCompiler33Version>${neo4jVersion}</neo4jCypherCompiler33Version>
-        <neo4jCypherCompiler32Version>3.2.8</neo4jCypherCompiler32Version>
+        <neo4jCypherCompiler32Version>3.2.9</neo4jCypherCompiler32Version>
         <neo4jCypherCompiler31Version>3.1.6</neo4jCypherCompiler31Version>
-        <neo4jCypherCompiler23Version>2.3.11</neo4jCypherCompiler23Version>
+        <neo4jCypherCompiler23Version>2.3.12</neo4jCypherCompiler23Version>
     </properties>
 
     <inceptionYear>2010</inceptionYear>
