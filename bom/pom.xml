@@ -27,7 +27,7 @@
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
 
-        <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
+        <hibernateCommonsAnnotationsVersion>5.0.2.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.3.0.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>2.0.2.Final</jbossLoggingProcessorVersion>
         <classmateVersion>1.3.3</classmateVersion>
