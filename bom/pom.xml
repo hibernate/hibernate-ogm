@@ -56,7 +56,7 @@
         <asmVersion>5.2</asmVersion> <!-- used for Parboiled and Neo4j -->
 
         <!-- Infinispan -->
-        <infinispanVersion>9.1.5.Final</infinispanVersion>
+        <infinispanVersion>9.1.6.Final</infinispanVersion>
         <protostreamVersion>4.1.3.Final</protostreamVersion>
 
         <!-- MongoDB -->
