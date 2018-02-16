@@ -64,6 +64,7 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPointGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPolygonGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPointGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPolygonGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.MongoTimestampGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
@@ -783,6 +784,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		// Override handling of calendar types
 		if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
 			return StringCalendarDateType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.TIMESTAMP ) {
+			return MongoTimestampGridType.INSTANCE;
 		}
 		else if ( type == StandardBasicTypes.BINARY ) {
 			return BinaryAsBsonBinaryGridType.INSTANCE;
