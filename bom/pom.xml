@@ -65,7 +65,7 @@
 
         <!-- Neo4j -->
         <neo4jVersion>3.3.3</neo4jVersion>
-        <neo4jJavaDriverVersion>1.5.0</neo4jJavaDriverVersion>
+        <neo4jJavaDriverVersion>1.5.1</neo4jJavaDriverVersion>
         <neo4jScalaLibraryVersion>2.11.11</neo4jScalaLibraryVersion>
         <!-- See Parboiled dependency above -->
         <!-- See Lucene dependency above -->
