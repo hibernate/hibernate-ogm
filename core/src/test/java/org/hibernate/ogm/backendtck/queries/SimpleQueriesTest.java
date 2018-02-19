@@ -531,7 +531,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testAutoFlushIsAppliedDuringQueryExecution() throws Exception {
-		Query query = session.createQuery( "from Hypothesis" );
+		Query<Hypothesis> query = session.createQuery( "from Hypothesis" );
 		assertQuery( session, 8, query );
 
 		Hypothesis hypothesis = new Hypothesis();
@@ -553,7 +553,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testEntitiesInsertedInCurrentSessionAreFoundByQueriesNotBasedOnHibernateSearch() throws Exception {
-		Query query = session.createQuery( "from Hypothesis h where h.position = 30" );
+		Query<Hypothesis> query = session.createQuery( "from Hypothesis h where h.position = 30" );
 		assertQuery( session, 0, query );
 
 		Hypothesis hypothesis = new Hypothesis();
@@ -575,7 +575,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testSetFlushModeIsApplied() throws Exception {
-		Query query = session.createQuery( "from Hypothesis h where h.position = 31" );
+		Query<Hypothesis> query = session.createQuery( "from Hypothesis h where h.position = 31" );
 		assertQuery( session, 0, query );
 
 		Hypothesis hypothesis = new Hypothesis();
