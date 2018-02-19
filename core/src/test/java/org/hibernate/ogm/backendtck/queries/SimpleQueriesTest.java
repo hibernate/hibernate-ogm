@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.PersistenceException;
+import javax.persistence.TemporalType;
 
 import org.hamcrest.core.CombinableMatcher;
 import org.hamcrest.core.IsInstanceOf;
@@ -207,7 +208,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	public void testParametricQueries() throws Exception {
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.description = :myParam" )
-				.setString( "myParam", "stuff works" )
+				.setParameter( "myParam", "stuff works" )
 				.list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
 	}
@@ -224,8 +225,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	public void testRangeQueryWithParameters() throws Exception {
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.description BETWEEN :start and :end" )
-				.setString( "start", "Hilbers" )
-				.setString( "end", "Peanq" )
+				.setParameter( "start", "Hilbers" )
+				.setParameter( "end", "Peanq" )
 				.list();
 
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "17" );
@@ -244,8 +245,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.date BETWEEN :start and :end" )
-				.setDate( "start", start )
-				.setDate( "end", end )
+				.setParameter( "start", start, TemporalType.DATE )
+				.setParameter( "end", end, TemporalType.DATE )
 				.list();
 
 		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16" );
