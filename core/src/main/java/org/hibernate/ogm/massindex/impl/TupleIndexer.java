@@ -174,7 +174,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 	}
 
 	private void initSession(Session session) {
-		session.setFlushMode( FlushMode.MANUAL );
+		session.setHibernateFlushMode( FlushMode.MANUAL );
 		session.setCacheMode( cacheMode );
 		session.setDefaultReadOnly( true );
 	}

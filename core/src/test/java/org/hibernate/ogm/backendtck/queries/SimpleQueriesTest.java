@@ -584,7 +584,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		hypothesis.setPosition( 31 );
 		session.persist( hypothesis );
 
-		query.setFlushMode( FlushMode.MANUAL );
+		query.setHibernateFlushMode( FlushMode.MANUAL );
 
 		assertQuery( session, query, 0, "No auto-flush should be performed prior to query execution" );
 
