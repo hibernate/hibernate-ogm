@@ -1,6 +1,19 @@
 Hibernate OGM Changelog
 =======================
 
+5.3.0.Final (20-02-2018)
+-------------------------
+
+** Improvement
+    * OGM-1404 - neo4j         - Update Neo4j Driver to version 1.5.1
+    * OGM-1403 - infinispan    - Update to Infinispan 9.1.6
+    * OGM-1402 - mongodb       - Upgrade MongoDB driver to 3.6.3 and MongoDB test instance to 3.6.2
+    * OGM-1399 - neo4j         - Upgrade Neo4j to 3.3.3
+
+** Task
+    * OGM-1401 - build, core   - Upgrade to Hibernate Commons Annotations 5.0.2.Final
+    * OGM-1400 - documentation - Update address of Free Software Foundation
+
 5.3.0.CR1 (12-02-2018)
 -------------------------
 
