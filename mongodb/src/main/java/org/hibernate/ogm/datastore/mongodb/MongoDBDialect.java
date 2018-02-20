@@ -117,6 +117,7 @@ import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
+import org.hibernate.ogm.type.impl.TimestampAsDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.util.impl.StringHelper;
@@ -792,6 +793,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		// Override handling of calendar types
 		if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
 			return StringCalendarDateType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.TIMESTAMP ) {
+			return TimestampAsDateType.INSTANCE;
 		}
 		else if ( type == StandardBasicTypes.BINARY ) {
 			return BinaryAsBsonBinaryGridType.INSTANCE;
