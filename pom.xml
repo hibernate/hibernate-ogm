@@ -38,6 +38,8 @@
 
         <maven.compiler.source>${minJdkVersion}</maven.compiler.source>
         <maven.compiler.target>${minJdkVersion}</maven.compiler.target>
+        <!-- The plugin org.wildfly.plugins:wildfly-maven-plugin requires Maven version 3.3.1 -->
+        <minMavenVersion>3.3.1</minMavenVersion>
 
         <jdkTargetForProcessor>${minJdkVersion}</jdkTargetForProcessor>
         <!-- test / build-only dependency versions, managed below -->
@@ -267,6 +269,9 @@
                         <requireJavaVersion>
                             <version>[${minJdkVersion},)</version>
                         </requireJavaVersion>
+                        <requireMavenVersion>
+                            <version>${minMavenVersion}</version>
+                        </requireMavenVersion>
                         <DependencyConvergence />
                         <bannedDependencies>
                             <searchTransitive>true</searchTransitive>
