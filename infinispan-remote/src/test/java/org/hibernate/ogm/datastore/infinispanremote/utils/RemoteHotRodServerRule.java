@@ -36,6 +36,7 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 	private static final int MAX_WAIT_MILLISECONDS = 120 * 1000;
 	private static final int STATE_REFRESH_MILLISECONDS = 50;
 	private static final int MAX_STATE_REFRESH_ATTEMPTS =  MAX_WAIT_MILLISECONDS / STATE_REFRESH_MILLISECONDS;
+	private static final String DEFAULT_CONFIG_PATH = "wildfly-trimmed-config.xml";
 
 	/**
 	 * An atomic static flag to make it possible to reuse this class both as a global JUnit listener and as a Rule, and
@@ -45,10 +46,6 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 
 	private final int portOffset;
 
-	private final String configPath;
-
-	private final String defaultConfigPath = "wildfly-trimmed-config.xml";
-
 	/**
 	 * Reference to the Hot Rod Server process. Access protected by synchronization on the static field "running".
 	 */
@@ -56,12 +53,6 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 
 	public RemoteHotRodServerRule() {
 		this.portOffset = 0;
-		this.configPath = defaultConfigPath;
-	}
-
-	public RemoteHotRodServerRule(String configPath) {
-		this.portOffset = 0;
-		this.configPath = configPath;
 	}
 
 	/**
@@ -70,7 +61,6 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 	 */
 	public RemoteHotRodServerRule(int portOffset) {
 		this.portOffset = portOffset;
-		this.configPath = defaultConfigPath;
 	}
 
 	@Override
@@ -82,7 +72,7 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 				StandaloneCommandBuilder builder = StandaloneCommandBuilder
 						.of( "target/infinispan-server" );
 				builder
-					.setServerReadOnlyConfiguration( configPath );
+					.setServerReadOnlyConfiguration( DEFAULT_CONFIG_PATH );
 				if ( portOffset != 0 ) {
 					builder.addJavaOption( "-Djboss.socket.binding.port-offset=" + portOffset );
 				}
