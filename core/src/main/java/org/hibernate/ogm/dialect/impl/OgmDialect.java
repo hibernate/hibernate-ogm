@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
+import java.sql.Types;
 import javax.persistence.GenerationType;
 
 import org.hibernate.cfg.AvailableSettings;
@@ -31,6 +32,7 @@ public class OgmDialect extends Dialect {
 
 	public OgmDialect(GridDialect gridDialect) {
 		this.gridDialect = gridDialect;
+		registerColumnType( Types.BINARY,"binary" );
 	}
 
 	/**
