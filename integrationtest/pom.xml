@@ -150,15 +150,6 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.hibernate</groupId>
-                                    <artifactId>hibernate-orm-modules</artifactId>
-                                    <version>${hibernateVersion}</version>
-                                    <classifier>${hibernateWildflyClassifier}</classifier>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
                                     <groupId>org.infinispan</groupId>
                                     <artifactId>infinispan-wildfly-modules</artifactId>
                                     <version>${infinispanVersion}</version>
