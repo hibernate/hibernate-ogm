@@ -70,6 +70,12 @@
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
         <version.wildfly>11.0.0.Final</version.wildfly>
         <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
+        <jpa22patch.version>1.0.0.Beta1</jpa22patch.version>
+        <jpa22patch.filename>hibernate-jpa-api-2.2-wildflymodules-${jpa22patch.version}-wildfly-${version.wildfly}-patch.zip</jpa22patch.filename>
+
+        <cdi20patch.version>3.0.2.Final</cdi20patch.version>
+        <cdi20patch.filename>wildfly-${version.wildfly}-weld-${cdi20patch.version}-patch.zip</cdi20patch.filename>
+        <cdi20patch.url>http://download.jboss.org/weld/${cdi20patch.version}/${cdi20patch.filename}</cdi20patch.url>
 
         <!-- This slot property is used by the modules project and the integration tests -->
         <hibernate-search.module.slot>${hibernateSearchFamilyVersion}</hibernate-search.module.slot>
@@ -345,6 +351,11 @@
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>1.2.1.Final</version>
+                </plugin>
                 <plugin>
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
