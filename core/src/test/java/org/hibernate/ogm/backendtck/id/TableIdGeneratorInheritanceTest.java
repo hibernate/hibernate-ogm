@@ -12,7 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
-
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
@@ -69,14 +69,17 @@ public class TableIdGeneratorInheritanceTest extends OgmJpaTestCase {
 	}
 
 	@Entity
+	@Table(name = "TRUCK")
 	private static class Truck extends BaseCar {
 	}
 
 	@Entity
+	@Table(name = "PASSENGER_CAR")
 	private static class PassengerCar extends BaseCar {
 	}
 
 	@Entity
+	@Table(name = "BASE_CAR")
 	@Inheritance(strategy = TABLE_PER_CLASS)
 	private abstract static class BaseCar {
 		protected UUID id;
