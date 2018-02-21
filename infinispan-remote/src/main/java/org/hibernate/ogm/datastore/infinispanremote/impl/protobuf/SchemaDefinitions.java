@@ -8,11 +8,10 @@ package org.hibernate.ogm.datastore.infinispanremote.impl.protobuf;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
@@ -22,10 +21,10 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDef
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.protostream.FileDescriptorSource;
@@ -93,19 +92,13 @@ public class SchemaDefinitions {
 		}
 	}
 
-	public Set<String> getTableNames() {
-		Set<String> unionSet = new HashSet<>();
-		unionSet.addAll(  definitionsByTableName.keySet() );
-		unionSet.addAll(  idSchemaPerName.keySet() );
-		return Collections.unmodifiableSet( unionSet );
-	}
-
 	public Map<String, String> getCacheTemplateByName() {
+
 		Map<String, String> map = new HashMap<>();
 		definitionsByTableName.values().forEach( definition -> map.put(
-				definition.getTableName(),
-				definition.getCacheTemplate()
+			definition.getTableName(), definition.getCacheTemplate()
 		) );
+
 		idSchemaPerName.keySet().forEach( tableName -> map.put( tableName, null ) );
 		return map;
 	}

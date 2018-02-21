@@ -1,5 +1,5 @@
 = Hibernate OGM {hibernate-ogm-version}: Reference Guide
-Emmanuel Bernard; Sanne Grinovero; Gunnar Morling; Davide D'Alto; Guillaume Scheibel; Mark Paluch; Guillaume Smet
+Emmanuel Bernard; Sanne Grinovero; Gunnar Morling; Davide D'Alto; Guillaume Scheibel; Mark Paluch; Guillaume Smet; Fabio Massimo Ercoli
 :doctype: book
 :revdate: {docdate}
 :sectanchors:

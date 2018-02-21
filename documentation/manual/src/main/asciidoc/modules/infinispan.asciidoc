@@ -2596,6 +2596,117 @@ If any Cache is missing, Hibernate OGM will fail to start and list which table n
 expected, but not found. We plan to automate the creation of missing caches in the future.
 ====
 
+==== Caches creation and Templates
+
+Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
+If the property is enabled the dialect is capable of creating cache, if necessary, on remote Infinispan cluster.
+
+By default all caches created use the default Infinispan configuration,
+so by default all caches are created **without a specific Infinispan configuration**.
+
+To applying a configuration on cache
+we need an already defined cache on remote Infinispan configuration to use ``as a template`` for the new caches.
+
+There are two ways for applying a template to new caches:
+
+* Using the dialect property: ``hibernate.ogm.datastore.use_cache_as_template``
+* Using the ``@CacheTemplate`` annotation on Entity class
+
+The property is applied to all new caches, it means for all Entities. So property has a global scope.
+
+The annotations are applied to the new caches related to the Entities on which they are present.
+So annotations have a local (Entity) scope instead.
+
+Is it possible enabling both the configurations, whenever are both present the templates defined by annotation
+will **override** the template defined by property.
+
+[IMPORTANT]
+====
+Caches, used as templates, **need to be present** on remote Infinispan cluster
+configuration, otherwise an exception will thrown.
+====
+
+Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheTemplateEntity__:
+
+====
+[source, JAVA]
+----
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity # <1>
+public class NoAnnotationEntity {
+
+	@Id
+	private String id;
+
+}
+----
+[source, JAVA]
+----
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+
+@Entity
+@CacheTemplate("transactional") # <2>
+public class CacheTemplateEntity {
+
+	@Id
+	private String id;
+
+}
+----
+<1> __NoAnnotationEntity__ Entity does not make use of `@CacheTemplate` annotation
+<2> __CacheTemplateEntity__ Entity declares instead to use a cache, named __transactional__, as a template configuration
+====
+
+Bundled with a __persistence.xml__ such that:
+====
+[source, XML]
+----
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+
+	<persistence-unit name="ogm-with-hotrod">
+		<provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+		<properties>
+			<property name="hibernate.ogm.datastore.provider"
+				value="infinispan_remote" />
+			<property name="hibernate.ogm.infinispan_remote.configuration_resource_name"
+				value="hotrodclient.properties" />
+			<property name="hibernate.ogm.datastore.create_database"
+				value="true" /> # <1>
+			<property name="hibernate.ogm.datastore.use_cache_as_template"
+				value="default" /> # <2>
+		</properties>
+	</persistence-unit>
+</persistence>
+----
+<1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
+<2> Property ``hibernate.ogm.datastore.use_cache_as_template`` defines a template,
+named __default__, to apply to all created caches
+====
+
+Assuming that:
+
+* Caches __default__ and __transactional__ are **present** on Infinispan server configuration.
+* Caches __NoAnnotationEntity__ and __CacheTemplateEntity__ are instead **NOT present** on Infinispan server configuration.
+
+Then:
+
+* Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache template.
+* Cache __CacheTemplateEntity__ will be created by the dialect using __transactional__ as a cache template.
+
+[IMPORTANT]
+====
+Template configuration can be used to force a ``transactional behaviour`` for the caches.
+
+We reccomend having ``transactional caches`` when a **stronger consistency** is required by the use case.
+====
 
 ==== Known Limitations & Future improvements
 
