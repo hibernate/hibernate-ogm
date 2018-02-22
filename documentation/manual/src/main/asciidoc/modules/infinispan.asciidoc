@@ -2405,6 +2405,9 @@ hibernate.ogm.infinispan_remote.schema_package_name::
 Defines the package name of the generated Protobuf schema. Defaults to `HibernateOGMGenerated`.
 Useful to isolate different applications using the same Infinispan Server instance.
 
+hibernate.ogm.infinispan_remote.schema_file_name::
+Defines the file name of the generated Protobuf schema. Defualts to 'Hibernate_OGM_Generated_schema.proto'.
+The file name must have a valid __*.proto__ extension.
 
 ==== Data encoding: Protobuf Schema
 
