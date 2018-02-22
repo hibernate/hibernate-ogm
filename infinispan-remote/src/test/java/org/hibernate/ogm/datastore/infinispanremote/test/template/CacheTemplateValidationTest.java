@@ -80,7 +80,7 @@ public class CacheTemplateValidationTest {
 	public void test_templateDefinedByProperty() {
 		String cacheName = NoAnnotationEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
-				Collections.singletonMap( InfinispanRemoteProperties.USE_CACHE_AS_TEMPLATE, "default" ),
+				Collections.singletonMap( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, "default" ),
 				NoAnnotationEntity.class
 		) ) {
 
@@ -95,7 +95,7 @@ public class CacheTemplateValidationTest {
 	public void test_templateDefinedByProperty_overrides_templateDefinedByAnnotation() {
 		String cacheName = ExistCacheTemplateEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
-				Collections.singletonMap( InfinispanRemoteProperties.USE_CACHE_AS_TEMPLATE, "notExist" ),
+				Collections.singletonMap( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, "notExist" ),
 				ExistCacheTemplateEntity.class
 		) ) {
 			InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
@@ -134,7 +134,7 @@ public class CacheTemplateValidationTest {
 				"OGM001709: The remote cache 'notExist' was expected to exist but is not defined on the server" );
 
 		TestHelper.getDefaultTestSessionFactory(
-				Collections.singletonMap( InfinispanRemoteProperties.USE_CACHE_AS_TEMPLATE, "notExist" ),
+				Collections.singletonMap( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, "notExist" ),
 				NoAnnotationEntity.class
 		);
 		fail( "Expected exception at Hibernate factory creation time was not raised" );

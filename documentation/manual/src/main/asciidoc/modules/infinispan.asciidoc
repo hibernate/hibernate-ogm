@@ -2609,7 +2609,7 @@ we need an already defined cache on remote Infinispan configuration to use ``as 
 
 There are two ways for applying a template to new caches:
 
-* Using the dialect property: ``hibernate.ogm.datastore.use_cache_as_template``
+* Using the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
 * Using the ``@CacheTemplate`` annotation on Entity class
 
 The property is applied to all new caches, it means for all Entities. So property has a global scope.
@@ -2680,14 +2680,14 @@ Bundled with a __persistence.xml__ such that:
 				value="hotrodclient.properties" />
 			<property name="hibernate.ogm.datastore.create_database"
 				value="true" /> # <1>
-			<property name="hibernate.ogm.datastore.use_cache_as_template"
+			<property name="hibernate.ogm.datastore.template_for_new_caches"
 				value="default" /> # <2>
 		</properties>
 	</persistence-unit>
 </persistence>
 ----
 <1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
-<2> Property ``hibernate.ogm.datastore.use_cache_as_template`` defines a template,
+<2> Property ``hibernate.ogm.datastore.template_for_new_caches`` defines a template,
 named __default__, to apply to all created caches
 ====
 
