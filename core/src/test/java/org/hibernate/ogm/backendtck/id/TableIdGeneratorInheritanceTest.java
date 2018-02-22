@@ -44,18 +44,19 @@ public class TableIdGeneratorInheritanceTest extends OgmJpaTestCase {
 	@Test
 	public void testTableIdGenerator() {
 		em.getTransaction().begin();
-		Truck loadedTruck = new Truck();
-		em.persist( loadedTruck );
+		Truck truck = new Truck();
+		em.persist( truck );
 		em.getTransaction().commit();
 
 		em.clear();
 
 		em.getTransaction().begin();
 
-		loadedTruck = em.find( Truck.class, loadedTruck.getId() );
+		Truck loadedTruck = em.find( Truck.class, truck.getId() );
 
-		assertThat( loadedTruck.getId() ).isNotNull();
-		assertThat( loadedTruck ).isNotNull();
+		assertThat( loadedTruck ).isNotNull().as( "truck not loaded" );
+		assertThat( loadedTruck.getId() ).isNotNull().as( "truck id not loaded" );
+		assertThat( loadedTruck.getId() ).isEqualTo(truck.getId()).as( "loaded truck id is not equals saved truck id" );
 		em.getTransaction().commit();
 	}
 
