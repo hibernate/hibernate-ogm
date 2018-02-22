@@ -32,7 +32,8 @@ public class OgmDialect extends Dialect {
 
 	public OgmDialect(GridDialect gridDialect) {
 		this.gridDialect = gridDialect;
-		registerColumnType( Types.BINARY,"binary" );
+		//enabling support for binary types
+		registerColumnType( Types.BINARY, "binary" );
 	}
 
 	/**
