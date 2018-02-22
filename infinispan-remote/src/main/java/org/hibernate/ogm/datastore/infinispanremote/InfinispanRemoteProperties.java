@@ -75,6 +75,17 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	 */
 	public static final String DEFAULT_SCHEMA_PACKAGE_NAME = "HibernateOGMGenerated";
 
+	/**
+	 * The configuration property key to configure the file name to be used in Protobuf generated schemas.
+	 */
+	public static final String SCHEMA_FILE_NAME = "hibernate.ogm.infinispan_remote.schema_file_name";
+
+	/**
+	 * The default file name for Protobuf schemas. Override using SCHEMA_FILE_NAME.
+	 * @see #SCHEMA_FILE_NAME
+	 */
+	public static final String DEFAULT_SCHEMA_FILE_NAME = "Hibernate_OGM_Generated_schema.proto";
+
 	private InfinispanRemoteProperties() {
 	}
 

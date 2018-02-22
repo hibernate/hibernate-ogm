@@ -102,6 +102,8 @@ public class InfinispanRemoteConfiguration {
 
 	private String schemaPackageName;
 
+	private String schemaFileName;
+
 	private Properties clientProperties;
 
 	private boolean createCachesEnabled;
@@ -135,6 +137,10 @@ public class InfinispanRemoteConfiguration {
 
 	public String getSchemaPackageName() {
 		return schemaPackageName;
+	}
+
+	public String getSchemaFileName() {
+		return schemaFileName;
 	}
 
 	public boolean isCreateCachesEnabled() {
@@ -171,6 +177,12 @@ public class InfinispanRemoteConfiguration {
 		this.schemaPackageName = propertyReader
 				.property( InfinispanRemoteProperties.SCHEMA_PACKAGE_NAME, String.class )
 				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_PACKAGE_NAME )
+				.getValue();
+
+		this.schemaFileName = propertyReader
+				.property( InfinispanRemoteProperties.SCHEMA_FILE_NAME, String.class )
+				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_FILE_NAME )
+				.withValidator( InfinispanRemoteValidators.SCHEMA_FILE_NAME )
 				.getValue();
 
 		this.createCachesEnabled = propertyReader

@@ -87,6 +87,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	@EffectivelyFinal
 	private String schemaPackageName;
 
+	@EffectivelyFinal
+	private String schemaFileName;
+
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return InfinispanRemoteDialect.class;
@@ -115,6 +118,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.schemaCapture = config.getSchemaCaptureService();
 		this.schemaOverrideService = config.getSchemaOverrideService();
 		this.schemaPackageName = config.getSchemaPackageName();
+		this.schemaFileName = config.getSchemaFileName();
 		this.createCachesEnabled = config.isCreateCachesEnabled();
 	}
 
@@ -132,9 +136,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.sd = sd;
 		sd.validateSchema();
 		RemoteCache<String,String> protobufCache = getProtobufCache();
-		//FIXME make this name configurable & give it a sensible default:
-		final String generatedProtobufName = "Hibernate_OGM_Generated_schema.proto";
-		sd.deploySchema( generatedProtobufName, protobufCache, schemaCapture, schemaOverrideService );
+		sd.deploySchema( schemaFileName, protobufCache, schemaCapture, schemaOverrideService );
 		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
 		setMappedCacheNames( sd );
 		startAndValidateCaches();
