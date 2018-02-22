@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.infinispanremote.test.initialize;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME;
 import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.HOT_ROD_CLIENT_PREFIX;
+import static org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties.SCHEMA_FILE_NAME;
 import static org.infinispan.client.hotrod.impl.ConfigurationProperties.DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE;
 import static org.infinispan.client.hotrod.impl.ConfigurationProperties.FORCE_RETURN_VALUES;
 import static org.infinispan.client.hotrod.impl.ConfigurationProperties.MARSHALLER;
@@ -27,6 +28,7 @@ import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.Infinispa
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.utils.RemoteHotRodServerRule;
 import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
@@ -80,6 +82,38 @@ public class InfinispanRemoteConfigurationTest {
 			assertThat( ex.getCause() ).isInstanceOf( HibernateException.class );
 			assertThat( ex.getCause().getMessage() ).isEqualTo( "OGM001715: Property <" + property.replace( HOT_ROD_CLIENT_PREFIX, "infinispan.client.hotrod." ) + "> has to be set to <" + expectedValue + "> but it's set to <" + actualValue + ">" );
 		}
+	}
+
+	@Test
+	@TestForIssue( jiraKey = "OGM-1347" )
+	public void shouldThrowExceptionWhenProtoFileNameIsInvalid() {
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, GridDialectType.INFINISPAN_REMOTE.name() );
+		settings.put( CONFIGURATION_RESOURCE_NAME, RESOURCE_NAME );
+		settings.put( SCHEMA_FILE_NAME, "invalidproto.wrongextention" );
+
+		try {
+			extractClientConfiguration( settings );
+			Fail.fail( "There should be an exception because of the wrong configuration value" );
+		}
+		catch (org.hibernate.service.spi.ServiceException ex) {
+			assertThat( ex.getCause() ).isInstanceOf( HibernateException.class );
+			assertThat( ex.getCause().getMessage() ).isEqualTo( "OGM001717: Invalid Proto file name <invalidproto.wrongextention>. Proto file name should match the pattern: *.proto" );
+		}
+
+	}
+
+	@Test
+	@TestForIssue( jiraKey = "OGM-1347" )
+	public void itIsPossibleChangeProtoFileName() {
+		Map<String, Object> settings = new HashMap<>();
+		settings.put( OgmProperties.DATASTORE_PROVIDER, GridDialectType.INFINISPAN_REMOTE.name() );
+		settings.put( CONFIGURATION_RESOURCE_NAME, RESOURCE_NAME );
+		settings.put( SCHEMA_FILE_NAME, "rightName.proto" );
+
+		InfinispanRemoteConfiguration configuration = extractConfiguration( settings );
+
+		assertThat( configuration.getSchemaFileName() ).isEqualTo( "rightName.proto" );
 	}
 
 	@Test
@@ -151,4 +185,14 @@ public class InfinispanRemoteConfigurationTest {
 			return conf.getClientProperties();
 		}
 	}
+
+	private InfinispanRemoteConfiguration extractConfiguration(Map<String, Object> settings) {
+		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings ) ) {
+			ServiceRegistryImplementor serviceRegistry = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry();
+			InfinispanRemoteConfiguration conf = new InfinispanRemoteConfiguration();
+			conf.initConfiguration( settings, serviceRegistry );
+			return conf;
+		}
+	}
+
 }

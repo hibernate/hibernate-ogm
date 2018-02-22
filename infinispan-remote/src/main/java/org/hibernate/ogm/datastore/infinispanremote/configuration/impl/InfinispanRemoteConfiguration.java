@@ -102,6 +102,8 @@ public class InfinispanRemoteConfiguration {
 
 	private String schemaPackageName;
 
+	private String schemaFileName;
+
 	private Properties clientProperties;
 
 	private boolean createCachesEnabled;
@@ -135,6 +137,10 @@ public class InfinispanRemoteConfiguration {
 
 	public String getSchemaPackageName() {
 		return schemaPackageName;
+	}
+
+	public String getSchemaFileName() {
+		return schemaFileName;
 	}
 
 	public boolean isCreateCachesEnabled() {
@@ -173,12 +179,27 @@ public class InfinispanRemoteConfiguration {
 				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_PACKAGE_NAME )
 				.getValue();
 
+		this.schemaFileName = propertyReader
+				.property( InfinispanRemoteProperties.SCHEMA_FILE_NAME, String.class )
+				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_FILE_NAME )
+				.getValue();
+
 		this.createCachesEnabled = propertyReader
 				.property( OgmProperties.CREATE_DATABASE, boolean.class )
 				.withDefault( false )
 				.getValue();
 
+		validateProperties();
+
 		log.tracef( "Initializing Infinispan Hot Rod client from configuration file at '%1$s'", configurationResource );
+	}
+
+	private void validateProperties() {
+
+		if ( !( schemaFileName.endsWith( ".proto" ) ) ) {
+			throw log.invalidProtoFileName( schemaFileName );
+		}
+
 	}
 
 	/**
