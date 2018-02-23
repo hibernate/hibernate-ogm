@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.type.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Types;
 
 import org.hibernate.HibernateException;
@@ -16,7 +17,6 @@ import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.type.CustomType;
 
 /**
@@ -87,7 +87,8 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 
 	private void initEnumValues() {
 		if ( enumValues == null ) {
-			this.enumValues = coreEnumType.returnedClass().getEnumConstants();
+			Class<? extends Enum<?>> returnedClass = coreEnumType.returnedClass();
+			this.enumValues = returnedClass.getEnumConstants();
 			if ( enumValues == null ) {
 				throw new NullPointerException( "Failed to init enumValues" );
 			}

@@ -13,7 +13,7 @@
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
             <property name="hibernate.ogm.datastore.provider"
-                      value="org.hibernate.ogm.test.datastore.DatastoreProviderGeneratingSchema"/>
+                      value="org.hibernate.ogm.test.datastore.DatastoreProviderGeneratingSchema" />
         </properties>
     </persistence-unit>
 </persistence>

@@ -8,6 +8,7 @@ package org.hibernate.ogm.transaction.impl;
 
 import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
+import org.hibernate.jpa.JpaCompliance;
 import org.hibernate.resource.transaction.spi.SynchronizationRegistry;
 import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
@@ -83,5 +84,10 @@ public class ForwardingTransactionCoordinator implements TransactionCoordinator 
 	@Override
 	public int getTimeOut() {
 		return delegate.getTimeOut();
+	}
+
+	@Override
+	public JpaCompliance getJpaCompliance() {
+		return delegate.getJpaCompliance();
 	}
 }

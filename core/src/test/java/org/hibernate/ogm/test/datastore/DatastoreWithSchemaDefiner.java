@@ -6,10 +6,12 @@
  */
 package org.hibernate.ogm.test.datastore;
 
+import static org.fest.assertions.Assertions.assertThat;
+
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.hibernate.ogm.utils.PackagingRule;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -18,28 +20,21 @@ import org.junit.Test;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class DatastoreWithStartStoppableTest {
+public class DatastoreWithSchemaDefiner {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/datastoreobserver.xml", Noise.class );
 
 	@Test
-	public void testObserver() throws Exception {
+	public void testSchemaDefiner() throws Exception {
+		assertThat( DatastoreProviderGeneratingSchema.TestSchemaDefiner.schemaInitialized ).isFalse();
+
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "datastoreobserver" );
 		try {
-			Persistence.createEntityManagerFactory( "datastoreobserver" );
-			Assert.fail( "StartStoppable provider not executed" );
+			assertThat( DatastoreProviderGeneratingSchema.TestSchemaDefiner.schemaInitialized ).isTrue();
 		}
-		catch (RuntimeException e) {
-			Throwable cause = e;
-			do {
-				if ( cause.getMessage().equals( "STARTED!" ) ) {
-					break;
-				}
-				cause = cause.getCause();
-			} while ( cause != null );
-			if ( cause == null ) {
-				Assert.fail( "StartStoppable provider not executed" );
-			}
+		finally {
+			emf.close();
 		}
 	}
 }

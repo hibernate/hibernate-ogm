@@ -47,7 +47,7 @@ public class Hypothesis {
 
 Query query = session
     .createQuery("from Hypothesis h where h.description = :desc")
-    .setString("desc", "tomorrow it's going to rain");
+    .setParameter("desc", "tomorrow it's going to rain");
 ----
 
 Note that the `description` field is marked as not analysed.

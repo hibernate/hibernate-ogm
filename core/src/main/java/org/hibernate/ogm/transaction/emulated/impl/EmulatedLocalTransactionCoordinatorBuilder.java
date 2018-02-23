@@ -86,7 +86,7 @@ public class EmulatedLocalTransactionCoordinatorBuilder implements TransactionCo
 
 		@Override
 		public void rollback() {
-			status = TransactionStatus.NOT_ACTIVE;
+			status = TransactionStatus.ROLLED_BACK;
 		}
 
 		@Override
