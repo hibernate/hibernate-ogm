@@ -2596,72 +2596,53 @@ If any Cache is missing, Hibernate OGM will fail to start and list which table n
 expected, but not found. We plan to automate the creation of missing caches in the future.
 ====
 
-==== Caches creation and Templates
+==== Caches creation
 
-Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
-If the property is enabled the dialect is capable of creating cache, if necessary, on remote Infinispan cluster.
+Hibernate OGM can create caches if needed when the property
+``hibernate.ogm.datastore.create_database`` is set to true.
 
-By default all caches created use the default Infinispan configuration,
-so by default all caches are created **without a specific Infinispan configuration**.
+Hibernate OGM will use the default cache defined in the Infinispan configuration when the
+cache is created. Here's an example of how you can select the default configuration:
 
-To applying a configuration on cache
-we need an already defined cache on remote Infinispan configuration to use ``as a template`` for the new caches.
+You can also select a different default by using:
 
-There are two ways for applying a template to new caches:
+* the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
+* the ``@CacheTemplate`` annotation on an entity class
 
-* Using the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
-* Using the ``@CacheTemplate`` annotation on Entity class
-
-The property is applied to all new caches, it means for all Entities. So property has a global scope.
-
-The annotations are applied to the new caches related to the Entities on which they are present.
-So annotations have a local (Entity) scope instead.
-
-Is it possible enabling both the configurations, whenever are both present the templates defined by annotation
-will **override** the template defined by property.
-
-[IMPORTANT]
-====
-Caches, used as templates, **need to be present** on remote Infinispan cluster
-configuration, otherwise an exception will thrown.
-====
-
-Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheTemplateEntity__:
-
+.Example of @CacheTemplate
 ====
 [source, JAVA]
 ----
 import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Entity # <1>
-public class NoAnnotationEntity {
-
-	@Id
-	private String id;
-
-}
-----
-[source, JAVA]
-----
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
 
 @Entity
-@CacheTemplate("transactional") # <2>
+@CacheTemplate("transactional") # <1>
 public class CacheTemplateEntity {
 
-	@Id
-	private String id;
+    ...
 
 }
 ----
-<1> __NoAnnotationEntity__ Entity does not make use of `@CacheTemplate` annotation
-<2> __CacheTemplateEntity__ Entity declares instead to use a cache, named __transactional__, as a template configuration
+<1> __CacheTemplateEntity__ cache is created using the configuration for the cache __transactional__
 ====
 
-Bundled with a __persistence.xml__ such that:
+If a cache called ``CacheTemplateEntity`` doesn't exist already, Hibernate OGM will create it
+using the configuration for the cache named ``transactional``.
+
+[IMPORTANT]
+====
+Caches, used as templates, **must be present** in the Infinispan configuration.
+If the cache is not configured, an exception is thrown.
+====
+
+The property ``hibernate.ogm.datastore.template_for_new_caches`` can instead be use to select
+a different default cache for all the new caches created.
+
+It is possible to enable both configurations, the templates defined by the annotation will
+**override** the template defined by the property.
+
+.Example of __persistence.xml__
 ====
 [source, XML]
 ----
@@ -2676,10 +2657,13 @@ Bundled with a __persistence.xml__ such that:
 		<properties>
 			<property name="hibernate.ogm.datastore.provider"
 				value="infinispan_remote" />
+
 			<property name="hibernate.ogm.infinispan_remote.configuration_resource_name"
 				value="hotrodclient.properties" />
+
 			<property name="hibernate.ogm.datastore.create_database"
 				value="true" /> # <1>
+
 			<property name="hibernate.ogm.datastore.template_for_new_caches"
 				value="default" /> # <2>
 		</properties>
@@ -2687,13 +2671,13 @@ Bundled with a __persistence.xml__ such that:
 </persistence>
 ----
 <1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
-<2> Property ``hibernate.ogm.datastore.template_for_new_caches`` defines a template,
-named __default__, to apply to all created caches
+<2> Property ``hibernate.ogm.datastore.template_for_new_caches`` select the configuration of
+the cache __default__ as the one to use for the creation of all new caches 
 ====
 
 Assuming that:
 
-* Caches __default__ and __transactional__ are **present** on Infinispan server configuration.
+* Caches __default__ and __transactional__ are **present** in the Infinispan configuration.
 * Caches __NoAnnotationEntity__ and __CacheTemplateEntity__ are instead **NOT present** on Infinispan server configuration.
 
 Then:
@@ -2701,12 +2685,6 @@ Then:
 * Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache template.
 * Cache __CacheTemplateEntity__ will be created by the dialect using __transactional__ as a cache template.
 
-[IMPORTANT]
-====
-Template configuration can be used to force a ``transactional behaviour`` for the caches.
-
-We reccomend having ``transactional caches`` when a **stronger consistency** is required by the use case.
-====
 
 ==== Known Limitations & Future improvements
 
