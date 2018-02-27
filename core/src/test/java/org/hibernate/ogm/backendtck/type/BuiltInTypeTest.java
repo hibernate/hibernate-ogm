@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -336,6 +337,20 @@ public class BuiltInTypeTest extends OgmTestCase {
 		Bookmark loadedBookmark = saveAndGet( bookmark );
 
 		assertEquals( "Year value does not match", bookmark.getDestructionDate(), loadedBookmark.getDestructionDate() );
+	}
+
+	@Test
+	public void testDatePersistedAsJdbcTimestamp() throws Exception {
+		Timestamp judgementDay = Timestamp.valueOf( "1997-8-29 02:14:35.678" );
+		Date date = new Date();
+		bookmark.setDestructionSqlTimestamp( judgementDay );
+		bookmark.setCreationDate( date );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+
+		assertEquals( "Timestamp does not match", judgementDay, loadedBookmark.getDestructionJdbcTimestamp() );
+		assertEquals( "Timestamp time does not match", judgementDay.getTime(), loadedBookmark.getDestructionJdbcTimestamp().getTime() );
+		assertEquals( "Timestamp nanos don't match", judgementDay.getNanos(), loadedBookmark.getDestructionJdbcTimestamp().getNanos() );
 	}
 
 	@Test
