@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
-import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator.TransactionDriver;
 
 /**
  * A {@link TransactionDriver} that can return an identifier for the underlying transaction.

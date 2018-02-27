@@ -11,7 +11,7 @@ import static org.hibernate.ogm.util.impl.TransactionContextHelper.transactionCo
 import java.io.Serializable;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
 import org.hibernate.ogm.dialect.impl.GridDialects;
@@ -42,7 +42,7 @@ import org.hibernate.persister.entity.EntityPersister;
 public class AssociationPersister {
 	private GridType keyGridType;
 	private Object key;
-	private SessionImplementor session;
+	private SharedSessionContractImplementor session;
 	private AssociationKey associationKey;
 	private Association association;
 	private Object[] columnValues;
@@ -81,7 +81,7 @@ public class AssociationPersister {
 		public AssociationTypeContext associationTypeContext;
 		public GridType keyGridType;
 		public Object key;
-		public SessionImplementor session;
+		public SharedSessionContractImplementor session;
 		public GridDialect gridDialect;
 		public Object hostingEntity;
 
@@ -96,7 +96,7 @@ public class AssociationPersister {
 			return this;
 		}
 
-		public Builder session(SessionImplementor session) {
+		public Builder session(SharedSessionContractImplementor session) {
 			this.session = session;
 			return this;
 		}
@@ -284,7 +284,7 @@ public class AssociationPersister {
 
 	private OgmEntityPersister getHostingEntityPersister() {
 		if ( hostingEntityPersister == null ) {
-			hostingEntityPersister = session.getFactory().getEntityPersister( hostingEntityType.getName() );
+			hostingEntityPersister = session.getFactory().getMetamodel().entityPersister( hostingEntityType );
 		}
 
 		return (OgmEntityPersister) hostingEntityPersister;

@@ -7,302 +7,91 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
+import javax.persistence.EntityGraph;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
+import javax.persistence.SynchronizationType;
 
-import org.hibernate.Cache;
-import org.hibernate.CustomEntityDirtinessStrategy;
-import org.hibernate.EntityNameResolver;
+import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
-import org.hibernate.Interceptor;
-import org.hibernate.MappingException;
 import org.hibernate.Session;
-import org.hibernate.SessionFactoryObserver;
+import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.StatelessSessionBuilder;
-import org.hibernate.TypeHelper;
-import org.hibernate.boot.spi.SessionFactoryOptions;
-import org.hibernate.cache.spi.QueryCache;
-import org.hibernate.cache.spi.Region;
-import org.hibernate.cache.spi.UpdateTimestampsCache;
-import org.hibernate.cache.spi.access.RegionAccessStrategy;
-import org.hibernate.cfg.Settings;
-import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.function.SQLFunctionRegistry;
-import org.hibernate.engine.ResultSetMappingDefinition;
-import org.hibernate.engine.jdbc.spi.JdbcServices;
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
-import org.hibernate.engine.profile.FetchProfile;
-import org.hibernate.engine.query.spi.QueryPlanCache;
-import org.hibernate.engine.spi.FilterDefinition;
-import org.hibernate.engine.spi.NamedQueryDefinition;
-import org.hibernate.engine.spi.NamedSQLQueryDefinition;
+import org.hibernate.engine.jndi.spi.JndiService;
+import org.hibernate.engine.spi.SessionFactoryDelegatingImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
-import org.hibernate.exception.spi.SQLExceptionConverter;
 import org.hibernate.id.IdentifierGenerator;
-import org.hibernate.id.factory.IdentifierGeneratorFactory;
-import org.hibernate.internal.NamedQueryRepository;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.metadata.CollectionMetadata;
+import org.hibernate.id.UUIDGenerator;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.internal.SessionFactoryRegistry;
+import org.hibernate.internal.SessionFactoryRegistry.ObjectFactoryImpl;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.engine.spi.OgmSessionBuilderImplementor;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.proxy.EntityNotFoundDelegate;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.stat.Statistics;
-import org.hibernate.stat.spi.StatisticsImplementor;
-import org.hibernate.type.Type;
-import org.hibernate.type.TypeResolver;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
+public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implements OgmSessionFactoryImplementor {
 
-	private final SessionFactoryImplementor delegate;
+	private static final IdentifierGenerator UUID_GENERATOR = UUIDGenerator.buildSessionFactoryUniqueIdentifierGenerator();
+
+	private final String uuid;
 
 	public OgmSessionFactoryImpl(SessionFactoryImplementor delegate) {
-		this.delegate = delegate;
-	}
+		super( delegate );
 
-	@Override
-	public TypeResolver getTypeResolver() {
-		return delegate.getTypeResolver();
-	}
+		try {
+			uuid = (String) UUID_GENERATOR.generate( null, null );
+		}
+		catch (Exception e) {
+			throw new AssertionFailure( "Could not generate UUID" );
+		}
 
-	@Override
-	public Properties getProperties() {
-		return delegate.getProperties();
-	}
-
-	@Override
-	public EntityPersister getEntityPersister(String entityName) throws MappingException {
-		return delegate.getEntityPersister( entityName );
-	}
-
-	@Override
-	public Map<String, EntityPersister> getEntityPersisters() {
-		return delegate.getEntityPersisters();
-	}
-
-	@Override
-	public CollectionPersister getCollectionPersister(String role) throws MappingException {
-		return delegate.getCollectionPersister( role );
-	}
-
-	@Override
-	public Map<String, CollectionPersister> getCollectionPersisters() {
-		return delegate.getCollectionPersisters();
-	}
-
-	@Override
-	public JdbcServices getJdbcServices() {
-		return delegate.getJdbcServices();
-	}
-
-	@Override
-	public Dialect getDialect() {
-		return delegate.getDialect();
-	}
-
-	@Override
-	public Interceptor getInterceptor() {
-		return delegate.getInterceptor();
-	}
-
-	@Override
-	public QueryPlanCache getQueryPlanCache() {
-		return delegate.getQueryPlanCache();
-	}
-
-	@Override
-	public Type[] getReturnTypes(String queryString) throws HibernateException {
-		return delegate.getReturnTypes( queryString );
-	}
-
-	@Override
-	public String[] getReturnAliases(String queryString) throws HibernateException {
-		return delegate.getReturnAliases( queryString );
-	}
-
-	@Override
-	public String[] getImplementors(String className) throws MappingException {
-		return delegate.getImplementors( className );
-	}
-
-	@Override
-	public String getImportedClassName(String name) {
-		return delegate.getImportedClassName( name );
-	}
-
-	@Override
-	public QueryCache getQueryCache() {
-		return delegate.getQueryCache();
-	}
-
-	@Override
-	public QueryCache getQueryCache(String regionName) throws HibernateException {
-		return delegate.getQueryCache( regionName );
-	}
-
-	@Override
-	public UpdateTimestampsCache getUpdateTimestampsCache() {
-		return delegate.getUpdateTimestampsCache();
-	}
-
-	@Override
-	public StatisticsImplementor getStatisticsImplementor() {
-		return delegate.getStatisticsImplementor();
-	}
-
-	@Override
-	public NamedQueryDefinition getNamedQuery(String queryName) {
-		return delegate.getNamedQuery( queryName );
-	}
-
-	@Override
-	public NamedSQLQueryDefinition getNamedSQLQuery(String queryName) {
-		return delegate.getNamedSQLQuery( queryName );
-	}
-
-	@Override
-	public NamedQueryRepository getNamedQueryRepository() {
-		return delegate.getNamedQueryRepository();
-	}
-
-	@Override
-	public void registerNamedQueryDefinition(String name, NamedQueryDefinition definition) {
-		delegate.registerNamedQueryDefinition( name, definition );
-	}
-
-	@Override
-	public void registerNamedSQLQueryDefinition(String name, NamedSQLQueryDefinition definition) {
-		delegate.registerNamedSQLQueryDefinition( name, definition );
-	}
-
-	@Override
-	public ResultSetMappingDefinition getResultSetMapping(String name) {
-		return delegate.getResultSetMapping( name );
-	}
-
-	@Override
-	public IdentifierGenerator getIdentifierGenerator(String rootEntityName) {
-		return delegate.getIdentifierGenerator( rootEntityName );
-	}
-
-	@Override
-	public Region getSecondLevelCacheRegion(String regionName) {
-		return delegate.getSecondLevelCacheRegion( regionName );
-	}
-
-	@Override
-	public Map getAllSecondLevelCacheRegions() {
-		return delegate.getAllSecondLevelCacheRegions();
-	}
-
-	@Override
-	public SQLExceptionConverter getSQLExceptionConverter() {
-		return delegate.getSQLExceptionConverter();
-	}
-
-	@Override
-	public SqlExceptionHelper getSQLExceptionHelper() {
-		return delegate.getSQLExceptionHelper();
-	}
-
-	@Override
-	public Settings getSettings() {
-		return delegate.getSettings();
+		SessionFactoryRegistry.INSTANCE.addSessionFactory(
+				uuid,
+				delegate.getName(),
+				delegate.getSessionFactoryOptions().isSessionFactoryNameAlsoJndiName(),
+				this,
+				delegate.getServiceRegistry().getService( JndiService.class )
+		);
 	}
 
 	@Override
 	public OgmSession openTemporarySession() throws HibernateException {
-		return new OgmSessionImpl( this, (EventSource) delegate.openTemporarySession() );
-	}
-
-	@Override
-	public Set<String> getCollectionRolesByEntityParticipant(String entityName) {
-		return delegate.getCollectionRolesByEntityParticipant( entityName );
-	}
-
-	@Override
-	public EntityNotFoundDelegate getEntityNotFoundDelegate() {
-		return delegate.getEntityNotFoundDelegate();
-	}
-
-	@Override
-	public SQLFunctionRegistry getSqlFunctionRegistry() {
-		return delegate.getSqlFunctionRegistry();
-	}
-
-	@Override
-	public FetchProfile getFetchProfile(String name) {
-		return delegate.getFetchProfile( name );
-	}
-
-	@Override
-	public ServiceRegistryImplementor getServiceRegistry() {
-		return delegate.getServiceRegistry();
-	}
-
-	@Override
-	public void addObserver(SessionFactoryObserver observer) {
-		delegate.addObserver( observer );
-	}
-
-	@Override
-	public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
-		return delegate.getIdentifierGeneratorFactory();
-	}
-
-	@Override
-	public Type getIdentifierType(String className) throws MappingException {
-		return delegate.getIdentifierType( className );
-	}
-
-	@Override
-	public String getIdentifierPropertyName(String className) throws MappingException {
-		return delegate.getIdentifierPropertyName( className );
-	}
-
-	@Override
-	public Type getReferencedPropertyType(String className, String propertyName) throws MappingException {
-		return delegate.getReferencedPropertyType( className, propertyName );
-	}
-
-	@Override
-	public SessionFactoryOptions getSessionFactoryOptions() {
-		return delegate.getSessionFactoryOptions();
+		return new OgmSessionImpl( this, (EventSource) delegate().openTemporarySession() );
 	}
 
 	@Override
 	public OgmSessionBuilderImplementor withOptions() {
-		return new OgmSessionBuilderDelegator( delegate.withOptions(), this );
+		return new OgmSessionBuilderDelegator( delegate().withOptions(), this );
 	}
 
 	@Override
 	public OgmSession openSession() throws HibernateException {
-		final Session session = delegate.openSession();
+		final Session session = delegate().openSession();
 		return new OgmSessionImpl( this, (EventSource) session );
 	}
 
 	@Override
 	public OgmSession getCurrentSession() throws HibernateException {
-		final Session session = delegate.getCurrentSession();
+		final Session session = delegate().getCurrentSession();
 		return new OgmSessionImpl( this, (EventSource) session );
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public StatelessSessionBuilder withStatelessOptions() {
 		throw new NotSupportedException( "OGM-18", "Stateless session is not implemented in OGM" );
@@ -319,130 +108,83 @@ public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 	}
 
 	@Override
-	public ClassMetadata getClassMetadata(Class entityClass) {
-		return delegate.getClassMetadata( entityClass );
-	}
-
-	@Override
-	public ClassMetadata getClassMetadata(String entityName) {
-		return delegate.getClassMetadata( entityName );
-	}
-
-	@Override
-	public CollectionMetadata getCollectionMetadata(String roleName) {
-		return delegate.getCollectionMetadata( roleName );
-	}
-
-	@Override
-	public Map<String, ClassMetadata> getAllClassMetadata() {
-		return delegate.getAllClassMetadata();
-	}
-
-	@Override
-	public Map getAllCollectionMetadata() {
-		return delegate.getAllCollectionMetadata();
-	}
-
-	@Override
-	public Statistics getStatistics() {
-		return delegate.getStatistics();
-	}
-
-	@Override
-	public void close() throws HibernateException {
-		delegate.close();
-	}
-
-	@Override
-	public boolean isClosed() {
-		return delegate.isClosed();
-	}
-
-	@Override
-	public Cache getCache() {
-		return delegate.getCache();
-	}
-
-
-	@Override
-	public Set getDefinedFilterNames() {
-		return delegate.getDefinedFilterNames();
-	}
-
-	@Override
-	public FilterDefinition getFilterDefinition(String filterName) throws HibernateException {
-		return delegate.getFilterDefinition( filterName );
-	}
-
-	@Override
-	public boolean containsFetchProfileDefinition(String name) {
-		return delegate.containsFetchProfileDefinition( name );
-	}
-
-	@Override
-	public TypeHelper getTypeHelper() {
-		return delegate.getTypeHelper();
-	}
-
-	@Override
-	public CurrentTenantIdentifierResolver getCurrentTenantIdentifierResolver() {
-		return delegate.getCurrentTenantIdentifierResolver();
-	}
-
-	@Override
-	public Region getNaturalIdCacheRegion(String regionName) {
-		return delegate.getNaturalIdCacheRegion( regionName );
-	}
-
-	@Override
-	public CustomEntityDirtinessStrategy getCustomEntityDirtinessStrategy() {
-		return delegate.getCustomEntityDirtinessStrategy();
-	}
-
-	@Override
 	public Reference getReference() throws NamingException {
-		//Expect Hibernate Core to use one StringRefAddr based address
-		String uuid = String.valueOf( delegate.getReference().get( 0 ).getContent() );
 		return new Reference(
-				OgmSessionFactoryImpl.class.getName(),
+				getClass().getName(),
 				new StringRefAddr( "uuid", uuid ),
-				OgmSessionFactoryObjectFactory.class.getName(),
+				ObjectFactoryImpl.class.getName(),
 				null
-				);
+		);
 	}
 
 	@Override
-	public Iterable<EntityNameResolver> iterateEntityNameResolvers() {
-		return delegate.iterateEntityNameResolvers();
+	public EntityManager createEntityManager() {
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager() );
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EntityManager createEntityManager(Map map) {
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager( map ) );
 	}
 
 	@Override
-	public RegionAccessStrategy getSecondLevelCacheRegionAccessStrategy(String regionName) {
-		return delegate.getSecondLevelCacheRegionAccessStrategy( regionName );
+	public EntityManager createEntityManager(SynchronizationType synchronizationType) {
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager( synchronizationType ) );
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
+		return new OgmSessionImpl( this, (EventSource) delegate().createEntityManager( synchronizationType, map ) );
 	}
 
 	@Override
-	public RegionAccessStrategy getNaturalIdCacheRegionAccessStrategy(String regionName) {
-		return delegate.getNaturalIdCacheRegionAccessStrategy( regionName );
+	public <T> void addNamedEntityGraph(String graphName, EntityGraph<T> entityGraph) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public EntityGraph findEntityGraphByName(String name) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
 	}
 
 	@Override
-	public EntityPersister locateEntityPersister(Class byClass) {
-		return delegate.locateEntityPersister( byClass );
+	public <T> List<EntityGraph<? super T>> findEntityGraphsByType(Class<T> entityClass) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
 	}
 
 	@Override
-	public EntityPersister locateEntityPersister(String byName) {
-		return delegate.locateEntityPersister( byName );
-	}
+	public <T> T unwrap(Class<T> type) {
+		if ( type.isAssignableFrom( SessionFactory.class ) ) {
+			return type.cast( this );
+		}
 
-	@Override
-	public DeserializationResolver getDeserializationResolver() {
-		return delegate.getDeserializationResolver();
-	}
+		if ( type.isAssignableFrom( SessionFactoryImplementor.class ) ) {
+			return type.cast( this );
+		}
 
-	@Override
-	public String getUuid() {
-		return delegate.getUuid();
+		if ( type.isAssignableFrom( SessionFactoryImpl.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( OgmSessionFactory.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( OgmSessionFactoryImplementor.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( OgmSessionFactoryImpl.class ) ) {
+			return type.cast( this );
+		}
+
+		if ( type.isAssignableFrom( EntityManagerFactory.class ) ) {
+			return type.cast( this );
+		}
+
+		throw new PersistenceException( "Hibernate cannot unwrap EntityManagerFactory as '" + type.getName() + "'" );
 	}
 }

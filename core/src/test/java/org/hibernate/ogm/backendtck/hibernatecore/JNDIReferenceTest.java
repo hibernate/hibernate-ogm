@@ -6,16 +6,17 @@
  */
 package org.hibernate.ogm.backendtck.hibernatecore;
 
-import javax.naming.Reference;
+import static org.fest.assertions.Assertions.assertThat;
 
-import org.junit.Test;
+import javax.naming.Reference;
+import javax.naming.spi.ObjectFactory;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.internal.SessionFactoryRegistry.ObjectFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.utils.OgmTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -31,11 +32,11 @@ public class JNDIReferenceTest extends OgmTestCase {
 
 		Reference reference = factory.getReference();
 		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactoryImpl.class.getName() );
-		assertThat( reference.getFactoryClassName() ).isEqualTo( OgmSessionFactoryObjectFactory.class.getName() );
+		assertThat( reference.getFactoryClassName() ).isEqualTo( ObjectFactoryImpl.class.getName() );
 		assertThat( reference.get( 0 ) ).isNotNull();
 		assertThat( reference.getFactoryClassLocation() ).isNull();
 
-		OgmSessionFactoryObjectFactory objFactory = new OgmSessionFactoryObjectFactory();
+		ObjectFactory objFactory = new ObjectFactoryImpl();
 		SessionFactory factoryFromRegistry = (SessionFactory) objFactory.getObjectInstance( reference, null, null, null );
 		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 		assertThat( factoryFromRegistry.getReference() ).isEqualTo( factory.getReference() );

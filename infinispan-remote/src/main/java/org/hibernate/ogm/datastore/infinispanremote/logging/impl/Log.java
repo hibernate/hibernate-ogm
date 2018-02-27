@@ -80,4 +80,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1716, value = "Error deploying Protobuf schema '%s' to the server: '%s'")
 	HibernateException errorAtSchemaDeploy(String generatedProtobufName, String remoteErrorMessage);
 
+	@Message(id = 1717, value = "Invalid Proto file name <%s>. Proto file name should match the pattern: *.proto")
+	HibernateException invalidProtoFileName(String protoFileName);
+
 }

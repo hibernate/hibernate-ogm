@@ -23,7 +23,7 @@ public interface OgmSessionFactory extends SessionFactory {
 	 * @author Gunnar Morling
 	 *
 	 */
-	interface OgmSessionBuilder extends SessionBuilder {
+	public interface OgmSessionBuilder<T extends OgmSessionBuilder> extends SessionBuilder<T> {
 
 		@Override
 		OgmSession openSession();

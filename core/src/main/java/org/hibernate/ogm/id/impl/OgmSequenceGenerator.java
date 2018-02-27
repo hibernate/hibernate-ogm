@@ -17,7 +17,7 @@ import org.hibernate.boot.model.relational.QualifiedName;
 import org.hibernate.boot.model.relational.QualifiedNameParser;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
@@ -100,7 +100,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase implements Exportable
 	}
 
 	@Override
-	protected IdSourceKey getGeneratorKey(SessionImplementor session) {
+	protected IdSourceKey getGeneratorKey(SharedSessionContractImplementor session) {
 		return delegate.getGeneratorKey( session );
 	}
 
@@ -173,7 +173,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase implements Exportable
 	 */
 	private interface IdSourceKeyAndKeyMetadataProvider {
 		IdSourceKeyMetadata getGeneratorKeyMetadata();
-		IdSourceKey getGeneratorKey(SessionImplementor session);
+		IdSourceKey getGeneratorKey(SharedSessionContractImplementor session);
 	}
 
 	private static class TableKeyAndMetadataProvider implements IdSourceKeyAndKeyMetadataProvider {
@@ -190,7 +190,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase implements Exportable
 		}
 
 		@Override
-		public IdSourceKey getGeneratorKey(SessionImplementor session) {
+		public IdSourceKey getGeneratorKey(SharedSessionContractImplementor session) {
 			return delegate.getGeneratorKey( session );
 		}
 	}
@@ -209,7 +209,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase implements Exportable
 		}
 
 		@Override
-		public IdSourceKey getGeneratorKey(SessionImplementor session) {
+		public IdSourceKey getGeneratorKey(SharedSessionContractImplementor session) {
 			return idSourceKey;
 		}
 	}

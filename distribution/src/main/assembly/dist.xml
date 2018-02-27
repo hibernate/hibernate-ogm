@@ -75,16 +75,16 @@
 
         <!--
         #######################################################################
-        #  hibernate-ogm-infinispan
+        #  hibernate-ogm-infinispan-embedded
         #######################################################################
          -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>dist/lib/infinispan</outputDirectory>
+            <outputDirectory>dist/lib/infinispan-embedded</outputDirectory>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
-                <include>org.hibernate.ogm:hibernate-ogm-infinispan:jar</include>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-embedded:jar</include>
 
                 <!-- Optional dependencies for infinispan -->
                 <include>org.infinispan:infinispan-lucene-directory</include>

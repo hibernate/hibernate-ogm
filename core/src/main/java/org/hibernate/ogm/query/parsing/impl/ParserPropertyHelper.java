@@ -145,7 +145,7 @@ public class ParserPropertyHelper implements PropertyHelper {
 			throw new IllegalStateException( "Unknown entity name " + entityType );
 		}
 
-		return (OgmEntityPersister) sessionFactory.getEntityPersister( targetedType.getName() );
+		return (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( targetedType );
 	}
 
 	/**

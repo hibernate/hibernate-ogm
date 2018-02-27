@@ -15,6 +15,7 @@ import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.descriptor.impl.GridTypeDescriptor;
 import org.hibernate.ogm.type.descriptor.impl.GridValueBinder;
@@ -107,6 +108,7 @@ public abstract class AbstractGenericBasicType<T>
 		return gridTypeDescriptor;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public final Class getReturnedClass() {
 		return javaTypeDescriptor.getJavaTypeClass();
@@ -140,13 +142,11 @@ public abstract class AbstractGenericBasicType<T>
 		return false;
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	@Override
 	public final boolean isSame(Object x, Object y) {
 		return isEqual( x, y );
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	@Override
 	public final boolean isEqual(Object x, Object y, SessionFactoryImplementor factory) {
 		return isEqual( x, y );
@@ -176,12 +176,12 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	@Override
-	public final boolean isDirty(Object old, Object current, SessionImplementor session) {
+	public final boolean isDirty(Object old, Object current, SharedSessionContractImplementor session) {
 		return isDirty( old, current );
 	}
 
 	@Override
-	public final boolean isDirty(Object old, Object current, boolean[] checkable, SessionImplementor session) {
+	public final boolean isDirty(Object old, Object current, boolean[] checkable, SharedSessionContractImplementor session) {
 		return checkable[0] && isDirty( old, current );
 	}
 
@@ -194,7 +194,7 @@ public abstract class AbstractGenericBasicType<T>
 			Object oldHydratedState,
 			Object currentState,
 			boolean[] checkable,
-			SessionImplementor session) {
+			SharedSessionContractImplementor session) {
 		return isDirty( oldHydratedState, currentState );
 	}
 
@@ -202,17 +202,17 @@ public abstract class AbstractGenericBasicType<T>
 	public final Object nullSafeGet(
 			Tuple rs,
 			String[] names,
-			SessionImplementor session,
+			SharedSessionContractImplementor session,
 			Object owner) {
 		return nullSafeGet( rs, names[0], session );
 	}
 
 	@Override
-	public final Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner) {
+	public final Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner) {
 		return nullSafeGet( rs, name, session );
 	}
 
-	private T nullSafeGet(Tuple rs, String name, final SessionImplementor session) {
+	private T nullSafeGet(Tuple rs, String name, final SharedSessionContractImplementor session) {
 		return nullSafeGet( rs, name, (WrapperOptions) null );
 	}
 
@@ -224,13 +224,12 @@ public abstract class AbstractGenericBasicType<T>
 //		return nullSafeGet( rs, name, session );
 //	}
 
-	@SuppressWarnings({ "unchecked" })
 	@Override
 	public final void nullSafeSet(
 			Tuple rs,
 			Object value,
 			String[] names,
-			final SessionImplementor session)  {
+			final SharedSessionContractImplementor session)  {
 		nullSafeSet( rs, value, names, (WrapperOptions) null );
 	}
 
@@ -240,7 +239,7 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	@Override
-	public final void nullSafeSet(Tuple st, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public final void nullSafeSet(Tuple st, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		if ( settable.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );
@@ -284,32 +283,32 @@ public abstract class AbstractGenericBasicType<T>
 
 	@Override
 	@SuppressWarnings({ "unchecked" })
-	public final Serializable disassemble(Object value, SessionImplementor session, Object owner) throws HibernateException {
+	public final Serializable disassemble(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return getMutabilityPlan().disassemble( (T) value );
 	}
 
 	@Override
-	public final Object assemble(Serializable cached, SessionImplementor session, Object owner) throws HibernateException {
+	public final Object assemble(Serializable cached, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return getMutabilityPlan().assemble( cached );
 	}
 
 	@Override
-	public final void beforeAssemble(Serializable cached, SessionImplementor session) {
+	public final void beforeAssemble(Serializable cached, SharedSessionContractImplementor session) {
 	}
 
 	@Override
-	public final Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public final Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, names, session, owner );
 	}
 
 	@Override
-	public final Object resolve(Object value, SessionImplementor session, Object owner) throws HibernateException {
+	public final Object resolve(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return value;
 	}
 
 	@Override
-	public final Object semiResolve(Object value, SessionImplementor session, Object owner) throws HibernateException {
+	public final Object semiResolve(Object value, SharedSessionContractImplementor session, Object owner) throws HibernateException {
 		return value;
 	}
 
@@ -319,17 +318,17 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked" })
-	public final Object replace(Object original, Object target, SessionImplementor session, Object owner, Map copyCache) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public final Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner, Map copyCache) {
 		return getReplacement( (T) original, (T) target );
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object replace(
 			Object original,
 			Object target,
-			SessionImplementor session,
+			SharedSessionContractImplementor session,
 			Object owner,
 			Map copyCache,
 			ForeignKeyDirection foreignKeyDirection) {

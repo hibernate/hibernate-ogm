@@ -5,7 +5,7 @@
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
 <assembly>
-    <id>wildfly-10-dist</id>
+    <id>${hibernateWildflyClassifier}</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -30,8 +30,8 @@
             <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/infinispan/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan/${hibernate.ogm.infinispan.module.slot}</outputDirectory>
+             <source>${module.xml.basedir}/ogm/infinispan-embedded/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.infinispan-embedded.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -40,8 +40,8 @@
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.aliases.basedir}/ogm/infinispan/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/infinispan/main</outputDirectory>
+             <source>${module.xml.aliases.basedir}/ogm/infinispan-embedded/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan-embedded/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
@@ -85,15 +85,16 @@
             <filtered>true</filtered>
         </file>
 
-        <!-- HSEARCH 5.5 using ORM 5.1 -->
+        <!-- INFINISPAN clustered counter module is not present on 9.1.4 Wildfly distribution. -->
+        <!-- Will be available from Infinispan 9.2.0. -->
         <file>
-            <source>${module.xml.basedir}/org/hibernate/search/orm/module.xml</source>
-            <outputDirectory>/org/hibernate/search/orm/${hibernate-search.module.slot}</outputDirectory>
+            <source>${module.xml.basedir}/org/infinispan/core/module.xml</source>
+            <outputDirectory>/org/infinispan/core/${infinispan.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>${module.xml.aliases.basedir}/org/hibernate/search/engine/module.xml</source>
-            <outputDirectory>/org/hibernate/search/engine/${hibernate-search.module.slot}</outputDirectory>
+            <source>${module.xml.basedir}/org/infinispan/counter/module.xml</source>
+            <outputDirectory>/org/infinispan/counter/${infinispan.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
     </files>
@@ -120,11 +121,11 @@
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/ogm/infinispan/${hibernate.ogm.infinispan.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.infinispan-embedded.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
-                <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan-embedded</include>
             </includes>
         </dependencySet>
         <dependencySet>
@@ -179,8 +180,13 @@
                   <include>org.neo4j:neo4j-cypher-frontend-3.1</include>
                   <include>org.neo4j:neo4j-cypher-compiler-3.2</include>
                   <include>org.neo4j:neo4j-cypher-frontend-3.2</include>
+                  <include>org.neo4j:neo4j-cypher-compiler-3.3</include>
+                  <include>org.neo4j:neo4j-cypher-frontend-3.3</include>
+                  <include>org.neo4j:neo4j-cypher-logical-plans-3.3</include>
                   <include>org.neo4j:neo4j-cypher-ir-3.2</include>
+                  <include>org.neo4j:neo4j-cypher-ir-3.3</include>
                   <include>org.neo4j:neo4j-graphdb-api</include>
+                  <include>org.neo4j:neo4j-values</include>
                   <include>org.neo4j:neo4j-index</include>
                   <include>org.neo4j:neo4j-io</include>
                   <include>org.neo4j.driver:neo4j-java-driver</include>
@@ -239,5 +245,18 @@
                 <include>org.ow2.asm:asm-util</include>
             </includes>
        </dependencySet>
+
+        <!-- INFINISPAN -->
+        <!-- INFINISPAN clustered counter module is not present on 9.1.4 Wildfly distribution. -->
+        <!-- Will be available from Infinispan 9.2.0. -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/infinispan/counter/${infinispan.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.infinispan:infinispan-clustered-counter</include>
+            </includes>
+        </dependencySet>
     </dependencySets>
 </assembly>

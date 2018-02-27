@@ -39,7 +39,7 @@ public class JPAStandaloneNoOGMTest {
 			fail( "Expected exception was not raised" );
 		}
 		catch ( PersistenceException pe ) {
-			assertThat( Throwables.getRootCause( pe ).getMessage() ).contains( "hibernate.dialect" );
+			assertThat( Throwables.getRootCause( pe ).getMessage() ).contains( "No Persistence provider for EntityManager named noogm" );
 		}
 
 		if ( emf != null ) {

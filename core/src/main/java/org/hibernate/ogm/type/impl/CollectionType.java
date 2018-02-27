@@ -8,7 +8,7 @@ package org.hibernate.ogm.type.impl;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
@@ -23,31 +23,31 @@ public class CollectionType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( null, session, owner );
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		//NOOP
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SharedSessionContractImplementor session)
 			throws HibernateException {
 		//NOOP
 	}
 
 	@Override
-	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		//CollectionType.delegate returns a marker object. We pass it through.
 		return delegate.hydrate( null, names, session, owner );

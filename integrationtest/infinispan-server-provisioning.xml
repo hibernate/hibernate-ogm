@@ -1,0 +1,42 @@
+<server-provisioning xmlns="urn:wildfly:server-provisioning:1.1">
+    <feature-packs>
+
+        <!-- Materialises a copy of Infinispan Server suitable for our tests: we strip out things we don't need -->
+        <feature-pack groupId="org.infinispan.server" artifactId="infinispan-server-feature-pack" version="${infinispanVersion}">
+            <!-- Filters not necessary: just to keep tests light -->
+            <contents>
+                <filter
+                    pattern="copyright.txt"
+                    include="false"/>
+                <filter
+                    pattern="README.txt"
+                    include="false"/>
+                <filter
+                    pattern="LICENSE.txt"
+                    include="false"/>
+                <filter
+                    pattern="docs/*"
+                    include="false"/>
+                <filter
+                    pattern="welcome-content/*"
+                    include="false"/>
+                <filter
+                    pattern="bin/*"
+                    include="false"/>
+                <filter
+                    pattern="rest/*"
+                    include="false"/>
+                <filter
+                    pattern="appclient/*"
+                    include="false"/>
+                <filter
+                    pattern="client/*"
+                    include="false"/>
+                <filter
+                    pattern="domain/*"
+                    include="false"/>
+            </contents>
+        </feature-pack>
+
+    </feature-packs>
+</server-provisioning>

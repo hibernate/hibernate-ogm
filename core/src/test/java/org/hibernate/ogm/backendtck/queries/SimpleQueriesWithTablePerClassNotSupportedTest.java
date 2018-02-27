@@ -15,6 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.PersistenceException;
 import javax.persistence.Table;
 
 import org.fest.assertions.Fail;
@@ -95,9 +96,9 @@ public class SimpleQueriesWithTablePerClassNotSupportedTest extends OgmTestCase 
 				tx.commit();
 				Fail.fail( "Expected exception for query: [" + queryString + "]" );
 			}
-			catch ( HibernateException e) {
-				assertThat( e ).isInstanceOf( HibernateException.class );
-				assertThat( e.getMessage() ).startsWith( "OGM000089: " );
+			catch ( PersistenceException e) {
+				assertThat( e.getCause() ).isInstanceOf( HibernateException.class );
+				assertThat( e.getCause().getMessage() ).startsWith( "OGM000089: " );
 			}
 			finally {
 				if ( tx != null && tx.getStatus() == TransactionStatus.ACTIVE ) {

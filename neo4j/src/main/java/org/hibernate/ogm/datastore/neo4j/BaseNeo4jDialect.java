@@ -247,7 +247,7 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 
 	private Map<EntityKeyMetadata, E> initializeEntityWithEmbeddedQueries(SessionFactoryImplementor sessionFactoryImplementor) {
 		Map<EntityKeyMetadata, E> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
-		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getMetamodel().collectionPersisters().values();
 		for ( CollectionPersister collectionPersister : collectionPersisters ) {
 			if ( collectionPersister instanceof OgmCollectionPersister ) {
 				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
@@ -266,7 +266,7 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 
 	private  Map<EntityKeyMetadata, E> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
 		Map<EntityKeyMetadata, E> queryMap = new HashMap<EntityKeyMetadata, E>();
-		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
+		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getMetamodel().entityPersisters().values();
 		for ( EntityPersister entityPersister : entityPersisters ) {
 			if ( entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
@@ -281,7 +281,7 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 
 	protected Map<AssociationKeyMetadata, A> initializeAssociationQueries( SessionFactoryImplementor sessionFactoryImplementor) {
 		Map<AssociationKeyMetadata, A> queryMap = new HashMap<AssociationKeyMetadata, A>();
-		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getMetamodel().collectionPersisters().values();
 		for ( CollectionPersister collectionPersister : collectionPersisters ) {
 			if ( collectionPersister instanceof OgmCollectionPersister ) {
 				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;

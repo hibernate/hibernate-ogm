@@ -16,12 +16,14 @@ import java.util.List;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.dialect.pagination.LimitHelper;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.PersistenceContext;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.RowSelection;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.entity.EntityJoinWalker;
@@ -106,7 +108,7 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 		}
 
 		@Override
-		public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
+		public Object load(Serializable id, Object optionalObject, SharedSessionContractImplementor session, LockOptions lockOptions) {
 			final Serializable[] batch = session.getPersistenceContext()
 					.getBatchFetchQueue()
 					.getEntityBatch( persister(), id, maxBatchSize, persister().getEntityMode() );
@@ -123,7 +125,7 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 		}
 
 		@Override
-		public List<Object> loadEntitiesFromTuples(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
+		public List<Object> loadEntitiesFromTuples(SharedSessionContractImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
 			return singleKeyLoader.loadEntitiesFromTuples( session, lockOptions, ogmContext );
 		}
 	}
@@ -233,7 +235,7 @@ class DynamicBatchingEntityLoaderBuilder extends BatchingEntityLoaderBuilder {
 				}
 			}
 			catch ( SQLException sqle ) {
-				throw session.getFactory().getSQLExceptionHelper().convert(
+				throw session.getFactory().getServiceRegistry().getService( JdbcServices.class ).getSqlExceptionHelper().convert(
 						sqle,
 						"could not load an entity batch: " + MessageHelper.infoString(
 								getEntityPersisters()[0],

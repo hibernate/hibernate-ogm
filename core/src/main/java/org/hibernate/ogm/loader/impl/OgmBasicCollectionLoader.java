@@ -9,7 +9,7 @@ package org.hibernate.ogm.loader.impl;
 import java.io.Serializable;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.type.Type;
@@ -23,7 +23,7 @@ public class OgmBasicCollectionLoader extends OgmLoader implements CollectionIni
 	}
 
 	@Override
-	public void initialize(Serializable id, SessionImplementor session)
+	public void initialize(Serializable id, SharedSessionContractImplementor session)
 	throws HibernateException {
 		loadCollection( session, id, getKeyType() );
 	}

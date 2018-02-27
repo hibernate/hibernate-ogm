@@ -12,7 +12,7 @@ import static org.neo4j.graphdb.Label.label;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Database;
@@ -160,7 +160,7 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 		return sequences;
 	}
 
-	protected void createEntityConstraints(DatastoreProvider provider, Database database, Properties properties) {
+	protected void createEntityConstraints(DatastoreProvider provider, Database database, Map<String, Object> properties) {
 		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy
 				.interpret( properties.get( Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
 

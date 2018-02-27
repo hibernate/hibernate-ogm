@@ -7,10 +7,12 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
+import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +22,13 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.persistence.PersistenceException;
+import javax.persistence.TemporalType;
+
+import org.hamcrest.core.CombinableMatcher;
+import org.hamcrest.core.IsInstanceOf;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -32,7 +38,7 @@ import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.TestSessionFactory;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
+import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,8 +71,13 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@After
 	public void closeSession() {
-		if ( tx != null && tx.getStatus() == TransactionStatus.ACTIVE ) {
-			tx.commit();
+		if ( tx != null ) {
+			if ( tx.getRollbackOnly() ) {
+				tx.rollback();
+			}
+			else {
+				tx.commit();
+			}
 			tx = null;
 		}
 		if ( session != null ) {
@@ -93,8 +104,9 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testFailingQuery() {
-		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM000024" );
+		thrown.expect( PersistenceException.class );
+		thrown.expectCause( new CombinableMatcher<Throwable>( hasMessage( startsWith( "OGM000024" ) ) )
+				.and( IsInstanceOf.instanceOf( HibernateException.class ) ) );
 		assertQuery( session, 4, session.createQuery( "from Object" ) ); // Illegal query
 	}
 
@@ -196,7 +208,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	public void testParametricQueries() throws Exception {
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.description = :myParam" )
-				.setString( "myParam", "stuff works" )
+				.setParameter( "myParam", "stuff works" )
 				.list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
 	}
@@ -213,8 +225,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	public void testRangeQueryWithParameters() throws Exception {
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.description BETWEEN :start and :end" )
-				.setString( "start", "Hilbers" )
-				.setString( "end", "Peanq" )
+				.setParameter( "start", "Hilbers" )
+				.setParameter( "end", "Peanq" )
 				.list();
 
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "17" );
@@ -233,8 +245,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.date BETWEEN :start and :end" )
-				.setDate( "start", start )
-				.setDate( "end", end )
+				.setParameter( "start", start, TemporalType.DATE )
+				.setParameter( "end", end, TemporalType.DATE )
 				.list();
 
 		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16" );
@@ -519,7 +531,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testAutoFlushIsAppliedDuringQueryExecution() throws Exception {
-		Query query = session.createQuery( "from Hypothesis" );
+		Query<Hypothesis> query = session.createQuery( "from Hypothesis" );
 		assertQuery( session, 8, query );
 
 		Hypothesis hypothesis = new Hypothesis();
@@ -541,7 +553,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testEntitiesInsertedInCurrentSessionAreFoundByQueriesNotBasedOnHibernateSearch() throws Exception {
-		Query query = session.createQuery( "from Hypothesis h where h.position = 30" );
+		Query<Hypothesis> query = session.createQuery( "from Hypothesis h where h.position = 30" );
 		assertQuery( session, 0, query );
 
 		Hypothesis hypothesis = new Hypothesis();
@@ -563,7 +575,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testSetFlushModeIsApplied() throws Exception {
-		Query query = session.createQuery( "from Hypothesis h where h.position = 31" );
+		Query<Hypothesis> query = session.createQuery( "from Hypothesis h where h.position = 31" );
 		assertQuery( session, 0, query );
 
 		Hypothesis hypothesis = new Hypothesis();
@@ -572,7 +584,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		hypothesis.setPosition( 31 );
 		session.persist( hypothesis );
 
-		query.setFlushMode( FlushMode.MANUAL );
+		query.setHibernateFlushMode( FlushMode.MANUAL );
 
 		assertQuery( session, query, 0, "No auto-flush should be performed prior to query execution" );
 

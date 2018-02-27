@@ -20,7 +20,6 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
@@ -37,6 +36,7 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 	private static final int MAX_WAIT_MILLISECONDS = 120 * 1000;
 	private static final int STATE_REFRESH_MILLISECONDS = 50;
 	private static final int MAX_STATE_REFRESH_ATTEMPTS =  MAX_WAIT_MILLISECONDS / STATE_REFRESH_MILLISECONDS;
+	private static final String DEFAULT_CONFIG_PATH = "wildfly-trimmed-config.xml";
 
 	/**
 	 * An atomic static flag to make it possible to reuse this class both as a global JUnit listener and as a Rule, and
@@ -69,11 +69,10 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 		// e.g. the usage as JUnit Rule concurrently with the usage as global test listener in Surefire.
 		synchronized ( running ) {
 			if ( running.compareAndSet( false, true ) ) {
-				String InfinispanVersion = RemoteCache.class.getPackage().getImplementationVersion();
 				StandaloneCommandBuilder builder = StandaloneCommandBuilder
-						.of( "target/node1/infinispan-server-" + InfinispanVersion );
+						.of( "target/infinispan-server" );
 				builder
-					.setServerReadOnlyConfiguration( "wildfly-trimmed-config.xml" );
+					.setServerReadOnlyConfiguration( DEFAULT_CONFIG_PATH );
 				if ( portOffset != 0 ) {
 					builder.addJavaOption( "-Djboss.socket.binding.port-offset=" + portOffset );
 				}

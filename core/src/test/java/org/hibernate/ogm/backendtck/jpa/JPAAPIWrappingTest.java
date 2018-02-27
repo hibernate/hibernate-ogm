@@ -13,8 +13,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
 
-import org.hibernate.ogm.jpa.impl.OgmEntityManager;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
@@ -36,14 +36,14 @@ public class JPAAPIWrappingTest extends OgmJpaTestCase {
 	@Test
 	public void testWrappedStandalone() throws Exception {
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm", TestHelper.getDefaultTestSettings() );
-		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
+		assertThat( emf.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 
 		EntityManager em = emf.createEntityManager();
-		assertThat( em.getClass() ).isEqualTo( OgmEntityManager.class );
+		assertThat( em.getClass() ).isEqualTo( OgmSessionImpl.class );
 		em.close();
 
 		em = emf.createEntityManager();
-		assertThat( em.getClass() ).isEqualTo( OgmEntityManager.class );
+		assertThat( em.getClass() ).isEqualTo( OgmSessionImpl.class );
 		em.close();
 
 		emf.close();
@@ -57,12 +57,12 @@ public class JPAAPIWrappingTest extends OgmJpaTestCase {
 
 	@Test
 	public void testWrapInContainer() throws Exception {
-		assertThat( getFactory().getClass() ).isEqualTo( OgmEntityManagerFactory.class );
+		assertThat( getFactory().getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 		EntityManager entityManager = getFactory().createEntityManager();
-		assertThat( entityManager.getClass() ).isEqualTo( OgmEntityManager.class );
+		assertThat( entityManager.getClass() ).isEqualTo( OgmSessionImpl.class );
 		entityManager.close();
 		entityManager = getFactory().createEntityManager();
-		assertThat( entityManager.getClass() ).isEqualTo( OgmEntityManager.class );
+		assertThat( entityManager.getClass() ).isEqualTo( OgmSessionImpl.class );
 		entityManager.close();
 	}
 
@@ -70,7 +70,13 @@ public class JPAAPIWrappingTest extends OgmJpaTestCase {
 	public void testIllegalArgumentExceptionIfQueryDefinitionDoesNotExists() throws Exception {
 		thrown.expect( IllegalArgumentException.class );
 		EntityManager em = getFactory().createEntityManager();
-		em.createNamedQuery( "DoesNotExistsQuery" );
+		em.getTransaction().begin();
+		try {
+			em.createNamedQuery( "DoesNotExistsQuery" );
+		}
+		finally {
+			em.getTransaction().rollback();
+		}
 	}
 
 	@Override

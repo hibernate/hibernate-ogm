@@ -10,7 +10,9 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.procedure.ProcedureCallMemento;
 import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
@@ -43,5 +45,10 @@ public class NoSQLProcedureCallMemento implements ProcedureCallMemento {
 			return (T) this;
 		}
 		throw new HibernateException( "Cannot unwrap the following type: " + cls );
+	}
+
+	@Override
+	public ProcedureCall makeProcedureCall(SharedSessionContractImplementor session) {
+		throw new NotYetImplementedException( "==makeProcedureCall==" );
 	}
 }

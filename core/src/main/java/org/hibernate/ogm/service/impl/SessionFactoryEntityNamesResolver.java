@@ -30,6 +30,6 @@ public class SessionFactoryEntityNamesResolver implements EntityNamesResolver {
 
 	@Override
 	public Class<?> getClassFromName(String entityName) {
-		return classLoaderService.classForName( sessionFactory.getImportedClassName( entityName ) );
+		return classLoaderService.classForName( sessionFactory.getMetamodel().getImportedClassName( entityName ) );
 	}
 }

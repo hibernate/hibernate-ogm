@@ -12,7 +12,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
@@ -30,19 +30,19 @@ public class ManyToOneType extends EntityType {
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( hydrate( rs, names, session, owner ), session, owner );
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		GridType idGridType = getIdGridType( session.getFactory() );
 		idGridType.nullSafeSet( resultset, getIdentifier( value, session ), names, settable, session );
@@ -55,14 +55,14 @@ public class ManyToOneType extends EntityType {
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SharedSessionContractImplementor session)
 			throws HibernateException {
 		GridType idGridType = getIdGridType( session.getFactory() );
 		idGridType.nullSafeSet( resultset, getIdentifier( value, session ), names, session );
 	}
 
 	@Override
-	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		// return the (fully resolved) identifier value, but do not resolve
 		// to the actual referenced entity instance
@@ -77,10 +77,10 @@ public class ManyToOneType extends EntityType {
 	 *
 	 * Copied from {@link org.hibernate.type.ManyToOneType#scheduleBatchLoadIfNeeded}
 	 */
-	private void scheduleBatchLoadIfNeeded(Serializable id, SessionImplementor session) throws MappingException {
+	private void scheduleBatchLoadIfNeeded(Serializable id, SharedSessionContractImplementor session) throws MappingException {
 		//cannot batch fetch by unique key (property-ref associations)
 		if ( StringHelper.isEmpty( delegate.getRHSUniqueKeyPropertyName() ) && id != null ) {
-			EntityPersister persister = session.getFactory().getEntityPersister( delegate.getAssociatedEntityName() );
+			EntityPersister persister = session.getFactory().getMetamodel().entityPersister( delegate.getAssociatedEntityName() );
 			EntityKey entityKey = session.generateEntityKey( id, persister );
 			if ( !session.getPersistenceContext().containsEntity( entityKey ) ) {
 				session.getPersistenceContext().getBatchFetchQueue().addBatchLoadableEntityKey( entityKey );

@@ -8,7 +8,7 @@ package org.hibernate.ogm.model.impl;
 
 import java.io.Serializable;
 
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
@@ -27,7 +27,7 @@ public final class EntityKeyBuilder {
 	public static EntityKey fromPersister(
 			final OgmEntityPersister persister,
 			final Serializable id,
-			SessionImplementor session) {
+			SharedSessionContractImplementor session) {
 		return fromData(
 				persister.getEntityKeyMetadata(),
 				persister.getGridIdentifierType(),
@@ -40,7 +40,7 @@ public final class EntityKeyBuilder {
 			EntityKeyMetadata entityKeyMetadata,
 			GridType identifierGridType,
 			final Serializable id,
-			SessionImplementor session) {
+			SharedSessionContractImplementor session) {
 		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
 				id,
 				identifierGridType,

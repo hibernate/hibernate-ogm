@@ -9,12 +9,13 @@ package org.hibernate.ogm.compensation.impl;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.ogm.compensation.ErrorHandler;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 
 /**
  * A {@link TransactionCoordinator} invoking the registered {@link ErrorHandler} upon rollbacks.
  *
  * @author Gunnar Morling
+ * @author Guillaume Smet
  */
 public class ErrorHandlerEnabledTransactionCoordinatorDecorator extends ForwardingTransactionCoordinator {
 
@@ -35,14 +36,14 @@ public class ErrorHandlerEnabledTransactionCoordinatorDecorator extends Forwardi
 	}
 
 	@Override
-	public TransactionDriver getTransactionDriverControl() {
+	public void pulse() {
 		// Create the collector upon first usage in a given TX (not done via TransactionObserver#afterBegin() as it is
 		// not invoked in the case of JTA
 		if ( operationCollector == null ) {
 			operationCollector = new OperationCollector( errorHandler );
 		}
 
-		return super.getTransactionDriverControl();
+		super.pulse();
 	}
 
 	/**

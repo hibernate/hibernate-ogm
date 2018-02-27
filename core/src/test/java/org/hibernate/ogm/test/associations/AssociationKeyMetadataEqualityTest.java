@@ -28,10 +28,10 @@ public class AssociationKeyMetadataEqualityTest extends OgmTestCase {
 	// Each association must have a different table. For this reason we decided to update the tests and rename the
 	// tables. I'll leave this here just in case someone decides to change the test.
 	public void testDefaultAssociationKeyMetadataEquals() throws Exception {
-		OgmCollectionPersister collection1 = (OgmCollectionPersister) getSessionFactory().getCollectionPersister( User.class.getName() + ".phoneNumbersByPriority" );
+		OgmCollectionPersister collection1 = (OgmCollectionPersister) getSessionFactory().getMetamodel().collectionPersister( User.class.getName() + ".phoneNumbersByPriority" );
 		AssociationKeyMetadata byPriority = collection1.getAssociationKeyMetadata();
 
-		OgmCollectionPersister collection2 = (OgmCollectionPersister) getSessionFactory().getCollectionPersister( User.class.getName() + ".alternativePhoneNumbers" );
+		OgmCollectionPersister collection2 = (OgmCollectionPersister) getSessionFactory().getMetamodel().collectionPersister( User.class.getName() + ".alternativePhoneNumbers" );
 		AssociationKeyMetadata alternatvePhoneNumbers = collection2.getAssociationKeyMetadata();
 
 		assertThat( byPriority ).as( "Missing required association for testing" ).isNotNull();

@@ -9,6 +9,7 @@ package org.hibernate.ogm.jpa.impl;
 import javax.persistence.EntityExistsException;
 import javax.transaction.SystemException;
 
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.ExceptionMapper;
 
@@ -26,19 +27,19 @@ public class OgmExceptionMapper implements ExceptionMapper {
 	}
 
 	@Override
-	public RuntimeException mapStatusCheckFailure(String message, SystemException systemException) {
-		return delegate.mapStatusCheckFailure( message, systemException );
+	public RuntimeException mapStatusCheckFailure(String message, SystemException systemException, SessionImplementor sessionImplementor) {
+		return delegate.mapStatusCheckFailure( message, systemException, sessionImplementor );
 	}
 
 	@Override
-	public RuntimeException mapManagedFlushFailure(String message, RuntimeException failure) {
+	public RuntimeException mapManagedFlushFailure(String message, RuntimeException failure, SessionImplementor session) {
 		// OGM-specific
 		if ( EntityAlreadyExistsException.class.isInstance( failure ) ) {
 			throw new EntityExistsException( failure );
 		}
 		// Let ORM deal with the others
 		else {
-			return delegate.mapManagedFlushFailure( message, failure );
+			return delegate.mapManagedFlushFailure( message, failure, session );
 		}
 	}
 }

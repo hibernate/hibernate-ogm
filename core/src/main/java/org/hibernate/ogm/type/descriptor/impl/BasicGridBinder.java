@@ -7,6 +7,7 @@
 package org.hibernate.ogm.type.descriptor.impl;
 
 import java.util.Arrays;
+import java.util.TimeZone;
 
 import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.jdbc.NonContextualLobCreator;
@@ -23,6 +24,9 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
  */
 public abstract class BasicGridBinder<X> implements GridValueBinder<X> {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	private static final TimeZone UTC_TIMEZONE = TimeZone.getTimeZone( "UTC" );
+
 	private static final WrapperOptions DEFAULT_OPTIONS = new WrapperOptions() {
 
 		@Override
@@ -39,6 +43,11 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X> {
 		public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
 			//OGM dialect don't remap types yet
 			return sqlTypeDescriptor;
+		}
+
+		@Override
+		public TimeZone getJdbcTimeZone() {
+			return UTC_TIMEZONE;
 		}
 	};
 

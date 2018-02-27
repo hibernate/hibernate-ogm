@@ -64,7 +64,7 @@ From JPA, use the `unwrap` method of `EntityManager`
 ----
 EntityManager entityManager = ...
 OgmSession ogmSession = entityManager.unwrap(OgmSession.class);
-NoSQLQuery query = ogmSession.createNativeQuery(...);
+NativeQuery query = ogmSession.createNativeQuery(...);
 ----
 ====
 
@@ -86,7 +86,7 @@ OgmSessionFactory ogmSessionFactory = new MetadataSources( registry )
     .unwrap( OgmSessionFactoryBuilder.class )
     .build();
 OgmSession ogmSession = ogmSessionFactory.openSession();
-NoSQLQuery query = ogmSession.createNativeQuery(...);
+NativeQuery query = ogmSession.createNativeQuery(...);
 ----
 ====
 

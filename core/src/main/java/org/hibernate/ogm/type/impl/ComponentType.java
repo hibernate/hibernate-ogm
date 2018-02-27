@@ -12,6 +12,7 @@ import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
@@ -38,19 +39,19 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( hydrate( rs, names, session, owner ), session, owner ) ;
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		Object[] subvalues = nullSafeGetValues( value, componentType.getEntityMode() );
 		//TODO in the original componentType begin and loc are different (namely begin only counts settable slots
@@ -78,7 +79,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SharedSessionContractImplementor session)
 			throws HibernateException {
 		final boolean[] trueSettable = new boolean[names.length];
 		Arrays.fill( trueSettable, true );
@@ -86,7 +87,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		int begin = 0;
 		boolean notNull = false;

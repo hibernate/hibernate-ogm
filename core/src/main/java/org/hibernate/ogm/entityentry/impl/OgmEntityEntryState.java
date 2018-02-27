@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.EntityEntryExtraState;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
@@ -80,7 +80,7 @@ public class OgmEntityEntryState implements EntityEntryExtraState {
 		associations.put( collectionRole, association );
 	}
 
-	public static OgmEntityEntryState getStateFor(SessionImplementor session, Object object) {
+	public static OgmEntityEntryState getStateFor(SharedSessionContractImplementor session, Object object) {
 		EntityEntry entityEntry = session.getPersistenceContext().getEntry( object );
 		if ( entityEntry == null ) {
 			throw log.cannotFindEntityEntryForEntity( object );

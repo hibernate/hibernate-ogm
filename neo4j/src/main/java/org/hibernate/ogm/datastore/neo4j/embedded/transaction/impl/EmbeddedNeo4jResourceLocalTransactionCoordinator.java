@@ -20,13 +20,14 @@ import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.jdbc.WorkExecutor;
 import org.hibernate.jdbc.WorkExecutorVisitable;
+import org.hibernate.jpa.JpaCompliance;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import org.hibernate.resource.transaction.SynchronizationRegistry;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
+import org.hibernate.resource.transaction.spi.SynchronizationRegistry;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -55,6 +56,8 @@ public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements Transac
 
 	private final EmbeddedNeo4jDatastoreProvider provider;
 
+	private final JpaCompliance jpaCompliance;
+
 	/**
 	 * Construct a ResourceLocalTransactionCoordinatorImpl instance. Package-protected to ensure access goes through
 	 * builder.
@@ -69,6 +72,12 @@ public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements Transac
 		this.observers = new ArrayList<>();
 		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 		this.owner = owner;
+
+		this.jpaCompliance = owner.getJdbcSessionOwner()
+				.getJdbcSessionContext()
+				.getSessionFactory()
+				.getSessionFactoryOptions()
+				.getJpaCompliance();
 	}
 
 	@Override
@@ -111,6 +120,11 @@ public class EmbeddedNeo4jResourceLocalTransactionCoordinator implements Transac
 	@Override
 	public IsolationDelegate createIsolationDelegate() {
 		return new Neo4jIsolationDelegate( provider );
+	}
+
+	@Override
+	public JpaCompliance getJpaCompliance() {
+		return jpaCompliance;
 	}
 
 	private class Neo4jIsolationDelegate implements IsolationDelegate {

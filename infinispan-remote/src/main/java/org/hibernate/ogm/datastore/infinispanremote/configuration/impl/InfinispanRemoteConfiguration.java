@@ -102,9 +102,13 @@ public class InfinispanRemoteConfiguration {
 
 	private String schemaPackageName;
 
+	private String schemaFileName;
+
 	private Properties clientProperties;
 
 	private boolean createCachesEnabled;
+
+	private String newCacheTemplate;
 
 	/**
 	 * The location of the configuration file.
@@ -137,8 +141,16 @@ public class InfinispanRemoteConfiguration {
 		return schemaPackageName;
 	}
 
+	public String getSchemaFileName() {
+		return schemaFileName;
+	}
+
 	public boolean isCreateCachesEnabled() {
 		return createCachesEnabled;
+	}
+
+	public String getNewCacheTemplate() {
+		return newCacheTemplate;
 	}
 
 	/**
@@ -173,9 +185,20 @@ public class InfinispanRemoteConfiguration {
 				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_PACKAGE_NAME )
 				.getValue();
 
+		this.schemaFileName = propertyReader
+				.property( InfinispanRemoteProperties.SCHEMA_FILE_NAME, String.class )
+				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_FILE_NAME )
+				.withValidator( InfinispanRemoteValidators.SCHEMA_FILE_NAME )
+				.getValue();
+
 		this.createCachesEnabled = propertyReader
 				.property( OgmProperties.CREATE_DATABASE, boolean.class )
 				.withDefault( false )
+				.getValue();
+
+		this.newCacheTemplate = propertyReader
+				.property( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, String.class )
+				.withDefault( null )
 				.getValue();
 
 		log.tracef( "Initializing Infinispan Hot Rod client from configuration file at '%1$s'", configurationResource );

@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <version>5.4.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>hibernate-ogm-integrationtest</artifactId>
@@ -11,14 +11,18 @@
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
-        <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
-        <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
-        <infinispan-server.home>${project.build.directory}/infinispan-server-${infinispanVersion}</infinispan-server.home>
+        <wildFlyServerName>wildfly-${version.wildfly}</wildFlyServerName>
+        <jboss.home>${project.build.directory}/${wildFlyServerName}</jboss.home>
+        <infinispanServerName>infinispan-server</infinispanServerName>
+        <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
+
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
             convergence issues -->
         <enforcer.skip>true</enforcer.skip>
+
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <dependencyManagement>
@@ -48,9 +52,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -96,80 +100,136 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.build</groupId>
+                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>server-provisioning</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <config-file>server-provisioning.xml</config-file>
+                            <server-name>${wildFlyServerName}</server-name>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fetch-jpa-patch</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.hibernate.javax.persistence</groupId>
+                                    <artifactId>hibernate-jpa-api-2.2-wildflymodules</artifactId>
+                                    <classifier>wildfly-${version.wildfly}-patch</classifier>
+                                    <version>${jpa22patch.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <overWrite>true</overWrite>
+                                    <destFileName>${jpa22patch.filename}</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.infinispan</groupId>
+                                    <artifactId>infinispan-wildfly-modules</artifactId>
+                                    <version>${infinispanVersion}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>hibernate-ogm-modules</artifactId>
+                                    <classifier>${hibernateWildflyClassifier}</classifier>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fetch-cdi20-patch</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${cdi20patch.url}</url>
+                            <unpack>false</unpack>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+           <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <executions>
+                    <!-- Install JPA 2.2 patch -->
+                    <execution>
+                        <id>apply-wildfly-node1-jpa22-patch-file</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
+                        <configuration>
+                            <offline>true</offline>
+                            <jbossHome>${jboss.home}</jbossHome>
+                            <!-- The CLI script below will fail if the patch was already applied in a previous build -->
+                            <fail-on-error>false</fail-on-error>
+                            <commands>
+                                <command>patch apply --override-all --path ${project.build.directory}/${jpa22patch.filename}</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+                    <!-- Install CDI 2.0 patch -->
+                    <execution>
+                        <id>apply-wildfly-node1-cdi20-patch-file</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
+                        <configuration>
+                            <offline>true</offline>
+                            <jbossHome>${jboss.home}</jbossHome>
+                            <!-- The CLI script below will fail if the patch was already applied in a previous build -->
+                            <fail-on-error>false</fail-on-error>
+                            <commands>
+                                <command>patch apply --override-all --path ${project.build.directory}/${cdi20patch.filename}</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>unpack</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                                <goal>unpack</goal>
-                            </goals>
-                            <configuration>
-                                <artifactItems>
-                                    <artifactItem>
-                                        <groupId>org.wildfly</groupId>
-                                        <artifactId>wildfly-dist</artifactId>
-                                        <version>${version.wildfly}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${project.build.directory}</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>org.hibernate</groupId>
-                                        <artifactId>hibernate-orm-modules</artifactId>
-                                        <version>${hibernateVersion}</version>
-                                        <classifier>${hibernateWildflyClassifier}</classifier>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>hibernate-ogm-modules</artifactId>
-                                        <classifier>${hibernateWildflyClassifier}</classifier>
-                                        <version>${project.version}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>org.infinispan</groupId>
-                                        <artifactId>infinispan-wildfly-modules</artifactId>
-                                        <version>${infinispanVersion}</version>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                    <artifactItem>
-                                        <groupId>org.hibernate</groupId>
-                                        <artifactId>hibernate-search-modules</artifactId>
-                                        <version>${hibernateSearchVersion}</version>
-                                        <classifier>${hibernateWildflyClassifier}</classifier>
-                                        <type>zip</type>
-                                        <overWrite>false</overWrite>
-                                        <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                    </artifactItem>
-                                </artifactItems>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
     <dependencies>
@@ -266,7 +326,7 @@
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
-            <version>${version.org.wildfly.arquillian}</version>
+            <version>${wildflyArquillianVersion}</version>
             <scope>test</scope>
             <exclusions>
                 <!-- Pulled in transitively; Neither available on 
@@ -453,25 +513,18 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
+                        <groupId>org.wildfly.build</groupId>
+                        <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>unpack-infinispan-server</id>
-                                <phase>process-test-resources</phase>
+                                <id>infinispan-server-provisioning</id>
                                 <goals>
-                                    <goal>unpack</goal>
+                                    <goal>build</goal>
                                 </goals>
+                                <phase>compile</phase>
                                 <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.infinispan.server</groupId>
-                                            <artifactId>infinispan-server-build</artifactId>
-                                            <version>${infinispanVersion}</version>
-                                            <type>zip</type>
-                                            <outputDirectory>${project.build.directory}/node1</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
+                                    <config-file>infinispan-server-provisioning.xml</config-file>
+                                    <server-name>${infinispanServerName}</server-name>
                                 </configuration>
                             </execution>
                         </executions>
@@ -488,7 +541,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/node1/infinispan-server-${infinispanVersion}/standalone/configuration</outputDirectory>
+                                    <outputDirectory>${infinispan-server.home}/standalone/configuration</outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>

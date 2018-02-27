@@ -486,7 +486,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Integer() {
-		return Sequence( Optional( "-" ), NonZeroDigit(), ZeroOrMore( Digit() ) );
+		return Sequence( Optional( "-" ), FirstOf( "0", Sequence( NonZeroDigit(), ZeroOrMore( Digit() ) ) ) );
 	}
 
 	public Rule Digits() {

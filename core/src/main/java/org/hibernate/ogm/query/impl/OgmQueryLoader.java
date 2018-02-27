@@ -17,7 +17,7 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.loader.hql.QueryLoader;
@@ -66,8 +66,8 @@ public class OgmQueryLoader extends QueryLoader {
 	}
 
 	@Override
-	protected List<?> list(SessionImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
-			throws HibernateException {
+	protected List<?> list(SharedSessionContractImplementor session, org.hibernate.engine.spi.QueryParameters queryParameters, Set<Serializable> querySpaces,
+			Type[] resultTypes) throws HibernateException {
 
 		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( session, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator, session.getFactory() ) );
 		try {
@@ -84,7 +84,7 @@ public class OgmQueryLoader extends QueryLoader {
 	}
 
 	// At the moment we only support the case where one entity type is returned
-	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
+	private List<Object> listOfEntities(SharedSessionContractImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
 		TupleBasedEntityLoader loader = getLoader( session, returnedClass );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
@@ -100,7 +100,7 @@ public class OgmQueryLoader extends QueryLoader {
 		return tuplesAsList;
 	}
 
-	private List<Object> listOfArrays(SessionImplementor session, Iterator<Tuple> tuples) {
+	private List<Object> listOfArrays(SharedSessionContractImplementor session, Iterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
@@ -124,8 +124,8 @@ public class OgmQueryLoader extends QueryLoader {
 		return results;
 	}
 
-	private TupleBasedEntityLoader getLoader(SessionImplementor session, Class<?> entityClass) {
-		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
+	private TupleBasedEntityLoader getLoader(SharedSessionContractImplementor session, Class<?> entityClass) {
+		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getMetamodel().entityPersister( entityClass.getName() );
 		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, session );
 		return loader;
 	}
@@ -145,7 +145,7 @@ public class OgmQueryLoader extends QueryLoader {
 			this.query = query;
 		}
 
-		public ClosableIterator<Tuple> executeQuery(SessionImplementor session, QueryParameters queryParameters) {
+		public ClosableIterator<Tuple> executeQuery(SharedSessionContractImplementor session, QueryParameters queryParameters) {
 			return gridDialect.executeBackendQuery( query, queryParameters, tupleContext( session, query.getSingleEntityMetadataInformationOrNull() ) );
 		}
 	}

@@ -1,6 +1,6 @@
 # Hibernate OGM
 
-*Version: 5.2.0.Beta1 - 12-10-2017*
+*Version: 5.3.0.Final - 20-02-2018*
 
 ## Description
 
@@ -46,7 +46,7 @@ Bug Reports:
 Support:
 
  * The hibernate-ogm tag on Stackoverflow: <http://stackoverflow.com/questions/tagged/hibernate-ogm>
- * Our forum: <https://forum.hibernate.org/viewforum.php?f=31>
+ * Our forum: <https://discourse.hibernate.org/c/hibernate-ogm>
 
 ## Build instructions
 

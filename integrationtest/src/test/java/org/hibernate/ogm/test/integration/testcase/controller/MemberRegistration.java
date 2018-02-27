@@ -27,5 +27,7 @@ public interface MemberRegistration {
 
 	Member findWithNativeQuery(String nativeQuery);
 
+	void deleteAll();
+
 	void close();
 }

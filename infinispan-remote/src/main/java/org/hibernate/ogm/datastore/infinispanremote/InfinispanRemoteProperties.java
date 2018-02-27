@@ -36,6 +36,7 @@ import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
  * @see InfinispanRemoteConfiguration
  *
  * @author Davide D'Alto
+ * @author Fabio Massimo Ercoli
  */
 public final class InfinispanRemoteProperties implements KeyValueStoreProperties {
 
@@ -74,6 +75,23 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	 * @see #SCHEMA_PACKAGE_NAME
 	 */
 	public static final String DEFAULT_SCHEMA_PACKAGE_NAME = "HibernateOGMGenerated";
+
+	/**
+	 * The configuration property key to configure the file name to be used in Protobuf generated schemas.
+	 */
+	public static final String SCHEMA_FILE_NAME = "hibernate.ogm.infinispan_remote.schema_file_name";
+
+	/**
+	 * The default file name for Protobuf schemas. Override using SCHEMA_FILE_NAME.
+	 * @see #SCHEMA_FILE_NAME
+	 */
+	public static final String DEFAULT_SCHEMA_FILE_NAME = "Hibernate_OGM_Generated_schema.proto";
+
+	/**
+	 * The name of the template to use for the creation of a new cache.
+	 * If not set the default template in the infinispan configuration file is used.
+	 */
+	public static final String NEW_CACHE_TEMPLATE = "hibernate.ogm.datastore.template_for_new_caches";
 
 	private InfinispanRemoteProperties() {
 	}

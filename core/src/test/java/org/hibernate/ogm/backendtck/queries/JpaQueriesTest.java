@@ -154,7 +154,14 @@ public class JpaQueriesTest extends OgmJpaTestCase {
 	public void closeEmAndRemoveEntities() throws Exception {
 		//Do not hide the real cause with an NPE if there are initialization issues:
 		if ( em != null ) {
-			em.getTransaction().commit();
+			if ( em.getTransaction().isActive() ) {
+				if ( em.getTransaction().getRollbackOnly() ) {
+					em.getTransaction().rollback();
+				}
+				else {
+					em.getTransaction().commit();
+				}
+			}
 			em.close();
 			removeEntities();
 		}

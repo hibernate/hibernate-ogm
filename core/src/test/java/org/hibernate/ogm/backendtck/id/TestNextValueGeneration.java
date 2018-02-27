@@ -14,8 +14,9 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Before;
@@ -59,10 +60,14 @@ public abstract class TestNextValueGeneration extends OgmJpaTestCase {
 	protected abstract IdSourceKey buildIdGeneratorKey(Class<?> entityClass, String sequenceName);
 
 	protected IdentifierGenerator generateKeyMetadata(Class<?> entityClass) {
-		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
-		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) getFactory();
 		IdentifierGenerator generator = sessionFactory.getIdentifierGenerator( entityClass.getName() );
 		return generator;
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 
 	protected static class IncrementJob implements Runnable {

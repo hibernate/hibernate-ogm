@@ -11,13 +11,15 @@ import java.util.Set;
 
 import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
-import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
+import org.hibernate.ogm.hibernatecore.impl.BackendCustomLoader;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
+import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
  * Interprets given native NoSQL queries.
@@ -36,7 +38,7 @@ public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 	}
 
 	@Override
-	public ParameterMetadata getParameterMetadata(String nativeQuery) {
+	public ParameterMetadataImpl getParameterMetadata(String nativeQuery) {
 		return builder.buildParameterMetadata( nativeQuery );
 	}
 
@@ -44,6 +46,11 @@ public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 	public NativeSQLQueryPlan createQueryPlan(NativeSQLQuerySpecification specification, SessionFactoryImplementor sessionFactory) {
 		CustomQuery customQuery = getCustomQuery( gridDialect, specification, sessionFactory );
 		return new NativeNoSqlQueryPlan( specification.getQueryString(), customQuery );
+	}
+
+	@Override
+	public CustomLoader createCustomLoader(CustomQuery customQuery, SessionFactoryImplementor sessionFactory) {
+		return new BackendCustomLoader( (BackendCustomQuery<?>) customQuery, sessionFactory );
 	}
 
 	private <T extends Serializable> CustomQuery getCustomQuery(QueryableGridDialect<T> gridDialect, NativeSQLQuerySpecification specification, SessionFactoryImplementor sessionFactory) {

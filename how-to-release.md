@@ -96,7 +96,7 @@ Verify:
    - http://www.hibernate.org/ogm/documentation
    - http://www.hibernate.org/ogm/roadmap
  
-4. Update the sticky post in the forum: https://forum.hibernate.org/viewtopic.php?f=31&t=1037570
+4. Update the sticky post in the forum: https://discourse.hibernate.org/t/latest-versions-5-1-0-final-stable-5-2-0-alpha1/25
 
 5. Send email to _hibernate-dev_ and _hibernate-announce_.
    A quick sum up paragraph in the email is necessary before pointing to the blog entry.

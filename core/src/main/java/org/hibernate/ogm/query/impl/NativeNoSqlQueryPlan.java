@@ -12,7 +12,7 @@ import java.io.Serializable;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.QueryParameters;
@@ -35,7 +35,7 @@ class NativeNoSqlQueryPlan extends NativeSQLQueryPlan {
 	}
 
 	@Override
-	public int performExecuteUpdate(org.hibernate.engine.spi.QueryParameters queryParameters, SessionImplementor session) throws HibernateException {
+	public int performExecuteUpdate(org.hibernate.engine.spi.QueryParameters queryParameters, SharedSessionContractImplementor session) throws HibernateException {
 		QueryableGridDialect<?> gridDialect = session.getFactory().getServiceRegistry().getService( QueryableGridDialect.class );
 		TypeTranslator typeTranslator = session.getFactory().getServiceRegistry().getService( TypeTranslator.class );
 		return performExecuteUpdateQuery( gridDialect, QueryParameters.fromOrmQueryParameters( queryParameters, typeTranslator, session.getFactory() ), session );
@@ -43,7 +43,7 @@ class NativeNoSqlQueryPlan extends NativeSQLQueryPlan {
 
 	@SuppressWarnings("unchecked")
 	private <T extends Serializable> int performExecuteUpdateQuery(QueryableGridDialect<T> gridDialect, QueryParameters queryParameters,
-			SessionImplementor session) {
+			SharedSessionContractImplementor session) {
 		// Safe cast, see
 		// org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter.createQueryPlan(NativeSQLQuerySpecification,
 		// SessionFactoryImplementor)

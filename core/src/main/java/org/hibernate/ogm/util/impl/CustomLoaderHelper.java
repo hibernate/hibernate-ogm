@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.LockOptions;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.metamodel.spi.MetamodelImplementor;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.loader.impl.TupleBasedEntityLoader;
@@ -26,7 +27,7 @@ import org.hibernate.type.Type;
 public class CustomLoaderHelper {
 
 	// At the moment we only support the case where one entity type is returned
-	public static List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
+	public static List<Object> listOfEntities(SharedSessionContractImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		Class<?> returnedClass = resultTypes[0].getReturnedClass();
 		TupleBasedEntityLoader loader = getLoader( session, returnedClass );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
@@ -34,7 +35,7 @@ public class CustomLoaderHelper {
 		return loader.loadEntitiesFromTuples( session, LockOptions.NONE, ogmLoadingContext );
 	}
 
-	public static  List<Object> listOfEntities(SessionImplementor session, Class<?> returnedClass, ClosableIterator<Tuple> tuples) {
+	public static  List<Object> listOfEntities(SharedSessionContractImplementor session, Class<?> returnedClass, ClosableIterator<Tuple> tuples) {
 		TupleBasedEntityLoader loader = getLoader( session, returnedClass );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		ogmLoadingContext.setTuples( getTuplesAsList( tuples ) );
@@ -49,8 +50,11 @@ public class CustomLoaderHelper {
 		return tuplesAsList;
 	}
 
-	public static TupleBasedEntityLoader getLoader(SessionImplementor session, Class<?> entityClass) {
-		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
+	public static TupleBasedEntityLoader getLoader(SharedSessionContractImplementor session, Class<?> entityClass) {
+
+		MetamodelImplementor metamodelImplementor = session.getFactory().getMetamodel();
+		OgmEntityPersister persister = (OgmEntityPersister) metamodelImplementor.entityPersister( entityClass );
+		//OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
 		TupleBasedEntityLoader loader = (TupleBasedEntityLoader) persister.getAppropriateLoader( LockOptions.READ, session );
 		return loader;
 	}

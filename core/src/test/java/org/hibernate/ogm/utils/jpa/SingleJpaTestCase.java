@@ -25,9 +25,7 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -102,13 +100,12 @@ public abstract class SingleJpaTestCase {
 	 * Get JBoss TM out of Hibernate
 	 */
 	private static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) factory;
 		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
 	}
 
 	protected ServiceRegistryImplementor getServiceRegistry() {
-		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
-		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) getFactory();
 		ServiceRegistryImplementor serviceRegistry = sessionFactory.getServiceRegistry();
 		return serviceRegistry;
 	}

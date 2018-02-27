@@ -13,7 +13,8 @@ import javax.persistence.EntityManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
+import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -108,6 +109,11 @@ public class CompositeIdTest extends OgmJpaTestCase {
 		em.remove( news );
 		assertThat( em.find( News.class, newsCountJugID ) ).isNull();
 		em.getTransaction().commit();
+	}
+
+	@Override
+	protected void configure(GetterPersistenceUnitInfo info) {
+		TestHelper.enableCountersForInfinispan( info.getProperties() );
 	}
 
 	@Override

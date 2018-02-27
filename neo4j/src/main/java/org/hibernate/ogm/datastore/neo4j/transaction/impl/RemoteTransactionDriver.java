@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.transaction.impl;
 
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionDriver;
-import org.hibernate.resource.transaction.TransactionCoordinator.TransactionDriver;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator.TransactionDriver;
 
 /**
  * {@link IdentifiableDriver} implementation for Neo4j.

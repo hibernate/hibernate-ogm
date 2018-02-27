@@ -29,15 +29,14 @@ import javax.transaction.TransactionManager;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.exception.impl.Exceptions;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestEntities;
 import org.hibernate.ogm.utils.TestEntityManagerFactory;
+import org.hibernate.ogm.utils.TestEntityManagerFactory.Scope;
 import org.hibernate.ogm.utils.TestEntityManagerFactoryConfiguration;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.ogm.utils.TestEntityManagerFactory.Scope;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
@@ -169,7 +168,7 @@ public class OgmJpaTestRunner extends SkippableTestRunner {
 	}
 
 	private void cleanUpPendingTransactionIfRequired(EntityManagerFactory entityManagerFactory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) entityManagerFactory ).getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) entityManagerFactory;
 		TransactionManager transactionManager = sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
 
 		try {

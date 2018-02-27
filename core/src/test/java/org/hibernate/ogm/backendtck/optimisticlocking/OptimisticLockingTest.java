@@ -20,8 +20,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
+import javax.persistence.OptimisticLockException;
+
 import org.hibernate.Session;
-import org.hibernate.StaleObjectStateException;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -77,7 +78,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void updatingEntityUsingOldVersionCausesException() throws Throwable {
-		thrown.expect( StaleObjectStateException.class );
+		thrown.expect( OptimisticLockException.class );
 
 		persistPlanet();
 
@@ -104,7 +105,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE }
 	)
 	public void updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate() throws Throwable {
-		thrown.expectCause( isA( StaleObjectStateException.class ) );
+		thrown.expectCause( isA( OptimisticLockException.class ) );
 
 		persistPlanet();
 
@@ -123,7 +124,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void deletingEntityUsingOldVersionCausesException() throws Throwable {
-		thrown.expect( StaleObjectStateException.class );
+		thrown.expect( OptimisticLockException.class );
 
 		persistPlanet();
 
@@ -150,7 +151,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE }
 	)
 	public void deletingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndDelete() throws Throwable {
-		thrown.expectCause( isA( StaleObjectStateException.class ) );
+		thrown.expectCause( isA( OptimisticLockException.class ) );
 
 		persistPlanet();
 
@@ -169,7 +170,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void updatingEntityUsingOldEntityStateCausesException() throws Throwable {
-		thrown.expect( StaleObjectStateException.class );
+		thrown.expect( OptimisticLockException.class );
 
 		persistPulsar();
 
@@ -194,7 +195,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void deletingEntityUsingOldEntityStateCausesException() throws Throwable {
-		thrown.expect( StaleObjectStateException.class );
+		thrown.expect( OptimisticLockException.class );
 
 		persistPulsar();
 
@@ -215,7 +216,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 	@Test
 	public void mergingEntityUsingOldVersionCausesException() throws Throwable {
-		thrown.expect( StaleObjectStateException.class );
+		thrown.expect( OptimisticLockException.class );
 
 		persistPlanet();
 
@@ -237,6 +238,9 @@ public class OptimisticLockingTest extends OgmTestCase {
 		// merging back the previously loaded version will cause an exception
 		try {
 			entity = (Planet) session.merge( entity );
+		}
+		catch ( Exception e ) {
+			throw e;
 		}
 		finally {
 			commitTransactionAndPropagateExceptions( session, transaction );
@@ -343,10 +347,15 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 	private void commitTransactionAndPropagateExceptions(Session session, Transaction transaction) throws Exception {
 		try {
-			transaction.commit();
+			if ( !transaction.getRollbackOnly() ) {
+				transaction.commit();
+			}
+			else {
+				transaction.rollback();
+			}
 		}
 		catch (Exception e) {
-			if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
+			if ( transaction.getStatus() != TransactionStatus.NOT_ACTIVE ) {
 				transaction.rollback();
 			}
 			throw e;

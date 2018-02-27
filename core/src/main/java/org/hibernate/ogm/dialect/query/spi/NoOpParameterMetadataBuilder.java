@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.dialect.query.spi;
 
-import org.hibernate.engine.query.spi.ParameterMetadata;
+import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
  * Default implementation of {@link ParameterMetadataBuilder} which returns no parameter at all.
@@ -17,13 +17,13 @@ public class NoOpParameterMetadataBuilder implements ParameterMetadataBuilder {
 
 	public static final NoOpParameterMetadataBuilder INSTANCE = new NoOpParameterMetadataBuilder();
 
-	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
+	private static final ParameterMetadataImpl NO_PARAMETERS = new ParameterMetadataImpl( null, null );
 
 	private NoOpParameterMetadataBuilder() {
 	}
 
 	@Override
-	public ParameterMetadata buildParameterMetadata(String nativeQuery) {
+	public ParameterMetadataImpl buildParameterMetadata(String nativeQuery) {
 		return NO_PARAMETERS;
 	}
 }

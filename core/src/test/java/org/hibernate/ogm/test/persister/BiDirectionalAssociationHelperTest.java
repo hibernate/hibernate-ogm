@@ -150,11 +150,11 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	}
 
 	private OgmEntityPersister getEntityPersister(String entityName) {
-		return (OgmEntityPersister) ( getSessionFactory() ).getEntityPersister( entityName );
+		return (OgmEntityPersister) ( getSessionFactory() ).getMetamodel().entityPersister( entityName );
 	}
 
 	private OgmCollectionPersister getCollectionPersister(String role) {
-		return (OgmCollectionPersister) ( getSessionFactory() ).getCollectionPersister( role );
+		return (OgmCollectionPersister) ( getSessionFactory() ).getMetamodel().collectionPersister( role );
 	}
 
 	@Override

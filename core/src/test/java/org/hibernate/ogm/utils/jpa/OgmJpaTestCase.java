@@ -14,7 +14,6 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.utils.TestEntities;
 import org.hibernate.ogm.utils.TestEntityManagerFactory;
 import org.hibernate.ogm.utils.TestEntityManagerFactoryConfiguration;
@@ -73,8 +72,7 @@ public abstract class OgmJpaTestCase {
 	}
 
 	protected ServiceRegistryImplementor getServiceRegistry() {
-		OgmEntityManagerFactory emFactory = ( (OgmEntityManagerFactory) getFactory() );
-		SessionFactoryImplementor sessionFactory = emFactory.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) getFactory();
 		ServiceRegistryImplementor serviceRegistry = sessionFactory.getServiceRegistry();
 		return serviceRegistry;
 	}

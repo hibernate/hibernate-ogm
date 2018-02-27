@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-bom</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <version>5.4.0-SNAPSHOT</version>
         <relativePath>bom/pom.xml</relativePath>
     </parent>
 
@@ -38,12 +38,15 @@
 
         <maven.compiler.source>${minJdkVersion}</maven.compiler.source>
         <maven.compiler.target>${minJdkVersion}</maven.compiler.target>
+        <!-- The plugin org.wildfly.plugins:wildfly-maven-plugin requires Maven version 3.3.1 -->
+        <minMavenVersion>3.3.1</minMavenVersion>
 
         <jdkTargetForProcessor>${minJdkVersion}</jdkTargetForProcessor>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
-        <arquillianVersion>1.1.5.Final</arquillianVersion>
+        <arquillianVersion>1.2.0.Final</arquillianVersion>
+        <wildflyArquillianVersion>2.1.0.Final</wildflyArquillianVersion>
         <jmhVersion>1.0</jmhVersion>
         <bytemanVersion>4.0.0-BETA5</bytemanVersion>
 
@@ -65,9 +68,17 @@
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
-        <version.wildfly>10.1.0.Final</version.wildfly>
-        <hibernateWildflyClassifier>wildfly-10-dist</hibernateWildflyClassifier>
-        <hibernate-orm.module.slot>5.1</hibernate-orm.module.slot>
+        <version.wildfly>11.0.0.Final</version.wildfly>
+        <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
+        <jpa22patch.version>1.0.0.Beta1</jpa22patch.version>
+        <jpa22patch.filename>hibernate-jpa-api-2.2-wildflymodules-${jpa22patch.version}-wildfly-${version.wildfly}-patch.zip</jpa22patch.filename>
+
+        <cdi20patch.version>3.0.2.Final</cdi20patch.version>
+        <cdi20patch.filename>wildfly-${version.wildfly}-weld-${cdi20patch.version}-patch.zip</cdi20patch.filename>
+        <cdi20patch.url>http://download.jboss.org/weld/${cdi20patch.version}/${cdi20patch.filename}</cdi20patch.url>
+
+        <!-- This slot property is used by the modules project and the integration tests -->
+        <hibernate-search.module.slot>${hibernateSearchFamilyVersion}</hibernate-search.module.slot>
 
         <!-- Asciidoctor -->
         <hibernate-asciidoctor-theme.version>1.0.1.Final</hibernate-asciidoctor-theme.version>
@@ -189,7 +200,7 @@
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-transaction-spi</artifactId>
-                <version>7.3.0.Final</version>
+                <version>${jbossTransactionSPIVersion}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -264,6 +275,9 @@
                         <requireJavaVersion>
                             <version>[${minJdkVersion},)</version>
                         </requireJavaVersion>
+                        <requireMavenVersion>
+                            <version>${minMavenVersion}</version>
+                        </requireMavenVersion>
                         <DependencyConvergence />
                         <bannedDependencies>
                             <searchTransitive>true</searchTransitive>
@@ -338,18 +352,64 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>1.2.1.Final</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.build</groupId>
+                    <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                    <version>1.2.7.Final</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.8</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>2.10.3</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals><goal>jar</goal></goals>
-                        </execution>
-                    </executions>
+                    <configuration>
+                        <quiet>true</quiet>
+                        <!--
+                        For some reason the 'javadoc' goal (used in individual projects to generate the javadoc)
+                        targets the report output directory, while the 'jar' goal (used in the javadoc module
+                        to aggregate the javadoc) searches for pre-existing javadoc in the non-report output directory...
+                        As a result, the jar goal displays some warnings about the javadoc not being found and
+                        regenerates it. This sets the report output directory to the same path as the non-report one,
+                        which solves the problem.
+                         -->
+                        <reportOutputDirectory>${project.build.directory}/apidocs</reportOutputDirectory>
+                        <additionalDependencies>
+                            <additionalDependency>
+                                <groupId>org.jboss.logging</groupId>
+                                <artifactId>jboss-logging-annotations</artifactId>
+                                <version>${jbossLoggingProcessorVersion}</version>
+                            </additionalDependency>
+                            <dependency>
+                                <groupId>org.jboss.spec.javax.transaction</groupId>
+                                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                                <version>${jbossJtaAPIVersion}</version>
+                            </dependency>
+                        </additionalDependencies>
+                        <!-- Exclude implementation classes from the javadoc -->
+                        <excludePackageNames>*.impl,*.impl.*</excludePackageNames>
+                        <tags>
+                            <tag>
+                                <name>experimental</name>
+                                <placement>a</placement>
+                                <head>Experimental</head>
+                            </tag>
+                        </tags>
+                        <links>
+                            <link>https://docs.oracle.com/javase/8/docs/api/</link>
+                            <link>http://docs.jboss.org/hibernate/orm/5.2/javadocs/</link>
+                            <link>http://docs.jboss.org/hibernate/search/5.9/api/</link>
+                            <link>http://lucene.apache.org/core/5_5_4/core/</link>
+                        </links>
+                        <bottom>
+                            <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.redhat.com/">Red Hat, Inc.</a> and others. Licensed under the GNU Lesser General Public License (LGPL), version 2.1 or later.]]>
+                        </bottom>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -495,8 +555,9 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <argLine>${additionalRuntimeArgLine}</argLine>
                         <systemPropertyVariables>
-                           <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
-                           <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                            <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
+                            <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                            <project.build.directory>${project.build.directory}</project.build.directory>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
@@ -737,6 +798,13 @@
                         <bindIp>${embeddedMongoDbBindIp}</bindIp>
                         <version>${embeddedMongoDbVersion}</version>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>de.flapdoodle.embed</groupId>
+                            <artifactId>de.flapdoodle.embed.mongo</artifactId>
+                            <version>2.0.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmaven</groupId>
@@ -789,6 +857,7 @@
             </activation>
             <modules>
                 <module>infinispan</module>
+                <module>infinispan-embedded</module>
                 <module>infinispan-remote</module>
                 <module>neo4j</module>
                 <!-- The WildFly modules require the other modules to be enabled too -->
@@ -832,6 +901,23 @@
             <modules>
                 <module>documentation</module>
             </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.3</version>
+                        <executions>
+                            <execution>
+                                <id>generate-javadoc</id>
+                                <goals>
+                                    <goal>javadoc-no-fork</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>distro</id>

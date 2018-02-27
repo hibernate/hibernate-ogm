@@ -15,7 +15,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -105,14 +105,14 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 		return incrementSize;
 	}
 
-	protected abstract IdSourceKey getGeneratorKey(SessionImplementor session);
+	protected abstract IdSourceKey getGeneratorKey(SharedSessionContractImplementor session);
 
 	protected GridDialect getGridDialect() {
 		return gridDialect;
 	}
 
 	@Override
-	public synchronized Serializable generate(final SessionImplementor session, Object obj) {
+	public synchronized Serializable generate(final SharedSessionContractImplementor session, Object obj) {
 		return optimizer.generate(
 				new AccessCallback() {
 					@Override
@@ -129,10 +129,10 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	}
 
 	//copied and altered from TransactionHelper
-	private Serializable doWorkInIsolationTransaction(final SessionImplementor session)
+	private Serializable doWorkInIsolationTransaction(final SharedSessionContractImplementor session)
 			throws HibernateException {
 		class Work extends AbstractReturningWork<IntegralDataTypeHolder> {
-			private final SessionImplementor localSession = session;
+			private final SharedSessionContractImplementor localSession = session;
 
 			@Override
 			public IntegralDataTypeHolder execute(Connection connection) throws SQLException {
@@ -151,7 +151,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 		return generatedValue;
 	}
 
-	private IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
+	private IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SharedSessionContractImplementor session) {
 		IdSourceKey key = getGeneratorKey( session );
 
 		Number nextValue = gridDialect.nextValue(

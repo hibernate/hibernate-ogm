@@ -121,7 +121,7 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 		}
 		if ( isLastElementAssociation ) {
 			// even the last element is an association, we need to find a suitable identifier property
-			propertyName = getSessionFactory().getEntityPersister( propertyEntityType ).getIdentifierPropertyName();
+			propertyName = getSessionFactory().getMetamodel().entityPersister( propertyEntityType ).getIdentifierPropertyName();
 		}
 		else {
 			// the last element is a property so we can build the test with this property
@@ -135,7 +135,7 @@ public class Neo4jPropertyHelper extends ParserPropertyHelper implements Propert
 	}
 
 	public String getColumnName(Class<?> entityType, List<String> propertyName) {
-		OgmEntityPersister persister = (OgmEntityPersister) getSessionFactory().getEntityPersister( entityType.getName() );
+		OgmEntityPersister persister = (OgmEntityPersister) getSessionFactory().getMetamodel().entityPersister( entityType );
 		return getColumnName( persister, propertyName );
 	}
 

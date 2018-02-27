@@ -10,7 +10,7 @@
 
     <groupId>org.hibernate.ogm</groupId>
     <artifactId>hibernate-ogm-bom</artifactId>
-    <version>5.2.0-SNAPSHOT</version>
+    <version>5.4.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -26,57 +26,62 @@
             See the version.wildfly property in the hibernate-ogm-parent pom
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
-        <hibernateSearchVersion>5.6.3.Final</hibernateSearchVersion>
-        <hibernate-search.module.slot>${hibernateSearchVersion}-orm51</hibernate-search.module.slot>
-        <hibernateCommonsAnnotationsVersion>5.0.1.Final</hibernateCommonsAnnotationsVersion>
+
+        <hibernateCommonsAnnotationsVersion>5.0.2.Final</hibernateCommonsAnnotationsVersion>
         <jbossLoggingVersion>3.3.0.Final</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>2.0.2.Final</jbossLoggingProcessorVersion>
-        <classmateVersion>1.3.1</classmateVersion>
-        <resteasyVersion>3.0.19.Final</resteasyVersion> <!-- Used by CouchDB and Neo4j remote -->
-        <jacksonVersion>2.7.4</jacksonVersion>
-        <slf4jVersion>1.7.7</slf4jVersion> <!-- Note: Wildfly 10.1.0.CR1 uses a custom jboss version -->
-        <netty4Version>4.0.33.Final</netty4Version>
-        <jbossJtaAPIVersion>1.0.0.Final</jbossJtaAPIVersion>
-        <narayanaVersion>5.4.0.Final</narayanaVersion>
+        <classmateVersion>1.3.3</classmateVersion>
+        <resteasyVersion>3.0.24.Final</resteasyVersion> <!-- Used by CouchDB and Neo4j remote -->
+        <jacksonVersion>2.8.9</jacksonVersion>
+        <slf4jVersion>1.7.22</slf4jVersion>
+        <netty4Version>4.1.9.Final</netty4Version>
+        <jbossJtaAPIVersion>1.0.1.Final</jbossJtaAPIVersion>
+        <jbossTransactionSPIVersion>7.6.0.Final</jbossTransactionSPIVersion>
+        <narayanaVersion>5.5.30.Final</narayanaVersion>
 
         <!-- Hibernate ORM -->
-        <hibernateVersion>5.1.10.Final</hibernateVersion>
+        <hibernateOrmFamilyVersion>5.3</hibernateOrmFamilyVersion>
+        <hibernateVersion>5.3.0.CR1</hibernateVersion>
+
+        <!-- Hibernate Search -->
+        <hibernateSearchFamilyVersion>5.10</hibernateSearchFamilyVersion>
+        <hibernateSearchVersion>5.10.0.Beta1</hibernateSearchVersion>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
-        <luceneVersion>5.5.4</luceneVersion>
+        <luceneVersion>5.5.5</luceneVersion>
 
         <!-- Various dependencies -->
-        <hibernateHqlParserVersion>1.4.0.Final</hibernateHqlParserVersion>
-        <hibernate.hql.module.slot>${hibernateHqlParserVersion}</hibernate.hql.module.slot>
-        <parboiledVersion>1.1.7</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
-        <asmVersion>5.0.3</asmVersion> <!-- used for Parboiled and Neo4j -->
+        <hibernateHqlParserVersion>1.5.0.Final</hibernateHqlParserVersion>
+        <parboiledVersion>1.1.8</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
+        <asmVersion>5.2</asmVersion> <!-- used for Parboiled and Neo4j -->
 
         <!-- Infinispan -->
-        <infinispanVersion>9.1.1.Final</infinispanVersion>
-        <protostreamVersion>4.1.0.Final</protostreamVersion>
+        <infinispanVersion>9.1.6.Final</infinispanVersion>
+        <protostreamVersion>4.1.3.Final</protostreamVersion>
 
         <!-- MongoDB -->
-        <mongodbDriverVersion>3.5.0</mongodbDriverVersion>
-        <mongodbVersion>3.4.6</mongodbVersion>
+        <mongodbVersion>3.6.2</mongodbVersion>
+        <mongodbDriverVersion>3.6.3</mongodbDriverVersion>
         <mongodbCommonslang3Version>3.3.2</mongodbCommonslang3Version>
 
         <!-- Neo4j -->
-        <neo4jVersion>3.2.6</neo4jVersion>
-        <neo4jJavaDriverVersion>1.4.4</neo4jJavaDriverVersion>
-        <neo4jScalaLibraryVersion>2.11.8</neo4jScalaLibraryVersion>
+        <neo4jVersion>3.3.3</neo4jVersion>
+        <neo4jJavaDriverVersion>1.5.1</neo4jJavaDriverVersion>
+        <neo4jScalaLibraryVersion>2.11.11</neo4jScalaLibraryVersion>
         <!-- See Parboiled dependency above -->
         <!-- See Lucene dependency above -->
         <!-- Dependencies used in the Neo4j WildFly module -->
-        <neo4jGraphMatchingVersion>3.1.3</neo4jGraphMatchingVersion>
-        <neo4jCommonsLang3Version>3.3.2</neo4jCommonsLang3Version>
+        <neo4jGraphMatchingVersion>3.1.6</neo4jGraphMatchingVersion>
+        <neo4jCommonsLang3Version>3.5</neo4jCommonsLang3Version>
         <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
         <neo4jBouncyCastleVersion>1.53</neo4jBouncyCastleVersion>
-        <neo4jNettyVersion>4.1.15.Final</neo4jNettyVersion>
+        <neo4jNettyVersion>4.1.17.Final</neo4jNettyVersion>
         <neo4jCaffeineVersion>2.3.3</neo4jCaffeineVersion>
         <!-- Neo4j supports different versions of Cypher -->
-        <neo4jCypherCompiler32Version>${neo4jVersion}</neo4jCypherCompiler32Version>
+        <neo4jCypherCompiler33Version>${neo4jVersion}</neo4jCypherCompiler33Version>
+        <neo4jCypherCompiler32Version>3.2.9</neo4jCypherCompiler32Version>
         <neo4jCypherCompiler31Version>3.1.6</neo4jCypherCompiler31Version>
-        <neo4jCypherCompiler23Version>2.3.11</neo4jCypherCompiler23Version>
+        <neo4jCypherCompiler23Version>2.3.12</neo4jCypherCompiler23Version>
     </properties>
 
     <inceptionYear>2010</inceptionYear>
@@ -381,7 +386,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>hibernate-ogm-infinispan</artifactId>
+                <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -405,6 +410,13 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>hibernate-ogm-neo4j</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-modules</artifactId>
+                <version>${project.version}</version>
+                <classifier>wildfly-11-dist</classifier>
+                <type>zip</type>
             </dependency>
 
             <!-- Logging -->
@@ -474,6 +486,11 @@
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-clustered-counter</artifactId>
+                <version>${infinispanVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
@@ -636,6 +653,22 @@
             <dependency>
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-java</artifactId>
+                <version>${parboiledVersion}</version>
+                <exclusions>
+                    <exclusion>
+                         <groupId>org.scala-lang</groupId>
+                         <artifactId>scala-library</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${neo4jScalaLibraryVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.parboiled</groupId>
+                <artifactId>parboiled-scala_2.11</artifactId>
                 <version>${parboiledVersion}</version>
             </dependency>
             <dependency>

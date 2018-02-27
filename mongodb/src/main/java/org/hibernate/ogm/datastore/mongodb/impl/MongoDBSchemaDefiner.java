@@ -74,7 +74,7 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		validateGenerators( context.getAllIdSourceKeyMetadata() );
 		validateEntityCollectionNames( context.getAllEntityKeyMetadata() );
 		validateAssociationNames( context.getAllAssociationKeyMetadata() );
-		validateAllPersisters( context.getSessionFactory().getEntityPersisters().values() );
+		validateAllPersisters( context.getSessionFactory().getMetamodel().entityPersisters().values() );
 		validateIndexSpecs( context );
 	}
 

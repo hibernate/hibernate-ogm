@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +73,9 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 
 		List<Object> positionalParameters = new ArrayList<>();
 		Map<String, Object> namedParameters = new HashMap<>();
-		for ( ParameterRegistration nosqlParameterRegistration : procedureCall.getRegisteredParameters() ) {
+		Iterator it = procedureCall.getRegisteredParameters().iterator();
+		while ( it.hasNext() ) {
+			ParameterRegistration nosqlParameterRegistration = (ParameterRegistration) it.next();
 			if ( nosqlParameterRegistration.getMode() != ParameterMode.REF_CURSOR ) {
 				Object value = nosqlParameterRegistration.getBind().getValue();
 				if ( nosqlParameterRegistration.getName() != null ) {
@@ -94,7 +97,7 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 		String entityName = null;
 
 		if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
-			String querySpace = procedureCall.getSynchronizedQuerySpaces().iterator().next();
+			String querySpace = (String) procedureCall.getSynchronizedQuerySpaces().iterator().next();
 
 			for ( Map.Entry<String, EntityPersister> entry : procedureCall.getSession().getFactory().getEntityPersisters().entrySet() ) {
 				List<Serializable> querySpaces = Arrays.asList( entry.getValue().getQuerySpaces() );

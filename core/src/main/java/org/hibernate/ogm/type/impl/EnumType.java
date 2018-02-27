@@ -6,16 +6,17 @@
  */
 package org.hibernate.ogm.type.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Types;
 
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.type.CustomType;
 
 /**
@@ -43,7 +44,7 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		if ( names.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );
@@ -52,7 +53,7 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		final Object object = rs.get( name );
 		if ( object == null ) {
@@ -86,7 +87,8 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 
 	private void initEnumValues() {
 		if ( enumValues == null ) {
-			this.enumValues = coreEnumType.returnedClass().getEnumConstants();
+			Class<? extends Enum<?>> returnedClass = coreEnumType.returnedClass();
+			this.enumValues = returnedClass.getEnumConstants();
 			if ( enumValues == null ) {
 				throw new NullPointerException( "Failed to init enumValues" );
 			}
@@ -94,13 +96,13 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SharedSessionContractImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, names, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SharedSessionContractImplementor session)
 			throws HibernateException {
 		if ( settable.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );
@@ -111,7 +113,7 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SharedSessionContractImplementor session)
 			throws HibernateException {
 		if ( names.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );

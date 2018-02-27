@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.test.integration.testcase.controller;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 
 import org.apache.lucene.search.Query;
@@ -30,6 +32,14 @@ public class RegistrationExecutor {
 
 	public static Member find(EntityManager em, Long id) {
 		return em.find( Member.class, id );
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void deleteAll(EntityManager em) {
+		List<Member> members = em.createQuery( "select t from " + Member.class.getName() + " t" ).getResultList();
+		for ( Member member : members ) {
+			em.remove( member );
+		}
 	}
 
 	public static Member findWithNativeQuery(EntityManager em, String nativeQuery) {

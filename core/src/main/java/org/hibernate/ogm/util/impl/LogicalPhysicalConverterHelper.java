@@ -7,7 +7,7 @@
 package org.hibernate.ogm.util.impl;
 
 
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 
@@ -27,7 +27,8 @@ public class LogicalPhysicalConverterHelper {
 		return columnValues;
 	}
 
-	public static Object[] getColumnsValuesFromObjectValue(Object uniqueKey, GridType gridUniqueKeyType, String[] propertyColumnNames, SessionImplementor session) {
+	public static Object[] getColumnsValuesFromObjectValue(Object uniqueKey, GridType gridUniqueKeyType, String[] propertyColumnNames,
+			SharedSessionContractImplementor session) {
 		Tuple tempResultset = new Tuple();
 		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, propertyColumnNames, session ) ;
 		Object[] columnValuesFromResultset = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tempResultset, propertyColumnNames );

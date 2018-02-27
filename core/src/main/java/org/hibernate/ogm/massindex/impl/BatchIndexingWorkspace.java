@@ -17,9 +17,10 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.backend.spi.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
-import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.exception.ErrorHandler;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.util.logging.impl.Log;
 import java.lang.invoke.MethodHandles;
 
@@ -37,7 +38,7 @@ public class BatchIndexingWorkspace implements Runnable {
 	private final ExtendedSearchIntegrator searchIntegrator;
 	private final SessionFactoryImplementor sessionFactory;
 
-	private final Class<?> indexedType;
+	private final IndexedTypeIdentifier indexedTypeIdentifier;
 
 	// progress monitor
 	private final MassIndexerProgressMonitor monitor;
@@ -54,10 +55,10 @@ public class BatchIndexingWorkspace implements Runnable {
 	private final String tenantId;
 
 	public BatchIndexingWorkspace(GridDialect gridDialect, SearchIntegrator search,
-			SessionFactoryImplementor sessionFactory, Class<?> entityType, CacheMode cacheMode, CountDownLatch endAllSignal,
+			SessionFactoryImplementor sessionFactory, IndexedTypeIdentifier indexedTypeIdentifier, CacheMode cacheMode, CountDownLatch endAllSignal,
 			MassIndexerProgressMonitor monitor, BatchBackend backend, String tenantId) {
 		this.gridDialect = gridDialect;
-		this.indexedType = entityType;
+		this.indexedTypeIdentifier = indexedTypeIdentifier;
 		this.tenantId = tenantId;
 		this.searchIntegrator = search.unwrap( ExtendedSearchIntegrator.class );
 		this.sessionFactory = sessionFactory;
@@ -71,10 +72,10 @@ public class BatchIndexingWorkspace implements Runnable {
 	public void run() {
 		ErrorHandler errorHandler = searchIntegrator.getErrorHandler();
 		try {
-			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
+			OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( indexedTypeIdentifier.getPojoType() );
 			final EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 
-			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler, tenantId );
+			final SessionAwareRunnable consumer = new TupleIndexer( indexedTypeIdentifier, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler, tenantId );
 			gridDialect.forEachTuple( new OptionallyWrapInJTATransaction( sessionFactory, errorHandler, consumer ), persister.getTupleTypeContext(), keyMetadata );
 		}
 		catch ( RuntimeException re ) {

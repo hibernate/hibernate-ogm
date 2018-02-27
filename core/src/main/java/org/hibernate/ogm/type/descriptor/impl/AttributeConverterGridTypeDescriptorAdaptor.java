@@ -6,14 +6,16 @@
  */
 package org.hibernate.ogm.type.descriptor.impl;
 
+import java.lang.invoke.MethodHandles;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.PersistenceException;
 
+import org.hibernate.metamodel.model.convert.spi.JpaAttributeConverter;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
@@ -25,12 +27,12 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDescriptor {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
-	private final AttributeConverter converter;
+	private final JpaAttributeConverter converter;
 	private final GridTypeToGridTypeDescriptorAdapter delegate;
 	private final JavaTypeDescriptor intermediateJavaTypeDescriptor;
 
 	public AttributeConverterGridTypeDescriptorAdaptor(
-			AttributeConverter converter,
+			JpaAttributeConverter converter,
 			GridType delegate,
 			JavaTypeDescriptor intermediateJavaTypeDescriptor) {
 		this.converter = converter;
@@ -54,7 +56,7 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 			public void bind(Tuple resultset, X value, String[] names) {
 				final Object convertedValue;
 				try {
-					convertedValue = converter.convertToDatabaseColumn( value );
+					convertedValue = converter.toRelationalValue( value );
 				}
 				catch (PersistenceException pe) {
 					throw pe;
@@ -88,7 +90,7 @@ public class AttributeConverterGridTypeDescriptorAdaptor implements GridTypeDesc
 			@SuppressWarnings("unchecked")
 			private X doConversion(Object extractedValue) {
 				try {
-					X convertedValue = (X) converter.convertToEntityAttribute( extractedValue );
+					X convertedValue = (X) converter.toDomainValue( extractedValue );
 					log.debugf( "Converted value on extraction: %s -> %s", extractedValue, convertedValue );
 					return convertedValue;
 				}

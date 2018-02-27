@@ -71,6 +71,8 @@ When connecting to an _Infinispan Server_ over the _Hot Rod client_, the archite
 is similar to having Hibernate connect to traditional database: the data is stored
 on the _Infinispan Server_ nodes, and Hibernate OGM uses a client with a pool of
 TCP connections to talk to the server.
+But the Hot Rod client is not transactional, see the limitation described here:
+(<<storage-principles-of-infinispan-dataprovider>>).
 
 Another important difference, is that when connecting to _Infinispan Server_ via
 _Hot Rod_ the data is encoded using _Google Protobuf_, which requires a schema.
@@ -162,7 +164,7 @@ To add the dependencies for the Hibernate OGM extensions for Infinispan Embedded
 ----
 <dependency>
     <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     <version>{hibernate-ogm-version}</version>
 </dependency>
 ----
@@ -659,7 +661,123 @@ public class News {
 |===
 ====
 
-====== Identifier generation strategies
+[[infinispan-embedded-id-generation-strategies]]
+
+====== Identifier generation strategies for Infinispan Embedded
+
+The Infinispan Embedded dialect will use
+http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Infinispan clustered counters]
+for the generation of ids and sequences.
+
+If the clusterd counter is not already defined, Hibernate OGM will create it using a default
+configuration. The following is probably the simplest case for which a counter is created:
+
+.Example of the default counter
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue
+    private long id;
+
+    // getters, setters ...
+}
+----
+====
+
+In this case Hibernate OGM will create a strong persitent counter with name `hibernate_sequence`
+and initial value of 0.
+
+[NOTE]
+====
+The default configuration will create `PERSISTENT` Infinispan counters.
+You need to define in the infinispan configuration a location where to store these counters
+using the following property:
+
+[source, XML]
+----
+<infinispan>
+    ...
+    <cache-container>
+
+        <global-state>
+            <persistent-location path="/counters"/>
+        </global-state>
+
+        ...
+    </cache-container>
+</infinispan>
+----
+
+An exception is thrown if the property is missing.
+====
+
+You can ovveride some of this properties with `@SequenceGenerator` or `@TableGenerator`.
+
+.Counter defined using `@SequenceGenerator` 
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen1")
+    @SequenceGenerator( name = "gen1",
+                        sequenceName = "GuitarPlayerCounter",
+                        initialValue = 5 )
+    private long id;
+
+    // getters, setters ...
+}
+----
+====
+
+This will create a counter with name `GuitarPlayerCounter` and initial value of 5.
+
+There is no real difference if you use `@TableGenerator`, except that the counter name
+is defined using the attribute `pkColumnValue`.
+
+Note that if you need more control over a counter you can still redefine it in the Infinispan
+configuration file. The following is an example of how you can define a `VOLATILE` counter:
+
+.Create a VOLATILE counter
+====
+[source, XML]
+----
+<infinispan>
+...
+    <cache-container>
+
+    ...
+
+        <!-- Clustered Counters are defined at runtime by InfinispanDialect -->
+        <counters xmlns="urn:infinispan:config:counters:9.1"
+            num-owners="4" reliability="CONSISTENT">
+
+            <strong-counter name="GuitarPlayerCounter"
+                initial-value="0" storage="VOLATILE">
+
+                <lower-bound value="0" />
+            </strong-counter>
+        </counters>
+    </cache-container>
+</infinispan
+----
+====
+
+In this last case Hibernate OGM won't create a counter but it will use the one defined in the
+Infinispan configuration.
+
+I will leave the details about counters configuration to the
+http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Infinispan documentation].
+
+[[infinispan-remote-id-generation-strategies]]
+
+====== Identifier generation strategies for Infinispan Remote via Hot Rod
 
 Since Infinispan has not native sequence nor identity column support,
 these are simulated using the table strategy, however their default values vary.
@@ -2287,6 +2405,9 @@ hibernate.ogm.infinispan_remote.schema_package_name::
 Defines the package name of the generated Protobuf schema. Defaults to `HibernateOGMGenerated`.
 Useful to isolate different applications using the same Infinispan Server instance.
 
+hibernate.ogm.infinispan_remote.schema_file_name::
+Defines the file name of the generated Protobuf schema. Defualts to 'Hibernate_OGM_Generated_schema.proto'.
+The file name must have a valid __*.proto__ extension.
 
 ==== Data encoding: Protobuf Schema
 
@@ -2339,6 +2460,8 @@ The deployed schemas can be fetched from the Infinispan Server; Hibernate OGM al
 logs the generated schemas at `INFO` level in the logging category
 `org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions`.
 
+[[storage-principles-of-infinispan-dataprovider]]
+
 ==== Storage Principles of the Infinispan Remote dataprovider
 
 This is actually very simple.
@@ -2358,6 +2481,23 @@ While we can use relations based on foreign keys, Infinispan has no notion of re
 Hibernate is able to maintain the integrity as it won't "forget" stale references, but since
 the storage doesn't support transactions either it is possible to interrupt Hibernate OGM
 during such maintenance and introduce breaks of integrity.
+
+When integrity could be broken::
+When the unit of work involves several operations we might risk to have a partial writes
+(updates, deletes, inserts); due to the fact that the Hot Rod client is not transactional
+some operation would be flushed to data store, other not.
+For instance let's imagine you create a new entity, remove an old one and update an association
+from the old to the new one in a single transaction,
+this would correspond to three different remote invocations: an Entity insert, an Entity delete
+and an Association update.
+If there were network problems during the third invocation,
+we could have a partial write in which only the first and the second operations
+would be actually stored on the remote storage and this could lead to a breaking referential
+integrity of the association.
+
+How to detect broken integrity::
+Unfortunately, at the moment the only way to detect a referential integrity error is to
+inspect the logs for error messages or periodically monitor the associations cache.
 
 A key. And a Value.::
 In a key/value store the two elements _key_ and _value_ are different, separate objects.
@@ -2456,6 +2596,117 @@ If any Cache is missing, Hibernate OGM will fail to start and list which table n
 expected, but not found. We plan to automate the creation of missing caches in the future.
 ====
 
+==== Caches creation and Templates
+
+Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
+If the property is enabled the dialect is capable of creating cache, if necessary, on remote Infinispan cluster.
+
+By default all caches created use the default Infinispan configuration,
+so by default all caches are created **without a specific Infinispan configuration**.
+
+To applying a configuration on cache
+we need an already defined cache on remote Infinispan configuration to use ``as a template`` for the new caches.
+
+There are two ways for applying a template to new caches:
+
+* Using the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
+* Using the ``@CacheTemplate`` annotation on Entity class
+
+The property is applied to all new caches, it means for all Entities. So property has a global scope.
+
+The annotations are applied to the new caches related to the Entities on which they are present.
+So annotations have a local (Entity) scope instead.
+
+Is it possible enabling both the configurations, whenever are both present the templates defined by annotation
+will **override** the template defined by property.
+
+[IMPORTANT]
+====
+Caches, used as templates, **need to be present** on remote Infinispan cluster
+configuration, otherwise an exception will thrown.
+====
+
+Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheTemplateEntity__:
+
+====
+[source, JAVA]
+----
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity # <1>
+public class NoAnnotationEntity {
+
+	@Id
+	private String id;
+
+}
+----
+[source, JAVA]
+----
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+
+@Entity
+@CacheTemplate("transactional") # <2>
+public class CacheTemplateEntity {
+
+	@Id
+	private String id;
+
+}
+----
+<1> __NoAnnotationEntity__ Entity does not make use of `@CacheTemplate` annotation
+<2> __CacheTemplateEntity__ Entity declares instead to use a cache, named __transactional__, as a template configuration
+====
+
+Bundled with a __persistence.xml__ such that:
+====
+[source, XML]
+----
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+
+	<persistence-unit name="ogm-with-hotrod">
+		<provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+		<properties>
+			<property name="hibernate.ogm.datastore.provider"
+				value="infinispan_remote" />
+			<property name="hibernate.ogm.infinispan_remote.configuration_resource_name"
+				value="hotrodclient.properties" />
+			<property name="hibernate.ogm.datastore.create_database"
+				value="true" /> # <1>
+			<property name="hibernate.ogm.datastore.template_for_new_caches"
+				value="default" /> # <2>
+		</properties>
+	</persistence-unit>
+</persistence>
+----
+<1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
+<2> Property ``hibernate.ogm.datastore.template_for_new_caches`` defines a template,
+named __default__, to apply to all created caches
+====
+
+Assuming that:
+
+* Caches __default__ and __transactional__ are **present** on Infinispan server configuration.
+* Caches __NoAnnotationEntity__ and __CacheTemplateEntity__ are instead **NOT present** on Infinispan server configuration.
+
+Then:
+
+* Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache template.
+* Cache __CacheTemplateEntity__ will be created by the dialect using __transactional__ as a cache template.
+
+[IMPORTANT]
+====
+Template configuration can be used to force a ``transactional behaviour`` for the caches.
+
+We reccomend having ``transactional caches`` when a **stronger consistency** is required by the use case.
+====
 
 ==== Known Limitations & Future improvements
 
@@ -2498,3 +2749,7 @@ When deploying the _Protobuf Schema_, we should also automatically define and st
 the needed Caches if they are not defined.
 This is currently not allowed over the Hot Rod protocol.
 
+Id generation and sequences for local caches::
+When using the the Infinispan Embedded dialect, the generation of id or sequences only works
+for clustered caches. This is because the version of Infinispan included doesn't support
+counters for local caches.

@@ -46,7 +46,7 @@ Adding the relevant Hibernate OGM module in your classpath looks like this in Ma
 ----
 <dependency>
     <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
     <version>{hibernate-ogm-version}</version>
 </dependency>
 ----
@@ -63,7 +63,7 @@ Possible values are:
 
 * specific shortcuts (preferable): `map` (only to be used for unit tests),
   `infinispan_embedded`, `infinispan_remote`, `ehcache`, `mongodb`, `neo4j_embedded`,
-  `neo4j_http`, `neo4j_bolt`, `couchdb_experimental` or `redis_experimental`
+  `neo4j_http`, `neo4j_bolt`.
 * the fully qualified class name of a `DatastoreProvider` implementation
 
 [NOTE]

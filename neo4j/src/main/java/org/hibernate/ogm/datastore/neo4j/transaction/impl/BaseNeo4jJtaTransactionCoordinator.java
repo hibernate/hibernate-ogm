@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.transaction.impl;
 
-import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 
 /**
  * Groups commons method used by the different Neo4j transaction coordinators in a JTA environment.

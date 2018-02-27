@@ -6,62 +6,43 @@
  */
 package org.hibernate.ogm.hibernatecore.impl;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.invoke.MethodHandles;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceException;
 
 import org.hibernate.Criteria;
 import org.hibernate.Filter;
 import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
 import org.hibernate.NaturalIdLoadAccess;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
-import org.hibernate.ScrollableResults;
-import org.hibernate.SessionException;
+import org.hibernate.ScrollMode;
+import org.hibernate.Session;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
-import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
-import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
-import org.hibernate.engine.spi.ActionQueue;
-import org.hibernate.engine.spi.EntityEntry;
-import org.hibernate.engine.spi.EntityKey;
-import org.hibernate.engine.spi.NamedQueryDefinition;
-import org.hibernate.engine.spi.NamedSQLQueryDefinition;
-import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionDelegatorBaseImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.event.service.spi.EventListenerGroup;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.AutoFlushEvent;
-import org.hibernate.event.spi.AutoFlushEventListener;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.event.spi.EventSource;
-import org.hibernate.event.spi.EventType;
-import org.hibernate.internal.SessionImpl;
-import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.query.NoSQLQuery;
-import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallMemento;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.procedure.ProcedureCallMemento;
 import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
-import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
+import org.hibernate.query.Query;
+import org.hibernate.query.spi.ScrollableResultsImplementor;
 
 /**
- * An OGM specific session implementation which delegate most of the work to the underlying Hibernate ORM {@code Session},
+ * An OGM specific session implementation which delegates most of the work to the underlying Hibernate ORM {@code Session},
  * except queries which are redirected to the OGM engine.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -70,12 +51,10 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
-	private final EventSource delegate;
 	private final OgmSessionFactoryImpl factory;
 
 	public OgmSessionImpl(OgmSessionFactory factory, EventSource delegate) {
-		super( delegate, delegate );
-		this.delegate = delegate;
+		super( delegate );
 		this.factory = (OgmSessionFactoryImpl) factory;
 	}
 
@@ -86,8 +65,18 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public OgmSessionFactory getSessionFactory() {
+	public OgmSessionFactoryImplementor getSessionFactory() {
 		return factory;
+	}
+
+	/**
+	 * In ORM 5.2, it is not possible anymore to call getTransaction() in a JTA environment anymore.
+	 *
+	 * A lot of our shared tests rely on this and we want to keep them working for Neo4j.
+	 */
+	@Override
+	public Transaction getTransaction() {
+		return ( (SharedSessionContractImplementor) delegate ).accessTransaction();
 	}
 
 	@Override
@@ -115,37 +104,9 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public Query createQuery(NamedQueryDefinition namedQueryDefinition) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
-
-		String queryString = namedQueryDefinition.getQueryString();
-		Query query = createQuery( queryString );
-		query.setComment( "named HQL/JP-QL query " + namedQueryDefinition.getName() );
-		query.setFlushMode( namedQueryDefinition.getFlushMode() );
-		return query;
-	}
-
-	@Override
-	public NoSQLQuery createSQLQuery(String queryString) throws HibernateException {
-		return createNativeQuery( queryString );
-	}
-
-	@Override
-	public SQLQuery createSQLQuery(NamedSQLQueryDefinition namedQueryDefinition) {
-		return createNativeQuery( namedQueryDefinition.getQuery() );
-	}
-
-	@Override
-	public NoSQLQuery createNativeQuery(String nativeQuery) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
-
-		return new NoSQLQueryImpl(
-				nativeQuery,
-				this,
-				factory.getQueryPlanCache().getSQLParameterMetadata( nativeQuery )
-		);
+	public ScrollableResultsImplementor scroll(Criteria criteria, ScrollMode scrollMode) {
+		//TODO plug the Lucene engine
+		throw new NotSupportedException( "OGM-23", "Criteria queries are not supported yet" );
 	}
 
 	@Override
@@ -160,11 +121,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public Filter getEnabledFilter(String filterName) {
-		return delegate.getEnabledFilter( filterName );
-	}
-
-	@Override
 	public void disableFilter(String filterName) {
 		throw new NotSupportedException( "OGM-25", "filters are not supported yet" );
 	}
@@ -175,13 +131,8 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public <T> T doReturningWork(ReturningWork<T> work) throws HibernateException {
-		return delegate.doReturningWork( work );
-	}
-
-	@Override
 	public ProcedureCall getNamedProcedureCall(String name) {
-		errorIfClosed();
+//		errorIfClosed();
 
 		final ProcedureCallMemento memento = factory.getNamedQueryRepository().getNamedProcedureCallMemento( name );
 		if ( memento == null ) {
@@ -194,207 +145,29 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
+//		errorIfClosed();
+//		checkTransactionSynchStatus();
 		return new NoSQLProcedureCallImpl( this, procedureName );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, Class... resultClasses) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
+//		errorIfClosed();
+//		checkTransactionSynchStatus();
 		return new NoSQLProcedureCallImpl( this, procedureName, resultClasses );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, String... resultSetMappings) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
+//		errorIfClosed();
+//		checkTransactionSynchStatus();
 		return new NoSQLProcedureCallImpl( this, procedureName, resultSetMappings );
 	}
 
-	//Event Source methods
-	@Override
-	public ActionQueue getActionQueue() {
-		return delegate.getActionQueue();
-	}
-
-	@Override
-	public Object instantiate(EntityPersister persister, Serializable id) throws HibernateException {
-		return delegate.instantiate( persister, id );
-	}
-
-	@Override
-	public void forceFlush(EntityEntry e) throws HibernateException {
-		delegate.forceFlush( e );
-	}
-
-	@Override
-	public void merge(String entityName, Object object, Map copiedAlready) throws HibernateException {
-		delegate.merge( entityName, object, copiedAlready );
-	}
-
-	@Override
-	public void persist(String entityName, Object object, Map createdAlready) throws HibernateException {
-		delegate.persist( entityName, object, createdAlready );
-	}
-
-	@Override
-	public void persistOnFlush(String entityName, Object object, Map copiedAlready) {
-		delegate.persistOnFlush( entityName, object, copiedAlready );
-	}
-
-	@Override
-	public void refresh(String entityName, Object object, Map refreshedAlready) throws HibernateException {
-		delegate.refresh( entityName, object, refreshedAlready );
-	}
-
-	@Override
-	public void delete(String entityName, Object child, boolean isCascadeDeleteEnabled, Set transientEntities) {
-		delegate.delete( entityName, child, isCascadeDeleteEnabled, transientEntities );
-	}
-
-	@Override
-	public JdbcConnectionAccess getJdbcConnectionAccess() {
-		return delegate.getJdbcConnectionAccess();
-	}
-
-	@Override
-	public EntityKey generateEntityKey(Serializable id, EntityPersister persister) {
-		return delegate.generateEntityKey( id, persister );
-	}
-
-	@Override
-	public List<?> listCustomQuery(CustomQuery customQuery, QueryParameters queryParameters) throws HibernateException {
-		errorIfClosed();
-		checkTransactionSynchStatus();
-
-		if ( log.isTraceEnabled() ) {
-			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
-		}
-
-		BackendCustomLoader loader = new BackendCustomLoader( (BackendCustomQuery<?>) customQuery, getFactory() );
-		autoFlushIfRequired( loader.getQuerySpaces() );
-
-		return loader.list( getDelegate(), queryParameters );
-	}
-
-	/**
-	 * detect in-memory changes, determine if the changes are to tables named in the query and, if so, complete
-	 * execution the flush
-	 * <p>
-	 * NOTE: Copied as-is from {@link SessionImpl}. We need it here as
-	 * {@link #listCustomQuery(CustomQuery, QueryParameters)} needs to be customized (which makes use of auto flushes)
-	 * to work with our custom loaders.
-	 */
-	private boolean autoFlushIfRequired(Set<String> querySpaces) throws HibernateException {
-		if ( ! isTransactionInProgress() ) {
-			// do not auto-flush while outside a transaction
-			return false;
-		}
-		AutoFlushEvent event = new AutoFlushEvent( querySpaces, getDelegate() );
-		for ( AutoFlushEventListener listener : listeners( EventType.AUTO_FLUSH ) ) {
-			listener.onAutoFlush( event );
-		}
-		return event.isFlushRequired();
-	}
-
-	private <T> Iterable<T> listeners(EventType<T> type) {
-		return eventListenerGroup( type ).listeners();
-	}
-
-	private <T> EventListenerGroup<T> eventListenerGroup(EventType<T> type) {
-		return factory.getServiceRegistry().getService( EventListenerRegistry.class ).getEventListenerGroup( type );
-	}
-
-	@Override
-	public ScrollableResults scrollCustomQuery(CustomQuery customQuery, QueryParameters queryParameters)
-			throws HibernateException {
-		return delegate.scrollCustomQuery( customQuery, queryParameters );
-	}
-
-	@Override
-	public List<?> list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
-		return listCustomQuery(
-				factory.getQueryPlanCache().getNativeSQLQueryPlan( spec ).getCustomQuery(),
-				queryParameters
-		);
-	}
-
-	@Override
-	public ScrollableResults scroll(NativeSQLQuerySpecification spec, QueryParameters queryParameters)
-			throws HibernateException {
-		return delegate.scroll( spec, queryParameters );
-	}
-
-	//SessionImplementor methods
-	@Override
-	public Query getNamedQuery(String name) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
-
-		NamedQueryDefinition namedQuery = factory.getNamedQuery( name );
-		//ORM looks for native queries when no HQL definition is found, we do the same here.
-		if ( namedQuery == null ) {
-			return getNamedSQLQuery( name );
-		}
-
-		return createQuery( namedQuery );
-	}
-
-	@Override
-	public Query getNamedSQLQuery(String queryName) {
-		errorIfClosed();
-		checkTransactionSynchStatus();
-
-		NamedSQLQueryDefinition nsqlqd = findNamedNativeQuery( queryName );
-		Query query = new NoSQLQueryImpl(
-				nsqlqd,
-				this,
-				factory.getQueryPlanCache().getSQLParameterMetadata( nsqlqd.getQuery() )
-		);
-		query.setComment( "named native query " + queryName );
-		return query;
-	}
-
-	private NamedSQLQueryDefinition findNamedNativeQuery(String queryName) {
-		NamedSQLQueryDefinition nsqlqd = factory.getNamedSQLQuery( queryName );
-		if ( nsqlqd == null ) {
-			throw new MappingException( "Named native query not found: " + queryName );
-		}
-		return nsqlqd;
-	}
-
+	@SuppressWarnings("rawtypes")
 	@Override
 	public SharedSessionBuilder sessionWithOptions() {
 		return new OgmSharedSessionBuilderDelegator( delegate.sessionWithOptions(), factory );
-	}
-
-	// Copied from org.hibernate.internal.AbstractSessionImpl.errorIfClosed() to mimic same behaviour
-	protected void errorIfClosed() {
-		if ( delegate.isClosed() ) {
-			throw new SessionException( "Session is closed!" );
-		}
-	}
-
-	// Copied from org.hibernate.internal.SessionImpl.checkTransactionSynchStatus() to mimic same behaviour
-	private void checkTransactionSynchStatus() {
-		pulseTransactionCoordinator();
-		delayedAfterCompletion();
-	}
-
-	// Copied from org.hibernate.internal.SessionImpl.pulseTransactionCoordinator() to mimic same behaviour
-	private void pulseTransactionCoordinator() {
-		if ( !isClosed() ) {
-			delegate.getTransactionCoordinator().pulse();
-		}
-	}
-
-	// Copied from org.hibernate.internal.SessionImpl.delayedAfterCompletion() to mimic same behaviour
-	private void delayedAfterCompletion() {
-		if ( delegate.getTransactionCoordinator() instanceof JtaTransactionCoordinatorImpl ) {
-			( (JtaTransactionCoordinatorImpl) delegate.getTransactionCoordinator() ).getSynchronizationCallbackCoordinator().processAnyDelayedAfterCompletion();
-		}
 	}
 
 	public <G extends GlobalContext<?, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {
@@ -406,32 +179,51 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 		delegate.removeOrphanBeforeUpdates( entityName, child );
 	}
 
-	/**
-	 * Returns the underlying ORM session to which most work is delegated.
-	 *
-	 * @return the underlying session
-	 */
-	public EventSource getDelegate() {
-		return delegate;
-	}
-
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public NaturalIdLoadAccess byNaturalId(Class entityClass) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public NaturalIdLoadAccess byNaturalId(String entityName) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(Class entityClass) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(String entityName) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T unwrap(Class<T> clazz) {
+		checkOpen();
+
+		if ( Session.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( SessionImplementor.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( SharedSessionContractImplementor.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( OgmSession.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+		if ( EntityManager.class.isAssignableFrom( clazz ) ) {
+			return (T) this;
+		}
+
+		throw new PersistenceException( "Hibernate OGM cannot unwrap " + clazz );
 	}
 }

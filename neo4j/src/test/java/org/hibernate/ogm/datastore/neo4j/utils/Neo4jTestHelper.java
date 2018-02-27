@@ -37,6 +37,10 @@ import org.hibernate.ogm.utils.TestHelper;
 public class Neo4jTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	static {
+		initEnvironment();
+	}
+
+	public static void initEnvironment() {
 		// Read host, username and password from environment variable
 		// Maven's surefire plugin set it to the string 'null'
 		String neo4jHost = System.getenv( "NEO4J_HOSTNAME" );

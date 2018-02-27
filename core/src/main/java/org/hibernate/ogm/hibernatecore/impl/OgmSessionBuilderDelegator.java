@@ -22,7 +22,8 @@ import org.hibernate.resource.transaction.backend.jta.internal.synchronization.M
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmSessionBuilderDelegator extends AbstractDelegatingSessionBuilderImplementor implements OgmSessionBuilderImplementor {
+public class OgmSessionBuilderDelegator extends AbstractDelegatingSessionBuilderImplementor<OgmSessionBuilderImplementor>
+		implements OgmSessionBuilderImplementor {
 
 	private final SessionBuilderImplementor builder;
 	private final OgmSessionFactory factory;

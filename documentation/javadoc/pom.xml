@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-documentation</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <version>5.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -41,7 +41,11 @@
             we import all types from dependant modules -->
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-infinispan</artifactId>
+            <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-infinispan-remote</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
@@ -65,55 +69,36 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <quiet>true</quiet>
-                    <additionalDependencies>
-                        <additionalDependency>
-                            <groupId>org.jboss.logging</groupId>
-                            <artifactId>jboss-logging-annotations</artifactId>
-                            <version>${jbossLoggingProcessorVersion}</version>
-                        </additionalDependency>
-                        <dependency>
-                            <groupId>org.jboss.spec.javax.transaction</groupId>
-                            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                            <version>${jbossJtaAPIVersion}</version>
-                        </dependency>
-                    </additionalDependencies>
-                    <sourcepath>
-                        ${basedir}/../../core/src/main/java;
-                        ${basedir}/../../infinispan/src/main/java;
-                        ${basedir}/../../mongodb/src/main/java;
-                        ${basedir}/../../neo4j/src/main/java;
-                    </sourcepath>
-                    <show>public</show>
-                    <tags>
-                        <tag>
-                            <name>experimental</name>
-                            <placement>a</placement>
-                            <head>Experimental</head>
-                        </tag>
-                    </tags>
-                    <docfilessubdirs>true</docfilessubdirs>
-                    <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
-                    <links>
-                        <link>http://docs.oracle.com/javase/7/docs/api/</link>
-                        <link>http://docs.jboss.org/hibernate/orm/5.0/javadocs/</link>
-                        <link>http://docs.jboss.org/hibernate/search/5.5/api/</link>
-                        <link>http://lucene.apache.org/core/5_3_1/core/</link>
-                    </links>
-                    <packagesheader>Hibernate OGM Packages</packagesheader>
-                    <doctitle>Hibernate OGM ${project.version}</doctitle>
-                    <windowtitle>Hibernate OGM ${project.version}</windowtitle>
-                    <bottom>
-                        <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://redhat.com">Red Hat, Inc.</a>, Emmanuel Bernard and various contributors.  All Rights Reserved.]]></bottom>
-                </configuration>
                 <executions>
                     <execution>
-                        <id>create-javadocs</id>
-                        <phase>install</phase>
+                        <!--
+                        Skip the execution defined in the parent pom,
+                        because we call the javadoc plugin with a different goal.
+                        -->
+                        <id>generate-javadoc</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-javadoc</id>
                         <goals>
-                            <goal>javadoc</goal>
+                            <goal>jar</goal>
                         </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <sourcepath>
+                                ${basedir}/../../core/src/main/java;
+                                ${basedir}/../../infinispan-embedded/src/main/java;
+                                ${basedir}/../../infinispan-remote/src/main/java;
+                                ${basedir}/../../mongodb/src/main/java;
+                                ${basedir}/../../neo4j/src/main/java;
+                            </sourcepath>
+                            <docfilessubdirs>true</docfilessubdirs>
+                            <packagesheader>Hibernate OGM Packages</packagesheader>
+                            <doctitle>Hibernate OGM ${project.version}</doctitle>
+                            <windowtitle>Hibernate OGM ${project.version}</windowtitle>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

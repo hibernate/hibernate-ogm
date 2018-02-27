@@ -10,11 +10,11 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.query.NativeQuery;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +66,7 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		Query query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
+		NativeQuery query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
 				.addEntity( OscarWildePoem.class )
 				.setFirstResult( 1 );
 		@SuppressWarnings("unchecked")
@@ -84,7 +84,7 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
-		Query query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
+		NativeQuery query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
 				.addEntity( OscarWildePoem.class )
 				.setMaxResults( 2 );
 		@SuppressWarnings("unchecked")
@@ -183,7 +183,7 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 
 		String nativeQuery = "{ name : 'Her Voice' }";
 
-		Query query = session.createNativeQuery( nativeQuery )
+		NativeQuery query = session.createNativeQuery( nativeQuery )
 				.addEntity( OscarWildePoem.class );
 
 		List<OscarWildePoem> result = query.list();

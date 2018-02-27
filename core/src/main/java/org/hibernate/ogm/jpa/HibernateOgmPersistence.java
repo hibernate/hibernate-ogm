@@ -19,13 +19,11 @@ import javax.persistence.spi.ProviderUtil;
 
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.AvailableSettings;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 
 /**
  * JPA PersistenceProvider implementation specific to Hibernate OGM
@@ -56,14 +54,9 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					Map<Object, Object> protectiveCopy = new HashMap<Object, Object>( integration );
 					enforceOgmConfig( protectiveCopy );
 					protectiveCopy.put( AvailableSettings.PROVIDER, delegate.getClass().getName() );
-					final HibernateEntityManagerFactory coreEMF = (HibernateEntityManagerFactory) delegate.createEntityManagerFactory(
+					return delegate.createEntityManagerFactory(
 							emName, protectiveCopy
 					);
-					if ( coreEMF != null ) {
-						//delegate might return null to refuse the configuration
-						//(like when the configuration file is not defining the expected persistent unit)
-						return new OgmEntityManagerFactory( coreEMF );
-					}
 				}
 			}
 
@@ -93,17 +86,12 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 			//HEM only builds an EntityManagerFactory when HibernatePersistence.class.getName() is the PersistenceProvider
 			//that's why we override it when
 			//new DelegatorPersistenceUnitInfo(info)
-			final HibernateEntityManagerFactory coreEMF = (HibernateEntityManagerFactory) delegate.createContainerEntityManagerFactory(
+			return delegate.createContainerEntityManagerFactory(
 					new DelegatorPersistenceUnitInfo(
 							info
 					),
 					protectiveCopy
 			);
-			if ( coreEMF != null ) {
-				//delegate might return null to refuse the configuration
-				//(like when the configuration file is not defining the expected persistent unit)
-				return new OgmEntityManagerFactory( coreEMF );
-			}
 		}
 		//not the right provider
 		return null;
