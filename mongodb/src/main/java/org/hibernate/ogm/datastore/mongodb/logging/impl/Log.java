@@ -134,4 +134,9 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1237, value = "Invalid GeoJSON type %1$s. Expecting %2$s.")
 	HibernateException invalidGeoJsonType(String actualType, String expectedType);
 
+	@Message(id = 1238, value = "Unable to execute command \"%s\". Error message : %s. Code name: %s")
+	HibernateException unableToExecuteCommand(String command, String errorMessage,String codeMessage, @Cause Exception e);
+
+	@Message(id = 1239, value = "Dialect %s does not support named parameters when calling stored procedures ")
+	HibernateException dialectDoesNotSupportNamedParametersForStoredProcedures( Class<?> dialectClass );
 }
