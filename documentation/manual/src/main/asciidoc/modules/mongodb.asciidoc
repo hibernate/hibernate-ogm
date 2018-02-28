@@ -3472,6 +3472,26 @@ String nativeQuery = "{ $query : { author : { $regex : '^Oscar' } }, $orderby : 
 List<Poem> result = session.createNativeQuery( nativeQuery ).addEntity( Poem.class ).list();
 ----
 ====
+[[ogm-mongodb-stored-proc-native]]
+==== Server-side JavaScript
+MongoDB supports server-side JavaScript feature.
+Server-side function must returns premitive value or document.
+If stored procedure call description contains `ParameterMode.REF_CURSOR` then document must looks like
+
+[source, JSON]
+----
+{
+  "result" : [
+  {"id":1,"title":"title1"},
+  {"id":2,"title":"title2"},
+  {"id":3,"title":"title3"}
+  ]
+}
+----
+In other  words, first tag in result document must contains array (it is resultset) with documents
+ (the document will mapped to entity)
+
+
 
 ==== Hibernate Search
 
