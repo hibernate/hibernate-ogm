@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
@@ -98,6 +100,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -111,6 +114,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
@@ -127,6 +131,7 @@ import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoCommandException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
@@ -179,7 +184,8 @@ import com.mongodb.client.result.UpdateResult;
  * @author Thorsten Möller &lt;thorsten.moeller@sbi.ch&gt;
  * @author Guillaume Smet
  */
-public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect,
+		StoredProcedureAwareGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -1731,6 +1737,95 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	/**
+	 * In MongoDB the equivalent of a stored procedure is a stored javascript.
+	 *
+	 * @param storedProcedureName name of stored procedure.
+	 * @param params - query parameters
+	 * @param tupleContext the tuple context
+	 * @see <a href="https://stackoverflow.com/questions/32480060/call-mongodb-function-from-java"> example</a>
+	 * @return
+	 */
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, ProcedureQueryParameters params, TupleContext tupleContext) {
+		validate( params );
+		StringBuilder commandLine = createCallStoreProcedureCommand( storedProcedureName, params );
+		Document result = callStoredProcedure( commandLine );
+		Object resultValue = result.get( "retval" );
+		List<Tuple> resultTuples = extractTuples( resultValue );
+		return CollectionHelper.newClosableIterator( resultTuples );
+	}
+
+	private List<Tuple> extractTuples(Object retvalObj) {
+		if ( retvalObj instanceof Document ) {
+			Document retval = (Document) retvalObj;
+			if ( retval.size() > 1 ) {
+				throw new UnsupportedOperationException( "Stored procedure returns many result objects!" );
+			}
+			String firstRetValTag = retval.keySet().iterator().next();
+			Object firstRetVal = retval.get( firstRetValTag );
+			@SuppressWarnings("unchecked")
+			Iterable<Document> documents = (Iterable<Document>) firstRetVal;
+			List<Tuple> resultTuples = new ArrayList<>();
+			for ( Document doc : documents ) {
+				resultTuples.add( convert( doc ) );
+			}
+			return resultTuples;
+		}
+		else {
+			Tuple tuple = new Tuple();
+			tuple.put( "result", retvalObj );
+			return Collections.singletonList( tuple );
+		}
+	}
+
+	private Document callStoredProcedure(StringBuilder commandLine) {
+		try {
+			Document result = provider.getDatabase().runCommand( new Document( "$eval", commandLine.toString() ) );
+			return result;
+		}
+		catch (MongoCommandException mce) {
+			BsonDocument response = mce.getResponse();
+			throw log.unableToExecuteCommand( commandLine.toString(), response.getString( "errmsg" ).getValue(),
+					response.getString( "codeName" ).getValue(), mce );
+		}
+	}
+
+	private StringBuilder createCallStoreProcedureCommand(String storedProcedureName, ProcedureQueryParameters params) {
+		StringBuilder commandLine = new StringBuilder( storedProcedureName ).append( "(" );
+		List<Object> positionalParameters = params.getPositionalParameters();
+		for ( Object paramValue : positionalParameters ) {
+			if ( paramValue instanceof String ) {
+				//need for escape char "'"
+				String escapedValue = StringEscapeUtils.escapeEcmaScript( (String) paramValue );
+				commandLine.append( '\'' ).append( escapedValue ).append( '\'' );
+			}
+			else {
+				commandLine.append( paramValue );
+			}
+			commandLine.append( "," );
+		}
+		commandLine.setLength( commandLine.length() - 1 );
+		commandLine.append( ")" );
+		return commandLine;
+	}
+
+	private void validate(ProcedureQueryParameters params) {
+		if ( !params.getNamedParameters().isEmpty() ) {
+			throw log.dialectDoesNotSupportNamedParametersForStoredProcedures( getClass() );
+		}
+	}
+
+	private Tuple convert(Document document) {
+		Tuple tuple = new Tuple();
+		if ( document != null ) {
+			for ( Map.Entry<String, Object> entry : document.entrySet() ) {
+				tuple.put( entry.getKey(), entry.getValue() );
+			}
+		}
+		return tuple;
 	}
 
 	private static class MongoDBAggregationOutput implements ClosableIterator<Tuple> {
