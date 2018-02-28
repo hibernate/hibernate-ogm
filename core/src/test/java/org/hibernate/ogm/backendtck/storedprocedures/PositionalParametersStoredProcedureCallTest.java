@@ -76,31 +76,15 @@ public class PositionalParametersStoredProcedureCallTest extends OgmJpaTestCase 
 		assertThat( listResult ).containsOnly( new Car( 1, "title" ) );
 	}
 
-	//@Test
+	@Test
 	public void testResultSetDynamicCallWithResultMapping() throws Exception {
-		//@todo wait fix https://hibernate.atlassian.net/browse/HHH-12330
 		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, "carMapping" );
 		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
 		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
 		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
 		storedProcedureQuery.setParameter( 1, 1 );
-		storedProcedureQuery.setParameter( new Parameter<String>() {
-
-			@Override
-			public String getName() {
-				return null;
-			}
-
-			@Override
-			public Integer getPosition() {
-				return 2;
-			}
-
-			@Override
-			public Class<String> getParameterType() {
-				return String.class;
-			}
-		}, "title'1" );
+		Parameter<String> p2 = storedProcedureQuery.getParameter( 2,String.class );
+		storedProcedureQuery.setParameter( p2, "title'1" );
 
 		@SuppressWarnings("unchecked")
 		List<Car> listResult = storedProcedureQuery.getResultList();
