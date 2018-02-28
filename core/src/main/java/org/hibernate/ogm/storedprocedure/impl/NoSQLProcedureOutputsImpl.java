@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.persistence.ParameterMode;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.metamodel.spi.MetamodelImplementor;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
@@ -98,8 +99,9 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 
 		if ( !procedureCall.getSynchronizedQuerySpaces().isEmpty() ) {
 			String querySpace = (String) procedureCall.getSynchronizedQuerySpaces().iterator().next();
+			MetamodelImplementor metamodelImplementor = procedureCall.getSession().getFactory().getMetamodel();
 
-			for ( Map.Entry<String, EntityPersister> entry : procedureCall.getSession().getFactory().getEntityPersisters().entrySet() ) {
+			for ( Map.Entry<String, EntityPersister> entry : metamodelImplementor.entityPersisters().entrySet() ) {
 				List<Serializable> querySpaces = Arrays.asList( entry.getValue().getQuerySpaces() );
 				if ( querySpaces.contains( querySpace ) ) {
 					entityPersister = (OgmEntityPersister) entry.getValue();

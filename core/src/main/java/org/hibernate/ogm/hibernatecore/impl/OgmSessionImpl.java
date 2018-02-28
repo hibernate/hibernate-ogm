@@ -7,9 +7,9 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.lang.invoke.MethodHandles;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.Criteria;
 import org.hibernate.Filter;
@@ -39,6 +39,7 @@ import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.procedure.ProcedureCallMemento;
 import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
 import org.hibernate.query.Query;
+import org.hibernate.query.spi.NamedQueryRepository;
 import org.hibernate.query.spi.ScrollableResultsImplementor;
 
 /**
@@ -162,6 +163,43 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 //		errorIfClosed();
 //		checkTransactionSynchStatus();
 		return new NoSQLProcedureCallImpl( this, procedureName, resultSetMappings );
+	}
+
+	@Override
+	public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
+		checkOpen();
+		NamedQueryRepository namedQueryRepository = getSessionFactory().getNamedQueryRepository();
+		ProcedureCallMemento memento =  namedQueryRepository.getNamedProcedureCallMemento( name );
+
+		if ( memento == null ) {
+			throw new IllegalArgumentException( "No @NamedStoredProcedureQuery was found with that name : " + name );
+		}
+		NoSQLProcedureCallImpl noSQLProcedureCallImpl = new NoSQLProcedureCallImpl( this, new NoSQLProcedureCallMemento( memento ) );
+		//@todo process hints
+//		if ( memento.getHintsMap() != null ) {
+//			for ( Map.Entry<String, Object> hintEntry : memento.getHintsMap().entrySet() ) {
+//				storedProcedureQuery.setHint( hintEntry.getKey(), hintEntry.getValue() );
+//			}
+//		}
+		return noSQLProcedureCallImpl;
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
+		checkOpen();
+		return createStoredProcedureCall( procedureName );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
+		checkOpen();
+		return createStoredProcedureCall( procedureName, resultClasses );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
+		checkOpen();
+		return createStoredProcedureCall( procedureName, resultSetMappings );
 	}
 
 	@SuppressWarnings("rawtypes")

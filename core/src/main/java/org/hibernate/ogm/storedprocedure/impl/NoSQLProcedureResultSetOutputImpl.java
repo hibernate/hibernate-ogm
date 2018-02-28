@@ -7,6 +7,7 @@
 package org.hibernate.ogm.storedprocedure.impl;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.ogm.model.spi.Tuple;
@@ -38,7 +39,8 @@ public class NoSQLProcedureResultSetOutputImpl implements ResultSetOutput {
 		if ( isResultSet() ) {
 			return resultList;
 		}
-		return null;
+		//need return list of one value
+		return Collections.singletonList( getSingleResult() );
 	}
 
 	@Override
