@@ -76,8 +76,9 @@ public class PositionalParametersStoredProcedureCallTest extends OgmJpaTestCase 
 		assertThat( listResult ).containsOnly( new Car( 1, "title" ) );
 	}
 
-	@Test
+	//@Test
 	public void testResultSetDynamicCallWithResultMapping() throws Exception {
+		//@todo wait comments of Steve Ebersole (@SteveEbersole) or Andrea Boriero(@Andrea)
 		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( TEST_RESULT_SET_STORED_PROC, "carMapping" );
 		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
 		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
