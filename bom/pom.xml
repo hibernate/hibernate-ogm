@@ -62,6 +62,7 @@
         <!-- MongoDB -->
         <mongodbVersion>3.6.2</mongodbVersion>
         <mongodbDriverVersion>3.6.3</mongodbDriverVersion>
+        <mongodbCommonslang3Version>3.3.2</mongodbCommonslang3Version>
 
         <!-- Neo4j -->
         <neo4jVersion>3.3.3</neo4jVersion>
@@ -692,4 +693,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
 </project>
