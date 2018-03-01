@@ -70,7 +70,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <showWarnings>true</showWarnings>
-                    <!-- WildFly 10 requires Java8, which means we can require it too. -->
+                    <!-- WildFly requires Java8, which means we can require it too. -->
                     <source>1.8</source>
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>

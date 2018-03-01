@@ -47,7 +47,7 @@ you will rather get the versions from the BOM automatically.
 
 [NOTE]
 ====
-If you're deploying your application onto WildFly 10,
+If you're deploying your application onto WildFly {wildfly-short-version},
 you don't need to add the Hibernate OGM modules to your deployment unit
 but you can rather add them as modules to the application server.
 Refer to <<ogm-configuration-jbossmodule>> to learn more.
@@ -255,7 +255,7 @@ Hibernate OGM might also require http://hibernate.org/search/[Hibernate Search] 
 This depends on the dialect or features you want to use with you project and you will find more
 details about it in the next chapters.
 
-If you want to use Hibernate OGM with http://wildfly.org/[WildFly 10] you will need some
+If you want to use Hibernate OGM with http://wildfly.org/[WildFly {wildfly-short-version}] you will need some
 additional configuration and you can find all the details
 in the <<ogm-configuration-jbossmodule>> paragraph.
 ====
