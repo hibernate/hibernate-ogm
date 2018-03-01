@@ -136,7 +136,7 @@ In this case, we have used the defaults settings for Infinispan.
 
 Hibernate OGM runs in various environments: it should work pretty much in all environments in which Hibernate ORM runs.
 There are however some selected environments in which it was tested more thoroughly than others.
-The current version is being tested regularly in Java SE (without a container) and within the WildFly 10 application server;
+The current version is being tested regularly in Java SE (without a container) and within the WildFly {wildfly-short-version} application server;
 at time of writing this there's no known reason for it to not work in different containers as long as you remember that it requires a
 specific version of Hibernate ORM: some containers might package a conflicting version.
 
@@ -162,7 +162,7 @@ The property is `hibernate.transaction.jta.platform`
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
 https://docs.jboss.org/hibernate/orm/{hibernate-orm-major-minor-version}/userguide/html_single/Hibernate_User_Guide.html#transactions-physical-jtaplatform[Hibernate ORM's configuration section].
-For example in WildFly 10 you would pick `JBossAS`, although in WildFly these settings are automatically injected so you could skip this.
+For example in WildFly {wildfly-short-version} you would pick `JBossAS`, although in WildFly these settings are automatically injected so you could skip this.
 
 In your [filename]`persistence.xml` you usually need to define an existing datasource.
 This is not needed by Hibernate OGM: it will ignore the datasource, but JPA specification mandates the setting.
@@ -337,7 +337,7 @@ to the datastore of your choice to see if it requires Hibernate Search or not.
 
 [[ogm-configuration-jbossmodule]]
 
-=== How to package Hibernate OGM applications for WildFly 10
+=== How to package Hibernate OGM applications for WildFly {wildfly-short-version}
 
 Provided you're deploying on WildFly,
 there is an additional way to add the OGM dependencies to your application.
@@ -356,7 +356,7 @@ These are documented in https://docs.jboss.org/author/display/WFLY10/JPA+Referen
 If you apply the following instructions you can create small and efficient deployments which do not include any dependency,
 as you can include your favourite version of Hibernate OGM directly to the collection of container provided libraries.
 
-==== Packaging Hibernate OGM applications for WildFly 10
+==== Packaging Hibernate OGM applications for WildFly {wildfly-short-version}
 
 When using WildFly several of the technologies it includes are automatically enabled.
 For example Hibernate ORM is made available to your applications if your `persistence.xml`
@@ -369,7 +369,7 @@ This is the default behaviour, but you are in control and can override this all;
 see the https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide]
 for a full list of properties you can explicitly set.
 
-WildFly 10 however does not include Hibernate OGM and the compatible Hibernate ORM and Hibernate Search
+WildFly {wildfly-short-version} however does not include Hibernate OGM and the compatible Hibernate ORM and Hibernate Search
 versions and it will require some configuration to make everything works.
 
 Set up WildFly after downloading the modules::
@@ -381,14 +381,14 @@ You can download the pre-packaged module ZIP for this version of Hibernate OGM f
 Hibernate OGM {hibernate-ogm-version} requires Hibernate ORM {hibernate-orm-version}
 and Hibernate Search {hibernate-search-version}.
 
-These versions are not included in WildFly 10 but you can download the pre-packaged ZIP modules from 
+These versions are not included in WildFly {wildfly-short-version} but you can download the pre-packaged ZIP modules from
 Maven Central:
 
 * https://repo1.maven.org/maven2/org/hibernate/hibernate-orm-modules/{hibernate-orm-version}/hibernate-orm-modules-{hibernate-orm-version}-{hibernate-wildfly-classifier}.zip[Hibernate ORM modules]
 * https://repo1.maven.org/maven2/org/hibernate/hibernate-search-modules/{hibernate-search-version}/hibernate-search-modules-{hibernate-search-version}-{hibernate-wildfly-classifier}.zip[Hibernate Search modules]
 
 Once you have the archives, you need to 
-unpack them into the `modules` folder of your WildFly 10 installation.
+unpack them into the `modules` folder of your WildFly {wildfly-short-version} installation.
 The modules included are:
 
 * _org.hibernate.ogm_, the core Hibernate OGM library.
@@ -529,7 +529,7 @@ WildFly will by default attempt to guess which Persistence Provider you need by 
 
 ==== Using the Hibernate OGM modules with Infinispan
 
-The Infinispan project also provides custom modules for WildFly 10.
+The Infinispan project also provides custom modules for WildFly {wildfly-short-version}.
 Hibernate OGM modules require these modules if you're planning to use the Hibernate OGM / Infinispan combination on WildFly.
 
 This release of Hibernate OGM was tested exclusively with Infinispan version {infinispan-version};
@@ -539,7 +539,7 @@ so a micro version update should be safe but is untested.
 In case you want to experiment with a more significant version upgrade, you will need to edit the modules of Hibernate OGM:
 the module identifiers are hardcoded in the XML files representing the module.
 
-Download the Infinispan modules pack for WildFly 10 from here:
+Download the Infinispan modules pack for WildFly {wildfly-short-version} from here:
 
  * https://repo1.maven.org/maven2/org/infinispan/infinispan-as-embedded-modules/{infinispan-version}/infinispan-as-embedded-modules-{infinispan-version}.zip[Infinispan WildFly modules version {infinispan-version} from the Maven repository]
 

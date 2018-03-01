@@ -346,6 +346,16 @@
                             <versionString>${mongodbVersion}</versionString>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>parse-wildfly-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>wildflyParsedVersion</propertyPrefix>
+                            <versionString>${version.wildfly}</versionString>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

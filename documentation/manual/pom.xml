@@ -171,6 +171,7 @@
                         <tabsize>4</tabsize>
 
                         <wildfly-version>${version.wildfly}</wildfly-version>
+                        <wildfly-short-version>${wildflyParsedVersion.majorVersion}.${wildflyParsedVersion.minorVersion}</wildfly-short-version>
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
                         <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
                         <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
