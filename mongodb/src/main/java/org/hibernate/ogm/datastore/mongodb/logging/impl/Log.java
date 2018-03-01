@@ -16,7 +16,9 @@ import org.hibernate.MappingException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.util.impl.ClassObjectFormatter;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -134,4 +136,12 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1237, value = "Invalid GeoJSON type %1$s. Expecting %2$s.")
 	HibernateException invalidGeoJsonType(String actualType, String expectedType);
 
+	@Message(id = 1238, value = "Unable to execute command \"%s\". Error message : %s. Code name: %s")
+	HibernateException unableToExecuteCommand(String command, String errorMessage,String codeMessage, @Cause Exception e);
+
+	@Message(id = 1239, value = "Dialect %s does not support named parameters when calling stored procedures")
+	HibernateException dialectDoesNotSupportNamedParametersForStoredProcedures( @FormatWith(ClassObjectFormatter.class) Class<?> dialectClass );
+
+	@Message(id = 1240, value = "Procedures returning muliple documents are not supported. Procedure '%1$s' returned %2$d results")
+	HibernateException multipleDocumentReturnedByStoredProcedure(String storedProcedureName, int size);
 }
