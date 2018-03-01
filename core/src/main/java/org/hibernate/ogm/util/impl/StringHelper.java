@@ -11,6 +11,7 @@ import java.util.Iterator;
 /**
  * Utility functions for dealing with strings.
  *
+ * @author Davide D'Alto
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
@@ -77,5 +78,29 @@ public class StringHelper {
 			return sb.substring( separator.length() );
 		}
 		return "";
+	}
+
+	/**
+	 * If a text contains double quotes, escape them.
+	 *
+	 * @param text the text to escape
+	 * @return Escaped text or {@code null} if the text is null
+	 */
+	public static String escapeDoubleQuotesForJson(String text) {
+		if ( text == null ) {
+			return null;
+		}
+		StringBuilder builder = new StringBuilder( text.length() );
+		for ( int i = 0; i < text.length(); i++ ) {
+			char c = text.charAt( i );
+			switch ( c ) {
+				case '"':
+				case '\\':
+					builder.append( "\\" );
+				default:
+					builder.append( c );
+			}
+		}
+		return builder.toString();
 	}
 }
