@@ -3473,6 +3473,59 @@ List<Poem> result = session.createNativeQuery( nativeQuery ).addEntity( Poem.cla
 ----
 ====
 
+[[ogm-mongodb-stored-proc-native]]
+
+==== Server-side JavaScript and stored procedures
+
+[NOTE]
+====
+This is an experimental feature.
+====
+
+In MongoDB, it is possible to call server-side JavaScript as if it is a stored procedure.
+You can use the existing methods in JPA:
+
+.Calling server-side JavaScript with positional parameters
+====
+[source, JAVA]
+----
+  @Entity
+  public class Car {
+    @Id
+    private Integer id;
+
+    private String brand;
+
+    ...
+  }
+
+  EntityManager em = ...
+  StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( "findMostExpensiveCars", Car.class );
+  storedProcedureQuery.registerStoredProcedureParameter( "year", Integer.class, ParameterMode.IN );
+  storedProcedureQuery.setParameter( "year", 1995 );
+  List<Car> cars = storedProcedureQuery.getResultList();
+----
+====
+
+This example will work assuming that there is a `findMostExpensiveCars` JavaScript function in MongoDB 
+and that the result of the function is a list of cars that can be mapped to the `Car` entity.
+
+.Calling server-side JavaScript with Hibernate OGM with positional parameters
+====
+[source, JSON]
+----
+{
+  "result" : [
+    { "id":1, "brand":"Bentley" },
+    { "id":2, "brand":"Maserati" },
+  ]
+}
+----
+====
+
+More details about server-side functions can be found in
+https://docs.mongodb.com/manual/core/server-side-JavaScript[the MongoDB reference documentation].
+
 ==== Hibernate Search
 
 You can index your entities using Hibernate Search.

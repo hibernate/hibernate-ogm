@@ -8,6 +8,7 @@ With Hibernate OGM, you have a few alternatives that should get you covered:
 * Use JPQL - only for simple queries for now
 * Use the NoSQL native query mapping the result as managed entities
 * Use Hibernate Search queries - primarily full-text queries
+* Use stored procedures mapping the result as managed entities
 
 [[ogm-jpql-query]]
 === Using JPQL
@@ -421,3 +422,73 @@ go check the https://docs.jboss.org/hibernate/search/{hibernate-search-major-min
 === Using the Criteria API
 
 At this time, we have not implemented support for the Criteria APIs (neither Hibernate native nor JPA).
+
+=== Using stored procedures
+
+Often you want the raw power of the underlying NoSQL query engine.
+Even if that costs you portability.
+
+Hibernate OGM addresses that requirement by letting you express stored procedures (e.g. in server-side JavaScript for MongoDB)
+and map the result of these queries as mapped entities or return primitive results.
+
+In JPA, use `EntityManager.createStoredProcedureQuery` or `EntityManager.createNamedStoredProcedureQuery`.
+The first form accepts a result class if your result set maps the mapping definition of the entity.
+The second form accepts the name of a resultSetMapping
+and lets you customize how properties are mapped to columns by the query.
+You can also use a predefined named query which defines its result set mapping.
+
+Let's take a look at how it is done:
+
+.Various ways to create a stored procedure query in JPA
+====
+[source, JAVA]
+----
+@Entity
+@NamedStoredProcedureQueries({
+		@NamedStoredProcedureQuery(name = "find_cars_by_brand", procedureName = "resultSetResultProc", parameters = {
+				@StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
+				@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
+		}, resultSetMappings = "carMapping")
+})
+
+@SqlResultSetMapping(name = "carMapping", entities = { @EntityResult(entityClass = Car.class) })
+public class Car {
+
+    @Id
+    private Long id;
+
+    private String brand;
+
+   // getters, setters ...
+
+}
+
+...
+
+javax.persistence.EntityManager em = ...
+
+StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( "mostExpensiveCarsPerYear", Car.class );
+storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
+storedProcedureQuery.setParameter( 1, 1995 );
+List<Car> cars = storedProcedureQuery.getResultList();
+
+// named stored procedure query
+StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "find_cars_by_brand" );
+storedProcedureQuery.setParameter( 1, "Bentley" );
+List<Car> cars = storedProcedureQuery.getResultList();
+
+----
+====
+
+You can also use named parameters and `StoredProcedureQuery#getSingleResult()`.
+
+Check out each individual datastore chapter for more info
+on the specifics of the native query language mapping.
+
+[WARNING]
+====
+'OUT' and 'IN_OUT' parameters of stored procedures are not supported yet.
+Main reason of it is supported data storages support 'IN' parameters only.
+====
+
