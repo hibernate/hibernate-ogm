@@ -979,7 +979,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static ClosableIterator<Tuple> doAggregatePipeline(MongoDBQueryDescriptor query, QueryParameters queryParameters, MongoCollection<Document> collection, EntityKeyMetadata entityKeyMetadata) {
-		List<Document> pipeline = query.getPipeline();
+
+		// create a pipeline that could be modified by this request adding pagination parameters
+		List<Document> pipeline = new ArrayList( query.getPipeline() );
+
 		applyFirstResult( queryParameters, pipeline );
 		applyMaxResults( queryParameters, pipeline );
 		AggregateIterable<Document> output = collection.aggregate( pipeline );
