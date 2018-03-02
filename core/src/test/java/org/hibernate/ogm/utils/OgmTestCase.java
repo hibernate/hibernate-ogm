@@ -13,6 +13,7 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -30,6 +31,7 @@ import org.junit.runner.RunWith;
  * session factory.
  *
  * @author Gunnar Morling
+ * @author Fabio Massimo Ercoli
  */
 @RunWith(OgmTestRunner.class)
 public abstract class OgmTestCase {
@@ -103,4 +105,22 @@ public abstract class OgmTestCase {
 		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
 		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
+
+	public void inTransaction(Consumer<Session> consumer) {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			try {
+				consumer.accept( session );
+				transaction.commit();
+			}
+			catch (Throwable t) {
+				if ( transaction.isActive() ) {
+					transaction.rollback();
+				}
+				throw t;
+			}
+		}
+	}
+
 }
