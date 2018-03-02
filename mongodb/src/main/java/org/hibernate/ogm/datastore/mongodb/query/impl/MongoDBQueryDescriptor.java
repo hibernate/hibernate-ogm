@@ -121,7 +121,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 	}
 
 	public List<Document> getPipeline() {
-		return pipeline;
+		// pipeline should be unmodifiable because current instance is used by different requests
+		return Collections.unmodifiableList( pipeline );
 	}
 
 	/**
