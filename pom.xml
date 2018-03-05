@@ -563,6 +563,7 @@
                     <version>2.20.1</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <trimStackTrace>false</trimStackTrace>
                         <argLine>${additionalRuntimeArgLine}</argLine>
                         <systemPropertyVariables>
                             <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
