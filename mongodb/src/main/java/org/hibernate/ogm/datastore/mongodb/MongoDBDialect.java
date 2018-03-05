@@ -837,6 +837,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
+		Integer firstRow = queryParameters.getRowSelection().getFirstRow();
+		if ( firstRow != null && firstRow.intValue() < 0 ) {
+			throw new IllegalArgumentException( "Query argument firstResult cannot be negative" );
+		}
+
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
 		EntityKeyMetadata entityKeyMetadata =

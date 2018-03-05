@@ -159,6 +159,9 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 	private void applyFirstRow(QueryParameters queryParameters, StringBuilder nativeQuery) {
 		Integer firstRow = queryParameters.getRowSelection().getFirstRow();
 		if ( firstRow != null ) {
+			if ( firstRow.intValue() < 0 ) {
+				throw new IllegalArgumentException( "Query argument firstResult cannot be negative" );
+			}
 			skip( nativeQuery, firstRow );
 		}
 	}
