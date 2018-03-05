@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.ColumnResult;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -139,5 +140,25 @@ public class OscarWildePoem {
 	@Override
 	public String toString() {
 		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", rating=" + rating + ", copiesSold=" + copiesSold + "]";
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || getClass() != o.getClass() ) {
+			return false;
+		}
+		OscarWildePoem that = (OscarWildePoem) o;
+		return Objects.equals( name, that.name ) &&
+				Objects.equals( author, that.author ) &&
+				Objects.equals( year, that.year );
+	}
+
+	@Override
+	public int hashCode() {
+
+		return Objects.hash( name, author, year );
 	}
 }
