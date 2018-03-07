@@ -35,3 +35,7 @@ work/
 test-output/
 transaction.log
 infinispan.log
+
+# Maven wrapper files
+.mvn
+mvnw*
