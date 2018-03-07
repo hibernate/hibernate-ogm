@@ -304,4 +304,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 89, value = "%1$s does not support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy. You should try using SINGLE_TABLE instead. Entities: %2$s")
 	HibernateException queriesOnPolymorphicEntitiesAreNotSupportedWithTablePerClass( String datastore, Collection<String> subclassEntityNames );
+
+	@Message(id = 90, value = "addEntity is not allowed in native queries using projection on root Entity")
+	HibernateException addEntityNotAllowedInNativeQueriesUsingProjection();
 }
