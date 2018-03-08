@@ -7,17 +7,21 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bson.BsonDocument;
+import org.bson.BsonJavaScript;
 import org.bson.Document;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
@@ -26,7 +30,6 @@ import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -40,8 +43,10 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
 import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -293,5 +298,41 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return MongoDB.class;
+	}
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		MongoDatabase mongoDatabase = provider.getDatabase();
+		loadServerScripts( mongoDatabase );
+	}
+
+	/*
+	 * Load server side scripts to test stored procedures with MongoDB.
+	 * @see org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect
+	 */
+	private void loadServerScripts(MongoDatabase mongoDatabase) {
+		BsonDocument simpleValueFunction = serverSideFunction( "function(x1) { return x1; }" );
+		registerServerSideFunction( mongoDatabase, simpleValueFunction, Car.SIMPLE_VALUE_PROC );
+
+		BsonDocument resultSetFunction = serverSideFunction(
+				"function(id, title) { return "
+						+ "{ 'result': [ {'id': NumberInt(id), 'title': title} ] }; "
+				+ "}" );
+		registerServerSideFunction( mongoDatabase, resultSetFunction, Car.RESULT_SET_PROC );
+
+		Document result =  mongoDatabase.runCommand( new Document( "$eval", "db.loadServerScripts()" ) );
+		log.infof( "Server-side scripts evaluated: %s", result.toJson() );
+	}
+
+	private void registerServerSideFunction(MongoDatabase mongoDatabase, BsonDocument uniqueValueFunction, String functionName) {
+		UpdateOptions options = new UpdateOptions().upsert( true );
+		MongoCollection<Document> systemCollection = mongoDatabase.getCollection( "system.js" );
+		systemCollection.updateOne( new Document( "_id", functionName ), new Document( "$set", uniqueValueFunction ), options );
+	}
+
+	private BsonDocument serverSideFunction(String code) {
+		BsonDocument simpleValueFunction = new BsonDocument( "value", new BsonJavaScript( code ) );
+		return simpleValueFunction;
 	}
 }

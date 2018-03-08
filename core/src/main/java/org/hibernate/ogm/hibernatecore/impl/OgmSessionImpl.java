@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.Criteria;
 import org.hibernate.Filter;
@@ -32,10 +33,14 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.storedprocedure.impl.NoSQLProcedureCallMemento;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ProcedureCall;
+import org.hibernate.procedure.ProcedureCallMemento;
+import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
 import org.hibernate.query.Query;
+import org.hibernate.query.spi.NamedQueryRepository;
 import org.hibernate.query.spi.ScrollableResultsImplementor;
 
 /**
@@ -129,22 +134,60 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public ProcedureCall getNamedProcedureCall(String name) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		final ProcedureCallMemento memento = factory.getNamedQueryRepository().getNamedProcedureCallMemento( name );
+		if ( memento == null ) {
+			throw new IllegalArgumentException(
+					"Could not find named stored procedure call with that registration name : " + name
+			);
+		}
+		return new NoSQLProcedureCallImpl( this, new NoSQLProcedureCallMemento( memento ) );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		return new NoSQLProcedureCallImpl( this, procedureName );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, Class... resultClasses) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		return new NoSQLProcedureCallImpl( this, procedureName, resultClasses );
 	}
 
 	@Override
 	public ProcedureCall createStoredProcedureCall(String procedureName, String... resultSetMappings) {
-		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+		return new NoSQLProcedureCallImpl( this, procedureName, resultSetMappings );
+	}
+
+	@Override
+	public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
+		checkOpen();
+		NamedQueryRepository namedQueryRepository = getSessionFactory().getNamedQueryRepository();
+		ProcedureCallMemento memento =  namedQueryRepository.getNamedProcedureCallMemento( name );
+
+		if ( memento == null ) {
+			throw new IllegalArgumentException( "No @NamedStoredProcedureQuery was found with that name : " + name );
+		}
+
+		NoSQLProcedureCallMemento nosqlMemento = new NoSQLProcedureCallMemento( memento );
+		return nosqlMemento.makeProcedureCall( this );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
+		checkOpen();
+		return createStoredProcedureCall( procedureName );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
+		checkOpen();
+		return createStoredProcedureCall( procedureName, resultClasses );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
+		checkOpen();
+		return createStoredProcedureCall( procedureName, resultSetMappings );
 	}
 
 	@SuppressWarnings("rawtypes")

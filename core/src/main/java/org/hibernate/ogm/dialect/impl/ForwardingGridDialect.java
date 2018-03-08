@@ -34,6 +34,7 @@ import org.hibernate.ogm.dialect.spi.OperationContext;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -41,6 +42,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.persister.entity.Lockable;
@@ -60,7 +62,7 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect, GroupingByEntityDialect {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService, MultigetGridDialect, GroupingByEntityDialect, StoredProcedureAwareGridDialect {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
@@ -70,6 +72,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
 	private final OptimisticLockingAwareGridDialect optimisticLockingAwareGridDialect;
 	private final MultigetGridDialect multigetGridDialect;
+	private final StoredProcedureAwareGridDialect storedProcedureAwareGridDialect;
 
 	@SuppressWarnings("unchecked")
 	public ForwardingGridDialect(GridDialect gridDialect) {
@@ -83,6 +86,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		this.identityColumnAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
 		this.optimisticLockingAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, OptimisticLockingAwareGridDialect.class );
 		this.multigetGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, MultigetGridDialect.class );
+		this.storedProcedureAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, StoredProcedureAwareGridDialect.class );
 	}
 
 	/**
@@ -308,4 +312,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		return gridDialect.usesNavigationalInformationForInverseSideOfAssociations();
 	}
 
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, ProcedureQueryParameters queryParameters,
+			TupleContext tupleContext) {
+		return storedProcedureAwareGridDialect.callStoredProcedure( storedProcedureName, queryParameters,tupleContext );
+	}
 }
