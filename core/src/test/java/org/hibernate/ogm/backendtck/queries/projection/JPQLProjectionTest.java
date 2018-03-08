@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.backendtck.queries.projection;
 
-
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Collections;
@@ -14,55 +13,55 @@ import java.util.List;
 
 import org.junit.Test;
 
-
 /**
  * Use of projection in JPQL query:
  * if a projection is used on root Entity then the result must be an Object array instead of an Entity.
  *
  * @author Fabio Massimo Ercoli
  */
-public class JPQLProjectionTest extends SinglePoemBaseTest {
+public class JPQLProjectionTest extends SingleMovieBaseTest {
 
-	public static final String JPQL_QUERY_WITHOUT_PROJECTION = "SELECT p FROM Poem p";
-	public static final String JPQL_QUERY_WITH_PROJECTION = "SELECT p.id, p.name FROM Poem p";
+	public static final String JPQL_QUERY_WITHOUT_PROJECTION = "SELECT p FROM Movie p";
+	public static final String JPQL_QUERY_WITH_PROJECTION_ID_NAME = "SELECT p.id, p.name FROM Movie p";
+	public static final String JPQL_QUERY_WITH_PROJECTION_YEAR_AUTHOR = "SELECT p.year, p.author FROM Movie p";
 
 	@Test
 	public void testUniqueResultWithoutProjection() {
 		inTransaction( session -> {
-			Poem poem = (Poem) session.createQuery( JPQL_QUERY_WITHOUT_PROJECTION )
+			Movie movie = (Movie) session.createQuery( JPQL_QUERY_WITHOUT_PROJECTION )
 				.uniqueResult();
 
-			assertThat( poem ).isEqualTo( originalPoem );
+			assertThat( movie ).isEqualTo( originalMovie );
 		} );
 	}
 
 	@Test
 	public void testUniqueResultWithProjection() {
 		inTransaction( session -> {
-			Object poem = session.createQuery( JPQL_QUERY_WITH_PROJECTION )
+			Object movie = session.createQuery( JPQL_QUERY_WITH_PROJECTION_ID_NAME )
 				.uniqueResult();
 
-			assertThat( poem ).isEqualTo( new Object[] { 1l, "Portia" } );
+			assertThat( movie ).isEqualTo( new Object[] { 1l, "2001: A Space Odyssey" } );
 		} );
 	}
 
 	@Test
 	public void testResultListWithoutProjection() {
 		inTransaction( session -> {
-			List<Poem> poems = session.createQuery( JPQL_QUERY_WITHOUT_PROJECTION )
+			List<Movie> movies = session.createQuery( JPQL_QUERY_WITHOUT_PROJECTION )
 				.getResultList();
 
-			assertThat( poems ).isEqualTo( Collections.singletonList( originalPoem ) );
+			assertThat( movies ).isEqualTo( Collections.singletonList( originalMovie ) );
 		} );
 	}
 
 	@Test
 	public void testResultListWithProjection() {
 		inTransaction( session -> {
-			List<Object> poems = session.createQuery( JPQL_QUERY_WITH_PROJECTION )
+			List<Object> movies = session.createQuery( JPQL_QUERY_WITH_PROJECTION_YEAR_AUTHOR )
 				.getResultList();
 
-			assertThat( poems.get( 0 ) ).isEqualTo( new Object[] { 1l, "Portia" } );
+			assertThat( movies.get( 0 ) ).isEqualTo( new Object[] { 1968, "Stanley Kubrick" } );
 		} );
 	}
 

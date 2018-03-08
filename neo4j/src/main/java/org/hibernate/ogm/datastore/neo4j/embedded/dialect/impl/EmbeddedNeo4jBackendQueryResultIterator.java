@@ -6,9 +6,12 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -27,6 +30,8 @@ import org.neo4j.graphdb.Result;
  * @author Davide D'Alto
  */
 public class EmbeddedNeo4jBackendQueryResultIterator extends EmbeddedNeo4jTupleIterator<Map<String, Object>> {
+
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final TupleTypeContext tupleTypeContext;
@@ -47,9 +52,14 @@ public class EmbeddedNeo4jBackendQueryResultIterator extends EmbeddedNeo4jTupleI
 		if ( entityKeyMetadata == null ) {
 			return mapSnapshot( next );
 		}
-		else {
-			return nodeSnapshot( (Node) next.values().iterator().next() );
+
+		Object value = next.values().iterator().next();
+		if ( value instanceof Node ) {
+			return nodeSnapshot( (Node) value );
 		}
+
+		// Projections and addEntities are not allowed in the same query at the same time
+		throw log.addEntityNotAllowedInNativeQueriesUsingProjection( entityKeyMetadata.getTable() );
 	}
 
 	private TupleSnapshot mapSnapshot(Map<String, Object> next) {
@@ -60,9 +70,9 @@ public class EmbeddedNeo4jBackendQueryResultIterator extends EmbeddedNeo4jTupleI
 
 	private TupleSnapshot nodeSnapshot(Node node) {
 		return EmbeddedNeo4jTupleSnapshot.fromNode(
-				node,
-				tupleTypeContext.getAllAssociatedEntityKeyMetadata(),
-				tupleTypeContext.getAllRoles(),
-				entityKeyMetadata );
+			node,
+			tupleTypeContext.getAllAssociatedEntityKeyMetadata(),
+			tupleTypeContext.getAllRoles(),
+			entityKeyMetadata );
 	}
 }

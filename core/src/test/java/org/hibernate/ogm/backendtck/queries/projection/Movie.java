@@ -18,11 +18,9 @@ import org.hibernate.search.annotations.SortableField;
 import org.hibernate.search.annotations.Store;
 
 @Entity
-@Table(name = Poem.TABLE_NAME)
+@Table(name = "Movie")
 @Indexed
-public class Poem {
-
-	public static final String TABLE_NAME = "POEM";
+public class Movie {
 
 	@Id
 	private Long id;
@@ -31,18 +29,18 @@ public class Poem {
 	@SortableField
 	private String name;
 
-	@Field(analyze = Analyze.NO)
+	@Field(analyze = Analyze.NO, store = Store.YES)
 	@SortableField
 	private String author;
 
-	@Field(analyze = Analyze.NO)
+	@Field(analyze = Analyze.NO, store = Store.YES)
 	@SortableField
 	private Integer year;
 
-	public Poem() {
+	public Movie() {
 	}
 
-	public Poem(Long id, String name, String author, int year) {
+	public Movie(Long id, String name, String author, int year) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
@@ -55,7 +53,7 @@ public class Poem {
 
 	@Override
 	public String toString() {
-		return "Poem{" +
+		return "Movie{" +
 				"id=" + id +
 				", name='" + name + '\'' +
 				", author='" + author + '\'' +
@@ -71,11 +69,11 @@ public class Poem {
 		if ( o == null || getClass() != o.getClass() ) {
 			return false;
 		}
-		Poem poem = (Poem) o;
-		return Objects.equals( id, poem.id ) &&
-				Objects.equals( name, poem.name ) &&
-				Objects.equals( author, poem.author ) &&
-				Objects.equals( year, poem.year );
+		Movie movie = (Movie) o;
+		return Objects.equals( id, movie.id ) &&
+			Objects.equals( name, movie.name ) &&
+			Objects.equals( author, movie.author ) &&
+			Objects.equals( year, movie.year );
 	}
 
 	@Override

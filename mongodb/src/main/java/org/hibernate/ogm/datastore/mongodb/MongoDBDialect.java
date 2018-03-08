@@ -839,14 +839,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
-		// is not allowed using projection and addEntities parameter in the same query
-		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null && queryDescriptor.getProjection() != null ) {
-			throw log.addEntityNotAllowedInNativeQueriesUsingProjection();
-		}
-
 		EntityKeyMetadata entityKeyMetadata =
-				backendQuery.getSingleEntityMetadataInformationOrNull() == null ? null :
-					backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+			( backendQuery.getSingleEntityMetadataInformationOrNull() == null ) ? null :
+				backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+
+		// Projections and addEntities are not allowed in the same query at the same time
+		if ( entityKeyMetadata != null && queryDescriptor.getProjection() != null ) {
+			throw log.addEntityNotAllowedInNativeQueriesUsingProjection( entityKeyMetadata.getTable() );
+		}
 
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		MongoCollection<Document> collection = provider.getDatabase().getCollection( collectionName );

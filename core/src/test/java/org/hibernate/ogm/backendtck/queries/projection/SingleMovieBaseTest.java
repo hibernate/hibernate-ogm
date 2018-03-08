@@ -16,22 +16,24 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Fabio Massimo Ercoli
  */
-public abstract class SinglePoemBaseTest extends OgmTestCase {
+public abstract class SingleMovieBaseTest extends OgmTestCase {
+
+	protected static final String PROJECTION_ADD_ENTITY_MESSAGE = "OGM000090: Projection and addEntity are not allowed in the same query: table <Movie>";
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	protected final Poem originalPoem = new Poem( 1L, "Portia", "Oscar Wilde", 1881 );
+	protected final Movie originalMovie = new Movie( 1L, "2001: A Space Odyssey", "Stanley Kubrick", 1968 );
 
 	@Before
 	public void init() {
-		inTransaction( session -> session.persist( originalPoem ) );
+		inTransaction( session -> session.persist( originalMovie ) );
 	}
 
 	@After
 	public void tearDown() {
 		inTransaction( session -> {
-			Object entity = session.get( Poem.class, originalPoem.getId() );
+			Object entity = session.get( Movie.class, originalMovie.getId() );
 			if ( entity != null ) {
 				session.delete( entity );
 			}
@@ -40,6 +42,6 @@ public abstract class SinglePoemBaseTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Poem.class };
+		return new Class<?>[] { Movie.class };
 	}
 }
