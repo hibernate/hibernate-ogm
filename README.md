@@ -141,9 +141,14 @@ prior to running the tests:
 For running the tests in the _neo4j_ and _integrationtest/neo4j_ modules, by default the
 embedded Neo4j configuration is used.
 
-If you want to run the tests on a remote server, you need to specify the profile `neo4j-remote`
+Hibernate OGM can connect to a Neo4j server remotely via the Bolt protocol or via HTTP.
+These tests are not executed by default, you can run them using the following commands:
 
-    mvn clean install -s settings-example.xml -Pneo4j-remote
+    mvn clean install -s settings-example.xml -Pneo4j-http
+
+or
+
+    mvn clean install -s settings-example.xml -Pneo4j-bolt
 
 This assumes Neo4j to be installed on `localhost`, using the default port and no authentication.
 If you work with different settings, configure the required properties in hibernate.properties
