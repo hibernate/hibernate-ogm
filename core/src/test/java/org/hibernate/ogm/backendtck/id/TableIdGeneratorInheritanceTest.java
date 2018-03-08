@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.id;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
@@ -29,6 +30,8 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class TableIdGeneratorInheritanceTest extends OgmJpaTestCase {
 
+	private static final String someTruckName = "someTruckName";
+	private static final String someOtherTruckName = "someOtherTruckName";
 	private EntityManager em;
 
 	@Before
@@ -43,36 +46,73 @@ public class TableIdGeneratorInheritanceTest extends OgmJpaTestCase {
 
 	@Test
 	public void testTableIdGeneratesAndEqualsSaved() {
-		em.getTransaction().begin();
 		Truck truck = new Truck();
-		em.persist( truck );
-		em.getTransaction().commit();
+		doInTransaction( em -> em.persist( truck ) );
 
-		em.clear();
-
-		em.getTransaction().begin();
-
-		Truck loadedTruck = em.find( Truck.class, truck.getId() );
-
-		assertThat( loadedTruck.getId() ).isEqualTo( truck.getId() );
-		em.getTransaction().commit();
+		doInTransaction( em -> {
+			Truck loadedTruck = em.find( Truck.class, truck.getId() );
+			assertThat( loadedTruck.getId() ).isEqualTo( truck.getId() );
+		} );
 	}
 
 	@Test
 	public void testInheritedTableIdGenerates() {
-		em.getTransaction().begin();
 		Truck truck = new Truck();
-		em.persist( truck );
-		em.getTransaction().commit();
+		doInTransaction( em -> em.persist( truck ) );
 
-		em.clear();
+		doInTransaction( em -> {
+			Truck loadedTruck = em.find( Truck.class, truck.getId() );
+			assertThat( loadedTruck.getId() ).isNotNull();
+		} );
+	}
 
+
+	@Test
+	public void testInheritedTableUpdates() {
+		Truck truck = new Truck();
+		truck.setName( someTruckName );
+
+		doInTransaction( em -> em.persist( truck ) );
+
+		doInTransaction( em -> {
+			Truck loadedTruck = em.find( Truck.class, truck.getId() );
+			assertThat( loadedTruck.getName() ).isEqualTo( someTruckName );
+
+			loadedTruck.setName( someOtherTruckName );
+			em.persist( loadedTruck );
+
+		} );
+
+		doInTransaction( em -> {
+			Truck loadedTruck = em.find( Truck.class, truck.getId() );
+			assertThat( loadedTruck.getName() ).isEqualTo( someOtherTruckName );
+		} );
+	}
+
+	private void doInTransaction(Consumer<EntityManager> action) {
 		em.getTransaction().begin();
 
-		Truck loadedTruck = em.find( Truck.class, truck.getId() );
+		action.accept( em );
 
-		assertThat( loadedTruck.getId() ).isNotNull();
 		em.getTransaction().commit();
+		em.clear();
+	}
+
+	@Test
+	public void testInheritedTableDelete() {
+		Truck truck = new Truck();
+		doInTransaction( em -> em.persist( truck ) );
+
+		doInTransaction( em -> {
+			Truck loadedTruck = em.find( Truck.class, truck.getId() );
+			em.remove( loadedTruck );
+		} );
+
+		doInTransaction( em -> {
+			Truck loadedTruck = em.find( Truck.class, truck.getId() );
+			assertThat( loadedTruck ).isNull();
+		} );
+
 	}
 
 	@Override
@@ -93,6 +133,7 @@ public class TableIdGeneratorInheritanceTest extends OgmJpaTestCase {
 	@Inheritance(strategy = TABLE_PER_CLASS)
 	private abstract static class BaseCar {
 		protected UUID id;
+		private String name;
 
 		@Id
 		@GeneratedValue(generator = "uuid")
@@ -103,6 +144,14 @@ public class TableIdGeneratorInheritanceTest extends OgmJpaTestCase {
 
 		public void setId(UUID id) {
 			this.id = id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
 		}
 	}
 
