@@ -66,6 +66,7 @@ import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.Statement;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.Value;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.summary.ResultSummary;
 import org.neo4j.driver.v1.types.Node;
@@ -118,7 +119,14 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 				List<EntityKey> entityKeys = new ArrayList<>();
 				while ( result.hasNext() ) {
 					Record record = result.next();
-					Map<String, Object> recordAsMap = record.get( 0 ).asMap();
+					Value value = record.get( 0 );
+
+					if ( !( "NODE".equals( value.type().name() ) ) ) {
+						// Projections and addEntities are not allowed in the same query at the same time
+						throw log.addEntityNotAllowedInNativeQueriesUsingProjection( entityKeyMetadata.getTable() );
+					}
+
+					Map<String, Object> recordAsMap = value.asMap();
 					Object[] columnValues = columnValues( recordAsMap, entityKeyMetadata );
 					entityKeys.add( new EntityKey( entityKeyMetadata, columnValues ) );
 				}
