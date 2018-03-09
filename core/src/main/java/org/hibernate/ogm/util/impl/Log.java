@@ -307,4 +307,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 90, value = "Returning multiple entities is not supported. Procedure '%1$s' expects results of type %2$s")
 	HibernateException multipleEntitiesOutputNotSupported(String procedureName, Collection<?> synchronizedQuerySpaces);
+
+	@Message(id = 91, value = "Projection and addEntity are not allowed in the same query on <%1$s> %2$s")
+	HibernateException addEntityNotAllowedInNativeQueriesUsingProjection( String table, String query );
 }
