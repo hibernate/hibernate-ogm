@@ -41,7 +41,7 @@
 
         <!-- Hibernate ORM -->
         <hibernateOrmFamilyVersion>5.2</hibernateOrmFamilyVersion>
-        <hibernateVersion>5.2.13.Final</hibernateVersion>
+        <hibernateVersion>5.2.15.Final</hibernateVersion>
 
         <!-- Hibernate Search -->
         <hibernateSearchFamilyVersion>5.9</hibernateSearchFamilyVersion>
