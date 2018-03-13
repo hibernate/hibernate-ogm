@@ -22,7 +22,7 @@ import org.hibernate.annotations.Cascade;
 public class Wheel {
 	private String id;
 	private double diameter;
-	private Vehicule vehicule;
+	private Vehicle vehicle;
 
 	@Id
 	public String getId() {
@@ -45,11 +45,11 @@ public class Wheel {
 	@PrimaryKeyJoinColumn
 	@Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
 	@MapsId
-	public Vehicule getVehicule() {
-		return vehicule;
+	public Vehicle getVehicle() {
+		return vehicle;
 	}
 
-	public void setVehicule(Vehicule vehicule) {
-		this.vehicule = vehicule;
+	public void setVehicle(Vehicle vehicle) {
+		this.vehicle = vehicle;
 	}
 }

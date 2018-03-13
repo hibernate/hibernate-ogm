@@ -1293,7 +1293,7 @@ except that the target entity is represented by its identifier(s).
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -1310,13 +1310,13 @@ public class Wheel {
     private double diameter;
 
     @OneToOne
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
 ----
 
-.Content of the `Vehicule` cache
+.Content of the `Vehicle` cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
@@ -1332,7 +1332,7 @@ public class Wheel {
 
 .3+^.^| ["id"], ["W001"]             | id             | "W001"
                                      | diameter       | 0.0
-                                     | vehicule_id    | "V_01"
+                                     | vehicle_id     | "V_01"
 |===
 ====
 
@@ -1342,7 +1342,7 @@ public class Wheel {
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -1361,7 +1361,7 @@ public class Wheel {
 
     @OneToOne
     @JoinColumn( name = "part_of" )
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
@@ -1392,7 +1392,7 @@ public class Wheel {
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -1411,7 +1411,7 @@ public class Wheel {
     @OneToOne
     @PrimaryKeyJoinColumn
     @MapsId
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
@@ -1431,7 +1431,7 @@ public class Wheel {
 |===
      ^| KEY                                2+^| MAP ENTRIES
 
-.2+^.^| ["vehicule_id"], ["V_01"]             | vehicule_id    | "V_01"
+.2+^.^| ["vehicle_id"], ["V_01"]              | vehicle_id     | "V_01"
                                               | diameter       | 0.0
 |===
 ====

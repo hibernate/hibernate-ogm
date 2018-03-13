@@ -436,7 +436,7 @@ which store foreign column keys. This means that annotation like `@JoinColumn` w
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -455,7 +455,7 @@ public class Wheel {
     private double diameter;
 
     @OneToOne
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
