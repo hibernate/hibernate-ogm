@@ -1359,7 +1359,7 @@ You can use `@JoinColumn` to change the name of the field that stores the foreig
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -1377,7 +1377,7 @@ public class Wheel {
     private double diameter;
 
     @OneToOne
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
@@ -1398,7 +1398,7 @@ Wheel collection as JSON in MongoDB
 {
   "_id" : "W001",
   "diameter" : 0,
-  "vehicule_id" : "V_01"
+  "vehicle_id" : "V_01"
 }
 ----
 ====
@@ -1409,7 +1409,7 @@ Wheel collection as JSON in MongoDB
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -1428,7 +1428,7 @@ public class Wheel {
 
     @OneToOne
     @JoinColumn( name = "part_of" )
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
@@ -1463,7 +1463,7 @@ the following example:
 [source, JAVA]
 ----
 @Entity
-public class Vehicule {
+public class Vehicle {
 
     @Id
     private String id;
@@ -1482,13 +1482,13 @@ public class Wheel {
     @OneToOne
     @PrimaryKeyJoinColumn
     @MapsId
-    private Vehicule vehicule;
+    private Vehicle vehicle;
 
     // getters, setters ...
 }
 ----
 
-Vehicule collection as JSON in MongoDB
+Vehicle collection as JSON in MongoDB
 
 [source, JSON]
 ----
