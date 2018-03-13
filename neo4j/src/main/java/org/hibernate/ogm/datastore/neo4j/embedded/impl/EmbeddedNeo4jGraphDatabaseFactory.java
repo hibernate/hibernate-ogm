@@ -157,7 +157,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 						LOG.debugf( " currentTransaction: %s", spi.currentTransaction() );
 						//LOG.warnf( "close transaction %s", spi.currentTransaction().getTransactionId() );
 						LOG.warnf( "transaction  started %s", spi.currentTransaction().startTime() );
-						spi.currentTransaction().failure();
+						spi.currentTransaction().success();
 						spi.currentTransaction().closeTransaction();
 					}
 				}
