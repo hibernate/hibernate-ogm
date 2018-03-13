@@ -16,7 +16,7 @@ import org.hibernate.annotations.GenericGenerator;
  * @author Emmanuel Bernard
  */
 @Entity
-public class Vehicule {
+public class Vehicle {
 	private String id;
 	private String brand;
 

@@ -49,20 +49,20 @@ public class OneToOneTest extends OgmTestCase {
 	public void testUnidirectionalOneToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		Vehicule vehicule = new Vehicule();
-		vehicule.setBrand( "Mercedes" );
+		Vehicle vehicle = new Vehicle();
+		vehicle.setBrand( "Mercedes" );
 		Wheel wheel = new Wheel();
-		wheel.setVehicule( vehicule );
-		session.persist( vehicule );
+		wheel.setVehicle( vehicle );
+		session.persist( vehicle );
 		session.persist( wheel );
 		transaction.commit();
 		session.clear();
 
 		transaction = session.beginTransaction();
 		wheel = (Wheel) session.get( Wheel.class, wheel.getId() );
-		vehicule = wheel.getVehicule();
+		vehicle = wheel.getVehicle();
 		session.delete( wheel );
-		session.delete( vehicule );
+		session.delete( vehicle );
 		transaction.commit();
 		session.close();
 	}
@@ -166,7 +166,7 @@ public class OneToOneTest extends OgmTestCase {
 		return new Class<?>[] {
 				Horse.class,
 				Cavalier.class,
-				Vehicule.class,
+				Vehicle.class,
 				Wheel.class,
 				Husband.class,
 				Wife.class,
