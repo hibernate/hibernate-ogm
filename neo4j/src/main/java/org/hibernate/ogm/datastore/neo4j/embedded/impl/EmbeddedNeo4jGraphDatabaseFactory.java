@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.embedded.impl;
 
 import java.io.File;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.kernel.impl.factory.GraphDatabaseFacade;
 import org.neo4j.kernel.internal.GraphDatabaseAPI;
 
 /**
@@ -64,16 +66,17 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		AtomicBoolean isNew = new AtomicBoolean( false );
 		FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String dbPath ) -> {
 			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
-			GraphDatabaseService service = buildGraphDatabaseService();
+			GraphDatabaseFacade service = buildGraphDatabaseService();
 			FactoryHolder holder = new FactoryHolder();
 			holder.setCounter( 1 );
-			holder.setGraphDatabaseService( service );
+			holder.setGraphDatabaseFacade( service );
 			isNew.set( true );
 			return holder;
 		} );
 		if ( !isNew.get() ) {
 			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
-				boolean isAvailable = factoryHolder.getGraphDatabaseService().isAvailable( 100 );
+				factoryHolder.getGraphDatabaseFacade();
+				boolean isAvailable = factoryHolder.getGraphDatabaseFacade().isAvailable( 100 );
 				if ( isAvailable ) {
 					factoryHolder.setCounter( factoryHolder.getCounter() + 1 );
 				}
@@ -81,15 +84,15 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 					//need recreate db
 					LOG.infof( " Recreate service instance for dbPath  %s", dbLocationAbsolutePath );
 					factoryHolder.setCounter( 1 );
-					factoryHolder.setGraphDatabaseService( buildGraphDatabaseService() );
+					factoryHolder.setGraphDatabaseFacade( buildGraphDatabaseService() );
 				}
 				LOG.debugf( " Counter : %s for path %s", factoryHolder.getCounter(), dbLocationAbsolutePath );
 			}
 		}
-		return factoryHolder.getGraphDatabaseService();
+		return factoryHolder.getGraphDatabaseFacade();
 	}
 
-	private GraphDatabaseService buildGraphDatabaseService() {
+	private GraphDatabaseFacade buildGraphDatabaseService() {
 		GraphDatabaseService service = null;
 		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( dbLocation );
 		setConfigurationFromLocation( builder, configurationLocation );
@@ -102,7 +105,8 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 			//Allow it to load even the ones we're not exposing directly to end users.
 			currentThread.setContextClassLoader( neo4JClassLoader );
 			service =  builder.newGraphDatabase();
-			GraphDatabaseAPI sq = (GraphDatabaseAPI) service;
+			GraphDatabaseFacade sq = (GraphDatabaseFacade) service;
+			LOG.debugf( "GraphDatabaseAPI class: %s",sq.getClass().getName() );
 			LOG.debugf( "Created new storage at path : %s;  store id: %s",sq.getStoreDir(),sq.storeId() );
 		}
 		catch (Exception e) {
@@ -111,7 +115,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		finally {
 			currentThread.setContextClassLoader( contextClassLoader );
 		}
-		return service;
+		return (GraphDatabaseFacade) service;
 	}
 
 	private void setConfigurationFromProperties(GraphDatabaseBuilder builder, Map<?, ?> properties) {
@@ -142,9 +146,28 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 				FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.get( key );
 				factoryHolder.setCounter( factoryHolder.getCounter() - 1 );
 				LOG.debugf( " Counter : %s  for path %s", factoryHolder.getCounter(), key );
+
+				GraphDatabaseFacade graphDatabaseFacade = factoryHolder.getGraphDatabaseFacade();
+				try {
+					GraphDatabaseFacade.SPI spi = null;
+					Object obj = getPrivateField( GraphDatabaseFacade.class.getDeclaredField( "spi" ), graphDatabaseFacade );//
+					spi = (GraphDatabaseFacade.SPI) obj;
+					LOG.debugf( " isInOpenTransaction: %s", spi.isInOpenTransaction() );
+					if ( spi.isInOpenTransaction() ) {
+						LOG.debugf( " currentTransaction: %s", spi.currentTransaction() );
+						//LOG.warnf( "close transaction %s", spi.currentTransaction().getTransactionId() );
+						LOG.warnf( "transaction  started %s", spi.currentTransaction().startTime() );
+						spi.currentTransaction().failure();
+						spi.currentTransaction().closeTransaction();
+					}
+				}
+				catch ( Exception e) {
+					LOG.error( "ERROR!", e );
+				}
+
 				if ( factoryHolder.getCounter() == 0 ) {
 					LOG.debugf( " Shutdown db for path : %s", key );
-					factoryHolder.getGraphDatabaseService().shutdown();
+					factoryHolder.getGraphDatabaseFacade().shutdown();
 					GRAPH_DATABASE_SERVICE_MAP.remove( key );
 				}
 			}
@@ -154,10 +177,23 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		}
 	}
 
+	private static Object getPrivateField(Field privateField, Object targetObject) {
+		Object result = null;
+		try {
+			//Field privateTransactionField = TopLevelTransaction.class.getDeclaredField( "transaction" );
+			privateField.setAccessible( true );
+			result =  privateField.get( targetObject );
+		}
+		catch (Exception e) {
+			LOG.error( "ERROR!", e );
+		}
+		return result;
+	}
+
 
 	private static class FactoryHolder {
 		private int counter;
-		private GraphDatabaseService graphDatabaseService;
+		private GraphDatabaseFacade graphDatabaseFacade;
 
 		int getCounter() {
 			return counter;
@@ -167,12 +203,12 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 			this.counter = counter;
 		}
 
-		GraphDatabaseService getGraphDatabaseService() {
-			return graphDatabaseService;
+		public GraphDatabaseFacade getGraphDatabaseFacade() {
+			return graphDatabaseFacade;
 		}
 
-		void setGraphDatabaseService(GraphDatabaseService graphDatabaseService) {
-			this.graphDatabaseService = graphDatabaseService;
+		public void setGraphDatabaseFacade(GraphDatabaseFacade graphDatabaseFacade) {
+			this.graphDatabaseFacade = graphDatabaseFacade;
 		}
 	}
 

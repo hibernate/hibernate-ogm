@@ -83,24 +83,20 @@ public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		else {
 			PlaceboTransaction placeboTransaction = (PlaceboTransaction) tx;
 			log.infof( "PlaceboTransaction placeboTransaction : %s", placeboTransaction );
-			tx.success();
-			tx.close();
-			tx = neo4jDb.beginTx();
-			log.infof( "Open new transaction : %s", tx.toString() );
 
-//			try {
-//				Field privateTransactionField = PlaceboTransaction.class.getDeclaredField( "currentTransaction" );
-//				privateTransactionField.setAccessible( true );
-//				KernelTransactionImplementation kernelTransaction = (KernelTransactionImplementation) privateTransactionField.get( placeboTransaction );
-//
-//				log.infof( "kernelTransaction : %s", kernelTransaction.getTransactionId() );
-//			}
-//			catch (IllegalStateException ise) {
-//				log.warn( "New transction created!" );
-//			}
-//			catch (Exception e) {
-//				log.error( "ERROR!", e );
-//			}
+			try {
+				Field privateTransactionField = PlaceboTransaction.class.getDeclaredField( "currentTransaction" );
+				privateTransactionField.setAccessible( true );
+				KernelTransactionImplementation kernelTransaction = (KernelTransactionImplementation) privateTransactionField.get( placeboTransaction );
+
+				log.infof( "kernelTransaction : %s", kernelTransaction.getTransactionId() );
+			}
+			catch (IllegalStateException ise) {
+				log.warn( "New transction created!" );
+			}
+			catch (Exception e) {
+				log.error( "ERROR!", e );
+			}
 		}
 
 
