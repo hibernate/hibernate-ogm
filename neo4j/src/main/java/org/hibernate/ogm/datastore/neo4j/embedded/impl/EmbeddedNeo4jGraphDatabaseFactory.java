@@ -33,9 +33,10 @@ import org.neo4j.kernel.internal.GraphDatabaseAPI;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFactory {
+	public static final int WAITING_TIME_MS = 100;
+
 	private static final Map<String, FactoryHolder> GRAPH_DATABASE_SERVICE_MAP = new ConcurrentHashMap<>();
 	private static Log LOG = LoggerFactory.make( MethodHandles.lookup() );
-
 
 	private File dbLocation;
 
@@ -76,7 +77,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		if ( !isNew.get() ) {
 			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
 				factoryHolder.getGraphDatabaseFacade();
-				boolean isAvailable = factoryHolder.getGraphDatabaseFacade().isAvailable( 100 );
+				boolean isAvailable = factoryHolder.getGraphDatabaseFacade().isAvailable( WAITING_TIME_MS );
 				if ( isAvailable ) {
 					factoryHolder.setCounter( factoryHolder.getCounter() + 1 );
 				}
