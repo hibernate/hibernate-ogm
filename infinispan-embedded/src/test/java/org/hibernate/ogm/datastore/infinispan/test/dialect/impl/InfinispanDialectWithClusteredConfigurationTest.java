@@ -75,8 +75,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 	@BeforeClass
 	public static void setupProvidersAndDialects() throws Exception {
-		SessionFactoryImplementor sessionFactory1 = getSessionFactory();
-		SessionFactoryImplementor sessionFactory2 = getSessionFactory();
+		SessionFactoryImplementor sessionFactory1 = getSessionFactory( "infinispan-dist.xml" );
+		SessionFactoryImplementor sessionFactory2 = getSessionFactory( "infinispan-dist-alt-counter.xml" );
 		provider1 = (InfinispanEmbeddedDatastoreProvider) sessionFactory1.getServiceRegistry().getService( DatastoreProvider.class );
 		provider2 = (InfinispanEmbeddedDatastoreProvider) sessionFactory2.getServiceRegistry().getService( DatastoreProvider.class );
 		dialect1 = new InfinispanDialect( provider1 );
@@ -192,9 +192,9 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		}
 	}
 
-	private static InfinispanEmbeddedDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
+	private static InfinispanEmbeddedDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry, String configFile) {
 		Map<String, Object> configurationValues = new HashMap<String, Object>();
-		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-dist.xml" );
+		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, configFile );
 		InfinispanEmbeddedDatastoreProvider provider = new InfinispanEmbeddedDatastoreProvider();
 
 		provider.configure( configurationValues );
@@ -204,14 +204,14 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		return provider;
 	}
 
-	private static ServiceRegistryImplementor getServiceRegistry() {
+	private static ServiceRegistryImplementor getServiceRegistry(String configFile) {
 		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
 
 		JBossStandAloneJtaPlatform jtaPlatform = new JBossStandAloneJtaPlatform();
 		jtaPlatform.injectServices( serviceRegistry );
 		when( serviceRegistry.getService( JtaPlatform.class ) ).thenReturn( jtaPlatform );
 
-		InfinispanEmbeddedDatastoreProvider provider = createAndStartNewProvider( serviceRegistry );
+		InfinispanEmbeddedDatastoreProvider provider = createAndStartNewProvider( serviceRegistry, configFile );
 		when( serviceRegistry.getService( DatastoreProvider.class ) ).thenReturn( provider );
 
 		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
@@ -224,7 +224,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		return serviceRegistry;
 	}
 
-	private static SessionFactoryImplementor getSessionFactory() {
+	private static SessionFactoryImplementor getSessionFactory(String configFile) {
 		SessionFactoryImplementor sessionFactory = mock( SessionFactoryImplementor.class );
 
 		// metamodel
@@ -250,7 +250,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 				Collections.<String, CollectionPersister>singletonMap( "Foobar", foobarCollectionPersister ) );
 
 		// service registry
-		ServiceRegistryImplementor serviceRegistry = getServiceRegistry();
+		ServiceRegistryImplementor serviceRegistry = getServiceRegistry( configFile );
 		when( sessionFactory.getServiceRegistry() ).thenReturn( serviceRegistry );
 
 		return sessionFactory;

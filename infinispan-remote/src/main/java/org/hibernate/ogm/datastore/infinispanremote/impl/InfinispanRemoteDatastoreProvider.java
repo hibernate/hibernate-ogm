@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.hibernate.service.spi.Stoppable;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 
@@ -141,6 +143,15 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		sd.validateSchema();
 		RemoteCache<String,String> protobufCache = getProtobufCache();
 		sd.deploySchema( schemaFileName, protobufCache, schemaCapture, schemaOverrideService );
+
+		// register proto schema also to global serialization context used for unmarshalling
+		try {
+			marshaller.getSerializationContext().registerProtoFiles( sd.asFileDescriptorSource() );
+		}
+		catch (DescriptorParserException | IOException e) {
+			throw log.errorAtProtobufParsing( e );
+		}
+
 		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
 
 		cacheCreation = new HotRodCacheCreationHandler( createCachesEnabled, newCacheTemplate, sd.getCacheTemplateByName() );

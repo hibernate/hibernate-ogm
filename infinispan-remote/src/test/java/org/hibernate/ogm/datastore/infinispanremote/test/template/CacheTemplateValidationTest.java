@@ -71,7 +71,7 @@ public class CacheTemplateValidationTest {
 
 			InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
 			String template = provider.getTemplate( cacheName );
-			assertEquals( "Template default applied to the cache", "default", template );
+			assertEquals( "Template default applied to the cache", "ogm-config", template );
 		}
 		verifyCacheExistThenRemoveIt( cacheName );
 	}
@@ -80,13 +80,13 @@ public class CacheTemplateValidationTest {
 	public void test_templateDefinedByProperty() {
 		String cacheName = NoAnnotationEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
-				Collections.singletonMap( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, "default" ),
+				Collections.singletonMap( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, "ogm-config" ),
 				NoAnnotationEntity.class
 		) ) {
 
 			InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
 			String template = provider.getTemplate( cacheName );
-			assertEquals( "Template default applied to the cache", "default", template );
+			assertEquals( "Template default applied to the cache", "ogm-config", template );
 		}
 		verifyCacheExistThenRemoveIt( cacheName );
 	}
@@ -100,7 +100,7 @@ public class CacheTemplateValidationTest {
 		) ) {
 			InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
 			String template = provider.getTemplate( cacheName );
-			assertEquals( "Template default applied to the cache", "default", template );
+			assertEquals( "Template default applied to the cache", "ogm-config", template );
 		}
 		verifyCacheExistThenRemoveIt( cacheName );
 	}

@@ -84,7 +84,7 @@ public final class TableDefinition implements ProtobufTypeExporter, ProtobufEntr
 			CompositeProtobufCoDec codec = new CompositeProtobufCoDec( tableName,
 					qualify( protobufTypeName ), qualify( protobufIdTypeName ),
 					keyComponents, valueComponents, remoteCache, sd );
-			SerializationContext serializationContext = ProtostreamSerializerSetup.buildSerializationContext( sd, codec );
+			SerializationContext serializationContext = ProtostreamSerializerSetup.buildSerializationContext( sd, codec, marshaller );
 			return new ProtoDataMapper( codec, serializationContext, marshaller );
 		}
 		catch (DescriptorParserException | IOException e) {

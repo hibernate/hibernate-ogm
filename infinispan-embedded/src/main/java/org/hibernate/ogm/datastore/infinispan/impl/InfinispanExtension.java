@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.ExternalizersIntegration;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;
-import org.infinispan.lifecycle.AbstractModuleLifecycle;
+import org.infinispan.lifecycle.ModuleLifecycle;
 
 /**
  * Implements a Service which is autodiscovered by Infinispan during its initialization.
@@ -18,8 +18,9 @@ import org.infinispan.lifecycle.AbstractModuleLifecycle;
  * Externalizers.
  *
  * @author Sanne Grinovero
+ * @author Fabio Massimo Ercoli
  */
-public class InfinispanExtension extends AbstractModuleLifecycle {
+public class InfinispanExtension implements ModuleLifecycle {
 
 	@Override
 	public void cacheManagerStarting(GlobalComponentRegistry gcr, GlobalConfiguration globalCfg) {
