@@ -2596,7 +2596,7 @@ If any Cache is missing, Hibernate OGM will fail to start and list which table n
 expected, but not found. We plan to automate the creation of missing caches in the future.
 ====
 
-==== Caches creation and Templates
+==== Caches creation and Configuration
 
 Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
 If the property is enabled the dialect is capable of creating cache, if necessary, on remote Infinispan cluster.
@@ -2605,9 +2605,9 @@ By default all caches created use the default Infinispan configuration,
 so by default all caches are created **without a specific Infinispan configuration**.
 
 To applying a configuration on cache
-we need an already defined cache on remote Infinispan configuration to use ``as a template`` for the new caches.
+we need an already defined cache or __cache configuration__ on remote Infinispan configuration to configure the new caches.
 
-There are two ways for applying a template to new caches:
+There are two ways for applying a cache configuration to new caches:
 
 * Using the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
 * Using the ``@CacheTemplate`` annotation on Entity class
@@ -2617,13 +2617,12 @@ The property is applied to all new caches, it means for all Entities. So propert
 The annotations are applied to the new caches related to the Entities on which they are present.
 So annotations have a local (Entity) scope instead.
 
-Is it possible enabling both the configurations, whenever are both present the templates defined by annotation
-will **override** the template defined by property.
+Is it possible enabling both the configurations, whenever are both present the cache configurations defined by annotation
+will **override** the cache configuration defined by property.
 
 [IMPORTANT]
 ====
-Caches, used as templates, **need to be present** on remote Infinispan cluster
-configuration, otherwise an exception will thrown.
+Cache configurations **need to be present** on remote Infinispan cluster, otherwise an exception will thrown.
 ====
 
 Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheTemplateEntity__:
@@ -2698,14 +2697,14 @@ Assuming that:
 
 Then:
 
-* Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache template.
-* Cache __CacheTemplateEntity__ will be created by the dialect using __transactional__ as a cache template.
+* Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache configuration.
+* Cache __CacheTemplateEntity__ will be created by the dialect using __transactional__ as a cache configuration.
 
 [IMPORTANT]
 ====
-Template configuration can be used to force a ``transactional behaviour`` for the caches.
+Cache configuration can be used to force a ``transactional behaviour`` for the caches.
 
-We reccomend having ``transactional caches`` when a **stronger consistency** is required by the use case.
+We recommend having ``transactional caches`` when a **stronger consistency** is required by the use case.
 ====
 
 ==== Known Limitations & Future improvements

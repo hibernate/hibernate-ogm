@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
  * @author Fabio Massimo Ercoli
  */
 @Entity
-@CacheTemplate("default")
+@CacheTemplate("ogm-config")
 public class ExistCacheTemplateEntity {
 
 	@Id

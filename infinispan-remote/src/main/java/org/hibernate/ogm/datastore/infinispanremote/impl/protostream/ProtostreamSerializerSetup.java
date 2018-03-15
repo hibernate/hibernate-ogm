@@ -28,7 +28,7 @@ public class ProtostreamSerializerSetup {
 	}
 
 	public static SerializationContext buildSerializationContext(
-			SchemaDefinitions sd, MainOgmCoDec delegate) throws DescriptorParserException, IOException {
+			SchemaDefinitions sd, MainOgmCoDec delegate, OgmProtoStreamMarshaller marshaller) throws DescriptorParserException, IOException {
 		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
 		SerializationContextImpl serContext = new SerializationContextImpl( cfg );
 		IdMessageMarshaller idM = new IdMessageMarshaller( delegate );
@@ -39,8 +39,13 @@ public class ProtostreamSerializerSetup {
 		catch (DescriptorParserException | IOException e) {
 			throw log.errorAtProtobufParsing( e );
 		}
+		// register the marshallers to local serialization context (used for marshalling)
 		serContext.registerMarshaller( idM );
 		serContext.registerMarshaller( valueM );
+
+		// register the marshallers to global serialization context (used for unmarshalling)
+		marshaller.getSerializationContext().registerMarshaller( idM );
+		marshaller.getSerializationContext().registerMarshaller( valueM );
 		return serContext;
 	}
 

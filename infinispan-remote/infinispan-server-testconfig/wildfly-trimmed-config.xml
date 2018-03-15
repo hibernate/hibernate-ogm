@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<server xmlns="urn:jboss:domain:4.0">
+<server xmlns="urn:jboss:domain:5.0">
     <extensions>
         <extension module="org.infinispan.extension"/>
         <extension module="org.infinispan.server.endpoint"/>
@@ -44,18 +44,19 @@
             <handlers>
                 <file-handler name="file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
             </handlers>
-            <logger log-boot="true" log-read-only="false" enabled="false">
+            <logger log-boot="true" enabled="false">
                 <handlers>
                     <handler name="file"/>
                 </handlers>
             </logger>
         </audit-log>
         <management-interfaces>
-            <http-interface security-realm="ManagementRealm" http-upgrade-enabled="true">
+            <http-interface security-realm="ManagementRealm">
+                <http-upgrade enabled="true"/>
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
-        <access-control provider="simple">
+        <access-control>
             <role-mapping>
                 <role name="SuperUser">
                     <include>
@@ -92,24 +93,25 @@
                 <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
             </formatter>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:core:8.2" default-cache-container="clustered">
+        <subsystem xmlns="urn:infinispan:server:core:9.2">
             <cache-container name="clustered" default-cache="default" statistics="true">
                 <transport lock-timeout="60000"/>
-                <distributed-cache-configuration name="transactional" mode="SYNC" start="EAGER">
+                <distributed-cache-configuration name="transactional">
                     <transaction mode="NON_XA" locking="PESSIMISTIC"/>
                 </distributed-cache-configuration>
-                <distributed-cache name="default" mode="SYNC" segments="20" owners="2" remote-timeout="30000" start="EAGER">
+                <distributed-cache-configuration name="ogm-config" segments="20" owners="2" remote-timeout="30000" start="EAGER">
                     <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
-                    <transaction mode="NON_XA" locking="PESSIMISTIC"/>
-                </distributed-cache>
+                    <transaction mode="NONE" />
+                </distributed-cache-configuration>
+                <distributed-cache name="default" configuration="ogm-config" />
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:endpoint:8.0">
+        <subsystem xmlns="urn:infinispan:server:endpoint:9.2">
             <hotrod-connector socket-binding="hotrod" cache-container="clustered">
                 <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
             </hotrod-connector>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:jgroups:8.0">
+        <subsystem xmlns="urn:infinispan:server:jgroups:9.2">
             <channels default="cluster">
                 <channel name="cluster"/>
             </channels>
@@ -123,17 +125,17 @@
                     <protocol type="UNICAST3"/>
                     <protocol type="pbcast.STABLE"/>
                     <protocol type="pbcast.GMS"/>
-                    <protocol type="UFC"/>
-                    <protocol type="MFC"/>
-                    <protocol type="FRAG2"/>
+                    <protocol type="UFC_NB"/>
+                    <protocol type="MFC_NB"/>
+                    <protocol type="FRAG3"/>
                 </stack>
             </stacks>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:io:1.1">
+        <subsystem xmlns="urn:jboss:domain:io:2.0">
             <worker name="default"/>
             <buffer-pool name="default"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:jca:4.0">
+        <subsystem xmlns="urn:jboss:domain:jca:5.0">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
             <bean-validation enabled="true"/>
             <default-workmanager>
@@ -161,11 +163,11 @@
         <subsystem xmlns="urn:jboss:domain:naming:2.0">
             <remote-naming/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:remoting:3.0">
+        <subsystem xmlns="urn:jboss:domain:remoting:4.0">
             <endpoint/>
             <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:security:1.2">
+        <subsystem xmlns="urn:jboss:domain:security:2.0">
             <security-domains>
                 <security-domain name="other" cache-type="default">
                     <authentication>
@@ -197,13 +199,14 @@
                 </security-domain>
             </security-domains>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:transactions:3.0">
+        <subsystem xmlns="urn:jboss:domain:transactions:4.0">
             <core-environment>
                 <process-id>
                     <uuid/>
                 </process-id>
             </core-environment>
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+            <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
         </subsystem>
     </profile>
     <interfaces>

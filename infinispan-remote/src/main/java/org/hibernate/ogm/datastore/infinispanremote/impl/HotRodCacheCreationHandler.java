@@ -16,6 +16,7 @@ import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 
 /**
  * Creates {@link org.infinispan.client.hotrod.RemoteCache} if necessary,
@@ -73,20 +74,12 @@ public class HotRodCacheCreationHandler {
 			return;
 		}
 
-		if ( cacheTemplate != null ) {
-			// if a template is used, we check if exists
-			RemoteCache<Object, Object> template = hotrodClient.getCache( cacheTemplate );
-			if ( template == null ) {
-				failedCacheNames.add( cacheTemplate );
-				return;
-			}
-		}
-
 		// finally create cache
-		hotrodClient.administration().createCache( cacheName, cacheTemplate );
-		cache = hotrodClient.getCache( cacheName );
-		if ( cache == null ) {
-			failedCacheNames.add( cacheName );
+		try {
+			hotrodClient.administration().createCache( cacheName, cacheTemplate );
+		}
+		catch ( HotRodClientException ex ) {
+			failedCacheNames.add( cacheTemplate );
 		}
 
 	}
