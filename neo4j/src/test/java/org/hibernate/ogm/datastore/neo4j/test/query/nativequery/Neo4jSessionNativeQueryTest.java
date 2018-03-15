@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.neo4j.test.query.nativequery;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.neo4j.test.query.nativequery.OscarWildePoem.TABLE_NAME;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -38,9 +40,9 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 	 */
 	private static final String UPDATE_LABEL = "UPDATE";
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L	, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
-	private final OscarWildePoem ballade = new OscarWildePoem( 3L, "Ballade De Marguerite", "Oscar Wilde", new GregorianCalendar( 1881, 3, 1 ).getTime() );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", timestamp( new GregorianCalendar( 1808, 3, 10, 12, 45 ) ) );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", timestamp( new GregorianCalendar( 1810, 3, 10 ) ) );
+	private final OscarWildePoem ballade = new OscarWildePoem( 3L, "Ballade De Marguerite", "Oscar Wilde", timestamp( new GregorianCalendar( 1881, 3, 1 ) ) );
 
 	@Before
 	public void init() {
@@ -62,6 +64,10 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		tx.commit();
 		session.clear();
 		session.close();
+	}
+
+	private Date timestamp(GregorianCalendar cal) {
+		return new Timestamp( cal.getTimeInMillis() );
 	}
 
 	private void delete(Session session, OscarWildePoem poem) {

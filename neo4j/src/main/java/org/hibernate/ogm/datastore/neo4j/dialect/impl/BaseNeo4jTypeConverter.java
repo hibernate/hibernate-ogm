@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.impl.StringDateTypeDescriptor;
+import org.hibernate.ogm.type.impl.StringTimestampTypeDescriptor;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -30,7 +31,7 @@ public abstract class BaseNeo4jTypeConverter {
 		conversion.put( StandardBasicTypes.CALENDAR_DATE, StringCalendarDateType.INSTANCE );
 		conversion.put( StandardBasicTypes.DATE, StringDateTypeDescriptor.INSTANCE );
 		conversion.put( StandardBasicTypes.TIME, StringDateTypeDescriptor.INSTANCE );
-		conversion.put( StandardBasicTypes.TIMESTAMP, StringDateTypeDescriptor.INSTANCE );
+		conversion.put( StandardBasicTypes.TIMESTAMP, StringTimestampTypeDescriptor.INSTANCE );
 		return conversion;
 	}
 

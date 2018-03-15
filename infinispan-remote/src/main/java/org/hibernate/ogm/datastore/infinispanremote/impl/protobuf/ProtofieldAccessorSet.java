@@ -86,8 +86,7 @@ public class ProtofieldAccessorSet {
 			add( new DateProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
 		}
 		else if ( gridType instanceof TimestampType ) {
-			//TODO same as DateType?
-			add( new DateProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
+			add( new TimestampProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
 		}
 		else if ( gridType instanceof TimeType ) {
 			//TODO same as DateType?

@@ -9,6 +9,7 @@ package org.hibernate.ogm.backendtck.type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -98,6 +99,8 @@ public class Bookmark {
 
 	@Temporal(TemporalType.TIMESTAMP)
 	private Calendar destructionCalendar;
+
+	private Timestamp destructionJdbcTimestamp;
 
 	// "special" types
 	private UUID serialNumber;
@@ -337,5 +340,13 @@ public class Bookmark {
 
 	public void setLobWithLong(Long lobWithLong) {
 		this.lobWithLong = lobWithLong;
+	}
+
+	public Timestamp getDestructionJdbcTimestamp() {
+		return destructionJdbcTimestamp;
+	}
+
+	public void setDestructionSqlTimestamp(Timestamp destructionJdbcTimestamp) {
+		this.destructionJdbcTimestamp = destructionJdbcTimestamp;
 	}
 }
