@@ -37,7 +37,12 @@ public final class OgmProtoStreamMarshaller extends ProtoStreamMarshaller {
 
 	@Override
 	public SerializationContext getSerializationContext() {
-		return currentSerializationContext.get();
+		SerializationContext threadLocalSC = currentSerializationContext.get();
+
+		// unmarshalling is performed by another thread from Infinispan 9.2 version
+		// so in case of unmarshalling thread local variable is null
+		// and we have to fallback to the default (global) serialization context
+		return (threadLocalSC == null) ? super.getSerializationContext() : threadLocalSC;
 	}
 
 	public void setCurrentSerializationContext(SerializationContext sc) {

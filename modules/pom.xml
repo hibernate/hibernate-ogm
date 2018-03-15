@@ -32,7 +32,7 @@
         <hibernate.ogm.mongodb.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>${hibernate.ogm.module.slot}</hibernate.ogm.neo4j.module.slot>
         <hibernate.ogm.neo4j-internal.module.slot>${project.version}</hibernate.ogm.neo4j-internal.module.slot>
-        <infinispan.module.slot>ispn-9.1</infinispan.module.slot>
+        <infinispan.module.slot>ispn-9.2</infinispan.module.slot>
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
