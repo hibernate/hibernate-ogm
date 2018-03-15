@@ -2598,31 +2598,32 @@ expected, but not found. We plan to automate the creation of missing caches in t
 
 ==== Caches creation and Configuration
 
-Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
-If the property is enabled the dialect is capable of creating cache, if necessary, on remote Infinispan cluster.
+The Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
+When this property is enabled the dialect will create any missing caches on the remote Infinispan cluster.
 
 By default all caches created use the default Infinispan configuration,
-so by default all caches are created **without a specific Infinispan configuration**.
+so by default all caches are created without a specific Infinispan configuration.
 
-To applying a configuration on cache
-we need an already defined cache or __cache configuration__ on remote Infinispan configuration to configure the new caches.
+To apply a custom configuration to a newly created cache
+we need a previously defined cache or an existing __cache configuration__ on the remote Infinispan server to use as templates.
 
-There are two ways for applying a cache configuration to new caches:
+There are two alternative ways to apply a cache configuration to new caches:
 
 * Using the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
 * Using the ``@CacheTemplate`` annotation on Entity class
 
 The property is applied to all new caches, it means for all Entities. So property has a global scope.
 
-The annotations are applied to the new caches related to the Entities on which they are present.
-So annotations have a local (Entity) scope instead.
+The annotations are applied to the new caches being used to store the respective Entities on which they are present,
+so the approach using annotations is scoped to the entity.
 
-Is it possible enabling both the configurations, whenever are both present the cache configurations defined by annotation
-will **override** the cache configuration defined by property.
+It is possible to use a mixed approach; when both the dialect property and annotations are used the annotation takes
+precedence on the global property.
 
 [IMPORTANT]
 ====
-Cache configurations **need to be present** on remote Infinispan cluster, otherwise an exception will thrown.
+Any configuration being referred to when when creating new Caches need to be present on the remote Infinispan cluster,
+or an exception will thrown.
 ====
 
 Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheTemplateEntity__:
@@ -2702,9 +2703,9 @@ Then:
 
 [IMPORTANT]
 ====
-Cache configuration can be used to force a ``transactional behaviour`` for the caches.
+Cache configurations can be used to enable transactional behaviour for the caches.
 
-We recommend having ``transactional caches`` when a **stronger consistency** is required by the use case.
+We always recommend using transactional caches, at least unless you are confident that data consistency is not important for your use case.
 ====
 
 ==== Known Limitations & Future improvements
