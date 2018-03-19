@@ -16,8 +16,8 @@ import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
-import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
-import org.hibernate.ogm.datastore.infinispanremote.options.cache.impl.CacheTemplateOption;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.impl.CacheConfigurationOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -45,7 +45,7 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 			for ( Table table : namespace.getTables() ) {
 				if ( table.isPhysicalTable() ) {
 					createTableDefinition( context.getSessionFactory(), sd, table, typeTranslator, protobufPackageName,
-											getCacheTemplate( tableEntityTypeMapping, optionsService, table.getName() )
+						getCacheConfiguration( tableEntityTypeMapping, optionsService, table.getName() )
 					);
 				}
 			}
@@ -56,22 +56,22 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		datastoreProvider.registerSchemaDefinitions( sd );
 	}
 
-	private String getCacheTemplate(Map tableEntityTypeMapping, OptionsService optionsService, String tableName) {
+	private String getCacheConfiguration(Map tableEntityTypeMapping, OptionsService optionsService, String tableName) {
 		Class<?> entity = (Class<?>) tableEntityTypeMapping.get( tableName );
 		if ( entity == null ) {
 			return null;
 		}
-		CacheTemplate cacheTemplate = optionsService.context().getEntityOptions( entity )
-				.getUnique( CacheTemplateOption.class );
-		if ( cacheTemplate == null ) {
+		CacheConfiguration cacheConfiguration = optionsService.context().getEntityOptions( entity )
+				.getUnique( CacheConfigurationOption.class );
+		if ( cacheConfiguration == null ) {
 			return null;
 		}
-		return cacheTemplate.value();
+		return cacheConfiguration.value();
 	}
 
 	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd,
-			Table table, TypeTranslator typeTranslator, String protobufPackageName, String cacheTemplate ) {
-		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName, cacheTemplate );
+			Table table, TypeTranslator typeTranslator, String protobufPackageName, String cacheConfiguration ) {
+		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName, cacheConfiguration );
 		if ( table.hasPrimaryKey() ) {
 			for ( Column pkColumn : table.getPrimaryKey().getColumns() ) {
 				String name = pkColumn.getName();

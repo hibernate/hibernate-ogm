@@ -35,17 +35,17 @@ public final class TableDefinition implements ProtobufTypeExporter, ProtobufEntr
 	private final String protobufTypeName;
 	private final String protobufIdTypeName;
 	private final String protobufPackageName;
-	private final String cacheTemplate;
+	private final String cacheConfiguration;
 	private final ProtofieldAccessorSet keyComponents = new ProtofieldAccessorSet();
 	private final ProtofieldAccessorSet valueComponents = new ProtofieldAccessorSet();
 	private final Set<String> pkColumnNames = new HashSet<>();
 
-	public TableDefinition(String name, String protobufPackageName, String cacheTemplate) {
+	public TableDefinition(String name, String protobufPackageName, String cacheConfiguration) {
 		this.tableName = name;
 		this.protobufTypeName = SanitationUtils.convertNameSafely( name );
 		this.protobufIdTypeName = SanitationUtils.toProtobufIdName( protobufTypeName );
 		this.protobufPackageName = protobufPackageName;
-		this.cacheTemplate = cacheTemplate;
+		this.cacheConfiguration = cacheConfiguration;
 	}
 
 	public void addColumnnDefinition(Column column, GridType gridType, Type ormType) {
@@ -114,7 +114,7 @@ public final class TableDefinition implements ProtobufTypeExporter, ProtobufEntr
 		}
 	}
 
-	public String getCacheTemplate() {
-		return cacheTemplate;
+	public String getCacheConfiguration() {
+		return cacheConfiguration;
 	}
 }

@@ -92,11 +92,11 @@ public class SchemaDefinitions {
 		}
 	}
 
-	public Map<String, String> getCacheTemplateByName() {
+	public Map<String, String> getCacheConfigurationByName() {
 
 		Map<String, String> map = new HashMap<>();
 		definitionsByTableName.values().forEach( definition -> map.put(
-			definition.getTableName(), definition.getCacheTemplate()
+			definition.getTableName(), definition.getCacheConfiguration()
 		) );
 
 		idSchemaPerName.keySet().forEach( tableName -> map.put( tableName, null ) );

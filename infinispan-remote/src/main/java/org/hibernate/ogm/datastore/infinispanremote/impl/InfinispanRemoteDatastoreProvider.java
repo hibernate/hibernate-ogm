@@ -59,7 +59,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	private boolean createCachesEnabled = false;
 
 	@EffectivelyFinal
-	private String newCacheTemplate;
+	private String cacheConfiguration;
 
 	// The Hot Rod client; maintains TCP connections to the datagrid.
 	@EffectivelyFinal
@@ -125,7 +125,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.schemaPackageName = config.getSchemaPackageName();
 		this.schemaFileName = config.getSchemaFileName();
 		this.createCachesEnabled = config.isCreateCachesEnabled();
-		this.newCacheTemplate = config.getNewCacheTemplate();
+		this.cacheConfiguration = config.getCacheConfiguration();
 	}
 
 	@Override
@@ -154,7 +154,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
 
-		cacheCreation = new HotRodCacheCreationHandler( createCachesEnabled, newCacheTemplate, sd.getCacheTemplateByName() );
+		cacheCreation = new HotRodCacheCreationHandler( createCachesEnabled, cacheConfiguration, sd.getCacheConfigurationByName() );
 		cacheCreation.startAndValidateCaches( hotrodClient );
 
 		perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
@@ -174,8 +174,8 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		return schemaPackageName;
 	}
 
-	public String getTemplate(String cacheName) {
-		return cacheCreation.getTemplate( cacheName );
+	public String getConfiguration(String cacheName) {
+		return cacheCreation.getConfiguration( cacheName );
 	}
 
 	public Set<String> getMappedCacheNames() {

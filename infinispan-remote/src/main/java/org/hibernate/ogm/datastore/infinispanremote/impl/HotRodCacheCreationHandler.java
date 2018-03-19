@@ -20,8 +20,8 @@ import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 
 /**
  * Creates {@link org.infinispan.client.hotrod.RemoteCache} if necessary,
- * apply a template to the cache, if required,
- * verifies the existence of any template
+ * apply a configuration to the cache, if required,
+ * verifies the existence of any configuration
  *
  * @author Fabio Massimo Ercoli
  */
@@ -30,16 +30,16 @@ public class HotRodCacheCreationHandler {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final boolean createCachesEnabled;
-	private final Map<String, String> cacheTemplatesByName;
+	private final Map<String, String> cacheConfigurationByName;
 
-	public HotRodCacheCreationHandler(boolean createCachesEnabled, String globalTemplate, Map<String, String> perCacheTemplate) {
+	public HotRodCacheCreationHandler(boolean createCachesEnabled, String globalConfiguration, Map<String, String> perCacheConfiguration) {
 		this.createCachesEnabled = createCachesEnabled;
-		this.cacheTemplatesByName = perCacheTemplate;
+		this.cacheConfigurationByName = perCacheConfiguration;
 
-		// applying globalTemplate to all caches where a template is not defined
-		perCacheTemplate.forEach( ( cache, template ) -> {
-			if ( template == null ) {
-				perCacheTemplate.put( cache, globalTemplate );
+		// applying globalConfiguration to all caches where a configuration is not defined
+		perCacheConfiguration.forEach( ( cache, configuration ) -> {
+			if ( configuration == null ) {
+				perCacheConfiguration.put( cache, globalConfiguration );
 			}
 		} );
 	}
@@ -47,7 +47,7 @@ public class HotRodCacheCreationHandler {
 	public void startAndValidateCaches(RemoteCacheManager hotrodClient) {
 		Set<String> failedCacheNames = new HashSet<>();
 
-		cacheTemplatesByName.entrySet().forEach( entry -> {
+		cacheConfigurationByName.entrySet().forEach( entry -> {
 			startAndValidateCache( hotrodClient, entry.getKey(), entry.getValue(), failedCacheNames );
 		} );
 
@@ -60,7 +60,7 @@ public class HotRodCacheCreationHandler {
 
 	}
 
-	protected void startAndValidateCache(RemoteCacheManager hotrodClient, String cacheName, String cacheTemplate, Set<String> failedCacheNames) {
+	protected void startAndValidateCache(RemoteCacheManager hotrodClient, String cacheName, String cacheConfiguration, Set<String> failedCacheNames) {
 
 		RemoteCache<?, ?> cache = hotrodClient.getCache( cacheName );
 		if ( cache != null ) {
@@ -76,19 +76,19 @@ public class HotRodCacheCreationHandler {
 
 		// finally create cache
 		try {
-			hotrodClient.administration().createCache( cacheName, cacheTemplate );
+			hotrodClient.administration().createCache( cacheName, cacheConfiguration );
 		}
 		catch ( HotRodClientException ex ) {
-			failedCacheNames.add( cacheTemplate );
+			failedCacheNames.add( cacheConfiguration );
 		}
 
 	}
 
-	public String getTemplate(String cacheName) {
-		return cacheTemplatesByName.get( cacheName );
+	public String getConfiguration(String cacheName) {
+		return cacheConfigurationByName.get( cacheName );
 	}
 
 	public Set<String> getMappedCacheNames() {
-		return cacheTemplatesByName.keySet();
+		return cacheConfigurationByName.keySet();
 	}
 }
