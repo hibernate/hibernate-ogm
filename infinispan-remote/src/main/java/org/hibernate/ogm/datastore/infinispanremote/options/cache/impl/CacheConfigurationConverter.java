@@ -6,13 +6,13 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.options.cache.impl;
 
-import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 
-public class CacheTemplateConverter implements AnnotationConverter<CacheTemplate> {
+public class CacheConfigurationConverter implements AnnotationConverter<CacheConfiguration> {
 	@Override
-	public OptionValuePair<?> convert(CacheTemplate annotation) {
-		return OptionValuePair.getInstance( new CacheTemplateOption(), annotation );
+	public OptionValuePair<?> convert(CacheConfiguration annotation) {
+		return OptionValuePair.getInstance( new CacheConfigurationOption(), annotation );
 	}
 }

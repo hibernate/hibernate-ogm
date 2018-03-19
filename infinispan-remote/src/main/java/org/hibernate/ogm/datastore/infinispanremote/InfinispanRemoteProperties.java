@@ -88,10 +88,10 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	public static final String DEFAULT_SCHEMA_FILE_NAME = "Hibernate_OGM_Generated_schema.proto";
 
 	/**
-	 * The name of the template to use for the creation of a new cache.
-	 * If not set the default template in the infinispan configuration file is used.
+	 * Cache configuration to apply to the caches created by the dialect.
+	 * If not set the default configuration is used.
 	 */
-	public static final String NEW_CACHE_TEMPLATE = "hibernate.ogm.datastore.template_for_new_caches";
+	public static final String CACHE_CONFIGURATION = "hibernate.ogm.datastore.cache_configuration";
 
 	private InfinispanRemoteProperties() {
 	}

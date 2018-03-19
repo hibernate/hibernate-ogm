@@ -6,14 +6,14 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.options.cache.impl;
 
-import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
 import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
-public class CacheTemplateOption extends UniqueOption<CacheTemplate> {
+public class CacheConfigurationOption extends UniqueOption<CacheConfiguration> {
 
 	@Override
-	public CacheTemplate getDefaultValue(ConfigurationPropertyReader propertyReader) {
+	public CacheConfiguration getDefaultValue(ConfigurationPropertyReader propertyReader) {
 		return null;
 	}
 }
