@@ -19,7 +19,9 @@
         </protocol>
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
-            <property name="javaVmArguments">-XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true -XX:+IgnoreUnrecognizedVMOptions</property>
+            <!-- -Dee8.preview.mode=true is to Enable CDI 2.0 on Wildfly 12.0 -->
+            <!-- When JEE8 will be available by default we can remove it -->
+            <property name="javaVmArguments">-XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true -XX:+IgnoreUnrecognizedVMOptions -Dee8.preview.mode=true</property>
             <!-- To debug the Arquillian managed application server: -->
             <!-- <property name="javaVmArguments">-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y -Xmx512m -XX:MaxPermSize=128m</property> -->
         </configuration>

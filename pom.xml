@@ -68,9 +68,9 @@
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
 
         <!-- Target version of WildFly (for testing and JipiJapa integration) -->
-        <version.wildfly>11.0.0.Final</version.wildfly>
-        <hibernateWildflyClassifier>wildfly-11-dist</hibernateWildflyClassifier>
-        <jpa22patch.version>1.0.0.Beta1</jpa22patch.version>
+        <version.wildfly>12.0.0.Final</version.wildfly>
+        <hibernateWildflyClassifier>wildfly-12-dist</hibernateWildflyClassifier>
+        <jpa22patch.version>1.0.0.Beta2</jpa22patch.version>
         <jpa22patch.filename>hibernate-jpa-api-2.2-wildflymodules-${jpa22patch.version}-wildfly-${version.wildfly}-patch.zip</jpa22patch.filename>
 
         <cdi20patch.version>3.0.2.Final</cdi20patch.version>
