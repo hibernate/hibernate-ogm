@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.identity.IdentityColumnSupport;
+import org.hibernate.hql.spi.id.MultiTableBulkIdStrategy;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -31,6 +32,11 @@ public class OgmDialect extends Dialect {
 
 	public OgmDialect(GridDialect gridDialect) {
 		this.gridDialect = gridDialect;
+	}
+
+	@Override
+	public MultiTableBulkIdStrategy getDefaultMultiTableBulkIdStrategy() {
+		return new EmptyMultiTableBulkIdStrategy();
 	}
 
 	/**
