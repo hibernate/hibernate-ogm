@@ -7,9 +7,11 @@
 package org.hibernate.ogm.utils.jpa;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -90,4 +92,25 @@ public abstract class OgmJpaTestCase {
 		em.close();
 	}
 
+	public void inTransaction(Consumer<EntityManager> consumer) {
+		EntityManager em = getFactory().createEntityManager();
+		try {
+			EntityTransaction transaction = em.getTransaction();
+			transaction.begin();
+
+			try {
+				consumer.accept( em );
+				transaction.commit();
+			}
+			catch (Throwable t) {
+				if ( transaction.isActive() ) {
+					transaction.rollback();
+				}
+				throw t;
+			}
+		}
+		finally {
+			em.close();
+		}
+	}
 }
