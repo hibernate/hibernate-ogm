@@ -72,7 +72,7 @@
                             <includeGroupIds>${project.groupId}</includeGroupIds>
                             <includeArtifactIds>hibernate-ogm-modules</includeArtifactIds>
                             <includeTypes>zip</includeTypes>
-                            <includeClassifiers>wildfly-11-dist</includeClassifiers>
+                            <includeClassifiers>${hibernateWildflyClassifier}</includeClassifiers>
                             <excludeTransitive>true</excludeTransitive>
                         </configuration>
                     </execution>
@@ -177,7 +177,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>hibernate-ogm-modules</artifactId>
-            <classifier>wildfly-11-dist</classifier>
+            <classifier>${hibernateWildflyClassifier}</classifier>
             <type>zip</type>
         </dependency>
     </dependencies>
