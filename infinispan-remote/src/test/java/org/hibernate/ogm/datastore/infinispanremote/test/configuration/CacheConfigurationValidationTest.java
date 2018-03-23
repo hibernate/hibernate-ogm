@@ -54,7 +54,7 @@ public class CacheConfigurationValidationTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
-	public void test_noConfigurationDefined() {
+	public void testNoConfigurationDefined() {
 		String cacheName = NoAnnotationEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( NoAnnotationEntity.class ) ) {
 			InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
@@ -65,7 +65,7 @@ public class CacheConfigurationValidationTest {
 	}
 
 	@Test
-	public void test_configurationDefinedByAnnotation() {
+	public void testConfigurationDefinedByAnnotation() {
 		String cacheName = ExistCacheConfigurationEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( ExistCacheConfigurationEntity.class ) ) {
 
@@ -77,7 +77,7 @@ public class CacheConfigurationValidationTest {
 	}
 
 	@Test
-	public void test_configurationDefinedByProperty() {
+	public void testConfigurationDefinedByProperty() {
 		String cacheName = NoAnnotationEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
 				Collections.singletonMap( InfinispanRemoteProperties.CACHE_CONFIGURATION, "ogm-config" ),
@@ -92,7 +92,7 @@ public class CacheConfigurationValidationTest {
 	}
 
 	@Test
-	public void test_configurationDefinedByProperty_overrides_configurationDefinedByAnnotation() {
+	public void testConfigurationDefinedByPropertyOverridesConfigurationDefinedByAnnotation() {
 		String cacheName = ExistCacheConfigurationEntity.class.getSimpleName();
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory(
 				Collections.singletonMap( InfinispanRemoteProperties.CACHE_CONFIGURATION, "notExist" ),
@@ -118,7 +118,7 @@ public class CacheConfigurationValidationTest {
 	}
 
 	@Test
-	public void test_configurationDefinedByAnnotation_butDoesNotExist() {
+	public void testConfigurationDefinedByAnnotationButDoesNotExist() {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage(
 				"OGM001718: The remote cache configurations '[notExist]' were expected to exist but are not defined on the server" );
@@ -128,7 +128,7 @@ public class CacheConfigurationValidationTest {
 	}
 
 	@Test
-	public void test_configurationDefinedByProperty_butDoesNotExist() {
+	public void testConfigurationDefinedByPropertyButDoesNotExist() {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage(
 				"OGM001718: The remote cache configurations '[notExist]' were expected to exist but are not defined on the server" );
