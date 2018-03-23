@@ -2601,8 +2601,20 @@ expected, but not found. We plan to automate the creation of missing caches in t
 The Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
 When this property is enabled the dialect will create any missing caches on the remote Infinispan cluster.
 
-By default all caches created use the default Infinispan configuration,
-so by default all caches are created without a specific Infinispan configuration.
+By default all caches created use the __OGM default configuration__:
+====
+[source, XML]
+----
+<infinispan><cache-container>
+  <distributed-cache-configuration name="configuration">
+     <locking striping="false" acquire-timeout="10000" concurrency-level="50" isolation="READ_COMMITTED"/>
+     <transaction mode="NON_DURABLE_XA" />
+     <expiration max-idle="-1" />
+     <indexing index="NONE" />
+     <state-transfer timeout="480000" await-initial-transfer="true" />
+  </distributed-cache-configuration>
+</cache-container></infinispan>"
+====
 
 To apply a custom configuration to a newly created cache
 we need a previously defined cache or an existing __cache configuration__ on the remote Infinispan server to use as templates.
@@ -2703,7 +2715,7 @@ Then:
 
 [IMPORTANT]
 ====
-Cache configurations can be used to enable transactional behaviour for the caches.
+__OGM default configuration__ is transactional.
 
 We always recommend using transactional caches, at least unless you are confident that data consistency is not important for your use case.
 ====

@@ -83,4 +83,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1717, value = "Invalid Proto file name <%s>. Proto file name should match the pattern: *.proto")
 	HibernateException invalidProtoFileName(String protoFileName);
 
+	@Message(id = 1718, value = "The remote cache configurations '%s' were expected to exist but are not defined on the server")
+	HibernateException expectedCacheConfiguratiosNotDefined(@FormatWith(StringSetFormatter.class) Set<String> cacheConfigurationNames);
+
+	@Message(id = 1719, value = "Error during caches start phase")
+	HibernateException errorAtCachesStart(@Cause Exception cause);
+
 }
