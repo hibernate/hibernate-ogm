@@ -8,11 +8,15 @@ package org.hibernate.ogm.datastore.infinispanremote.impl;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
+import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheHandler;
+import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheCreationHandler;
+import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheValidationHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMapper;
@@ -35,12 +39,14 @@ import org.hibernate.service.spi.Stoppable;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 
 /**
  * @author Sanne Grinovero
+ * @author Fabio Massimo Ercoli
  */
 public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 				implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
@@ -84,7 +90,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	private HotRodSequenceHandler sequences;
 
 	@EffectivelyFinal
-	private HotRodCacheCreationHandler cacheCreation;
+	private HotRodCacheHandler cacheHandler;
 
 	@EffectivelyFinal
 	private SchemaDefinitions sd;
@@ -105,10 +111,6 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		hotrodClient = HotRodClientBuilder.builder().withConfiguration( config, marshaller ).build();
 		hotrodClient.start();
 		config = null; //no longer needed
-	}
-
-	public RemoteCacheManager getRemoteCacheManager() {
-		return hotrodClient;
 	}
 
 	@Override
@@ -154,8 +156,19 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
 
-		cacheCreation = new HotRodCacheCreationHandler( createCachesEnabled, cacheConfiguration, sd.getCacheConfigurationByName() );
-		cacheCreation.startAndValidateCaches( hotrodClient );
+		if ( createCachesEnabled ) {
+			cacheHandler = new HotRodCacheCreationHandler( cacheConfiguration, sd.getCacheConfigurationByName() );
+		}
+		else {
+			cacheHandler = new HotRodCacheValidationHandler( sd.getCacheConfigurationByName().keySet() );
+		}
+
+		try {
+			cacheHandler.startAndValidateCaches( hotrodClient );
+		}
+		catch ( HotRodClientException ex ) {
+			log.errorAtCachesStart( ex );
+		}
 
 		perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
 	}
@@ -175,11 +188,11 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	}
 
 	public String getConfiguration(String cacheName) {
-		return cacheCreation.getConfiguration( cacheName );
+		return cacheHandler.getConfiguration( cacheName );
 	}
 
 	public Set<String> getMappedCacheNames() {
-		return cacheCreation.getMappedCacheNames();
+		return cacheHandler.getCaches();
 	}
 
 	public ProtoStreamMappingAdapter getDataMapperForCache(String cacheName) {
@@ -202,7 +215,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	public <K, V> RemoteCache<K, V> getCache(String cacheName) {
 		RemoteCache<K,V> cache = hotrodClient.getCache( cacheName );
 		if ( cache == null ) {
-			throw log.expectedCacheNotDefined( cacheName );
+			throw log.expectedCachesNotDefined( Collections.singleton( cacheName ) );
 		}
 		return cache;
 	}

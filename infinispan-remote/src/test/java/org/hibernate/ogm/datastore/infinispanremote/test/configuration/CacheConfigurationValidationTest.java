@@ -121,7 +121,7 @@ public class CacheConfigurationValidationTest {
 	public void test_configurationDefinedByAnnotation_butDoesNotExist() {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage(
-				"OGM001709: The remote cache 'notExist' was expected to exist but is not defined on the server" );
+				"OGM001718: The remote cache configurations '[notExist]' were expected to exist but are not defined on the server" );
 
 		TestHelper.getDefaultTestSessionFactory( NotExistCacheConfigurationEntity.class );
 		fail( "Expected exception at Hibernate factory creation time was not raised" );
@@ -131,7 +131,7 @@ public class CacheConfigurationValidationTest {
 	public void test_configurationDefinedByProperty_butDoesNotExist() {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage(
-				"OGM001709: The remote cache 'notExist' was expected to exist but is not defined on the server" );
+				"OGM001718: The remote cache configurations '[notExist]' were expected to exist but are not defined on the server" );
 
 		TestHelper.getDefaultTestSessionFactory(
 				Collections.singletonMap( InfinispanRemoteProperties.CACHE_CONFIGURATION, "notExist" ),
