@@ -45,7 +45,7 @@ public class CacheNotDefinedTest {
 	@Test
 	public void undefinedCacheOnServer() throws Exception {
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM001709: " );
+		thrown.expectMessage( "OGM001710: " );
 
 		createFactory( EntityCache.class );
 	}

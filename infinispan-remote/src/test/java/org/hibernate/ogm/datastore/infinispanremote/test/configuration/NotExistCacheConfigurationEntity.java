@@ -4,18 +4,21 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispanremote.test.template;
+package org.hibernate.ogm.datastore.infinispanremote.test.configuration;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
+
 /**
- * This class not declare a cache as a template
+ * Used a NOT existing cache configuration
  *
  * @author Fabio Massimo Ercoli
  */
 @Entity
-public class NoAnnotationEntity {
+@CacheConfiguration("notExist")
+public class NotExistCacheConfigurationEntity {
 
 	@Id
 	private String id;

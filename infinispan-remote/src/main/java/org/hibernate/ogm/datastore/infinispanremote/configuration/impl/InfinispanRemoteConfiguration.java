@@ -108,7 +108,7 @@ public class InfinispanRemoteConfiguration {
 
 	private boolean createCachesEnabled;
 
-	private String newCacheTemplate;
+	private String cacheConfiguration;
 
 	/**
 	 * The location of the configuration file.
@@ -149,8 +149,8 @@ public class InfinispanRemoteConfiguration {
 		return createCachesEnabled;
 	}
 
-	public String getNewCacheTemplate() {
-		return newCacheTemplate;
+	public String getCacheConfiguration() {
+		return cacheConfiguration;
 	}
 
 	/**
@@ -196,8 +196,8 @@ public class InfinispanRemoteConfiguration {
 				.withDefault( false )
 				.getValue();
 
-		this.newCacheTemplate = propertyReader
-				.property( InfinispanRemoteProperties.NEW_CACHE_TEMPLATE, String.class )
+		this.cacheConfiguration = propertyReader
+				.property( InfinispanRemoteProperties.CACHE_CONFIGURATION, String.class )
 				.withDefault( null )
 				.getValue();
 

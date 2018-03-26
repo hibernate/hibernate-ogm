@@ -2601,16 +2601,28 @@ expected, but not found. We plan to automate the creation of missing caches in t
 The Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
 When this property is enabled the dialect will create any missing caches on the remote Infinispan cluster.
 
-By default all caches created use the default Infinispan configuration,
-so by default all caches are created without a specific Infinispan configuration.
+By default all caches created use the __OGM default configuration__:
+====
+[source, XML]
+----
+<infinispan><cache-container>
+  <distributed-cache-configuration name="configuration">
+     <locking striping="false" acquire-timeout="10000" concurrency-level="50" isolation="READ_COMMITTED"/>
+     <transaction mode="NON_DURABLE_XA" />
+     <expiration max-idle="-1" />
+     <indexing index="NONE" />
+     <state-transfer timeout="480000" await-initial-transfer="true" />
+  </distributed-cache-configuration>
+</cache-container></infinispan>"
+====
 
 To apply a custom configuration to a newly created cache
 we need a previously defined cache or an existing __cache configuration__ on the remote Infinispan server to use as templates.
 
 There are two alternative ways to apply a cache configuration to new caches:
 
-* Using the dialect property: ``hibernate.ogm.datastore.template_for_new_caches``
-* Using the ``@CacheTemplate`` annotation on Entity class
+* Using the dialect property: ``hibernate.ogm.datastore.cache_configuration``
+* Using the ``@CacheConfiguration`` annotation on Entity class
 
 The property is applied to all new caches, it means for all Entities. So property has a global scope.
 
@@ -2626,7 +2638,7 @@ Any configuration being referred to when when creating new Caches need to be pre
 or an exception will thrown.
 ====
 
-Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheTemplateEntity__:
+Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheConfigurationEntity__:
 
 ====
 [source, JAVA]
@@ -2646,19 +2658,19 @@ public class NoAnnotationEntity {
 ----
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheTemplate;
+import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
 
 @Entity
-@CacheTemplate("transactional") # <2>
-public class CacheTemplateEntity {
+@CacheConfiguration("transactional") # <2>
+public class CacheConfigurationEntity {
 
 	@Id
 	private String id;
 
 }
 ----
-<1> __NoAnnotationEntity__ Entity does not make use of `@CacheTemplate` annotation
-<2> __CacheTemplateEntity__ Entity declares instead to use a cache, named __transactional__, as a template configuration
+<1> __NoAnnotationEntity__ Entity does not make use of `@CacheConfiguration` annotation
+<2> __CacheConfigurationEntity__ Entity declares instead to use a configuration, named __transactional__
 ====
 
 Bundled with a __persistence.xml__ such that:
@@ -2680,30 +2692,30 @@ Bundled with a __persistence.xml__ such that:
 				value="hotrodclient.properties" />
 			<property name="hibernate.ogm.datastore.create_database"
 				value="true" /> # <1>
-			<property name="hibernate.ogm.datastore.template_for_new_caches"
+			<property name="hibernate.ogm.datastore.cache_configuration"
 				value="default" /> # <2>
 		</properties>
 	</persistence-unit>
 </persistence>
 ----
 <1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
-<2> Property ``hibernate.ogm.datastore.template_for_new_caches`` defines a template,
+<2> Property ``hibernate.ogm.datastore.cache_configuration`` defines a configuration,
 named __default__, to apply to all created caches
 ====
 
 Assuming that:
 
 * Caches __default__ and __transactional__ are **present** on Infinispan server configuration.
-* Caches __NoAnnotationEntity__ and __CacheTemplateEntity__ are instead **NOT present** on Infinispan server configuration.
+* Caches __NoAnnotationEntity__ and __CacheConfigurationEntity__ are instead **NOT present** on Infinispan server configuration.
 
 Then:
 
 * Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache configuration.
-* Cache __CacheTemplateEntity__ will be created by the dialect using __transactional__ as a cache configuration.
+* Cache __CacheConfigurationEntity__ will be created by the dialect using __transactional__ as a cache configuration.
 
 [IMPORTANT]
 ====
-Cache configurations can be used to enable transactional behaviour for the caches.
+__OGM default configuration__ is transactional.
 
 We always recommend using transactional caches, at least unless you are confident that data consistency is not important for your use case.
 ====

@@ -52,8 +52,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1708, value = "Error during parse of Protobuf schema")
 	HibernateException errorAtProtobufParsing(@Cause Exception e);
 
-	@Message(id = 1709, value = "The remote cache '%s' was expected to exist but is not defined on the server")
-	HibernateException expectedCacheNotDefined(String cacheName);
+	@Message(id = 1709, value = "Error during caches start phase")
+	HibernateException errorAtCachesStart(@Cause Exception cause);
 
 	@Message(id = 1710, value = "The remote caches '%s' were expected to exist but are not defined on the server")
 	HibernateException expectedCachesNotDefined(@FormatWith(StringSetFormatter.class) Set<String> cacheNames);
@@ -82,5 +82,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1717, value = "Invalid Proto file name <%s>. Proto file name should match the pattern: *.proto")
 	HibernateException invalidProtoFileName(String protoFileName);
+
+	@Message(id = 1718, value = "The remote cache configurations '%s' were expected to exist but are not defined on the server")
+	HibernateException expectedCacheConfiguratiosNotDefined(@FormatWith(StringSetFormatter.class) Set<String> cacheConfigurationNames);
 
 }
