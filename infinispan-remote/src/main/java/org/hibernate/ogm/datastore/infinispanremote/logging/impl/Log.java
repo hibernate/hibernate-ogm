@@ -52,9 +52,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1708, value = "Error during parse of Protobuf schema")
 	HibernateException errorAtProtobufParsing(@Cause Exception e);
 
-	@Message(id = 1709, value = "The remote cache '%s' was expected to exist but is not defined on the server")
-	HibernateException expectedCacheNotDefined(String cacheName);
-
 	@Message(id = 1710, value = "The remote caches '%s' were expected to exist but are not defined on the server")
 	HibernateException expectedCachesNotDefined(@FormatWith(StringSetFormatter.class) Set<String> cacheNames);
 
