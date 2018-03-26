@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.test.id.objectid;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -71,5 +72,32 @@ public class Bar {
 
 	public void setDoorMen(Set<DoorMan> doorMen) {
 		this.doorMen = doorMen;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( doorMen == null ) ? 0 : doorMen.hashCode() );
+		result = prime * result + ( ( musicGenre == null ) ? 0 : musicGenre.hashCode() );
+		result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if ( this == obj ) {
+			return true;
+		}
+		if ( obj == null ) {
+			return false;
+		}
+		if ( getClass() != obj.getClass() ) {
+			return false;
+		}
+		Bar other = (Bar) obj;
+		return Objects.equals( doorMen, other.doorMen )
+				&& Objects.equals( musicGenre, other.musicGenre )
+				&& Objects.equals( name, other.name );
 	}
 }
