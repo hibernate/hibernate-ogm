@@ -38,6 +38,21 @@ public class ObjectIdJpaTest extends OgmJpaTestCase {
 	}
 
 	@Test
+	public void testQueryWithParameter() {
+		Bar blackPearl = new Bar( "Black Pearl" );
+		inTransaction( ( em ) -> {
+			em.persist( blackPearl );
+		} );
+		inTransaction( ( em ) -> {
+			Bar found = em.createQuery( "FROM Bar b WHERE b.id = :id", Bar.class )
+					.setParameter( "id", blackPearl.getId() )
+					.getSingleResult();
+
+			assertThat( found ).isEqualTo( blackPearl );
+		} );
+	}
+
+	@Test
 	public void canUseObjectIdAssignedUponInsertInOneToManyAssociation() throws Exception {
 		em.getTransaction().begin();
 		// given
