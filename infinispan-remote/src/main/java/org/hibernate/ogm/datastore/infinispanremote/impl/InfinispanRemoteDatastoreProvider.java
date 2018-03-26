@@ -142,35 +142,46 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	public void registerSchemaDefinitions(SchemaDefinitions sd) {
 		this.sd = sd;
-		sd.validateSchema();
-		RemoteCache<String,String> protobufCache = getProtobufCache();
-		sd.deploySchema( schemaFileName, protobufCache, schemaCapture, schemaOverrideService );
+		this.sd.validateSchema();
+		RemoteCache<String, String> protobufCache = getProtobufCache();
+		this.sd.deploySchema( schemaFileName, protobufCache, schemaCapture, schemaOverrideService );
 
 		// register proto schema also to global serialization context used for unmarshalling
+		registerProtoFiles( marshaller, sd );
+
+		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
+		this.cacheHandler = createCacheHandler( sd );
+
+		startCaches( cacheHandler, hotrodClient );
+
+		this.perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
+	}
+
+	private void registerProtoFiles(OgmProtoStreamMarshaller marshaller, SchemaDefinitions sd) {
 		try {
 			marshaller.getSerializationContext().registerProtoFiles( sd.asFileDescriptorSource() );
 		}
 		catch (DescriptorParserException | IOException e) {
 			throw log.errorAtProtobufParsing( e );
 		}
+	}
 
-		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
-
-		if ( createCachesEnabled ) {
-			cacheHandler = new HotRodCacheCreationHandler( cacheConfiguration, sd.getCacheConfigurationByName() );
-		}
-		else {
-			cacheHandler = new HotRodCacheValidationHandler( sd.getCacheConfigurationByName().keySet() );
-		}
-
+	private void startCaches(HotRodCacheHandler cacheHandler, RemoteCacheManager hotrodClient) {
 		try {
 			cacheHandler.startAndValidateCaches( hotrodClient );
 		}
-		catch ( HotRodClientException ex ) {
+		catch (HotRodClientException ex) {
 			throw log.errorAtCachesStart( ex );
 		}
+	}
 
-		perCacheSchemaMappers = sd.generateSchemaMappingAdapters( this, sd, marshaller );
+	private HotRodCacheHandler createCacheHandler(SchemaDefinitions sd) {
+		if ( createCachesEnabled ) {
+			return new HotRodCacheCreationHandler( cacheConfiguration, sd.getCacheConfigurationByName() );
+		}
+		else {
+			return new HotRodCacheValidationHandler( sd.getCacheConfigurationByName().keySet() );
+		}
 	}
 
 	private RemoteCache<String, String> getProtobufCache() {
@@ -219,6 +230,4 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		}
 		return cache;
 	}
-
-
 }
