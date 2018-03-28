@@ -1,6 +1,21 @@
 Hibernate OGM Changelog
 =======================
 
+5.3.1.Final (28-03-2018)
+-------------------------
+
+** Bug
+    * OGM-1416 -                - org.hibernate.PropertyAccessException with MongoDB Native Query. Null assigned to primitve 
+    * OGM-1411 - mongodb, tests - MongoDB native query with pagination on aggregate: empty-results for subsequent runs
+    * OGM-1375 - core, mongodb  - We shouldn't create partial entities from a native query
+
+** Improvement
+    * OGM-1436 - core           - Update to Hibernate ORM 5.2.16
+    * OGM-1422 - documentation  - Typo in examples, tests and documentation: Vehicule should be Vehicle
+    * OGM-1418 - documentation  - Fix README.md about running the tests with a Neo4j server
+    * OGM-1415 - core           - Upgrade to Hibernate ORM 5.2.15.Final
+    * OGM-1414 - documentation  - Documentation states it's about WildFly 10, whereas it's about 11 (and soon 12)
+
 5.3.0.Final (20-02-2018)
 -------------------------
 
