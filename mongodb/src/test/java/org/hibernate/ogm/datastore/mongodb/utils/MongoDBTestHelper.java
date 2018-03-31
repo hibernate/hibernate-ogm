@@ -8,12 +8,14 @@
 package org.hibernate.ogm.datastore.mongodb.utils;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.mongodb.client.MongoIterable;
 import org.bson.BsonDocument;
 import org.bson.BsonJavaScript;
 import org.bson.Document;
@@ -334,5 +336,11 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 	private BsonDocument serverSideFunction(String code) {
 		BsonDocument simpleValueFunction = new BsonDocument( "value", new BsonJavaScript( code ) );
 		return simpleValueFunction;
+	}
+
+	public static boolean collectionExists(SessionFactory sessionFactory, String collectionName) {
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		MongoIterable<String> listCollectionNames = provider.getDatabase().listCollectionNames();
+		return listCollectionNames.into( new ArrayList<>() ).contains( collectionName );
 	}
 }

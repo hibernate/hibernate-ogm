@@ -7,16 +7,22 @@
 package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.collectionExists;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.fest.assertions.Fail;
 import org.fest.assertions.MapAssert;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.query.NativeQuery;
@@ -36,7 +42,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", 1881, 15 );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", 1879, 37, (byte) 5, "ebook" );
 	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde", 1882, 48, (byte) 5, "audible", "ebook", "paperback" );
-
+	private final MarkTwainPoem genius = new MarkTwainPoem( 1L, "Genius", "Mark Twain" );
 
 	@Before
 	public void init() {
@@ -45,6 +51,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			session.persist( portia );
 			session.persist( athanasia );
 			session.persist( imperatrix );
+			session.persist( genius );
 			tx.commit();
 		}
 	}
@@ -56,7 +63,15 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			delete( session, portia );
 			delete( session, athanasia );
 			delete( session, imperatrix );
+			delete( session, genius );
 			tx.commit();
+		}
+	}
+
+	private void delete(final Session session, final MarkTwainPoem poem) {
+		Object entity = session.get( MarkTwainPoem.class, poem.getId() );
+		if ( entity != null ) {
+			session.delete( entity );
 		}
 	}
 
@@ -1079,7 +1094,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[] { OscarWildePoem.class };
+		return new Class[] { OscarWildePoem.class, MarkTwainPoem.class };
 	}
 
 	@Test
@@ -1245,4 +1260,47 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		}
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-1433")
+	public void testDropCollection() {
+		try ( OgmSession session = openSession() ) {
+			Transaction transaction = session.beginTransaction();
+			assertThat( collectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isTrue();
+
+			String nativeQuery = "db." + MarkTwainPoem.TABLE_NAME + ".drop()";
+			int result = session.createNativeQuery( nativeQuery ).executeUpdate();
+			assertThat( result ).isEqualTo( 1 );
+			assertThat( collectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isFalse();
+			assertThat( collectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
+			transaction.commit();
+			session.clear();
+		}
+	}
+
+
+	/**
+	 * This class is solely created for testing {@link #testDropCollection()}
+	 */
+	@Entity
+	@Table(name = MarkTwainPoem.TABLE_NAME)
+	private static class MarkTwainPoem {
+		static final String TABLE_NAME = "MARK_TWAIN_POEM";
+
+		@Id
+		private Long id;
+
+		private String name;
+
+		private String author;
+
+		MarkTwainPoem(Long id, String name, String author) {
+			this.id = id;
+			this.name = name;
+			this.author = author;
+		}
+
+		Long getId() {
+			return id;
+		}
+	}
 }

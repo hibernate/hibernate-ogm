@@ -931,6 +931,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			case UPDATEONE:
 			case UPDATEMANY:
 				return doUpdate( queryDescriptor, collection, queryDescriptor.getOperation() );
+			case DROP:
+				return doDrop( collection );
 			case FIND:
 			case FINDONE:
 			case FINDANDMODIFY:
@@ -1381,6 +1383,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		long count = collection.count( query.getCriteria() );
 		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", count ) );
 		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot, SnapshotType.UNKNOWN ) ) );
+	}
+
+	/**
+	 * do 'Drop' operation.
+	 * <p>
+	 * At the moment, this method always returns 1 because the underlying driver doesn't return any value
+	 * after the execution of the command.
+	 *
+	 * @see <a href ="https://docs.mongodb.com/manual/reference/method/db.collection.drop/">Drop Collection</a>
+	 */
+	private static int doDrop(MongoCollection<Document> collection) {
+		collection.drop();
+		return 1;
 	}
 
 	/**
