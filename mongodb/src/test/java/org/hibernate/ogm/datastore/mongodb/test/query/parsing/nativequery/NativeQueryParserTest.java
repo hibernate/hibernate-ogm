@@ -197,6 +197,21 @@ public class NativeQueryParserTest {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1433")
+	public void shouldParseDropCollectionQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		String query = "db.Order.drop()";
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( query );
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DROP );
+		assertThat( queryDescriptor.getCriteria() ).isNull();
+		assertThat( queryDescriptor.getOptions() ).isNull();
+		assertThat( queryDescriptor.getProjection() ).isNull();
+	}
+
+	@Test
 	public void shouldParseSimplifiedFindQuery() {
 		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )

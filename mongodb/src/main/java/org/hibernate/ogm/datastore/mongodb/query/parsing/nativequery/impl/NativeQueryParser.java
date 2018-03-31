@@ -43,6 +43,7 @@ import org.parboiled.annotations.SuppressSubnodes;
  * <li>aggregate(criteria)</li>
  * <li>distinct(fieldName,criteria,options)</li>
  * <li>mapReduce(mapFunction,reduceFunction,options)</li>
+ * <li>drop()</li>
  * </ul>
  * The parameter values must be given as JSON objects adhering to the <a
  * href="http://docs.mongodb.org/manual/reference/mongodb-extended-json/">strict mode</a> of MongoDB's JSON handling,
@@ -133,6 +134,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Aggregate(),
 				Distinct(),
 				MapReduce(),
+				Drop(),
 				Sequence( Optional( Ident(), peek().setOperationName( match() ) ), ACTION( false ) )
 		);
 	}
@@ -362,6 +364,16 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Sequence( JsonString(), peek().setMapFunction( readStringFromJson( match() ) ) ),
 				Sequence( ", ", JsonString(), peek().setReduceFunction( readStringFromJson( match() ) ) ),
 				Optional( Sequence( ", ", JsonParameter( JsonObject() ), peek().setOptions( match() ) ) ),
+				peek().setParametersValid( true ),
+				") "
+		);
+	}
+
+	public Rule Drop() {
+		return Sequence(
+				"drop",
+				peek().setOperation( Operation.DROP ),
+				"( ",
 				peek().setParametersValid( true ),
 				") "
 		);
