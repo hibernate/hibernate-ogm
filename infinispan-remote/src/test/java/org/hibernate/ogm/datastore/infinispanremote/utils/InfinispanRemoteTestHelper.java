@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.utils;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +30,9 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatasto
 import org.hibernate.ogm.datastore.infinispanremote.impl.ProtoStreamMappingAdapter;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamId;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamPayload;
+import org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures.ExceptionalProcedure;
+import org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures.ResultSetProcedure;
+import org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures.SimpleValueProcedure;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -46,10 +51,19 @@ import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.query.dsl.Query;
 
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+
 /**
  * @author Sanne Grinovero (C) 2015 Red Hat Inc.
  */
 public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
+
+	private static final String SERVER_TASK_META_INF_RESOURCE_DIRECTORY = "/storedprocedures/servertask";
+
+	private static final String SERVER_TASK_META_INF_TARGET_FILE = "/META-INF/services/org.infinispan.tasks.ServerTask";
+	private static final String INFINISPAN_DEPLOYMENTS_DIRECTORY = "target/infinispan-server/standalone/deployments";
 
 	@Override
 	public void prepareDatabase(SessionFactory sessionFactory) {
@@ -162,6 +176,33 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 
 	// Various static helpers below:
 
+	public static void clearScriptStoredProcedures(SessionFactory sessionFactory) {
+		InfinispanRemoteDatastoreProvider provider = getProvider( sessionFactory );
+		RemoteCache<Object, Object> scriptCache = provider.getScriptCache();
+		scriptCache.remove( Car.SIMPLE_VALUE_PROC );
+		scriptCache.remove( Car.RESULT_SET_PROC );
+		scriptCache.remove( "exceptionalProcedure" );
+	}
+
+	public static void deployJavaStoredProcedures() {
+		ShrinkWrap.create( JavaArchive.class, "simple-value-procedure.jar" )
+				.addClass( SimpleValueProcedure.class )
+				.addAsResource( asResource( SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/simple-value-procedure" ), SERVER_TASK_META_INF_TARGET_FILE )
+				.as( ZipExporter.class )
+				.exportTo( new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + "/simple-value-procedure.jar" ), true );
+		ShrinkWrap.create( JavaArchive.class, "result-set-procedure.jar" )
+				.addClass( Car.class )
+				.addClass( ResultSetProcedure.class )
+				.addAsResource( asResource( SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/result-set-procedure" ), SERVER_TASK_META_INF_TARGET_FILE )
+				.as( ZipExporter.class )
+				.exportTo( new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + "/result-set-procedure.jar" ), true );
+		ShrinkWrap.create( JavaArchive.class, INFINISPAN_DEPLOYMENTS_DIRECTORY + "exceptional-procedure.jar" )
+				.addClass( ExceptionalProcedure.class )
+				.addAsResource( asResource( SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/exceptional-procedure" ), SERVER_TASK_META_INF_TARGET_FILE )
+				.as( ZipExporter.class )
+				.exportTo( new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + "/exceptional-procedure.jar" ), true );
+	}
+
 	private static SessionFactoryImplementor getSessionFactoryImplementor(SessionFactory sessionFactory) {
 		return ( (SessionFactoryImplementor) sessionFactory );
 	}
@@ -176,6 +217,10 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			throw new RuntimeException( "Not testing with Infinispan Remote, cannot extract underlying cache" );
 		}
 		return InfinispanRemoteDatastoreProvider.class.cast( provider );
+	}
+
+	private static URL asResource(String resource) {
+		return InfinispanRemoteTestHelper.class.getResource( resource );
 	}
 
 	private static String toResourceString(String path) {

@@ -30,7 +30,11 @@ public class InfinispanRemoteStoredProceduresManager {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
+	// this is the error pattern specified in Infinispan scripting engine, so far there is only way
+	// to know whether the undefined parameters are being used.
+	// TODO: switch to error code based pattern when Infinispan provides such opportunity.
 	private static final Pattern REFERENCE_ERROR_REGEXP = Pattern.compile( ".*\"([a-zA-Z_$]+)\" is not defined in <eval>.*" );
+	private static final String UNKNOWN_TASK_ERROR_ID = "ISPN027002";
 
 	/**
 	 * Returns the result of a stored procedure executed on the backend.
@@ -42,10 +46,6 @@ public class InfinispanRemoteStoredProceduresManager {
 	 * @return a {@link ClosableIterator} with the result of the query
 	 */
 	public ClosableIterator<Tuple> callStoredProcedure( InfinispanRemoteDatastoreProvider provider, String storedProcedureName, ProcedureQueryParameters queryParameters ) {
-		RemoteCache<Object, Object> scripts = provider.getScriptCache();
-		if ( scripts.get( storedProcedureName ) == null ) {
-			throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, null );
-		}
 		validate( queryParameters );
 		RemoteCache<Object, Object> executor = provider.getScriptExecutorCache();
 		Object res = execute( executor, storedProcedureName, queryParameters );
@@ -65,8 +65,13 @@ public class InfinispanRemoteStoredProceduresManager {
 			return executor.execute( storedProcedureName, namedParameters );
 		}
 		catch (Exception e) {
-			if ( e instanceof HotRodClientException ) {
-				Matcher matcher = REFERENCE_ERROR_REGEXP.matcher( e.getMessage() );
+			String msg = e.getMessage();
+			if ( e instanceof HotRodClientException && msg != null ) {
+				// parse undefined task exception, e.g. ISPN027002: Unknown task 'storedProcedureName'"
+				if ( msg.contains( UNKNOWN_TASK_ERROR_ID ) ) {
+					throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, e );
+				}
+				Matcher matcher = REFERENCE_ERROR_REGEXP.matcher( msg );
 				if ( matcher.find() ) {
 					String param = matcher.group( 1 );
 					if ( param != null && !param.isEmpty() ) {
