@@ -42,10 +42,6 @@ public class InfinispanRemoteStoredProceduresManager {
 	 * @return a {@link ClosableIterator} with the result of the query
 	 */
 	public ClosableIterator<Tuple> callStoredProcedure( InfinispanRemoteDatastoreProvider provider, String storedProcedureName, ProcedureQueryParameters queryParameters ) {
-		RemoteCache<Object, Object> scripts = provider.getScriptCache();
-		if ( scripts.get( storedProcedureName ) == null ) {
-			throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, null );
-		}
 		validate( queryParameters );
 		RemoteCache<Object, Object> executor = provider.getScriptExecutorCache();
 		Object res = execute( executor, storedProcedureName, queryParameters );
@@ -65,8 +61,13 @@ public class InfinispanRemoteStoredProceduresManager {
 			return executor.execute( storedProcedureName, namedParameters );
 		}
 		catch (Exception e) {
-			if ( e instanceof HotRodClientException ) {
-				Matcher matcher = REFERENCE_ERROR_REGEXP.matcher( e.getMessage() );
+			String msg = e.getMessage();
+			if ( e instanceof HotRodClientException && msg != null ) {
+				// parse undefined task exception, e.g. ISPN027002: Unknown task 'storedProcedureName'"
+				if ( msg.contains( "ISPN027002" ) ) {
+					throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, e );
+				}
+				Matcher matcher = REFERENCE_ERROR_REGEXP.matcher( msg );
 				if ( matcher.find() ) {
 					String param = matcher.group( 1 );
 					if ( param != null && !param.isEmpty() ) {

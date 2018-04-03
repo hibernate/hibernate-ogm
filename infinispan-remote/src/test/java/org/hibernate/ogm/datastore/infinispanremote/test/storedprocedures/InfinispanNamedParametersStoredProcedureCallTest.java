@@ -11,13 +11,11 @@ import javax.persistence.PersistenceException;
 import javax.persistence.StoredProcedureQuery;
 
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
+import org.hibernate.ogm.backendtck.storedprocedures.NamedParametersStoredProcedureCallTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 /**
@@ -27,10 +25,7 @@ import org.junit.runner.RunWith;
  */
 @TestForIssue(jiraKey = { "OGM-1430" })
 @RunWith(InfinispanRemoteJpaServerRunner.class)
-public class InfinispanNamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
+public class InfinispanNamedParametersStoredProcedureCallTest extends NamedParametersStoredProcedureCallTest {
 
 	@Test
 	public void testExceptionWhenUsePositionalParameters() throws Exception {
@@ -42,10 +37,5 @@ public class InfinispanNamedParametersStoredProcedureCallTest extends OgmJpaTest
 			storedProcedureQuery.setParameter( 0, 1 );
 			storedProcedureQuery.getSingleResult();
 		} );
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[] { Car.class };
 	}
 }

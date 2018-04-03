@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.storedprocedures;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.persistence.Entity;
@@ -66,7 +67,7 @@ import javax.persistence.StoredProcedureParameter;
 			})
 })
 @SqlResultSetMapping(name = "carMapping", entities = { @EntityResult(entityClass = Car.class) })
-public class Car {
+public class Car implements Serializable {
 
 	public static final String SIMPLE_VALUE_PROC = "simpleValueProcedure";
 	public static final String UNIQUE_VALUE_PROC_PARAM = "param";

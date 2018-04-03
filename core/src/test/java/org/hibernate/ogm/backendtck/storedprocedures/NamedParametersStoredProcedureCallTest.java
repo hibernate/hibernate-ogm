@@ -61,7 +61,7 @@ public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
 	protected EntityManager em;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		em = getFactory().createEntityManager();
 	}
 
