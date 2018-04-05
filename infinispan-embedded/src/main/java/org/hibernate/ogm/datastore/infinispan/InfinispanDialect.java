@@ -6,12 +6,20 @@
  */
 package org.hibernate.ogm.datastore.infinispan;
 
+import java.beans.IntrospectionException;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.hibernate.LockMode;
@@ -22,9 +30,12 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
+import org.hibernate.ogm.datastore.infinispan.util.ReflectionHelper;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -38,6 +49,7 @@ import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -47,11 +59,15 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.persister.entity.Lockable;
+
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stream.CacheCollectors;
 
 /**
@@ -62,7 +78,10 @@ import org.infinispan.stream.CacheCollectors;
  * @author Emmanuel Bernard
  * @author Fabio Massimo Ercoli
  */
-public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
+public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect
+		implements StoredProcedureAwareGridDialect {
+
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final InfinispanEmbeddedDatastoreProvider provider;
 
@@ -226,6 +245,93 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	@SuppressWarnings("unchecked")
 	private KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return (KeyProvider<EK, AK, ISK>) provider.getKeyProvider();
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext ) {
+		EmbeddedCacheManager embeddedCacheManager = getCacheManager().getCacheManager();
+		Cache<String, String> cache = embeddedCacheManager.getCache( "___stored_procedures", true );
+		String className = cache.getOrDefault( storedProcedureName, storedProcedureName );
+		Callable<?> callable = instantiate( storedProcedureName, className );
+		setParams( storedProcedureName, queryParameters, callable );
+		Object res = execute( storedProcedureName, embeddedCacheManager, callable );
+		return CollectionHelper.newClosableIterator( extractTuples( storedProcedureName, res ) );
+	}
+
+	private Object execute(String storedProcedureName, EmbeddedCacheManager embeddedCacheManager, Callable<?> callable) {
+		AtomicReference<Object> ref = new AtomicReference<>();
+		try {
+			return embeddedCacheManager.executor()
+					.submitConsumer( ecm -> execute( callable ), ( a, r, e ) -> {
+						if ( e != null ) {
+							if ( e instanceof InfinispanDialect.ExceptionWrapper ) {
+								throw log.cannotExecuteStoredProcedure( storedProcedureName, e.getCause() );
+							}
+							throw log.cannotExecuteStoredProcedure( storedProcedureName, e );
+						}
+						ref.set( r );
+					} )
+					.thenCompose( v -> CompletableFuture.supplyAsync( ref::get ) )
+					.get();
+		}
+		catch ( InterruptedException | ExecutionException e ) {
+			throw log.cannotExecuteStoredProcedure( storedProcedureName, e );
+		}
+	}
+
+	private static Callable<?> instantiate(String storedProcedureName, String className) {
+		try {
+			return ReflectionHelper.instantiate( className );
+		}
+		catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+			throw log.cannotInstantiateStoredProcedure( storedProcedureName, className, e );
+		}
+	}
+
+	private static void setParams( String storedProcedureName, ProcedureQueryParameters queryParameters, Callable<?> callable ) {
+		try {
+			ReflectionHelper.setFields( callable, queryParameters.getNamedParameters() );
+		}
+		catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+			throw log.cannotSetStoredProcedureParameters( storedProcedureName, queryParameters.getNamedParameters(), e );
+		}
+	}
+
+	private static Object execute(Callable<?> callable) {
+		try {
+			return callable.call();
+		}
+		catch (Exception e) {
+			throw new ExceptionWrapper( e );
+		}
+	}
+
+	private static List<Tuple> extractTuples(String storedProcedureName, Object retvalObj) {
+		Tuple tuple = new Tuple();
+		if ( retvalObj == null || ReflectionHelper.isPrimitiveRef( retvalObj.getClass() ) ) {
+			tuple.put( "result", retvalObj );
+		}
+		else {
+			extractTuple( storedProcedureName, retvalObj, tuple );
+		}
+		return Collections.singletonList( tuple );
+	}
+
+	private static void extractTuple(String storedProcedureName, Object retvalObj, Tuple tuple) {
+		try {
+			Map<String, Object> introspect = ReflectionHelper.introspect( retvalObj );
+			introspect.forEach( tuple::put );
+		}
+		catch (IntrospectionException | InvocationTargetException | IllegalAccessException e) {
+			throw log.cannotExtractStoredProcedureResultSet( storedProcedureName, retvalObj, e );
+		}
+	}
+
+	private static class ExceptionWrapper extends RuntimeException {
+
+		ExceptionWrapper(Throwable cause) {
+			super( cause );
+		}
 	}
 
 	private class InfinispanTuplesSupplier<SEK> implements TuplesSupplier {

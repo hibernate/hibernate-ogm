@@ -17,9 +17,11 @@ import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanEmbedded;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
@@ -37,9 +39,11 @@ import org.hibernate.ogm.utils.FileHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
+
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
@@ -47,6 +51,22 @@ import org.infinispan.atomic.FineGrainedAtomicMap;
 public class InfinispanTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	@Override
+	public void prepareDatabase(SessionFactory sessionFactory) {
+		super.prepareDatabase( sessionFactory );
+		InfinispanEmbeddedDatastoreProvider provider = getProvider( sessionFactory );
+		LocalCacheManager<?, ?, ?> lcm = provider.getCacheManager();
+		EmbeddedCacheManager ecm = lcm.getCacheManager();
+		registerStoredProcedures( ecm );
+	}
+
+	private void registerStoredProcedures(EmbeddedCacheManager ecm) {
+		Cache<Object, Object> storedProcedures = ecm.getCache( "___stored_procedures" );
+		storedProcedures.put( Car.RESULT_SET_PROC, "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ResultSetProcedure" );
+		storedProcedures.put( Car.SIMPLE_VALUE_PROC, "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.SimpleValueProcedure" );
+		storedProcedures.put( "exceptionalProcedure", "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ExceptionalProcedure" );
+	}
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
