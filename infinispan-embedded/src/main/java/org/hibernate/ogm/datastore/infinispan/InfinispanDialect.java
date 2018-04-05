@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.LockMode;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
@@ -22,6 +23,7 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedStoredProceduresManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
@@ -38,6 +40,7 @@ import org.hibernate.ogm.dialect.spi.TransactionContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -47,11 +50,17 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
+import org.hibernate.ogm.util.impl.EffectivelyFinal;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
+
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stream.CacheCollectors;
 
 /**
@@ -62,12 +71,17 @@ import org.infinispan.stream.CacheCollectors;
  * @author Emmanuel Bernard
  * @author Fabio Massimo Ercoli
  */
-public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
+public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect implements StoredProcedureAwareGridDialect, ServiceRegistryAwareService {
 
 	private final InfinispanEmbeddedDatastoreProvider provider;
+	private final InfinispanEmbeddedStoredProceduresManager storedProceduresDelegate;
+
+	@EffectivelyFinal
+	private ClassLoaderService classLoaderService;
 
 	public InfinispanDialect(InfinispanEmbeddedDatastoreProvider provider) {
 		this.provider = provider;
+		storedProceduresDelegate = new InfinispanEmbeddedStoredProceduresManager();
 	}
 
 	/**
@@ -226,6 +240,17 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	@SuppressWarnings("unchecked")
 	private KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return (KeyProvider<EK, AK, ISK>) provider.getKeyProvider();
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext ) {
+		EmbeddedCacheManager embeddedCacheManager = getCacheManager().getCacheManager();
+		return storedProceduresDelegate.callStoredProcedure( embeddedCacheManager, storedProcedureName, queryParameters, classLoaderService );
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 	}
 
 	private class InfinispanTuplesSupplier<SEK> implements TuplesSupplier {
