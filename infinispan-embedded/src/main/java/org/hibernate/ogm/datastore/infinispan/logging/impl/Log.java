@@ -8,7 +8,9 @@ package org.hibernate.ogm.datastore.infinispan.logging.impl;
 
 import org.hibernate.HibernateException;
 import org.hibernate.service.spi.ServiceException;
+
 import org.infinispan.commons.marshall.AdvancedExternalizer;
+
 import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -60,4 +62,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1110, value = "Exception generating value for counter '%1$s'.")
 	HibernateException exceptionGeneratingValueForCounter(String counterName);
 
+	@Message(id = 1111, value = "Cannot instantiate stored procedure '%s' with resolved name '%s'.")
+	HibernateException cannotInstantiateStoredProcedure(String storedProcedureName, String className, @Cause Exception e);
 }
