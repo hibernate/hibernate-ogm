@@ -57,21 +57,6 @@
                             <outputDirectory>${project.build.directory}/lib/neo4j</outputDirectory>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>add-jbossmodules-to-dist</id>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <phase>install</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/dist/</outputDirectory>
-                            <includeGroupIds>${project.groupId}</includeGroupIds>
-                            <includeArtifactIds>hibernate-ogm-modules</includeArtifactIds>
-                            <includeTypes>zip</includeTypes>
-                            <includeClassifiers>${hibernateWildflyClassifier}</includeClassifiers>
-                            <excludeTransitive>true</excludeTransitive>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -170,12 +155,6 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hibernate-ogm-modules</artifactId>
-            <classifier>${hibernateWildflyClassifier}</classifier>
-            <type>zip</type>
-        </dependency>
     </dependencies>
 
     <profiles>

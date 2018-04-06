@@ -29,7 +29,6 @@
         <module>mongodb</module>
         <!-- <module>neo4j</module> Is only enabled when not running in Java 9: see the profiles section-->
         <module>jipijapa</module>
-        <!-- <module>modules</module> The modules require all of the above modules to be enabled -->
         <!-- <module>featurepack</module> WildFly feature pack modules require all of the above modules to be enabled -->
         <module>performance</module>
     </modules>
@@ -886,7 +885,6 @@
                 <module>infinispan-remote</module>
                 <module>neo4j</module>
                 <!-- The WildFly modules require the other modules to be enabled too -->
-                <module>modules</module>
                 <module>featurepack</module>
             </modules>
         </profile>
