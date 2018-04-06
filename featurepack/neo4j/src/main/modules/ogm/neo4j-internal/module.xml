@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.module.slot}">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.apache.lucene:lucene-core}" />
+        <artifact name="${org.apache.lucene:lucene-codecs}" />
+        <artifact name="${org.apache.lucene:lucene-backward-codecs}" />
+        <artifact name="${org.apache.lucene:lucene-queryparser}" />
+        <artifact name="${org.apache.lucene:lucene-analyzers-common}" />
+
+        <artifact name="${org.neo4j:neo4j-codegen}" />
+        <artifact name="${org.neo4j:neo4j-collections}" />
+        <artifact name="${org.neo4j:neo4j-common}" />
+        <artifact name="${org.neo4j:neo4j-configuration}" />
+
+        <artifact name="${org.neo4j:neo4j-cypher-compiler-2.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-compiler-3.1}" />
+        <artifact name="${org.neo4j:neo4j-cypher-compiler-3.2}" />
+        <artifact name="${org.neo4j:neo4j-cypher-compiler-3.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-frontend-2.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-frontend-3.1}" />
+        <artifact name="${org.neo4j:neo4j-cypher-frontend-3.2}" />
+        <artifact name="${org.neo4j:neo4j-cypher-frontend-3.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-ir-3.2}" />
+        <artifact name="${org.neo4j:neo4j-cypher-ir-3.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-logical-plans-3.3}" />
+
+        <artifact name="${org.neo4j:neo4j-graphdb-api}" />
+        <artifact name="${org.neo4j:neo4j-index}" />
+        <artifact name="${org.neo4j:neo4j-io}" />
+        <artifact name="${org.neo4j:neo4j-values}" />
+
+        <artifact name="${org.neo4j.driver:neo4j-java-driver}" />
+
+        <artifact name="${org.neo4j:neo4j-logging}" />
+        <artifact name="${org.neo4j:neo4j-lucene-index}" />
+        <artifact name="${org.neo4j:neo4j-lucene-upgrade}" />
+        <artifact name="${org.neo4j:neo4j-primitive-collections}" />
+        <artifact name="${org.neo4j:neo4j-resource}" />
+        <artifact name="${org.neo4j:neo4j-ssl}" />
+        <artifact name="${org.neo4j:neo4j-unsafe}" />
+
+        <!-- dependency of neo4j-ssl -->
+        <artifact name="${org.bouncycastle:bcpkix-jdk15on}" />
+        <artifact name="${org.bouncycastle:bcprov-jdk15on}" />
+
+        <artifact name="${io.netty:netty-all}" />
+
+        <!-- dependency of neo4j-cypher-compiler -->
+        <artifact name="${com.github.ben-manes.caffeine:caffeine}" />
+
+        <artifact name="${org.parboiled:parboiled-scala_2.11}" />
+
+        <artifact name="${org.scala-lang:scala-library}" />
+        <artifact name="${org.scala-lang:scala-reflect}" />
+        <artifact name="${com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru}" />
+        <artifact name="${org.apache.commons:commons-lang3}" />
+    </resources>
+
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+
+        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}"/>
+
+        <!-- neo4j-lucene-index requires the API in the Kernel -->
+        <module name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.module.slot}"/>
+
+        <!-- It requires sun.misc.Unsafe -->
+        <module name="sun.jdk" />
+    </dependencies>
+</module>

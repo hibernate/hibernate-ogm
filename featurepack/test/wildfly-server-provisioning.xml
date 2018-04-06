@@ -1,0 +1,30 @@
+<server-provisioning xmlns="urn:wildfly:server-provisioning:1.1">
+	<feature-packs>
+
+		<feature-pack
+			groupId="org.hibernate"
+			artifactId="hibernate-search-jbossmodules-orm"
+			version="${hibernateSearchVersion}" />
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-infinispan-remote"
+			version="${project.version}" />
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-infinispan-embedded"
+			version="${project.version}" />
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-mongodb"
+			version="${project.version}" />
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-neo4j"
+			version="${project.version}" />
+
+	</feature-packs>
+</server-provisioning>

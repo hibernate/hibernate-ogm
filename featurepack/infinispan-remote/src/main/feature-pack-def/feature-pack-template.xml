@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build xmlns="urn:wildfly:feature-pack-build:1.1">
+    <dependencies>
+        <artifact name="org.hibernate.ogm:hibernate-ogm-featurepack-core" />
+
+        <!-- Temporary repackaging of Infinispan client modules as a Wildfly feature pack -->
+        <!-- we can switch to Infinispan official, after solving issue: https://issues.jboss.org/browse/ISPN-8689 -->
+        <artifact name="org.hibernate.ogm:hibernate-ogm-featurepack-base-infinispan" />
+    </dependencies>
+</build>

@@ -18,11 +18,10 @@
 
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
-            convergence issues -->
-        <enforcer.skip>true</enforcer.skip>
-
         <maven.javadoc.skip>true</maven.javadoc.skip>
+
+        <!-- Skipping enforcer dependency convergence check as AS/Arquillian cause several dependency convergence issues -->
+        <enforcer.dependencyconvergence.skip>true</enforcer.dependencyconvergence.skip>
     </properties>
 
     <dependencyManagement>
@@ -137,34 +136,6 @@
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                     <overWrite>true</overWrite>
                                     <destFileName>${jpa22patch.filename}</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>unpack</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.infinispan</groupId>
-                                    <artifactId>infinispan-wildfly-modules</artifactId>
-                                    <version>${infinispanVersion}</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>hibernate-ogm-modules</artifactId>
-                                    <classifier>${hibernateWildflyClassifier}</classifier>
-                                    <version>${project.version}</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${jboss.home}/modules</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

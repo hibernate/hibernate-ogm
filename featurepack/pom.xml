@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-parent</artifactId>
+        <version>5.4.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>hibernate-ogm-featurepack</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Hibernate OGM WildFly Feature Pack</name>
+    <description>Hibernate OGM WildFly Feature Pack</description>
+
+    <properties>
+        <!-- Disable the dependency convergence rule, because the dependencies of WildFly feature packs do not converge -->
+        <enforcer.dependencyconvergence.skip>true</enforcer.dependencyconvergence.skip>
+
+        <feature-pack.dir>${project.build.directory}/feature-pack/src/main/resources</feature-pack.dir>
+        <template.dir>${feature-pack.dir}/modules/</template.dir>
+
+        <!-- Common slot -->
+        <hibernate.ogm.module.slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate.ogm.module.slot>
+        <hibernate.hql.module.slot>${hibernateHqlParserVersion}</hibernate.hql.module.slot>
+    </properties>
+
+    <modules>
+        <module>core</module>
+        <module>base-infinispan</module>
+        <module>infinispan-embedded</module>
+        <module>infinispan-remote</module>
+        <module>neo4j</module>
+        <module>mongodb</module>
+        <module>test</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>
