@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -24,6 +25,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.kernel.api.exceptions.TransactionFailureException;
 import org.neo4j.kernel.impl.factory.GraphDatabaseFacade;
 import org.neo4j.kernel.internal.GraphDatabaseAPI;
 
@@ -151,20 +153,24 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 				GraphDatabaseFacade graphDatabaseFacade = factoryHolder.getGraphDatabaseFacade();
 				try {
 					GraphDatabaseFacade.SPI spi = null;
-					Object obj = getPrivateField( GraphDatabaseFacade.class.getDeclaredField( "spi" ), graphDatabaseFacade );//
+					Object obj = getPrivateField( GraphDatabaseFacade.class.getDeclaredField( "spi" ), graphDatabaseFacade );
 					spi = (GraphDatabaseFacade.SPI) obj;
 					LOG.debugf( " isInOpenTransaction: %s", spi.isInOpenTransaction() );
 					if ( spi.isInOpenTransaction() ) {
-						LOG.debugf( " currentTransaction: %s", spi.currentTransaction() );
-						//LOG.warnf( "close transaction %s", spi.currentTransaction().getTransactionId() );
-						LOG.warnf( "transaction  started %s", spi.currentTransaction().startTime() );
+						LOG.warnf( "currentTransaction: %s", spi.currentTransaction() );
+						LOG.warnf( "transaction started %s", spi.currentTransaction().startTime() );
+						LOG.warn( "hang transactions  will commited and closed .." );
 						spi.currentTransaction().success();
 						spi.currentTransaction().closeTransaction();
 					}
 				}
-				catch ( Exception e) {
-					LOG.error( "ERROR!", e );
+				catch ( IllegalAccessException | NoSuchFieldException e) {
+					throw new HibernateException( "Can't get value of private variable by reflection!",e );
 				}
+				catch (TransactionFailureException e) {
+					throw new HibernateException( "Can't close transaction!",e );
+				}
+
 
 				if ( factoryHolder.getCounter() == 0 ) {
 					LOG.debugf( " Shutdown db for path : %s", key );
@@ -178,17 +184,9 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		}
 	}
 
-	private static Object getPrivateField(Field privateField, Object targetObject) {
-		Object result = null;
-		try {
-			//Field privateTransactionField = TopLevelTransaction.class.getDeclaredField( "transaction" );
-			privateField.setAccessible( true );
-			result =  privateField.get( targetObject );
-		}
-		catch (Exception e) {
-			LOG.error( "ERROR!", e );
-		}
-		return result;
+	private static Object getPrivateField(Field privateField, Object targetObject) throws IllegalAccessException {
+		privateField.setAccessible( true );
+		return privateField.get( targetObject );
 	}
 
 
