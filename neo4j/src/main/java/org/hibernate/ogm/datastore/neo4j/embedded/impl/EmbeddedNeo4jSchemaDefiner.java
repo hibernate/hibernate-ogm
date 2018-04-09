@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.neo4j.embedded.impl;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 
@@ -16,18 +14,15 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.ConstraintType;
-import org.neo4j.kernel.impl.api.KernelTransactionImplementation;
-import org.neo4j.kernel.impl.coreapi.PlaceboTransaction;
-import org.neo4j.kernel.impl.coreapi.TopLevelTransaction;
 
 /**
  * Initialize the schema for the Neo4j database:
@@ -64,42 +59,6 @@ public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		EmbeddedNeo4jDatastoreProvider neo4jProvider = (EmbeddedNeo4jDatastoreProvider) provider;
 		GraphDatabaseService neo4jDb = neo4jProvider.getDatabase();
 		Transaction tx = neo4jDb.beginTx();
-		if ( tx instanceof TopLevelTransaction ) {
-			TopLevelTransaction topLevelTransaction = (TopLevelTransaction) tx;
-			log.infof( "TopLevelTransaction topLevelTransaction : %s", topLevelTransaction.toString() );
-			try {
-				Field privateTransactionField = TopLevelTransaction.class.getDeclaredField( "transaction" );
-				privateTransactionField.setAccessible( true );
-				KernelTransactionImplementation kernelTransaction = (KernelTransactionImplementation) privateTransactionField.get( topLevelTransaction );
-				log.infof( "kernelTransaction : %s", kernelTransaction.getTransactionId() );
-			}
-			catch (IllegalStateException ise) {
-				log.warn( "New toplevel transaction created!" );
-			}
-			catch (Exception e) {
-				log.error( "ERROR!", e );
-			}
-		}
-		else {
-			PlaceboTransaction placeboTransaction = (PlaceboTransaction) tx;
-			log.infof( "PlaceboTransaction placeboTransaction : %s", placeboTransaction );
-
-			try {
-				Field privateTransactionField = PlaceboTransaction.class.getDeclaredField( "currentTransaction" );
-				privateTransactionField.setAccessible( true );
-				KernelTransactionImplementation kernelTransaction = (KernelTransactionImplementation) privateTransactionField.get( placeboTransaction );
-
-				log.infof( "kernelTransaction : %s", kernelTransaction.getTransactionId() );
-			}
-			catch (IllegalStateException ise) {
-				log.warn( "New transction created!" );
-			}
-			catch (Exception e) {
-				log.error( "ERROR!", e );
-			}
-		}
-
-
 		try {
 			for ( UniqueConstraintDetails constraint : constraints ) {
 				createUniqueConstraint( neo4jDb, constraint );
