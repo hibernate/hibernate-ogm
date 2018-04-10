@@ -98,4 +98,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1422, value = "Unknown database path: %s!")
 	HibernateException unknownDatabasePathException( String databasePath);
+
+	@Message(id = 1423, value = "Exists open transactions for database path: %s. Close it!")
+	HibernateException existsOpenTransactionsFornDatabasePathException( String databasePath );
 }

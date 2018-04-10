@@ -159,16 +159,16 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 					if ( spi.isInOpenTransaction() ) {
 						LOG.warnf( "currentTransaction: %s", spi.currentTransaction() );
 						LOG.warnf( "transaction started %s", spi.currentTransaction().startTime() );
-						LOG.warn( "hang transactions  will commited and closed .." );
-						spi.currentTransaction().success();
+						spi.currentTransaction().failure();
 						spi.currentTransaction().closeTransaction();
+						throw LOG.existsOpenTransactionsFornDatabasePathException( key );
 					}
 				}
 				catch ( IllegalAccessException | NoSuchFieldException e) {
 					throw new HibernateException( "Can't get value of private variable by reflection!",e );
 				}
 				catch (TransactionFailureException e) {
-					throw new HibernateException( "Can't close transaction!",e );
+					throw new HibernateException( "Can't close transction!",e );
 				}
 
 
