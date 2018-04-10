@@ -44,6 +44,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		UPDATEMANY,
 		REPLACEONE,
 		COUNT,
+		DROP,
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
 		 */
