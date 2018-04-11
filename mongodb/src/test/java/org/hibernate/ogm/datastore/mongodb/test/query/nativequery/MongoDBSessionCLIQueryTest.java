@@ -18,12 +18,15 @@ import org.fest.assertions.MapAssert;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParseException;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.query.NativeQuery;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.mongodb.BasicDBList;
 
@@ -33,6 +36,9 @@ import com.mongodb.BasicDBList;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class MongoDBSessionCLIQueryTest extends OgmTestCase {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", 1881, 15 );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", 1879, 37, (byte) 5, "ebook" );
@@ -1083,6 +1089,36 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result ).isEqualTo( 1 );
 			assertThat( collectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isFalse();
 			assertThat( collectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
+		} );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1433")
+	public void testDropCollectionThatDoesNotExist() {
+		inTransaction( ( session ) -> {
+			String fakeCollection = "IdoNotExistCollectionForTest";
+			assertThat( collectionExists( sessionFactory, fakeCollection ) ).isFalse();
+
+			String nativeQuery = "db." + fakeCollection + ".drop()";
+			int result = session.createNativeQuery( nativeQuery ).executeUpdate();
+
+			assertThat( result )
+					.as( "Congratulations, you have solved an issue! So far we couldn't know if the collection was actually deleted so we always returned 1. If you fix this issue, update this test, please." )
+					.isNotEqualTo( 0 );
+			assertThat( collectionExists( sessionFactory, fakeCollection ) ).isFalse();
+			assertThat( collectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
+		} );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1433")
+	public void testParametersAreInvalidWithDropCollectionOperation() {
+		thrown.expect( NativeQueryParseException.class );
+		thrown.expectMessage( "Parameters are invalid for drop" );
+
+		inTransaction( ( session ) -> {
+			String nativeQuery = "db." + MarkTwainPoem.TABLE_NAME + ".drop( 'parameter' )";
+			session.createNativeQuery( nativeQuery ).executeUpdate();
 		} );
 	}
 }
