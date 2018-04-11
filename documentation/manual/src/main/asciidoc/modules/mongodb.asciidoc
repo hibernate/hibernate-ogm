@@ -3380,6 +3380,15 @@ As one would expect, `find()`, `findOne()`, `findAndModify()`, `aggregate`,
 `remove()`, and `update()` require using `javax.persistence.Query.executeUpdate()`. Also note that,
 `javax.persistence.Query.executeUpdate()` may return `-1` in case execution of a query was not acknowledged
 relative to the write concern used.
+Via `javax.persistence.Query.executeUpdate()` it is also possible to run `db.Collection.drop()`
+queries.
+
+[NOTE]
+====
+`db.Collection.drop()` will always return 1. This is because the underlying driver we are
+using doesn't return any value after the execution of the operation.
+====
+
 
 The following functions can be used in the provided JSON:
 `BinData`, `Date`, `HexData`, `ISODate`, `NumberLong`, `ObjectId`, `Timestamp`,
