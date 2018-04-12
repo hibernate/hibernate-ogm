@@ -12,21 +12,22 @@
     <artifactId>hibernate-ogm-featurepack-base-infinispan</artifactId>
     <packaging>pom</packaging>
 
+    <!-- At the time of writing, Infinispan does not provide a feature pack client modules distribution -->
     <!-- This module can be removed after solving issue: https://issues.jboss.org/browse/ISPN-8689 -->
     <name>Hibernate OGM WildFly Feature Pack - Temporary Infinispan modules Repackaging</name>
     <description>Temporary repackaging of Infinispan modules as a Wildfly feature pack</description>
 
     <properties>
-        <infinispan-client-azure-version>6.1.0</infinispan-client-azure-version>
-        <infinispan-client-oauth-version>20090531</infinispan-client-oauth-version>
-        <infinispan-client-hibernate-search-version>5.9.0.Final</infinispan-client-hibernate-search-version>
+        <infinispanClientAzureVersion>6.1.0</infinispanClientAzureVersion>
+        <infinispanClientOauthVersion>20090531</infinispanClientOauthVersion>
+        <infinispanClientHibernateSearchVersion>5.9.0.Final</infinispanClientHibernateSearchVersion>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
-            <version>${infinispan-client-azure-version}</version>
+            <version>${infinispanClientAzureVersion}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -38,7 +39,7 @@
         <dependency>
             <groupId>net.oauth.core</groupId>
             <artifactId>oauth</artifactId>
-            <version>${infinispan-client-oauth-version}</version>
+            <version>${infinispanClientOauthVersion}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -61,7 +62,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-jbossmodules-engine</artifactId>
-            <version>${infinispan-client-hibernate-search-version}</version>
+            <version>${infinispanClientHibernateSearchVersion}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -159,5 +160,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

@@ -24,13 +24,11 @@
 
     <properties>
         <jdkTargetForProcessor>1.8</jdkTargetForProcessor>
-
-        <infinispanServerName>infinispan-server</infinispanServerName>
-        <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
-
         <!-- Skipping enforcer dependency convergence check as WildFly / Infinispan Server artifact
              causes several dependency convergence issues which are beyond our control -->
         <enforcer.dependencyconvergence.skip>true</enforcer.dependencyconvergence.skip>
+        <infinispanServerName>infinispan-server</infinispanServerName>
+        <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
     </properties>
 
     <dependencies>

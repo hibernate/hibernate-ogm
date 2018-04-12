@@ -372,20 +372,81 @@ for a full list of properties you can explicitly set.
 WildFly {wildfly-short-version} however does not include Hibernate OGM and the compatible Hibernate ORM and Hibernate Search
 versions and it will require some configuration to make everything works.
 
-Set up WildFly after downloading the modules::
-You can download the pre-packaged module ZIP for this version of Hibernate OGM from:
+Hibernate OGM {hibernate-ogm-version} requires Hibernate ORM {hibernate-orm-version} and Hibernate Search {hibernate-search-version}.
 
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-{hibernate-wildfly-classifier}.zip[Sourceforge]
-* https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-{hibernate-wildfly-classifier}.zip[The Maven Central repository]
+===== Server provisioning via Maven
 
-Hibernate OGM {hibernate-ogm-version} requires Hibernate ORM {hibernate-orm-version}
-and Hibernate Search {hibernate-search-version}.
+Maven users can use the `wildfly-server-provisioning-maven-plugin`
+to create a custom WildFly server including the Hibernate OGM modules:
+====
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<plugins>
+	<plugin>
+		<groupId>org.wildfly.build</groupId>
+		<artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+		<version>1.2.10.Final</version>
+		<executions>
+			<execution>
+			<id>server-provisioning</id>
+			<goals>
+				<goal>build</goal>
+			</goals>
+			<phase>compile</phase>
+			<configuration>
+				<config-file>server-provisioning.xml</config-file>
+				<server-name>wildfly-with-hibernate-ogm</server-name>
+			</configuration>
+			</execution>
+		</executions>
+	</plugin>
+</plugins>
+====
 
-These versions are not included in WildFly {wildfly-short-version} but you can download the pre-packaged ZIP modules from
-Maven Central:
+You will also need a `server-provisioning.xml` in the root of your project:
 
-* https://repo1.maven.org/maven2/org/hibernate/hibernate-orm-modules/{hibernate-orm-version}/hibernate-orm-modules-{hibernate-orm-version}-{hibernate-wildfly-classifier}.zip[Hibernate ORM modules]
-* https://repo1.maven.org/maven2/org/hibernate/hibernate-search-modules/{hibernate-search-version}/hibernate-search-modules-{hibernate-search-version}-{hibernate-wildfly-classifier}.zip[Hibernate Search modules]
+====
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<server-provisioning xmlns="urn:wildfly:server-provisioning:1.1">
+	<feature-packs>
+
+		<feature-pack
+			groupId="org.hibernate"
+			artifactId="hibernate-search-jbossmodules-orm"
+			version="{hibernate-search-version}" /> # <1>
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-infinispan-remote"
+			version="{hibernate-ogm-version}" /> # <2>
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-infinispan-embedded"
+			version="{hibernate-ogm-version}" /> # <2>
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-mongodb"
+			version="{hibernate-ogm-version}" /> # <2>
+
+		<feature-pack
+			groupId="org.hibernate.ogm"
+			artifactId="hibernate-ogm-featurepack-neo4j"
+			version="{hibernate-ogm-version}" /> # <2>
+
+	</feature-packs>
+</server-provisioning>
+----
+<1> Add Hibernate Search feature pack, if you need it.
+<2> Add one or more Hibernate OGM feature packs, it depends on which dialects your application needs.
+====
+
+. See https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#hibernatesearch-jboss-modules-feature-packs[list of available Hibernate Search feature packs].
+. See <<hibernate-ogm-jboss-modules-feature-packs, list of available Hibernate OGM feature packs>>.
 
 Once you have the archives, you need to 
 unpack them into the `modules` folder of your WildFly {wildfly-short-version} installation.
@@ -411,84 +472,6 @@ This way your application will use the right Hibernate ORM and Hibernate Search 
 [subs="verbatim,attributes"]
 ----
 <property name="wildfly.jpa.hibernate.search.module" value="org.hibernate.search.orm:{hibernate-search-module-slot}"/>
-----
-====
-
-The Hibernate Search documentation explains the details of downloading and deploying a custom version:
-https://docs.jboss.org/hibernate/search/{hibernate-search-major-minor-version}/reference/en-US/html_single/#_update_and_activate_latest_hibernate_search_version_in_wildfly[Update and activate latest Hibernate Search version in WildFly].
-
-Set up WildFly using Maven::
-If you are using Maven, you can download and set up your WildFly with the following snippet:
-
-.Maven example to prepare a WildFly installation for integration tests
-====
-[source, XML]
-[subs="verbatim,attributes"]
-----
-<plugin>
-    <artifactId>maven-dependency-plugin</artifactId>
-    <executions>
-        <execution>
-            <id>unpack</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-                <goal>unpack</goal>
-            </goals>
-            <configuration>
-                <artifactItems>
-                    <!-- Download and unpack WildFly -->
-                    <artifactItem>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-dist</artifactId>
-                        <version>{wildfly-version}</version>
-                        <type>zip</type>
-                        <overWrite>false</overWrite>
-                        <outputDirectory>${project.build.directory}</outputDirectory>
-                    </artifactItem>
-
-                    <!-- Download and unpack Hibernate ORM modules -->
-                    <artifactItem>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-orm-modules</artifactId>
-                        <version>{hibernate-orm-version}</version>
-                        <classifier>{hibernate-wildfly-classifier}</classifier>
-                        <type>zip</type>
-                        <overWrite>false</overWrite>
-                        <outputDirectory>
-                            ${project.build.directory}/wildfly-{wildfly-version}/modules
-                        </outputDirectory>
-                    </artifactItem>
-
-                    <!-- Download and unpack Hibernate Search modules -->
-                    <artifactItem>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-modules</artifactId>
-                        <version>{hibernate-search-version}</version>
-                        <classifier>{hibernate-wildfly-classifier}</classifier>
-                        <type>zip</type>
-                        <overWrite>false</overWrite>
-                        <outputDirectory>
-                            ${project.build.directory}/wildfly-{wildfly-version}/modules
-                        </outputDirectory>
-                    </artifactItem>
-
-                    <!-- Download and unpack Hibernate OGM modules -->
-                    <artifactItem>
-                        <groupId>org.hibernate.ogm</groupId>
-                        <artifactId>hibernate-ogm-modules</artifactId>
-                        <classifier>{hibernate-wildfly-classifier}</classifier>
-                        <version>{hibernate-ogm-version}</version>
-                        <type>zip</type>
-                        <overWrite>false</overWrite>
-                        <outputDirectory>
-                            ${project.build.directory}/wildfly-{wildfly-version}/modules
-                        </outputDirectory>
-                    </artifactItem>
-                </artifactItems>
-            </configuration>
-        </execution>
-    </executions>
-</plugin>
 ----
 ====
 
@@ -522,6 +505,70 @@ Add a `WEB-INF/jboss-deployment-structure.xml` in your archive with the followin
 
 More information about the descriptor can be found in the
 https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly[WildFly documentation].
+
+More information about Maven Wildfly provisioning plugin can be found in the
+https://github.com/wildfly/wildfly-build-tools[WildFly provisioning build tools].
+
+If you are not using Maven in your project, there is also a Gradle plugin
+https://plugins.gradle.org/plugin/org.wildfly.build.provision[org.wildfly.build.provision]
+available on the official portal.
+
+[[hibernate-ogm-jboss-modules-feature-packs]]
+==== List of the Hibernate OGM WildFly/JBoss feature packs
+
+===== Core feature pack
+
+It contains the core of Hibernate OGM and all the dialects feature packs extend it.
+
+It extends the base WildFly feature pack distribution.
+It includes Hibernate ORM {hibernate-orm-version} modules, required by Hibernate OGM {hibernate-ogm-version}.
+
+The feature pack is published on the JBoss Nexus repository and Maven Central as
+link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-core~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-core:{hibernate-ogm-version}:zip].
+
+===== Infinispan Remote feature pack
+
+This is the Infinispan Remote dialect feature pack.
+It includes the main module:
+
+* _org.hibernate.ogm.infinispan-remote_, containing Hibernate OGM Infinispan Remote module
+
+It includes Hibernate OGM core feature pack and Infinispan client Wildfly modules.
+The feature pack is published on the JBoss Nexus repository and Maven Central as
+link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-infinispan-remote~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:{hibernate-ogm-version}:zip].
+
+===== Infinispan Embedded feature pack
+
+This is the Infinispan Embedded dialect feature pack.
+It includes the main module:
+
+* _org.hibernate.ogm.infinispan-embedded_, containing Hibernate OGM Infinispan Embedded module
+
+It includes Hibernate OGM core feature pack and Infinispan client Wildfly modules.
+The feature pack is published on the JBoss Nexus repository and Maven Central as
+link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-infinispan-embedded~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:{hibernate-ogm-version}:zip].
+
+===== MongoDB feature pack
+
+This is the MongoDB dialect feature pack.
+It includes the main module:
+
+* _org.hibernate.ogm.mongodb_, containing Hibernate OGM MongoDB module
+
+It includes Hibernate OGM core feature pack and MongoDB Java client.
+The feature pack is published on the JBoss Nexus repository and Maven Central as
+link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-mongodb~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:{hibernate-ogm-version}:zip].
+
+===== Neo4j feature pack
+
+This is the Neo4j dialect feature pack.
+It includes the main module:
+
+* _org.hibernate.ogm.neo4j_, containing Hibernate OGM Neo4j module
+
+It includes Hibernate OGM core feature pack and Neo4j client libraries.
+The feature pack is published on the JBoss Nexus repository and Maven Central as
+link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-neo4j~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:{hibernate-ogm-version}:zip].
 
 ==== Configure your persistence.xml to use your choice of persistence provider
 
@@ -577,3 +624,7 @@ Download the Infinispan modules pack for WildFly {wildfly-short-version} from he
 
 Then similarly to what you did with the Hibernate OGM modules zip, unpack this one too in your `modules` directory within the application server.
 
+[NOTE]
+====
+If you are using the Hibernate OGM Infinispan feature packs, you don't have to worry about this. Infinispan client is already included in them.
+====

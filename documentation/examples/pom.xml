@@ -11,6 +11,7 @@
   <name>Hibernate OGM Examples</name>
   <modules>
   	<module>gettingstarted</module>
+    <module>wildfly-quickstart</module>
   </modules>
   <build>
     <pluginManagement>

@@ -1,11 +1,13 @@
 <server-provisioning xmlns="urn:wildfly:server-provisioning:1.1">
 	<feature-packs>
 
+		<!-- add Hibernate Search pack if you need it -->
 		<feature-pack
 			groupId="org.hibernate"
 			artifactId="hibernate-search-jbossmodules-orm"
 			version="${hibernateSearchVersion}" />
 
+		<!-- add every Hibernate OGM packs dialects your application needs -->
 		<feature-pack
 			groupId="org.hibernate.ogm"
 			artifactId="hibernate-ogm-featurepack-infinispan-remote"

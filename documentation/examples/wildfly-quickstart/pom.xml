@@ -6,11 +6,13 @@
 
     <parent>
         <groupId>org.hibernate.ogm</groupId>
-        <artifactId>hibernate-ogm-featurepack</artifactId>
+        <artifactId>hibernate-ogm-documentation-examples</artifactId>
         <version>5.4.0-SNAPSHOT</version>
     </parent>
-    <artifactId>hibernate-ogm-featurepack-test</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>hibernate-ogm-wildfly-quickstart</artifactId>
+
+    <name>Hibernate OGM WildFly Quickstart Example</name>
+    <description>This module shows how to provision WildFly with Hibernate OGM</description>
 
     <build>
         <plugins>
@@ -82,6 +84,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

@@ -34,7 +34,6 @@
         <module>infinispan-remote</module>
         <module>neo4j</module>
         <module>mongodb</module>
-        <module>test</module>
     </modules>
 
     <build>
@@ -49,5 +48,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
 </project>
