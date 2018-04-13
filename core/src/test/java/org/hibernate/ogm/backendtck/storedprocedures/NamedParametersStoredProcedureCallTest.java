@@ -13,6 +13,9 @@ import static org.hibernate.ogm.backendtck.storedprocedures.Car.RESULT_SET_PROC_
 import static org.hibernate.ogm.backendtck.storedprocedures.Car.RESULT_SET_PROC_TITLE_PARAM;
 import static org.hibernate.ogm.backendtck.storedprocedures.Car.SIMPLE_VALUE_PROC;
 import static org.hibernate.ogm.backendtck.storedprocedures.Car.UNIQUE_VALUE_PROC_PARAM;
+import static org.hibernate.ogm.test.storedprocedures.MockStoredProcedureDialect.EXCEPTIONAL_PROCEDURE_NAME;
+import static org.hibernate.ogm.test.storedprocedures.MockStoredProcedureDialect.INVALID_PARAM;
+import static org.hibernate.ogm.test.storedprocedures.MockStoredProcedureDialect.NOT_EXISTING_PROCEDURE_NAME;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
@@ -161,40 +164,31 @@ public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
 		storedProcedureQuery.getResultList();
 	}
 
-	@SkipByGridDialect(
-			value = { HASHMAP },
-			comment = "These dialects don't throw exception when procedure does not exist.")
 	@Test
 	public void testExceptionWhenProcedureDoesNotExist() throws Exception {
 		thrown.expect( PersistenceException.class );
 		thrown.expectMessage( "org.hibernate.HibernateException: OGM000093" );
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( "notExistingProcedureName", Car.class );
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( NOT_EXISTING_PROCEDURE_NAME, Car.class );
 		storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
 		storedProcedureQuery.setParameter( "param", 1 );
 		storedProcedureQuery.getSingleResult();
 	}
 
-	@SkipByGridDialect(
-			value = { HASHMAP },
-			comment = "These dialects don't throw exception when using unregistered parameter.")
 	@Test
 	public void testExceptionWhenUsingNotRegisteredParameter() throws Exception {
 		thrown.expect( PersistenceException.class );
 		thrown.expectMessage( "org.hibernate.HibernateException: OGM000095" );
 		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( Car.SIMPLE_VALUE_PROC, Integer.class );
-		storedProcedureQuery.registerStoredProcedureParameter( "invalidParam", Integer.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( "invalidParam", 1 );
+		storedProcedureQuery.registerStoredProcedureParameter( INVALID_PARAM, Integer.class, ParameterMode.IN );
+		storedProcedureQuery.setParameter( INVALID_PARAM, 1 );
 		storedProcedureQuery.getSingleResult();
 	}
 
-	@SkipByGridDialect(
-			value = { HASHMAP },
-			comment = "These dialects don't throw exception when procedure fails.")
 	@Test
 	public void testExceptionWhenProcedureFails() throws Exception {
 		thrown.expect( PersistenceException.class );
 		thrown.expectMessage( "org.hibernate.HibernateException: OGM000092" );
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( "exceptionalProcedure", Integer.class );
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( EXCEPTIONAL_PROCEDURE_NAME, Integer.class );
 		storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
 		storedProcedureQuery.setParameter( "param", 1 );
 		storedProcedureQuery.getSingleResult();

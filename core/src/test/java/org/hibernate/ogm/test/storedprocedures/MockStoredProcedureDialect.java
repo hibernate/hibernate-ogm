@@ -8,6 +8,7 @@ package org.hibernate.ogm.test.storedprocedures;
 
 import static org.hibernate.ogm.backendtck.storedprocedures.Car.UNIQUE_VALUE_PROC_PARAM;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,23 +35,45 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.util.impl.CollectionHelper;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * This dialect is used to test stored procedures calls.
+ * This dialect is used to test stored procedures calls and make sure that the rights methods are called when the
+ * dialect support stored procedures.
+ * <p>
+ * It also act as a template to show what kind of exceptions we expect.
  *
  * @see Car
+ * @see org.hibernate.ogm.test.storedprocedures.NamedParametersStoredProcedureCallTest
+ * @see org.hibernate.ogm.test.storedprocedures.PositionalParametersStoredProcedureCallTest
  *
  * @author Davide D'Alto
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class MockStoredProcedureDialect extends BaseGridDialect implements StoredProcedureAwareGridDialect {
 
+	public static final String INVALID_PARAM = "invalidParam";
+	public static final String EXCEPTIONAL_PROCEDURE_NAME = "exceptionalProcedure";
+	public static final String NOT_EXISTING_PROCEDURE_NAME = "notExistingProcedureName";
+
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
 	public MockStoredProcedureDialect(DatastoreProvider provider) {
 	}
 
 	@Override
 	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
+		if ( queryParameters.getNamedParameters().containsKey( INVALID_PARAM ) ) {
+			Object value = queryParameters.getNamedParameters().get( INVALID_PARAM );
+			throw log.cannotSetStoredProcedureParameter( storedProcedureName, INVALID_PARAM, value, new RuntimeException( "Invalid parameter!" ) );
+		}
+
 		switch ( storedProcedureName ) {
+			case EXCEPTIONAL_PROCEDURE_NAME:
+				throw log.cannotExecuteStoredProcedure( storedProcedureName, new RuntimeException( "This is the simulation of a failure" ) );
+			case NOT_EXISTING_PROCEDURE_NAME:
+				throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, new RuntimeException( "This is the simulation of a failure" ) );
 			case Car.RESULT_SET_PROC:
 				return callResultsetStoredProcedure( queryParameters );
 			case Car.SIMPLE_VALUE_PROC:
