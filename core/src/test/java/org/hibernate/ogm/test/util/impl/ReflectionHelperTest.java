@@ -6,12 +6,18 @@
  */
 package org.hibernate.ogm.test.util.impl;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.lang.annotation.ElementType;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
 
 import org.hibernate.ogm.util.impl.ReflectionHelper;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Unit test for {@link ReflectionHelper}.
@@ -19,6 +25,9 @@ import org.junit.Test;
  * @author Gunnar Morling
  */
 public class ReflectionHelperTest {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void propertyExistsShouldConsiderField() {
@@ -53,6 +62,27 @@ public class ReflectionHelperTest {
 		assertThat( ReflectionHelper.getPropertyName( Giraffe.class.getMethod( "setName", String.class ) ) ).isNull();
 	}
 
+	@Test
+	public void introspectShouldReturnFieldValues() throws Exception {
+		Subject subject = new Subject();
+		subject.setField( "value" );
+		Map<String, Object> res = ReflectionHelper.introspect( subject );
+		assertThat( res ).isEqualTo( Collections.singletonMap( "field", "value" ) );
+	}
+
+	@Test
+	public void setField() throws Exception {
+		Subject subject = new Subject();
+		ReflectionHelper.setField( subject, "field", "value" );
+		assertThat( subject.getField() ).isEqualTo( "value" );
+	}
+
+	@Test
+	public void setNonExistingFields() throws Exception {
+		thrown.expect( NoSuchMethodException.class );
+		ReflectionHelper.setField( new Subject(), "nonExistingField", "value" );
+	}
+
 	public static class Giraffe {
 
 		@SuppressWarnings("unused")
@@ -67,6 +97,44 @@ public class ReflectionHelperTest {
 
 		public boolean isGrownUp() {
 			return false;
+		}
+
+	}
+
+	public static class Subject {
+
+		private String field;
+
+		public Subject() {
+		}
+
+		public Subject(String field) {
+			this.field = field;
+		}
+
+		public String getField() {
+			return field;
+		}
+
+		public void setField(String field) {
+			this.field = field;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if ( this == o ) {
+				return true;
+			}
+			if ( o == null || getClass() != o.getClass() ) {
+				return false;
+			}
+			Subject subject = (Subject) o;
+			return Objects.equals( field, subject.field );
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash( field );
 		}
 	}
 }

@@ -6,10 +6,16 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Some reflection utility methods.
@@ -21,6 +27,31 @@ public final class ReflectionHelper {
 
 	private static final String PROPERTY_ACCESSOR_PREFIX_GET = "get";
 	private static final String PROPERTY_ACCESSOR_PREFIX_IS = "is";
+	private static final String PROPERTY_ACCESSOR_PREFIX_SET = "set";
+
+	/**
+	 * Introspect the given object.
+	 *
+	 * @param obj object for introspection.
+	 *
+	 * @return a map containing object's field values.
+	 *
+	 * @throws IntrospectionException if an exception occurs during introspection
+	 * @throws InvocationTargetException if property getter throws an exception
+	 * @throws IllegalAccessException if property getter is inaccessible
+	 */
+	public static Map<String, Object> introspect(Object obj) throws IntrospectionException, InvocationTargetException, IllegalAccessException {
+		Map<String, Object> result = new HashMap<>();
+		BeanInfo info = Introspector.getBeanInfo( obj.getClass() );
+		for ( PropertyDescriptor pd : info.getPropertyDescriptors() ) {
+			Method reader = pd.getReadMethod();
+			String name = pd.getName();
+			if ( reader != null && !"class".equals( name ) ) {
+				result.put( name, reader.invoke( obj ) );
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * Whether the specified JavaBeans property exists on the given type or not.
@@ -80,6 +111,23 @@ public final class ReflectionHelper {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Set value for given object field.
+	 *
+	 * @param object object to be updated
+	 * @param field field name
+	 * @param value field value
+	 *
+	 * @throws NoSuchMethodException if property writer is not available
+	 * @throws InvocationTargetException if property writer throws an exception
+	 * @throws IllegalAccessException if property writer is inaccessible
+	 */
+	public static void setField(Object object, String field, Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		Class<?> clazz = object.getClass();
+		Method m = clazz.getMethod( PROPERTY_ACCESSOR_PREFIX_SET + capitalize( field ), value.getClass() );
+		m.invoke( object, value );
 	}
 
 	private static Field getDeclaredField(Class<?> clazz, String fieldName) {
