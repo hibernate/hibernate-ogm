@@ -72,6 +72,16 @@ public class InfinispanNamedParametersStoredProcedureCallTest extends OgmJpaTest
 		storedProcedureQuery.getSingleResult();
 	}
 
+	@Test
+	public void testExceptionWhenUsePositionalParameters() throws Exception {
+		thrown.expect( PersistenceException.class );
+		thrown.expectMessage( "org.hibernate.HibernateException: OGM000094" );
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( Car.SIMPLE_VALUE_PROC, Car.class );
+		storedProcedureQuery.registerStoredProcedureParameter( 0, Integer.class, ParameterMode.IN );
+		storedProcedureQuery.setParameter( 0, 1 );
+		storedProcedureQuery.getSingleResult();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class[] { Car.class };
