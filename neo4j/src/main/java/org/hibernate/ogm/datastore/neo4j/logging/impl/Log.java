@@ -92,4 +92,13 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1420, value = "Sequences creation failed: %s, %s")
 	HibernateException sequencesCreationException(String code, String message);
+
+	@Message(id = 1421, value = "Cannot create new GraphDatabaseService!")
+	HibernateException cannotCreateNewGraphDatabaseServiceException( @Cause Exception cause);
+
+	@Message(id = 1422, value = "Unknown database path: %s!")
+	HibernateException unknownDatabasePathException( String databasePath);
+
+	@Message(id = 1423, value = "Exists open transactions for database path: %s. Close it!")
+	HibernateException existsOpenTransactionsFornDatabasePathException( String databasePath );
 }
