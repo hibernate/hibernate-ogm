@@ -16,6 +16,8 @@ import java.util.concurrent.Callable;
  */
 public class InvalidStoredProcedure implements Runnable {
 
+	public static String INVALID_STORED_PROCEDURE_NAME = "invalidaStoredProcedure";
+
 	@Override
 	public void run() {
 	}

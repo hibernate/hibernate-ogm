@@ -51,7 +51,7 @@ public class InfinispanNamedParametersStoredProcedureCallTest extends OgmJpaTest
 
 	@Test
 	public void testResultSetDynamicCallWithFullQualifiedProcedureNameAndResultClass() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ResultSetProcedure", Car.class );
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( ResultSetProcedure.class.getName(), Car.class );
 		storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
 		storedProcedureQuery.registerStoredProcedureParameter( RESULT_SET_PROC_ID_PARAM, Integer.class, ParameterMode.IN );
 		storedProcedureQuery.registerStoredProcedureParameter( RESULT_SET_PROC_TITLE_PARAM, String.class, ParameterMode.IN );
@@ -66,7 +66,7 @@ public class InfinispanNamedParametersStoredProcedureCallTest extends OgmJpaTest
 	public void testExceptionWhenCallingARunnableProcedure() throws Exception {
 		thrown.expect( PersistenceException.class );
 		thrown.expectMessage( "org.hibernate.HibernateException: OGM001111" );
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( "invalidStoredProcedure", Void.class );
+		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( InvalidStoredProcedure.INVALID_STORED_PROCEDURE_NAME, Void.class );
 		storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
 		storedProcedureQuery.setParameter( "param", 1 );
 		storedProcedureQuery.getSingleResult();
