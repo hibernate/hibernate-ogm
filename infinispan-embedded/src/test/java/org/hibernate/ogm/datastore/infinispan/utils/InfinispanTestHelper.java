@@ -24,6 +24,10 @@ import org.hibernate.ogm.datastore.infinispan.impl.InfinispanEmbeddedDatastorePr
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
+import org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ExceptionalProcedure;
+import org.hibernate.ogm.datastore.infinispan.test.storedprocedures.InvalidStoredProcedure;
+import org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ResultSetProcedure;
+import org.hibernate.ogm.datastore.infinispan.test.storedprocedures.SimpleValueProcedure;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -63,10 +67,11 @@ public class InfinispanTestHelper extends BaseGridDialectTestHelper implements G
 
 	private void registerStoredProcedures(EmbeddedCacheManager ecm) {
 		Cache<Object, Object> storedProcedures = ecm.getCache( "___stored_procedures" );
-		storedProcedures.put( Car.SIMPLE_VALUE_PROC, "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.SimpleValueProcedure" );
-		storedProcedures.put( Car.RESULT_SET_PROC, "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ResultSetProcedure" );
-		storedProcedures.put( "exceptionalProcedure", "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.ExceptionalProcedure" );
-		storedProcedures.put( "invalidStoredProcedure", "org.hibernate.ogm.datastore.infinispan.test.storedprocedures.InvalidStoredProcedure" );
+		storedProcedures.put( Car.SIMPLE_VALUE_PROC, SimpleValueProcedure.class.getName() );
+		storedProcedures.put( Car.RESULT_SET_PROC, ResultSetProcedure.class.getName() );
+		storedProcedures.put( InvalidStoredProcedure.INVALID_STORED_PROCEDURE_NAME, InvalidStoredProcedure.class.getName() );
+		// See NamedParametersStoredProcedureCallTest#testExceptionWhenProcedureFails
+		storedProcedures.put( "exceptionalProcedure", ExceptionalProcedure.class.getName() );
 	}
 
 	@Override
