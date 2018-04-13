@@ -7,17 +7,12 @@
 
 package org.hibernate.ogm.datastore.infinispan.impl;
 
-import java.beans.IntrospectionException;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
@@ -29,6 +24,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.util.impl.ReflectionHelper;
+import org.hibernate.ogm.util.impl.TupleExtractor;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -59,7 +55,7 @@ public class InfinispanEmbeddedStoredProceduresManager {
 		Callable<?> callable = instantiate( storedProcedureName, className, classLoaderService );
 		setParams( storedProcedureName, queryParameters, callable );
 		Object res = execute( storedProcedureName, embeddedCacheManager, callable );
-		return CollectionHelper.newClosableIterator( extractTuples( storedProcedureName, res ) );
+		return extractResultSet( storedProcedureName, res );
 	}
 
 	private void validate(ProcedureQueryParameters queryParameters) {
@@ -124,27 +120,12 @@ public class InfinispanEmbeddedStoredProceduresManager {
 		}
 	}
 
-	private static List<Tuple> extractTuples(String storedProcedureName, Object retvalObj) {
-		if ( retvalObj instanceof Iterable ) {
-			Iterable<?> it = (Iterable) retvalObj;
-			return StreamSupport.stream( it.spliterator(), false )
-					.map( r -> extractTuple( storedProcedureName, r ) )
-					.collect( Collectors.toList() );
-		}
-		Tuple tuple = new Tuple();
-		tuple.put( "result", retvalObj );
-		return Collections.singletonList( tuple );
-	}
-
-	private static Tuple extractTuple(String storedProcedureName, Object obj) {
+	private ClosableIterator<Tuple> extractResultSet(String storedProcedureName, Object res) {
 		try {
-			Tuple tuple = new Tuple();
-			Map<String, Object> introspect = ReflectionHelper.introspect( obj );
-			introspect.forEach( tuple::put );
-			return tuple;
+			return CollectionHelper.newClosableIterator( TupleExtractor.extractTuplesFromObject( res ) );
 		}
-		catch (IntrospectionException | InvocationTargetException | IllegalAccessException e) {
-			throw log.cannotExtractStoredProcedureResultSet( storedProcedureName, obj, e );
+		catch (Exception e) {
+			throw log.cannotExtractStoredProcedureResultSet( storedProcedureName, res, e );
 		}
 	}
 }

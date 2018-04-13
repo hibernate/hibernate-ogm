@@ -325,4 +325,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 96, value = "Cannot extract stored procedure '%s' result set '%s'.")
 	HibernateException cannotExtractStoredProcedureResultSet(String storedProcedureName, Object resultSet, @Cause Exception e);
+
+	@Message(id = 97, value = "Cannot extract tuple from value '%s'.")
+	HibernateException cannotExtractTupleFromObject(Object value, @Cause Exception e);
 }
