@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteStoredProceduresManager;
 import org.hibernate.ogm.datastore.infinispanremote.impl.ProtoStreamMappingAdapter;
 import org.hibernate.ogm.datastore.infinispanremote.impl.ProtostreamAssociationMappingAdapter;
 import org.hibernate.ogm.datastore.infinispanremote.impl.VersionedTuple;
@@ -56,6 +57,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -68,6 +70,7 @@ import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.AssociationOperationType;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -95,7 +98,7 @@ import org.infinispan.query.dsl.QueryFactory;
  * @author Sanne Grinovero
  * @author Fabio Massimo Ercoli
  */
-public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEntityDialect implements QueryableGridDialect<InfinispanRemoteQueryDescriptor>, MultigetGridDialect {
+public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEntityDialect implements QueryableGridDialect<InfinispanRemoteQueryDescriptor>, MultigetGridDialect, StoredProcedureAwareGridDialect {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
@@ -181,6 +184,11 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 	@Override
 	public InfinispanRemoteQueryDescriptor parseNativeQuery(String nativeQuery) {
 		return new InfinispanRemoteNativeQueryParser( nativeQuery ).parse();
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure( String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext ) {
+		return new InfinispanRemoteStoredProceduresManager().callStoredProcedure( provider, storedProcedureName, queryParameters );
 	}
 
 	/**

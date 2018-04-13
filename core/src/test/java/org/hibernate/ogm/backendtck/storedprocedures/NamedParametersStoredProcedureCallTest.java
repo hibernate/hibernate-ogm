@@ -17,7 +17,6 @@ import static org.hibernate.ogm.test.storedprocedures.MockStoredProcedureDialect
 import static org.hibernate.ogm.test.storedprocedures.MockStoredProcedureDialect.INVALID_PARAM;
 import static org.hibernate.ogm.test.storedprocedures.MockStoredProcedureDialect.NOT_EXISTING_PROCEDURE_NAME;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
@@ -51,7 +50,7 @@ import org.junit.rules.ExpectedException;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 @SkipByGridDialect(
-		value = { HASHMAP, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE, MONGODB },
+		value = { HASHMAP, NEO4J_EMBEDDED, NEO4J_REMOTE, MONGODB },
 		comment = "These dialects don't support stored procedures with named parameters")
 @TestForIssue(jiraKey = { "OGM-359" })
 public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
