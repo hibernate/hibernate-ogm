@@ -1,6 +1,40 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.0.Alpha1 (16-04-2018)
+-------------------------
+
+** Bug
+    * OGM-1416 -                            - org.hibernate.PropertyAccessException with MongoDB Native Query. Null assigned to primitve 
+    * OGM-1411 - mongodb, tests             - MongoDB native query with pagination on aggregate: empty-results for subsequent runs
+    * OGM-1375 - core, mongodb              - We shouldn't create partial entities from a native query
+    * OGM-614 - infinispan, mongodb, neo4j - Add support for java.sql.Timestamp
+
+** Improvement
+    * OGM-1453 - neo4j                      - Upgrade to Neo4j 3.3.5
+    * OGM-1450 -                            - Upgrade to Hibernate Search 5.10.0.Beta2
+    * OGM-1437 - build                      - Upgrade to Hibernate Commons Annotations 5.0.3.Final
+    * OGM-1434 - mongodb, tests             - Create a test case for MongoDB to check that we can pass ObjectId as parameter for JPQL queries
+    * OGM-1428 - build                      - Feature pack distribution for Hibernate OGM WildFly modules
+    * OGM-1424 - infinispan                 - Infinispan remote: avoid word "Template" in favour of "Cache Configuration" in dialect properties and annotations
+    * OGM-1423 - infinispan                 - Infinispan remote: default Hibernate OGM cache configuration for created client side caches 
+    * OGM-1422 - documentation              - Typo in examples, tests and documentation: Vehicule should be Vehicle
+    * OGM-1418 - documentation              - Fix README.md about running the tests with a Neo4j server
+    * OGM-1414 - documentation              - Documentation states it's about WildFly 10, whereas it's about 11 (and soon 12)
+    * OGM-1413 -                            - Upgrade WildFly distribution used for integration tests to 12.0
+    * OGM-1412 - infinispan                 - Upgrade Infinispan to 9.2.0.Final
+    * OGM-1390 - build                      - Upgrade to Hibernate ORM 5.3 and JPA 2.2
+
+** New Feature
+    * OGM-1433 - mongodb                    - We should support db.Collection.drop() for MongoDB with native queries
+    * OGM-1405 - infinispan                 - Choosing a default template configuration for new caches in Infinispan Remote dialect
+    * OGM-1347 - infinispan                 - Add configuration option for generated protobuf file in Infinispan Remote
+    * OGM-1329 - infinispan                 - Add annotation to select the template configuration for a cache
+    * OGM-359 - core, mongodb              - Support stored procedures with positional parameters for MongoDB
+
+** Sub-task
+    * OGM-1429 -                            - Support run java code for embedded mode
+
 5.3.0.Final (20-02-2018)
 -------------------------
 
