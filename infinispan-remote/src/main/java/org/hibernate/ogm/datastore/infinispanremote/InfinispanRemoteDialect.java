@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +26,6 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.Protostream
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamPayload;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -36,7 +36,11 @@ import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.impl.AbstractGroupingByEntityDialect;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
@@ -60,6 +64,8 @@ import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.AssociationOperationType;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+import org.hibernate.ogm.util.impl.CollectionHelper;
+
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
@@ -90,7 +96,7 @@ import org.infinispan.query.dsl.QueryFactory;
  *
  * @author Sanne Grinovero
  */
-public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntityDialect implements MultigetGridDialect {
+public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntityDialect implements QueryableGridDialect<String>, MultigetGridDialect {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
@@ -154,6 +160,40 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 		}
 
 		owningEntity.flushOperations();
+	}
+
+	@Override
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
+		String cacheName = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata().getTable();
+		RemoteCache<ProtostreamId, ProtostreamPayload> cache = provider.getCache( cacheName );
+
+		QueryFactory queryFactory = Search.getQueryFactory( cache );
+		Query query = queryFactory.create( backendQuery.getQuery() );
+
+		List<Tuple> tuples = new ArrayList<>();
+		List<Object> list = query.list();
+		for (Object payload : list ) {
+			Tuple tuple = ( (ProtostreamPayload) payload ).toTuple( SnapshotType.UPDATE );
+			tuples.add( tuple );
+		}
+
+		return CollectionHelper.newClosableIterator( tuples );
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		return 0;
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return null;
+	}
+
+	@Override
+	public String parseNativeQuery(String nativeQuery) {
+		// We return given JPQL queries as they are
+		return nativeQuery;
 	}
 
 	/**
