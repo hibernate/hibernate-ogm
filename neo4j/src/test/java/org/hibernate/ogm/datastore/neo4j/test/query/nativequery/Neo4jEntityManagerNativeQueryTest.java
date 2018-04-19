@@ -182,6 +182,23 @@ public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
 		em.getTransaction().commit();
 	}
 
+	@Test
+	public void testQueryWithPositionalParams() {
+		em.getTransaction().begin();
+
+		long id = 1L;
+		String author = "Oscar Wilde";
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { id: {0}, author: { 1 }} ) RETURN n";
+		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+		query.setParameter( 0, id );
+		query.setParameter( 1, author );
+		OscarWildePoem result = (OscarWildePoem) query.getSingleResult();
+		assertAreEquals( portia, result );
+
+		em.getTransaction().commit();
+	}
+
 	private void persist(Object... entities) {
 		EntityManager em = createEntityManager();
 		em.getTransaction().begin();
