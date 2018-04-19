@@ -41,21 +41,24 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 	@SkipNode
 	public Rule QueryPart() {
-		return FirstOf( Quoted(), Escaped(), NamedParameter(), Other() );
+		return FirstOf( Quoted(), Escaped(), OrdinalParameterAction(), NamedParameter(), Other() );
 	}
 
 	@SuppressSubnodes
 	public Rule NamedParameter() {
 		StringVar name = new StringVar( "" );
 
-		return Sequence(
-			ParameterBeginDelimiter(),
-			ZeroOrMore( WhiteSpace() ),
-			OneOrMore( Alphanumeric() ),
-			name.set( match() ),
-			ZeroOrMore( WhiteSpace() ),
-			ParameterEndDelimiter(),
-			adapter.addNamedParameter( name.get(), currentIndex() )
+		return OneOrMore(
+				TestNot( OrdinalParameter() ),
+				Sequence(
+						ParameterBeginDelimiter(),
+						ZeroOrMore( WhiteSpace() ),
+						OneOrMore( Alphanumeric() ),
+						name.set( match() ),
+						ZeroOrMore( WhiteSpace() ),
+						ParameterEndDelimiter(),
+						adapter.addNamedParameter( name.get(), currentIndex() )
+				)
 		);
 	}
 
@@ -88,8 +91,40 @@ public class QueryParser extends BaseParser<Recognizer> {
 	}
 
 	@SuppressSubnodes
+	public Rule OrdinalParameter() {
+		return Sequence(
+				ParameterBeginDelimiter(),
+				ZeroOrMore( WhiteSpace() ),
+				OneOrMore( Digit() ),
+				ZeroOrMore( WhiteSpace() ),
+				ParameterEndDelimiter()
+		);
+	}
+
+	@SuppressSubnodes
+	public Rule OrdinalParameterAction() {
+		StringVar identifier = new StringVar( "" );
+
+		return Sequence(
+				ParameterBeginDelimiter(),
+				ZeroOrMore( WhiteSpace() ),
+				OneOrMore( Digit() ),
+				identifier.set( match() ),
+				ZeroOrMore( WhiteSpace() ),
+				ParameterEndDelimiter(),
+				adapter.addPositionalParameter( identifier.get(), currentIndex() )
+		);
+	}
+
+	@SuppressSubnodes
 	public Rule Other() {
-		return OneOrMore( TestNot( NamedParameter() ), TestNot( Quoted() ), TestNot( Escaped() ), ANY );
+		return OneOrMore(
+				TestNot( OrdinalParameter() ),
+				TestNot( NamedParameter() ),
+				TestNot( Quoted() ),
+				TestNot( Escaped() ),
+				ANY
+		);
 	}
 
 	public Rule QuoteDelimiter() {
@@ -148,6 +183,11 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 		private boolean addNamedParameter(String name, int position) {
 			recognizer.namedParameter( name, position );
+			return true;
+		}
+
+		private boolean addPositionalParameter(String identifier, int position) {
+			recognizer.jpaPositionalParameter( Integer.parseInt( identifier ), position );
 			return true;
 		}
 	}
