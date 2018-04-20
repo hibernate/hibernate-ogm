@@ -7,6 +7,8 @@
 package org.hibernate.ogm.datastore.neo4j.query.impl;
 
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
+
+import org.apache.commons.lang3.math.NumberUtils;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.SkipNode;
@@ -45,17 +47,7 @@ public class QueryParser extends BaseParser<Recognizer> {
 	}
 
 	@SuppressSubnodes
-	public Rule ParameterAction() {
-		return FirstOf( OrdinalParameterAction(), NamedParameterAction() );
-	}
-
-	@SuppressSubnodes
-	public Rule ParameterTest() {
-		return FirstOf( OrdinalParameterTest(), NamedParameterTest() );
-	}
-
-	@SuppressSubnodes
-	public Rule NamedParameter(StringVar identifier) {
+	public Rule Parameter(StringVar identifier) {
 		return Sequence(
 				ParameterBeginDelimiter(),
 				ZeroOrMore( WhiteSpace() ),
@@ -67,18 +59,18 @@ public class QueryParser extends BaseParser<Recognizer> {
 	}
 
 	@SuppressSubnodes
-	public Rule NamedParameterTest() {
-		return NamedParameter( new StringVar( "" ) );
+	public Rule ParameterAction() {
+		StringVar identifier = new StringVar( "" );
+
+		return Sequence(
+				Parameter( identifier ),
+				adapter.addParameter( identifier.get(), currentIndex() )
+		);
 	}
 
 	@SuppressSubnodes
-	public Rule NamedParameterAction() {
-		StringVar name = new StringVar( "" );
-
-		return Sequence(
-				NamedParameter( name ),
-				adapter.addNamedParameter( name.get(), currentIndex() )
-		);
+	public Rule ParameterTest() {
+		return Parameter( new StringVar( "" ) );
 	}
 
 	@SuppressSubnodes
@@ -106,33 +98,6 @@ public class QueryParser extends BaseParser<Recognizer> {
 				)
 			),
 			EscapeDelimiter()
-		);
-	}
-
-	@SuppressSubnodes
-	public Rule OrdinalParameter(StringVar identifier) {
-		return Sequence(
-				ParameterBeginDelimiter(),
-				ZeroOrMore( WhiteSpace() ),
-				OneOrMore( Digit() ),
-				identifier.set( match() ),
-				ZeroOrMore( WhiteSpace() ),
-				ParameterEndDelimiter()
-		);
-	}
-
-	@SuppressSubnodes
-	public Rule OrdinalParameterTest() {
-		return OrdinalParameter( new StringVar( "" ) );
-	}
-
-	@SuppressSubnodes
-	public Rule OrdinalParameterAction() {
-		StringVar identifier = new StringVar( "" );
-
-		return Sequence(
-				OrdinalParameter( identifier ),
-				adapter.addPositionalParameter( identifier.get(), currentIndex() )
 		);
 	}
 
@@ -200,13 +165,19 @@ public class QueryParser extends BaseParser<Recognizer> {
 			this.recognizer = recognizer;
 		}
 
+		private boolean addParameter(String identifier, int position) {
+			return NumberUtils.isCreatable( identifier )
+					? addPositionalParameter( Integer.parseInt( identifier ), position )
+					: addNamedParameter( identifier, position );
+		}
+
 		private boolean addNamedParameter(String name, int position) {
 			recognizer.namedParameter( name, position );
 			return true;
 		}
 
-		private boolean addPositionalParameter(String identifier, int position) {
-			recognizer.jpaPositionalParameter( Integer.parseInt( identifier ), position );
+		private boolean addPositionalParameter(int identifier, int position) {
+			recognizer.jpaPositionalParameter( identifier, position );
 			return true;
 		}
 	}
