@@ -7,8 +7,6 @@
 package org.hibernate.ogm.datastore.neo4j.query.impl;
 
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
-
-import org.apache.commons.lang3.math.NumberUtils;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.SkipNode;
@@ -166,9 +164,12 @@ public class QueryParser extends BaseParser<Recognizer> {
 		}
 
 		private boolean addParameter(String identifier, int position) {
-			return NumberUtils.isCreatable( identifier )
-					? addPositionalParameter( Integer.parseInt( identifier ), position )
-					: addNamedParameter( identifier, position );
+			try {
+				return addPositionalParameter( Integer.parseInt( identifier ), position );
+			}
+			catch (NumberFormatException nfe) {
+				return addNamedParameter( identifier, position );
+			}
 		}
 
 		private boolean addNamedParameter(String name, int position) {
