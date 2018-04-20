@@ -46,194 +46,164 @@ public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime(), critic );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime(), null );
 
-	private EntityManager em;
-
 	@Before
 	public void init() throws Exception {
-		em = createEntityManager();
 		persist( critic, portia, athanasia );
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		delete( portia, athanasia, critic );
-		em.close();
 	}
 
 	@Test
 	public void testIteratorSingleResultQuery() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
+			OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
-		OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
-
-		assertAreEquals( portia, poem );
-
-		em.getTransaction().commit();
+			assertAreEquals( portia, poem );
+		} );
 	}
 
 	@Test
 	public void testIteratorSingleResultFromNamedNativeQuery() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQuery" ).getSingleResult();
 
-		OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQuery" ).getSingleResult();
-
-		assertAreEquals( athanasia, poem );
-
-		em.getTransaction().commit();
+			assertAreEquals( athanasia, poem );
+		} );
 	}
-
-
 
 	@Test
 	public void testListMultipleResultQuery() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { author:'Oscar Wilde' } ) RETURN n ORDER BY n.name";
+			@SuppressWarnings("unchecked")
+			List<OscarWildePoem> results = em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getResultList();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { author:'Oscar Wilde' } ) RETURN n ORDER BY n.name";
-		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> results = em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getResultList();
-
-		assertThat( results ).as( "Unexpected number of results" ).hasSize( 2 );
-		assertAreEquals( athanasia, results.get( 0 ) );
-		assertAreEquals( portia, results.get( 1 ) );
-
-		em.getTransaction().commit();
+			assertThat( results ).as( "Unexpected number of results" ).hasSize( 2 );
+			assertAreEquals( athanasia, results.get( 0 ) );
+			assertAreEquals( portia, results.get( 1 ) );
+		} );
 	}
 
 	@Test
 	public void testSingleResultQueryUsingParameter() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:{name}, author:'Oscar Wilde' } ) RETURN n";
+			Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+			query.setParameter( "name", "Portia" );
+			OscarWildePoem poem = (OscarWildePoem) query.getSingleResult();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:{name}, author:'Oscar Wilde' } ) RETURN n";
-		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
-		query.setParameter( "name", "Portia" );
-		OscarWildePoem poem = (OscarWildePoem) query.getSingleResult();
-
-		assertAreEquals( portia, poem );
-
-		em.getTransaction().commit();
+			assertAreEquals( portia, poem );
+		} );
 	}
 
 	@Test
 	public void testSingleResultQueryUsingDateParameter() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { dateOfCreation:{creationDate}, author:'Oscar Wilde' } ) RETURN n";
+			Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+			query.setParameter( "creationDate", new GregorianCalendar( 1810, 3, 10 ).getTime() );
+			OscarWildePoem poem = (OscarWildePoem) query.getSingleResult();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { dateOfCreation:{creationDate}, author:'Oscar Wilde' } ) RETURN n";
-		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
-		query.setParameter( "creationDate", new GregorianCalendar( 1810, 3, 10 ).getTime() );
-		OscarWildePoem poem = (OscarWildePoem) query.getSingleResult();
-
-		assertAreEquals( athanasia, poem );
-
-		em.getTransaction().commit();
+			assertAreEquals( athanasia, poem );
+		} );
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-702")
 	public void testQueryWithCompositeId() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			@SuppressWarnings("unchecked")
+			List<Critic> critics = em.createNativeQuery( "MATCH ( n:Critic ) RETURN n", Critic.class ).getResultList();
 
-		@SuppressWarnings("unchecked")
-		List<Critic> critics = em.createNativeQuery( "MATCH ( n:Critic ) RETURN n", Critic.class ).getResultList();
-
-		assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
-
-		em.getTransaction().commit();
+			assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
+		} );
 	}
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-854")
 	public void testToOneInitializedByQuery() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
+			OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
-		OscarWildePoem poem = (OscarWildePoem) em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getSingleResult();
-
-		assertThat( poem.getCritic() ).isNotNull();
-		assertThat( poem.getCritic().getName() ).as( "Wrong critic name" ).isEqualTo( "Roger" );
-
-		em.getTransaction().commit();
+			assertThat( poem.getCritic() ).isNotNull();
+			assertThat( poem.getCritic().getName() ).as( "Wrong critic name" ).isEqualTo( "Roger" );
+		} );
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testNativeQueryExecuteUpdate() throws Exception {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String findQueryString = "MATCH (n:" + UPDATE_LABEL + ") RETURN n";
+			Query findQuery = em.createNativeQuery( findQueryString );
 
-		String findQueryString = "MATCH (n:" + UPDATE_LABEL + ") RETURN n";
-		Query findQuery = em.createNativeQuery( findQueryString );
+			String createQuery = "CREATE (n:" + UPDATE_LABEL + " { author:'Giorgio Faletti' })";
+			int updates = em.createNativeQuery( createQuery ).executeUpdate();
+			if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+				assertThat( updates ).isEqualTo( 3 ); // 1 node + 1 label + 1 property set
+			}
+			List<Object> createdNode = (List<Object>) findQuery.getResultList();
+			assertThat( createdNode ).hasSize( 1 );
 
-		String createQuery = "CREATE (n:" + UPDATE_LABEL + " { author:'Giorgio Faletti' })";
-		int updates = em.createNativeQuery( createQuery ).executeUpdate();
-		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
-			assertThat( updates ).isEqualTo( 3 ); // 1 node + 1 label + 1 property set
-		}
-		List<Object> createdNode = (List<Object>) findQuery.getResultList();
-		assertThat( createdNode ).hasSize( 1 );
-
-		String deleteQuery = "MATCH (n:" + UPDATE_LABEL + ") DELETE n ";
-		int deletes = em.createNativeQuery( deleteQuery ).executeUpdate();
-		if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
-			assertThat( deletes ).isEqualTo( 1 ); // 1 node
-		}
-		List<Object> uniqueResult = (List<Object>) findQuery.getResultList();
-		assertThat( uniqueResult ).isEmpty();
-
-		em.getTransaction().commit();
+			String deleteQuery = "MATCH (n:" + UPDATE_LABEL + ") DELETE n ";
+			int deletes = em.createNativeQuery( deleteQuery ).executeUpdate();
+			if ( TestHelper.getCurrentDatastoreProviderType() != DatastoreProviderType.NEO4J_HTTP ) {
+				assertThat( deletes ).isEqualTo( 1 ); // 1 node
+			}
+			List<Object> uniqueResult = (List<Object>) findQuery.getResultList();
+			assertThat( uniqueResult ).isEmpty();
+		} );
 	}
 
 	@Test
 	public void testQueryWithPositionalParams() {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { id: {0}, author: {1}} ) RETURN n";
+			Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+			query.setParameter( 0, 1L );
+			query.setParameter( 1, "Oscar Wilde" );
+			OscarWildePoem result = (OscarWildePoem) query.getSingleResult();
 
-		long id = 1L;
-		String author = "Oscar Wilde";
-
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { id: {0}, author: { 1 }} ) RETURN n";
-		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
-		query.setParameter( 0, id );
-		query.setParameter( 1, author );
-		OscarWildePoem result = (OscarWildePoem) query.getSingleResult();
-		assertAreEquals( portia, result );
-
-		em.getTransaction().commit();
+			assertAreEquals( portia, result );
+		} );
 	}
 
 	@Test
 	public void testQueryWithAlternativePositionalParams() {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name: {34}, author: {35}} ) RETURN n";
+			Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+			query.setParameter( 34, "Portia" );
+			query.setParameter( 35, "Oscar Wilde" );
+			OscarWildePoem result = (OscarWildePoem) query.getSingleResult();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name: {34}, author: {35}} ) RETURN n";
-		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
-		query.setParameter( 34, "Portia" );
-		query.setParameter( 35, "Oscar Wilde" );
-		OscarWildePoem result = (OscarWildePoem) query.getSingleResult();
-		assertAreEquals( portia, result );
-
-		em.getTransaction().commit();
+			assertAreEquals( portia, result );
+		} );
 	}
 
 	@Test
 	public void testQueryWithDuplicatedPositionalParams() {
-		em.getTransaction().begin();
+		inTransaction( ( em ) -> {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name: {5}, author: {5}} ) RETURN n";
+			Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+			query.setParameter( 5, "Portia" );
+			List<?> result = query.getResultList();
 
-		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name: {5}, author: {5}} ) RETURN n";
-		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
-		query.setParameter( 5, "Portia" );
-		List<?> result = query.getResultList();
-		assertThat( result ).isEmpty();
-
-		em.getTransaction().commit();
+			assertThat( result ).isEmpty();
+		} );
 	}
 
 	private void persist(Object... entities) {
-		EntityManager em = createEntityManager();
-		em.getTransaction().begin();
-		for ( Object object : entities ) {
-			em.persist( object );
-		}
-		em.getTransaction().commit();
-		em.clear();
+		inTransaction( ( em ) -> {
+			for ( Object object : entities ) {
+				em.persist( object );
+			}
+		} );
 	}
 
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
@@ -245,17 +215,16 @@ public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
 
 	@Override
 	public Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { OscarWildePoem.class, Critic.class };
+		return new Class<?>[]{ OscarWildePoem.class, Critic.class };
 	}
 
 	private void delete(Object... entities) {
-		em.getTransaction().begin();
-		for ( Object object : entities ) {
-			Object entity = em.merge( object );
-			em.remove( entity );
-		}
-		em.getTransaction().commit();
-		em.clear();
+		inTransaction( ( em ) -> {
+			for ( Object object : entities ) {
+				Object entity = em.merge( object );
+				em.remove( entity );
+			}
+		} );
 	}
 
 	private EntityManager createEntityManager() {
