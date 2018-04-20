@@ -199,6 +199,33 @@ public class Neo4jEntityManagerNativeQueryTest extends OgmJpaTestCase {
 		em.getTransaction().commit();
 	}
 
+	@Test
+	public void testQueryWithAlternativePositionalParams() {
+		em.getTransaction().begin();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name: {34}, author: {35}} ) RETURN n";
+		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+		query.setParameter( 34, "Portia" );
+		query.setParameter( 35, "Oscar Wilde" );
+		OscarWildePoem result = (OscarWildePoem) query.getSingleResult();
+		assertAreEquals( portia, result );
+
+		em.getTransaction().commit();
+	}
+
+	@Test
+	public void testQueryWithDuplicatedPositionalParams() {
+		em.getTransaction().begin();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name: {5}, author: {5}} ) RETURN n";
+		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+		query.setParameter( 5, "Portia" );
+		List<?> result = query.getResultList();
+		assertThat( result ).isEmpty();
+
+		em.getTransaction().commit();
+	}
+
 	private void persist(Object... entities) {
 		EntityManager em = createEntityManager();
 		em.getTransaction().begin();
