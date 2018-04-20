@@ -7,6 +7,8 @@
 package org.hibernate.ogm.datastore.neo4j.query.impl;
 
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
+
+import org.apache.commons.lang3.math.NumberUtils;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.SkipNode;
@@ -41,22 +43,34 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 	@SkipNode
 	public Rule QueryPart() {
-		return FirstOf( Quoted(), Escaped(), NamedParameter(), Other() );
+		return FirstOf( Quoted(), Escaped(), ParameterAction(), Other() );
 	}
 
 	@SuppressSubnodes
-	public Rule NamedParameter() {
-		StringVar name = new StringVar( "" );
+	public Rule Parameter(StringVar identifier) {
+		return Sequence(
+				ParameterBeginDelimiter(),
+				ZeroOrMore( WhiteSpace() ),
+				OneOrMore( Alphanumeric() ),
+				identifier.set( match() ),
+				ZeroOrMore( WhiteSpace() ),
+				ParameterEndDelimiter()
+		);
+	}
+
+	@SuppressSubnodes
+	public Rule ParameterAction() {
+		StringVar identifier = new StringVar( "" );
 
 		return Sequence(
-			ParameterBeginDelimiter(),
-			ZeroOrMore( WhiteSpace() ),
-			OneOrMore( Alphanumeric() ),
-			name.set( match() ),
-			ZeroOrMore( WhiteSpace() ),
-			ParameterEndDelimiter(),
-			adapter.addNamedParameter( name.get(), currentIndex() )
+				Parameter( identifier ),
+				adapter.addParameter( identifier.get(), currentIndex() )
 		);
+	}
+
+	@SuppressSubnodes
+	public Rule ParameterTest() {
+		return Parameter( new StringVar( "" ) );
 	}
 
 	@SuppressSubnodes
@@ -89,7 +103,12 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 	@SuppressSubnodes
 	public Rule Other() {
-		return OneOrMore( TestNot( NamedParameter() ), TestNot( Quoted() ), TestNot( Escaped() ), ANY );
+		return OneOrMore(
+				TestNot( ParameterTest() ),
+				TestNot( Quoted() ),
+				TestNot( Escaped() ),
+				ANY
+		);
 	}
 
 	public Rule QuoteDelimiter() {
@@ -146,8 +165,19 @@ public class QueryParser extends BaseParser<Recognizer> {
 			this.recognizer = recognizer;
 		}
 
+		private boolean addParameter(String identifier, int position) {
+			return NumberUtils.isCreatable( identifier )
+					? addPositionalParameter( Integer.parseInt( identifier ), position )
+					: addNamedParameter( identifier, position );
+		}
+
 		private boolean addNamedParameter(String name, int position) {
 			recognizer.namedParameter( name, position );
+			return true;
+		}
+
+		private boolean addPositionalParameter(int identifier, int position) {
+			recognizer.jpaPositionalParameter( identifier, position );
 			return true;
 		}
 	}
