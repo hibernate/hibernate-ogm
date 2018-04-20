@@ -41,24 +41,43 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 	@SkipNode
 	public Rule QueryPart() {
-		return FirstOf( Quoted(), Escaped(), OrdinalParameterAction(), NamedParameter(), Other() );
+		return FirstOf( Quoted(), Escaped(), ParameterAction(), Other() );
 	}
 
 	@SuppressSubnodes
-	public Rule NamedParameter() {
+	public Rule ParameterAction() {
+		return FirstOf( OrdinalParameterAction(), NamedParameterAction() );
+	}
+
+	@SuppressSubnodes
+	public Rule ParameterTest() {
+		return FirstOf( OrdinalParameterTest(), NamedParameterTest() );
+	}
+
+	@SuppressSubnodes
+	public Rule NamedParameter(StringVar identifier) {
+		return Sequence(
+				ParameterBeginDelimiter(),
+				ZeroOrMore( WhiteSpace() ),
+				OneOrMore( Alphanumeric() ),
+				identifier.set( match() ),
+				ZeroOrMore( WhiteSpace() ),
+				ParameterEndDelimiter()
+		);
+	}
+
+	@SuppressSubnodes
+	public Rule NamedParameterTest() {
+		return NamedParameter( new StringVar( "" ) );
+	}
+
+	@SuppressSubnodes
+	public Rule NamedParameterAction() {
 		StringVar name = new StringVar( "" );
 
-		return OneOrMore(
-				TestNot( OrdinalParameter() ),
-				Sequence(
-						ParameterBeginDelimiter(),
-						ZeroOrMore( WhiteSpace() ),
-						OneOrMore( Alphanumeric() ),
-						name.set( match() ),
-						ZeroOrMore( WhiteSpace() ),
-						ParameterEndDelimiter(),
-						adapter.addNamedParameter( name.get(), currentIndex() )
-				)
+		return Sequence(
+				NamedParameter( name ),
+				adapter.addNamedParameter( name.get(), currentIndex() )
 		);
 	}
 
@@ -91,14 +110,20 @@ public class QueryParser extends BaseParser<Recognizer> {
 	}
 
 	@SuppressSubnodes
-	public Rule OrdinalParameter() {
+	public Rule OrdinalParameter(StringVar identifier) {
 		return Sequence(
 				ParameterBeginDelimiter(),
 				ZeroOrMore( WhiteSpace() ),
 				OneOrMore( Digit() ),
+				identifier.set( match() ),
 				ZeroOrMore( WhiteSpace() ),
 				ParameterEndDelimiter()
 		);
+	}
+
+	@SuppressSubnodes
+	public Rule OrdinalParameterTest() {
+		return OrdinalParameter( new StringVar( "" ) );
 	}
 
 	@SuppressSubnodes
@@ -106,12 +131,7 @@ public class QueryParser extends BaseParser<Recognizer> {
 		StringVar identifier = new StringVar( "" );
 
 		return Sequence(
-				ParameterBeginDelimiter(),
-				ZeroOrMore( WhiteSpace() ),
-				OneOrMore( Digit() ),
-				identifier.set( match() ),
-				ZeroOrMore( WhiteSpace() ),
-				ParameterEndDelimiter(),
+				OrdinalParameter( identifier ),
 				adapter.addPositionalParameter( identifier.get(), currentIndex() )
 		);
 	}
@@ -119,8 +139,7 @@ public class QueryParser extends BaseParser<Recognizer> {
 	@SuppressSubnodes
 	public Rule Other() {
 		return OneOrMore(
-				TestNot( OrdinalParameter() ),
-				TestNot( NamedParameter() ),
+				TestNot( ParameterTest() ),
 				TestNot( Quoted() ),
 				TestNot( Escaped() ),
 				ANY
