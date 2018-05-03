@@ -6,13 +6,15 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl;
 
+import java.lang.invoke.MethodHandles;
+
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
-import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.commons.marshall.Marshaller;
 
 public class HotRodClientBuilder {
 
@@ -20,7 +22,7 @@ public class HotRodClientBuilder {
 
 	private InfinispanRemoteConfiguration config;
 
-	private OgmProtoStreamMarshaller marshaller;
+	private Marshaller marshaller;
 
 	private HotRodClientBuilder() {
 		//not to be created directly
@@ -30,7 +32,7 @@ public class HotRodClientBuilder {
 		return new HotRodClientBuilder();
 	}
 
-	public HotRodClientBuilder withConfiguration(InfinispanRemoteConfiguration config, OgmProtoStreamMarshaller marshaller) {
+	public HotRodClientBuilder withConfiguration(InfinispanRemoteConfiguration config, Marshaller marshaller) {
 		this.config = config;
 		this.marshaller = marshaller;
 		return this;

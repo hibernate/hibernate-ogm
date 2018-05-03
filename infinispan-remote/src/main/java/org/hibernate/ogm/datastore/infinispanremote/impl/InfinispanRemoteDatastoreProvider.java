@@ -14,8 +14,8 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
-import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheCreationHandler;
+import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheValidationHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
@@ -40,6 +40,7 @@ import org.hibernate.service.spi.Stoppable;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
+import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
@@ -52,6 +53,8 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 				implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	private static final String SCRIPT_CACHE_NAME = "___script_cache";
 
 	/**
 	 * The org.infinispan.commons.marshall.Marshaller instance which shall be used
@@ -70,6 +73,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	// The Hot Rod client; maintains TCP connections to the datagrid.
 	@EffectivelyFinal
 	private RemoteCacheManager hotrodClient;
+
+	@EffectivelyFinal
+	private RemoteCacheManager scriptManager;
 
 	//Useful to allow people to dump the generated schema,
 	//we use it to capture the schema in tests too.
@@ -109,7 +115,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	@Override
 	public void start() {
 		hotrodClient = HotRodClientBuilder.builder().withConfiguration( config, marshaller ).build();
-		hotrodClient.start();
+		// TODO temporary create another cache manager to handle remote script registration and invocation due to incompatibility of ProtoStreamMarshaller.
+		// When https://issues.jboss.org/browse/ISPN-8020 is closed, we could remove it and reuse the common hotrodClient.
+		scriptManager = HotRodClientBuilder.builder().withConfiguration( config, new GenericJBossMarshaller() ).build();
 		config = null; //no longer needed
 	}
 
@@ -229,5 +237,13 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 			throw log.expectedCachesNotDefined( Collections.singleton( cacheName ) );
 		}
 		return cache;
+	}
+
+	public <K, V> RemoteCache<K, V> getScriptCache() {
+		return scriptManager.getCache( SCRIPT_CACHE_NAME );
+	}
+
+	public <K, V> RemoteCache<K, V> getScriptExecutorCache() {
+		return scriptManager.getCache();
 	}
 }

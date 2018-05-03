@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
+
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.LogMessage;
@@ -85,5 +86,4 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1719, value = "Error during caches start phase")
 	HibernateException errorAtCachesStart(@Cause Exception cause);
-
 }
