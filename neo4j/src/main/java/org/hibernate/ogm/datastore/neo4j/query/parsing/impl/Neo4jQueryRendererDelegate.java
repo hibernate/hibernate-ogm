@@ -10,29 +10,29 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.node;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.relationship;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.antlr.runtime.tree.Tree;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.common.JoinType;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
-import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
-import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.query.parsing.impl.KeepNamedParametersQueryRendererDelegate;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+
+import org.antlr.runtime.tree.Tree;
 
 /**
  * Parser delegate which creates Neo4j queries in form of {@link StringBuilder}s.
@@ -40,7 +40,7 @@ import org.hibernate.ogm.type.spi.TypeTranslator;
  * @author Davide D'Alto
  * @author Guillaume Smet
  */
-public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegate<StringBuilder, Neo4jQueryParsingResult> {
+public class Neo4jQueryRendererDelegate extends KeepNamedParametersQueryRendererDelegate<StringBuilder, Neo4jQueryParsingResult> {
 
 	private static final Log LOG = LoggerFactory.make( MethodHandles.lookup() );
 
@@ -326,111 +326,8 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		propertyHelper.getPropertyIdentifier( targetTypeName, propertyPath, requiredDepth );
 	}
 
-	// TODO Methods below were not required here if fromNamedQuery() could be overridden from super
-
 	@Override
-	public void predicateLess(String comparativePredicate) {
-		addComparisonPredicate( comparativePredicate, Type.LESS );
-	}
-
-	@Override
-	public void predicateLessOrEqual(String comparativePredicate) {
-		addComparisonPredicate( comparativePredicate, Type.LESS_OR_EQUAL );
-	}
-
-	/**
-	 * This implements the equality predicate; the comparison
-	 * predicate could be a constant, a subfunction or
-	 * some random type parameter.
-	 * The tree node has all details but with current tree rendering
-	 * it just passes it's text so we have to figure out the options again.
-	 */
-	@Override
-	public void predicateEquals(final String comparativePredicate) {
-		addComparisonPredicate( comparativePredicate, Type.EQUALS );
-	}
-
-	@Override
-	public void predicateNotEquals(String comparativePredicate) {
-		builder.pushNotPredicate();
-		addComparisonPredicate( comparativePredicate, Type.EQUALS );
-		builder.popBooleanPredicate();
-	}
-
-	@Override
-	public void predicateGreaterOrEqual(String comparativePredicate) {
-		addComparisonPredicate( comparativePredicate, Type.GREATER_OR_EQUAL );
-	}
-
-	@Override
-	public void predicateGreater(String comparativePredicate) {
-		addComparisonPredicate( comparativePredicate, Type.GREATER );
-	}
-
-	private void addComparisonPredicate(String comparativePredicate, Type comparisonType) {
-		Object comparisonValue = fromNamedQuery( comparativePredicate );
-		List<String> property = resolveAlias( propertyPath );
-		builder.addComparisonPredicate( property, comparisonType, comparisonValue );
-	}
-
-	@Override
-	public void predicateIn(List<String> list) {
-		List<Object> values = fromNamedQuery( list );
-		List<String> property = resolveAlias( propertyPath );
-		builder.addInPredicate( property, values );
-	}
-
-	@Override
-	public void predicateBetween(String lower, String upper) {
-		Object lowerComparisonValue = fromNamedQuery( lower );
-		Object upperComparisonValue = fromNamedQuery( upper );
-
-		List<String> property = resolveAlias( propertyPath );
-		builder.addRangePredicate( property, lowerComparisonValue, upperComparisonValue );
-	}
-
-	@Override
-	public void predicateLike(String patternValue, Character escapeCharacter) {
-		Object pattern = fromNamedQuery( patternValue );
-		List<String> property = resolveAlias( propertyPath );
-		builder.addLikePredicate( property, (String) pattern, escapeCharacter );
-	}
-
-	@Override
-	public void predicateIsNull() {
-		List<String> property = resolveAlias( propertyPath );
-		builder.addIsNullPredicate( property );
-	}
-
-	private Object fromNamedQuery(String comparativePredicate) {
-		// It's a named parameter; Value given via setParameter(), taking that as is
-		if ( comparativePredicate.startsWith( ":" ) ) {
-			return new Neo4jQueryParameter( comparativePredicate.substring( 1 ) );
-		}
-		// It's a value given in JP-QL; Convert the literal value
-		else {
-			List<String> path = new ArrayList<String>();
-			path.addAll( propertyPath.getNodeNamesWithoutAlias() );
-
-			PropertyPath fullPath = propertyPath;
-
-			// create the complete path in case it's a join
-			while ( fullPath.getFirstNode().isAlias() && aliasToPropertyPath.containsKey( fullPath.getFirstNode().getName() ) ) {
-				fullPath = aliasToPropertyPath.get( fullPath.getFirstNode().getName() );
-				path.addAll( 0, fullPath.getNodeNamesWithoutAlias() );
-			}
-
-			return propertyHelper.convertToPropertyType( targetTypeName, path, comparativePredicate );
-		}
-	}
-
-	private List<Object> fromNamedQuery(List<String> list) {
-		List<Object> elements = new ArrayList<Object>( list.size() );
-
-		for ( String string : list ) {
-			elements.add( fromNamedQuery( string ) );
-		}
-
-		return elements;
+	protected Object getObjectParameter(String comparativePredicate) {
+		return new Neo4jQueryParameter( comparativePredicate.substring( 1 ) );
 	}
 }
