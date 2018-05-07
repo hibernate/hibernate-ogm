@@ -25,11 +25,13 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDef
 import org.hibernate.ogm.datastore.infinispanremote.impl.sequences.HotRodSequenceHandler;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.InfinispanRemoteBasedQueryParserService;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.util.impl.EffectivelyFinal;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -192,6 +194,11 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	public boolean allowsTransactionEmulation() {
 		// Hot Rod doesn't support "true" transaction yet
 		return true;
+	}
+
+	@Override
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
+		return InfinispanRemoteBasedQueryParserService.class;
 	}
 
 	public String getProtobufPackageName() {
