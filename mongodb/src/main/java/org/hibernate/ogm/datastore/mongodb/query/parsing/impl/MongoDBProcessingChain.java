@@ -16,6 +16,7 @@ import org.hibernate.hql.ast.spi.AstProcessor;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.QueryRendererProcessor;
 import org.hibernate.hql.ast.spi.QueryResolverProcessor;
+import org.hibernate.ogm.query.parsing.impl.HibernateOGMQueryResolverDelegate;
 
 import org.bson.Document;
 
@@ -31,14 +32,15 @@ public class MongoDBProcessingChain implements AstProcessingChain<MongoDBQueryPa
 	private final MongoDBQueryRendererDelegate rendererDelegate;
 
 	public MongoDBProcessingChain(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames, Map<String, Object> namedParameters) {
-		this.resolverProcessor = new QueryResolverProcessor( new MongoDBQueryResolverDelegate() );
+		this.resolverProcessor = new QueryResolverProcessor( new HibernateOGMQueryResolverDelegate() );
 
 		MongoDBPropertyHelper propertyHelper = new MongoDBPropertyHelper( sessionFactory, entityNames );
 		MongoDBQueryRendererDelegate rendererDelegate = new MongoDBQueryRendererDelegate(
 				sessionFactory,
 				entityNames,
 				propertyHelper,
-				namedParameters );
+				namedParameters
+		);
 		this.rendererProcessor = new QueryRendererProcessor( rendererDelegate );
 		this.rendererDelegate = rendererDelegate;
 	}
