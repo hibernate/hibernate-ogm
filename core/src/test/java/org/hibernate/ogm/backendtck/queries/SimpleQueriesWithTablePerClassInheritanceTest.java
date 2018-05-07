@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.queries;
 
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
@@ -67,7 +68,7 @@ public class SimpleQueriesWithTablePerClassInheritanceTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-732")
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE })
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, INFINISPAN_REMOTE })
 	public void testResultsFromPerson() throws Exception {
 		try ( Session session = openSession() ) {
 			Transaction tx = session.beginTransaction();
@@ -81,7 +82,7 @@ public class SimpleQueriesWithTablePerClassInheritanceTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-732")
-	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE })
+	@SkipByGridDialect(value = { MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, INFINISPAN_REMOTE })
 	public void testResultsFromCommunityMember() throws Exception {
 		try ( Session session = openSession() ) {
 			Transaction tx = session.beginTransaction();

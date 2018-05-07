@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.inheritance.tableperclass.family;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.INFINISPAN_REMOTE;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.MONGODB;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_BOLT;
 import static org.hibernate.ogm.datastore.impl.DatastoreProviderType.NEO4J_EMBEDDED;
@@ -68,7 +69,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1294")
 	@SkipByDatastoreProvider(
-			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED, INFINISPAN_REMOTE },
 			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
 	public void testJpqlWithSingleResult() {
 		initDB();
@@ -82,7 +83,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1294")
 	@SkipByDatastoreProvider(
-			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED, INFINISPAN_REMOTE },
 			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
 	public void testJpql() {
 		initDB();
@@ -96,7 +97,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1294")
 	@SkipByDatastoreProvider(
-			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED, INFINISPAN_REMOTE },
 			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
 	public void testJpqlReturnPropertiesForMan() {
 		initDB();
@@ -112,7 +113,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1294")
 	@SkipByDatastoreProvider(
-			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED, INFINISPAN_REMOTE },
 			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
 	public void testJpqlReturnPropertiesForChildren() {
 		initDB();
@@ -132,7 +133,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1294")
 	@SkipByDatastoreProvider(
-			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED, INFINISPAN_REMOTE },
 			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
 	public void testJpqlReturnPropertiesForSubClasses() {
 		initDB();
@@ -158,7 +159,7 @@ public class TablePerClassInheritancePersistTest extends OgmJpaTestCase {
 	@Test
 	@TestForIssue(jiraKey = "OGM-1294")
 	@SkipByDatastoreProvider(
-			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED },
+			value = { MONGODB, NEO4J_BOLT, NEO4J_HTTP, NEO4J_EMBEDDED, INFINISPAN_REMOTE },
 			comment = "They don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy; requires multiple queries")
 	public void testPolymorphicAssociation() {
 		initDB();
