@@ -2577,24 +2577,10 @@ Hibernate OGM by convention will write to several named ``Cache``s, mapping each
 to a "cache name". In the above example, when having an `Hypothesis` entity this will
 write to a Cache named `Hypothesis`.
 
-The benefit is that you can tune each cache (each "table") independently; for example you could
+The benefit is that you can tune, or query, each cache (each "table") independently; for example you could
 configure the caches for the most important data to have a synchronous CacheStore which replicates
 data to a relational database, and have less important entries use an asynchronous CacheStore,
 or none at all, to favour performance over redundancy.
-
-The drawback of this design choice is that each named cache must be pre-defined in the Infinispan
-Server configuration: at this point, the Hot Rod protocol is not allowed to start missing caches
-so Hibernate OGM can not define the missing tables automatically.
-It generates the encoding protobuf, but you have to list the Cache names in the server configuration.
-
-[WARNING]
-====
-For each "table name" your model would generate on a relational database, you have to define
-a matching Cache on the Infinispan Server.
-
-If any Cache is missing, Hibernate OGM will fail to start and list which table names were
-expected, but not found. We plan to automate the creation of missing caches in the future.
-====
 
 ==== Caches creation and Configuration
 
@@ -2720,6 +2706,16 @@ __OGM default configuration__ is transactional.
 We always recommend using transactional caches, at least unless you are confident that data consistency is not important for your use case.
 ====
 
+==== Remote Query Capability
+
+Hibernate OGM backend is able to run the queries it needs to materialize relations.
+From version __5.4.0.Alpha2__ the dialect is capable to translate JPQL or Criteria queries to the Infinispan remote queries.
+But there are still some limitations:
+
+* We don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy
+* Selecting from associations is not yet implemented
+* Query on Byte filed is not currently supported
+
 ==== Known Limitations & Future improvements
 
 The Infinispan Remote dataprovider has some known limitations, some of which are
@@ -2728,11 +2724,6 @@ unsolvable without further development of Infinispan itself.
 Transaction Support::
 We're eagerly waiting for Infinispan to support transactions over Hot Rod, as it
 already provides this feature in Embedded Mode.
-
-Queries::
-At this point the Hibernate OGM backend is able to run the queries it needs to materialize
-relations, but does not yet translate JPQL queries nor Criteria queries to the
-Infinispan remote queries.
 
 Indexing::
 Infinispan supports Hibernate Search annotations directly embedded within its protobuf
