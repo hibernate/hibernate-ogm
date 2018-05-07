@@ -541,7 +541,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		hypothesis.setPosition( 29 );
 		session.persist( hypothesis );
 
-		if ( EnumSet.of( MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
+		if ( EnumSet.of( MONGODB, NEO4J_EMBEDDED, NEO4J_REMOTE, INFINISPAN_REMOTE ).contains( TestHelper.getCurrentDialectType() ) ) {
 			assertQuery( session, query, 9, "Auto-flush should be performed prior to query execution" );
 		}
 		else {
