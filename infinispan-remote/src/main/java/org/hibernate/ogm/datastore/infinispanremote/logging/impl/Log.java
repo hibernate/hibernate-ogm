@@ -86,4 +86,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1719, value = "Error during caches start phase")
 	HibernateException errorAtCachesStart(@Cause Exception cause);
 
+	@Message(id = 1720, value = "Error on parsing native query: <%s>")
+	HibernateException errorOnParsingNativeQuery(String nativeQuery);
 }
