@@ -92,4 +92,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1420, value = "Sequences creation failed: %s, %s")
 	HibernateException sequencesCreationException(String code, String message);
+
+	@Message(id = 1421, value = "Indexes creation failed: %s, %s")
+	HibernateException indexCreationException(String code, String message);
 }

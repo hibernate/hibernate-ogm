@@ -13,6 +13,7 @@ import java.util.Set;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
@@ -59,6 +60,16 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	}
 
 	@Override
+	protected void createIndexesIfMissing(DatastoreProvider provider, List<Neo4jIndexSpec> indexes ) {
+		List<Statement> statements = new ArrayList<>();
+		for ( Neo4jIndexSpec index : indexes ) {
+			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", index.getLabel(), index.getProperties() );
+			statements.add( new Statement( index.asCypherQuery() ) );
+		}
+		run( provider, statements );
+	}
+
+	@Override
 	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
 		List<Statement> statements = new ArrayList<>();
 		for ( UniqueConstraintDetails constraint : constraints ) {
@@ -94,9 +105,11 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	}
 
 	private void runAll(Transaction tx, List<Statement> statements) {
+		List<StatementResult> results = new ArrayList<>();
 		for ( Statement statement : statements ) {
 			StatementResult result = tx.run( statement );
 			validate( result );
+			results.add( result );
 		}
 	}
 
