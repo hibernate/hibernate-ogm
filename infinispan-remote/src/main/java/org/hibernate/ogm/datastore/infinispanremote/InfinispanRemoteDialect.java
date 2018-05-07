@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.infinispanremote.query.impl.InfinispanRemoteQueryDescriptor;
 import org.hibernate.ogm.datastore.infinispanremote.query.impl.InfinispanRemoteQueryHandler;
+import org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.InfinispanRemoteNativeQueryParser;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -179,7 +180,7 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 
 	@Override
 	public InfinispanRemoteQueryDescriptor parseNativeQuery(String nativeQuery) {
-		throw new UnsupportedOperationException( "Native Query not supported by Infinispan Remote Dialect" );
+		return new InfinispanRemoteNativeQueryParser( nativeQuery ).parse();
 	}
 
 	/**
