@@ -21,7 +21,7 @@ public enum GridDialectType {
 
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.InfinispanDialect", false, false),
 
-	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect", true, false ),
+	INFINISPAN_REMOTE( "org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect", true, true ),
 
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.MongoDBDialect", true, true ),
 
