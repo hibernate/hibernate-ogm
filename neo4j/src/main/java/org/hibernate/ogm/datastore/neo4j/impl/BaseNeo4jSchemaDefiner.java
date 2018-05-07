@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.Namespace;
@@ -23,18 +24,23 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Constraint;
 import org.hibernate.mapping.ForeignKey;
+import org.hibernate.mapping.Index;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
+
 import org.jboss.logging.Logger.Level;
+
 import org.neo4j.graphdb.Label;
 
 /**
@@ -81,6 +87,13 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 	}
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	private List<Neo4jIndexSpec> indexSpecs = new ArrayList<>();
+
+	@Override
+	public void validateMapping(SchemaDefinitionContext context) {
+		validateIndexSpecs( context );
+	}
 
 	protected void createUniqueConstraints(DatastoreProvider provider, Database database) {
 		List<UniqueConstraintDetails> constraints = new ArrayList<>();
@@ -181,10 +194,41 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 		List<Sequence> sequences = sequences( context.getDatabase() );
 
 		createSequences( sequences, context.getAllIdSourceKeyMetadata(), provider );
+		createIndexesIfMissing( provider, indexSpecs );
 		createEntityConstraints( provider, context.getDatabase(), sessionFactoryImplementor.getProperties() );
 	}
 
+	private void validateIndexSpecs(SchemaDefinitionContext context) {
+		Database database = context.getDatabase();
+		for ( Namespace namespace : database.getNamespaces() ) {
+			for ( Table table : namespace.getTables() ) {
+				if ( table.isPhysicalTable() ) {
+					Label label = label( table.getName() );
+					Iterator<Index> indexIterator = table.getIndexIterator();
+					while ( indexIterator.hasNext() ) {
+						addIndex( label, indexIterator.next() );
+					}
+				}
+			}
+		}
+	}
+
+	private void addIndex(Label label, Index index) {
+		if ( index != null ) {
+			if ( index.getName() != null ) {
+				if ( log.isEnabled( Level.WARN ) ) {
+					log.warnf( "Neo4j does not support named indexes. Property name='%1$s' is ignored!", index.getName() );
+				}
+			}
+			List<String> properties = CollectionHelper.toStream( index.getColumnIterator() )
+					.map( Column::getName ).collect( Collectors.toList() );
+			indexSpecs.add( new Neo4jIndexSpec( label, properties ) );
+		}
+	}
+
 	protected abstract void createSequences(List<Sequence> sequences, Set<IdSourceKeyMetadata> allIdSourceKeyMetadata, DatastoreProvider provider);
+
+	protected abstract void createIndexesIfMissing(DatastoreProvider provider, List<Neo4jIndexSpec> indexes );
 
 	protected abstract void createUniqueConstraintsIfMissing( DatastoreProvider provider, List<UniqueConstraintDetails> constraints );
 }

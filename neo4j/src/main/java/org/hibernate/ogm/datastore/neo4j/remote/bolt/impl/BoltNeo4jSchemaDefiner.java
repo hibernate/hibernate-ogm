@@ -13,6 +13,7 @@ import java.util.Set;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
@@ -59,6 +60,16 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	}
 
 	@Override
+	protected void createIndexesIfMissing(DatastoreProvider provider, List<Neo4jIndexSpec> indexes ) {
+		List<Statement> statements = new ArrayList<>();
+		for ( Neo4jIndexSpec index : indexes ) {
+			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", index.getLabel(), index.getProperties() );
+			statements.add( new Statement( index.asCypherQuery() ) );
+		}
+		run( provider, statements );
+	}
+
+	@Override
 	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
 		List<Statement> statements = new ArrayList<>();
 		for ( UniqueConstraintDetails constraint : constraints ) {
@@ -69,7 +80,7 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		run( provider, statements );
 	}
 
-	private void run(DatastoreProvider provider, List<Statement> statements) {
+	public static List<StatementResult> run(DatastoreProvider provider, List<Statement> statements) {
 		BoltNeo4jDatastoreProvider boltProvider = (BoltNeo4jDatastoreProvider) provider;
 		Driver driver = boltProvider.getClient().getDriver();
 		Session session = null;
@@ -78,8 +89,9 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 			Transaction tx = null;
 			try {
 				tx = session.beginTransaction();
-				runAll( tx, statements );
+				List<StatementResult> results = runAll( tx, statements );
 				tx.success();
+				return results;
 			}
 			catch (ClientException e) {
 				throw log.constraintsCreationException( e.code(), e.getMessage() );
@@ -93,18 +105,21 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		}
 	}
 
-	private void runAll(Transaction tx, List<Statement> statements) {
+	private static List<StatementResult> runAll(Transaction tx, List<Statement> statements) {
+		List<StatementResult> results = new ArrayList<>();
 		for ( Statement statement : statements ) {
 			StatementResult result = tx.run( statement );
 			validate( result );
+			results.add( result );
 		}
+		return results;
 	}
 
-	private void validate(StatementResult result) {
+	private static void validate(StatementResult result) {
 		result.hasNext();
 	}
 
-	private void close(Resource closable) {
+	private static void close(Resource closable) {
 		if ( closable != null ) {
 			closable.close();
 		}

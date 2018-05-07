@@ -12,9 +12,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 
@@ -107,6 +113,18 @@ public class CollectionHelper {
 			}
 		}
 		return true;
+	}
+
+	public static <T> List<T> toList(Iterable<T> iterable) {
+		return toStream( iterable ).collect( Collectors.toList() );
+	}
+
+	public static <T> Stream<T> toStream(Iterable<T> iterable) {
+		return StreamSupport.stream( iterable.spliterator(), false );
+	}
+
+	public static <T> Stream<T> toStream(Iterator<T> iterator) {
+		return StreamSupport.stream( Spliterators.spliteratorUnknownSize( iterator, Spliterator.ORDERED ), false );
 	}
 
 	/**

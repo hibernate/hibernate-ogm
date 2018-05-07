@@ -12,6 +12,7 @@ import java.util.Set;
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
@@ -54,6 +55,19 @@ public class HttpNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	}
 
 	@Override
+	protected void createIndexesIfMissing(DatastoreProvider provider, List<Neo4jIndexSpec> indexes) {
+		Statements statements = new Statements();
+		for ( Neo4jIndexSpec index : indexes ) {
+			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", index.getLabel(), index.getProperties() );
+			statements.addStatement( new Statement( index.asCypherQuery() ) );
+		}
+		log.debug( "Creating missing indexes" );
+		HttpNeo4jClient remoteClient = ( (HttpNeo4jDatastoreProvider) provider ).getClient();
+		StatementsResponse response = remoteClient.executeQueriesInNewTransaction( statements );
+		validateIndexesCreation( response );
+	}
+
+	@Override
 	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
 		Statements statements = new Statements();
 		for ( UniqueConstraintDetails constraint : constraints ) {
@@ -65,6 +79,13 @@ public class HttpNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		HttpNeo4jClient remoteClient = ( (HttpNeo4jDatastoreProvider) provider ).getClient();
 		StatementsResponse response = remoteClient.executeQueriesInNewTransaction( statements );
 		validateConstraintsCreation( response );
+	}
+
+	private void validateIndexesCreation(StatementsResponse response) {
+		if ( !response.getErrors().isEmpty() ) {
+			ErrorResponse errorResponse = response.getErrors().get( 0 );
+			throw log.indexCreationException( errorResponse.getCode(), errorResponse.getMessage() );
+		}
 	}
 
 	private void validateConstraintsCreation(StatementsResponse response) {
