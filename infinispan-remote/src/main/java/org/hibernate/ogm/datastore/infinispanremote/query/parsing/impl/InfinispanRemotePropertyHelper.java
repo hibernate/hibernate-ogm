@@ -50,10 +50,6 @@ public class InfinispanRemotePropertyHelper extends ParserPropertyHelper {
 			return value;
 		}
 
-		if ( value instanceof String ) {
-			return value;
-		}
-
 		Type propertyType = getPropertyType( entityType, propertyPath );
 		if ( isElementCollection( propertyType ) ) {
 			// For collection of elements we return the type of the collection

@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.hibernate.HibernateException;
+import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
+import org.hibernate.hql.ast.spi.predicate.Predicate;
 
 /**
  * Helper class to append single or multiple values to the wrapped {@link StringBuilder}
@@ -39,6 +41,32 @@ public class InfinispanRemoteQueryBuilder implements Serializable {
 		append( child );
 	}
 
+	/**
+	 * Constructor for conjunction or disjunction predicate
+	 *
+	 * @param operator should be "and" or "or"
+	 * @param negateChildren indicates if apply a negation of each sub predicates
+	 * @param children sub predicates
+	 */
+	public InfinispanRemoteQueryBuilder(String operator, boolean negateChildren, List<Predicate<InfinispanRemoteQueryBuilder>> children) {
+		this.builder = new StringBuilder( "(" );
+
+		int counter = 1;
+		for ( Predicate<InfinispanRemoteQueryBuilder> child : children ) {
+			InfinispanRemoteQueryBuilder nestedQuery = ( negateChildren ) ?
+					( (NegatablePredicate<InfinispanRemoteQueryBuilder>) child ).getNegatedQuery()
+					: child.getQuery();
+
+			builder.append( nestedQuery );
+			builder.append( ")" );
+			if ( counter++ < children.size() ) {
+				builder.append( " " );
+				builder.append( operator );
+				builder.append( " (" );
+			}
+		}
+	}
+
 	public void append(String content) {
 		builder.append( content );
 	}
@@ -48,13 +76,13 @@ public class InfinispanRemoteQueryBuilder implements Serializable {
 	}
 
 	public void appendValue(Object value) {
-		boolean isConstant = value instanceof String;
+		boolean isText = value instanceof String;
 
-		if ( isConstant ) {
+		if ( isText ) {
 			builder.append( "'" );
 		}
 		builder.append( value );
-		if ( isConstant ) {
+		if ( isText ) {
 			builder.append( "'" );
 		}
 	}

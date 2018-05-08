@@ -49,7 +49,7 @@ public class InfinispanRemoteQueryHandler {
 		QueryFactory queryFactory = Search.getQueryFactory( cache );
 		Query query = queryFactory.create( queryDescriptor.getText() );
 
-		applyNamedParamters( queryParameters, query );
+		applyNamedParameters( queryParameters, query );
 		applyRowSelection( queryParameters, query );
 
 		boolean hasProjection = !queryDescriptor.getProjections().isEmpty();
@@ -66,7 +66,7 @@ public class InfinispanRemoteQueryHandler {
 				new ProtostreamPayloadClosableIterator( query.list() );
 	}
 
-	private void applyNamedParamters(QueryParameters queryParameters, Query query) {
+	private void applyNamedParameters(QueryParameters queryParameters, Query query) {
 		for ( Map.Entry<String, TypedGridValue> param : queryParameters.getNamedParameters().entrySet() ) {
 			query.setParameter( param.getKey(), getValue( param ) );
 		}
