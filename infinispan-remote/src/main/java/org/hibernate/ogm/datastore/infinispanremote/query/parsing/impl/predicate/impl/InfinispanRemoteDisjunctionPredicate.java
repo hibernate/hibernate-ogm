@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.predicat
 
 import org.hibernate.hql.ast.spi.predicate.DisjunctionPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-import org.hibernate.hql.ast.spi.predicate.Predicate;
 import org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.InfinispanRemoteQueryBuilder;
 
 /**
@@ -23,25 +22,11 @@ public class InfinispanRemoteDisjunctionPredicate extends DisjunctionPredicate<I
 
 	@Override
 	public InfinispanRemoteQueryBuilder getQuery() {
-		return getBaseQuery( " or " );
+		return new InfinispanRemoteQueryBuilder( "or", false, children );
 	}
 
 	@Override
 	public InfinispanRemoteQueryBuilder getNegatedQuery() {
-		return getBaseQuery( " and " );
-	}
-
-	private InfinispanRemoteQueryBuilder getBaseQuery(final String operator) {
-		InfinispanRemoteQueryBuilder builder = new InfinispanRemoteQueryBuilder( "(" );
-
-		int counter = 1;
-		for ( Predicate<InfinispanRemoteQueryBuilder> child : children ) {
-			builder.append( ( (NegatablePredicate<InfinispanRemoteQueryBuilder>) child ).getNegatedQuery() );
-			builder.append( ")" );
-			if ( counter++ < children.size() ) {
-				builder.append( operator + "(" );
-			}
-		}
-		return builder;
+		return new InfinispanRemoteQueryBuilder( "and", true, children );
 	}
 }
