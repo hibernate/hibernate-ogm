@@ -2709,12 +2709,13 @@ We always recommend using transactional caches, at least unless you are confiden
 ==== Remote Query Capability
 
 Hibernate OGM backend is able to run the queries it needs to materialize relations.
-From version __5.4.0.Alpha2__ the dialect is capable to translate JPQL or Criteria queries to the Infinispan remote queries.
+From version __5.4.0.Alpha2__ the dialect is capable to translate JPQL to the **corresponding** Infinispan remote queries
+or to execute native queries.
 But there are still some limitations:
 
 * We don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy
-* Selecting from associations is not yet implemented
-* Query on Byte filed is not currently supported
+* Selecting from associations is not yet implemented (example: select h.author.name from Hypothesis h where author is a one-to-one association)
+* Query on Byte filed is currently unsupported
 
 ==== Known Limitations & Future improvements
 
