@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.predicat
 
 import org.hibernate.hql.ast.spi.predicate.ConjunctionPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-import org.hibernate.hql.ast.spi.predicate.Predicate;
 import org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.InfinispanRemoteQueryBuilder;
 
 /**
@@ -23,33 +22,11 @@ public class InfinispanRemoteConjunctionPredicate extends ConjunctionPredicate<I
 
 	@Override
 	public InfinispanRemoteQueryBuilder getQuery() {
-		InfinispanRemoteQueryBuilder builder = new InfinispanRemoteQueryBuilder();
-
-		int counter = 1;
-		builder.append( "(" );
-		for ( Predicate<InfinispanRemoteQueryBuilder> child : children ) {
-			builder.append( child.getQuery() );
-			builder.append( ")" );
-			if ( counter++ < children.size() ) {
-				builder.append( " and (" );
-			}
-		}
-		return builder;
+		return new InfinispanRemoteQueryBuilder( "and", false, children );
 	}
 
 	@Override
 	public InfinispanRemoteQueryBuilder getNegatedQuery() {
-		InfinispanRemoteQueryBuilder builder = new InfinispanRemoteQueryBuilder();
-
-		int counter = 1;
-		builder.append( "(" );
-		for ( Predicate<InfinispanRemoteQueryBuilder> child : children ) {
-			builder.append( ( (NegatablePredicate<InfinispanRemoteQueryBuilder>) child ).getNegatedQuery() );
-			builder.append( ")" );
-			if ( counter++ < children.size() ) {
-				builder.append( " or (" );
-			}
-		}
-		return builder;
+		return new InfinispanRemoteQueryBuilder( "or", true, children );
 	}
 }
