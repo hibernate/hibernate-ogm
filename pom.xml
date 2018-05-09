@@ -578,6 +578,7 @@
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <argLine>${additionalRuntimeArgLine}</argLine>
+                        <runOrder>alphabetical</runOrder>
                         <systemPropertyVariables>
                             <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
                             <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
