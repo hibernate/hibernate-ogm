@@ -42,7 +42,7 @@ import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
+
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -523,7 +523,7 @@ public class CompensationSpiTest extends OgmTestCase {
 	 * In JTA the failed commit attempt will have done the rollback already. The TX is NOT_ACTIVE in this case.
 	 */
 	private void rollbackTransactionIfActive(Transaction transaction) {
-		if ( transaction.getStatus() == TransactionStatus.ACTIVE ) {
+		if ( transaction.isActive() ) {
 			transaction.rollback();
 		}
 	}

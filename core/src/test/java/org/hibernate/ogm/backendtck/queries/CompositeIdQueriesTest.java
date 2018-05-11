@@ -26,7 +26,7 @@ import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SessionHelper.ProjectionResult;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestSessionFactory;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -101,7 +101,7 @@ public class CompositeIdQueriesTest extends OgmTestCase {
 
 	@After
 	public void closeSession() {
-		if ( tx != null && tx.getStatus() == TransactionStatus.ACTIVE ) {
+		if ( tx != null && tx.isActive() ) {
 			tx.commit();
 			tx = null;
 		}

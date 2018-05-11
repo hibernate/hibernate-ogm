@@ -25,7 +25,7 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
-import org.hibernate.resource.transaction.spi.TransactionStatus;
+
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -101,7 +101,7 @@ public class SimpleQueriesWithTablePerClassNotSupportedTest extends OgmTestCase 
 				assertThat( e.getCause().getMessage() ).startsWith( "OGM000089: " );
 			}
 			finally {
-				if ( tx != null && tx.getStatus() == TransactionStatus.ACTIVE ) {
+				if ( tx != null && tx.isActive() ) {
 					tx.rollback();
 				}
 			}
