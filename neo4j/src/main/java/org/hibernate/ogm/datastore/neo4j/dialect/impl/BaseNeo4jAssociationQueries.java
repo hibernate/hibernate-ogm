@@ -104,7 +104,7 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 
 	/*
 	 * MATCH (o:ENTITY:table1 {id: {0}}), (t:ENTITY:table2 {id: {1}})
-	 * CREATE UNIQUE (o) -[r:role {props}]-> (t)
+	 * MERGE (o) -[r:role {props}]-> (t)
 	 * RETURN r
 	 */
 	private static String initCreateRelationshipQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
@@ -115,7 +115,7 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 		queryBuilder.append( ", " );
 		offset += ownerEntityKeyMetadata.getColumnNames().length;
 		appendEntityNode( "t", targetEntityKeyMetadata, queryBuilder, offset );
-		queryBuilder.append( " CREATE UNIQUE (n)" );
+		queryBuilder.append( " MERGE (n)" );
 		queryBuilder.append( " -[r" );
 		queryBuilder.append( ":" );
 		appendRelationshipType( queryBuilder, associationKeyMetadata );
@@ -347,7 +347,7 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 	 * Example 1:
 	 *
 	 * MATCH (owner:ENTITY:MultiAddressAccount {login: {0}})
-	 * CREATE UNIQUE (owner) -[r:addresses {name: {1}}]-> (target:EMBEDDED:`MultiAddressAccount_addresses` {city: {2}, country: {3}})
+	 * MERGE (owner) -[r:addresses {name: {1}}]-> (target:EMBEDDED:`MultiAddressAccount_addresses` {city: {2}, country: {3}})
 	 * RETURN r
 	 *
 	 * Example 2:
@@ -360,11 +360,11 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 		int offset = associationKey.getEntityKey().getColumnNames().length;
 		if ( isPartOfEmbedded( collectionRole ) ) {
 			String[] pathToEmbedded = appendEmbeddedNodes( collectionRole, queryBuilder );
-			queryBuilder.append( " CREATE UNIQUE (e) -[r:" );
+			queryBuilder.append( " MERGE (e) -[r:" );
 			appendRelationshipType( queryBuilder, pathToEmbedded[pathToEmbedded.length - 1] );
 		}
 		else {
-			queryBuilder.append( " CREATE UNIQUE (owner) -[r:" );
+			queryBuilder.append( " MERGE (owner) -[r:" );
 			appendRelationshipType( queryBuilder, collectionRole );
 		}
 		appendProperties( queryBuilder, associationKey.getMetadata().getRowKeyIndexColumnNames(), offset );
