@@ -28,7 +28,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 		return new ModuleMemberRegistrationDeployment
 			.Builder( InfinispanModuleMemberRegistrationIT.class )
 			.persistenceXml( persistenceXml() )
-			.manifestDependencies( "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.infinispan-embedded:${hibernate-ogm.module.slot} services" )
+			.manifestDependencies( "org.hibernate.ogm:${module-slot.org.hibernate.ogm.short-id} services, org.hibernate.ogm.infinispan-embedded:${module-slot.org.hibernate.ogm.short-id} services" )
 			.createDeployment();
 	}
 
@@ -41,7 +41,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 				.getOrCreateProperties()
 				.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan_embedded" ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
-				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
+				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${module-slot.org.hibernate.search.short-id}" ).up()
 			.up().up();
 	}
 

@@ -5,19 +5,19 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.infinispan-remote" slot="${hibernate.ogm.module.slot}">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.infinispan-remote" slot="${module-slot.org.hibernate.ogm.short-id}">
     <resources>
         <artifact name="${org.hibernate.ogm:hibernate-ogm-infinispan-remote}" />
     </resources>
     <dependencies>
-        <module name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}" />
-        <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
+        <module name="org.hibernate.ogm" slot="${module-slot.org.hibernate.ogm.short-id}" />
+        <module name="org.hibernate.hql" slot="${module-slot.org.hibernate.hql.full-id}" />
 
-        <module name="org.infinispan.client.hotrod" slot="${infinispan.module.slot}" />
-        <module name="org.infinispan.protostream" slot="${infinispan.module.slot}" />
-        <module name="org.infinispan.commons" slot="${infinispan.module.slot}" />
-        <module name="org.infinispan.query.dsl" slot="${infinispan.module.slot}" />
-        <module name="org.infinispan.query.remote.client" slot="${infinispan.module.slot}" />
+        <module name="org.infinispan.client.hotrod" slot="${module-slot.org.infinispan.short-id}" />
+        <module name="org.infinispan.protostream" slot="${module-slot.org.infinispan.short-id}" />
+        <module name="org.infinispan.commons" slot="${module-slot.org.infinispan.short-id}" />
+        <module name="org.infinispan.query.dsl" slot="${module-slot.org.infinispan.short-id}" />
+        <module name="org.infinispan.query.remote.client" slot="${module-slot.org.infinispan.short-id}" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />

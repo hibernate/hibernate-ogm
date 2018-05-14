@@ -37,7 +37,7 @@ public class HotRodSearchIntegrationIT extends MagiccardsDatabaseScenario {
 		String persistenceXml = ModulesHelper.injectVariables( persistenceXml().exportAsString() );
 		webArchive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
 		webArchive.addAsResource( "hotrod-client-testingconfiguration-offset100.properties", "hotrod-client-configuration.properties" );
-		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${hibernate-ogm.module.slot} services, org.hibernate.ogm.infinispan-remote:${hibernate-ogm.module.slot} services" );
+		ModulesHelper.addModulesDependencyDeclaration( webArchive, "org.hibernate.ogm:${module-slot.org.hibernate.ogm.short-id} services, org.hibernate.ogm.infinispan-remote:${module-slot.org.hibernate.ogm.short-id} services" );
 		return webArchive;
 	}
 
@@ -51,7 +51,7 @@ public class HotRodSearchIntegrationIT extends MagiccardsDatabaseScenario {
 						.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 						.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan_remote" ).up()
 						.createProperty().name( "hibernate.ogm.infinispan_remote.configuration_resource_name" ).value( "hotrod-client-configuration.properties" ).up()
-						.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
+						.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${module-slot.org.hibernate.search.short-id}" ).up()
 				.up().up();
 	}
 

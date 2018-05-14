@@ -2203,7 +2203,7 @@ in any NoSQL store supported by Infinispan:
 
 How to configure it? Here is a simple cheat sheet to get you started with this type of setup:
 
-* Add `org.infinispan:infinispan-directory-provider:{infinispanVersion}` to your dependencies
+* Add `org.infinispan:infinispan-directory-provider:{infinispan-version}` to your dependencies
 * set these configuration properties:
 
 ** `hibernate.search.default.directory_provider = infinispan`

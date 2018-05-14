@@ -5,21 +5,21 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm" slot="${module-slot.org.hibernate.ogm.short-id}">
     <resources>
         <artifact name="${org.hibernate.ogm:hibernate-ogm-core}" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" export="true" slot="${hibernate-orm.module.slot}" />
+        <module name="org.hibernate" export="true" slot="${module-slot.org.hibernate.short-id}" />
         <module name="org.hibernate.commons-annotations" />
-        <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
-        <module name="org.hibernate.search.orm" slot="${hibernate-search.module.slot}" optional="true" />
+        <module name="org.hibernate.hql" slot="${module-slot.org.hibernate.hql.full-id}" />
+        <module name="org.hibernate.search.orm" slot="${module-slot.org.hibernate.search.short-id}" optional="true" />
 
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
 
-        <module name="org.hibernate.ogm.jipijapa" slot="${hibernate.ogm.jipijapa.module.slot}" services="import" />
+        <module name="org.hibernate.ogm.jipijapa" slot="${module-slot.org.hibernate.ogm.jipijapa.full-id}" services="import" />
 
         <!-- Needed for Iso8601StringDateType -->
         <module name="javax.xml.bind.api"/>

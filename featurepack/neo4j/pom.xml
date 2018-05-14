@@ -30,7 +30,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-graph-algo</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-graph-matching</artifactId>
-            <version>${neo4jGraphMatchingVersion}</version>
+            <version>${version.org.neo4j.neo4j-graph-matching}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-kernel</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -90,7 +90,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-jmx</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -102,7 +102,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-udc</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -114,7 +114,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>${luceneVersion}</version>
+            <version>${version.org.apache.lucene}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-codecs</artifactId>
-            <version>${luceneVersion}</version>
+            <version>${version.org.apache.lucene}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -138,7 +138,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
-            <version>${luceneVersion}</version>
+            <version>${version.org.apache.lucene}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -150,7 +150,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>${luceneVersion}</version>
+            <version>${version.org.apache.lucene}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -162,7 +162,7 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>${luceneVersion}</version>
+            <version>${version.org.apache.lucene}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -174,7 +174,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-codegen</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -186,7 +186,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-collections</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -198,7 +198,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-common</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -210,7 +210,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-configuration</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -222,7 +222,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-compiler-2.3</artifactId>
-            <version>${neo4jCypherCompiler23Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-2.3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -234,7 +234,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-frontend-2.3</artifactId>
-            <version>${neo4jCypherCompiler23Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-2.3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -246,7 +246,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-compiler-3.1</artifactId>
-            <version>${neo4jCypherCompiler31Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.1}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -258,7 +258,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-frontend-3.1</artifactId>
-            <version>${neo4jCypherCompiler31Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.1}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -270,7 +270,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-compiler-3.2</artifactId>
-            <version>${neo4jCypherCompiler32Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.2}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -282,7 +282,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-frontend-3.2</artifactId>
-            <version>${neo4jCypherCompiler32Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.2}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -294,7 +294,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-ir-3.2</artifactId>
-            <version>${neo4jCypherCompiler32Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.2}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -306,7 +306,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-compiler-3.3</artifactId>
-            <version>${neo4jCypherCompiler33Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -318,7 +318,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-frontend-3.3</artifactId>
-            <version>${neo4jCypherCompiler33Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -330,7 +330,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-ir-3.3</artifactId>
-            <version>${neo4jCypherCompiler33Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -342,7 +342,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-cypher-logical-plans-3.3</artifactId>
-            <version>${neo4jCypherCompiler33Version}</version>
+            <version>${version.org.neo4j.neo4j-cypher-compiler-3.3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -354,7 +354,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-graphdb-api</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -366,7 +366,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-index</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -378,7 +378,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-io</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -390,7 +390,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-values</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -402,7 +402,7 @@
         <dependency>
             <groupId>org.neo4j.driver</groupId>
             <artifactId>neo4j-java-driver</artifactId>
-            <version>${neo4jJavaDriverVersion}</version>
+            <version>${version.org.neo4j.driver}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -414,7 +414,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-logging</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -426,7 +426,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-lucene-index</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -438,7 +438,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-lucene-upgrade</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -450,7 +450,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-primitive-collections</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -462,7 +462,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-resource</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -474,7 +474,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-ssl</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -486,7 +486,7 @@
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-unsafe</artifactId>
-            <version>${neo4jVersion}</version>
+            <version>${version.org.neo4j}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -498,7 +498,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>${neo4jBouncyCastleVersion}</version>
+            <version>${version.neo4j.org.bouncycastle}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -510,7 +510,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>${neo4jBouncyCastleVersion}</version>
+            <version>${version.neo4j.org.bouncycastle}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -522,7 +522,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>${neo4jNettyVersion}</version>
+            <version>${version.neo4j.io.netty}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -534,7 +534,7 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>${neo4jCaffeineVersion}</version>
+            <version>${version.neo4j.com.github.ben-manes.caffeine}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -546,7 +546,7 @@
         <dependency>
             <groupId>org.parboiled</groupId>
             <artifactId>parboiled-scala_2.11</artifactId>
-            <version>${parboiledVersion}</version>
+            <version>${version.org.parboiled}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -558,7 +558,7 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>${neo4jScalaLibraryVersion}</version>
+            <version>${version.neo4j.org.scala-lang}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -570,7 +570,7 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-reflect</artifactId>
-            <version>${neo4jScalaLibraryVersion}</version>
+            <version>${version.neo4j.org.scala-lang}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -582,7 +582,7 @@
         <dependency>
             <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
             <artifactId>concurrentlinkedhashmap-lru</artifactId>
-            <version>${neo4jConcurrentlinkedhashmapVersion}</version>
+            <version>${version.neo4j.com.googlecode.concurrentlinkedhashmap}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -594,7 +594,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${neo4jCommonsLang3Version}</version>
+            <version>${version.neo4j.org.apache.commons.lang3}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -630,7 +630,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/neo4j/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/neo4j/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/neo4j</directory>
@@ -646,7 +646,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/neo4j/internal/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/neo4j/internal/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/neo4j-internal</directory>

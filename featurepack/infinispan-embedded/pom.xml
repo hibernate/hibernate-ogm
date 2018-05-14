@@ -16,7 +16,7 @@
     <description>Hibernate OGM WildFly Feature Pack - Hibernate OGM Infinispan Embedded</description>
 
     <properties>
-        <infinispan.module.slot>ispn-9.2</infinispan.module.slot>
+        <module-slot.org.infinispan.short-id>ispn-9.2</module-slot.org.infinispan.short-id>
     </properties>
 
     <dependencies>
@@ -71,7 +71,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/infinispan-embedded/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/infinispan-embedded/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/infinispan-embedded</directory>

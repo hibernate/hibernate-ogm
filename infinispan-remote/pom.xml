@@ -23,12 +23,11 @@
     <description>Persist objects in Infinispan over Hot Rod, the remote client protocol of Infinispan</description>
 
     <properties>
-        <jdkTargetForProcessor>1.8</jdkTargetForProcessor>
         <!-- Skipping enforcer dependency convergence check as WildFly / Infinispan Server artifact
              causes several dependency convergence issues which are beyond our control -->
         <enforcer.dependencyconvergence.skip>true</enforcer.dependencyconvergence.skip>
-        <infinispanServerName>infinispan-server</infinispanServerName>
-        <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
+        <infinispan-server.name>infinispan-server</infinispan-server.name>
+        <infinispan-server.home>${project.build.directory}/${infinispan-server.name}</infinispan-server.home>
     </properties>
 
     <dependencies>
@@ -150,7 +149,7 @@
         <dependency>
             <groupId>org.infinispan.server</groupId>
             <artifactId>infinispan-server-build</artifactId>
-            <version>${infinispanVersion}</version>
+            <version>${version.org.infinispan}</version>
             <type>zip</type>
             <scope>test</scope>
             <exclusions>
@@ -194,7 +193,7 @@
                         <phase>compile</phase>
                         <configuration>
                             <config-file>infinispan-server-provisioning.xml</config-file>
-                            <server-name>${infinispanServerName}</server-name>
+                            <server-name>${infinispan-server.name}</server-name>
                         </configuration>
                     </execution>
                 </executions>
@@ -250,7 +249,6 @@
                           to speed tests and avoid FLUSH issue
                            -->
                     <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false</argLine>
-                    <skipExec>${skipUnitTests}</skipExec>
                     <!-- Apache Lucene uses assertions which currently fail on JDK9: -->
                     <!-- not sure yet how that is going to be resolved, but it's not an OGM problem. -->
                     <enableAssertions>false</enableAssertions>
@@ -313,16 +311,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipUnitTests>false</skipUnitTests>
-            </properties>
-        </profile>
-     </profiles>
 </project>

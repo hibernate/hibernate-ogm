@@ -65,7 +65,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/mongodb/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/mongodb/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/mongodb</directory>

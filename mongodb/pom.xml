@@ -179,16 +179,16 @@
                                 </goals>
                                 <configuration>
                                     <source>
-                                        def mongoDir = project.properties['embeddedMongoDbTempDir'].replace('\\','/');
+                                        def mongoDir = project.properties['mongodb.embedded.temp-dir'].replace('\\','/');
                                         println "[INFO] ------------------------------------------------------------------------";
                                         println "[INFO] MONGO DB BUILD INFO                                                     ";
                                         println "[INFO] ------------------------------------------------------------------------";
                                         println "[INFO] Extracting MongoDB distribution to ${mongoDir} and        ";
-                                        println "[INFO] launching MongoDB process on port ${embeddedMongoDbPort}. The properties";
-                                        println "[INFO] 'embeddedMongoDbTempDir' and 'embeddedMongoDbPort' can be used to       ";
+                                        println "[INFO] launching MongoDB process on port ${mongodb.embedded.port}. The properties";
+                                        println "[INFO] 'mongodb.embedded.temp-dir' and 'mongodb.embedded.port' can be used to  ";
                                         println "[INFO] specify another directory and/or port like this:                        ";
                                         println "[INFO]                                                                         ";
-                                        println "[INFO]     mvn test -DembeddedMongoDbTempDir=%dir% -DembeddedMongoDbPort=%port%";
+                                        println "[INFO]     mvn test -mongodb.embedded.temp-dir=%dir% -mongodb.embedded.port=%port%";
                                         println "[INFO]                                                                         ";
                                         println "[INFO] To use an external Mongo DB instance instead, specify the               ";
                                         println "[INFO] 'useExternalMongoDb' property:                                          ";
@@ -209,8 +209,8 @@
                                 </goals>
                                 <configuration>
                                     <source>
-                                        def mongoDir = project.properties['embeddedMongoDbTempDir'].replace('\\','/');
-                                        def mongoLogDir = project.properties['embeddedMongoDbLogDir'].replace('\\','/');
+                                        def mongoDir = project.properties['mongodb.embedded.temp-dir'].replace('\\','/');
+                                        def mongoLogDir = project.properties['mongodb.embedded.log-dir'].replace('\\','/');
 
                                         def tempDir = new File(mongoDir);
                                         ant.delete(dir : tempDir);
@@ -231,8 +231,8 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <environmentVariables>
-                                <MONGODB_PORT>${embeddedMongoDbPort}</MONGODB_PORT>
-                                <MONGODB_HOSTNAME>${embeddedMongoDbBindIp}</MONGODB_HOSTNAME>
+                                <MONGODB_PORT>${mongodb.embedded.port}</MONGODB_PORT>
+                                <MONGODB_HOSTNAME>${mongodb.embedded.bind-ip}</MONGODB_HOSTNAME>
                             </environmentVariables>
                             <forkMode>once</forkMode>
                         </configuration>

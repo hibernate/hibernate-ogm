@@ -17,7 +17,7 @@ cache:
     - $HOME/.m2
 env:
   global:
-    - NEO4J_VERSION=$(xmlstarlet sel -N maven=http://maven.apache.org/POM/4.0.0 -t -m '/maven:project/maven:properties' -v maven:neo4jVersion bom/pom.xml)
+    - NEO4J_VERSION=$(xmlstarlet sel -N maven=http://maven.apache.org/POM/4.0.0 -t -m '/maven:project/maven:properties' -v maven:version.org.neo4j bom/pom.xml)
     - NEO4J_HOSTNAME=127.0.0.1 NEO4J_PORT=7474 NEO4J_USERNAME=neo4j NEO4J_PASSWORD=hibernate NEO4J_HOME=neo4j-community-$NEO4J_VERSION
 before_install:
   - curl http://dist.neo4j.org/neo4j-community-$NEO4J_VERSION-unix.tar.gz | tar xz

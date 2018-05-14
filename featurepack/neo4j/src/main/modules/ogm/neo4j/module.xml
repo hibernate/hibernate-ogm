@@ -5,7 +5,7 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.neo4j" slot="${hibernate.ogm.module.slot}">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.neo4j" slot="${module-slot.org.hibernate.ogm.short-id}">
     <resources>
         <artifact name="${org.hibernate.ogm:hibernate-ogm-neo4j}" />
         <artifact name="${org.neo4j:neo4j}" />
@@ -18,13 +18,13 @@
         <artifact name="${org.neo4j:neo4j-udc}" />
     </resources>
     <dependencies>
-        <module name="org.hibernate.ogm" slot="${hibernate.ogm.module.slot}" />
-        <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
+        <module name="org.hibernate.ogm" slot="${module-slot.org.hibernate.ogm.short-id}" />
+        <module name="org.hibernate.hql" slot="${module-slot.org.hibernate.hql.full-id}" />
 
-        <module name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}"/>
+        <module name="org.hibernate.ogm.internal.parboiled" slot="${module-slot.org.hibernate.ogm.short-id}"/>
 
         <!-- Separate module to make sure it's not visible to the applications -->
-        <module name="org.hibernate.ogm.neo4j.internal" slot="${hibernate.ogm.module.slot}" services="import" />
+        <module name="org.hibernate.ogm.neo4j.internal" slot="${module-slot.org.hibernate.ogm.short-id}" services="import" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />

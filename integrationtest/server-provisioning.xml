@@ -9,7 +9,7 @@
 		<feature-pack
 			groupId="org.hibernate"
 			artifactId="hibernate-search-jbossmodules-orm"
-			version="${hibernateSearchVersion}" />
+			version="${version.org.hibernate.search}" />
 
 		<feature-pack
 			groupId="org.hibernate.ogm"

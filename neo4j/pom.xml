@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${neo4jCommonsLang3Version}</version>
+            <version>${version.neo4j.org.apache.commons.lang3}</version>
         </dependency>
 
         <dependency>

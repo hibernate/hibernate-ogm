@@ -18,16 +18,16 @@
     <description>Temporary repackaging of Infinispan modules as a Wildfly feature pack</description>
 
     <properties>
-        <infinispanClientAzureVersion>6.1.0</infinispanClientAzureVersion>
-        <infinispanClientOauthVersion>20090531</infinispanClientOauthVersion>
-        <infinispanClientHibernateSearchVersion>5.9.0.Final</infinispanClientHibernateSearchVersion>
+        <version.com.microsoft.azure.azure-storage>6.1.0</version.com.microsoft.azure.azure-storage>
+        <version.net.oauth.core>20090531</version.net.oauth.core>
+        <version.org.hibernate.hibernate-search-jbossmodules-engine>5.9.0.Final</version.org.hibernate.hibernate-search-jbossmodules-engine>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
-            <version>${infinispanClientAzureVersion}</version>
+            <version>${version.com.microsoft.azure.azure-storage}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>net.oauth.core</groupId>
             <artifactId>oauth</artifactId>
-            <version>${infinispanClientOauthVersion}</version>
+            <version>${version.net.oauth.core}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-jbossmodules-engine</artifactId>
-            <version>${infinispanClientHibernateSearchVersion}</version>
+            <version>${version.org.hibernate.hibernate-search-jbossmodules-engine}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -111,7 +111,7 @@
                                 <artifactItem>
                                     <groupId>org.infinispan</groupId>
                                     <artifactId>infinispan-wildfly-modules</artifactId>
-                                    <version>${infinispanVersion}</version>
+                                    <version>${version.org.infinispan}</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${template.dir}</outputDirectory>

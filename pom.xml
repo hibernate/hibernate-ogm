@@ -34,21 +34,25 @@
     </modules>
 
     <properties>
-        <minJdkVersion>1.8</minJdkVersion>
 
-        <maven.compiler.source>${minJdkVersion}</maven.compiler.source>
-        <maven.compiler.target>${minJdkVersion}</maven.compiler.target>
-        <!-- The plugin org.wildfly.plugins:wildfly-maven-plugin requires Maven version 3.3.1 -->
-        <minMavenVersion>3.3.1</minMavenVersion>
+        <!-- Test dependencies -->
 
-        <jdkTargetForProcessor>${minJdkVersion}</jdkTargetForProcessor>
-        <!-- test / build-only dependency versions, managed below -->
-        <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
-        <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
-        <arquillianVersion>1.2.0.Final</arquillianVersion>
-        <wildflyArquillianVersion>2.1.0.Final</wildflyArquillianVersion>
-        <jmhVersion>1.0</jmhVersion>
-        <bytemanVersion>4.0.0-BETA5</bytemanVersion>
+        <version.junit>4.12</version.junit>
+        <version.io.takari.junit>1.2.7</version.io.takari.junit>
+        <version.org.easytesting.fest-assert>1.4</version.org.easytesting.fest-assert>
+        <version.org.mockito>1.9.5</version.org.mockito>
+        <version.org.hamcrest>1.3</version.org.hamcrest>
+        <version.com.google.guava>18.0</version.com.google.guava>
+        <version.com.experlog.xapool>1.5.0</version.com.experlog.xapool>
+        <version.org.skyscreamer.jsonassert>1.2.3</version.org.skyscreamer.jsonassert>
+        <version.org.jboss.naming>7.1.0.Final</version.org.jboss.naming>
+        <version.org.jboss.shrinkwrap>1.2.2</version.org.jboss.shrinkwrap>
+        <version.org.jboss.arquillian>1.2.0.Final</version.org.jboss.arquillian>
+        <version.org.wildfly.arquillian>2.1.0.Final</version.org.wildfly.arquillian>
+        <version.org.openjdk.jmh>1.21</version.org.openjdk.jmh>
+        <version.org.jboss.byteman>4.0.2</version.org.jboss.byteman>
+        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
+        <version.javax.enterprise>2.0</version.javax.enterprise>
 
         <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -57,38 +61,94 @@
              setting the value to an interface where you know multicast works
           -->
         <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
-        <skipUnitTests>false</skipUnitTests>
 
         <!-- The following properties configure the embedded MongoDB instance used for tests -->
-        <embeddedMongoDbVersion>${mongodbVersion}</embeddedMongoDbVersion>
-        <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
-        <embeddedMongoDbTempDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}extracted</embeddedMongoDbTempDir>
-        <embeddedMongoDbLogDir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</embeddedMongoDbLogDir>
+        <mongodb.embedded.version>${version.org.mongodb}</mongodb.embedded.version>
+        <mongodb.embedded.bind-ip>127.0.0.1</mongodb.embedded.bind-ip>
+        <mongodb.embedded.temp-dir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}extracted</mongodb.embedded.temp-dir>
+        <mongodb.embedded.log-dir>${project.build.directory}${file.separator}embeddedMongoDb${file.separator}logs</mongodb.embedded.log-dir>
         <!-- Not using default port to reduce chances of shutting down an external MongoDB instance -->
-        <embeddedMongoDbPort>27018</embeddedMongoDbPort>
+        <mongodb.embedded.port>27018</mongodb.embedded.port>
 
-        <!-- Target version of WildFly (for testing and JipiJapa integration) -->
-        <version.wildfly>12.0.0.Final</version.wildfly>
-        <hibernateWildflyClassifier>wildfly-12-dist</hibernateWildflyClassifier>
+        <!-- JPA 2.2 patch -->
+
         <jpa22patch.version>1.0.0.Beta2</jpa22patch.version>
         <jpa22patch.filename>hibernate-jpa-api-2.2-wildflymodules-${jpa22patch.version}-wildfly-${version.wildfly}-patch.zip</jpa22patch.filename>
 
-        <cdi20patch.version>3.0.2.Final</cdi20patch.version>
-        <cdi20patch.filename>wildfly-${version.wildfly}-weld-${cdi20patch.version}-patch.zip</cdi20patch.filename>
-        <cdi20patch.url>http://download.jboss.org/weld/${cdi20patch.version}/${cdi20patch.filename}</cdi20patch.url>
+        <!-- Module slots -->
 
-        <!-- This slot property is used by the modules project and the integration tests -->
-        <hibernate-search.module.slot>${hibernateSearchFamilyVersion}</hibernate-search.module.slot>
+        <module-slot.org.hibernate.ogm.short-id>${parsed-version.majorVersion}.${parsed-version.minorVersion}</module-slot.org.hibernate.ogm.short-id>
+        <module-slot.org.hibernate.ogm.jipijapa.full-id>${project.version}</module-slot.org.hibernate.ogm.jipijapa.full-id>
+        <module-slot.org.hibernate.search.short-id>${parsed-version.org.hibernate.search.majorVersion}.${parsed-version.org.hibernate.search.minorVersion}</module-slot.org.hibernate.search.short-id>
+        <module-slot.org.hibernate.short-id>${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}</module-slot.org.hibernate.short-id>
+        <module-slot.org.hibernate.hql.full-id>${version.org.hibernate.hql}</module-slot.org.hibernate.hql.full-id>
+        <module-slot.org.infinispan.short-id>ispn-${parsed-version.org.infinispan.majorVersion}.${parsed-version.org.infinispan.minorVersion}</module-slot.org.infinispan.short-id>
+
+        <!-- Maven plugins versions -->
+
+        <version.animal-sniffer.plugin>1.15</version.animal-sniffer.plugin>
+        <version.antrun.plugin>1.8</version.antrun.plugin>
+        <version.assembly.plugin>3.1.0</version.assembly.plugin>
+        <version.buildhelper.plugin>3.0.0</version.buildhelper.plugin>
+        <version.buildnumber.plugin>1.4</version.buildnumber.plugin>
+        <version.checkstyle.plugin>2.17</version.checkstyle.plugin>
+        <version.clean.plugin>3.0.0</version.clean.plugin>
+        <version.clirr.plugin>2.7</version.clirr.plugin>
+        <version.compiler.plugin>3.7.0</version.compiler.plugin>
+        <version.copy.plugin>0.0.5</version.copy.plugin>
+        <version.dependency.plugin>3.0.2</version.dependency.plugin>
+        <version.deploy.plugin>2.8.2</version.deploy.plugin>
+        <version.embedmongo.plugin>0.3.5</version.embedmongo.plugin>
+        <version.de.flapdoodle.embed.mongo>2.0.3</version.de.flapdoodle.embed.mongo>
+        <version.enforcer.plugin>3.0.0-M1</version.enforcer.plugin>
+        <version.groovy.plugin>2.0</version.groovy.plugin>
+        <version.org.codehaus.groovy>2.4.12</version.org.codehaus.groovy>
+        <version.help.plugin>2.2</version.help.plugin>
+        <version.install.plugin>2.5.2</version.install.plugin>
+        <version.jar.plugin>3.0.2</version.jar.plugin>
+        <version.javadoc.plugin>3.0.0</version.javadoc.plugin>
+        <version.processor.plugin>3.2.0</version.processor.plugin>
+        <version.release.plugin>2.5.3</version.release.plugin>
+        <version.resources.plugin>3.0.2</version.resources.plugin>
+        <version.site.plugin>3.6</version.site.plugin>
+        <version.source.plugin>3.0.0</version.source.plugin>
+        <version.surefire.plugin>2.21.0</version.surefire.plugin>
+        <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
+        <version.wildfly.plugin>1.2.1.Final</version.wildfly.plugin>
+        <version.org.wildfly.build-tools>1.2.9.Final</version.org.wildfly.build-tools>
 
         <!-- Asciidoctor -->
-        <hibernate-asciidoctor-theme.version>1.0.1.Final</hibernate-asciidoctor-theme.version>
-        <asciidoctor-maven-plugin.version>1.5.3</asciidoctor-maven-plugin.version>
-        <jruby.version>1.7.26</jruby.version>
-        <asciidoctorj.version>1.5.4.1</asciidoctorj.version>
-        <asciidoctorj-pdf.version>1.5.0-alpha.11</asciidoctorj-pdf.version>
+
+        <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
+        <version.org.hibernate.infra.hibernate-asciidoctor-theme>1.0.2.Final</version.org.hibernate.infra.hibernate-asciidoctor-theme>
+        <version.org.jruby>9.1.15.0</version.org.jruby>
+        <version.org.asciidoctor.asciidoctorj>1.5.6</version.org.asciidoctor.asciidoctorj>
+        <version.org.asciidoctor.asciidoctorj-pdf>1.5.0-alpha.16</version.org.asciidoctor.asciidoctorj-pdf>
+
+        <!-- Build settings -->
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Can be overridden by subprojects if dependency convergence cannot be achieved -->
         <enforcer.dependencyconvergence.skip>false</enforcer.dependencyconvergence.skip>
+
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.testTarget>${maven.compiler.target}</maven.compiler.testTarget>
+        <maven.compiler.testSource>${maven.compiler.source}</maven.compiler.testSource>
+        <!--
+                Options to override the compiler arguments directly on the compiler argument line to separate between what
+                the IDE understands as the source level and what the Maven compiler actually use.
+        -->
+        <maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
+        <maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
+        <maven.compiler.argument.testTarget>${maven.compiler.testTarget}</maven.compiler.argument.testTarget>
+        <maven.compiler.argument.testSource>${maven.compiler.testSource}</maven.compiler.argument.testSource>
+
+        <jdk.min.version>${maven.compiler.argument.source}</jdk.min.version>
+        <!-- The plugin org.wildfly.plugins:wildfly-maven-plugin requires Maven version 3.3.1 -->
+        <maven.min.version>3.3.1</maven.min.version>
     </properties>
 
     <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are
@@ -98,112 +158,113 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.12</version>
+                <version>${version.junit}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.takari.junit</groupId>
                 <artifactId>takari-cpsuite</artifactId>
-                <version>1.2.7</version>
+                <version>${version.io.takari.junit}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.easytesting</groupId>
                 <artifactId>fest-assert</artifactId>
-                <version>1.4</version>
+                <version>${version.org.easytesting.fest-assert}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.experlog</groupId>
                 <artifactId>xapool</artifactId>
                 <scope>test</scope>
-                <version>1.5.0</version>
+                <version>${version.com.experlog.xapool}</version>
             </dependency>
             <dependency>
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
-                <version>1.2.3</version>
+                <version>${version.org.skyscreamer.jsonassert}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.byteman</groupId>
                 <artifactId>byteman</artifactId>
-                <version>${bytemanVersion}</version>
+                <version>${version.org.jboss.byteman}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.byteman</groupId>
                 <artifactId>byteman-bmunit</artifactId>
-                <version>${bytemanVersion}</version>
+                <version>${version.org.jboss.byteman}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.byteman</groupId>
                 <artifactId>byteman-install</artifactId>
-                <version>${bytemanVersion}</version>
+                <version>${version.org.jboss.byteman}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
               <groupId>org.jboss.naming</groupId>
               <artifactId>jnp-client</artifactId>
               <scope>test</scope>
-              <version>${jbossNamingVersion}</version>
+              <version>${version.org.jboss.naming}</version>
             </dependency>
             <dependency>
               <groupId>org.jboss.naming</groupId>
               <artifactId>jnpserver</artifactId>
               <scope>test</scope>
-              <version>${jbossNamingVersion}</version>
+              <version>${version.org.jboss.naming}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-bom</artifactId>
-                <version>${shrinkwrapVersion}</version>
+                <version>${version.org.jboss.shrinkwrap}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>1.9.5</version>
+                <version>${version.org.mockito}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-core</artifactId>
-                <version>1.3</version>
+                <version>${version.org.hamcrest}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>18.0</version>
+                <version>${version.com.google.guava}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-core</artifactId>
-                <version>${jmhVersion}</version>
+                <version>${version.org.openjdk.jmh}</version>
             </dependency>
             <dependency>
                 <groupId>org.openjdk.jmh</groupId>
                 <artifactId>jmh-generator-annprocess</artifactId>
-                <version>${jmhVersion}</version>
+                <version>${version.org.openjdk.jmh}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
-                <version>${jbossLoggingProcessorVersion}</version>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-annotations</artifactId>
-                <version>${jbossLoggingProcessorVersion}</version>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-transaction-spi</artifactId>
-                <version>${jbossTransactionSPIVersion}</version>
+                <version>${version.org.jboss.jboss-transaction-spi}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -235,11 +296,14 @@
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <showWarnings>true</showWarnings>
-                    <source>${minJdkVersion}</source>
-                    <target>${minJdkVersion}</target>
+                    <source>${maven.compiler.argument.source}</source>
+                    <target>${maven.compiler.argument.target}</target>
+                    <testSource>${maven.compiler.argument.testSource}</testSource>
+                    <testTarget>${maven.compiler.argument.testTarget}</testTarget>
                     <encoding>UTF-8</encoding>
                     <!-- Annotation processor is run as an independent step -->
                     <proc>none</proc>
@@ -274,10 +338,10 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${minJdkVersion},)</version>
+                                    <version>[${jdk.min.version},)</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>${minMavenVersion}</version>
+                                    <version>${maven.min.version}</version>
                                 </requireMavenVersion>
                                 <bannedDependencies>
                                     <searchTransitive>true</searchTransitive>
@@ -318,80 +382,31 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!-- This defines the properties 'parsedVersion.majorVersion'
-                    and 'parsedVersion.minorVersion' to be in synch with the current project version -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>parse-project-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>parse-orm-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <configuration>
-                            <propertyPrefix>hibernateParsedVersion</propertyPrefix>
-                            <versionString>${hibernateVersion}</versionString>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>parse-search-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <configuration>
-                            <propertyPrefix>hibernateSearchParsedVersion</propertyPrefix>
-                            <versionString>${hibernateSearchVersion}</versionString>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>parse-mongodb-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <configuration>
-                            <propertyPrefix>mongodbParsedVersion</propertyPrefix>
-                            <versionString>${mongodbVersion}</versionString>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>parse-wildfly-version</id>
-                        <goals>
-                            <goal>parse-version</goal>
-                        </goals>
-                        <configuration>
-                            <propertyPrefix>wildflyParsedVersion</propertyPrefix>
-                            <versionString>${version.wildfly}</versionString>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.wildfly.plugins</groupId>
                     <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>1.2.1.Final</version>
+                    <version>${version.wildfly.plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-                    <version>1.2.7.Final</version>
+                    <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.build</groupId>
+                    <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.build-tools}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>${version.antrun.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.3</version>
+                    <version>${version.javadoc.plugin}</version>
                     <configuration>
                         <quiet>true</quiet>
                         <!--
@@ -407,12 +422,12 @@
                             <additionalDependency>
                                 <groupId>org.jboss.logging</groupId>
                                 <artifactId>jboss-logging-annotations</artifactId>
-                                <version>${jbossLoggingProcessorVersion}</version>
+                                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
                             </additionalDependency>
                             <dependency>
                                 <groupId>org.jboss.spec.javax.transaction</groupId>
                                 <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                                <version>${jbossJtaAPIVersion}</version>
+                                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec}</version>
                             </dependency>
                         </additionalDependencies>
                         <!-- Exclude implementation classes from the javadoc -->
@@ -437,7 +452,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${version.jar.plugin}</version>
                     <dependencies>
                         <dependency>
                             <!-- This override is needed to fix
@@ -453,31 +468,31 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${version.clean.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.5.2</version>
+                    <version>${version.install.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.5.1</version>
+                    <version>${version.site.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>${version.resources.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.5.1</version>
+                    <version>${version.compiler.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>${version.enforcer.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.17</version>
+                    <version>${version.checkstyle.plugin}</version>
                     <dependencies>
                         <!-- force SLF4J dependency to align
                              Maven internals and CheckStyle's
@@ -487,12 +502,12 @@
                         <dependency>
                             <groupId>org.slf4j</groupId>
                             <artifactId>jcl-over-slf4j</artifactId>
-                            <version>1.7.5</version>
+                            <version>${version.org.slf4j}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.slf4j</groupId>
                             <artifactId>slf4j-jdk14</artifactId>
-                            <version>1.7.5</version>
+                            <version>${version.org.slf4j}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -521,7 +536,7 @@
                 <plugin>
                     <groupId>org.bsc.maven</groupId>
                     <artifactId>maven-processor-plugin</artifactId>
-                    <version>2.2.4</version>
+                    <version>${version.processor.plugin}</version>
                     <executions>
                         <!-- Run annotation processors on src/main/java sources -->
                         <execution>
@@ -534,7 +549,7 @@
                                 <processors>
                                     <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
                                 </processors>
-                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${jdkTargetForProcessor} -target ${jdkTargetForProcessor}</compilerArguments>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${maven.compiler.argument.source} -target ${maven.compiler.argument.target} -Aorg.jboss.logging.tools.addGeneratedAnnotation=false</compilerArguments>
                             </configuration>
                         </execution>
                     </executions>
@@ -542,13 +557,7 @@
                         <dependency>
                             <groupId>org.jboss.logging</groupId>
                             <artifactId>jboss-logging-processor</artifactId>
-                            <version>${jbossLoggingProcessorVersion}</version>
-                            <scope>compile</scope>
-                        </dependency>
-                        <dependency>
-                            <groupId>javax.annotation</groupId>
-                            <artifactId>jsr250-api</artifactId>
-                            <version>1.0</version>
+                            <version>${version.org.jboss.logging.jboss-logging-tools}</version>
                             <scope>compile</scope>
                         </dependency>
                     </dependencies>
@@ -556,7 +565,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>animal-sniffer-maven-plugin</artifactId>
-                    <version>1.15</version>
+                    <version>${version.animal-sniffer.plugin}</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.ow2.asm</groupId>
@@ -574,7 +583,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20.1</version>
+                    <version>${version.surefire.plugin}</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <argLine>${additionalRuntimeArgLine}</argLine>
@@ -590,33 +599,33 @@
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <version>${asciidoctor-maven-plugin.version}</version>
+                    <version>${version.asciidoctor.plugin}</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.jruby</groupId>
                             <artifactId>jruby-complete</artifactId>
-                            <version>${jruby.version}</version>
+                            <version>${version.org.jruby}</version>
                         </dependency>
                          <dependency>
                             <groupId>org.asciidoctor</groupId>
                             <artifactId>asciidoctorj</artifactId>
-                            <version>${asciidoctorj.version}</version>
+                            <version>${version.org.asciidoctor.asciidoctorj}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.asciidoctor</groupId>
                             <artifactId>asciidoctorj-pdf</artifactId>
-                            <version>${asciidoctorj-pdf.version}</version>
+                            <version>${version.org.asciidoctor.asciidoctorj-pdf}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>ch.mfrey.maven.plugin</groupId>
                     <artifactId>copy-maven-plugin</artifactId>
-                    <version>0.0.5</version>
+                    <version>${version.copy.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.6</version>
+                    <version>${version.assembly.plugin}</version>
                     <configuration>
                         <tarLongFileMode>posix</tarLongFileMode>
                         <descriptors>
@@ -633,28 +642,10 @@
                             </goals>
                         </execution>
                     </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-archiver</artifactId>
-                            <!-- Required override to work on Java 9 -->
-                            <version>3.3</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-io</artifactId>
-                            <version>2.7.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.apache.apache.resources</groupId>
-                            <artifactId>apache-source-release-assembly-descriptor</artifactId>
-                            <version>1.0.6</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
+                    <version>${version.release.plugin}</version>
                     <configuration>
                         <goals>deploy</goals>
                         <preparationGoals>clean install</preparationGoals>
@@ -669,7 +660,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${version.source.plugin}</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -682,26 +673,26 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>${version.deploy.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-help-plugin</artifactId>
-                    <version>2.2</version>
+                    <version>${version.help.plugin}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.20.1</version>
+                    <version>${version.failsafe.plugin}</version>
                 </plugin>
                 <!-- Unpack test from hibernate-ogm-core to re-run them on each other module database integration -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>${version.dependency.plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.10</version>
+                    <version>${version.buildhelper.plugin}</version>
                 </plugin>
                 <plugin>
                     <!-- This plugin's configuration is used in m2e only. -->
@@ -797,7 +788,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>buildnumber-maven-plugin</artifactId>
-                    <version>1.4</version>
+                    <version>${version.buildnumber.plugin}</version>
                     <executions>
                         <execution>
                             <phase>validate</phase>
@@ -815,46 +806,41 @@
                 <plugin>
                     <groupId>com.github.joelittlejohn.embedmongo</groupId>
                     <artifactId>embedmongo-maven-plugin</artifactId>
-                    <version>0.3.4</version>
+                    <version>${version.embedmongo.plugin}</version>
                     <configuration>
-                        <port>${embeddedMongoDbPort}</port>
+                        <port>${mongodb.embedded.port}</port>
                         <logging>file</logging>
-                        <logFile>${embeddedMongoDbLogDir}/embedded-mongodb.log</logFile>
-                        <bindIp>${embeddedMongoDbBindIp}</bindIp>
-                        <version>${embeddedMongoDbVersion}</version>
+                        <logFile>${mongodb.embedded.log-dir}/mongodb.embedded.log</logFile>
+                        <bindIp>${mongodb.embedded.bind-ip}</bindIp>
+                        <version>${mongodb.embedded.version}</version>
                     </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>de.flapdoodle.embed</groupId>
                             <artifactId>de.flapdoodle.embed.mongo</artifactId>
-                            <version>2.0.3</version>
+                            <version>${version.de.flapdoodle.embed.mongo}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.gmaven</groupId>
                     <artifactId>groovy-maven-plugin</artifactId>
-                    <version>2.0</version>
+                    <version>${version.groovy.plugin}</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.codehaus.groovy</groupId>
                             <artifactId>groovy-all</artifactId>
-                            <version>2.4.12</version>
+                            <version>${version.org.codehaus.groovy}</version>
                         </dependency>
                     </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>com.savage7.maven.plugins</groupId>
-                    <artifactId>maven-external-dependency-plugin</artifactId>
-                    <version>0.5</version>
                 </plugin>
                 <plugin>
                     <!-- Creates a report by running "mvn clirr:clirr" -->
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>clirr-maven-plugin</artifactId>
-                    <version>2.7</version>
+                    <version>${version.clirr.plugin}</version>
                     <configuration>
-                        <comparisonVersion>5.0.0.Final</comparisonVersion>
+                        <comparisonVersion>5.3.0.Final</comparisonVersion>
                         <excludes>
                             <exclude>org/hibernate/ogm/**/impl/**</exclude>
                         </excludes>
@@ -930,7 +916,6 @@
                 <plugins>
                     <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.3</version>
                         <executions>
                             <execution>
                                 <id>generate-javadoc</id>

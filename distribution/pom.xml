@@ -50,7 +50,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.lucene</groupId>
                                     <artifactId>lucene-core</artifactId>
-                                    <version>${luceneVersion}</version>
+                                    <version>${version.org.apache.lucene}</version>
                                     <type>jar</type>
                                 </artifactItem>
                            </artifactItems>

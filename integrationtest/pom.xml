@@ -11,10 +11,10 @@
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
-        <wildFlyServerName>wildfly-${version.wildfly}</wildFlyServerName>
-        <jboss.home>${project.build.directory}/${wildFlyServerName}</jboss.home>
-        <infinispanServerName>infinispan-server</infinispanServerName>
-        <infinispan-server.home>${project.build.directory}/${infinispanServerName}</infinispan-server.home>
+        <wildfly-server.name>wildfly-${version.wildfly}</wildfly-server.name>
+        <jboss.home>${project.build.directory}/${wildfly-server.name}</jboss.home>
+        <infinispan-server.name>infinispan-server</infinispan-server.name>
+        <infinispan-server.home>${project.build.directory}/${infinispan-server.name}</infinispan-server.home>
 
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -30,7 +30,7 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>${arquillianVersion}</version>
+                <version>${version.org.jboss.arquillian}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -111,7 +111,7 @@
                         <phase>compile</phase>
                         <configuration>
                             <config-file>server-provisioning.xml</config-file>
-                            <server-name>${wildFlyServerName}</server-name>
+                            <server-name>${wildfly-server.name}</server-name>
                         </configuration>
                     </execution>
                 </executions>
@@ -260,7 +260,7 @@
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
-            <version>${wildflyArquillianVersion}</version>
+            <version>${version.org.wildfly.arquillian}</version>
             <scope>test</scope>
             <exclusions>
                 <!-- Pulled in transitively; Neither available on 
@@ -295,18 +295,18 @@
         <dependency>
             <groupId>org.jboss.spec.javax.ejb</groupId>
             <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-            <version>1.0.0.Final</version>
+            <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.1-api</artifactId>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
-            <version>1.2</version>
+            <version>${version.javax.enterprise}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -374,12 +374,12 @@
                                     println "[INFO] ------------------------------------------------------------------------"
                                     println "[INFO] MONGO DB BUILD INFO                                                     "
                                     println "[INFO] ------------------------------------------------------------------------"
-                                    println "[INFO] Extracting MongoDB distribution to " + project.properties['embeddedMongoDbTempDir'] + " and        "
-                                    println "[INFO] launching MongoDB process on port " + project.properties['embeddedMongoDbPort'] + ". The properties"
-                                    println "[INFO] 'embeddedMongoDbTempDir' and 'embeddedMongoDbPort' can be used to       "
+                                    println "[INFO] Extracting MongoDB distribution to " + project.properties['mongodb.embedded.temp-dir'] + " and        "
+                                    println "[INFO] launching MongoDB process on port " + project.properties['mongodb.embedded.port'] + ". The properties"
+                                    println "[INFO] 'mongodb.embedded.temp-dir' and 'mongodb.embedded.port' can be used to       "
                                     println "[INFO] specify another directory and/or port like this:                        "
                                     println "[INFO]                                                                         "
-                                    println "[INFO]     mvn test -DembeddedMongoDbTempDir=%dir% -DembeddedMongoDbPort=%port%"
+                                    println "[INFO]     mvn test -Dmongodb.embedded.temp-dir=%dir% -Dmongodb.embedded.port=%port%"
                                     println "[INFO]                                                                         "
                                     println "[INFO] To use an external Mongo DB instance instead, specify the               "
                                     println "[INFO] 'useExternalMongoDb' property:                                          "
@@ -390,15 +390,15 @@
                                     println "[INFO] variables MONGODB_HOSTNAME and MONGODB_PORT, respectively.              "
                                     println "[INFO] ------------------------------------------------------------------------"
 
-                                    def tempDir = new File(project.properties['embeddedMongoDbTempDir'])
+                                    def tempDir = new File(project.properties['mongodb.embedded.temp-dir'])
                                     ant.delete(dir : tempDir)
                                     ant.mkdir(dir : tempDir)
 
-                                    def logDir = new File(project.properties['embeddedMongoDbLogDir'])
+                                    def logDir = new File(project.properties['mongodb.embedded.log-dir'])
                                     ant.delete(dir : logDir)
                                     ant.mkdir(dir : logDir)
 
-                                    System.setProperty( "de.flapdoodle.embed.io.tmpdir", project.properties['embeddedMongoDbTempDir'] )
+                                    System.setProperty( "de.flapdoodle.embed.io.tmpdir", project.properties['mongodb.embedded.temp-dir'] )
                                     </source>
                                 </configuration>
                             </execution>
@@ -408,8 +408,8 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <environmentVariables>
-                                <MONGODB_PORT>${embeddedMongoDbPort}</MONGODB_PORT>
-                                <MONGODB_HOSTNAME>${embeddedMongoDbBindIp}</MONGODB_HOSTNAME>
+                                <MONGODB_PORT>${mongodb.embedded.port}</MONGODB_PORT>
+                                <MONGODB_HOSTNAME>${mongodb.embedded.bind-ip}</MONGODB_HOSTNAME>
                             </environmentVariables>
                         </configuration>
                     </plugin>
@@ -458,7 +458,7 @@
                                 <phase>compile</phase>
                                 <configuration>
                                     <config-file>infinispan-server-provisioning.xml</config-file>
-                                    <server-name>${infinispanServerName}</server-name>
+                                    <server-name>${infinispan-server.name}</server-name>
                                 </configuration>
                             </execution>
                         </executions>

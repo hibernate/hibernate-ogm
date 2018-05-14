@@ -57,7 +57,7 @@
                                 <artifactItem>
                                     <groupId>org.hibernate.infra</groupId>
                                     <artifactId>hibernate-asciidoctor-theme</artifactId>
-                                    <version>${hibernate-asciidoctor-theme.version}</version>
+                                    <version>${version.org.hibernate.infra.hibernate-asciidoctor-theme}</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/</outputDirectory>
@@ -171,20 +171,18 @@
                         <tabsize>4</tabsize>
 
                         <wildfly-version>${version.wildfly}</wildfly-version>
-                        <wildfly-short-version>${wildflyParsedVersion.majorVersion}.${wildflyParsedVersion.minorVersion}</wildfly-short-version>
+                        <wildfly-short-version>${parsed-version.wildfly.majorVersion}.${parsed-version.wildfly.minorVersion}</wildfly-short-version>
                         <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
-                        <hibernate-ogm-module-slot>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</hibernate-ogm-module-slot>
-                        <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
-                        <hibernate-wildfly-classifier>${hibernateWildflyClassifier}</hibernate-wildfly-classifier>
-                        <hibernate-orm-major-minor-version>${hibernateParsedVersion.majorVersion}.${hibernateParsedVersion.minorVersion}</hibernate-orm-major-minor-version>
-                        <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
-                        <hibernate-search-module-slot>${hibernate-search.module.slot}</hibernate-search-module-slot>
-                        <hibernate-search-major-minor-version>${hibernateSearchParsedVersion.majorVersion}.${hibernateSearchParsedVersion.minorVersion}</hibernate-search-major-minor-version>
-                        <infinispan-version>${infinispanVersion}</infinispan-version>
-                        <jboss-jta-version>${narayanaVersion}</jboss-jta-version>
-                        <ehcache-version>${ehcacheVersion}</ehcache-version>
-                        <mongodb-version>${mongodbParsedVersion.majorVersion}.${mongodbParsedVersion.minorVersion}</mongodb-version>
-                        <slf4j-version>${slf4jVersion}</slf4j-version>
+                        <hibernate-ogm-module-slot>${module-slot.org.hibernate.ogm.short-id}</hibernate-ogm-module-slot>
+                        <hibernate-orm-version>${version.org.hibernate}</hibernate-orm-version>
+                        <hibernate-orm-major-minor-version>${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}</hibernate-orm-major-minor-version>
+                        <hibernate-search-version>${version.org.hibernate.search}</hibernate-search-version>
+                        <hibernate-search-module-slot>${module-slot.org.hibernate.search.short-id}</hibernate-search-module-slot>
+                        <hibernate-search-major-minor-version>${parsed-version.org.hibernate.search.majorVersion}.${parsed-version.org.hibernate.search.minorVersion}</hibernate-search-major-minor-version>
+                        <infinispan-version>${version.org.infinispan}</infinispan-version>
+                        <jboss-jta-version>${version.org.jboss.narayana}</jboss-jta-version>
+                        <mongodb-version>${parsed-version.org.mongodb.majorVersion}.${parsed-version.org.mongodb.minorVersion}</mongodb-version>
+                        <slf4j-version>${version.org.slf4j}</slf4j-version>
                     </attributes>
                 </configuration>
             </plugin>

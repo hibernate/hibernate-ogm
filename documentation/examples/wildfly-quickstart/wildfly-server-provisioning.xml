@@ -5,7 +5,7 @@
 		<feature-pack
 			groupId="org.hibernate"
 			artifactId="hibernate-search-jbossmodules-orm"
-			version="${hibernateSearchVersion}" />
+			version="${version.org.hibernate.search}" />
 
 		<!-- add every Hibernate OGM packs dialects your application needs -->
 		<feature-pack

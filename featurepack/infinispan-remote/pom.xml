@@ -15,10 +15,6 @@
     <name>Hibernate OGM WildFly Feature Pack - Hibernate OGM Infinispan Remote</name>
     <description>Hibernate OGM WildFly Feature - Hibernate OGM Infinispan Remote</description>
 
-    <properties>
-        <infinispan.module.slot>ispn-9.2</infinispan.module.slot>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
@@ -72,7 +68,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/infinispan-remote/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/infinispan-remote/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/infinispan-remote</directory>

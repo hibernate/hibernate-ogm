@@ -15,12 +15,6 @@
     <name>Hibernate OGM WildFly Feature Pack - Hibernate OGM Core</name>
     <description>Hibernate OGM WildFly Feature Pack - Hibernate OGM Core</description>
 
-    <properties>
-        <hibernate-orm.module.slot>${hibernateOrmFamilyVersion}</hibernate-orm.module.slot>
-        <hibernate.ogm.jipijapa.module.slot>${project.version}</hibernate.ogm.jipijapa.module.slot>
-        <antlr-runtime.version>3.4</antlr-runtime.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
@@ -69,7 +63,7 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr-runtime</artifactId>
-            <version>${antlr-runtime.version}</version>
+            <version>${version.org.antlr}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -81,7 +75,7 @@
         <dependency>
             <groupId>org.parboiled</groupId>
             <artifactId>parboiled-core</artifactId>
-            <version>${parboiledVersion}</version>
+            <version>${version.org.parboiled}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -93,7 +87,7 @@
         <dependency>
             <groupId>org.parboiled</groupId>
             <artifactId>parboiled-java</artifactId>
-            <version>${parboiledVersion}</version>
+            <version>${version.org.parboiled}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -105,7 +99,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>${asmVersion}</version>
+            <version>${version.org.ow2.asm}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -117,7 +111,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-tree</artifactId>
-            <version>${asmVersion}</version>
+            <version>${version.org.ow2.asm}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -129,7 +123,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-analysis</artifactId>
-            <version>${asmVersion}</version>
+            <version>${version.org.ow2.asm}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -141,7 +135,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-util</artifactId>
-            <version>${asmVersion}</version>
+            <version>${version.org.ow2.asm}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -168,7 +162,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-jbossmodules-hibernate-orm</artifactId>
-            <version>${hibernateSearchVersion}</version>
+            <version>${version.org.hibernate.search}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -192,7 +186,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/core</directory>
@@ -224,7 +218,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/jipijapa/${hibernate.ogm.jipijapa.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/jipijapa/${module-slot.org.hibernate.ogm.jipijapa.full-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/ogm/jipijapa</directory>
@@ -240,7 +234,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/hql/${hibernate.hql.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/hql/${module-slot.org.hibernate.hql.full-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/hql</directory>
@@ -256,7 +250,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${template.dir}/org/hibernate/ogm/internal/parboiled/${hibernate.ogm.module.slot}</outputDirectory>
+                            <outputDirectory>${template.dir}/org/hibernate/ogm/internal/parboiled/${module-slot.org.hibernate.ogm.short-id}</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/modules/org/parboiled</directory>

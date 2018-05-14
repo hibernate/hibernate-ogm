@@ -21,102 +21,119 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <!-- Hibernate ORM -->
+
+        <version.org.hibernate>5.3.0.CR1</version.org.hibernate>
+        <version.javax.persistence>2.2</version.javax.persistence>
+
+        <!-- Hibernate Search -->
+
+        <version.org.hibernate.search>5.10.0.Beta2</version.org.hibernate.search>
+
+        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
+
+        <version.org.apache.lucene>5.5.5</version.org.apache.lucene>
+
+        <!-- Misc. dependencies -->
+
+        <version.org.hibernate.hql>1.5.0.Final</version.org.hibernate.hql>
+        <version.org.antlr>3.4</version.org.antlr>
+        <version.org.parboiled>1.1.8</version.org.parboiled> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
+        <version.org.ow2.asm>5.2</version.org.ow2.asm> <!-- used for Parboiled and Neo4j -->
+
         <!--
             These dependencies should be aligned with the ones from the WildFly version we support
             See the version.wildfly property in the hibernate-ogm-parent pom
             See http://search.maven.org/#search|gav|1|g%3A"org.wildfly"%20AND%20a%3A"wildfly-parent"
         -->
 
-        <hibernateCommonsAnnotationsVersion>5.0.3.Final</hibernateCommonsAnnotationsVersion>
-        <jbossLoggingVersion>3.3.0.Final</jbossLoggingVersion>
-        <jbossLoggingProcessorVersion>2.0.2.Final</jbossLoggingProcessorVersion>
-        <classmateVersion>1.3.3</classmateVersion>
-        <resteasyVersion>3.0.24.Final</resteasyVersion> <!-- Used by CouchDB and Neo4j remote -->
-        <jacksonVersion>2.8.9</jacksonVersion>
-        <slf4jVersion>1.7.22</slf4jVersion>
-        <netty4Version>4.1.9.Final</netty4Version>
-        <jbossJtaAPIVersion>1.0.1.Final</jbossJtaAPIVersion>
-        <jbossTransactionSPIVersion>7.6.0.Final</jbossTransactionSPIVersion>
-        <narayanaVersion>5.5.30.Final</narayanaVersion>
-
-        <!-- Hibernate ORM -->
-        <hibernateOrmFamilyVersion>5.3</hibernateOrmFamilyVersion>
-        <hibernateVersion>5.3.0.CR1</hibernateVersion>
-
-        <!-- Hibernate Search -->
-        <hibernateSearchFamilyVersion>5.10</hibernateSearchFamilyVersion>
-        <hibernateSearchVersion>5.10.0.Beta2</hibernateSearchVersion>
-
-        <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
-        <luceneVersion>5.5.5</luceneVersion>
-
-        <!-- Various dependencies -->
-        <hibernateHqlParserVersion>1.5.0.Final</hibernateHqlParserVersion>
-        <parboiledVersion>1.1.8</parboiledVersion> <!-- needs to be aligned with Neo4j version but is also used for MongoDB -->
-        <asmVersion>5.2</asmVersion> <!-- used for Parboiled and Neo4j -->
+        <version.wildfly>12.0.0.Final</version.wildfly>
+        <version.org.hibernate.commons.annotations>5.0.3.Final</version.org.hibernate.commons.annotations>
+        <version.org.jboss.logging.jboss-logging>3.3.0.Final</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging-tools>2.0.2.Final</version.org.jboss.logging.jboss-logging-tools>
+        <version.com.fasterxml.classmate>1.3.3</version.com.fasterxml.classmate>
+        <version.org.jboss.resteasy>3.0.24.Final</version.org.jboss.resteasy> <!-- Used by CouchDB and Neo4j remote -->
+        <version.com.fasterxml.jackson>2.8.9</version.com.fasterxml.jackson>
+        <version.org.slf4j>1.7.22</version.org.slf4j>
+        <version.log4j>1.2.16</version.log4j>
+        <version.io.netty>4.1.9.Final</version.io.netty>
+        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
+        <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
+        <version.org.jboss.narayana>5.5.30.Final</version.org.jboss.narayana>
+        <version.org.javassist>3.18.1-GA</version.org.javassist>
 
         <!-- Infinispan -->
-        <infinispanVersion>9.2.0.Final</infinispanVersion>
-        <protostreamVersion>4.2.0.CR1</protostreamVersion>
+
+        <version.org.infinispan>9.2.0.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.2.0.CR1</version.org.infinispan.protostream>
 
         <!-- MongoDB -->
-        <mongodbVersion>3.6.2</mongodbVersion>
-        <mongodbDriverVersion>3.6.3</mongodbDriverVersion>
+
+        <version.org.mongodb>3.6.2</version.org.mongodb>
+        <version.org.mongodb.mongo-java-driver>3.6.3</version.org.mongodb.mongo-java-driver>
 
         <!-- Neo4j -->
-        <neo4jVersion>3.3.5</neo4jVersion>
-        <neo4jJavaDriverVersion>1.5.2</neo4jJavaDriverVersion>
-        <neo4jScalaLibraryVersion>2.11.11</neo4jScalaLibraryVersion>
+
+        <version.org.neo4j>3.3.5</version.org.neo4j>
+        <version.org.neo4j.driver>1.5.2</version.org.neo4j.driver>
+        <version.neo4j.org.scala-lang>2.11.11</version.neo4j.org.scala-lang>
         <!-- See Parboiled dependency above -->
         <!-- See Lucene dependency above -->
-        <!-- Dependencies used in the Neo4j WildFly module -->
-        <neo4jGraphMatchingVersion>3.1.6</neo4jGraphMatchingVersion>
-        <neo4jCommonsLang3Version>3.5</neo4jCommonsLang3Version>
-        <neo4jConcurrentlinkedhashmapVersion>1.4.2</neo4jConcurrentlinkedhashmapVersion>
-        <neo4jBouncyCastleVersion>1.53</neo4jBouncyCastleVersion>
-        <neo4jNettyVersion>4.1.17.Final</neo4jNettyVersion>
-        <neo4jCaffeineVersion>2.3.3</neo4jCaffeineVersion>
+        <!-- Dependencies used in the Neo4j WildFly feature pack -->
+        <version.org.neo4j.neo4j-graph-matching>3.1.6</version.org.neo4j.neo4j-graph-matching>
+        <version.neo4j.org.apache.commons.lang3>3.5</version.neo4j.org.apache.commons.lang3>
+        <version.neo4j.com.googlecode.concurrentlinkedhashmap>1.4.2</version.neo4j.com.googlecode.concurrentlinkedhashmap>
+        <version.neo4j.org.bouncycastle>1.53</version.neo4j.org.bouncycastle>
+        <version.neo4j.io.netty>4.1.17.Final</version.neo4j.io.netty>
+        <version.neo4j.com.github.ben-manes.caffeine>2.3.3</version.neo4j.com.github.ben-manes.caffeine>
         <!-- Neo4j supports different versions of Cypher -->
-        <neo4jCypherCompiler33Version>${neo4jVersion}</neo4jCypherCompiler33Version>
-        <neo4jCypherCompiler32Version>3.2.9</neo4jCypherCompiler32Version>
-        <neo4jCypherCompiler31Version>3.1.6</neo4jCypherCompiler31Version>
-        <neo4jCypherCompiler23Version>2.3.12</neo4jCypherCompiler23Version>
+        <version.org.neo4j.neo4j-cypher-compiler-3.3>${version.org.neo4j}</version.org.neo4j.neo4j-cypher-compiler-3.3>
+        <version.org.neo4j.neo4j-cypher-compiler-3.2>3.2.9</version.org.neo4j.neo4j-cypher-compiler-3.2>
+        <version.org.neo4j.neo4j-cypher-compiler-3.1>3.1.6</version.org.neo4j.neo4j-cypher-compiler-3.1>
+        <version.org.neo4j.neo4j-cypher-compiler-2.3>2.3.12</version.org.neo4j.neo4j-cypher-compiler-2.3>
+
+        <!-- Maven plugins versions -->
+
+        <version.buildhelper.plugin>3.0.0</version.buildhelper.plugin>
+
+        <!-- Repository Deployment URLs -->
+
+        <jboss.releases.repo.id>jboss-releases-repository</jboss.releases.repo.id>
+        <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</jboss.releases.repo.url>
+        <jboss.snapshots.repo.id>jboss-snapshots-repository</jboss.snapshots.repo.id>
+        <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots/</jboss.snapshots.repo.url>
     </properties>
 
     <inceptionYear>2010</inceptionYear>
 
     <distributionManagement>
         <repository>
-            <id>jboss-releases-repository</id>
+            <id>${jboss.releases.repo.id}</id>
             <name>JBoss Releases Repository</name>
-            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/</url>
+            <url>${jboss.releases.repo.url}</url>
         </repository>
         <snapshotRepository>
-            <id>jboss-snapshots-repository</id>
+            <id>${jboss.snapshots.repo.id}</id>
             <name>JBoss Snapshots Repository</name>
-            <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+            <url>${jboss.snapshots.repo.url}</url>
         </snapshotRepository>
     </distributionManagement>
 
-    <prerequisites>
-       <maven>3.2.3</maven>
-    </prerequisites>
-
     <issueManagement>
         <system>JIRA</system>
-        <url>https://hibernate.onjira.com/browse/OGM</url>
+        <url>https://hibernate.atlassian.net/projects/OGM</url>
     </issueManagement>
 
     <scm>
         <connection>scm:git:git://github.com/hibernate/hibernate-ogm.git</connection>
         <developerConnection>scm:git:git@github.com:hibernate/hibernate-ogm.git</developerConnection>
-        <url>http://github.com/hibernate/hibernate-ogm</url>
+        <url>https://github.com/hibernate/hibernate-ogm/</url>
         <tag>HEAD</tag>
     </scm>
 
     <organization>
         <name>Hibernate</name>
-        <url>http://www.hibernate.org</url>
+        <url>http://hibernate.org/</url>
     </organization>
 
     <licenses>
@@ -127,7 +144,7 @@
     </licenses>
 
     <ciManagement>
-        <url>http://ci.jboss.org/jenkins/view/hibernate/job/hibernate-ogm/</url>
+        <url>http://ci.hibernate.org/view/OGM/</url>
         <system>Jenkins</system>
     </ciManagement>
 
@@ -204,19 +221,19 @@
             <dependency>
                 <groupId>org.jboss.spec.javax.transaction</groupId>
                 <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                <version>${jbossJtaAPIVersion}</version>
+                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec}</version>
             </dependency>
             <dependency>
-                <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.1-api</artifactId>
-                <version>1.0.0.Final</version>
+                <groupId>javax.persistence</groupId>
+                <artifactId>javax.persistence-api</artifactId>
+                <version>${version.javax.persistence}</version>
             </dependency>
 
             <!-- Hibernate Core -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -231,7 +248,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -246,7 +263,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -257,19 +274,19 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-infinispan</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${version.org.hibernate}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-java8</artifactId>
-                <version>${hibernateVersion}</version>
+                <version>${version.org.hibernate}</version>
             </dependency>
 
             <!-- Hibernate Search -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
-                <version>${hibernateSearchVersion}</version>
+                <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>hibernate-search-analyzers</artifactId>
@@ -288,7 +305,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
-                <version>${hibernateSearchVersion}</version>
+                <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>hibernate-search-analyzers</artifactId>
@@ -309,43 +326,43 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analyzers-common</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-misc</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-facet</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-backward-codecs</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-codecs</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queryparser</artifactId>
-                <version>${luceneVersion}</version>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
             <!-- Hibernate Search / Infinispan integration -->
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-directory-provider</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>hibernate-search-analyzers</artifactId>
@@ -415,17 +432,17 @@
             <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
-                <version>1.2.16</version>
+                <version>${version.log4j}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <version>${jbossLoggingVersion}</version>
+                <version>${version.org.jboss.logging.jboss-logging}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-annotations</artifactId>
-                <version>${jbossLoggingProcessorVersion}</version>
+                <version>${version.org.jboss.logging.jboss-logging-tools}</version>
             </dependency>
 
             <!-- slf4j is not used by OGM itself; Still setting the version to make sure different versions pulled in
@@ -433,24 +450,24 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>${slf4jVersion}</version>
+                <version>${version.org.slf4j}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4jVersion}</version>
+                <version>${version.org.slf4j}</version>
             </dependency>
 
             <!-- HQL Parsing and Lucene Query creation support -->
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-parser</artifactId>
-                <version>${hibernateHqlParserVersion}</version>
+                <version>${version.org.hibernate.hql}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-lucene</artifactId>
-                <version>${hibernateHqlParserVersion}</version>
+                <version>${version.org.hibernate.hql}</version>
                 <!-- TODO Remove once parser is updated -->
                 <exclusions>
                     <exclusion>
@@ -462,7 +479,7 @@
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-mongodb</artifactId>
-                <version>${hibernateHqlParserVersion}</version>
+                <version>${version.org.hibernate.hql}</version>
             </dependency>
 
             <!-- NoSQL databases -->
@@ -471,7 +488,7 @@
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-core</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -482,79 +499,79 @@
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-clustered-counter</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-lucene-directory</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-core</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-client-hotrod</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan.protostream</groupId>
                 <artifactId>protostream</artifactId>
-                <version>${protostreamVersion}</version>
+                <version>${version.org.infinispan.protostream}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-client-hotrod</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-server-hotrod</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-server-hotrod</artifactId>
                 <type>test-jar</type>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-remote-query-client</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-query-dsl</artifactId>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-remote-query-server</artifactId>
                 <scope>test</scope>
-                <version>${infinispanVersion}</version>
+                <version>${version.org.infinispan}</version>
             </dependency>
 
             <!-- MongoDB -->
             <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
-                <version>${mongodbDriverVersion}</version>
+                <version>${version.org.mongodb.mongo-java-driver}</version>
             </dependency>
 
             <!-- Neo4j -->
             <dependency>
                 <groupId>org.neo4j</groupId>
                 <artifactId>neo4j</artifactId>
-                <version>${neo4jVersion}</version>
+                <version>${version.org.neo4j}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>neo4j-consistency-check</artifactId>
@@ -575,32 +592,32 @@
             <dependency>
                 <groupId>org.neo4j</groupId>
                 <artifactId>neo4j-kernel</artifactId>
-                <version>${neo4jVersion}</version>
+                <version>${version.org.neo4j}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.neo4j.driver</groupId>
                 <artifactId>neo4j-java-driver</artifactId>
-                <version>${neo4jJavaDriverVersion}</version>
+                <version>${version.org.neo4j.driver}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>${asmVersion}</version>
+                <version>${version.org.ow2.asm}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-reflect</artifactId>
-                <version>${neo4jScalaLibraryVersion}</version>
+                <version>${version.neo4j.org.scala-lang}</version>
             </dependency>
 
             <!-- RESTEasy -->
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
-                <version>${resteasyVersion}</version>
+                <version>${version.org.jboss.resteasy}</version>
                 <exclusions>
                     <!-- Javassist changed its group id and is already pulled in with the new id -->
                     <exclusion>
@@ -612,19 +629,19 @@
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jaxrs</artifactId>
-                <version>${resteasyVersion}</version>
+                <version>${version.org.jboss.resteasy}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson2-provider</artifactId>
-                <version>${resteasyVersion}</version>
+                <version>${version.org.jboss.resteasy}</version>
             </dependency>
 
             <!-- utils -->
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>${hibernateCommonsAnnotationsVersion}</version>
+                <version>${version.org.hibernate.commons.annotations}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -635,17 +652,17 @@
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.18.1-GA</version>
+                <version>${version.org.javassist}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml</groupId>
                 <artifactId>classmate</artifactId>
-                <version>${classmateVersion}</version>
+                <version>${version.com.fasterxml.classmate}</version>
             </dependency>
             <dependency>
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-java</artifactId>
-                <version>${parboiledVersion}</version>
+                <version>${version.org.parboiled}</version>
                 <exclusions>
                     <exclusion>
                          <groupId>org.scala-lang</groupId>
@@ -656,33 +673,106 @@
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
-                <version>${neo4jScalaLibraryVersion}</version>
+                <version>${version.neo4j.org.scala-lang}</version>
             </dependency>
             <dependency>
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-scala_2.11</artifactId>
-                <version>${parboiledVersion}</version>
+                <version>${version.org.parboiled}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>${jacksonVersion}</version>
+                <version>${version.com.fasterxml.jackson}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
-                <version>${jacksonVersion}</version>
+                <version>${version.com.fasterxml.jackson}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jacksonVersion}</version>
+                <version>${version.com.fasterxml.jackson}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.narayana.jta</groupId>
                 <artifactId>narayana-jta</artifactId>
-                <version>${narayanaVersion}</version>
+                <version>${version.org.jboss.narayana}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- This defines the properties 'parsedVersion.majorVersion'
+                    and 'parsedVersion.minorVersion' to be in synch with the current project version -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${version.buildhelper.plugin}</version>
+                <executions>
+                    <execution>
+                        <id>parse-project-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsed-version</propertyPrefix>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-orm-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsed-version.org.hibernate</propertyPrefix>
+                            <versionString>${version.org.hibernate}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-search-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsed-version.org.hibernate.search</propertyPrefix>
+                            <versionString>${version.org.hibernate.search}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-mongodb-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsed-version.org.mongodb</propertyPrefix>
+                            <versionString>${version.org.mongodb}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-infinispan-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsed-version.org.infinispan</propertyPrefix>
+                            <versionString>${version.org.infinispan}</versionString>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>parse-wildfly-version</id>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>parsed-version.wildfly</propertyPrefix>
+                            <versionString>${version.wildfly}</versionString>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

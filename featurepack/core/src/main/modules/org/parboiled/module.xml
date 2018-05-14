@@ -5,7 +5,7 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
-<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.internal.parboiled" slot="${hibernate.ogm.module.slot}">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.internal.parboiled" slot="${module-slot.org.hibernate.ogm.short-id}">
     <resources>
         <artifact name="${org.parboiled:parboiled-core}" />
         <artifact name="${org.parboiled:parboiled-java}" />
