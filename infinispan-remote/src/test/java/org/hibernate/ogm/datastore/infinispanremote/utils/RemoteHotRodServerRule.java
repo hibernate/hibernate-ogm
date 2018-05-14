@@ -77,7 +77,9 @@ public final class RemoteHotRodServerRule extends org.junit.rules.ExternalResour
 					builder.addJavaOption( "-Djboss.socket.binding.port-offset=" + portOffset );
 				}
 				Launcher launcher = Launcher.of( builder );
-				hotRodServer = launcher.inherit().launch();
+				//This will launch the server w/o redirecting stdin and stdout, as that would corrupt Surefire's own streams when running via Maven.
+				//Might want to use launcher.inherit().launch instead if you need to debug server bootstrap.
+				hotRodServer = launcher.launch();
 				waitForRunning();
 			}
 		}
