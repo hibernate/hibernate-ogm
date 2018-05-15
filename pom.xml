@@ -441,9 +441,9 @@
                         </tags>
                         <links>
                             <link>https://docs.oracle.com/javase/8/docs/api/</link>
-                            <link>http://docs.jboss.org/hibernate/orm/5.2/javadocs/</link>
-                            <link>http://docs.jboss.org/hibernate/search/5.9/api/</link>
-                            <link>http://lucene.apache.org/core/5_5_4/core/</link>
+                            <link>https://docs.jboss.org/hibernate/orm/5.3/javadocs/</link>
+                            <link>https://docs.jboss.org/hibernate/search/5.10/api/</link>
+                            <link>https://lucene.apache.org/core/5_5_5/core/</link>
                         </links>
                         <bottom>
                             <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.redhat.com/">Red Hat, Inc.</a> and others. Licensed under the GNU Lesser General Public License (LGPL), version 2.1 or later.]]>
