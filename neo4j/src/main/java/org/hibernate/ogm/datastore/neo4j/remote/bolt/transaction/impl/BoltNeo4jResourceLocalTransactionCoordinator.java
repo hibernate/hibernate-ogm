@@ -20,7 +20,7 @@ import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.jdbc.WorkExecutor;
 import org.hibernate.jdbc.WorkExecutorVisitable;
-import org.hibernate.jpa.JpaCompliance;
+import org.hibernate.jpa.spi.JpaCompliance;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jClient;
@@ -89,8 +89,7 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 
 	@Override
 	public TransactionDriver getTransactionDriverControl() { // Again, this PhysicalTransactionDelegate will act as the bridge from the local transaction back into the
-		// coordinator. We lazily build it as we invalidate each delegate after each transaction (a delegate is
-		// valid for just one transaction)
+		// coordinator. We lazily build it.
 		if ( physicalTransactionDelegate == null ) {
 			physicalTransactionDelegate = new Neo4jTransactionDriver( provider );
 		}
@@ -248,16 +247,6 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 		for ( TransactionObserver observer : observers ) {
 			observer.afterCompletion( successful, false );
 		}
-		invalidateDelegate();
-	}
-
-	private void invalidateDelegate() {
-		if ( physicalTransactionDelegate == null ) {
-			throw new IllegalStateException( "Physical-transaction delegate not known on attempt to invalidate" );
-		}
-
-		physicalTransactionDelegate.invalidate();
-		physicalTransactionDelegate = null;
 	}
 
 	@Override
@@ -280,32 +269,20 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 		private TransactionStatus status;
 		private Transaction tx;
 
-		private boolean invalid;
 		private boolean rollbackOnly = false;
 
 		public Neo4jTransactionDriver(BoltNeo4jDatastoreProvider provider) {
 			this.driver = ( (BoltNeo4jClient) provider.getClient() ).getDriver();
 		}
 
-		protected void invalidate() {
-			invalid = true;
-		}
-
 		@Override
 		public void begin() {
-			errorIfInvalid();
 			if ( session == null ) {
 				session = driver.session();
 			}
 			tx = session.beginTransaction();
 			status = TransactionStatus.ACTIVE;
 			BoltNeo4jResourceLocalTransactionCoordinator.this.afterBeginCallback();
-		}
-
-		protected void errorIfInvalid() {
-			if ( invalid ) {
-				throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
-			}
 		}
 
 		@Override

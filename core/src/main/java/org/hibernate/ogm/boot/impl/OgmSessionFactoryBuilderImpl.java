@@ -52,6 +52,7 @@ public class OgmSessionFactoryBuilderImpl extends AbstractDelegatingSessionFacto
 	public OgmSessionFactory build() {
 		OgmSessionFactoryOptions options = new OgmSessionFactoryOptions( delegate.buildSessionFactoryOptions() );
 
-		return new OgmSessionFactoryImpl( new SessionFactoryImpl( metadata, options ) );
+		// not overrides bootstrapContext
+		return new OgmSessionFactoryImpl( new SessionFactoryImpl( null, metadata, options ) );
 	}
 }
