@@ -17,7 +17,6 @@ import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.NullPrecedence;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.boot.SessionFactoryBuilder;
-import org.hibernate.cache.spi.QueryCacheFactory;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.dialect.function.SQLFunction;
 import org.hibernate.hql.spi.id.MultiTableBulkIdStrategy;
@@ -137,9 +136,6 @@ public interface OgmSessionFactoryBuilder extends SessionFactoryBuilder {
 
 	@Override
 	OgmSessionFactoryBuilder applyQueryCacheSupport(boolean enabled);
-
-	@Override
-	OgmSessionFactoryBuilder applyQueryCacheFactory(QueryCacheFactory factory);
 
 	@Override
 	OgmSessionFactoryBuilder applyCacheRegionPrefix(String prefix);

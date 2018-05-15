@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-
 import javax.transaction.Status;
 
 import org.hibernate.HibernateException;
@@ -20,7 +19,7 @@ import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.TransactionObserver;
 import org.hibernate.jdbc.WorkExecutor;
 import org.hibernate.jdbc.WorkExecutorVisitable;
-import org.hibernate.jpa.JpaCompliance;
+import org.hibernate.jpa.spi.JpaCompliance;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
@@ -82,8 +81,7 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 	@Override
 	public TransactionDriver getTransactionDriverControl() {
 		// Again, this PhysicalTransactionDelegate will act as the bridge from the local transaction back into the
-		// coordinator. We lazily build it as we invalidate each delegate after each transaction (a delegate is
-		// valid for just one transaction)
+		// coordinator. We lazily build it.
 		if ( physicalTransactionDelegate == null ) {
 			physicalTransactionDelegate = new Neo4jTransactionDriver( provider );
 		}
@@ -233,16 +231,6 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 		for ( TransactionObserver observer : observers ) {
 			observer.afterCompletion( successful, false );
 		}
-		invalidateDelegate();
-	}
-
-	private void invalidateDelegate() {
-		if ( physicalTransactionDelegate == null ) {
-			throw new IllegalStateException( "Physical-transaction delegate not known on attempt to invalidate" );
-		}
-
-		physicalTransactionDelegate.invalidate();
-		physicalTransactionDelegate = null;
 	}
 
 	@Override
@@ -265,29 +253,17 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 		private TransactionStatus status;
 		private HttpNeo4jTransaction tx;
 
-		private boolean invalid;
 		private boolean rollbackOnly = false;
 
 		public Neo4jTransactionDriver(HttpNeo4jDatastoreProvider provider) {
 			this.client = provider.getClient();
 		}
 
-		protected void invalidate() {
-			invalid = true;
-		}
-
 		@Override
 		public void begin() {
-			errorIfInvalid();
 			tx = client.beginTx();
 			status = TransactionStatus.ACTIVE;
 			HttpNeo4jResourceLocalTransactionCoordinator.this.afterBeginCallback();
-		}
-
-		protected void errorIfInvalid() {
-			if ( invalid ) {
-				throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
-			}
 		}
 
 		@Override

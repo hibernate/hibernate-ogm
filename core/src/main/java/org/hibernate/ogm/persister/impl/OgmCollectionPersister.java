@@ -18,7 +18,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.Session;
 import org.hibernate.cache.CacheException;
-import org.hibernate.cache.spi.access.CollectionRegionAccessStrategy;
+import org.hibernate.cache.spi.access.CollectionDataAccess;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -110,9 +110,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 */
 	private AssociationTypeContext associationTypeContext;
 
-	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, PersisterCreationContext persisterCreationContext)
+	public OgmCollectionPersister(final Collection collection, final CollectionDataAccess cacheDataAccess, PersisterCreationContext persisterCreationContext)
 			throws MappingException, CacheException {
-		super( collection, cacheAccessStrategy, persisterCreationContext );
+		super( collection, cacheDataAccess, persisterCreationContext );
 
 		SessionFactoryImplementor factory = persisterCreationContext.getSessionFactory();
 		ServiceRegistry registry = factory.getServiceRegistry();

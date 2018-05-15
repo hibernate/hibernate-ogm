@@ -163,12 +163,10 @@
             </exclusions>
         </dependency>
 
-        <!-- Temporary repackaging of Hibernate ORM modules as a Wildfly feature pack -->
-        <!-- waiting for official Hibernate ORM Wildfly feature pack distribution -->
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-jbossmodules-hibernate-orm</artifactId>
-            <version>${hibernateSearchVersion}</version>
+            <artifactId>hibernate-orm-jbossmodules</artifactId>
+            <version>${hibernateVersion}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
