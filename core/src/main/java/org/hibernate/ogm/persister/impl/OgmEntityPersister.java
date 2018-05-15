@@ -25,8 +25,8 @@ import org.hibernate.LockOptions;
 import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.bytecode.enhance.spi.LazyPropertyInitializer;
-import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
-import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
+import org.hibernate.cache.spi.access.EntityDataAccess;
+import org.hibernate.cache.spi.access.NaturalIdDataAccess;
 import org.hibernate.cache.spi.entry.CacheEntry;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -217,8 +217,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	OgmEntityPersister(
 			final PersistentClass persistentClass,
-			final EntityRegionAccessStrategy cacheAccessStrategy,
-			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
+			final EntityDataAccess cacheAccessStrategy,
+			final NaturalIdDataAccess naturalIdRegionAccessStrategy,
 			final PersisterCreationContext creationContext,
 			final EntityDiscriminator discriminator) throws HibernateException {
 		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, creationContext );
@@ -687,7 +687,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		if ( hasCache() ) {
 			Object cacheKey = getCacheAccessStrategy().generateCacheKey( id, this, session.getFactory(), session.getTenantIdentifier() );
-			Object ce = getCacheAccessStrategy().get( session, cacheKey, session.getTimestamp() );
+			Object ce = getCacheAccessStrategy().get( session, cacheKey );
 			if ( ce != null ) {
 				CacheEntry cacheEntry = (CacheEntry) getCacheEntryStructure().destructure( ce, getFactory() );
 				final Object initializedValue = initializeLazyPropertiesFromCache( fieldName, entity, session, entry, cacheEntry );

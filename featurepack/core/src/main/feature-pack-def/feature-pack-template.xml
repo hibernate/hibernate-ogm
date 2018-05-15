@@ -3,7 +3,6 @@
     <dependencies>
         <artifact name="org.wildfly:wildfly-feature-pack" />
 
-        <!-- Temporary repackaging of Hibernate ORM modules as a Wildfly feature pack -->
-        <artifact name="org.hibernate:hibernate-search-jbossmodules-hibernate-orm"/>
+        <artifact name="org.hibernate:hibernate-orm-jbossmodules"/>
     </dependencies>
 </build>
