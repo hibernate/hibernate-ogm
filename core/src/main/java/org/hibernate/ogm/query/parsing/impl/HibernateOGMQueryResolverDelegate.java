@@ -4,29 +4,30 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
+package org.hibernate.ogm.query.parsing.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.antlr.runtime.tree.Tree;
 import org.hibernate.hql.ast.common.JoinType;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReference;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReferenceSource;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.QueryResolverDelegate;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+
+import org.antlr.runtime.tree.Tree;
 
 /**
- * Query resolver delegate targeting MongoDB queries. Very basic implementation atm., need to decide on
+ * Query resolver delegate. Very basic implementation atm., need to decide on
  * type checks, validation etc.
  *
  * @author Gunnar Morling
  *
  */
-public class MongoDBQueryResolverDelegate implements QueryResolverDelegate {
+public class HibernateOGMQueryResolverDelegate implements QueryResolverDelegate {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
