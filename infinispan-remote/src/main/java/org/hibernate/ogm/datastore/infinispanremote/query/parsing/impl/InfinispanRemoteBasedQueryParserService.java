@@ -34,7 +34,7 @@ public class InfinispanRemoteBasedQueryParserService extends BaseQueryParserServ
 
 	@Override
 	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
-		throw new UnsupportedOperationException( "The Infinispan Remote query parser supports parameterized queries" );
+		throw new UnsupportedOperationException( "The Infinispan Remote query parser doesn't support parameterized queries" );
 	}
 
 	@Override
