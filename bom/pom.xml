@@ -27,7 +27,7 @@
 
         <!-- Hibernate Search -->
 
-        <version.org.hibernate.search>5.10.0.CR1</version.org.hibernate.search>
+        <version.org.hibernate.search>5.10.0.Final</version.org.hibernate.search>
 
         <!-- Careful: Lucene is shared across Neo4J dependencies, Infinispan and Hibernate Search -->
 
