@@ -6,9 +6,10 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.query.impl;
 
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -24,24 +25,23 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class RawTypeClosableIterator implements ClosableIterator<Tuple> {
 
-	private final List<Object> queryResult;
+	private final Iterator<Object> queryResultIterator;
 	private final List<String> projections;
-	private int index = 0;
 
 	public RawTypeClosableIterator(List<Object> queryResult, List<String> projections) {
-		this.queryResult = queryResult;
+		this.queryResultIterator = queryResult.iterator();
 		this.projections = projections;
 	}
 
 	@Override
 	public boolean hasNext() {
-		return index < queryResult.size();
+		return queryResultIterator.hasNext();
 	}
 
 	@Override
 	public Tuple next() {
-		Object[] rawType = (Object[]) queryResult.get( index++ );
-		HashMap<String, Object> map = new LinkedHashMap<>();
+		Object[] rawType = (Object[]) queryResultIterator.next();
+		Map<String, Object> map = new LinkedHashMap<>();
 		int i = 0;
 
 		for ( String projection : projections ) {
