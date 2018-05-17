@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.query.impl;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamPayload;
@@ -20,21 +21,20 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class ProtostreamPayloadClosableIterator implements ClosableIterator<Tuple> {
 
-	private final List<ProtostreamPayload> queryResult;
-	private int index = 0;
+	private final Iterator<ProtostreamPayload> delegate;
 
 	public ProtostreamPayloadClosableIterator(List<ProtostreamPayload> queryResult) {
-		this.queryResult = queryResult;
+		this.delegate = queryResult.iterator();
 	}
 
 	@Override
 	public boolean hasNext() {
-		return index < queryResult.size();
+		return delegate.hasNext();
 	}
 
 	@Override
 	public Tuple next() {
-		return queryResult.get( index++ ).toTuple( Tuple.SnapshotType.UPDATE );
+		return delegate.next().toTuple( Tuple.SnapshotType.UPDATE );
 	}
 
 	@Override
