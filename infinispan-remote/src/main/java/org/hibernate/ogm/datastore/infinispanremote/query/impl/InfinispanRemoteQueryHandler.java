@@ -47,7 +47,7 @@ public class InfinispanRemoteQueryHandler {
 		RemoteCache<ProtostreamId, ProtostreamPayload> cache = provider.getCache( queryDescriptor.getCache() );
 
 		QueryFactory queryFactory = Search.getQueryFactory( cache );
-		Query query = queryFactory.create( queryDescriptor.getText() );
+		Query query = queryFactory.create( queryDescriptor.getQuery() );
 
 		applyNamedParameters( queryParameters, query );
 		applyRowSelection( queryParameters, query );
