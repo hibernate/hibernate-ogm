@@ -18,12 +18,12 @@ import java.util.Objects;
 public class InfinispanRemoteQueryDescriptor implements Serializable {
 
 	private final String cache;
-	private final String text;
+	private final String query;
 	private final List<String> projections;
 
-	public InfinispanRemoteQueryDescriptor(String cache, String text, List<String> projections) {
+	public InfinispanRemoteQueryDescriptor(String cache, String query, List<String> projections) {
 		this.cache = cache;
-		this.text = text;
+		this.query = query;
 		this.projections = projections;
 	}
 
@@ -31,8 +31,8 @@ public class InfinispanRemoteQueryDescriptor implements Serializable {
 		return cache;
 	}
 
-	public String getText() {
-		return text;
+	public String getQuery() {
+		return query;
 	}
 
 	public List<String> getProjections() {
@@ -49,20 +49,20 @@ public class InfinispanRemoteQueryDescriptor implements Serializable {
 		}
 		InfinispanRemoteQueryDescriptor that = (InfinispanRemoteQueryDescriptor) o;
 		return Objects.equals( cache, that.cache ) &&
-				Objects.equals( text, that.text ) &&
+				Objects.equals( query, that.query ) &&
 				Objects.equals( projections, that.projections );
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash( cache, text, projections );
+		return Objects.hash( cache, query, projections );
 	}
 
 	@Override
 	public String toString() {
 		return "InfinispanRemoteQueryDescriptor{" +
 				"cache='" + cache + '\'' +
-				", text='" + text + '\'' +
+				", query='" + query + '\'' +
 				", projections=" + projections +
 				'}';
 	}
