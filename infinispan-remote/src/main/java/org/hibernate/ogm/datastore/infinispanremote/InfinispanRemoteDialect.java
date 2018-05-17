@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +26,9 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.Protostream
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamPayload;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+import org.hibernate.ogm.datastore.infinispanremote.query.impl.InfinispanRemoteQueryDescriptor;
+import org.hibernate.ogm.datastore.infinispanremote.query.impl.InfinispanRemoteQueryHandler;
+import org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.InfinispanRemoteNativeQueryParser;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -36,7 +39,12 @@ import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.impl.AbstractGroupingByEntityDialect;
 import org.hibernate.ogm.dialect.multiget.spi.MultigetGridDialect;
+import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryParameters;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
@@ -60,6 +68,7 @@ import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.AssociationOperationType;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
+
 import org.infinispan.client.hotrod.MetadataValue;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
@@ -71,33 +80,31 @@ import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
 
 /**
- *  Some implementation notes for evolution:
+ * Some implementation notes for evolution:
  *
- *  - QueryableGridDialect can't be implemented as "native queries" in Hot Rod are DSL based
- *    and have no String representation; this might change as Hot Rod exposes the underlying
- *    query representation which is similar to HQL; alternatively we could look at exposing
- *    native queries in some way other than a String.
+ * - OptimisticLockingAwareGridDialect can't be implemented as it requires an atomic replace
+ * operation on a subset of the columns, while atomic operations in Hot Rod have to involve
+ * either the full value or the version metadata of Infinispan's VersionedValue.
  *
- *  - OptimisticLockingAwareGridDialect can't be implemented as it requires an atomic replace
- *    operation on a subset of the columns, while atomic operations in Hot Rod have to involve
- *    either the full value or the version metadata of Infinispan's VersionedValue.
+ * - IdentityColumnAwareGridDialect can't work out of the box. I suspect we could do this but
+ * would need extending the Infinispan server deployment with some extension such as a
+ * custom script to be invoked from the client.
  *
- *  - IdentityColumnAwareGridDialect can't work out of the box. I suspect we could do this but
- *    would need extending the Infinispan server deployment with some extension such as a
- *    custom script to be invoked from the client.
- *
- *  - BatchableGridDialect could probably be implemented.
+ * - BatchableGridDialect could probably be implemented.
  *
  * @author Sanne Grinovero
+ * @author Fabio Massimo Ercoli
  */
-public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntityDialect implements MultigetGridDialect {
+public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEntityDialect implements QueryableGridDialect<InfinispanRemoteQueryDescriptor>, MultigetGridDialect {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final InfinispanRemoteDatastoreProvider provider;
+	private final InfinispanRemoteQueryHandler queryHandler;
 
 	public InfinispanRemoteDialect(InfinispanRemoteDatastoreProvider provider) {
 		this.provider = Objects.requireNonNull( provider );
+		this.queryHandler = new InfinispanRemoteQueryHandler( provider );
 	}
 
 	@Override
@@ -154,6 +161,26 @@ public class InfinispanRemoteDialect<EK,AK,ISK> extends AbstractGroupingByEntity
 		}
 
 		owningEntity.flushOperations();
+	}
+
+	@Override
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<InfinispanRemoteQueryDescriptor> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
+		return queryHandler.executeBackendQuery( backendQuery, queryParameters );
+	}
+
+	@Override
+	public int executeBackendUpdateQuery(BackendQuery<InfinispanRemoteQueryDescriptor> query, QueryParameters queryParameters, TupleContext tupleContext) {
+		throw new UnsupportedOperationException( "Update Query not supported by Infinispan Remote Dialect" );
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return NoOpParameterMetadataBuilder.INSTANCE;
+	}
+
+	@Override
+	public InfinispanRemoteQueryDescriptor parseNativeQuery(String nativeQuery) {
+		return new InfinispanRemoteNativeQueryParser( nativeQuery ).parse();
 	}
 
 	/**
