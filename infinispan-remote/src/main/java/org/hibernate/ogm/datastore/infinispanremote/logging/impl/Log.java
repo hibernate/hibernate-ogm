@@ -86,6 +86,9 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1719, value = "Error during caches start phase")
 	HibernateException errorAtCachesStart(@Cause Exception cause);
 
-	@Message(id = 1720, value = "Error on parsing native query: <%s>")
-	HibernateException errorOnParsingNativeQuery(String nativeQuery);
+	@Message(id = 1720, value = "Missing from clause in native query: <%s>")
+	HibernateException missingFromClauseInNativeQuery(String nativeQuery);
+
+	@Message(id = 1721, value = "Infinispan queries can only target a single entity type. Found %s for query: %s")
+	HibernateException multipleEntitiesInFromClause(String[] split, String nativeQuery);
 }

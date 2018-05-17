@@ -7,8 +7,7 @@
 package org.hibernate.ogm.datastore.infinispanremote.query.impl;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
+import java.util.Arrays;
 
 /**
  * Describes a query to be executed against Infinispan Server.
@@ -19,9 +18,9 @@ public class InfinispanRemoteQueryDescriptor implements Serializable {
 
 	private final String cache;
 	private final String query;
-	private final List<String> projections;
+	private final String[] projections;
 
-	public InfinispanRemoteQueryDescriptor(String cache, String query, List<String> projections) {
+	public InfinispanRemoteQueryDescriptor(String cache, String query, String[] projections) {
 		this.cache = cache;
 		this.query = query;
 		this.projections = projections;
@@ -35,27 +34,8 @@ public class InfinispanRemoteQueryDescriptor implements Serializable {
 		return query;
 	}
 
-	public List<String> getProjections() {
+	public String[] getProjections() {
 		return projections;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if ( this == o ) {
-			return true;
-		}
-		if ( o == null || getClass() != o.getClass() ) {
-			return false;
-		}
-		InfinispanRemoteQueryDescriptor that = (InfinispanRemoteQueryDescriptor) o;
-		return Objects.equals( cache, that.cache ) &&
-				Objects.equals( query, that.query ) &&
-				Objects.equals( projections, that.projections );
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash( cache, query, projections );
 	}
 
 	@Override
@@ -63,7 +43,7 @@ public class InfinispanRemoteQueryDescriptor implements Serializable {
 		return "InfinispanRemoteQueryDescriptor{" +
 				"cache='" + cache + '\'' +
 				", query='" + query + '\'' +
-				", projections=" + projections +
+				", projections='" + Arrays.toString( projections ) + '\'' +
 				'}';
 	}
 }

@@ -21,7 +21,6 @@ import org.hibernate.ogm.dialect.query.spi.RowSelection;
 import org.hibernate.ogm.dialect.query.spi.TypedGridValue;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.query.dsl.Query;
@@ -43,6 +42,10 @@ public class InfinispanRemoteQueryHandler {
 	}
 
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<InfinispanRemoteQueryDescriptor> backendQuery, QueryParameters queryParameters) {
+		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull() == null
+				? null
+				: backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
+
 		InfinispanRemoteQueryDescriptor queryDescriptor = backendQuery.getQuery();
 		RemoteCache<ProtostreamId, ProtostreamPayload> cache = provider.getCache( queryDescriptor.getCache() );
 
@@ -52,18 +55,19 @@ public class InfinispanRemoteQueryHandler {
 		applyNamedParameters( queryParameters, query );
 		applyRowSelection( queryParameters, query );
 
-		boolean hasProjection = !queryDescriptor.getProjections().isEmpty();
-		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull() == null
-				? null
-				: backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
-
-		if ( hasProjection && entityKeyMetadata != null ) {
+		boolean hasProjection = hasProjection( queryDescriptor );
+		if ( entityKeyMetadata != null && hasProjection ) {
 			throw log.addEntityNotAllowedInNativeQueriesUsingProjection( entityKeyMetadata.getTable(), backendQuery.toString() );
 		}
 
-		return hasProjection ?
-				new RawTypeClosableIterator( query.list(), queryDescriptor.getProjections() ) :
-				new ProtostreamPayloadClosableIterator( query.list() );
+		return hasProjection
+				? new RawTypeClosableIterator( query, queryDescriptor.getProjections() )
+				: new ProtostreamPayloadClosableIterator( query.list() );
+	}
+
+	// We are using QueryDescriptor and not Query because the QueryFactory.create( ) doesn't initialize the projection field
+	private boolean hasProjection(InfinispanRemoteQueryDescriptor queryDescriptor) {
+		return queryDescriptor.getProjections() != null && queryDescriptor.getProjections().length > 0;
 	}
 
 	private void applyNamedParameters(QueryParameters queryParameters, Query query) {

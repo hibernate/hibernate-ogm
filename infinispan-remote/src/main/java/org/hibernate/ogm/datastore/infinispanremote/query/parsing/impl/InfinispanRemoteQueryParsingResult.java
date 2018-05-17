@@ -30,7 +30,14 @@ public class InfinispanRemoteQueryParsingResult implements QueryParsingResult {
 
 	@Override
 	public Object getQueryObject() {
-		return new InfinispanRemoteQueryDescriptor( cache, query, projection );
+		return new InfinispanRemoteQueryDescriptor( cache, query, asArray( projection ) );
+	}
+
+	private String[] asArray(List<String> projection) {
+		if ( projection == null ) {
+			return null;
+		}
+		return projection.toArray( new String[projection.size()] );
 	}
 
 	@Override
