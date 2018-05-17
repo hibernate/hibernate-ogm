@@ -8,12 +8,12 @@ package org.hibernate.ogm.datastore.infinispanremote.query.impl;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.infinispan.query.dsl.Query;
 
 /**
  * Iterates over the result of an Infinispan query, when each result is a <b>partial</b> cache entry.
@@ -25,11 +25,13 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class RawTypeClosableIterator implements ClosableIterator<Tuple> {
 
-	private final Iterator<Object> queryResultIterator;
-	private final List<String> projections;
+	private final Iterator<?> queryResultIterator;
+	private final String[] projections;
 
-	public RawTypeClosableIterator(List<Object> queryResult, List<String> projections) {
-		this.queryResultIterator = queryResult.iterator();
+	public RawTypeClosableIterator(Query query, String[] projections) {
+		this.queryResultIterator = query.list().iterator();
+		// Note that we are not using query.getProjection() because at
+		// QueryFactory.create( ) doesn't populate the projection field
 		this.projections = projections;
 	}
 
@@ -42,10 +44,8 @@ public class RawTypeClosableIterator implements ClosableIterator<Tuple> {
 	public Tuple next() {
 		Object[] rawType = (Object[]) queryResultIterator.next();
 		Map<String, Object> map = new LinkedHashMap<>();
-		int i = 0;
-
-		for ( String projection : projections ) {
-			map.put( projection, rawType[i++] );
+		for ( int i = 0; i < projections.length; i++ ) {
+			map.put( projections[i], rawType[i] );
 		}
 
 		return new Tuple( new MapTupleSnapshot( map ), Tuple.SnapshotType.UPDATE );

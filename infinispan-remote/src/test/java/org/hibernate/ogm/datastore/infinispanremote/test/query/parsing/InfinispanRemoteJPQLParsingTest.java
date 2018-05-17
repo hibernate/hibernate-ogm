@@ -15,7 +15,6 @@ import org.hibernate.ogm.datastore.infinispanremote.query.parsing.impl.Infinispa
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteServerRunner;
 import org.hibernate.ogm.query.spi.QueryParsingResult;
 import org.hibernate.ogm.utils.OgmTestCase;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -199,7 +198,7 @@ public class InfinispanRemoteJPQLParsingTest extends OgmTestCase {
 		);
 	}
 
-	private void verifyParsing(String jpql, String cache, String datastoreQuery, String... projection) {
+	private void verifyParsing(String jpql, String cache, String datastoreQuery, String... projections) {
 		// To *QueryParserService internal SPI the JPQL query arrives always
 		// with the Entity name expresses as **fully qualified** class name,
 		// even if in the original API invocation it had been expressed as a **simple name**.
@@ -207,9 +206,12 @@ public class InfinispanRemoteJPQLParsingTest extends OgmTestCase {
 		// %org.hibernate.ogm.datastore.infinispanremote.test.query.parsing.IndexedEntity%
 		// ans never like: %IndexedEntity%.
 		QueryParsingResult queryParsingResult = testTarget.parseQuery( getSessionFactory(), jpql );
-		Object queryDescriptor = queryParsingResult.getQueryObject();
+		InfinispanRemoteQueryDescriptor queryDescriptor = (InfinispanRemoteQueryDescriptor) queryParsingResult.getQueryObject();
 
-		assertThat( queryDescriptor ).isEqualTo( new InfinispanRemoteQueryDescriptor( cache, datastoreQuery, Arrays.asList( projection ) ) );
+		assertThat( queryParsingResult.getColumnNames() ).isEqualTo( Arrays.asList( projections ) );
+		assertThat( queryDescriptor.getCache() ).isEqualTo( cache );
+		assertThat( queryDescriptor.getQuery() ).isEqualTo( datastoreQuery );
+		assertThat( queryDescriptor.getProjections() ).isEqualTo( projections );
 	}
 
 	@Override
