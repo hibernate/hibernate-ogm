@@ -109,7 +109,7 @@ public class InfinispanRemoteQueryBuilder implements Serializable {
 
 	public void addWhere(InfinispanRemoteQueryBuilder subQuery) {
 		if ( where ) {
-			throw new HibernateException( "Impossible to add two times a where clause to the same query" );
+			throw new HibernateException( "Impossible to add a where clause twice in the same query" );
 		}
 
 		builder.append( " where " );
