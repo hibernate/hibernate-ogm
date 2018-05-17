@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.test.query.nativequery;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
 
 import java.time.LocalDate;
@@ -13,12 +14,12 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,27 +83,36 @@ public class InfinispanRemoteEntityManagerNativeQueryTest extends OgmJpaTestCase
 	}
 
 	@Test
-	public void testSingleResultQueryWithProjection() {
+	public void testSingleResultQueryWithFieldProjection() {
 		inTransaction( em -> {
 			// projection can be declared in native query text
 			Object result = em.createNativeQuery( "select title from HibernateOGMGenerated.Plan where title = 'Mars'" )
-					.getSingleResult();
-			assertThat( result ).isEqualTo( mars.getName() );
-
-			// projection can be declared as result set mapping
-			result = em.createNativeQuery( "from HibernateOGMGenerated.Plan where title = 'Mars'", "titleMapping" )
-					.getSingleResult();
-			assertThat( result ).isEqualTo( mars.getName() );
-
-			// or in both
-			result = em.createNativeQuery( "select title from HibernateOGMGenerated.Plan where title = 'Mars'", "titleMapping" )
 					.getSingleResult();
 			assertThat( result ).isEqualTo( mars.getName() );
 		} );
 	}
 
 	@Test
-	public void testSingleResultQueryWithSeveralProjections() {
+	public void testSingleResultQueryWithProjectionAsResultSetMapping() {
+		inTransaction( em -> {
+			// projection can be declared as result set mapping
+			Object result = em.createNativeQuery( "from HibernateOGMGenerated.Plan where title = 'Mars'", "titleMapping" )
+					.getSingleResult();
+			assertThat( result ).isEqualTo( mars.getName() );
+		} );
+	}
+
+	@Test
+	public void testSingleResultQueryWithProjectionAsResultSetMappingAndProjection() {
+		inTransaction( em -> {
+			Object result = em.createNativeQuery( "select title from HibernateOGMGenerated.Plan where title = 'Mars'", "titleMapping" )
+					.getSingleResult();
+			assertThat( result ).isEqualTo( mars.getName() );
+		} );
+	}
+
+	@Test
+	public void testSingleResultQueryWithSeveralResultSetMapping() {
 		String moonQuery = "from HibernateOGMGenerated.Plan where title = 'Moon' and description = 'Travel to the Moon'";
 
 		inTransaction( em -> {

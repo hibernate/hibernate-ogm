@@ -10,10 +10,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
 
-import org.hibernate.ogm.backendtck.queries.projection.Movie;
 import org.hibernate.ogm.backendtck.queries.projection.NativeQueryProjectionBaseTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteServerRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -46,9 +44,10 @@ public class InfinispanRemoteProjectionTest extends NativeQueryProjectionBaseTes
 	@Test
 	public void testResultListWithoutAddEntityWithProjection() {
 		inTransaction( session -> {
-			List<Movie> movies = session.createNativeQuery( getNativeQueryWithProjectionYearAuthor() )
+			List<?> movies = session.createNativeQuery( getNativeQueryWithProjectionYearAuthor() )
 					.getResultList();
 
+			assertThat( movies ).hasSize( 1 );
 			assertThat( movies.get( 0 ) ).isEqualTo( new Object[] { 1968, "Stanley Kubrick" } );
 		} );
 	}
