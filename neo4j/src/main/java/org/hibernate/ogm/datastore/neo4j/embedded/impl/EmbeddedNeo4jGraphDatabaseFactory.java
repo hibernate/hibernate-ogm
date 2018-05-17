@@ -13,7 +13,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -66,32 +65,36 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 	@Override
 	public GraphDatabaseService create() {
 		final String dbLocationAbsolutePath = dbLocation.getAbsolutePath();
-		AtomicBoolean isNew = new AtomicBoolean( false );
-		FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String dbPath ) -> {
+		final FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.computeIfAbsent( dbLocationAbsolutePath, ( String dbPath ) -> {
 			LOG.infof( " Create new service instance for dbPath  %s", dbLocationAbsolutePath );
 			GraphDatabaseFacade service = buildGraphDatabaseService();
 			FactoryHolder holder = new FactoryHolder();
 			holder.setCounter( 1 );
 			holder.setGraphDatabaseFacade( service );
-			isNew.set( true );
+			holder.setNewHolder( true );
 			return holder;
 		} );
-		if ( !isNew.get() ) {
-			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
-				factoryHolder.getGraphDatabaseFacade();
-				boolean isAvailable = factoryHolder.getGraphDatabaseFacade().isAvailable( WAITING_TIME_MS );
-				if ( isAvailable ) {
+
+		boolean isAvailable = factoryHolder.getGraphDatabaseFacade().isAvailable( WAITING_TIME_MS );
+		synchronized (factoryHolder) {
+
+			if ( isAvailable ) {
+				if ( !factoryHolder.isNewHolder() ) {
 					factoryHolder.setCounter( factoryHolder.getCounter() + 1 );
 				}
 				else {
-					//need recreate db
-					LOG.infof( " Recreate service instance for dbPath  %s", dbLocationAbsolutePath );
-					factoryHolder.setCounter( 1 );
-					factoryHolder.setGraphDatabaseFacade( buildGraphDatabaseService() );
+					factoryHolder.setNewHolder( false );
 				}
-				LOG.debugf( " Counter : %s for path %s", factoryHolder.getCounter(), dbLocationAbsolutePath );
 			}
+			else {
+				//need recreate db
+				LOG.infof( " Recreate service instance for dbPath  %s", dbLocationAbsolutePath );
+				factoryHolder.setCounter( 1 );
+				factoryHolder.setGraphDatabaseFacade( buildGraphDatabaseService() );
+			}
+			LOG.debugf( " Counter : %s for path %s", factoryHolder.getCounter(), dbLocationAbsolutePath );
 		}
+
 		return factoryHolder.getGraphDatabaseFacade();
 	}
 
@@ -144,8 +147,8 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 		GraphDatabaseAPI sq = (GraphDatabaseAPI) neo4jDb;
 		String key = sq.getStoreDir().getAbsolutePath();
 		if ( GRAPH_DATABASE_SERVICE_MAP.containsKey( key ) ) {
-			synchronized (GRAPH_DATABASE_SERVICE_MAP) {
-				FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.get( key );
+			final FactoryHolder factoryHolder = GRAPH_DATABASE_SERVICE_MAP.get( key );
+			synchronized (factoryHolder) {
 				factoryHolder.setCounter( factoryHolder.getCounter() - 1 );
 				LOG.debugf( " Counter : %s  for path %s", factoryHolder.getCounter(), key );
 
@@ -156,17 +159,17 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 					spi = (GraphDatabaseFacade.SPI) obj;
 					LOG.debugf( " isInOpenTransaction: %s", spi.isInOpenTransaction() );
 					if ( spi.isInOpenTransaction() ) {
-						LOG.warnf( "currentTransaction  %s started at %s", spi.currentTransaction() , spi.currentTransaction().startTime() );
+						LOG.warnf( "currentTransaction  %s started at %s", spi.currentTransaction(), spi.currentTransaction().startTime() );
 						spi.currentTransaction().failure();
 						spi.currentTransaction().closeTransaction();
 						throw LOG.existsOpenTransactionsFornDatabasePathException( key );
 					}
 				}
-				catch ( IllegalAccessException | NoSuchFieldException e) {
-					throw new HibernateException( "Can't get value of private variable by reflection!",e );
+				catch (IllegalAccessException | NoSuchFieldException e) {
+					throw new HibernateException( "Can't get value of private variable by reflection!", e );
 				}
 				catch (TransactionFailureException e) {
-					throw new HibernateException( "Can't close transction!",e );
+					throw new HibernateException( "Can't close transction!", e );
 				}
 
 
@@ -191,6 +194,7 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 	private static class FactoryHolder {
 		private int counter;
 		private GraphDatabaseFacade graphDatabaseFacade;
+		private boolean newHolder;
 
 		int getCounter() {
 			return counter;
@@ -206,6 +210,14 @@ public class EmbeddedNeo4jGraphDatabaseFactory implements GraphDatabaseServiceFa
 
 		public void setGraphDatabaseFacade(GraphDatabaseFacade graphDatabaseFacade) {
 			this.graphDatabaseFacade = graphDatabaseFacade;
+		}
+
+		public boolean isNewHolder() {
+			return newHolder;
+		}
+
+		public void setNewHolder(boolean newHolder) {
+			this.newHolder = newHolder;
 		}
 	}
 
