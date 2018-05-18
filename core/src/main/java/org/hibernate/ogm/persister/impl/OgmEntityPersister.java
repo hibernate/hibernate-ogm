@@ -34,12 +34,14 @@ import org.hibernate.engine.OptimisticLockStyle;
 import org.hibernate.engine.internal.Versioning;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
+import org.hibernate.engine.spi.CascadingActions;
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.internal.DynamicFilterAliasGenerator;
 import org.hibernate.internal.FilterAliasGenerator;
+import org.hibernate.loader.entity.CascadeEntityLoader;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
@@ -909,19 +911,15 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		loaders.put( LockMode.OPTIMISTIC, createEntityLoader( LockMode.OPTIMISTIC ) );
 		loaders.put( LockMode.OPTIMISTIC_FORCE_INCREMENT, createEntityLoader( LockMode.OPTIMISTIC_FORCE_INCREMENT ) );
 
-		//FIXME handle cascading merge and refresh
 		loaders.put(
 				"merge",
-				createEntityLoader( LockMode.READ )
-				//new CascadeEntityLoader( this, CascadingAction.MERGE, getFactory() )
+				new CascadeEntityLoader( this, CascadingActions.MERGE, getFactory() )
 			);
 		loaders.put(
 				"refresh",
-				createEntityLoader( LockMode.READ )
-				//new CascadeEntityLoader( this, CascadingAction.REFRESH, getFactory() )
+				new CascadeEntityLoader( this, CascadingActions.REFRESH, getFactory() )
 			);
 	}
-
 
 	// TODO copied from AbtractEntityPersister: change the visibility
 	@Override
