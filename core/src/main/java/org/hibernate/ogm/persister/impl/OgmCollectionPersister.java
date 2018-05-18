@@ -759,7 +759,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public String selectFragment(Joinable rhs, String rhsAlias, String lhsAlias, String currentEntitySuffix, String currentCollectionSuffix, boolean includeCollectionColumns) {
-		return null;
+		return selectFragment( lhsAlias, currentEntitySuffix );
 	}
 
 	@Override
@@ -774,7 +774,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public boolean consumesEntityAlias() {
-		return false;
+		return oneToMany;
 	}
 
 	@Override
