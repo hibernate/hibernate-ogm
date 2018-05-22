@@ -35,13 +35,6 @@ public abstract class ClusteredCounterHandler {
 
 	public ClusteredCounterHandler(EmbeddedCacheManager cacheManager) {
 		this.cacheManager = cacheManager;
-		validate();
-	}
-
-	private void validate() {
-		if ( cacheManager.getTransport() == null ) {
-			throw LOG.counterCannotBeCreatedForLocalCaches();
-		}
 	}
 
 	/**
