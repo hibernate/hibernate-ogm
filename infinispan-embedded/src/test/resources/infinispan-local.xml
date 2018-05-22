@@ -19,6 +19,10 @@
     <cache-container name="HibernateOGM-Testsuite" default-cache="DEFAULT" statistics="false">
 
         <jmx duplicate-domains="true"/>
+        <!-- global state configuration is required to use persistent counters -->
+        <global-state>
+            <persistent-location path="${project.build.directory}/counters"/>
+        </global-state>
 
         <!-- *************************** -->
         <!--   Default cache settings    -->
