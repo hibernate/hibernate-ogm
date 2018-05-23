@@ -74,7 +74,7 @@
         <!-- Neo4j -->
 
         <version.org.neo4j>3.3.5</version.org.neo4j>
-        <version.org.neo4j.driver>1.5.2</version.org.neo4j.driver>
+        <version.org.neo4j.driver>1.6.1</version.org.neo4j.driver>
         <version.neo4j.org.scala-lang>2.11.11</version.neo4j.org.scala-lang>
         <!-- See Parboiled dependency above -->
         <!-- See Lucene dependency above -->
