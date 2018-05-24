@@ -1,6 +1,37 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.0.Beta1 (24-05-2018)
+-------------------------
+
+** Bug
+    * OGM-1469 - ignite        - Wrong type resolution for association keys and embedded on cache init
+
+** Improvement
+    * OGM-1481 - neo4j         - Update Neo4j Java Driver to version 1.6.1
+    * OGM-1476 - build         - Update JBoss Logging to 3.3.2.Final
+    * OGM-1475 - build         - Update the links to the ORM, Search and Lucene javadocs
+    * OGM-1473 - build         - Make our pom files more consistent with WildFly and JBoss parent pom files
+    * OGM-1468 - core          - Support merge and refresh loaders in OgmEntityPersister
+    * OGM-1465 - tests         - We should always run tests in the same order
+    * OGM-1463 - infinispan    - Infinispan Remote: support Native query
+    * OGM-1460 - core, neo4j   - Remove calls to getTransaction() in tests for JTA environment
+    * OGM-1457 -               - Infinispan remote query: support Character and Boolean as parameters
+    * OGM-1454 - neo4j         - Upgrade to Neo4j java driver 1.5.2
+    * OGM-1426 - infinispan    - Infinispan remote: enable support to JPQL
+    * OGM-1391 - build         - Upgrade to Hibernate Search 5.10.0.Final
+    * OGM-1326 - documentation - Add example of associations between entities of the same class
+
+** New Feature
+    * OGM-1474 - neo4j         - Cypher operator CREATE UNIQUE is deprecated
+    * OGM-1407 - core, neo4j   - Support Cypher queries with positional parameters for Neo4j or throw a clear exception when the user tries to run it
+    * OGM-1376 - infinispan    - Use counters for sequences with local caches in Infinispan embedded
+
+** Task
+    * OGM-1471 - tests         - Use the isActive() method to check if a transaction is still active
+    * OGM-1461 -               - Avoid RemoteHotRodServerRule to corrupt Maven's STDOUT by directly writing to native stream
+    * OGM-1459 - build, core   - Upgrade to Hibernate ORM 5.3.0.Final
+
 5.4.0.Alpha1 (16-04-2018)
 -------------------------
 
