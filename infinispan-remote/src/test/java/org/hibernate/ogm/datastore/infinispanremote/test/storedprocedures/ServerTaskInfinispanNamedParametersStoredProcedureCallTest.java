@@ -6,17 +6,15 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures;
 
-import org.hibernate.SessionFactory;
 import org.hibernate.ogm.backendtck.storedprocedures.NamedParametersStoredProcedureCallTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
-import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteTestHelper;
 import org.hibernate.ogm.utils.TestForIssue;
 
-import org.junit.Before;
 import org.junit.runner.RunWith;
 
 /**
- * Testing call of stored procedures.
+ * Testing call of stored procedures using <b>server-task</b> mechanism.
+ * It extends {@link NamedParametersStoredProcedureCallTest} to support backendtck test cases.
  * <p>This test based on 3 deployables (simple-value-procedure.jar, result-set-procedure.jar, exceptional-procedure.jar).
  * <p>They're representatives of following classes accordingly {@link SimpleValueProcedure}, {@link ResultSetProcedure} and {@link ExceptionalProcedure}.
  *
@@ -25,13 +23,6 @@ import org.junit.runner.RunWith;
 @TestForIssue(jiraKey = { "OGM-1431" })
 @RunWith(InfinispanRemoteJpaServerRunner.class)
 public class ServerTaskInfinispanNamedParametersStoredProcedureCallTest extends NamedParametersStoredProcedureCallTest {
-
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-		// remove all scripts because they have higher precedence
-		InfinispanRemoteTestHelper.clearScriptStoredProcedures( (SessionFactory) getFactory() );
-	}
 
 	@Override
 	public void testExceptionWhenUsingNotRegisteredParameter() {

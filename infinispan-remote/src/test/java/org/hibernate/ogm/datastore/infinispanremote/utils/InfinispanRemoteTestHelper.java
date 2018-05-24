@@ -66,20 +66,6 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 	private static final String INFINISPAN_DEPLOYMENTS_DIRECTORY = "target/infinispan-server/standalone/deployments";
 
 	@Override
-	public void prepareDatabase(SessionFactory sessionFactory) {
-		super.prepareDatabase( sessionFactory );
-		InfinispanRemoteDatastoreProvider provider = getProvider( sessionFactory );
-		registerStoredProcedures( provider );
-	}
-
-	private void registerStoredProcedures(InfinispanRemoteDatastoreProvider provider) {
-		RemoteCache<String, String> scriptCache = provider.getScriptCache();
-		scriptCache.put( Car.SIMPLE_VALUE_PROC, toResourceString( "/storedprocedures/simpleValueProcedure.js" ) );
-		scriptCache.put( Car.RESULT_SET_PROC, toResourceString( "/storedprocedures/resultSetProcedure.js" ) );
-		scriptCache.put( "exceptionalProcedure", toResourceString( "/storedprocedures/exceptionalProcedure.js" ) );
-	}
-
-	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		final SessionFactoryImplementor sessionFactoryImplementor = getSessionFactoryImplementor( sessionFactory );
@@ -175,6 +161,14 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 	}
 
 	// Various static helpers below:
+
+	public static void registerScriptStoredProcedures(SessionFactory sessionFactory) {
+		InfinispanRemoteDatastoreProvider provider = getProvider( sessionFactory );
+		RemoteCache<String, String> scriptCache = provider.getScriptCache();
+		scriptCache.put( Car.SIMPLE_VALUE_PROC, toResourceString( "/storedprocedures/simpleValueProcedure.js" ) );
+		scriptCache.put( Car.RESULT_SET_PROC, toResourceString( "/storedprocedures/resultSetProcedure.js" ) );
+		scriptCache.put( "exceptionalProcedure", toResourceString( "/storedprocedures/exceptionalProcedure.js" ) );
+	}
 
 	public static void clearScriptStoredProcedures(SessionFactory sessionFactory) {
 		InfinispanRemoteDatastoreProvider provider = getProvider( sessionFactory );

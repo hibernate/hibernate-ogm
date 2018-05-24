@@ -6,26 +6,46 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures;
 
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.ParameterMode;
 import javax.persistence.PersistenceException;
 import javax.persistence.StoredProcedureQuery;
 
+import org.hibernate.SessionFactory;
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.backendtck.storedprocedures.NamedParametersStoredProcedureCallTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
+import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteTestHelper;
+import org.hibernate.ogm.utils.TestEntityManagerFactory;
 import org.hibernate.ogm.utils.TestForIssue;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testing call of stored procedures
+ * Testing call of stored procedures using <b>scripting</b> mechanism.
+ * It extends {@link NamedParametersStoredProcedureCallTest} to support backendtck test cases.
  *
  * @author The Viet Nguyen &amp;ntviet18@gmail.com&amp;
  */
 @TestForIssue(jiraKey = { "OGM-1430" })
 @RunWith(InfinispanRemoteJpaServerRunner.class)
 public class InfinispanNamedParametersStoredProcedureCallTest extends NamedParametersStoredProcedureCallTest {
+
+	@TestEntityManagerFactory(scope = TestEntityManagerFactory.Scope.TEST_CLASS)
+	private static EntityManagerFactory globalFactory;
+
+	@BeforeClass
+	public static void setUpAll() throws Exception {
+		InfinispanRemoteTestHelper.registerScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
+	}
+
+	@AfterClass
+	public static void tearDownAll() {
+		InfinispanRemoteTestHelper.clearScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
+	}
 
 	@Test
 	public void testExceptionWhenUsePositionalParameters() throws Exception {
