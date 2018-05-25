@@ -7,6 +7,8 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -25,6 +27,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.internal.SessionImpl;
 import org.hibernate.jdbc.Work;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -38,8 +41,11 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.procedure.ProcedureCallMemento;
 import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
+import org.hibernate.query.ParameterMetadata;
 import org.hibernate.query.Query;
+import org.hibernate.query.internal.QueryImpl;
 import org.hibernate.query.spi.NamedQueryRepository;
+import org.hibernate.query.spi.QueryImplementor;
 import org.hibernate.query.spi.ScrollableResultsImplementor;
 
 /**
@@ -216,6 +222,32 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(String entityName) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	public QueryImplementor createQuery(String queryString) {
+		SessionImpl session = (SessionImpl) delegate;
+		QueryImpl queryImplementor = (QueryImpl) session.createQuery( queryString );
+		OgmQueryImplFacade ogmQueryImplFacade = new OgmQueryImplFacade( queryImplementor );
+
+		return ogmQueryImplFacade;
+	}
+
+	private static class OgmQueryImplFacade<R> extends QueryImpl<R> {
+		private Map<String,Object> hints = new HashMap<>();
+		public OgmQueryImplFacade(QueryImpl query) {
+			this( query.getProducer(), query.getParameterMetadata(), query.getQueryString() );
+		}
+
+		public OgmQueryImplFacade(SharedSessionContractImplementor producer, ParameterMetadata parameterMetadata, String queryString) {
+			super( producer, parameterMetadata, queryString );
+		}
+
+		@Override
+		protected void handleUnrecognizedHint(String hintName, Object value) {
+			hints.put( hintName,value );
+			addQueryHint( hintName );
+		}
 	}
 
 	@Override
