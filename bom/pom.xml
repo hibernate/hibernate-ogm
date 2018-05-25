@@ -59,7 +59,6 @@
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.narayana>5.5.30.Final</version.org.jboss.narayana>
-        <version.org.javassist>3.18.1-GA</version.org.javassist>
 
         <!-- Infinispan -->
 
@@ -617,13 +616,6 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-client</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
-                <exclusions>
-                    <!-- Javassist changed its group id and is already pulled in with the new id -->
-                    <exclusion>
-                        <groupId>javassist</groupId>
-                        <artifactId>javassist</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
@@ -647,11 +639,6 @@
                         <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>${version.org.javassist}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml</groupId>
