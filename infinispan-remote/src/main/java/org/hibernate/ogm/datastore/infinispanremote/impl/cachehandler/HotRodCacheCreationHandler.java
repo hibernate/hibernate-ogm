@@ -29,7 +29,7 @@ public class HotRodCacheCreationHandler implements HotRodCacheHandler {
 
 	public static final String OGM_BASIC_CONFIG =
 		"<infinispan><cache-container>" +
-		"	<distributed-cache-configuration name=\"configuration\">" +
+		"	<distributed-cache-configuration name=\"%s\">" +
 		"     <locking striping=\"false\" acquire-timeout=\"10000\" concurrency-level=\"50\" isolation=\"READ_COMMITTED\"/>" +
 		"     <transaction mode=\"NON_DURABLE_XA\" />" +
 		"     <expiration max-idle=\"-1\" />" +
@@ -57,7 +57,6 @@ public class HotRodCacheCreationHandler implements HotRodCacheHandler {
 
 	@Override
 	public void startAndValidateCaches(RemoteCacheManager hotrodClient) {
-
 		cacheConfigurations.entrySet().forEach( entry -> {
 			if ( entry.getValue() == null ) {
 				startAndValidateCache( hotrodClient, entry.getKey() );
@@ -73,7 +72,6 @@ public class HotRodCacheCreationHandler implements HotRodCacheHandler {
 	}
 
 	protected void startAndValidateCache(RemoteCacheManager hotrodClient, String cacheName, String cacheConfiguration) {
-
 		try {
 			hotrodClient.administration()
 				.getOrCreateCache( cacheName, cacheConfiguration );
@@ -84,9 +82,12 @@ public class HotRodCacheCreationHandler implements HotRodCacheHandler {
 	}
 
 	protected void startAndValidateCache(RemoteCacheManager hotrodClient, String cacheName) {
-
 		hotrodClient.administration()
-			.getOrCreateCache( cacheName, new XMLStringConfiguration( OGM_BASIC_CONFIG ) );
+			.getOrCreateCache( cacheName, getCacheConfiguration( cacheName ) );
+	}
+
+	private XMLStringConfiguration getCacheConfiguration(String cacheName) {
+		return new XMLStringConfiguration( String.format( OGM_BASIC_CONFIG, cacheName ) );
 	}
 
 	@Override
