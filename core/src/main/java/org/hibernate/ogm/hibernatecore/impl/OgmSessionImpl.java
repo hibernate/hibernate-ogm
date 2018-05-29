@@ -7,8 +7,6 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;

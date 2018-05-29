@@ -102,8 +102,8 @@ public class CustomHintSupportedProvider extends BaseDatastoreProvider {
 				throw new HibernateException( "The query must have a hints!" );
 			}
 			else {
-				if (!queryHints.contains( DIALECT_SPECIFIED_HINT )) {
-					throw new HibernateException( "The query not contains required hint! The query must contains hint \""+DIALECT_SPECIFIED_HINT+"\"!" );
+				if ( !queryHints.contains( DIALECT_SPECIFIED_HINT ) ) {
+					throw new HibernateException( "The query not contains required hint! The query must contains hint \"" + DIALECT_SPECIFIED_HINT + "\"!" );
 				}
 			}
 			Tuple tuple = new Tuple();
