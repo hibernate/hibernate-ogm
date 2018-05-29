@@ -38,8 +38,11 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.procedure.ProcedureCallMemento;
 import org.hibernate.procedure.internal.NoSQLProcedureCallImpl;
+import org.hibernate.query.ParameterMetadata;
 import org.hibernate.query.Query;
+import org.hibernate.query.internal.QueryImpl;
 import org.hibernate.query.spi.NamedQueryRepository;
+import org.hibernate.query.spi.QueryImplementor;
 import org.hibernate.query.spi.ScrollableResultsImplementor;
 
 /**
@@ -216,6 +219,27 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(String entityName) {
 		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	public QueryImplementor createQuery(String queryString) {
+		QueryImpl queryImplementor = (QueryImpl) super.createQuery( queryString );
+		return new OgmQueryImpl( queryImplementor );
+	}
+
+	private static class OgmQueryImpl<R> extends QueryImpl<R> {
+		public OgmQueryImpl(QueryImpl query) {
+			this( query.getProducer(), query.getParameterMetadata(), query.getQueryString() );
+		}
+
+		public OgmQueryImpl(SharedSessionContractImplementor producer, ParameterMetadata parameterMetadata, String queryString) {
+			super( producer, parameterMetadata, queryString );
+		}
+
+		@Override
+		protected void handleUnrecognizedHint(String hintName, Object value) {
+			addQueryHint( hintName );
+		}
 	}
 
 	@Override
