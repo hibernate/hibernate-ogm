@@ -226,9 +226,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	public QueryImplementor createQuery(String queryString) {
 		SessionImpl session = (SessionImpl) delegate;
 		QueryImpl queryImplementor = (QueryImpl) session.createQuery( queryString );
-		OgmQueryImplFacade ogmQueryImplFacade = new OgmQueryImplFacade( queryImplementor );
-
-		return ogmQueryImplFacade;
+		return new OgmQueryImplFacade( queryImplementor );
 	}
 
 	private static class OgmQueryImplFacade<R> extends QueryImpl<R> {
