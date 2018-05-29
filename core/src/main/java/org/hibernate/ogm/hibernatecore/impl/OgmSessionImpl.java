@@ -25,7 +25,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.event.spi.EventSource;
-import org.hibernate.internal.SessionImpl;
 import org.hibernate.jdbc.Work;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -224,8 +223,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public QueryImplementor createQuery(String queryString) {
-		SessionImpl session = (SessionImpl) delegate;
-		QueryImpl queryImplementor = (QueryImpl) session.createQuery( queryString );
+		QueryImpl queryImplementor = (QueryImpl) super.createQuery( queryString );
 		return new OgmQueryImplFacade( queryImplementor );
 	}
 
