@@ -42,7 +42,7 @@ import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
- * The provider using for test custom (non-standart) hint passing
+ * The provider using for test custom (non-standard) hint passing
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class CustomHintSupportedProvider extends BaseDatastoreProvider {
