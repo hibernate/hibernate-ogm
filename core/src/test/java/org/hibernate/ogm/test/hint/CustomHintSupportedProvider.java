@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -41,6 +42,7 @@ import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
+ * The provider using for test custom (non-standart) hint passing
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class CustomHintSupportedProvider extends BaseDatastoreProvider {
@@ -97,7 +99,12 @@ public class CustomHintSupportedProvider extends BaseDatastoreProvider {
 		public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TupleContext tupleContext) {
 			List<String> queryHints = queryParameters.getQueryHints();
 			if ( queryHints.isEmpty() ) {
-				throw new RuntimeException( "NO HINTS!" );
+				throw new HibernateException( "The query must have a hints!" );
+			}
+			else {
+				if (!queryHints.contains( DIALECT_SPECIFIED_HINT )) {
+					throw new HibernateException( "The query not contains required hint! The query must contains hint \""+DIALECT_SPECIFIED_HINT+"\"!" );
+				}
 			}
 			Tuple tuple = new Tuple();
 			tuple.put( "id", UUID.randomUUID().toString() );

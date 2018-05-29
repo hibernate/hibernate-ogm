@@ -18,6 +18,7 @@ import org.hibernate.ogm.utils.PackagingRule;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
@@ -26,6 +27,8 @@ public class SupportCustomHintTest {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/hint.xml", Noise.class );
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
 	public void shouldPassDialectSpecificHint() {
