@@ -234,7 +234,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	private static class OgmQueryImplFacade<R> extends QueryImpl<R> {
-		private Map<String,Object> hints = new HashMap<>();
 		public OgmQueryImplFacade(QueryImpl query) {
 			this( query.getProducer(), query.getParameterMetadata(), query.getQueryString() );
 		}
@@ -245,7 +244,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 		@Override
 		protected void handleUnrecognizedHint(String hintName, Object value) {
-			hints.put( hintName,value );
 			addQueryHint( hintName );
 		}
 	}
