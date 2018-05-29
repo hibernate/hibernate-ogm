@@ -43,7 +43,8 @@ import org.hibernate.query.internal.ParameterMetadataImpl;
 
 /**
  * The provider using for test custom (non-standard) hint passing
- * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
+ *
+ * @author Sergey Chernolyas
  */
 public class CustomHintSupportedProvider extends BaseDatastoreProvider {
 
@@ -99,11 +100,11 @@ public class CustomHintSupportedProvider extends BaseDatastoreProvider {
 		public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters, TupleContext tupleContext) {
 			List<String> queryHints = queryParameters.getQueryHints();
 			if ( queryHints.isEmpty() ) {
-				throw new HibernateException( "The query must have a hints!" );
+				throw new HibernateException( "The query must have at least one hint!" );
 			}
 			else {
 				if ( !queryHints.contains( DIALECT_SPECIFIED_HINT ) ) {
-					throw new HibernateException( "The query not contains required hint! The query must contains hint \"" + DIALECT_SPECIFIED_HINT + "\"!" );
+					throw new HibernateException( "The query does not contain the required hint \"" + DIALECT_SPECIFIED_HINT + "\"!" );
 				}
 			}
 			Tuple tuple = new Tuple();

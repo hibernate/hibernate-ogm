@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /**
- * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
+ * @author Sergey Chernolyas
  */
 public class SupportCustomHintTest {
 

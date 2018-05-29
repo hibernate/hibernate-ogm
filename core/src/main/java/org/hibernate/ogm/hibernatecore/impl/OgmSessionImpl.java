@@ -224,15 +224,15 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public QueryImplementor createQuery(String queryString) {
 		QueryImpl queryImplementor = (QueryImpl) super.createQuery( queryString );
-		return new OgmQueryImplFacade( queryImplementor );
+		return new OgmQueryImpl( queryImplementor );
 	}
 
-	private static class OgmQueryImplFacade<R> extends QueryImpl<R> {
-		public OgmQueryImplFacade(QueryImpl query) {
+	private static class OgmQueryImpl<R> extends QueryImpl<R> {
+		public OgmQueryImpl(QueryImpl query) {
 			this( query.getProducer(), query.getParameterMetadata(), query.getQueryString() );
 		}
 
-		public OgmQueryImplFacade(SharedSessionContractImplementor producer, ParameterMetadata parameterMetadata, String queryString) {
+		public OgmQueryImpl(SharedSessionContractImplementor producer, ParameterMetadata parameterMetadata, String queryString) {
 			super( producer, parameterMetadata, queryString );
 		}
 
