@@ -105,7 +105,8 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 	}
 
 	private long countAssociations(String tableName, String ownerTableName, InfinispanRemoteDatastoreProvider datastoreProvider) {
-		final String[] ownerIdentifyingColumnNames = datastoreProvider.getDataMapperForCache( ownerTableName ).listIdColumnNames();
+		final String[] ownerIdentifyingColumnNames = getIdentityOwnerColumnNames( ownerTableName, datastoreProvider );
+
 		final ProtoStreamMappingAdapter mapper = datastoreProvider.getDataMapperForCache( tableName );
 		return mapper.withinCacheEncodingContext( c -> {
 			Query queryAll = Search.getQueryFactory( c ).from( ProtostreamPayload.class ).build();
@@ -125,6 +126,17 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			}
 			return (long) resultsCollector.size();
 		} );
+	}
+
+	private String[] getIdentityOwnerColumnNames(String ownerTableName, InfinispanRemoteDatastoreProvider datastoreProvider) {
+		final String[] ownerIdentifyingColumnNames = datastoreProvider.getDataMapperForCache( ownerTableName ).listIdColumnNames();
+		for ( int i = 0; i < ownerIdentifyingColumnNames.length; i++ ) {
+
+			// on association rows each column related to the Entity owner has a name
+			// composed by ownerTableName and original column name in the owner column
+			ownerIdentifyingColumnNames[i] = ownerTableName + "_" + ownerIdentifyingColumnNames[i];
+		}
+		return ownerIdentifyingColumnNames;
 	}
 
 	@Override
