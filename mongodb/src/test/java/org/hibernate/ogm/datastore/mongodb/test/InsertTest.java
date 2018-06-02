@@ -24,6 +24,10 @@ import org.junit.runner.RunWith;
 @RunWith(MongoDbServerRunner.class)
 public class InsertTest extends OgmTestCase {
 
+	/**
+	 * Verify flush does not duplicate Entity on changing field, even if we are in
+	 * the same transaction that creates the Entity itself.
+	 */
 	@Test
 	public void testModifyObjectAfterPersisting() {
 		inTransaction( em -> {

@@ -47,6 +47,7 @@ public class EmbeddedMongoDbServerRule extends ExternalResource {
 	@Override
 	protected void before() throws Exception {
 		synchronized (running) {
+			// if the port is busy we don't need to start the server again
 			if ( running.compareAndSet( false, true ) && portOpen() ) {
 				log.info( "Starting embedded MongoDb server..." );
 				MongodStarter starter = MongodStarter.getDefaultInstance();
