@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.infinispanremote.utils;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,8 +18,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -45,12 +49,10 @@ import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.query.dsl.Query;
-
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -61,9 +63,16 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	private static final String SERVER_TASK_META_INF_RESOURCE_DIRECTORY = "/storedprocedures/servertask";
+	private static final String SERVER_TASK_EXCEPTIONAL_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/exceptional-procedure";
+	private static final String SERVER_TASK_RESULT_SET_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/result-set-procedure";
+	private static final String SERVER_TASK_SIMPLE_VALUE_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/simple-value-procedure";
 
 	private static final String SERVER_TASK_META_INF_TARGET_FILE = "/META-INF/services/org.infinispan.tasks.ServerTask";
 	private static final String INFINISPAN_DEPLOYMENTS_DIRECTORY = "target/infinispan-server/standalone/deployments";
+	private static final String SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/exceptional-procedure.jar";
+	private static final String SERVER_TASK_RESULT_SET_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/result-set-procedure.jar";
+	private static final String SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/simple-value-procedure.jar";
+	private static final int MAX_TEST_COUNT = 20;
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
@@ -178,23 +187,42 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 		scriptCache.remove( "exceptionalProcedure" );
 	}
 
-	public static void deployJavaStoredProcedures() {
+	public static void deployJavaStoredProcedures() throws InterruptedException {
 		ShrinkWrap.create( JavaArchive.class, "simple-value-procedure.jar" )
 				.addClass( SimpleValueProcedure.class )
-				.addAsResource( asResource( SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/simple-value-procedure" ), SERVER_TASK_META_INF_TARGET_FILE )
+				.addAsResource( asResource( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
 				.as( ZipExporter.class )
-				.exportTo( new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + "/simple-value-procedure.jar" ), true );
+				.exportTo( new File( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR ), true );
 		ShrinkWrap.create( JavaArchive.class, "result-set-procedure.jar" )
 				.addClass( Car.class )
 				.addClass( ResultSetProcedure.class )
-				.addAsResource( asResource( SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/result-set-procedure" ), SERVER_TASK_META_INF_TARGET_FILE )
+				.addAsResource( asResource( SERVER_TASK_RESULT_SET_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
 				.as( ZipExporter.class )
-				.exportTo( new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + "/result-set-procedure.jar" ), true );
-		ShrinkWrap.create( JavaArchive.class, INFINISPAN_DEPLOYMENTS_DIRECTORY + "exceptional-procedure.jar" )
+				.exportTo( new File( SERVER_TASK_RESULT_SET_PROCEDURE_JAR ), true );
+		ShrinkWrap.create( JavaArchive.class, "exceptional-procedure.jar" )
 				.addClass( ExceptionalProcedure.class )
-				.addAsResource( asResource( SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/exceptional-procedure" ), SERVER_TASK_META_INF_TARGET_FILE )
+				.addAsResource( asResource( SERVER_TASK_EXCEPTIONAL_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
 				.as( ZipExporter.class )
-				.exportTo( new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + "/exceptional-procedure.jar" ), true );
+				.exportTo( new File( SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR ), true );
+
+		for ( int testNumber = 0; testNumber < MAX_TEST_COUNT; testNumber++ ) {
+			if ( !javaStoredProceduresDeployed() ) {
+				TimeUnit.SECONDS.sleep( 1 );
+			}
+			else {
+				break;
+			}
+		}
+		if ( !javaStoredProceduresDeployed() ) {
+			throw new HibernateException( "Can not upload procedures during 20 seconds!" );
+		}
+
+	}
+
+	private static boolean javaStoredProceduresDeployed() {
+		return Files.exists( Paths.get( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR + ".deployed" ) )
+				&& Files.exists( Paths.get( SERVER_TASK_RESULT_SET_PROCEDURE_JAR + ".deployed" ) )
+				&& Files.exists( Paths.get( SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR + ".deployed" ) );
 	}
 
 	private static SessionFactoryImplementor getSessionFactoryImplementor(SessionFactory sessionFactory) {

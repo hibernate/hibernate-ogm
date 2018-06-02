@@ -32,7 +32,6 @@ public class InfinispanRemoteJpaServerRunner extends OgmJpaTestRunner {
 	@Override
 	public void run(RunNotifier notifier) {
 		try {
-			InfinispanRemoteTestHelper.deployJavaStoredProcedures();
 			hotrodServer.before();
 			super.run( notifier );
 		}
