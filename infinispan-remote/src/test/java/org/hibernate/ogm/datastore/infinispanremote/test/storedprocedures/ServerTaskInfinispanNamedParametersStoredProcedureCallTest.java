@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 public class ServerTaskInfinispanNamedParametersStoredProcedureCallTest extends NamedParametersStoredProcedureCallTest {
 
 	@BeforeClass
-	public static void setUpAll() {
+	public static void setUpAll() throws Exception {
 		InfinispanRemoteTestHelper.deployJavaStoredProcedures();
 	}
 
