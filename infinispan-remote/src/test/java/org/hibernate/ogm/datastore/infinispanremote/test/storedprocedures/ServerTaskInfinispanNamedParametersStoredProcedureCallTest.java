@@ -8,8 +8,10 @@ package org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures;
 
 import org.hibernate.ogm.backendtck.storedprocedures.NamedParametersStoredProcedureCallTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
+import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteTestHelper;
 import org.hibernate.ogm.utils.TestForIssue;
 
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 /**
@@ -22,6 +24,11 @@ import org.junit.runner.RunWith;
 @TestForIssue(jiraKey = { "OGM-1431" })
 @RunWith(InfinispanRemoteJpaServerRunner.class)
 public class ServerTaskInfinispanNamedParametersStoredProcedureCallTest extends NamedParametersStoredProcedureCallTest {
+
+	@BeforeClass
+	public static void setUpAll() {
+		InfinispanRemoteTestHelper.deployJavaStoredProcedures();
+	}
 
 	@Override
 	public void testExceptionWhenUsingNotRegisteredParameter() {
