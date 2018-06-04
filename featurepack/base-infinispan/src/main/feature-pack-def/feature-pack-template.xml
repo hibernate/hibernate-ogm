@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<build xmlns="urn:wildfly:feature-pack-build:1.1">
-    <dependencies>
-        <artifact name="org.hibernate:hibernate-search-jbossmodules-engine" />
-    </dependencies>
-</build>

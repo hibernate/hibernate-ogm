@@ -62,7 +62,7 @@
 
         <!-- Infinispan -->
 
-        <version.org.infinispan>9.3.0.Beta1</version.org.infinispan>
+        <version.org.infinispan>9.3.0.CR1</version.org.infinispan>
         <version.org.infinispan.protostream>4.2.0.Final</version.org.infinispan.protostream>
 
         <!-- MongoDB -->

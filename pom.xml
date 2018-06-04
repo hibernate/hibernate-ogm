@@ -86,7 +86,7 @@
 
         <!-- Maven plugins versions -->
 
-        <version.animal-sniffer.plugin>1.15</version.animal-sniffer.plugin>
+        <version.animal-sniffer.plugin>1.16</version.animal-sniffer.plugin>
         <version.antrun.plugin>1.8</version.antrun.plugin>
         <version.assembly.plugin>3.1.0</version.assembly.plugin>
         <version.buildhelper.plugin>3.0.0</version.buildhelper.plugin>

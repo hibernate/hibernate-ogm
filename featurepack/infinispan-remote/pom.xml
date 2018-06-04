@@ -41,9 +41,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-featurepack-base-infinispan</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-feature-pack-client</artifactId>
+            <version>${version.org.infinispan}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
