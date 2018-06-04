@@ -197,14 +197,6 @@ public class SimpleQueriesWithTablePerClassNotSupportedTest extends OgmTestCase 
 		public void setProject(String project) {
 			this.project = project;
 		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = super.hashCode();
-			result = prime * result + ( ( project == null ) ? 0 : project.hashCode() );
-			return result;
-		}
 	}
 
 	@Entity(name = "Employee")
