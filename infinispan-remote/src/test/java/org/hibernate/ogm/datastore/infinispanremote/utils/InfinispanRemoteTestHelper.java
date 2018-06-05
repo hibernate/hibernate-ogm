@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -48,12 +49,10 @@ import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.query.dsl.Query;
-
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -73,6 +72,7 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 	private static final String SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/exceptional-procedure.jar";
 	private static final String SERVER_TASK_RESULT_SET_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/result-set-procedure.jar";
 	private static final String SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/simple-value-procedure.jar";
+	private static final int MAX_TEST_COUNT = 20;
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
@@ -204,9 +204,19 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 				.addAsResource( asResource( SERVER_TASK_EXCEPTIONAL_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
 				.as( ZipExporter.class )
 				.exportTo( new File( SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR ), true );
-		while ( !javaStoredProceduresDeployed() ) {
-			TimeUnit.SECONDS.sleep( 1 );
+
+		for ( int testNumber = 0; testNumber < MAX_TEST_COUNT; testNumber++ ) {
+			if ( !javaStoredProceduresDeployed() ) {
+				TimeUnit.SECONDS.sleep( 1 );
+			}
+			else {
+				break;
+			}
 		}
+		if ( !javaStoredProceduresDeployed() ) {
+			throw new HibernateException( "Can not upload procedures during 20 seconds!" );
+		}
+
 	}
 
 	private static boolean javaStoredProceduresDeployed() {
