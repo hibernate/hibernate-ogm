@@ -22,7 +22,9 @@ import javax.persistence.ParameterMode;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.spi.MetamodelImplementor;
+import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -55,11 +57,17 @@ public class NoSQLProcedureOutputsImpl implements ProcedureOutputs {
 		this.sessionFactory = procedureCall.getSession().getFactory();
 		this.gridDialect = this.sessionFactory.getServiceRegistry().getService( StoredProcedureAwareGridDialect.class );
 		if ( gridDialect == null ) {
-			throw new UnsupportedOperationException( String.format(
-					"Your grid dialect do not supports stored procedures. You tried to call '%s' procedure",
-					procedureCall.getProcedureName()
-			) );
+			String dialectType = dialectType( sessionFactory );
+			throw new UnsupportedOperationException( String.format( "Grid dialect %s does not support server side procedures: procedure '%s' has been called",
+					dialectType,
+					procedureCall.getProcedureName() ) );
 		}
+	}
+
+	private String dialectType(SessionFactoryImplementor sessionFactory) {
+		GridDialect dialect = sessionFactory.getServiceRegistry().getService( GridDialect.class );
+		String dialectType = GridDialects.getWrappedDialect( dialect ).getName();
+		return dialectType;
 	}
 
 	@Override
