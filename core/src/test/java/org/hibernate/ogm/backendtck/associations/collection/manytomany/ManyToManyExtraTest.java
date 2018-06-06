@@ -12,18 +12,12 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-@SkipByGridDialect(
-		value = { GridDialectType.INFINISPAN_REMOTE },
-		comment = "Classroom.students list - bag semantics unsupported (no primary key)"
-)
 public class ManyToManyExtraTest extends OgmTestCase {
 
 	@Test

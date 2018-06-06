@@ -7,7 +7,6 @@
 package org.hibernate.ogm.backendtck.cascade;
 
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
@@ -29,7 +28,7 @@ import org.junit.rules.ExpectedException;
  * @author Fabio Massimo Ercoli
  */
 @TestForIssue(jiraKey = "OGM-1468")
-@SkipByGridDialect({ INFINISPAN, INFINISPAN_REMOTE })
+@SkipByGridDialect({ INFINISPAN })
 public class CascadeEntityLoaderTest extends OgmTestCase {
 
 	public static final String ARTIST_1 = "Arctic Monkeys";
