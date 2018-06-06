@@ -2406,8 +2406,15 @@ Defines the package name of the generated Protobuf schema. Defaults to `Hibernat
 Useful to isolate different applications using the same Infinispan Server instance.
 
 hibernate.ogm.infinispan_remote.schema_file_name::
-Defines the file name of the generated Protobuf schema. Defualts to 'Hibernate_OGM_Generated_schema.proto'.
+Defines the file name of the generated Protobuf schema. Defaults to 'Hibernate_OGM_Generated_schema.proto'.
 The file name must have a valid __*.proto__ extension.
+
+hibernate.ogm.infinispan_remote.schema_override_resource::
+It is possible to override the generated Protobuf schema, providing a user defined Protobuf schema resource.
+Property value is of string type and it can either represent a *class path element*, an *URL* or a *file system path*.
+Hibernate OGM will use the specified Protobuf Schema instead of the generated one.
+This doesn't affect how entities are encoded so the specified schema is expected to be compatible with the generated one.
+This can be used to defined server side indexes on caches used by JPQL and native Ickle queries.
 
 ==== Data encoding: Protobuf Schema
 
@@ -2458,7 +2465,7 @@ using Hibernate OGM.
 
 The deployed schemas can be fetched from the Infinispan Server; Hibernate OGM also
 logs the generated schemas at `INFO` level in the logging category
-`org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions`.
+`org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema`.
 
 [[storage-principles-of-infinispan-dataprovider]]
 

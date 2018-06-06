@@ -66,6 +66,12 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	public static final String SCHEMA_OVERRIDE_SERVICE = "hibernate.ogm.infinispan_remote.schema_override_service";
 
 	/**
+	 * You can provide a Protobuf schema in a resource file to override the Protobuf schema being generated.
+	 * This will not affect how entities are encoded, so the alternative schema must be compatible.
+	 */
+	public static final String SCHEMA_OVERRIDE_RESOURCE = "hibernate.ogm.infinispan_remote.schema_override_resource";
+
+	/**
 	 * The configuration property key to configure the package name to be used in Protobuf generated schemas.
 	 */
 	public static final String SCHEMA_PACKAGE_NAME = "hibernate.ogm.infinispan_remote.schema_package_name";

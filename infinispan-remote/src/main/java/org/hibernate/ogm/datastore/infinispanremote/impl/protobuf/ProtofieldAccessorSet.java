@@ -48,6 +48,9 @@ import org.hibernate.ogm.type.impl.YesNoType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
+import org.infinispan.protostream.descriptors.Descriptor;
+import org.infinispan.protostream.descriptors.FieldDescriptor;
+
 public class ProtofieldAccessorSet {
 
 	//Counter to assign unique Tag ids in protobuf. First to be assigned is '1'.
@@ -184,7 +187,7 @@ public class ProtofieldAccessorSet {
 		orderedFields.forEach( action );
 	}
 
-	private void add(ProtofieldAccessor unsafeWriter) {
+	private void add(BaseProtofieldAccessor unsafeWriter) {
 		UnsafeProtofield wrapped = new UnsafeProtofield( unsafeWriter );
 		UnsafeProtofield previous = fieldsPerORMName.put( unsafeWriter.getColumnName(), wrapped );
 		if ( previous != null ) {
@@ -218,4 +221,23 @@ public class ProtofieldAccessorSet {
 		return fieldsPerORMName.keySet().toArray( new String[0] );
 	}
 
+	public boolean isDescribedIn(Descriptor descriptor) {
+		for ( UnsafeProtofield<?> field : orderedFields ) {
+			// if any field is not present the field set is not described
+			if ( !fieldIsDescribedIn( field, descriptor ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean fieldIsDescribedIn(UnsafeProtofield<?> field, Descriptor descriptor) {
+		for ( FieldDescriptor fieldDescriptor : descriptor.getFields() ) {
+			// find at least one match
+			if ( field.isDescribedIn( fieldDescriptor ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

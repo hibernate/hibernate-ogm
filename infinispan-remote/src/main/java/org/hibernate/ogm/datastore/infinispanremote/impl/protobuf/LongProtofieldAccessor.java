@@ -19,7 +19,7 @@ public final class LongProtofieldAccessor extends BaseProtofieldAccessor<Long> i
 	}
 
 	@Override
-	protected String getProtobufTypeName() {
+	public String getProtobufTypeName() {
 		return "int64";
 	}
 

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.infinispanremote.impl.VersionedAssociation;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.MainOgmCoDec;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamAssociationPayload;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamId;

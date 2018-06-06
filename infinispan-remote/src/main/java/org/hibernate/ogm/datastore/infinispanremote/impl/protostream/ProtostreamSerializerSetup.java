@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.infinispanremote.impl.protostream;
 
 import java.io.IOException;
 
-import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.impl.sequences.SequenceIdMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;

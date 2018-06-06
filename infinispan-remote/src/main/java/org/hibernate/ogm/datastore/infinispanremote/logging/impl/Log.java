@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
@@ -91,4 +92,16 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1721, value = "Infinispan queries can only target a single entity type. Found %s for query: %s")
 	HibernateException multipleEntitiesInFromClause(String[] split, String nativeQuery);
+
+	@Message(id = 1722, value = "Error on loading schema override resource file: %s")
+	HibernateException errorLoadingSchemaOverrideResourceFile(URL resource);
+
+	@Message(id = 1723, value = "Provided ProtoBuf schema has an illegal format. %s on [%s]")
+	HibernateException providedSchemaHasAnIllegalFormat(String detailMessage, String protoSchema);
+
+	@Message(id = 1724, value = "Provided ProtoBuf schema has an invalid package name: Required: [%s]. Actual: [%s]")
+	HibernateException providedSchemaHasAnInvalidPackageName(String required, String actual);
+
+	@Message(id = 1725, value = "Provided ProtoBuf schema has an invalid cache definition: %s")
+	HibernateException providedSchemaHasAnInvalidCacheDefinition(String tableName);
 }

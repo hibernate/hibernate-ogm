@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.infinispanremote.impl;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,7 @@ import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.Infinispa
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheCreationHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheValidationHandler;
-import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMapper;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamSerializerSetup;
@@ -84,6 +85,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	@EffectivelyFinal
 	private SchemaOverride schemaOverrideService;
 
+	@EffectivelyFinal
+	private URL schemaOverrideResource;
+
 	//For each cache we have a schema and a set of encoders/decoders to the generated protobuf schema
 	@EffectivelyFinal
 	private Map<String,ProtoDataMapper> perCacheSchemaMappers;
@@ -126,6 +130,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.config.initConfiguration( configurationValues, serviceRegistry );
 		this.schemaCapture = config.getSchemaCaptureService();
 		this.schemaOverrideService = config.getSchemaOverrideService();
+		this.schemaOverrideResource = config.getSchemaOverrideResource();
 		this.schemaPackageName = config.getSchemaPackageName();
 		this.schemaFileName = config.getSchemaFileName();
 		this.createCachesEnabled = config.isCreateCachesEnabled();
@@ -146,7 +151,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.sd = sd;
 		this.sd.validateSchema();
 		RemoteCache<String, String> protobufCache = getProtobufCache();
-		this.sd.deploySchema( schemaFileName, protobufCache, schemaCapture, schemaOverrideService );
+		this.sd.deploySchema( schemaFileName, protobufCache, schemaCapture, schemaOverrideService, schemaOverrideResource );
 
 		// register proto schema also to global serialization context used for unmarshalling
 		registerProtoFiles( marshaller, sd );
@@ -201,8 +206,16 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		return InfinispanRemoteBasedQueryParserService.class;
 	}
 
+	public URL getSchemaOverrideResource() {
+		return schemaOverrideResource;
+	}
+
 	public String getProtobufPackageName() {
 		return schemaPackageName;
+	}
+
+	public String getSchemaFileName() {
+		return schemaFileName;
 	}
 
 	public String getConfiguration(String cacheName) {

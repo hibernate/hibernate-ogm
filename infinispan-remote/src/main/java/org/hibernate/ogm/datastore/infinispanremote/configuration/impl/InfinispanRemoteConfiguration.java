@@ -100,6 +100,8 @@ public class InfinispanRemoteConfiguration {
 
 	private SchemaOverride schemaOverrideService;
 
+	private URL schemaOverrideResource;
+
 	private String schemaPackageName;
 
 	private String schemaFileName;
@@ -135,6 +137,16 @@ public class InfinispanRemoteConfiguration {
 
 	public SchemaOverride getSchemaOverrideService() {
 		return schemaOverrideService;
+	}
+
+	/**
+	 * The location of custom Protobuf schema file.
+	 *
+	 * @see InfinispanRemoteProperties#SCHEMA_OVERRIDE_RESOURCE
+	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
+	 */
+	public URL getSchemaOverrideResource() {
+		return schemaOverrideResource;
 	}
 
 	public String getSchemaPackageName() {
@@ -178,6 +190,10 @@ public class InfinispanRemoteConfiguration {
 		this.schemaOverrideService = propertyReader
 				.property( InfinispanRemoteProperties.SCHEMA_OVERRIDE_SERVICE, SchemaOverride.class )
 				.instantiate()
+				.getValue();
+
+		this.schemaOverrideResource = propertyReader
+				.property( InfinispanRemoteProperties.SCHEMA_OVERRIDE_RESOURCE, URL.class )
 				.getValue();
 
 		this.schemaPackageName = propertyReader

@@ -1,0 +1,27 @@
+ package HibernateOGMGenerated;
+
+ message TableWithTableGenerator_id {
+ 	required int64 id = 1;
+ }
+
+ message hibernate_sequences {
+ 	required int64 next_val = 2;
+ }
+
+ message hibernate_sequences_id {
+ 	required string sequence_name = 1;
+ }
+
+ message TableWithTableGenerator {
+ 	required int64 id = 1;
+
+ 	/**
+ 	 * @IndexedField(index=true, store=false)
+ 	 */
+ 	optional int64 moment = 2;
+
+ 	/**
+ 	 * @IndexedField(index=true, store=true)
+ 	 */
+ 	optional string subject = 3;
+ }

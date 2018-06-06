@@ -19,7 +19,7 @@ public final class StringProtofieldAccessor extends BaseProtofieldAccessor<Strin
 	}
 
 	@Override
-	protected String getProtobufTypeName() {
+	public String getProtobufTypeName() {
 		return "string";
 	}
 

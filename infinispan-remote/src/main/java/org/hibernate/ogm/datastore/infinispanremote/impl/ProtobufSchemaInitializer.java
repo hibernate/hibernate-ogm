@@ -14,7 +14,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
-import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.SchemaDefinitions;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.options.cache.impl.CacheConfigurationOption;

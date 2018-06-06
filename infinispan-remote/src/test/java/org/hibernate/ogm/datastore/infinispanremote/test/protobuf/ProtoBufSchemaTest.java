@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispanremote.test.initialize;
+package org.hibernate.ogm.datastore.infinispanremote.test.protobuf;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -87,7 +87,7 @@ public class ProtoBufSchemaTest {
 			}
 		}
 		catch (HibernateException he) {
-			Assert.assertTrue( "Unexpected exception message", he.getMessage().startsWith( "OGM001716" ) );
+			Assert.assertTrue( "Unexpected exception message", he.getMessage().startsWith( "OGM001723" ) );
 		}
 	}
 

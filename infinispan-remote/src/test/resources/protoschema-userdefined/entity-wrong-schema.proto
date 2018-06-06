@@ -1,0 +1,14 @@
+package HibernateOGMGenerated;
+
+message SimpleTable_id {
+	required int32 id = 1;
+}
+
+message SimpleTable {
+	required int32 id = 1;
+
+	/**
+	 * @IndexedField(index=true, store=false)
+	 */
+	optional string name = 2;
+}

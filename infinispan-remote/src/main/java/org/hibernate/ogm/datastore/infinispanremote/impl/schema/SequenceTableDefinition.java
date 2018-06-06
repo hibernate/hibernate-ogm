@@ -7,12 +7,17 @@
 package org.hibernate.ogm.datastore.infinispanremote.impl.schema;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.LongProtofieldAccessor;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.ProtofieldAccessor;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.StringProtofieldAccessor;
 import org.hibernate.ogm.datastore.infinispanremote.impl.sequences.SequenceId;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+
+import org.infinispan.protostream.descriptors.Descriptor;
+import org.infinispan.protostream.descriptors.FieldDescriptor;
+import org.infinispan.protostream.descriptors.FileDescriptor;
 
 public final class SequenceTableDefinition implements ProtobufEntryExporter {
 
@@ -69,4 +74,44 @@ public final class SequenceTableDefinition implements ProtobufEntryExporter {
 		return SanitationUtils.qualify( idMessageName, protobufPackageName );
 	}
 
+	public boolean isDescribedIn(FileDescriptor fileDescriptor) {
+		boolean idMessageIsDescribed = false;
+		boolean messageIsDescribed = false;
+
+		for ( Descriptor descriptor : fileDescriptor.getMessageTypes() ) {
+			if ( descriptor.getName().equals( idMessageName ) ) {
+				if ( idMessageIsDescribedIn( descriptor ) ) {
+					idMessageIsDescribed = true;
+				}
+			}
+			if ( descriptor.getName().equals( messageName ) ) {
+				if ( messageIsDescribedIn( descriptor ) ) {
+					messageIsDescribed = true;
+				}
+			}
+		}
+
+		// both key and value types must be described
+		return idMessageIsDescribed && messageIsDescribed;
+	}
+
+	private boolean idMessageIsDescribedIn(Descriptor descriptor) {
+		List<FieldDescriptor> fields = descriptor.getFields();
+		if ( fields.size() != 1 ) {
+			return false;
+		}
+
+		FieldDescriptor fieldDescriptor = fields.get( 0 );
+		return fieldDescriptor.getName().equals( keyColumnName ) || !fieldDescriptor.getTypeName().equals( sequenceNameEncoder.getProtobufTypeName() );
+	}
+
+	private boolean messageIsDescribedIn(Descriptor descriptor) {
+		List<FieldDescriptor> fields = descriptor.getFields();
+		if ( fields.size() != 1 ) {
+			return false;
+		}
+
+		FieldDescriptor fieldDescriptor = fields.get( 0 );
+		return fieldDescriptor.getName().equals( valueColumnName ) || !fieldDescriptor.getTypeName().equals( valueEncoder.getProtobufTypeName() );
+	}
 }

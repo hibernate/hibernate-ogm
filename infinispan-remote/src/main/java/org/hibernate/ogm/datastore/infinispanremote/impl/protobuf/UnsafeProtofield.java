@@ -12,8 +12,10 @@ import java.util.Objects;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtostreamMappedField;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.ProtobufFieldExporter;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.ProtobufTypeExporter;
+
 import org.infinispan.protostream.MessageMarshaller.ProtoStreamReader;
 import org.infinispan.protostream.MessageMarshaller.ProtoStreamWriter;
+import org.infinispan.protostream.descriptors.FieldDescriptor;
 
 /**
  * Catching all IOException cases makes usage of lambdas inconvenient.
@@ -21,9 +23,9 @@ import org.infinispan.protostream.MessageMarshaller.ProtoStreamWriter;
  */
 final class UnsafeProtofield<T> implements ProtobufFieldExporter, ProtobufTypeExporter, ProtostreamMappedField<T> {
 
-	private final ProtofieldAccessor<T> delegate;
+	private final BaseProtofieldAccessor<T> delegate;
 
-	UnsafeProtofield(ProtofieldAccessor<T> delegate) {
+	UnsafeProtofield(BaseProtofieldAccessor<T> delegate) {
 		Objects.requireNonNull( delegate );
 		this.delegate = delegate;
 	}
@@ -73,4 +75,7 @@ final class UnsafeProtofield<T> implements ProtobufFieldExporter, ProtobufTypeEx
 		return "UnsafeProtofield [delegate=" + delegate + "]";
 	}
 
+	public boolean isDescribedIn(FieldDescriptor fieldDescriptor) {
+		return delegate.getProtobufName().equals( fieldDescriptor.getName() ) && delegate.getProtobufTypeName().equals( fieldDescriptor.getTypeName() );
+	}
 }
