@@ -25,7 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testing call of stored procedures
+ * Testing call of stored procedures using <b>scripting</b> mechanism.
+ * It extends {@link NamedParametersStoredProcedureCallTest} to support backendtck test cases.
  *
  * @author The Viet Nguyen &amp;ntviet18@gmail.com&amp;
  */

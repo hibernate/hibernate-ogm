@@ -15,7 +15,8 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 /**
- * Testing call of stored procedures.
+ * Testing call of stored procedures using <b>server-task</b> mechanism.
+ * It extends {@link NamedParametersStoredProcedureCallTest} to support backendtck test cases.
  * <p>This test based on 3 deployables (simple-value-procedure.jar, result-set-procedure.jar, exceptional-procedure.jar).
  * <p>They're representatives of following classes accordingly {@link SimpleValueProcedure}, {@link ResultSetProcedure} and {@link ExceptionalProcedure}.
  *

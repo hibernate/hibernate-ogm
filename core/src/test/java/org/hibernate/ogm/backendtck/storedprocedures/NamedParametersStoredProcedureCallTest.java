@@ -47,6 +47,9 @@ import org.junit.rules.ExpectedException;
  * One that returns a value that can be mapped to {@link Car} and another store procedure that returns the value passed
  * as parameter. The name of the stored procedures are respectively {@link Car#RESULT_SET_PROC} and
  * {@link Car#SIMPLE_VALUE_PROC}.
+ * <p>
+ * {@link INFINISPAN_REMOTE} dialect is skipped in this test, the test is provided and
+ * run by the dialect module test, using both java and javascript procedure.
  *
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
