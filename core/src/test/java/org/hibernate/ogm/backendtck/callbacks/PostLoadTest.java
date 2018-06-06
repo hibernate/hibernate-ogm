@@ -14,8 +14,6 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.utils.GridDialectType;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Test;
@@ -23,10 +21,6 @@ import org.junit.Test;
 /**
  * @author David Williams
  */
-@SkipByGridDialect(
-		value = { GridDialectType.INFINISPAN_REMOTE },
-		comment = "Zoo.animals set - bag semantics unsupported (no primary key)"
-)
 public class PostLoadTest extends OgmJpaTestCase {
 
 	/**

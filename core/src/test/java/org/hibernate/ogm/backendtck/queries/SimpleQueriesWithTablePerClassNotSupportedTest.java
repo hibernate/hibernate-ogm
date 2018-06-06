@@ -9,7 +9,6 @@ package org.hibernate.ogm.backendtck.queries;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -41,7 +40,7 @@ import org.junit.rules.ExpectedException;
  *
  * @author Davide D'Alto
  */
-@SkipByGridDialect({ HASHMAP, INFINISPAN, INFINISPAN_REMOTE })
+@SkipByGridDialect({ HASHMAP, INFINISPAN })
 public class SimpleQueriesWithTablePerClassNotSupportedTest extends OgmTestCase {
 
 	@Rule

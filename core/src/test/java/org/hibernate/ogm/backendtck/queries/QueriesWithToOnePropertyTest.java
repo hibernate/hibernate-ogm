@@ -9,7 +9,6 @@ package org.hibernate.ogm.backendtck.queries;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 
 import javax.persistence.EntityManager;
 
@@ -24,7 +23,7 @@ import org.junit.Test;
  * @author Guillaume Smet
  */
 @SkipByGridDialect(
-		value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE },
+		value = { HASHMAP, INFINISPAN },
 		comment = "We need a QueryParserService to be able to perform these queries.")
 public class QueriesWithToOnePropertyTest extends OgmJpaTestCase {
 
