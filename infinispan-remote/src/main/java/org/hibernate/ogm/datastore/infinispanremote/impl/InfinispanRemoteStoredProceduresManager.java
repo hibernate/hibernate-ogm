@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.infinispanremote.impl;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
@@ -27,6 +29,11 @@ import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 public class InfinispanRemoteStoredProceduresManager {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	// this is the error pattern specified in Infinispan scripting engine, so far there is only way
+	// to know whether the undefined parameters are being used.
+	// TODO: switch to error code based pattern when Infinispan provides such opportunity.
+	private static final Pattern REFERENCE_ERROR_REGEXP = Pattern.compile( ".*\"([a-zA-Z_$]+)\" is not defined in <eval>.*" );
 	private static final String UNKNOWN_TASK_ERROR_ID = "ISPN027002";
 
 	/**
@@ -63,6 +70,13 @@ public class InfinispanRemoteStoredProceduresManager {
 				// parse undefined task exception, e.g. ISPN027002: Unknown task 'storedProcedureName'"
 				if ( msg.contains( UNKNOWN_TASK_ERROR_ID ) ) {
 					throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, e );
+				}
+				Matcher matcher = REFERENCE_ERROR_REGEXP.matcher( msg );
+				if ( matcher.find() ) {
+					String param = matcher.group( 1 );
+					if ( param != null && !param.isEmpty() ) {
+						throw log.cannotSetStoredProcedureParameter( storedProcedureName, param, namedParameters.get( param ), e );
+					}
 				}
 			}
 			throw log.cannotExecuteStoredProcedure( storedProcedureName, e );

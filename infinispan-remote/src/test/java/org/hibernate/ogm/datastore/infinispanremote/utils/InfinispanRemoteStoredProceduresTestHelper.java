@@ -89,7 +89,8 @@ public class InfinispanRemoteStoredProceduresTestHelper {
 			if ( !deployed ) {
 				TimeUnit.SECONDS.sleep( 1 );
 			}
-		} while ( ++testNumber < MAX_TEST_COUNT && !deployed );
+		}
+		while ( ++testNumber < MAX_TEST_COUNT && !deployed );
 		if ( !deployed ) {
 			throw new HibernateException( "Can not upload procedures during 20 seconds!" );
 		}
