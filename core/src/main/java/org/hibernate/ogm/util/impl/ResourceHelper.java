@@ -13,11 +13,11 @@ import java.util.Scanner;
 
 public class ResourceHelper {
 
-	private static final String LINE_DELIMITER = "\\A";
+	private static final String FILE_DELIMITER = "\\A";
 
 	public static String readResource(URL resource) throws IOException {
 		try ( InputStream is = resource.openStream() ) {
-			Scanner s = new Scanner( is ).useDelimiter( LINE_DELIMITER );
+			Scanner s = new Scanner( is ).useDelimiter( FILE_DELIMITER );
 			return s.hasNext() ? s.next() : "";
 		}
 	}
