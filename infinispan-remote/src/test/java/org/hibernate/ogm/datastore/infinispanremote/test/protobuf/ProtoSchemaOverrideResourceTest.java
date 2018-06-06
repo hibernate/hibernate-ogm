@@ -49,6 +49,7 @@ public class ProtoSchemaOverrideResourceTest {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
+	@SuppressWarnings("unused")
 	public void tryToRegisterResourceThatDoesNotExist() {
 		try ( SessionFactory sf = TestHelper.getDefaultTestSessionFactory(
 				Collections.singletonMap( InfinispanRemoteProperties.SCHEMA_OVERRIDE_RESOURCE, "file-does-not-exist.proto" ), SimpleEntity.class ) ) {
@@ -64,6 +65,7 @@ public class ProtoSchemaOverrideResourceTest {
 	}
 
 	@Test
+	@SuppressWarnings("unused")
 	public void tryToRegisterNotCompatibleProtoSchema() {
 		try ( SessionFactory sf = TestHelper.getDefaultTestSessionFactory(
 				Collections.singletonMap( InfinispanRemoteProperties.SCHEMA_OVERRIDE_RESOURCE, PROTOSCHEMA_USERDEFINED_FOLDER + "entity-wrong-schema.proto" ),
