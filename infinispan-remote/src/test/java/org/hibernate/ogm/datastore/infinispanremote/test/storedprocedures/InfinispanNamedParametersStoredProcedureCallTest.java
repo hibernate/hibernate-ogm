@@ -39,12 +39,12 @@ public class InfinispanNamedParametersStoredProcedureCallTest extends NamedParam
 
 	@BeforeClass
 	public static void setUpAll() throws Exception {
-		StoredProceduresDeployer.registerScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
+		StoredProceduresDeployer.deployJavaScripts( ( (SessionFactory) globalFactory ) );
 	}
 
 	@AfterClass
 	public static void tearDownAll() {
-		StoredProceduresDeployer.clearScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
+		StoredProceduresDeployer.undeployJavaScripts( ( (SessionFactory) globalFactory ) );
 	}
 
 	@Test

@@ -28,7 +28,7 @@ public class ServerTaskInfinispanNamedParametersStoredProcedureCallTest extends 
 
 	@BeforeClass
 	public static void setUpAll() throws Exception {
-		StoredProceduresDeployer.deployJavaStoredProcedures();
+		StoredProceduresDeployer.deployJars();
 	}
 
 	@Override

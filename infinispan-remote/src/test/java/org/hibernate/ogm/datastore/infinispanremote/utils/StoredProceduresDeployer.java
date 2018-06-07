@@ -45,7 +45,7 @@ public class StoredProceduresDeployer {
 	private static final String SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/exceptional-procedure.jar";
 	private static final int MAX_TEST_COUNT = 20;
 
-	public static void registerScriptStoredProcedures(SessionFactory sessionFactory) {
+	public static void deployJavaScripts(SessionFactory sessionFactory) {
 		InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
 		RemoteCache<String, String> scriptCache = provider.getScriptCache();
 		scriptCache.put( Car.SIMPLE_VALUE_PROC, getContent( "/storedprocedures/simpleValueProcedure.js" ) );
@@ -53,7 +53,7 @@ public class StoredProceduresDeployer {
 		scriptCache.put( "exceptionalProcedure", getContent( "/storedprocedures/exceptionalProcedure.js" ) );
 	}
 
-	public static void clearScriptStoredProcedures(SessionFactory sessionFactory) {
+	public static void undeployJavaScripts(SessionFactory sessionFactory) {
 		InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
 		RemoteCache<Object, Object> scriptCache = provider.getScriptCache();
 		scriptCache.remove( Car.SIMPLE_VALUE_PROC );
@@ -61,7 +61,7 @@ public class StoredProceduresDeployer {
 		scriptCache.remove( "exceptionalProcedure" );
 	}
 
-	public static void deployJavaStoredProcedures() throws InterruptedException {
+	public static void deployJars() throws InterruptedException {
 		ShrinkWrap.create( JavaArchive.class, "simple-value-procedure.jar" )
 				.addClass( SimpleValueProcedure.class )
 				.addAsResource( getResource( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
