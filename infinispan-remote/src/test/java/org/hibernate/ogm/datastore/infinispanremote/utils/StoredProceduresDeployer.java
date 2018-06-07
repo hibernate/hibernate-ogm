@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 /**
  * @author The Viet Nguyen
  */
-public class InfinispanRemoteStoredProceduresTestHelper {
+public class StoredProceduresDeployer {
 
 	private static final String SERVER_TASK_META_INF_RESOURCE_DIRECTORY = "/storedprocedures/servertask";
 	private static final String SERVER_TASK_SIMPLE_VALUE_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/simple-value-procedure";

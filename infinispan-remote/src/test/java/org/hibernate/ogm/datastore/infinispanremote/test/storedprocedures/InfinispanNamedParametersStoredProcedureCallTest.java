@@ -15,7 +15,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.ogm.backendtck.storedprocedures.Car;
 import org.hibernate.ogm.backendtck.storedprocedures.NamedParametersStoredProcedureCallTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
-import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteStoredProceduresTestHelper;
+import org.hibernate.ogm.datastore.infinispanremote.utils.StoredProceduresDeployer;
 import org.hibernate.ogm.utils.TestEntityManagerFactory;
 import org.hibernate.ogm.utils.TestForIssue;
 
@@ -39,12 +39,12 @@ public class InfinispanNamedParametersStoredProcedureCallTest extends NamedParam
 
 	@BeforeClass
 	public static void setUpAll() throws Exception {
-		InfinispanRemoteStoredProceduresTestHelper.registerScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
+		StoredProceduresDeployer.registerScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
 	}
 
 	@AfterClass
 	public static void tearDownAll() {
-		InfinispanRemoteStoredProceduresTestHelper.clearScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
+		StoredProceduresDeployer.clearScriptStoredProcedures( ( (SessionFactory) globalFactory ) );
 	}
 
 	@Test

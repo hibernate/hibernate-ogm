@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures;
 
 import org.hibernate.ogm.backendtck.storedprocedures.NamedParametersStoredProcedureCallTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteJpaServerRunner;
-import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteStoredProceduresTestHelper;
+import org.hibernate.ogm.datastore.infinispanremote.utils.StoredProceduresDeployer;
 import org.hibernate.ogm.utils.TestForIssue;
 
 import org.junit.BeforeClass;
@@ -28,7 +28,7 @@ public class ServerTaskInfinispanNamedParametersStoredProcedureCallTest extends 
 
 	@BeforeClass
 	public static void setUpAll() throws Exception {
-		InfinispanRemoteStoredProceduresTestHelper.deployJavaStoredProcedures();
+		StoredProceduresDeployer.deployJavaStoredProcedures();
 	}
 
 	@Override
