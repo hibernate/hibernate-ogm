@@ -8,12 +8,9 @@
 package org.hibernate.ogm.datastore.infinispanremote.utils;
 
 import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
@@ -22,35 +19,35 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.InfinispanRemoteDatasto
 import org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures.ExceptionalProcedure;
 import org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures.ResultSetProcedure;
 import org.hibernate.ogm.datastore.infinispanremote.test.storedprocedures.SimpleValueProcedure;
-
+import org.hibernate.ogm.util.impl.ResourceHelper;
 import org.infinispan.client.hotrod.RemoteCache;
-
+import org.infinispan.tasks.ServerTask;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
+ * @author Davide D'Alto
  * @author The Viet Nguyen
  */
 public class StoredProceduresDeployer {
 
-	private static final String SERVER_TASK_META_INF_RESOURCE_DIRECTORY = "/storedprocedures/servertask";
-	private static final String SERVER_TASK_SIMPLE_VALUE_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/simple-value-procedure";
-	private static final String SERVER_TASK_RESULT_SET_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/result-set-procedure";
-	private static final String SERVER_TASK_EXCEPTIONAL_PROCEDURE_META_INF = SERVER_TASK_META_INF_RESOURCE_DIRECTORY + "/exceptional-procedure";
-	private static final String SERVER_TASK_META_INF_TARGET_FILE = "/META-INF/services/org.infinispan.tasks.ServerTask";
-	private static final String INFINISPAN_DEPLOYMENTS_DIRECTORY = "target/infinispan-server/standalone/deployments";
-	private static final String SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/simple-value-procedure.jar";
-	private static final String SERVER_TASK_RESULT_SET_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/result-set-procedure.jar";
-	private static final String SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR = INFINISPAN_DEPLOYMENTS_DIRECTORY + "/exceptional-procedure.jar";
-	private static final int MAX_TEST_COUNT = 20;
+	private static final String FOLDER_SEP = System.getProperty( "file.separator" );
+
+	private static final String INFINISPAN_DEPLOYMENTS_DIRECTORY = "target/infinispan-server/standalone/deployments/".replaceAll( "//", FOLDER_SEP );
+
+	// Constants for waiting for the stored procedures to be deployed
+	private static final int MAX_WAIT_MILLISECONDS = 20 * 1000;
+	private static final int STATE_REFRESH_MILLISECONDS = 500;
+	private static final int MAX_STATE_REFRESH_ATTEMPTS =  MAX_WAIT_MILLISECONDS / STATE_REFRESH_MILLISECONDS;
 
 	public static void deployJavaScripts(SessionFactory sessionFactory) {
 		InfinispanRemoteDatastoreProvider provider = InfinispanRemoteTestHelper.getProvider( sessionFactory );
 		RemoteCache<String, String> scriptCache = provider.getScriptCache();
-		scriptCache.put( Car.SIMPLE_VALUE_PROC, getContent( "/storedprocedures/simpleValueProcedure.js" ) );
-		scriptCache.put( Car.RESULT_SET_PROC, getContent( "/storedprocedures/resultSetProcedure.js" ) );
-		scriptCache.put( "exceptionalProcedure", getContent( "/storedprocedures/exceptionalProcedure.js" ) );
+		scriptCache.put( Car.SIMPLE_VALUE_PROC, script( "/storedprocedures/simpleValueProcedure.js" ) );
+		scriptCache.put( Car.RESULT_SET_PROC, script( "/storedprocedures/resultSetProcedure.js" ) );
+		scriptCache.put( "exceptionalProcedure", script( "/storedprocedures/exceptionalProcedure.js" ) );
 	}
 
 	public static void undeployJavaScripts(SessionFactory sessionFactory) {
@@ -62,57 +59,68 @@ public class StoredProceduresDeployer {
 	}
 
 	public static void deployJars() throws InterruptedException {
-		ShrinkWrap.create( JavaArchive.class, "simple-value-procedure.jar" )
+		JavaArchive simpleValueJar = ShrinkWrap.create( JavaArchive.class, "simple-value-procedure.jar" )
 				.addClass( SimpleValueProcedure.class )
-				.addAsResource( getResource( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
-				.as( ZipExporter.class )
-				.exportTo( new File( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR ), true );
-		ShrinkWrap.create( JavaArchive.class, "result-set-procedure.jar" )
+				.addAsServiceProvider( ServerTask.class, SimpleValueProcedure.class );
+
+		JavaArchive resultSetJar = ShrinkWrap.create( JavaArchive.class, "result-set-procedure.jar" )
 				.addClass( Car.class )
 				.addClass( ResultSetProcedure.class )
-				.addAsResource( getResource( SERVER_TASK_RESULT_SET_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
-				.as( ZipExporter.class )
-				.exportTo( new File( SERVER_TASK_RESULT_SET_PROCEDURE_JAR ), true );
-		ShrinkWrap.create( JavaArchive.class, "exceptional-procedure.jar" )
+				.addAsServiceProvider( ServerTask.class, ResultSetProcedure.class );
+
+		JavaArchive exceptionalProcedureJar = ShrinkWrap.create( JavaArchive.class, "exceptional-procedure.jar" )
 				.addClass( ExceptionalProcedure.class )
-				.addAsResource( getResource( SERVER_TASK_EXCEPTIONAL_PROCEDURE_META_INF ), SERVER_TASK_META_INF_TARGET_FILE )
-				.as( ZipExporter.class )
-				.exportTo( new File( SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR ), true );
-		waitForJavaStoredProcedureDeployments();
+				.addAsServiceProvider( ServerTask.class, ExceptionalProcedure.class );
+
+		deploy( simpleValueJar, exceptionalProcedureJar, resultSetJar );
 	}
 
-	private static void waitForJavaStoredProcedureDeployments() throws InterruptedException {
-		boolean deployed;
-		int testNumber = 0;
-		do {
-			deployed = javaStoredProceduresDeployed();
-			if ( !deployed ) {
-				TimeUnit.SECONDS.sleep( 1 );
+	private static void deploy(Archive<?>... archives) {
+		for ( Archive<?> archive : archives ) {
+			archive.as( ZipExporter.class )
+			.exportTo( deploymentDirectory( archive.getName() ), true );
+		}
+		waitForArchivesDeployment( archives );
+	}
+
+	private static File deploymentDirectory(String name) {
+		return new File( INFINISPAN_DEPLOYMENTS_DIRECTORY + name );
+	}
+
+	private static void waitForArchivesDeployment(Archive<?>... archives) {
+		for ( int attempts = 0; attempts < MAX_STATE_REFRESH_ATTEMPTS; attempts++ ) {
+			if ( hasDeployed( archives ) ) {
+				return;
+			}
+			waitOrAbort();
+		}
+		throw new RuntimeException( "Stored procedures not deployed" );
+	}
+
+	private static void waitOrAbort() {
+		try {
+			Thread.sleep( STATE_REFRESH_MILLISECONDS );
+		}
+		catch (InterruptedException e) {
+			throw new RuntimeException( "Interrupted while waiting for Hot Rod server to deploy the stored procedures" );
+		}
+	}
+
+	private static boolean hasDeployed( Archive<?>... archives) {
+		for ( Archive<?> archive : archives ) {
+			if ( !Files.exists( Paths.get( INFINISPAN_DEPLOYMENTS_DIRECTORY + archive.getName() + ".deployed" ) ) ) {
+				return false;
 			}
 		}
-		while ( ++testNumber < MAX_TEST_COUNT && !deployed );
-		if ( !deployed ) {
-			throw new HibernateException( "Can not upload procedures during 20 seconds!" );
+		return true;
+	}
+
+	private static String script(String path) {
+		try {
+			return ResourceHelper.readResource( StoredProceduresDeployer.class.getResource( path ) );
 		}
-	}
-
-	private static boolean javaStoredProceduresDeployed() {
-		return Files.exists( Paths.get( SERVER_TASK_SIMPLE_VALUE_PROCEDURE_JAR + ".deployed" ) )
-				&& Files.exists( Paths.get( SERVER_TASK_RESULT_SET_PROCEDURE_JAR + ".deployed" ) )
-				&& Files.exists( Paths.get( SERVER_TASK_EXCEPTIONAL_PROCEDURE_JAR + ".deployed" ) );
-	}
-
-	private static URL getResource(String resource) {
-		return InfinispanRemoteTestHelper.class.getResource( resource );
-	}
-
-	private static String getContent(String path) {
-		return getContent( InfinispanRemoteTestHelper.class.getResourceAsStream( path ) );
-	}
-
-	private static String getContent(InputStream is) {
-		try ( Scanner scanner = new Scanner( is ) ) {
-			return scanner.useDelimiter( "\\A" ).next();
+		catch (IOException e) {
+			throw new HibernateException( e );
 		}
 	}
 }
