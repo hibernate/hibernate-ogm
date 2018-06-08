@@ -18,6 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import javax.persistence.SynchronizationType;
+import javax.persistence.criteria.CriteriaBuilder;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -89,6 +90,11 @@ public class OgmSessionFactoryImpl extends SessionFactoryDelegatingImpl implemen
 	public OgmSession getCurrentSession() throws HibernateException {
 		final Session session = delegate().getCurrentSession();
 		return new OgmSessionImpl( this, (EventSource) session );
+	}
+
+	@Override
+	public CriteriaBuilder getCriteriaBuilder() {
+		throw new NotSupportedException( "OGM-23", "Criteria queries are not supported yet" );
 	}
 
 	@SuppressWarnings("rawtypes")
