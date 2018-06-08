@@ -11,6 +11,7 @@ import java.lang.invoke.MethodHandles;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.StoredProcedureQuery;
+import javax.persistence.criteria.CriteriaBuilder;
 
 import org.hibernate.Criteria;
 import org.hibernate.Filter;
@@ -68,6 +69,11 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	@Override
 	public OgmSessionFactoryImplementor getSessionFactory() {
 		return factory;
+	}
+
+	@Override
+	public CriteriaBuilder getCriteriaBuilder() {
+		throw new NotSupportedException( "OGM-23", "Criteria queries are not supported yet" );
 	}
 
 	@Override
