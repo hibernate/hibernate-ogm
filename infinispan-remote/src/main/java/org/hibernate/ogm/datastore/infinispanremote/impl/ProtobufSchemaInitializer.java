@@ -72,7 +72,12 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd,
 			Table table, TypeTranslator typeTranslator, String protobufPackageName, String cacheConfiguration ) {
 		TableDefinition td = new TableDefinition( table.getName(), protobufPackageName, cacheConfiguration );
-		if ( table.hasPrimaryKey() ) {
+
+		// some table are defined without primary key
+		// for these cases the key will be composed by all fields
+		boolean hasPrimaryKey = table.hasPrimaryKey();
+
+		if ( hasPrimaryKey ) {
 			for ( Column pkColumn : table.getPrimaryKey().getColumns() ) {
 				String name = pkColumn.getName();
 				//We only collect the column names, as the Type assigned to PrimaryKey columns
@@ -85,6 +90,10 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		Iterator<Column> columnIterator = table.getColumnIterator();
 		while ( columnIterator.hasNext() ) {
 			Column column = columnIterator.next();
+			if ( !hasPrimaryKey ) {
+				td.markAsPrimaryKey( column.getName() );
+			}
+
 			Value value = column.getValue();
 			Type type = value.getType();
 			if ( type.isAssociationType() ) {

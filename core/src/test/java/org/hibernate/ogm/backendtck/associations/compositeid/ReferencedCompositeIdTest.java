@@ -10,9 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 
 import org.junit.Test;
 
@@ -21,10 +19,6 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
-@SkipByGridDialect(
-		value = { GridDialectType.INFINISPAN_REMOTE },
-		comment = "Director.Tournament list - bag semantics unsupported (no primary key)"
-)
 public class ReferencedCompositeIdTest extends OgmTestCase {
 
 	@Test

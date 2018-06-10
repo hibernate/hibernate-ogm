@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
+import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -43,5 +44,32 @@ public class Student {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || getClass() != o.getClass() ) {
+			return false;
+		}
+		Student student = (Student) o;
+		return Objects.equals( id, student.id ) &&
+				Objects.equals( name, student.name );
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash( id, name );
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder( "Student{" );
+		sb.append( "id='" ).append( id ).append( '\'' );
+		sb.append( ", name='" ).append( name ).append( '\'' );
+		sb.append( '}' );
+		return sb.toString();
 	}
 }

@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import javax.persistence.EntityNotFoundException;
 
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -125,13 +127,38 @@ public abstract class OgmTestCase {
 	}
 
 	protected <T> void deleteAll(Class<T> entity, Serializable... ids) {
-		inTransaction( session -> {
+		try ( OgmSession session = openSession() ) {
 			for ( Serializable id : ids ) {
-				T loadedObject = session.load( entity, id );
-				if ( loadedObject != null ) {
-					session.delete( loadedObject );
+				Transaction transaction = session.beginTransaction();
+				try {
+					try {
+						T loadedObject = session.load( entity, id );
+						if ( loadedObject != null ) {
+							session.delete( loadedObject );
+						}
+						transaction.commit();
+					}
+					// expected so I do not have to rethrow
+					catch (ObjectNotFoundException | EntityNotFoundException ex) {
+						if ( transaction.isActive() ) {
+							transaction.rollback();
+						}
+					}
+				}
+				// unexpected so I have to rethrow
+				catch (Throwable t) {
+					if ( transaction.isActive() ) {
+						transaction.rollback();
+					}
+					throw t;
 				}
 			}
-		} );
+		}
+	}
+
+	protected void persistAll(Session session, Object... entities) {
+		for ( Object entity : entities ) {
+			session.persist( entity );
+		}
 	}
 }
