@@ -9,7 +9,8 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.infinispan.transaction.lookup.TransactionManagerLookup;
+
+import org.infinispan.commons.tx.lookup.TransactionManagerLookup;
 
 /**
  * Wraps the TransactionManager lookup strategy as configured in the Hibernate main properties
@@ -34,9 +35,4 @@ public class TransactionManagerLookupDelegator implements TransactionManagerLook
 			return null;
 		}
 	}
-
-	protected boolean isValid() {
-		return platform != null ? platform.retrieveTransactionManager() != null : false;
-	}
-
 }
