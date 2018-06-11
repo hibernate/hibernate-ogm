@@ -17,8 +17,16 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Child {
+
 	private String id;
 	private String name;
+
+	public Child() {
+	}
+
+	public Child(String name) {
+		this.name = name;
+	}
 
 	@Id
 	@GeneratedValue(generator = "uuid")

@@ -8,6 +8,8 @@
 package org.hibernate.ogm.backendtck.associations.collection.types;
 
 import java.io.Serializable;
+import java.util.Objects;
+
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 
@@ -16,9 +18,18 @@ import javax.persistence.Entity;
  */
 @Entity
 public class Runner {
+
 	@EmbeddedId
 	private RunnerId runnerId;
 	private int age;
+
+	public Runner() {
+	}
+
+	public Runner(String firstname, String lastname, int age) {
+		this.runnerId = new RunnerId( firstname, lastname );
+		this.age = age;
+	}
 
 	public RunnerId getRunnerId() {
 		return runnerId;
@@ -36,7 +47,28 @@ public class Runner {
 		this.age = age;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash( age, runnerId );
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if ( this == obj ) {
+			return true;
+		}
+		if ( obj == null ) {
+			return false;
+		}
+		if ( getClass() != obj.getClass() ) {
+			return false;
+		}
+		Runner other = (Runner) obj;
+		return Objects.equals( age, other.age ) && Objects.equals( runnerId, other.runnerId );
+	}
+
 	public static class RunnerId implements Serializable {
+
 		private String firstname;
 		private String lastname;
 
@@ -66,11 +98,7 @@ public class Runner {
 
 		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ( ( firstname == null ) ? 0 : firstname.hashCode() );
-			result = prime * result + ( ( lastname == null ) ? 0 : lastname.hashCode() );
-			return result;
+			return Objects.hash( firstname, lastname );
 		}
 
 		@Override
@@ -85,24 +113,7 @@ public class Runner {
 				return false;
 			}
 			RunnerId other = (RunnerId) obj;
-			if ( firstname == null ) {
-				if ( other.firstname != null ) {
-					return false;
-				}
-			}
-			else if ( !firstname.equals( other.firstname ) ) {
-				return false;
-			}
-			else if ( lastname == null ) {
-				if ( other.lastname != null ) {
-					return false;
-				}
-			}
-			else if ( !lastname.equals( other.lastname ) ) {
-				return false;
-			}
-			return true;
+			return Objects.equals( firstname, other.firstname ) && Objects.equals( lastname, other.lastname );
 		}
-
 	}
 }

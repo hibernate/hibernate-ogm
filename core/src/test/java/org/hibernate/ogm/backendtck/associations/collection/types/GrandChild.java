@@ -13,7 +13,15 @@ import javax.persistence.Embeddable;
  */
 @Embeddable
 public class GrandChild {
+
 	private String name;
+
+	public GrandChild() {
+	}
+
+	public GrandChild(String name) {
+		this.name = name;
+	}
 
 	public String getName() {
 		return name;
