@@ -13,11 +13,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
-import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheCreationHandler;
+import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheValidationHandler;
+import org.hibernate.ogm.datastore.infinispanremote.impl.counter.HotRodSequenceCounterHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.ProtoDataMapper;
@@ -99,7 +101,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	private Map<String,ProtoDataMapper> perCacheSchemaMappers;
 
 	@EffectivelyFinal
-	private HotRodSequenceHandler sequences;
+	private HotRodSequenceCounterHandler sequences;
 
 	@EffectivelyFinal
 	private HotRodCacheHandler cacheHandler;
@@ -155,7 +157,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		return ProtobufSchemaInitializer.class;
 	}
 
-	public void registerSchemaDefinitions(SchemaDefinitions sd) {
+	public void registerSchemaDefinitions(SchemaDefinitions sd, Set<Sequence> sequences) {
 		this.sd = sd;
 		this.sd.validateSchema();
 		RemoteCache<String, String> protobufCache = getProtobufCache();
@@ -164,7 +166,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		// register proto schema also to global serialization context used for unmarshalling
 		registerProtoFiles( marshaller, sd );
 
-		this.sequences = new HotRodSequenceHandler( this, marshaller, sd.getSequenceDefinitions() );
+		this.sequences = new HotRodSequenceCounterHandler( this, marshaller, sd.getSequenceDefinitions(), sequences );
 		this.cacheHandler = createCacheHandler( sd );
 
 		startCaches( cacheHandler, hotrodClient );
@@ -265,5 +267,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	public <K, V> RemoteCache<K, V> getScriptExecutorCache() {
 		return scriptManager.getCache();
+	}
+
+	public RemoteCacheManager getManager() {
+		return hotrodClient;
 	}
 }

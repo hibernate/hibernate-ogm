@@ -6,14 +6,17 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.hibernate.boot.model.relational.Namespace;
+import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Value;
+import org.hibernate.ogm.datastore.infinispanremote.impl.counter.HotRodSequenceCounterHandler;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.TableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
@@ -41,7 +44,12 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		InfinispanRemoteDatastoreProvider datastoreProvider = (InfinispanRemoteDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 		String protobufPackageName = datastoreProvider.getProtobufPackageName();
 		SchemaDefinitions sd = new SchemaDefinitions( protobufPackageName );
+
+		HashSet<Sequence> sequences = new HashSet<>();
 		for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
+			for ( Sequence sequence : namespace.getSequences() ) {
+				sequences.add( sequence );
+			}
 			for ( Table table : namespace.getTables() ) {
 				if ( table.isPhysicalTable() ) {
 					createTableDefinition( context.getSessionFactory(), sd, table, typeTranslator, protobufPackageName,
@@ -51,9 +59,11 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 			}
 		}
 		for ( IdSourceKeyMetadata iddSourceKeyMetadata : context.getAllIdSourceKeyMetadata() ) {
-			sd.createSequenceSchemaDefinition( iddSourceKeyMetadata, datastoreProvider.getProtobufPackageName() );
+			if ( !HotRodSequenceCounterHandler.isSequenceGeneratorId( iddSourceKeyMetadata ) ) {
+				sd.createSequenceSchemaDefinition( iddSourceKeyMetadata, datastoreProvider.getProtobufPackageName() );
+			}
 		}
-		datastoreProvider.registerSchemaDefinitions( sd );
+		datastoreProvider.registerSchemaDefinitions( sd, sequences );
 	}
 
 	private String getCacheConfiguration(Map tableEntityTypeMapping, OptionsService optionsService, String tableName) {
