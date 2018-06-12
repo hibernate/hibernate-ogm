@@ -59,8 +59,6 @@ public abstract class ClusteredCounterHandler {
 						.initialValue( initialValue )
 						.storage( Storage.PERSISTENT )
 						.build() );
-
-			LOG.tracef( "Counter %s is not defined, creating it", counterName );
 		}
 
 		StrongCounter strongCounter = counterManager.getStrongCounter( counterName );
