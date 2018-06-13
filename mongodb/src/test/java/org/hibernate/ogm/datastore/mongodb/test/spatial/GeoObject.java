@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
+import org.hibernate.ogm.datastore.mongodb.type.GeoCollection;
 import org.hibernate.ogm.options.shared.IndexOption;
 import org.hibernate.ogm.options.shared.IndexOptions;
 
@@ -27,7 +28,8 @@ import org.hibernate.ogm.options.shared.IndexOptions;
 		@Index(columnList = "lineString", name = "lineString_spatial_idx"),
 		@Index(columnList = "multiLineString", name = "multiLineString_spatial_idx"),
 		@Index(columnList = "polygon", name = "polygon_spatial_idx"),
-		@Index(columnList = "multiPolygon", name = "multiPolygon_spatial_idx")
+		@Index(columnList = "multiPolygon", name = "multiPolygon_spatial_idx"),
+		@Index(columnList = "geoCollection", name = "geoCollection_spatial_idx")
 })
 @IndexOptions({
 		@IndexOption(forIndex = "point_spatial_idx", options = "{ _type: '2dsphere' }"),
@@ -35,7 +37,8 @@ import org.hibernate.ogm.options.shared.IndexOptions;
 		@IndexOption(forIndex = "lineString_spatial_idx", options = "{ _type: '2dsphere' }"),
 		@IndexOption(forIndex = "multiLineString_spatial_idx", options = "{ _type: '2dsphere' }"),
 		@IndexOption(forIndex = "polygon_spatial_idx", options = "{ _type: '2dsphere' }"),
-		@IndexOption(forIndex = "multiPolygon_spatial_idx", options = "{ _type: '2dsphere' }")
+		@IndexOption(forIndex = "multiPolygon_spatial_idx", options = "{ _type: '2dsphere' }"),
+		@IndexOption(forIndex = "geoCollection_spatial_idx", options = "{ _type: '2dsphere' }")
 })
 public class GeoObject {
 
@@ -56,6 +59,8 @@ public class GeoObject {
 
 	private GeoMultiPolygon multiPolygon;
 
+	private GeoCollection geoCollection;
+
 	public GeoObject() {
 	}
 
@@ -65,7 +70,8 @@ public class GeoObject {
 			GeoLineString lineString,
 			GeoMultiLineString multiLineString,
 			GeoPolygon polygon,
-			GeoMultiPolygon multiPolygon) {
+			GeoMultiPolygon multiPolygon,
+			GeoCollection geoCollection) {
 		this.id = id;
 		this.point = point;
 		this.multiPoint = multiPoint;
@@ -73,6 +79,7 @@ public class GeoObject {
 		this.multiLineString = multiLineString;
 		this.polygon = polygon;
 		this.multiPolygon = multiPolygon;
+		this.geoCollection = geoCollection;
 	}
 
 	public Long getId() {
@@ -129,6 +136,14 @@ public class GeoObject {
 
 	public void setMultiPolygon(GeoMultiPolygon multiPolygon) {
 		this.multiPolygon = multiPolygon;
+	}
+
+	public GeoCollection getGeoCollection() {
+		return geoCollection;
+	}
+
+	public void setGeoCollection(GeoCollection geoCollection) {
+		this.geoCollection = geoCollection;
 	}
 
 	@Override

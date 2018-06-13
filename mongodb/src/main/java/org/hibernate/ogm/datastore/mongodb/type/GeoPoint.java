@@ -22,7 +22,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 @Experimental
 public class GeoPoint extends AbstractGeoJsonObject {
 
-	private static final String TYPE = "Point";
+	public static final String TYPE = "Point";
 
 	/**
 	 * The longitude of the point.

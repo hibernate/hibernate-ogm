@@ -24,7 +24,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 @Experimental
 public class GeoPolygon extends AbstractGeoJsonObject {
 
-	private static final String TYPE = "Polygon";
+	public static final String TYPE = "Polygon";
 
 	private List<List<GeoPoint>> rings = new ArrayList<>( 1 );
 
