@@ -463,8 +463,7 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 
 	@Override
 	public boolean supportsSequences() {
-		//For reasons to keep this to 'false' see implementation comments on HotRodSequenceHandler
-		return false;
+		return true;
 	}
 
 	// [Optional] implement MultigetGridDialect:
