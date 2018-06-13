@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 @Experimental
 public class GeoMultiPolygon extends AbstractGeoJsonObject {
 
-	private static final String TYPE = "MultiPolygon";
+	public static final String TYPE = "MultiPolygon";
 
 	/**
 	 * The list of Polygon.

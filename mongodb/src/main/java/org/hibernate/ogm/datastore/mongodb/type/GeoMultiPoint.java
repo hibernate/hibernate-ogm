@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 @Experimental
 public class GeoMultiPoint extends AbstractGeoJsonObject {
 
-	private static final String TYPE = "MultiPoint";
+	public static final String TYPE = "MultiPoint";
 
 	/**
 	 * The list of Points.

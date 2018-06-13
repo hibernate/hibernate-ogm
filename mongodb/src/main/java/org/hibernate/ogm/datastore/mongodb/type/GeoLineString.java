@@ -22,7 +22,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 @Experimental
 public class GeoLineString extends AbstractGeoJsonObject {
 
-	private static final String TYPE = "LineString";
+	public static final String TYPE = "LineString";
 
 	/**
 	 * The start point of the line.

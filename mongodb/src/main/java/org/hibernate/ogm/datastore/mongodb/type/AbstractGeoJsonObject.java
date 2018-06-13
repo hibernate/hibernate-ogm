@@ -17,24 +17,35 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 
 /**
- * Common base class for GeoJSON objects.
- *
  * @author Guillaume Smet
+ * @author Aleksandr Mylnikov
  */
 public abstract class AbstractGeoJsonObject implements Serializable {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
+	/**
+     * Name of the main key used in the JSON document.
+     * For most geo objects, it is {@code coordinates}. For {@link GeoCollection}, it is {@code geometries}.
+	 */
+	private final String geoObjectDataKey;
+
 	private String type;
 
 	protected AbstractGeoJsonObject(String type) {
 		this.type = type;
+		this.geoObjectDataKey = "coordinates";
+	}
+
+	protected AbstractGeoJsonObject(String type, String keyName) {
+		this.type = type;
+		this.geoObjectDataKey = keyName;
 	}
 
 	public BsonDocument toBsonDocument() {
 		BsonDocument document = new BsonDocument();
 		document.put( "type", new BsonString( type ) );
-		document.put( "coordinates", toCoordinates() );
+		document.put( geoObjectDataKey, toCoordinates() );
 		return document;
 	}
 

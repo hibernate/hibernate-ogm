@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.Contracts;
 @Experimental
 public class GeoMultiLineString extends AbstractGeoJsonObject {
 
-	private static final String TYPE = "MultiLineString";
+	public static final String TYPE = "MultiLineString";
 
 	/**
 	 * The list of LineStrings.

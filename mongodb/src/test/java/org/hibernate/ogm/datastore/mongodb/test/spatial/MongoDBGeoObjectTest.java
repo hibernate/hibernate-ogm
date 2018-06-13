@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.test.spatial;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -20,6 +21,7 @@ import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
+import org.hibernate.ogm.datastore.mongodb.type.GeoCollection;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -59,8 +61,9 @@ public class MongoDBGeoObjectTest extends OgmTestCase {
 			POLYGON,
 			new GeoPolygon( ARSENIC, CHEZ_MARGOTTE, IMOUTO, ARSENIC )
 	);
+	private static final GeoCollection GEO_COLLECTION = new GeoCollection( Arrays.asList( OURSON_QUI_BOIT, MULTI_POINT, LINE_STRING, MULTI_LINE_STRING, POLYGON, MULTI_POLYGON ) );
 
-	private final GeoObject geoObject = new GeoObject( 1L, OURSON_QUI_BOIT, MULTI_POINT, LINE_STRING, MULTI_LINE_STRING, POLYGON, MULTI_POLYGON );
+	private final GeoObject geoObject = new GeoObject( 1L, OURSON_QUI_BOIT, MULTI_POINT, LINE_STRING, MULTI_LINE_STRING, POLYGON, MULTI_POLYGON , GEO_COLLECTION );
 
 	@Before
 	public void init() {
@@ -96,6 +99,7 @@ public class MongoDBGeoObjectTest extends OgmTestCase {
 			checkBoundingBoxResultForField( session, "multiLineString" );
 			checkBoundingBoxResultForField( session, "polygon" );
 			checkBoundingBoxResultForField( session, "multiPolygon" );
+			checkBoundingBoxResultForField( session, "geoCollection" );
 		}
 	}
 
@@ -118,6 +122,7 @@ public class MongoDBGeoObjectTest extends OgmTestCase {
 		assertThat( geoObject.getMultiLineString() ).describedAs( "multiLineString" ).isEqualTo( MULTI_LINE_STRING );
 		assertThat( geoObject.getPolygon() ).describedAs( "polygon" ).isEqualTo( POLYGON );
 		assertThat( geoObject.getMultiPolygon() ).describedAs( "multiPolygon" ).isEqualTo( MULTI_POLYGON );
+		assertThat( geoObject.getGeoCollection() ).describedAs( "geoCollection" ).isEqualTo( GEO_COLLECTION );
 
 		transaction.commit();
 	}

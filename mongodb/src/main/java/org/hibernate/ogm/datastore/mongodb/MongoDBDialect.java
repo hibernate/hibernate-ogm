@@ -58,6 +58,7 @@ import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
+import org.hibernate.ogm.datastore.mongodb.type.GeoCollection;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoLineStringGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiLineStringGridType;
@@ -65,6 +66,7 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPointGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPolygonGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPointGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPolygonGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoCollectionGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
@@ -837,6 +839,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type.getReturnedClass() == GeoMultiPolygon.class ) {
 			return GeoMultiPolygonGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == GeoCollection.class ) {
+			return GeoCollectionGridType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}
