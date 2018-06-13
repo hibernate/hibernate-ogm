@@ -72,6 +72,11 @@ public class ProtoBufSchemaTest {
 	}
 
 	@Test
+	public void testingTableSchemaGeneration() throws IOException {
+		assertSchemaEquals( "tableGenerationTest.protobuf", EntityWithTableGenerator.class );
+	}
+
+	@Test
 	public void testingAllTypesSchemaGeneration() throws IOException {
 		assertSchemaEquals( "allTypesGenerationTest.protobuf", Bookmark.class );
 	}
