@@ -38,8 +38,11 @@ import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
+import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.counter.api.CounterManager;
 import org.infinispan.query.dsl.Query;
 
 /**
@@ -68,6 +71,18 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		final Set<String> mappedCacheNames = datastoreProvider.getMappedCacheNames();
 		mappedCacheNames.forEach( cacheName -> datastoreProvider.getCache( cacheName ).clear() );
+
+		resetCounters( datastoreProvider );
+	}
+
+	private void resetCounters(InfinispanRemoteDatastoreProvider datastoreProvider) {
+		RemoteCacheManager manager = datastoreProvider.getManager();
+		CounterManager counterManager = RemoteCounterManagerFactory.asCounterManager( manager );
+		for ( String counter : counterManager.getCounterNames() ) {
+			if ( counterManager.isDefined( counter ) ) {
+				counterManager.remove( counter );
+			}
+		}
 	}
 
 	@Override
