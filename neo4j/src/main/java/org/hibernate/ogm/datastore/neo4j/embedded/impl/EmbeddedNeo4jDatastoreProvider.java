@@ -72,7 +72,7 @@ public class EmbeddedNeo4jDatastoreProvider extends BaseDatastoreProvider implem
 
 	@Override
 	public void stop() {
-		neo4jDb.shutdown();
+		EmbeddedNeo4jGraphDatabaseFactory.shutdownGraphDatabaseService( neo4jDb );
 	}
 
 	@Override

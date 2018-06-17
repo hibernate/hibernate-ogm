@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.neo4j.utils;
 import java.io.File;
 import java.util.Map;
 
-import org.fest.util.Files;
 import org.hibernate.Session;
 import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -21,7 +20,6 @@ import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.service.spi.Stoppable;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.QueryExecutionException;
@@ -70,18 +68,8 @@ public class EmbeddedNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate 
 
 	@Override
 	public void dropDatabase(DatastoreProvider datastoreProvider) {
-		( (Stoppable) datastoreProvider ).stop();
-		final String rootFolder = rootFolder( hibernateProperties );
-		Files.delete( new File( rootFolder ) );
-	}
-
-	private static String rootFolder(Map<String, String> hibernateProperties) {
-		String databasePath = hibernateProperties.get( Neo4jProperties.DATABASE_PATH );
-		return databasePath( databasePath );
-	}
-
-	private static String databasePath(String databasePath) {
-		return databasePath + File.separator + "NEO4J";
+		GraphDatabaseService graphDb = createExecutionEngine( datastoreProvider );
+		graphDb.execute( DELETE_ALL ).close();
 	}
 
 	@Override
@@ -91,10 +79,10 @@ public class EmbeddedNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate 
 	}
 
 	/**
-	 * Returns a random location where to create a neo4j database
+	 * Returns a location where to create a neo4j database
 	 */
 	public static String dbLocation() {
-		return ROOT_FOLDER + File.separator + "neo4j-db-" + System.currentTimeMillis();
+		return ROOT_FOLDER;
 	}
 
 	@Override
