@@ -28,6 +28,7 @@ public abstract class DocumentStoreConfiguration {
 	private final String username;
 	private final String password;
 	private final boolean createDatabase;
+	private final String nativeClientResource;
 
 	public DocumentStoreConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
@@ -50,6 +51,10 @@ public abstract class DocumentStoreConfiguration {
 
 		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
 				.withDefault( false )
+				.getValue();
+
+		this.nativeClientResource = propertyReader.property( OgmProperties.NATIVE_CLIENT_RESOURCE, String.class )
+				.withDefault( null )
 				.getValue();
 	}
 
@@ -92,5 +97,13 @@ public abstract class DocumentStoreConfiguration {
 	 */
 	public boolean isCreateDatabase() {
 		return createDatabase;
+	}
+
+	/**
+	 * @see OgmProperties#NATIVE_CLIENT_RESOURCE
+	 * @return Optional JNDI resource string to fetch a native document store client, null if it is not present
+	 */
+	public String getNativeClientResource() {
+		return nativeClientResource;
 	}
 }
