@@ -33,55 +33,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>fetch-jpa-patch</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.hibernate.javax.persistence</groupId>
-                                    <artifactId>hibernate-jpa-api-2.2-wildflymodules</artifactId>
-                                    <classifier>wildfly-${version.wildfly}-patch</classifier>
-                                    <version>${jpa22patch.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}</outputDirectory>
-                                    <overWrite>true</overWrite>
-                                    <destFileName>${jpa22patch.filename}</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <executions>
-                    <!-- Install JPA 2.2 patch -->
-                    <execution>
-                        <id>apply-wildfly-node1-jpa22-patch-file</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                        <configuration>
-                            <offline>true</offline>
-                            <jbossHome>${project.build.directory}/wildfly-server</jbossHome>
-                            <commands>
-                                <command>patch apply --override-all ${project.build.directory}/${jpa22patch.filename}</command>
-                            </commands>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>

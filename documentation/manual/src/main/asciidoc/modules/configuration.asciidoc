@@ -574,36 +574,15 @@ link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibern
 
 WildFly will by default attempt to guess which Persistence Provider you need by having a look at the `provider` section of the `persistence.xml`.
 
-==== Enable support for JEE 8
+==== Enable support for EE 8
 
-Hibernate OGM {hibernate-ogm-version} requires **CDI 2.0** and **JPA 2.2**, that belong to **JEE8** specification.
-WildFly 12 has limited support for Java EE8.
+Hibernate OGM {hibernate-ogm-version} requires **CDI 2.0** and **JPA 2.2**, that belong to **EE 8** specification.
+WildFly 13 has support for JavaEE 8.
 
-To enable required CDI version we need to start the server with __ee8.preview.mode__ Java system property set to **true** :
+But in order to enable required CDI and JPA versions we need to start the server with __ee8.preview.mode__ Java system property set to **true** :
 
 ----
 -Dee8.preview.mode=true
-----
-
-To enable required JPA version we need to apply __hibernate-jpa-api-2.2-wildflymodules__ patch to the server.
-Download the patch from here:
-
- * http://central.maven.org/maven2/org/hibernate/javax/persistence/hibernate-jpa-api-2.2-wildflymodules/1.0.0.Beta2/hibernate-jpa-api-2.2-wildflymodules-1.0.0.Beta2-wildfly-12.0.0.Final-patch.zip
-
-Or using these maven coordinates:
-[source, XML]
-[subs="verbatim,attributes"]
-----
-<groupId>org.hibernate.javax.persistence</groupId>
-<artifactId>hibernate-jpa-api-2.2-wildflymodules</artifactId>
-<classifier>wildfly-{wildfly-version}-patch</classifier>
-<version>1.0.0.Beta2</version>
-<type>zip</type>
-----
-
-To apply the patch execute the JBoss cli command:
-----
-patch apply --override-all hibernate-jpa-api-2.2-wildflymodules-1.0.0.Beta2-wildfly-12.0.0-patch.zip
 ----
 
 ==== Using the Hibernate OGM modules with Infinispan
