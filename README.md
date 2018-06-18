@@ -121,9 +121,9 @@ and the target directory for the extracted binary (defaults to _${project.build.
 
     mvn clean install -s settings-example.xml -DembeddedMongoDbTempDir=<my-temp-dir> -DembeddedMongoDbPort=<my-port>
 
-To work with a separately installed MongoDB instance instead, specify the property `-DmongodbProvider=external`:
+To work with a separately installed MongoDB instance instead, specify the property `-DuseExternalMongoDb`:
 
-    mvn clean install -s settings-example.xml -DmongodbProvider=external
+    mvn clean install -s settings-example.xml -DuseExternalMongoDb
 
 This assumes MongoDB to be installed on `localhost`, using the default port and no authentication.
 If you work with different settings, configure the required properties in hibernate.properties (for the tests in _mongodb_)
@@ -134,7 +134,7 @@ prior to running the tests:
     export MONGODB_PORT=1234
     export MONGODB_USERNAME=someUsername
     export MONGODB_PASSWORD=someP@ssw0rd
-    mvn clean install -s settings-example.xml -DmongodbProvider=external
+    mvn clean install -s settings-example.xml -DuseExternalMongoDb
 
 ### Neo4j
 
