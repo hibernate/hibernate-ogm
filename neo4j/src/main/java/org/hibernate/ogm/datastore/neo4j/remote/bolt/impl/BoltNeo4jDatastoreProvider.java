@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.remote.bolt.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.ogm.datastore.neo4j.BoltNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -20,8 +21,11 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
+
+import org.neo4j.driver.v1.Driver;
 
 /**
  * @author Davide D'Alto
@@ -35,6 +39,8 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 	private BoltNeo4jClient client;
 
 	private BoltNeo4jSequenceGenerator sequenceGenerator;
+
+	private JndiService jndiService;
 
 	public BoltNeo4jDatastoreProvider() {
 		super( BOLT_PROTOCOL, RemoteNeo4jConfiguration.DEFAULT_BOLT_PORT );
@@ -52,17 +58,42 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 
 	@Override
 	public void start() {
-		if ( client == null ) {
-			try {
-				this.client = new BoltNeo4jClient( getDatabaseIdentifier(), configuration );
-				this.sequenceGenerator = new BoltNeo4jSequenceGenerator( client, getSequenceCacheMaxSize() );
-			}
-			catch (HibernateException e) {
-				// Wrap HibernateException in a ServiceException to make the stack trace more friendly
-				// Otherwise a generic unable to request service is thrown
-				throw log.unableToStartDatastoreProvider( e );
-			}
+		if ( client != null ) {
+			return;
 		}
+
+		if ( configuration.getNativeClientResource() == null ) {
+			createClient();
+		}
+		else {
+			lookupClient();
+		}
+		this.sequenceGenerator = new BoltNeo4jSequenceGenerator( client, getSequenceCacheMaxSize() );
+	}
+
+	private void createClient() {
+		try {
+			this.client = new BoltNeo4jClient( getDatabaseIdentifier(), configuration );
+		}
+		catch (HibernateException e) {
+			// Wrap HibernateException in a ServiceException to make the stack trace more friendly
+			// Otherwise a generic unable to request service is thrown
+			throw log.unableToStartDatastoreProvider( e );
+		}
+	}
+
+	private void lookupClient() {
+		try {
+			log.tracef( "Retrieving MongoDatabase from JNDI at %1$s", configuration.getNativeClientResource() );
+			Driver driver = (Driver) jndiService.locate( configuration.getNativeClientResource() );
+			this.client = new BoltNeo4jClient( driver );
+		}
+		catch (RuntimeException e) {
+			throw log.errorOnFetchJndiClientProperty( configuration.getNativeClientResource() );
+		}
+
+		// clear resources
+		this.jndiService = null;
 	}
 
 	@Override
@@ -75,6 +106,11 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 		finally {
 			client = null;
 		}
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		jndiService = serviceRegistry.getService( JndiService.class );
 	}
 
 	@Override

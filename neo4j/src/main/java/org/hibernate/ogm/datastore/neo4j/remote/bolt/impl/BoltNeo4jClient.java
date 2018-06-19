@@ -20,7 +20,10 @@ import org.neo4j.driver.v1.GraphDatabase;
 import org.neo4j.driver.v1.exceptions.Neo4jException;
 
 /**
+ * Provides access to Neo4j Bolt native {@link Driver}
+ *
  * @author Davide D'Alto
+ * @author Fabio Massimo Ercoli
  */
 public class BoltNeo4jClient {
 
@@ -28,11 +31,12 @@ public class BoltNeo4jClient {
 
 	private final Driver driver;
 
-	private final String databaseUri;
-
 	public BoltNeo4jClient(RemoteNeo4jDatabaseIdentifier identifier, RemoteNeo4jConfiguration configuration) {
-		this.databaseUri = identifier.getDatabaseUri();
 		this.driver = createNeo4jDriver( identifier, configuration );
+	}
+
+	public BoltNeo4jClient(Driver driver) {
+		this.driver = driver;
 	}
 
 	private Driver createNeo4jDriver(RemoteNeo4jDatabaseIdentifier identifier, RemoteNeo4jConfiguration configuration) {
@@ -47,7 +51,7 @@ public class BoltNeo4jClient {
 			}
 		}
 		catch (Neo4jException e) {
-			throw log.connectionFailed( databaseUri, e.code(), e.getMessage() );
+			throw log.connectionFailed( uri, e.code(), e.getMessage() );
 		}
 	}
 
