@@ -347,7 +347,8 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 	 * Example 1:
 	 *
 	 * MATCH (owner:ENTITY:MultiAddressAccount {login: {0}})
-	 * MERGE (owner) -[r:addresses {name: {1}}]-> (target:EMBEDDED:`MultiAddressAccount_addresses` {city: {2}, country: {3}})
+	 * MERGE (owner) -[r:addresses {name: {1}}]-> (target:EMBEDDED:`MultiAddressAccount_addresses`)
+	 * SET target = {city: {2}, country: {3}}
 	 * RETURN r
 	 *
 	 * Example 2:
@@ -374,23 +375,13 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 		queryBuilder.append( EMBEDDED );
 		queryBuilder.append( ":" );
 		escapeIdentifier( queryBuilder, associationKey.getMetadata().getAssociatedEntityKeyMetadata().getEntityKeyMetadata().getTable() );
+
 		int index = 0;
 		int embeddedNumber = 0;
 
 		EmbeddedNodesTree tree = createEmbeddedTree( collectionRole, embeddedColumnNames, embeddedColumnValues, offset );
-		// Append primitive properties
-		if ( !tree.getProperties().isEmpty() ) {
-			queryBuilder.append( " {" );
-			for ( EmbeddedNodeProperty property : tree.getProperties() ) {
-				escapeIdentifier( queryBuilder, property.getColumn() );
-				queryBuilder.append( ": {" );
-				queryBuilder.append( property.getParam() );
-				queryBuilder.append( "}" );
-				if ( index++ < tree.getProperties().size() - 1 ) {
-					queryBuilder.append( ", " );
-				}
-			}
-			queryBuilder.append( "}" );
+		if ( !hasRowIndex( associationKey ) ) {
+			appendPrimitiveProperties( queryBuilder, index, tree );
 		}
 		queryBuilder.append( ")" );
 
@@ -414,22 +405,34 @@ public abstract class BaseNeo4jAssociationQueries extends BaseNeo4jQueries {
 			queryBuilder.append( embeddedNumber++ );
 			queryBuilder.append( ":" );
 			queryBuilder.append( EMBEDDED );
-			if ( !child.getProperties().isEmpty() ) {
-				queryBuilder.append( " {" );
-				for ( EmbeddedNodeProperty property : child.getProperties() ) {
-					escapeIdentifier( queryBuilder, property.getColumn() );
-					queryBuilder.append( ": {" );
-					queryBuilder.append( property.getParam() );
-					queryBuilder.append( "}" );
-					if ( index++ < child.getProperties().size() - 1 ) {
-						queryBuilder.append( ", " );
-					}
-				}
-				queryBuilder.append( "}" );
-			}
+			appendPrimitiveProperties( queryBuilder, index, child );
 			queryBuilder.append( ")" );
 		}
+		if ( hasRowIndex( associationKey ) && !tree.getProperties().isEmpty() ) {
+			queryBuilder.append( " SET target = " );
+			appendPrimitiveProperties( queryBuilder, index, tree );
+		}
 		queryBuilder.append( " RETURN r" );
+	}
+
+	private void appendPrimitiveProperties(StringBuilder queryBuilder, int index, EmbeddedNodesTree tree) {
+		if ( !tree.getProperties().isEmpty() ) {
+			queryBuilder.append( " {" );
+			for ( EmbeddedNodeProperty property : tree.getProperties() ) {
+				escapeIdentifier( queryBuilder, property.getColumn() );
+				queryBuilder.append( ": {" );
+				queryBuilder.append( property.getParam() );
+				queryBuilder.append( "}" );
+				if ( index++ < tree.getProperties().size() - 1 ) {
+					queryBuilder.append( ", " );
+				}
+			}
+			queryBuilder.append( "}" );
+		}
+	}
+
+	private boolean hasRowIndex(AssociationKey associationKey) {
+		return associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0;
 	}
 
 	/*
