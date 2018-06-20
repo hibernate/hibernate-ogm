@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.mongodb.index.impl;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
@@ -25,7 +26,7 @@ import com.mongodb.client.model.IndexOptions;
  * @author Guillaume Smet
  * @see <a href="https://docs.mongodb.com/manual/indexes/">info about indexes in MongoDB Java Driver 3.4</a>
  */
-public class MongoDBIndexSpec {
+public class MongoDBIndexSpec implements Comparable<MongoDBIndexSpec> {
 
 	private static final String INDEX_TYPE_OPTION = "_type";
 
@@ -193,4 +194,38 @@ public class MongoDBIndexSpec {
 		return sb.toString();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || getClass() != o.getClass() ) {
+			return false;
+		}
+		MongoDBIndexSpec that = (MongoDBIndexSpec) o;
+		return Objects.equals( collection, that.collection ) &&
+				Objects.equals( indexKeys, that.indexKeys );
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash( collection, indexKeys );
+	}
+
+	/**
+	 * this method could be used to choose between different configuration
+	 */
+	@Override
+	public int compareTo(MongoDBIndexSpec o) {
+		// choose the one with unique over a non unique
+		if ( this.getOptions().isUnique() && !o.getOptions().isUnique() ) {
+			return -1;
+		}
+		if ( !this.getOptions().isUnique() && o.getOptions().isUnique() ) {
+			return 1;
+		}
+
+		// otherwise we can use a different criteria like a name
+		return this.getIndexName().compareTo( o.getIndexName() );
+	}
 }

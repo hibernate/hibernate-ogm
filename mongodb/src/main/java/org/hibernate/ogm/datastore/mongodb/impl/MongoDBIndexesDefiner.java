@@ -115,7 +115,7 @@ public class MongoDBIndexesDefiner {
 					MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( table.getName(), column.getName(), indexName,
 							getIndexOptionDocument( table, indexOptions.getOptionForIndex( indexName ) ) );
 					if ( validateIndexSpec( indexSpec ) ) {
-						indexSpecs.add( indexSpec );
+						addHandleDuplications( indexSpec );
 					}
 				}
 			}
@@ -133,7 +133,7 @@ public class MongoDBIndexesDefiner {
 				MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( uniqueKey,
 						getIndexOptionDocument( table, indexOptions.getOptionForIndex( uniqueKey.getName() ) ) );
 				if ( validateIndexSpec( indexSpec ) ) {
-					indexSpecs.add( indexSpec );
+					addHandleDuplications( indexSpec );
 				}
 			}
 		}
@@ -147,8 +147,33 @@ public class MongoDBIndexesDefiner {
 			MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index,
 					getIndexOptionDocument( table, indexOptions.getOptionForIndex( index.getName() ) ) );
 			if ( validateIndexSpec( indexSpec ) ) {
-				indexSpecs.add( indexSpec );
+				addHandleDuplications( indexSpec );
 			}
+		}
+	}
+
+	private void addHandleDuplications(MongoDBIndexSpec indexSpec) {
+		// we can add any index defined on different collection or different key set
+		// we rely on hashcode and equals to verify conflicts
+		if ( !indexSpecs.contains( indexSpec ) ) {
+			indexSpecs.add( indexSpec );
+			return;
+		}
+
+		int existingIndexPosition = indexSpecs.indexOf( indexSpec );
+		MongoDBIndexSpec existingIndex = indexSpecs.get( existingIndexPosition );
+
+		// in case on conflict
+		// we rely on compareTo to choose the best candidate
+		if ( indexSpec.compareTo( existingIndex ) < 0 ) {
+			// replace the existing definition with the new one
+			indexSpecs.remove( existingIndexPosition );
+			indexSpecs.add( indexSpec );
+			log.tryToDefineMultipleIndexesOnTheSameKeySet( indexSpec.getIndexKeysDocument().toJson(), existingIndex.getIndexName() );
+		}
+		else {
+			// discard the current definition
+			log.tryToDefineMultipleIndexesOnTheSameKeySet( indexSpec.getIndexKeysDocument().toJson(), indexSpec.getIndexName() );
 		}
 	}
 

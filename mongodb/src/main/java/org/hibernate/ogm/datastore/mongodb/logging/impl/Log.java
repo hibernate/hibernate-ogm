@@ -144,4 +144,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1240, value = "Procedures returning muliple documents are not supported. Procedure '%1$s' returned %2$d results")
 	HibernateException multipleDocumentReturnedByStoredProcedure(String storedProcedureName, int size);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1241, value = "Try to define another index on the same key set %s: definition of index %s will be skipped!")
+	void tryToDefineMultipleIndexesOnTheSameKeySet(String keySet, String indexName);
 }
