@@ -21,19 +21,27 @@
         <artifact name="${org.neo4j:neo4j-collections}" />
         <artifact name="${org.neo4j:neo4j-common}" />
         <artifact name="${org.neo4j:neo4j-configuration}" />
+        <artifact name="${org.neo4j:neo4j-procedure-api}" />
 
         <artifact name="${org.neo4j:neo4j-cypher-compiler-2.3}" />
         <artifact name="${org.neo4j:neo4j-cypher-compiler-3.1}" />
-        <artifact name="${org.neo4j:neo4j-cypher-compiler-3.2}" />
         <artifact name="${org.neo4j:neo4j-cypher-compiler-3.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-expression-3.4}" />
         <artifact name="${org.neo4j:neo4j-cypher-frontend-2.3}" />
         <artifact name="${org.neo4j:neo4j-cypher-frontend-3.1}" />
-        <artifact name="${org.neo4j:neo4j-cypher-frontend-3.2}" />
         <artifact name="${org.neo4j:neo4j-cypher-frontend-3.3}" />
-        <artifact name="${org.neo4j:neo4j-cypher-ir-3.2}" />
+        <artifact name="${org.neo4j:neo4j-cypher-interpreted-runtime}" />
         <artifact name="${org.neo4j:neo4j-cypher-ir-3.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-ir-3.4}" />
         <artifact name="${org.neo4j:neo4j-cypher-logical-plans-3.3}" />
+        <artifact name="${org.neo4j:neo4j-cypher-logical-plans-3.4}" />
+        <artifact name="${org.neo4j:neo4j-cypher-util-3.4}" />
+        <artifact name="${org.neo4j:neo4j-cypher-planner-3.4}" />
+        <artifact name="${org.neo4j:neo4j-cypher-planner-spi-3.4}" />
+        <artifact name="${org.neo4j:neo4j-cypher-runtime-util}" />
+        <artifact name="${org.neo4j:openCypher-frontend-1}" />
 
+        <artifact name="${org.neo4j:neo4j-kernel-api}" />
         <artifact name="${org.neo4j:neo4j-graphdb-api}" />
         <artifact name="${org.neo4j:neo4j-index}" />
         <artifact name="${org.neo4j:neo4j-io}" />
@@ -48,6 +56,7 @@
         <artifact name="${org.neo4j:neo4j-resource}" />
         <artifact name="${org.neo4j:neo4j-ssl}" />
         <artifact name="${org.neo4j:neo4j-unsafe}" />
+        <artifact name="${org.neo4j:neo4j-spatial-index}" />
 
         <!-- dependency of neo4j-ssl -->
         <artifact name="${org.bouncycastle:bcpkix-jdk15on}" />
@@ -68,7 +77,6 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.transaction.api"/>
 
         <module name="org.hibernate.ogm.internal.parboiled" slot="${module-slot.org.hibernate.ogm.short-id}"/>
 
