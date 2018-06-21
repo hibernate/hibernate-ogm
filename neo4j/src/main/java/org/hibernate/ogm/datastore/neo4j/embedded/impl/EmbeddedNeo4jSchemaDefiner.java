@@ -7,22 +7,28 @@
 package org.hibernate.ogm.datastore.neo4j.embedded.impl;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Sequence;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.datastore.neo4j.impl.BaseNeo4jSchemaDefiner;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.ConstraintType;
+import org.neo4j.graphdb.schema.IndexCreator;
+import org.neo4j.graphdb.schema.IndexDefinition;
 
 /**
  * Initialize the schema for the Neo4j database:
@@ -55,6 +61,18 @@ public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 	}
 
 	@Override
+	protected void createIndexesIfMissing(DatastoreProvider provider, List<Neo4jIndexSpec> indexes ) {
+		EmbeddedNeo4jDatastoreProvider neo4jProvider = (EmbeddedNeo4jDatastoreProvider) provider;
+		GraphDatabaseService neo4jDb = neo4jProvider.getDatabase();
+		try ( Transaction tx = neo4jDb.beginTx() ) {
+			for ( Neo4jIndexSpec index : indexes ) {
+				createIndex( neo4jDb, index );
+			}
+			tx.success();
+		}
+	}
+
+	@Override
 	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
 		EmbeddedNeo4jDatastoreProvider neo4jProvider = (EmbeddedNeo4jDatastoreProvider) provider;
 		GraphDatabaseService neo4jDb = neo4jProvider.getDatabase();
@@ -70,6 +88,32 @@ public class EmbeddedNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 				tx.close();
 			}
 		}
+	}
+
+	private void createIndex(GraphDatabaseService neo4jDb, Neo4jIndexSpec index) {
+		Label label = index.getLabel();
+		if ( isIndexMissing( neo4jDb, index ) ) {
+			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", label, index.getProperties() );
+			IndexCreator indexCreator = neo4jDb.schema().indexFor( label );
+			for ( String property : index.getProperties() ) {
+				indexCreator = indexCreator.on( property );
+			}
+			indexCreator.create();
+		}
+		else {
+			log.tracef( "Composite index already exists for nodes labeled as %1$s on properties %2$s", label, index.getProperties() );
+		}
+	}
+
+	private boolean isIndexMissing(GraphDatabaseService neo4jDb, Neo4jIndexSpec indexDetails) {
+		Iterable<IndexDefinition> indexes = neo4jDb.schema().getIndexes( indexDetails.getLabel() );
+		for ( IndexDefinition index : indexes ) {
+			List<String> indexProperties = CollectionHelper.toList( index.getPropertyKeys() );
+			if ( Objects.equals( indexProperties, indexDetails.getProperties() ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void createUniqueConstraint(GraphDatabaseService neo4jDb, UniqueConstraintDetails constraint) {

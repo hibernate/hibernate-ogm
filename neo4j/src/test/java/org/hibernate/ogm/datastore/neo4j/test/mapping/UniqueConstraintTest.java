@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
 import static java.util.Collections.singletonMap;
+import static org.hibernate.ogm.datastore.neo4j.test.util.ExceptionHelper.extract;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -199,20 +200,6 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 		em.persist( duplicated );
 		em.getTransaction().commit();
 		em.close();
-	}
-
-	private <T extends Throwable> T extract(Class<T> class1, Exception e) throws Throwable {
-		Throwable cause = e;
-		while ( cause != null ) {
-			if ( cause.getClass().equals( class1 ) ) {
-				break;
-			}
-			cause = cause.getCause();
-		}
-		if ( cause == null ) {
-			throw e;
-		}
-		throw cause;
 	}
 
 	@Override
