@@ -28,9 +28,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.bson.BsonDocument;
-import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
@@ -66,6 +63,7 @@ import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoCollectionGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BlobGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GeoCollectionGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoLineStringGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiLineStringGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPointGridType;
@@ -138,10 +136,6 @@ import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoBulkWriteException;
@@ -171,6 +165,13 @@ import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.BsonDocument;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -612,13 +613,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Document toDelete = prepareIdObject( key );
-		MongoCollection<Document> collection = getCollection( key, getOptionsContext( tupleContext ) );
-		collection.deleteMany( toDelete );
+		OptionsService optionService = provider.getOptionService();
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		Document deleted = collection.findOneAndDelete( toDelete );
+		if ( deleted != null ) {
+			GridFsUtil.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, key );
+		}
 	}
 
 	@Override
 	public boolean removeTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, TupleContext tupleContext) {
 		Document toDelete = prepareIdObject( entityKey );
+		OptionsService optionService = provider.getOptionService();
 
 		for ( String versionColumn : oldLockState.getColumnNames() ) {
 			toDelete.put( versionColumn, oldLockState.get( versionColumn ) );
@@ -626,7 +633,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		MongoCollection<Document> collection = getCollection( entityKey );
 		Document deleted = collection.findOneAndDelete( toDelete );
-
+		if ( deleted != null ) {
+			GridFsUtil.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, entityKey );
+		}
 		return deleted != null;
 	}
 

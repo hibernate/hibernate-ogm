@@ -98,6 +98,23 @@ public class GridFsUtil {
 		}
 	}
 
+	public static void removeFromGridFsByEntity(MongoDatabase mongoDatabase, OptionsService optionService, Document deletedDocument,
+			EntityKey entityKey) {
+		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
+		for ( Field currentField : entityClass.getDeclaredFields() ) {
+			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, currentField.getName() );
+			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
+			if ( BinaryStorageType.GRID_FS == binaryStorageType ) {
+				//the field has GridFS configuration. Process it!
+				String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
+				GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
+				ObjectId gridFsLink = deletedDocument.get( currentField.getName(), ObjectId.class );
+				gridFSFilesBucket.delete( gridFsLink );
+
+			}
+		}
+	}
+
 	private static GridFSBucket getGridFSFilesBucket(MongoDatabase mongoDatabase, String gridfsBucketName) {
 		return gridfsBucketName != null ?
 				GridFSBuckets.create( mongoDatabase, gridfsBucketName ) : GridFSBuckets.create( mongoDatabase );
