@@ -216,9 +216,7 @@ public abstract class BaseNeo4jSchemaDefiner extends BaseSchemaDefiner {
 	private void addIndex(Label label, Index index) {
 		if ( index != null ) {
 			if ( index.getName() != null ) {
-				if ( log.isEnabled( Level.WARN ) ) {
-					log.warnf( "Neo4j does not support named indexes. Property name='%1$s' is ignored!", index.getName() );
-				}
+				log.cannotSetNameForIndex( index.getName() );
 			}
 			List<String> properties = CollectionHelper.toStream( index.getColumnIterator() )
 					.map( Column::getName ).collect( Collectors.toList() );

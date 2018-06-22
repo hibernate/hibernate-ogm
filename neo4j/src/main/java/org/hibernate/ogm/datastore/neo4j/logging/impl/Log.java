@@ -95,4 +95,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1421, value = "Indexes creation failed: %s, %s")
 	HibernateException indexCreationException(String code, String message);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1422, value = "Neo4j does not support named indexes. Property name='%1$s' is ignored!")
+	void cannotSetNameForIndex(String name);
 }
