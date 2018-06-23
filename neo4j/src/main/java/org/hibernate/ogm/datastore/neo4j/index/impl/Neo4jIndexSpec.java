@@ -21,16 +21,16 @@ public class Neo4jIndexSpec {
 
 	private Label label;
 	private List<String> properties;
-	private boolean constraintIndex;
+	private boolean unique;
 
 	public Neo4jIndexSpec(Label label, List<String> properties) {
 		this( label, properties, false );
 	}
 
-	public Neo4jIndexSpec(Label label, List<String> properties, boolean constraintIndex) {
+	public Neo4jIndexSpec(Label label, List<String> properties, boolean unique) {
 		this.label = label;
 		this.properties = properties;
-		this.constraintIndex = constraintIndex;
+		this.unique = unique;
 	}
 
 	public Label getLabel() {
@@ -41,8 +41,8 @@ public class Neo4jIndexSpec {
 		return properties;
 	}
 
-	public boolean isConstraintIndex() {
-		return constraintIndex;
+	public boolean isUnique() {
+		return unique;
 	}
 
 	/**
@@ -73,16 +73,16 @@ public class Neo4jIndexSpec {
 		Neo4jIndexSpec that = (Neo4jIndexSpec) object;
 		return Objects.equals( label, that.label ) &&
 				Objects.equals( properties, that.properties ) &&
-				Objects.equals( constraintIndex, that.constraintIndex );
+				Objects.equals( unique, that.unique );
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash( label, properties, constraintIndex );
+		return Objects.hash( label, properties, unique );
 	}
 
 	@Override
 	public String toString() {
-		return "Neo4jIndexSpec[" + "label=" + label + ", properties=" + properties + ", constraintIndex=" + constraintIndex + ']';
+		return "Neo4jIndexSpec[" + "label=" + label + ", properties=" + properties + ", unique=" + unique + ']';
 	}
 }
