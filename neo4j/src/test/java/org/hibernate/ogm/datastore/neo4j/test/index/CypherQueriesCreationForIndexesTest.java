@@ -32,6 +32,12 @@ public class CypherQueriesCreationForIndexesTest {
 	}
 
 	@Test
+	public void asCypherQueryForSinglePropertyWithSpecialChars() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Collections.singletonList( "fi~r  +stn # \\\"ame" ) );
+		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :Person(`fi~r  +stn # \\\"ame`)" );
+	}
+
+	@Test
 	public void asCypherQueryForMultipleProperties() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Arrays.asList( "firstname", "surname" ) );
 		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :Person(firstname, surname)" );
@@ -53,5 +59,41 @@ public class CypherQueriesCreationForIndexesTest {
 	public void asCypherQueryForIllegalLabelAndPropertyIdentifiers() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Neo4jIndexSpecTest$Person" ), Collections.singletonList( "1firstname" ) );
 		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :`Neo4jIndexSpecTest$Person`(`1firstname`)" );
+	}
+
+	@Test
+	public void asDropCypherQueryForSingleProperty() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Collections.singletonList( "firstname" ) );
+		assertThat( neo4jIndexSpec.asCypherDropQuery() ).isEqualTo( "DROP INDEX ON :Person(firstname)" );
+	}
+
+	@Test
+	public void asDropCypherQueryForSinglePropertyWithSpecialChars() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Collections.singletonList( "fi~r  +stn # \\\"ame" ) );
+		assertThat( neo4jIndexSpec.asCypherDropQuery() ).isEqualTo( "DROP INDEX ON :Person(`fi~r  +stn # \\\"ame`)" );
+	}
+
+	@Test
+	public void asDropCypherQueryForMultipleProperties() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Arrays.asList( "firstname", "surname" ) );
+		assertThat( neo4jIndexSpec.asCypherDropQuery() ).isEqualTo( "DROP INDEX ON :Person(firstname, surname)" );
+	}
+
+	@Test
+	public void asDropCypherQueryForIllegalLabelIdentifier() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Neo4jIndexSpecTest$Person" ), Collections.singletonList( "firstname" ) );
+		assertThat( neo4jIndexSpec.asCypherDropQuery() ).isEqualTo( "DROP INDEX ON :`Neo4jIndexSpecTest$Person`(firstname)" );
+	}
+
+	@Test
+	public void asDropCypherQueryForIllegalPropertyIdentifier() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Collections.singletonList( "1firstname" ) );
+		assertThat( neo4jIndexSpec.asCypherDropQuery() ).isEqualTo( "DROP INDEX ON :Person(`1firstname`)" );
+	}
+
+	@Test
+	public void asDropCypherQueryForIllegalLabelAndPropertyIdentifiers() {
+		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Neo4jIndexSpecTest$Person" ), Collections.singletonList( "1firstname" ) );
+		assertThat( neo4jIndexSpec.asCypherDropQuery() ).isEqualTo( "DROP INDEX ON :`Neo4jIndexSpecTest$Person`(`1firstname`)" );
 	}
 }
