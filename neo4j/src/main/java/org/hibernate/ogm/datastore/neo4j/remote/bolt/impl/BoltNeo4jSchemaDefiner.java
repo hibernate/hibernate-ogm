@@ -64,7 +64,7 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		List<Statement> statements = new ArrayList<>();
 		for ( Neo4jIndexSpec index : indexes ) {
 			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", index.getLabel(), index.getProperties() );
-			statements.add( new Statement( index.asCypherQuery() ) );
+			statements.add( new Statement( index.asCypherCreateQuery() ) );
 		}
 		run( provider, statements );
 	}

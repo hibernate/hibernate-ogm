@@ -28,30 +28,30 @@ public class CypherQueriesCreationForIndexesTest {
 	@Test
 	public void asCypherQueryForSingleProperty() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Collections.singletonList( "firstname" ) );
-		assertThat( neo4jIndexSpec.asCypherQuery() ).isEqualTo( "CREATE INDEX ON :Person(firstname)" );
+		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :Person(firstname)" );
 	}
 
 	@Test
 	public void asCypherQueryForMultipleProperties() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Arrays.asList( "firstname", "surname" ) );
-		assertThat( neo4jIndexSpec.asCypherQuery() ).isEqualTo( "CREATE INDEX ON :Person(firstname, surname)" );
+		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :Person(firstname, surname)" );
 	}
 
 	@Test
 	public void asCypherQueryForIllegalLabelIdentifier() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Neo4jIndexSpecTest$Person" ), Collections.singletonList( "firstname" ) );
-		assertThat( neo4jIndexSpec.asCypherQuery() ).isEqualTo( "CREATE INDEX ON :`Neo4jIndexSpecTest$Person`(firstname)" );
+		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :`Neo4jIndexSpecTest$Person`(firstname)" );
 	}
 
 	@Test
 	public void asCypherQueryForIllegalPropertyIdentifier() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Person" ), Collections.singletonList( "1firstname" ) );
-		assertThat( neo4jIndexSpec.asCypherQuery() ).isEqualTo( "CREATE INDEX ON :Person(`1firstname`)" );
+		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :Person(`1firstname`)" );
 	}
 
 	@Test
 	public void asCypherQueryForIllegalLabelAndPropertyIdentifiers() {
 		Neo4jIndexSpec neo4jIndexSpec = new Neo4jIndexSpec( Label.label( "Neo4jIndexSpecTest$Person" ), Collections.singletonList( "1firstname" ) );
-		assertThat( neo4jIndexSpec.asCypherQuery() ).isEqualTo( "CREATE INDEX ON :`Neo4jIndexSpecTest$Person`(`1firstname`)" );
+		assertThat( neo4jIndexSpec.asCypherCreateQuery() ).isEqualTo( "CREATE INDEX ON :`Neo4jIndexSpecTest$Person`(`1firstname`)" );
 	}
 }

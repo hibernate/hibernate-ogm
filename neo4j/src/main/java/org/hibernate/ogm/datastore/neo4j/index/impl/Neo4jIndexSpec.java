@@ -48,7 +48,7 @@ public class Neo4jIndexSpec {
 	/**
 	 * @return the cypher query for the creation of the constraint
 	 */
-	public String asCypherQuery() {
+	public String asCypherCreateQuery() {
 		StringBuilder queryBuilder = new StringBuilder( "CREATE INDEX ON :" );
 		CypherDSL.escapeIdentifier( queryBuilder, label.name() );
 		queryBuilder.append( "(" );

@@ -59,7 +59,7 @@ public class HttpNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 		Statements statements = new Statements();
 		for ( Neo4jIndexSpec index : indexes ) {
 			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", index.getLabel(), index.getProperties() );
-			statements.addStatement( new Statement( index.asCypherQuery() ) );
+			statements.addStatement( new Statement( index.asCypherCreateQuery() ) );
 		}
 		log.debug( "Creating missing indexes" );
 		HttpNeo4jClient remoteClient = ( (HttpNeo4jDatastoreProvider) provider ).getClient();
