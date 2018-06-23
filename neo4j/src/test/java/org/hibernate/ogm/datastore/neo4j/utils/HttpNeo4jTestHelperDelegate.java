@@ -163,11 +163,11 @@ class HttpNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 
 	@Override
 	public void executeCypherQuery(DatastoreProvider datastoreProvider, String query, Map<String, Object> parameters) {
-			HttpNeo4jDatastoreProvider provider = (HttpNeo4jDatastoreProvider) datastoreProvider;
-			Statements statements = new Statements();
-			statements.addStatement( query, parameters );
-			StatementsResponse statementsResponse = ( (HttpNeo4jClient) provider.getClient() ).executeQueriesInNewTransaction( statements );
-			validate( statementsResponse );
+		HttpNeo4jDatastoreProvider provider = (HttpNeo4jDatastoreProvider) datastoreProvider;
+		Statements statements = new Statements();
+		statements.addStatement( query, parameters );
+		StatementsResponse statementsResponse = ( (HttpNeo4jClient) provider.getClient() ).executeQueriesInNewTransaction( statements );
+		validate( statementsResponse );
 	}
 
 	private void validate(StatementsResponse readEntity) {
@@ -198,7 +198,6 @@ class HttpNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 		Long transactionId = (Long) driver.getTransactionId();
 		return transactionId;
 	}
-
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class RowStatementsResponse {
