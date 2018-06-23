@@ -7,20 +7,24 @@
 package org.hibernate.ogm.datastore.neo4j.utils;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.fest.util.Files;
 import org.hibernate.Session;
 import org.hibernate.ogm.datastore.neo4j.EmbeddedNeo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.embedded.impl.EmbeddedNeo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.RelationshipsChainForGraphAssertions;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.service.spi.Stoppable;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.PropertyContainer;
@@ -28,6 +32,7 @@ import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.schema.IndexDefinition;
 
 /**
  * @author Davide D'Alto
@@ -43,6 +48,22 @@ public class EmbeddedNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate 
 	private static final String ROOT_FOLDER = hibernateProperties.get( Neo4jProperties.DATABASE_PATH ) + File.separator + "NEO4J";
 
 	private EmbeddedNeo4jTestHelperDelegate() {
+	}
+
+	@Override
+	public List<Neo4jIndexSpec> getIndexes(Session session, DatastoreProvider provider) {
+		GraphDatabaseService neo4jDb = EmbeddedNeo4jDatastoreProvider.class.cast( provider ).getDatabase();
+		try ( Transaction tx = neo4jDb.beginTx() ) {
+			List<Neo4jIndexSpec> indexes = CollectionHelper.toStream( neo4jDb.schema().getIndexes() )
+					.map( EmbeddedNeo4jTestHelperDelegate::extractNeo4jIndexSpec )
+					.collect( Collectors.toList() );
+			tx.success();
+			return indexes;
+		}
+	}
+
+	public static Neo4jIndexSpec extractNeo4jIndexSpec(IndexDefinition i) {
+		return new Neo4jIndexSpec( i.getLabel(), CollectionHelper.toList( i.getPropertyKeys() ), i.isConstraintIndex() );
 	}
 
 	@Override

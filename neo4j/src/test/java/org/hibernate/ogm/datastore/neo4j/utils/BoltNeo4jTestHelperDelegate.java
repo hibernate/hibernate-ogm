@@ -6,15 +6,18 @@
  */
 package org.hibernate.ogm.datastore.neo4j.utils;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.neo4j.BoltNeo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.bolt.impl.BoltNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.test.dsl.NodeForGraphAssertions;
@@ -28,8 +31,10 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Statement;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.v1.Value;
 import org.neo4j.driver.v1.exceptions.ClientException;
 import org.neo4j.driver.v1.types.Node;
+import org.neo4j.graphdb.Label;
 
 /**
  * @author Davide D'Alto
@@ -41,6 +46,22 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private BoltNeo4jTestHelperDelegate() {
+	}
+
+	@Override
+	public List<Neo4jIndexSpec> getIndexes(Session session, DatastoreProvider provider) {
+		BoltNeo4jClient client = createClient( provider );
+		StatementResult result = run( session, client.getDriver(), GET_DB_INDEXES_PROCEDURE );
+		return result.list().stream()
+				.map( BoltNeo4jTestHelperDelegate::extractNeo4jIndexSpec )
+				.collect( Collectors.toList() );
+	}
+
+	private static Neo4jIndexSpec extractNeo4jIndexSpec(Record r) {
+		Label label = Label.label( r.get( INDEX_LABEL ).asString() );
+		List<String> properties = r.get( INDEX_PROPERTIES ).asList( Value::asString );
+		boolean uniquePropertyIndex = Objects.equals( r.get( INDEX_TYPE ).asString(), INDEX_TYPE_UNIQUE );
+		return new Neo4jIndexSpec( label, properties, uniquePropertyIndex );
 	}
 
 	@Override
@@ -56,6 +77,11 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	}
 
 	private long readCountFromResponse(Session session, Driver driver, String query) {
+		StatementResult response = run( session, driver, query );
+		return response.single().get( 0 ).asInt();
+	}
+
+	private StatementResult run(Session session, Driver driver, String query) {
 		StatementResult response = null;
 		if ( session != null ) {
 			Transaction transactionId = transactionId( session );
@@ -74,7 +100,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 				response = neo4jSession.run( query );
 			}
 		}
-		return response.single().get( 0 ).asInt();
+		return response;
 	}
 
 	private Transaction transactionId(Session session) {
@@ -169,6 +195,37 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	@Override
 	public void dropDatabase(DatastoreProvider datastoreProvider) {
 		deleteAllElements( datastoreProvider );
+		deleteAllConstraints( datastoreProvider );
+		deleteAllIndexes( datastoreProvider );
+	}
+
+	private void deleteAllConstraints(DatastoreProvider datastoreProvider) {
+		Driver driver = driver( datastoreProvider );
+		List<String> constraints = getConstraints( driver, datastoreProvider );
+		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
+			for ( String constraint : constraints ) {
+				session.run( dropUniqueConstraintQuery( constraint ) );
+			}
+		}
+	}
+
+	public List<String> getConstraints(Driver driver, DatastoreProvider provider) {
+		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
+			StatementResult result = session.run( GET_DB_CONSTRAINTS_PROCEDURE );
+			return result.list().stream()
+					.map( r -> r.get( 0 ).asString() )
+					.collect( Collectors.toList() );
+		}
+	}
+
+	private void deleteAllIndexes(DatastoreProvider datastoreProvider) {
+		Driver driver = driver( datastoreProvider );
+		List<Neo4jIndexSpec> indexes = getIndexes( null, datastoreProvider );
+		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
+			for ( Neo4jIndexSpec indexSpec : indexes ) {
+				session.run( indexSpec.asCypherDropQuery() );
+			}
+		}
 	}
 
 	@Override

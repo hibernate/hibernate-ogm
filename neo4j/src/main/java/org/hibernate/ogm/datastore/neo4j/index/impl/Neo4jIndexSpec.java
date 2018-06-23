@@ -49,7 +49,20 @@ public class Neo4jIndexSpec {
 	 * @return the cypher query for the creation of the constraint
 	 */
 	public String asCypherCreateQuery() {
-		StringBuilder queryBuilder = new StringBuilder( "CREATE INDEX ON :" );
+		StringBuilder queryBuilder = new StringBuilder( "CREATE " );
+		return asCypher( queryBuilder );
+	}
+
+	/**
+	 * @return the cypher query for dropping of the constraint
+	 */
+	public String asCypherDropQuery() {
+		StringBuilder queryBuilder = new StringBuilder( "DROP " );
+		return asCypher( queryBuilder );
+	}
+
+	private String asCypher(StringBuilder queryBuilder) {
+		queryBuilder.append( "INDEX ON :" );
 		CypherDSL.escapeIdentifier( queryBuilder, label.name() );
 		queryBuilder.append( "(" );
 		for ( int i = 0; i < properties.size(); ++i ) {

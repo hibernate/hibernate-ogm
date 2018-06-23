@@ -6,17 +6,21 @@
  */
 package org.hibernate.ogm.datastore.neo4j.utils;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.neo4j.HttpNeo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.index.impl.Neo4jIndexSpec;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jClient;
 import org.hibernate.ogm.datastore.neo4j.remote.http.impl.HttpNeo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.remote.http.json.impl.ErrorResponse;
@@ -32,6 +36,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
+import org.neo4j.graphdb.Label;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -45,6 +50,36 @@ class HttpNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private HttpNeo4jTestHelperDelegate() {
+	}
+
+	@Override
+	public List<Neo4jIndexSpec> getIndexes(Session session, DatastoreProvider provider) {
+		HttpNeo4jClient neo4jClient = HttpNeo4jDatastoreProvider.class.cast( provider ).getClient();
+		Statements statements = new Statements();
+		statements.addStatement( GET_DB_INDEXES_PROCEDURE, Collections.emptyMap(), Statement.AS_ROW );
+		StatementsResponse response = neo4jClient.executeQueriesInNewTransaction( statements );
+		return response.getResults().stream()
+				.flatMap( rs -> rs.getData().stream().map( r -> extractNeo4jIndexSpec( rs.getColumns(), r ) ) )
+				.collect( Collectors.toList() );
+	}
+
+	public List<String> getConstraints(Session session, DatastoreProvider provider) {
+		HttpNeo4jClient neo4jClient = HttpNeo4jDatastoreProvider.class.cast( provider ).getClient();
+		Statements statements = new Statements();
+		statements.addStatement( GET_DB_CONSTRAINTS_PROCEDURE, Collections.emptyMap(), Statement.AS_ROW );
+		StatementsResponse response = neo4jClient.executeQueriesInNewTransaction( statements );
+		return response.getResults().stream()
+				.flatMap( rs -> rs.getData().stream().map( row -> row.getRow().get( 0 ).toString() ) )
+				.collect( Collectors.toList() );
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Neo4jIndexSpec extractNeo4jIndexSpec(List<String> cols, Row row) {
+		List<Object> values = row.getRow();
+		Label label = Label.label( String.valueOf( values.get( cols.indexOf( INDEX_LABEL ) ) ) );
+		List<String> properties = (List<String>) values.get( cols.indexOf( INDEX_PROPERTIES ) );
+		boolean uniquePropertyIndex = Objects.equals( values.get( cols.indexOf( INDEX_TYPE ) ), INDEX_TYPE_UNIQUE );
+		return new Neo4jIndexSpec( label, properties, uniquePropertyIndex );
 	}
 
 	@Override
@@ -149,16 +184,41 @@ class HttpNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 
 	@Override
 	public void deleteAllElements(DatastoreProvider datastoreProvider) {
-		HttpNeo4jDatastoreProvider remoteProvider = (HttpNeo4jDatastoreProvider) datastoreProvider;
-		Statements statements = new Statements();
-
-		statements.addStatement( DELETE_ALL );
-		( (HttpNeo4jClient) remoteProvider.getClient() ).executeQueriesInNewTransaction( statements );
+		deleteAllNodesAndRelationships( datastoreProvider );
 	}
 
 	@Override
 	public void dropDatabase(DatastoreProvider datastoreProvider) {
 		deleteAllElements( datastoreProvider );
+		deleteAllConstraints( datastoreProvider );
+		deleteAllIndexes( datastoreProvider );
+	}
+
+	private void deleteAllNodesAndRelationships(DatastoreProvider datastoreProvider) {
+		HttpNeo4jDatastoreProvider remoteProvider = (HttpNeo4jDatastoreProvider) datastoreProvider;
+		Statements statements = new Statements();
+		statements.addStatement( DELETE_ALL );
+		( (HttpNeo4jClient) remoteProvider.getClient() ).executeQueriesInNewTransaction( statements );
+	}
+
+	private void deleteAllConstraints(DatastoreProvider datastoreProvider) {
+		HttpNeo4jDatastoreProvider remoteProvider = (HttpNeo4jDatastoreProvider) datastoreProvider;
+		List<String> constraints = getConstraints( null, datastoreProvider );
+		Statements statements = new Statements();
+		for ( String constraint : constraints ) {
+			statements.addStatement( dropUniqueConstraintQuery( constraint ) );
+		}
+		( (HttpNeo4jClient) remoteProvider.getClient() ).executeQueriesInNewTransaction( statements );
+	}
+
+	private void deleteAllIndexes(DatastoreProvider datastoreProvider) {
+		HttpNeo4jDatastoreProvider remoteProvider = (HttpNeo4jDatastoreProvider) datastoreProvider;
+		List<Neo4jIndexSpec> indexes = getIndexes( null, datastoreProvider );
+		Statements statements = new Statements();
+		for ( Neo4jIndexSpec indexSpec : indexes ) {
+			statements.addStatement( indexSpec.asCypherDropQuery() );
+		}
+		( (HttpNeo4jClient) remoteProvider.getClient() ).executeQueriesInNewTransaction( statements );
 	}
 
 	@Override
