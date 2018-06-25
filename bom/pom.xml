@@ -233,27 +233,11 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
                 <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
                 <version>${version.org.hibernate}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -266,39 +250,11 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
                 <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>hibernate-search-analyzers</artifactId>
-                        <groupId>org.hibernate</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>slf4j-api</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
                 <version>${version.org.hibernate.search}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>hibernate-search-analyzers</artifactId>
-                        <groupId>org.hibernate</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>slf4j-api</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <!-- Apache Lucene : we control the version explicitly to
                 pick a good compromise across Hibernate Search, Neo4J, Infinispan, HQL Parser -->
@@ -342,16 +298,6 @@
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-directory-provider</artifactId>
                 <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>hibernate-search-analyzers</artifactId>
-                        <groupId>org.hibernate</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>slf4j-api</artifactId>
-                        <groupId>org.slf4j</groupId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <!-- OGM modules -->
@@ -636,12 +582,6 @@
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
                 <version>${version.org.hibernate.commons.annotations}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml</groupId>
