@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.test.jpa;
 
-import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 
 import javax.persistence.EntityManagerFactory;
@@ -17,7 +16,6 @@ import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.google.common.base.Throwables;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
@@ -39,7 +37,7 @@ public class JPAStandaloneNoOGMTest {
 			fail( "Expected exception was not raised" );
 		}
 		catch ( PersistenceException pe ) {
-			assertThat( Throwables.getRootCause( pe ).getMessage() ).contains( "No Persistence provider for EntityManager named noogm" );
+			//ORM will throw some exception; verifying details would be too specific.
 		}
 
 		if ( emf != null ) {

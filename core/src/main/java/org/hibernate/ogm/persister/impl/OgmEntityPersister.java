@@ -1377,17 +1377,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.addNavigationalInformationForInverseSide();
 	}
 
-	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
-	private boolean checkVersion(final boolean[] includeProperty) {
-		return includeProperty[ getVersionProperty() ]
-				|| getEntityMetamodel().isVersionGenerated();
-	}
-
-	//TODO make AbstractEntityPersister#isModifiableEntity protected instead
-	private boolean isModifiableEntity(EntityEntry entry) {
-		return ( entry == null ? isMutable() : entry.isModifiableEntity() );
-	}
-
 	@Override
 	public Serializable insert(Object[] fields, Object object, SharedSessionContractImplementor session)
 			throws HibernateException {
@@ -1508,16 +1497,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
-	}
-
-	//TODO AbstractEntityPersister#isAllNull copied because of visibility
-	private boolean isAllNull(Object[] array, int tableNumber) {
-		for ( int i = 0; i < array.length; i++ ) {
-			if ( isPropertyOfTable( i, tableNumber ) && array[i] != null ) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	@Override
