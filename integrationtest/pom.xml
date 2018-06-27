@@ -313,51 +313,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.gmaven</groupId>
-                        <artifactId>groovy-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>prepare-mongodb-directories</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <source>
-                                    println "[INFO] ------------------------------------------------------------------------"
-                                    println "[INFO] MONGO DB BUILD INFO                                                     "
-                                    println "[INFO] ------------------------------------------------------------------------"
-                                    println "[INFO] Extracting MongoDB distribution to " + project.properties['mongodb.embedded.temp-dir'] + " and        "
-                                    println "[INFO] launching MongoDB process on port " + project.properties['mongodb.embedded.port'] + ". The properties"
-                                    println "[INFO] 'mongodb.embedded.temp-dir' and 'mongodb.embedded.port' can be used to       "
-                                    println "[INFO] specify another directory and/or port like this:                        "
-                                    println "[INFO]                                                                         "
-                                    println "[INFO]     mvn test -Dmongodb.embedded.temp-dir=%dir% -Dmongodb.embedded.port=%port%"
-                                    println "[INFO]                                                                         "
-                                    println "[INFO] To use an external Mongo DB instance instead, specify the               "
-                                    println "[INFO] 'useExternalMongoDb' property:                                          "
-                                    println "[INFO]                                                                         "
-                                    println "[INFO]     mvn test -DuseExternalMongoDb                                       "
-                                    println "[INFO]                                                                         "
-                                    println "[INFO] In this case, host and port are retrieved from the environment          "
-                                    println "[INFO] variables MONGODB_HOSTNAME and MONGODB_PORT, respectively.              "
-                                    println "[INFO] ------------------------------------------------------------------------"
-
-                                    def tempDir = new File(project.properties['mongodb.embedded.temp-dir'])
-                                    ant.delete(dir : tempDir)
-                                    ant.mkdir(dir : tempDir)
-
-                                    def logDir = new File(project.properties['mongodb.embedded.log-dir'])
-                                    ant.delete(dir : logDir)
-                                    ant.mkdir(dir : logDir)
-
-                                    System.setProperty( "de.flapdoodle.embed.io.tmpdir", project.properties['mongodb.embedded.temp-dir'] )
-                                    </source>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <environmentVariables>

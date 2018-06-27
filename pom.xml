@@ -97,8 +97,8 @@
         <version.copy.plugin>0.0.5</version.copy.plugin>
         <version.dependency.plugin>3.0.2</version.dependency.plugin>
         <version.deploy.plugin>2.8.2</version.deploy.plugin>
-        <version.embedmongo.plugin>0.3.5</version.embedmongo.plugin>
-        <version.de.flapdoodle.embed.mongo>2.0.3</version.de.flapdoodle.embed.mongo>
+        <version.embedmongo.plugin>0.4.0</version.embedmongo.plugin>
+        <version.de.flapdoodle.embed.mongo>2.1.1</version.de.flapdoodle.embed.mongo>
         <version.enforcer.plugin>3.0.0-M1</version.enforcer.plugin>
         <version.groovy.plugin>2.0</version.groovy.plugin>
         <version.org.codehaus.groovy>2.4.12</version.org.codehaus.groovy>
@@ -755,19 +755,6 @@
                                 </pluginExecution>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>org.codehaus.gmaven</groupId>
-                                        <artifactId>groovy-maven-plugin</artifactId>
-                                        <versionRange>[2.0,)</versionRange>
-                                        <goals>
-                                            <goal>execute</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
                                         <groupId>org.codehaus.mojo</groupId>
                                         <artifactId>build-helper-maven-plugin</artifactId>
                                         <versionRange>[1.9.1,)</versionRange>
@@ -821,27 +808,21 @@
                     <configuration>
                         <port>${mongodb.embedded.port}</port>
                         <logging>file</logging>
-                        <logFile>${mongodb.embedded.log-dir}/mongodb.embedded.log</logFile>
+                        <logFile>${project.build.directory}/mongodb.embedded.log</logFile>
                         <bindIp>${mongodb.embedded.bind-ip}</bindIp>
                         <version>${mongodb.embedded.version}</version>
+                        <!--
+                            Using the default configuration - by not setting a database path -
+                            the database will be created in a directory with a random name such as:
+                            /tmp/embedmongo-db-91e2f3b2-5e79-49ee-a345-44ffd9c2257d
+                            and will be automatically deleted on stop.
+                        -->
                     </configuration>
                     <dependencies>
                         <dependency>
                             <groupId>de.flapdoodle.embed</groupId>
                             <artifactId>de.flapdoodle.embed.mongo</artifactId>
                             <version>${version.de.flapdoodle.embed.mongo}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.gmaven</groupId>
-                    <artifactId>groovy-maven-plugin</artifactId>
-                    <version>${version.groovy.plugin}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.codehaus.groovy</groupId>
-                            <artifactId>groovy-all</artifactId>
-                            <version>${version.org.codehaus.groovy}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
