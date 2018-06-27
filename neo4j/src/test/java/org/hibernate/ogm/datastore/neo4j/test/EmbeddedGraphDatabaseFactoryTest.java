@@ -69,7 +69,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 	}
 
 	private URL neo4jPropertiesUrl() {
-		return Thread.currentThread().getContextClassLoader().getClass().getResource( "/neo4j-embedded-test.properties" );
+		return Thread.currentThread().getContextClassLoader().getResource( "neo4j-embedded-test.properties" );
 	}
 
 }
