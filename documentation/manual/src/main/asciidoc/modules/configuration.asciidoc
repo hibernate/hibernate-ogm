@@ -607,3 +607,104 @@ Then similarly to what you did with the Hibernate OGM modules zip, unpack this o
 ====
 If you are using the Hibernate OGM Infinispan feature packs, you don't have to worry about this. Infinispan client is already included in them.
 ====
+
+[[integration-with-wildfly-nosql]]
+
+=== Integration with WildFly NoSQL
+
+_WildFly NoSQL_ project allows to configure a NoSQL datastore client within a WildFly subsystem.
+See https://github.com/wildfly/wildfly-nosql/tree/master/doc[WildFly NoSQL Documentation].
+In a nutshell it provides the analogous concept of a _SQL DataSource_ for a NoSQL datastore.
+
+It is possible to configure Hibernate OGM to use the connections provided by WildFly NoSQL,
+using a special Hibernate property: `hibernate.connection.resource`.
+
+[NOTE]
+====
+At the time of writing the feature and its property are supported only for _MongoDB_ and _Neo4j Bolt_ clients.
+====
+
+==== How to use WildFly NoSQL with Hibernate OGM
+
+A typical Hibernate OGM persistence configuration, without the support of WildFly NoSQL, looks like this:
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<persistence version="2.1"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="primary" transaction-type="JTA">
+    <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+    <properties>
+      <property name="hibernate.ogm.datastore.provider" value="mongodb" />
+      <property name="hibernate.ogm.datastore.create_database" value="true"/>
+      <property name="hibernate.ogm.datastore.host" value="localhost:27018"/>
+      <property name="hibernate.ogm.datastore.database" value="mongodb"/>
+      <property name="hibernate.ogm.mongodb.write_concern" value="JOURNALED"/>
+      <property name="hibernate.ogm.mongodb.read_preference" value="NEAREST"/>
+    </properties>
+  </persistence-unit>
+</persistence>
+----
+
+Some configurations, like the hostname, port, name of the database
+and other datastore specific properties can be refactored/moved to a WildFly NoSQL subsystem, like this:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<subsystem xmlns="urn:jboss:domain:mongodb:1.0">
+	<mongo name="default" id="mongodb" jndi-name="java:jboss/mongodb/client" database="mongodb" module="org.hibernate.ogm.mongodb">
+		<host name="default" outbound-socket-binding-ref="mongodb"/>
+		<properties name="default">
+			<property name="writeConcern" value="JOURNALED"/>
+			<property name="readConcern" value="LOCAL"/>
+		</properties>
+	</mongo>
+</subsystem>
+----
+
+Notice that here the *jndi-name* attribute defines the String for the external lookup,
+it will be used later in this chapter.
+While *module* attribute indicates the static module from which to load client driver.
+
+[NOTE]
+====
+If you have provisioned your WildFly with Hibernate OGM featurepack(s),
+which is also the recommanded practice if you use WildFly,
+module attribute will be *org.hibernate.ogm.mongodb* for MongoDB driver
+or *org.hibernate.ogm.neo4j* for Neo4j driver.
+====
+
+Moreover you should have a WildFly socket binding like this one:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<socket-binding-group ...
+	<outbound-socket-binding name="mongodb">
+		<remote-destination host="localhost" port="27018"/>
+	</outbound-socket-binding>
+</socket-binding-group>
+----
+
+At this point you can use the Hibernate property `hibernate.connection.resource` in your _persistence.xml_,
+to integrate WildFly NoSQL with your Hibernate OGM.
+
+In our case we will have:
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<persistence version="2.1"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="primary" transaction-type="JTA">
+    <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+    <properties>
+      <property name="hibernate.ogm.datastore.provider" value="mongodb" />
+      <property name="*hibernate.connection.resource*" value="*java:jboss/mongodb/client*"/>
+      <property name="hibernate.ogm.datastore.create_database" value="true"/>
+    </properties>
+  </persistence-unit>
+</persistence>
+----
