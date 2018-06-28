@@ -107,6 +107,8 @@ The password to use when connecting remotely.
 hibernate.ogm.neo4j.client.connection_pool_size (optional)::
 The size of the client connection pool when using the http protocol.
 Default value is 10.
+hibernate.connection.resource::
+If you use Bolt interface you can lookup datastore client. See <<integration-with-wildfly-nosql>>.
 
 [NOTE]
 ====
