@@ -877,6 +877,15 @@
             </properties>
         </profile>
         <profile>
+            <id>java10</id>
+            <activation>
+                <jdk>10</jdk>
+            </activation>
+            <properties>
+                <additionalRuntimeArgLine>-Djdk.attach.allowAttachSelf=true --add-modules java.xml.bind</additionalRuntimeArgLine>
+            </properties>
+        </profile>
+        <profile>
             <id>integrationtest</id>
             <activation>
                 <property>
