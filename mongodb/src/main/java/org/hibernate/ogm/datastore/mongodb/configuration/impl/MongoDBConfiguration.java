@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.ReadConcern;
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -20,6 +21,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.OptionsContext;
@@ -46,6 +48,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final WriteConcern writeConcern;
+	private final ReadConcern readConcern;
 	private final ReadPreference readPreference;
 	private final AuthenticationMechanismType authenticationMechanism;
 	private final ConfigurationPropertyReader propertyReader;
@@ -68,6 +71,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.withDefault( DEFAULT_AUTHENTICATION_DATABASE )
 				.getValue();
 		this.writeConcern = globalOptions.getUnique( WriteConcernOption.class );
+		this.readConcern = globalOptions.getUnique( ReadConcernOption.class );
 		this.readPreference = globalOptions.getUnique( ReadPreferenceOption.class );
 	}
 
@@ -80,6 +84,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder();
 
 		optionsBuilder.writeConcern( writeConcern );
+		optionsBuilder.readConcern( readConcern );
 		optionsBuilder.readPreference( readPreference );
 
 		Map<String, Method> settingsMap = createSettingsMap();

@@ -6,11 +6,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
+import com.mongodb.ReadConcern;
 import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStorePropertyContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBEntityContext;
@@ -25,6 +28,7 @@ import com.mongodb.WriteConcern;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
+ * @author Aleksandr Mylnikov
  */
 public abstract class MongoDBPropertyContextImpl extends BaseDocumentStorePropertyContext<MongoDBEntityContext, MongoDBPropertyContext> implements
 		MongoDBPropertyContext {
@@ -58,6 +62,20 @@ public abstract class MongoDBPropertyContextImpl extends BaseDocumentStoreProper
 	public MongoDBPropertyContext readPreference(ReadPreferenceType readPreference) {
 		Contracts.assertParameterNotNull( readPreference, "readPreference" );
 		addPropertyOption( new ReadPreferenceOption(), readPreference.getReadPreference() );
+		return this;
+	}
+
+	@Override
+	public MongoDBPropertyContext readConcern(ReadConcern readConcern) {
+		Contracts.assertParameterNotNull( readConcern, "readConcern" );
+		addPropertyOption( new ReadConcernOption(), readConcern );
+		return this;
+	}
+
+	@Override
+	public MongoDBPropertyContext readConcern(ReadConcernType readConcern) {
+		Contracts.assertParameterNotNull( readConcern, "readConcern" );
+		addPropertyOption( new ReadConcernOption(), readConcern.getReadConcern() );
 		return this;
 	}
 }

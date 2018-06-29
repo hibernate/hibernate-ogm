@@ -6,11 +6,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
+import com.mongodb.ReadConcern;
 import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStoreGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBEntityContext;
@@ -25,6 +28,7 @@ import com.mongodb.WriteConcern;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
+ * @author Aleksandr Mylnikov
  */
 public abstract class MongoDBGlobalContextImpl extends BaseDocumentStoreGlobalContext<MongoDBGlobalContext, MongoDBEntityContext> implements
 		MongoDBGlobalContext {
@@ -44,6 +48,20 @@ public abstract class MongoDBGlobalContextImpl extends BaseDocumentStoreGlobalCo
 	public MongoDBGlobalContext writeConcern(WriteConcern writeConcern) {
 		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
 		addGlobalOption( new WriteConcernOption(), writeConcern );
+		return this;
+	}
+
+	@Override
+	public MongoDBGlobalContext readConcern(ReadConcern readConcern) {
+		Contracts.assertParameterNotNull( readConcern, "readConcern" );
+		addGlobalOption( new ReadConcernOption(), readConcern );
+		return this;
+	}
+
+	@Override
+	public MongoDBGlobalContext readConcern(ReadConcernType readConcern) {
+		Contracts.assertParameterNotNull( readConcern, "readConcern" );
+		addGlobalOption( new ReadConcernOption(), readConcern.getReadConcern() );
 		return this;
 	}
 
