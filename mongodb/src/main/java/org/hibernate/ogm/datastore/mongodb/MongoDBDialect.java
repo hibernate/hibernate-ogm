@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.mongodb.ReadConcern;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -47,6 +48,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
@@ -302,8 +304,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else {
 			ReadPreference readPreference = getReadPreference( associationContext );
-
-			MongoCollection<Document> collection = readPreference != null ? getCollection( key.getEntityKey() ).withReadPreference( readPreference ) : getCollection( key.getEntityKey() );
+			ReadConcern readConcern = getReadConcern( associationContext );
+			MongoCollection<Document> collection = withOptions( getCollection( key.getEntityKey() ), readPreference, readConcern );
 			Document searchObject = prepareIdObject( key.getEntityKey() );
 			Document projection = getProjection( key, true );
 
@@ -313,8 +315,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private Document getObject(EntityKey key, OperationContext operationContext) {
 		ReadPreference readPreference = getReadPreference( operationContext );
-
-		MongoCollection<Document> collection = readPreference != null ? getCollection( key ).withReadPreference( readPreference ) : getCollection( key ) ;
+		ReadConcern readConcern = getReadConcern( operationContext );
+		MongoCollection<Document> collection = withOptions( getCollection( key ), readPreference, readConcern );
 		Document searchObject = prepareIdObject( key );
 		Document projection = getProjection( operationContext );
 
@@ -325,8 +327,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
 			tupleContext) {
 		ReadPreference readPreference = getReadPreference( tupleContext );
+		ReadConcern readConcern = getReadConcern( tupleContext );
 
-		MongoCollection<Document> collection = readPreference != null ? getCollection( entityKeyMetadata ).withReadPreference( readPreference ) : getCollection( entityKeyMetadata );
+		MongoCollection<Document> collection = withOptions( getCollection( entityKeyMetadata ), readPreference, readConcern );
 
 		Document projection = getProjection( tupleContext );
 
@@ -413,6 +416,21 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private MongoCollection<Document> getCollection( EntityKey key ) {
 		return getCollection( key.getTable() );
+	}
+
+	private MongoCollection<Document> withOptions(MongoCollection<Document> collection,  ReadPreference readPreference, ReadConcern readConcern) {
+		if ( readPreference != null && readConcern != null ) {
+			return collection.withReadConcern( readConcern ).withReadPreference( readPreference );
+		}
+		else if ( readPreference != null ) {
+			return collection.withReadPreference( readPreference );
+		}
+		else if ( readConcern != null ) {
+			return collection.withReadConcern( readConcern );
+		}
+		else {
+			return collection;
+		}
 	}
 
 	private MongoCollection<Document> getCollection(EntityKeyMetadata entityKeyMetadata) {
@@ -588,8 +606,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	//not for embedded
 	private Document findAssociation(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
 		ReadPreference readPreference = getReadPreference( associationContext );
+		ReadConcern readConcern = getReadConcern( associationContext );
 		final Document associationKeyObject = associationKeyToObject( key, storageStrategy );
-		MongoCollection<Document> associationCollection = ( readPreference != null  ? getAssociationCollection( key, storageStrategy ).withReadPreference( readPreference ) : getAssociationCollection( key, storageStrategy ) );
+		MongoCollection<Document> associationCollection = withOptions( getAssociationCollection( key, storageStrategy ), readPreference, readConcern );
 
 		FindIterable<Document> fi = associationCollection.find( associationKeyObject );
 		return fi != null ? ( fi.projection( getProjection( key, false ) ).first() ) : null ;
@@ -863,7 +882,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		MongoCollection<Document> collection = provider.getDatabase().getCollection( collectionName );
-
 		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
 			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
 		}
@@ -1767,6 +1785,22 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private static ReadPreference getReadPreference(TupleContext tupleContext) {
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private static ReadConcern getReadConcern(OperationContext operationContext) {
+		return operationContext.getTupleTypeContext().getOptionsContext().getUnique( ReadConcernOption.class );
+	}
+
+	private static ReadConcern getReadConcern(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadConcernOption.class );
+	}
+
+	private static ReadConcern getReadConcern(TupleContext tupleContext) {
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( ReadConcernOption.class );
 	}
 
 	/**

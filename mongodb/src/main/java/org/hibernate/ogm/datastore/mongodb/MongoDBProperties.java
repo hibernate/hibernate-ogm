@@ -45,6 +45,10 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 */
 	public static final String WRITE_CONCERN_TYPE = "hibernate.ogm.mongodb.write_concern_type";
 
+	public static final String READ_CONCERN_TYPE = "hibernate.ogm.mongodb.read_concern_type";
+
+	public static final String READ_CONCERN = "hibernate.ogm.mongodb.read_concern";
+
 	/**
 	 * Configuration property for setting the read preference. Supported values are the {@link ReadPreferenceType} enum
 	 * or the String representations of its constants.
