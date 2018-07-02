@@ -154,10 +154,10 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 					IndexOptions indexOptions = getIndexOptions( optionsService, entityType );
 					Set<String> forIndexNotReferenced = new HashSet<>( indexOptions.getReferencedIndexes() );
 
+					// Don't change the order of these validate methods:
+					// UniqueKeys are used to validate normal Indexes
 					validateIndexSpecsForUniqueColumns( table, indexOptions, forIndexNotReferenced, constraintMethod );
-
 					validateIndexSpecsForUniqueKeys( table, indexOptions, forIndexNotReferenced, constraintMethod );
-
 					validateIndexSpecsForIndexes( table, indexOptions, forIndexNotReferenced );
 
 					for ( String forIndex : forIndexNotReferenced ) {
@@ -216,10 +216,24 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 			forIndexNotReferenced.remove( index.getName() );
 			MongoDBIndexSpec indexSpec = new MongoDBIndexSpec( index,
 					getIndexOptionDocument( table, indexOptions.getOptionForIndex( index.getName() ) ) );
-			if ( validateIndexSpec( indexSpec ) ) {
+			if ( validateIndexSpec( indexSpec ) && thereIsNoUniqueConstraintOnSameColumns( indexSpec ) ) {
 				indexSpecs.add( indexSpec );
 			}
 		}
+	}
+
+	private boolean thereIsNoUniqueConstraintOnSameColumns(MongoDBIndexSpec indexSpec) {
+		for ( MongoDBIndexSpec otherIndex : indexSpecs ) {
+			boolean hasSameColumns = otherIndex.getIndexKeysDocument().equals( indexSpec.getIndexKeysDocument() );
+			boolean isUniqueConstraint = otherIndex.getOptions().isUnique();
+
+			// Skip index creation if a unique constraint is already present
+			if ( hasSameColumns && isUniqueConstraint ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private Document getIndexOptionDocument(Table table, IndexOption indexOption) {

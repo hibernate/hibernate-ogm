@@ -30,7 +30,10 @@ public class MongoDBIndexTest extends OgmTestCase {
 		OgmSession session = openSession();
 
 		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), Poem.COLLECTION_NAME );
-		assertThat( indexMap.size() ).isEqualTo( 6 );
+		// Skip creation of @Index(columnList = "name, author")
+		// because author_name_idx is defined as unique
+		// on same field set
+		assertThat( indexMap.size() ).isEqualTo( 5 );
 
 		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
 				indexMap.get( "author_idx" ).toJson() );
@@ -39,8 +42,6 @@ public class MongoDBIndexTest extends OgmTestCase {
 				indexMap.get( "name_idx" ).toJson() );
 		assertJsonEquals( "{ 'v' : 2 , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'sparse' : true}",
 				indexMap.get( "author_name_idx" ).toJson() );
-		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'name' : 1 , 'author' : 1} , 'name' : 'IDXjo3qu8pkq9vsofgrq58pacxfq' , 'ns' : 'ogm_test_database.T_POEM' }",
-				indexMap.get( "IDXjo3qu8pkq9vsofgrq58pacxfq" ).toJson() );
 
 		session.close();
 	}
@@ -50,7 +51,10 @@ public class MongoDBIndexTest extends OgmTestCase {
 		OgmSession session = openSession();
 
 		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), Poem.COLLECTION_NAME );
-		assertThat( indexMap.size() ).isEqualTo( 6 );
+		// Skip creation of @Index(columnList = "name, author")
+		// because author_name_idx is defined as unique
+		// on same field set
+		assertThat( indexMap.size() ).isEqualTo( 5 );
 
 		assertJsonEquals( "{ 'v' : 2 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
 				indexMap.get( "author_name_text_idx" ).toJson() );
