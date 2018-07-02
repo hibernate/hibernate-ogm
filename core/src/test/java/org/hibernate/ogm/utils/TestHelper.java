@@ -21,6 +21,7 @@ import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -44,6 +45,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
 
 import com.arjuna.ats.arjuna.coordinator.TxControl;
 
@@ -428,4 +430,27 @@ public class TestHelper {
 		cfg.put( "hibernate.ogm.infinispan.configuration_resource_name", "infinispan-dist.xml" );
 	}
 
+	/**
+	 * Provides a static version of {@link org.hibernate.ogm.utils.OgmTestCase#inTransaction(Consumer)}.
+	 * It can be useful for test cases that do not extend OgmTestCase or {@link org.hibernate.ogm.utils.jpa.OgmJpaTestCase}
+	 *
+	 * @param sessionFactory already created session factory instance
+	 * @param consumer code to execute inside the transaction boundary
+	 */
+	public static void inTransaction(SessionFactory sessionFactory, Consumer<Session> consumer) {
+		try ( Session session = sessionFactory.openSession() ) {
+			Transaction transaction = session.beginTransaction();
+
+			try {
+				consumer.accept( session );
+				transaction.commit();
+			}
+			catch (Throwable t) {
+				if ( transaction.isActive() ) {
+					transaction.rollback();
+				}
+				throw t;
+			}
+		}
+	}
 }
