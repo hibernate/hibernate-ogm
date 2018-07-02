@@ -42,6 +42,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.Search;
+import org.infinispan.client.hotrod.impl.transaction.TransactionalRemoteCacheImpl;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.query.dsl.Query;
@@ -171,6 +172,28 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			String tableName = persister.getTableName();
 			int increment = datastoreProvider.getCache( tableName ).size();
 			counter.addAndGet( increment );
+		}
+		return counter.get();
+	}
+
+	@Override
+	public long getNumberOfEntities(Session session) {
+		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( session );
+		final SessionFactoryImplementor sessionFactoryImplementor = getSessionFactoryImplementor( session.getSessionFactory() );
+		final Collection<EntityPersister> persisters = sessionFactoryImplementor.getMetamodel().entityPersisters().values();
+
+		final AtomicLong counter = new AtomicLong();
+		for ( EntityPersister ep : persisters ) {
+			OgmEntityPersister persister = (OgmEntityPersister) ep;
+			String tableName = persister.getTableName();
+			RemoteCache<Object, Object> cache = datastoreProvider.getCache( tableName );
+			if ( !( cache instanceof TransactionalRemoteCacheImpl ) ) {
+				counter.addAndGet( cache.size() );
+				continue;
+			}
+
+			int size = TransactionalRemoteCacheCounter.count( persister, (TransactionalRemoteCacheImpl) cache, datastoreProvider.getDataMapperForCache( tableName ), session );
+			counter.addAndGet( size );
 		}
 		return counter.get();
 	}
