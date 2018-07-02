@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
-import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
@@ -21,9 +20,10 @@ import org.hibernate.ogm.util.impl.ResourceHelper;
 
 import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.FileDescriptorSource;
+import org.infinispan.protostream.ProtobufUtil;
+import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.config.Configuration;
 import org.infinispan.protostream.descriptors.FileDescriptor;
-import org.infinispan.protostream.impl.parser.SquareProtoParser;
 
 /**
  * Validate a user defined schema using ProtoStream library
@@ -73,8 +73,8 @@ public class SchemaValidator {
 		try {
 			fileDescriptor = parseSchema();
 		}
-		catch (DescriptorParserException descriptorParserException) {
-			throw LOG.providedSchemaHasAnIllegalFormat( descriptorParserException.getMessage(), protoSchema );
+		catch (DescriptorParserException | IOException e) {
+			throw LOG.providedSchemaHasAnIllegalFormat( e.getMessage(), protoSchema );
 		}
 
 		if ( !owner.packageName.equals( fileDescriptor.getPackage() ) ) {
@@ -92,12 +92,11 @@ public class SchemaValidator {
 		}
 	}
 
-	private FileDescriptor parseSchema() {
+	private FileDescriptor parseSchema() throws DescriptorParserException, IOException {
 		FileDescriptorSource fileDescriptorSource = FileDescriptorSource.fromString( schemaName, protoSchema );
 		Configuration config = Configuration.builder().build();
-
-		SquareProtoParser protoParser = new SquareProtoParser( config );
-		Map<String, FileDescriptor> fileDescriptorMap = protoParser.parse( fileDescriptorSource );
-		return fileDescriptorMap.get( schemaName );
+		SerializationContext serCtx = ProtobufUtil.newSerializationContext( config );
+		serCtx.registerProtoFiles( fileDescriptorSource );
+		return serCtx.getFileDescriptors().get( schemaName );
 	}
 }

@@ -15,9 +15,9 @@ import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import org.infinispan.protostream.DescriptorParserException;
+import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.config.Configuration;
-import org.infinispan.protostream.impl.SerializationContextImpl;
 
 public class ProtostreamSerializerSetup {
 
@@ -30,7 +30,7 @@ public class ProtostreamSerializerSetup {
 	public static SerializationContext buildSerializationContext(
 			SchemaDefinitions sd, MainOgmCoDec delegate, OgmProtoStreamMarshaller marshaller) throws DescriptorParserException, IOException {
 		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
-		SerializationContextImpl serContext = new SerializationContextImpl( cfg );
+		SerializationContext serContext = ProtobufUtil.newSerializationContext( cfg );
 		IdMessageMarshaller idM = new IdMessageMarshaller( delegate );
 		PayloadMessageMarshaller valueM = new PayloadMessageMarshaller( delegate );
 		try {
@@ -52,7 +52,7 @@ public class ProtostreamSerializerSetup {
 	public static SerializationContext buildSerializationContextForSequences(
 			SchemaDefinitions sd, SequenceTableDefinition std) {
 		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
-		SerializationContextImpl serContext = new SerializationContextImpl( cfg );
+		SerializationContext serContext = ProtobufUtil.newSerializationContext( cfg );
 		try {
 			serContext.registerProtoFiles( sd.asFileDescriptorSource() );
 		}
