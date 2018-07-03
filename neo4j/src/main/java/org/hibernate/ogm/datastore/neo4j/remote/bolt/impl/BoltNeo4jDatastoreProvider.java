@@ -69,6 +69,9 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 			lookupClient();
 		}
 		this.sequenceGenerator = new BoltNeo4jSequenceGenerator( client, getSequenceCacheMaxSize() );
+
+		// clear resources
+		this.jndiService = null;
 	}
 
 	private void createClient() {
@@ -91,9 +94,6 @@ public class BoltNeo4jDatastoreProvider extends RemoteNeo4jDatastoreProvider imp
 		catch (RuntimeException e) {
 			throw log.errorOnFetchJndiClientProperty( configuration.getNativeClientResource() );
 		}
-
-		// clear resources
-		this.jndiService = null;
 	}
 
 	@Override
