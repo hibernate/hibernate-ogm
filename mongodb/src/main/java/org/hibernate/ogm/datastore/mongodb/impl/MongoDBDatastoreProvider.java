@@ -118,6 +118,9 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		else {
 			lookupDatabase();
 		}
+
+		// clear resources
+		this.jndiService = null;
 	}
 
 	private void lookupDatabase() {
@@ -128,9 +131,6 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		catch (RuntimeException e) {
 			throw log.errorOnFetchJndiClientProperty( config.getNativeClientResource() );
 		}
-
-		// clear resources
-		this.jndiService = null;
 	}
 
 	private void startClientAndExtractDatabase() {
