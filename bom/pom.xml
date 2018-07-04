@@ -59,6 +59,7 @@
         <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>1.0.1.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.2_spec>
         <version.org.jboss.jboss-transaction-spi>7.6.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.narayana>5.5.30.Final</version.org.jboss.narayana>
+        <version.wildfly.nosql>1.0.0.Beta1</version.wildfly.nosql>
 
         <!-- Infinispan -->
 
