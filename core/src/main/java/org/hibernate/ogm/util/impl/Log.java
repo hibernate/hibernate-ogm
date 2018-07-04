@@ -328,4 +328,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 97, value = "Cannot extract tuple from value '%s'.")
 	HibernateException cannotExtractTupleFromObject(Object value, @Cause Exception e);
+
+	@Message(id = 98, value = "Error on fetch property " + OgmProperties.NATIVE_CLIENT_RESOURCE + ": '%s'.")
+	HibernateException errorOnFetchJndiClientProperty(String nativeClientResource);
 }

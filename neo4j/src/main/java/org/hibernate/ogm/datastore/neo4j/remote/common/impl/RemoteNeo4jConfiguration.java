@@ -47,6 +47,7 @@ public class RemoteNeo4jConfiguration {
 	private final Long connectionTTL;
 	private final boolean authenticationRequired;
 	private final Integer clientPoolSize;
+	private final String nativeClientResource;
 
 	public RemoteNeo4jConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
@@ -77,6 +78,9 @@ public class RemoteNeo4jConfiguration {
 		this.authenticationRequired = this.username != null;
 		this.clientPoolSize = propertyReader.property( Neo4jProperties.CONNECTION_POOL_SIZE, Integer.class )
 				.withDefault( DEFAULT_CONNECTION_POOL_SIZE ).getValue();
+		this.nativeClientResource = propertyReader.property( OgmProperties.NATIVE_CLIENT_RESOURCE, String.class )
+				.withDefault( null )
+				.getValue();
 	}
 
 	/**
@@ -165,5 +169,13 @@ public class RemoteNeo4jConfiguration {
 	 */
 	public Integer getClientPoolSize() {
 		return clientPoolSize;
+	}
+
+	/**
+	 * @see OgmProperties#NATIVE_CLIENT_RESOURCE
+	 * @return Optional JNDI resource string to fetch a native document store client, null if it is not present
+	 */
+	public String getNativeClientResource() {
+		return nativeClientResource;
 	}
 }

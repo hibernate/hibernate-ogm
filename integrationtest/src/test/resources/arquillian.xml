@@ -24,6 +24,7 @@
             <property name="javaVmArguments">-XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true -XX:+IgnoreUnrecognizedVMOptions -Dee8.preview.mode=true</property>
             <!-- To debug the Arquillian managed application server: -->
             <!-- <property name="javaVmArguments">-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y -Xmx512m -XX:MaxPermSize=128m</property> -->
+            <property name="serverConfig">standalone-nosql.xml</property>
         </configuration>
     </container>
 

@@ -10,6 +10,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HostParser;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyReaderContext;
 
 /**
  * Provides access to properties common to different document datastores.
@@ -28,6 +29,7 @@ public abstract class DocumentStoreConfiguration {
 	private final String username;
 	private final String password;
 	private final boolean createDatabase;
+	private final String nativeClientResource;
 
 	public DocumentStoreConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
 		String host = propertyReader.property( OgmProperties.HOST, String.class )
@@ -41,9 +43,16 @@ public abstract class DocumentStoreConfiguration {
 
 		hosts = HostParser.parse( host, port, defaultPort );
 
-		this.databaseName = propertyReader.property( OgmProperties.DATABASE, String.class )
-				.required()
+		this.nativeClientResource = propertyReader.property( OgmProperties.NATIVE_CLIENT_RESOURCE, String.class )
+				.withDefault( null )
 				.getValue();
+
+		PropertyReaderContext<String> databaseNamePropertyReader = propertyReader.property( OgmProperties.DATABASE, String.class );
+		if ( nativeClientResource == null ) {
+			// Require databaseName property, if nativeClientResource is not defined
+			databaseNamePropertyReader.required();
+		}
+		this.databaseName = databaseNamePropertyReader.getValue();
 
 		this.username = propertyReader.property( OgmProperties.USERNAME, String.class ).getValue();
 		this.password = propertyReader.property( OgmProperties.PASSWORD, String.class ).getValue();
@@ -51,6 +60,7 @@ public abstract class DocumentStoreConfiguration {
 		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
 				.withDefault( false )
 				.getValue();
+
 	}
 
 	/**
@@ -92,5 +102,13 @@ public abstract class DocumentStoreConfiguration {
 	 */
 	public boolean isCreateDatabase() {
 		return createDatabase;
+	}
+
+	/**
+	 * @see OgmProperties#NATIVE_CLIENT_RESOURCE
+	 * @return Optional JNDI resource string to fetch a native document store client, null if it is not present
+	 */
+	public String getNativeClientResource() {
+		return nativeClientResource;
 	}
 }

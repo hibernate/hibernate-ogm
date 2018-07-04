@@ -1,35 +1,11 @@
-<server-provisioning xmlns="urn:wildfly:server-provisioning:1.1">
+<server-provisioning xmlns="urn:wildfly:server-provisioning:1.1" extract-schemas="true" copy-module-artifacts="true">
 	<feature-packs>
-
-		<feature-pack
-			groupId="org.wildfly"
-			artifactId="wildfly-feature-pack"
-			version="${version.wildfly}" />
-
-		<feature-pack
-			groupId="org.hibernate"
-			artifactId="hibernate-search-jbossmodules-orm"
-			version="${version.org.hibernate.search}" />
-
-		<feature-pack
-			groupId="org.hibernate.ogm"
-			artifactId="hibernate-ogm-featurepack-infinispan-remote"
-			version="${project.version}" />
-
-		<feature-pack
-			groupId="org.hibernate.ogm"
-			artifactId="hibernate-ogm-featurepack-infinispan-embedded"
-			version="${project.version}" />
-
-		<feature-pack
-			groupId="org.hibernate.ogm"
-			artifactId="hibernate-ogm-featurepack-mongodb"
-			version="${project.version}" />
-
-		<feature-pack
-			groupId="org.hibernate.ogm"
-			artifactId="hibernate-ogm-featurepack-neo4j"
-			version="${project.version}" />
-
+		<feature-pack groupId="org.wildfly" artifactId="wildfly-feature-pack" version="${version.wildfly}" />
+		<feature-pack groupId="org.hibernate" artifactId="hibernate-search-jbossmodules-orm" version="${version.org.hibernate.search}" />
+		<feature-pack groupId="org.hibernate.ogm" artifactId="hibernate-ogm-featurepack-infinispan-remote" version="${project.version}" />
+		<feature-pack groupId="org.hibernate.ogm" artifactId="hibernate-ogm-featurepack-infinispan-embedded" version="${project.version}" />
+		<feature-pack groupId="org.hibernate.ogm" artifactId="hibernate-ogm-featurepack-mongodb" version="${project.version}" />
+		<feature-pack groupId="org.hibernate.ogm" artifactId="hibernate-ogm-featurepack-neo4j" version="${project.version}" />
+		<feature-pack groupId="org.wildfly.nosql" artifactId="wildfly-mongodb-feature-pack" version="${version.wildfly.nosql}" />
 	</feature-packs>
 </server-provisioning>

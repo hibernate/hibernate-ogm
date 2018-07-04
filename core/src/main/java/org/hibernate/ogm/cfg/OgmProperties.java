@@ -106,4 +106,9 @@ public interface OgmProperties {
 	 * </ul>
 	 */
 	String ERROR_HANDLER = "hibernate.ogm.error_handler";
+
+	/**
+	 * Optional JNDI resource string to fetch a native data store client
+	 */
+	String NATIVE_CLIENT_RESOURCE = "hibernate.connection.resource";
 }

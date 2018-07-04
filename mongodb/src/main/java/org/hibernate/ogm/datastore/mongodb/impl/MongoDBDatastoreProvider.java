@@ -19,6 +19,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
@@ -53,6 +54,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	private MongoClient mongo;
 	private MongoDatabase mongoDb;
 	private MongoDBConfiguration config;
+	private JndiService jndiService;
 
 	public MongoDBDatastoreProvider() {
 	}
@@ -85,6 +87,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
+		jndiService = serviceRegistry.getService( JndiService.class );
 	}
 
 	@Override
@@ -109,6 +112,28 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	@Override
 	public void start() {
+		if ( config.getNativeClientResource() == null ) {
+			startClientAndExtractDatabase();
+		}
+		else {
+			lookupDatabase();
+		}
+
+		// clear resources
+		this.jndiService = null;
+	}
+
+	private void lookupDatabase() {
+		try {
+			log.tracef( "Retrieving MongoDatabase from JNDI at %1$s", config.getNativeClientResource() );
+			mongoDb = (MongoDatabase) jndiService.locate( config.getNativeClientResource() );
+		}
+		catch (RuntimeException e) {
+			throw log.errorOnFetchJndiClientProperty( config.getNativeClientResource() );
+		}
+	}
+
+	private void startClientAndExtractDatabase() {
 		try {
 			if ( mongo == null ) {
 				mongo = createMongoClient( config );

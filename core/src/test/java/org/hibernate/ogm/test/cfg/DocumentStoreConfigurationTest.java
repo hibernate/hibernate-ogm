@@ -185,6 +185,30 @@ public class DocumentStoreConfigurationTest {
 		assertThat( configuration.isCreateDatabase() ).isTrue();
 	}
 
+	@Test
+	public void shouldReturnNullIfNativeClientResourceIsNotPresentAsConfigurationValue() {
+		configuration = new TestDocumentStoreConfiguration( configurationValues );
+
+		assertThat( configuration.getNativeClientResource() ).isNull();
+	}
+
+	@Test
+	public void shouldReturnNullIfNativeClientResourceConfigurationValueIsTheEmptyString() {
+		configurationValues.put( OgmProperties.NATIVE_CLIENT_RESOURCE, "" );
+		configuration = new TestDocumentStoreConfiguration( configurationValues );
+
+		assertThat( configuration.getNativeClientResource() ).isNull();
+	}
+
+	@Test
+	public void shouldReturnTheNativeClientResourceConfiguredValue() {
+		final String configuredResource = "java:jboss/datasource/mongosql";
+		configurationValues.put( OgmProperties.NATIVE_CLIENT_RESOURCE, configuredResource );
+		configuration = new TestDocumentStoreConfiguration( configurationValues );
+
+		assertThat( configuration.getNativeClientResource() ).isEqualTo( configuredResource );
+	}
+
 	private static class TestDocumentStoreConfiguration extends DocumentStoreConfiguration {
 
 		public TestDocumentStoreConfiguration(Map<?, ?> configurationValues) {
