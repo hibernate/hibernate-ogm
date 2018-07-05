@@ -1,6 +1,46 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.0.Beta2 (05-07-2018)
+-------------------------
+
+** Bug
+    * OGM-1510 -             - Remove references to org.infinispan.protostream.impl package
+    * OGM-1222 - mongodb     - Duplicate insert on mutate within entitymanager lifecycle
+
+** Improvement
+    * OGM-1505 - neo4j       - Allow building and testing the Neo4J integration on JDK9
+    * OGM-1496 - mongodb     - Improve the message to user when MongoDB does not like index and unique constraint on field.
+    * OGM-1485 - infinispan  - Infinispan Remote support all JoinTable association type use cases
+    * OGM-1484 - ignite      - Support of property selections (projection queries) in JPQL for Apache Ignite
+    * OGM-1442 - infinispan  - Remove temporary Infinispan client WF feature pack redistribution module
+    * OGM-1427 - infinispan  - Infinispan remote stored procedure (Remote Task) support
+    * OGM-1420 - mongodb     - @ElementCollection - doesn't retrieve MongoDB array  
+
+** New Feature
+    * OGM-1478 - core        - Throw proper exception when EntityManager#getCriteriaBuilder() is called
+    * OGM-1462 - neo4j       - Support indexes in Neo4j
+    * OGM-1346 - mongodb     - MongoDB - Add GeometryCollection to spatial support
+    * OGM-1287 -             - Create a property to look up native nosql connection via JNDI
+
+** Sub-task
+    * OGM-1431 - infinispan  - Support server tasks for Infinispan remote
+    * OGM-1430 -             - Support scripting for remote mode
+
+** Task
+    * OGM-1506 - build       - Introduce a Maven profile to test on JDK10
+    * OGM-1503 - build       - Remove deprecated dependencies hibernate-java8 ad hibernate-entitymanager
+    * OGM-1502 - infinispan  - Upgrade Infinispan to 9.3.0.Final
+    * OGM-1499 - tests       - Update integration tests to use WildFly 13.0.0.Final
+    * OGM-1495 - infinispan  - Use Infinispan remote clustered counters to implement @SequenceGenerator.
+    * OGM-1493 - infinispan  - Upgrade Infinispan to 9.3.0.CR1
+    * OGM-1491 - tests       - Provide a test using custom Identity Generator in core TCK
+    * OGM-1490 - core        - Upgrade to Hibernate Search 5.10.2.Final
+    * OGM-1489 - core        - Upgrade to Hibernate ORM 5.3.2.Final
+    * OGM-1483 - infinispan  - Define Infinispan Remote Protobuf schema providing the final file
+    * OGM-1480 - infinispan  - Upgrade Infinispan to 9.3.0.Beta1
+    * OGM-1479 - build, core - Remove dependency to Javassist
+
 5.4.0.Beta1 (24-05-2018)
 -------------------------
 
