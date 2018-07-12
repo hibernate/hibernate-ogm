@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Blob;
 
-import org.hibernate.HibernateError;
+import org.hibernate.HibernateException;
 import org.hibernate.engine.jdbc.BinaryStream;
 import org.hibernate.engine.jdbc.BlobProxy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
@@ -44,7 +44,6 @@ public class BlobMappedGridTypeDescriptor implements GridTypeDescriptor {
 			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
 				Proxy proxy = (Proxy) value;
 				InvocationHandler handler = Proxy.getInvocationHandler( proxy );
-				log.info( "handler:" + handler );
 
 				BinaryStream stream = null;
 				try {
@@ -52,7 +51,7 @@ public class BlobMappedGridTypeDescriptor implements GridTypeDescriptor {
 					stream = (BinaryStream) handler.invoke( proxy, getUnderlyingStreamMethod, new Object[0] );
 				}
 				catch (Throwable th) {
-					throw new HibernateError( "Cannot get input stream!", th );
+					throw new HibernateException( "Cannot get input stream!", th );
 				}
 				resultset.put( names[0], stream );
 			}
@@ -78,7 +77,6 @@ public class BlobMappedGridTypeDescriptor implements GridTypeDescriptor {
 			@Override
 			public X extract(Tuple tuple, String name) {
 				MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
-				//final GridFSDownloadStream binaryStream = (GridFSDownloadStream) tuple.get( name );
 				final ByteArrayOutputStream binaryStream = (ByteArrayOutputStream) tuple.get( name );
 				ByteArrayInputStream blobStream = new ByteArrayInputStream( binaryStream.toByteArray() );
 				Blob blob = BlobProxy.generateProxy( blobStream, binaryStream.size() );
