@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl.protostream;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import org.hibernate.ogm.datastore.infinispanremote.impl.AssociationCacheOperation;
@@ -17,19 +16,15 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.VersionedAssociation;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Tuple;
+
 import org.infinispan.protostream.DescriptorParserException;
-import org.infinispan.protostream.SerializationContext;
 
 public final class ProtoDataMapper implements ProtoStreamMappingAdapter, ProtostreamAssociationMappingAdapter {
 
-	private final SerializationContext serContext;
 	private final MainOgmCoDec delegate;
-	private final OgmProtoStreamMarshaller marshaller;
 
-	public ProtoDataMapper(MainOgmCoDec delegate, SerializationContext serContext, OgmProtoStreamMarshaller marshaller) throws DescriptorParserException, IOException {
-		this.marshaller = marshaller;
+	public ProtoDataMapper(MainOgmCoDec delegate) throws DescriptorParserException {
 		this.delegate = Objects.requireNonNull( delegate );
-		this.serContext = Objects.requireNonNull( serContext );
 	}
 
 	@Override
@@ -49,24 +44,12 @@ public final class ProtoDataMapper implements ProtoStreamMappingAdapter, Protost
 
 	@Override
 	public <T> T withinCacheEncodingContext(CacheOperation<T> function) {
-		try {
-			marshaller.setCurrentSerializationContext( serContext );
-			return (T) function.doOnCache( delegate.getLinkedCache() );
-		}
-		finally {
-			marshaller.setCurrentSerializationContext( null );
-		}
+		return (T) function.doOnCache( delegate.getLinkedCache() );
 	}
 
 	@Override
 	public <T> T withinCacheEncodingContext(AssociationCacheOperation<T> function) {
-		try {
-			marshaller.setCurrentSerializationContext( serContext );
-			return (T) function.doOnCache( delegate.getLinkedCache() );
-		}
-		finally {
-			marshaller.setCurrentSerializationContext( null );
-		}
+		return (T) function.doOnCache( delegate.getLinkedCache() );
 	}
 
 	@Override
@@ -83,5 +66,4 @@ public final class ProtoDataMapper implements ProtoStreamMappingAdapter, Protost
 	public String[] listIdColumnNames() {
 		return delegate.listIdColumnNames();
 	}
-
 }

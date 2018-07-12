@@ -80,7 +80,6 @@ import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.query.dsl.FilterConditionContext;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
-import org.infinispan.query.dsl.QueryFactory;
 
 /**
  * Some implementation notes for evolution:
@@ -358,9 +357,9 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 		final String cacheName = cacheName( key );
 		ProtostreamAssociationMappingAdapter mapper = provider.getCollectionsDataMapper( cacheName );
 		return mapper.withinCacheEncodingContext( c -> {
-			QueryFactory queryFactory = Search.getQueryFactory( c );
+			QueryBuilder qb = Search.getQueryFactory( c ).from( provider.getEntityType( c ) );
+
 			final String[] columnNames = key.getColumnNames();
-			QueryBuilder qb = queryFactory.from( ProtostreamPayload.class );
 			FilterConditionContext bqEnd = null;
 			boolean firstIteration = true;
 			for ( int i = 0; i < columnNames.length; i++ ) {

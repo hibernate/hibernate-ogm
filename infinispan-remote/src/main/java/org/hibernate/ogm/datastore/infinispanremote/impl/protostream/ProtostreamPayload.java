@@ -11,26 +11,30 @@ import java.util.Objects;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.infinispanremote.impl.VersionedTuple;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.multimessage.MultiMessage;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 
-public final class ProtostreamPayload {
+public final class ProtostreamPayload implements MultiMessage {
 
 	//One and only one of the following fields will be initialized:
 	private final MapTupleSnapshot loadedSnapshot;
 	private final Tuple tuple;
+	private final String protobufTypeName;
 
-	public ProtostreamPayload(MapTupleSnapshot loadedSnapshot) {
+	public ProtostreamPayload(MapTupleSnapshot loadedSnapshot, String protobufTypeName) {
 		this.loadedSnapshot = Objects.requireNonNull( loadedSnapshot );
 		this.tuple = null;
+		this.protobufTypeName = protobufTypeName;
 	}
 
-	public ProtostreamPayload(Tuple tuple) {
+	public ProtostreamPayload(Tuple tuple, String protobufTypeName) {
 		this.tuple = Objects.requireNonNull( tuple );
 		this.loadedSnapshot = null;
+		this.protobufTypeName = protobufTypeName;
 	}
 
 	public Tuple toTuple(SnapshotType snapshotType) {
@@ -86,4 +90,8 @@ public final class ProtostreamPayload {
 		return new RowKey( columnNames, columnValues );
 	}
 
+	@Override
+	public String getMessageType() {
+		return protobufTypeName;
+	}
 }

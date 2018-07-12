@@ -6,18 +6,14 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl.protostream;
 
-import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
-import org.hibernate.ogm.datastore.infinispanremote.impl.protobuf.schema.SchemaDefinitions;
 import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.impl.sequences.SequenceIdMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+
 import org.infinispan.protostream.DescriptorParserException;
-import org.infinispan.protostream.ProtobufUtil;
-import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.config.Configuration;
 
 public class ProtostreamSerializerSetup {
 
@@ -27,41 +23,15 @@ public class ProtostreamSerializerSetup {
 		//Not to be constructed
 	}
 
-	public static SerializationContext buildSerializationContext(
-			SchemaDefinitions sd, MainOgmCoDec delegate, OgmProtoStreamMarshaller marshaller) throws DescriptorParserException, IOException {
-		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
-		SerializationContext serContext = ProtobufUtil.newSerializationContext( cfg );
+	public static void registerEntityMarshaller(MainOgmCoDec delegate, OgmProtoStreamMarshaller marshaller) throws DescriptorParserException {
 		IdMessageMarshaller idM = new IdMessageMarshaller( delegate );
 		PayloadMessageMarshaller valueM = new PayloadMessageMarshaller( delegate );
-		try {
-			serContext.registerProtoFiles( sd.asFileDescriptorSource() );
-		}
-		catch (DescriptorParserException | IOException e) {
-			throw log.errorAtProtobufParsing( e );
-		}
-		// register the marshallers to local serialization context (used for marshalling)
-		serContext.registerMarshaller( idM );
-		serContext.registerMarshaller( valueM );
-
-		// register the marshallers to global serialization context (used for unmarshalling)
 		marshaller.getSerializationContext().registerMarshaller( idM );
 		marshaller.getSerializationContext().registerMarshaller( valueM );
-		return serContext;
 	}
 
-	public static SerializationContext buildSerializationContextForSequences(
-			SchemaDefinitions sd, SequenceTableDefinition std) {
-		Configuration cfg = Configuration.builder().setLogOutOfSequenceReads( true ).build();
-		SerializationContext serContext = ProtobufUtil.newSerializationContext( cfg );
-		try {
-			serContext.registerProtoFiles( sd.asFileDescriptorSource() );
-		}
-		catch (DescriptorParserException | IOException e) {
-			throw log.errorAtProtobufParsing( e );
-		}
+	public static void registerSequenceMarshaller(SequenceTableDefinition std, OgmProtoStreamMarshaller marshaller) {
 		SequenceIdMarshaller idM = new SequenceIdMarshaller( std );
-		serContext.registerMarshaller( idM );
-		return serContext;
+		marshaller.getSerializationContext().registerMarshaller( idM );
 	}
-
 }

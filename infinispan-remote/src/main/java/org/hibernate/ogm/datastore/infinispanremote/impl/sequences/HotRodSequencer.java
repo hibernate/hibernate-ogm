@@ -8,15 +8,12 @@ package org.hibernate.ogm.datastore.infinispanremote.impl.sequences;
 
 import java.util.Random;
 
-import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
-import org.hibernate.ogm.datastore.infinispanremote.impl.schema.SequenceTableDefinition;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.VersionedValue;
-import org.infinispan.protostream.SerializationContext;
 
 /**
  * This implements the atomic operations to model a source for named sequences.
@@ -46,8 +43,6 @@ public final class HotRodSequencer {
 	private static final int LOG_WARNING_EACH_N_OPS = 10;
 
 	private final RemoteCache<SequenceId, Long> remoteCache;
-	private final SerializationContext serContext;
-	private final OgmProtoStreamMarshaller marshaller;
 	private final int increment;
 	private final SequenceId id;
 	private final Random random = new Random();
@@ -57,25 +52,14 @@ public final class HotRodSequencer {
 
 	HotRodSequencer(
 			RemoteCache<SequenceId, Long> remoteCache,
-			SequenceTableDefinition sequenceTableDefinition,
-			NextValueRequest initialRequest,
-			SerializationContext serContext,
-			OgmProtoStreamMarshaller marshaller) {
+			NextValueRequest initialRequest) {
 				this.remoteCache = remoteCache;
 				this.increment = initialRequest.getIncrement();
-				this.serContext = serContext;
-				this.marshaller = marshaller;
 				this.id = new SequenceId( initialRequest.getKey().getColumnValue() );
 	}
 
 	Number getSequenceValue(NextValueRequest request) {
-		try {
-			marshaller.setCurrentSerializationContext( serContext );
-			return getSequenceValueInternal( request );
-		}
-		finally {
-			marshaller.setCurrentSerializationContext( null );
-		}
+		return getSequenceValueInternal( request );
 	}
 
 	private synchronized Number getSequenceValueInternal(NextValueRequest request) {

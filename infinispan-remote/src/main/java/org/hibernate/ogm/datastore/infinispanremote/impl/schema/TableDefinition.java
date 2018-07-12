@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl.schema;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +24,6 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.protostream.DescriptorParserException;
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.descriptors.Descriptor;
 import org.infinispan.protostream.descriptors.FileDescriptor;
 
@@ -83,13 +81,13 @@ public final class TableDefinition implements ProtobufTypeExporter, ProtobufEntr
 	public ProtoDataMapper createProtoDataMapper(RemoteCache remoteCache,
 			SchemaDefinitions sd, OgmProtoStreamMarshaller marshaller) {
 		try {
-			CompositeProtobufCoDec codec = new CompositeProtobufCoDec( tableName,
+			CompositeProtobufCoDec codec = new CompositeProtobufCoDec(
 					qualify( protobufTypeName ), qualify( protobufIdTypeName ),
 					keyComponents, valueComponents, remoteCache, sd );
-			SerializationContext serializationContext = ProtostreamSerializerSetup.buildSerializationContext( sd, codec, marshaller );
-			return new ProtoDataMapper( codec, serializationContext, marshaller );
+			ProtostreamSerializerSetup.registerEntityMarshaller( codec, marshaller );
+			return new ProtoDataMapper( codec );
 		}
-		catch (DescriptorParserException | IOException e) {
+		catch (DescriptorParserException e) {
 			throw new RuntimeException( e );
 		}
 	}

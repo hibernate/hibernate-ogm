@@ -9,18 +9,20 @@ package org.hibernate.ogm.datastore.infinispanremote.impl.protostream;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.multimessage.MultiMessage;
 
-public final class ProtostreamId {
+public final class ProtostreamId implements MultiMessage {
 
 	public final NamedValue[] namedValues;
 	//Redundant information for convenience, as we might need to represent in either form:
 	public final String[] columnNames;
 	public final Object[] columnValues;
+	public final String protobufIdTypeName;
 
-	public ProtostreamId(String[] columnNames, Object[] columnValues) {
+	public ProtostreamId(String[] columnNames, Object[] columnValues, String protobufIdTypeName) {
 		this.columnNames = columnNames;
 		this.columnValues = columnValues;
+		this.protobufIdTypeName = protobufIdTypeName;
 		Objects.requireNonNull( columnNames );
 		Objects.requireNonNull( columnValues );
 		if ( columnNames.length != columnValues.length ) {
@@ -32,8 +34,9 @@ public final class ProtostreamId {
 		}
 	}
 
-	public RowKey toRowKey() {
-		return new RowKey( columnNames, columnValues );
+	@Override
+	public String getMessageType() {
+		return protobufIdTypeName;
 	}
 
 	public static final class NamedValue {
@@ -118,5 +121,4 @@ public final class ProtostreamId {
 	public String toString() {
 		return "ProtostreamId:" + Arrays.toString( namedValues );
 	}
-
 }

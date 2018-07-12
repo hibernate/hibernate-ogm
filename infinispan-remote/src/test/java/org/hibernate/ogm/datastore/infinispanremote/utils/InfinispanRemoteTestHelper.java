@@ -38,6 +38,7 @@ import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.Search;
@@ -47,6 +48,7 @@ import org.infinispan.query.dsl.Query;
 
 /**
  * @author Sanne Grinovero (C) 2015 Red Hat Inc.
+ * @author Fabio Massimo Ercoli
  */
 public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
@@ -124,7 +126,7 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 
 		final ProtoStreamMappingAdapter mapper = datastoreProvider.getDataMapperForCache( tableName );
 		return mapper.withinCacheEncodingContext( c -> {
-			Query queryAll = Search.getQueryFactory( c ).from( ProtostreamPayload.class ).build();
+			Query queryAll = Search.getQueryFactory( c ).create( getNativeQueryText( datastoreProvider, c ) );
 			Set<RowKey> resultsCollector = new HashSet<>();
 			try ( CloseableIterator<Entry<Object,Object>> iterator = c.retrieveEntriesByQuery( queryAll, null, 100 ) ) {
 				while ( iterator.hasNext() ) {
@@ -141,6 +143,10 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			}
 			return (long) resultsCollector.size();
 		} );
+	}
+
+	private String getNativeQueryText(InfinispanRemoteDatastoreProvider datastoreProvider, RemoteCache<ProtostreamId, ProtostreamPayload> c) {
+		return "from " + datastoreProvider.getEntityType( c );
 	}
 
 	private String[] getIdentityOwnerColumnNames(String ownerTableName, InfinispanRemoteDatastoreProvider datastoreProvider) {
@@ -186,5 +192,4 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 		}
 		return InfinispanRemoteDatastoreProvider.class.cast( provider );
 	}
-
 }

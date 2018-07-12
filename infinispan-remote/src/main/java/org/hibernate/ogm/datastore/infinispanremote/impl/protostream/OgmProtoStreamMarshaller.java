@@ -6,47 +6,38 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl.protostream;
 
-import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
-import org.infinispan.protostream.SerializationContext;
+import java.io.IOException;
 
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.multimessage.MultiMessage;
+import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.multimessage.MultiMessageExtension;
+
+import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
+import org.infinispan.commons.io.ByteBuffer;
+import org.infinispan.commons.io.ByteBufferImpl;
 
 /**
  * The original ProtoStreamMarshaller expects 1:1 mapping between a Java class
- * and a protostream schema. We need flexibility to override this by providing
- * a custom org.infinispan.protostream.SerializationContext, but also we
- * need to extend org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller
- * to maintain general encoding compatibility and server side query capabilities.
+ * and a protostream schema.
+ * <p>
+ * We need flexibility to override this by choosing {@link org.infinispan.protostream.impl.BaseMarshallerDelegate}
+ * using the Protocol Buffer type even in marshalling phase.
  *
- * There's only one instance of OgmProtoStreamMarshaller for the whole Hot Rod Client;
- * that means all our parallel Session are using the same marshaller#
- * yet concurrently I need it to instruct which schema to use for a specific IO operation.
- * A typical Infinispan client app would have a different Class registered in the marshaller
- * for each entity; we don't have this luxury, or I'd have to bytecode-generate a Class
- * definition for each "Table" we want to map.
- *
- * Note: see the implementation of
- * org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller.getSerializationContext(RemoteCacheManager)
- * to understand why it's important to extend it.
+ * @author Fabio Massimo Ercoli
+ * @see MultiMessageExtension
+ * @see MultiMessage
  */
 public final class OgmProtoStreamMarshaller extends ProtoStreamMarshaller {
-
-	private final ThreadLocal<SerializationContext> currentSerializationContext = new ThreadLocal<>();
 
 	public OgmProtoStreamMarshaller() {
 	}
 
 	@Override
-	public SerializationContext getSerializationContext() {
-		SerializationContext threadLocalSC = currentSerializationContext.get();
+	protected ByteBuffer objectToBuffer(Object o, int estimatedSize) throws IOException, InterruptedException {
+		if ( !( o instanceof MultiMessage ) ) {
+			return super.objectToBuffer( o, estimatedSize );
+		}
 
-		// unmarshalling is performed by another thread from Infinispan 9.2 version
-		// so in case of unmarshalling thread local variable is null
-		// and we have to fallback to the default (global) serialization context
-		return (threadLocalSC == null) ? super.getSerializationContext() : threadLocalSC;
+		byte[] bytes = MultiMessageExtension.toWrappedByteArray( getSerializationContext(), (MultiMessage) o );
+		return new ByteBufferImpl( bytes, 0, bytes.length );
 	}
-
-	public void setCurrentSerializationContext(SerializationContext sc) {
-		currentSerializationContext.set( sc );
-	}
-
 }

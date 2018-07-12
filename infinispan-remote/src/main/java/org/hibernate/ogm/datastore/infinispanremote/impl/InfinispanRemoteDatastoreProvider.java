@@ -47,7 +47,6 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.protostream.DescriptorParserException;
-import org.infinispan.protostream.SerializationContext;
 import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 
 /**
@@ -166,8 +165,12 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		// register proto schema also to global serialization context used for unmarshalling
 		registerProtoFiles( marshaller, sd );
 
-		this.sequences = new HotRodSequenceCounterHandler( this, marshaller, sd.getSequenceDefinitions(), sequences );
 		this.cacheHandler = createCacheHandler( sd );
+
+		this.sequences = new HotRodSequenceCounterHandler( this, marshaller, sd.getSequenceDefinitions(), sequences );
+		for ( SequenceTableDefinition std : sd.getSequenceDefinitions().values() ) {
+			ProtostreamSerializerSetup.registerSequenceMarshaller( std, marshaller );
+		}
 
 		startCaches( cacheHandler, hotrodClient );
 
@@ -248,11 +251,6 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		return this.sequences;
 	}
 
-	public SerializationContext getSerializationContextForSequences(SequenceTableDefinition std) {
-		//This method is here so that we can cache / reuse these contexts ?
-		return ProtostreamSerializerSetup.buildSerializationContextForSequences( sd, std );
-	}
-
 	public <K, V> RemoteCache<K, V> getCache(String cacheName) {
 		RemoteCache<K,V> cache = hotrodClient.getCache( cacheName );
 		if ( cache == null ) {
@@ -271,5 +269,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	public RemoteCacheManager getManager() {
 		return hotrodClient;
+	}
+
+	public String getEntityType(RemoteCache<?,?> c) {
+		return getProtobufPackageName() + "." + c.getName();
 	}
 }

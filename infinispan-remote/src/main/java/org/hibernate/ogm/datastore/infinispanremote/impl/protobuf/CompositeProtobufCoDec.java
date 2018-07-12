@@ -26,7 +26,6 @@ import org.infinispan.protostream.MessageMarshaller.ProtoStreamWriter;
 
 public final class CompositeProtobufCoDec implements MainOgmCoDec {
 
-	private final String tableName;
 	private final String protobufTypeName;
 	private final String protobufIdTypeName;
 	private final RemoteCache remoteCache;
@@ -34,8 +33,7 @@ public final class CompositeProtobufCoDec implements MainOgmCoDec {
 	private final ProtofieldAccessorSet valueFields;
 	private final SchemaDefinitions sd;
 
-	public CompositeProtobufCoDec(String tableName, String protobufTypeName, String protobufIdTypeName, ProtofieldAccessorSet keyFields, ProtofieldAccessorSet valueFields, RemoteCache remoteCache, SchemaDefinitions sd) {
-		this.tableName = tableName;
+	public CompositeProtobufCoDec(String protobufTypeName, String protobufIdTypeName, ProtofieldAccessorSet keyFields, ProtofieldAccessorSet valueFields, RemoteCache remoteCache, SchemaDefinitions sd) {
 		this.protobufTypeName = protobufTypeName;
 		this.protobufIdTypeName = protobufIdTypeName;
 		this.remoteCache = remoteCache;
@@ -65,7 +63,7 @@ public final class CompositeProtobufCoDec implements MainOgmCoDec {
 	@Override
 	public ProtostreamId createIdPayload(String[] columnNames, Object[] columnValues) {
 		assert verifyAllColumnNamesArePartOfId( columnNames );
-		return new ProtostreamId( columnNames, columnValues );
+		return new ProtostreamId( columnNames, columnValues, protobufIdTypeName );
 	}
 
 	private boolean verifyAllColumnNamesArePartOfId(String[] columnNames) {
@@ -104,7 +102,7 @@ public final class CompositeProtobufCoDec implements MainOgmCoDec {
 			}
 		}
 		MapTupleSnapshot loadedSnapshot = new MapTupleSnapshot( mapTuple );
-		return new ProtostreamPayload( loadedSnapshot );
+		return new ProtostreamPayload( loadedSnapshot, protobufTypeName );
 	}
 
 	@Override
@@ -121,7 +119,7 @@ public final class CompositeProtobufCoDec implements MainOgmCoDec {
 
 	@Override
 	public ProtostreamPayload createValuePayload(Tuple tuple) {
-		return new ProtostreamPayload( tuple );
+		return new ProtostreamPayload( tuple, protobufTypeName );
 	}
 
 	@Override

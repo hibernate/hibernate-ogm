@@ -60,15 +60,9 @@ public class HotRodSequenceHandler {
 			if ( sequenceTableDefinition == null ) {
 				throw log.valueRequestedForUnknownSequence( request.getKey().getTable(), request.getKey().getColumnValue() );
 			}
-			return new SequencesPerCache(
-					provider,
-					sequenceTableDefinition,
-					provider.getCache( cacheName ),
-					marshaller
-			);
+			return new SequencesPerCache( provider.getCache( cacheName ) );
 		}
 		);
 		return sequencesSet.getSequenceValue( request );
 	}
-
 }
