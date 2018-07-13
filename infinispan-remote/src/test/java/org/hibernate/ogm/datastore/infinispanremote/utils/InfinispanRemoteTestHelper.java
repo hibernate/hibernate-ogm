@@ -70,6 +70,30 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 	}
 
 	@Override
+	public long getNumberOfAssociations(Session session) {
+		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( session.getSessionFactory() );
+		final SessionFactoryImplementor sessionFactoryImplementor = getSessionFactoryImplementor( session.getSessionFactory() );
+		Collection<CollectionPersister> persisters = sessionFactoryImplementor.getMetamodel().collectionPersisters().values();
+		long totalCount = 0;
+		for ( CollectionPersister ep : persisters ) {
+			OgmCollectionPersister persister = (OgmCollectionPersister) ep;
+			String tableName = persister.getTableName();
+			SingleTableOgmEntityPersister owningPersister = (SingleTableOgmEntityPersister) persister.getOwnerEntityPersister().getEntityPersister();
+			String ownerTableName = owningPersister.getTableName();
+
+			RemoteCache<Object, Object> cache = datastoreProvider.getCache( tableName );
+			if ( cache instanceof TransactionalRemoteCacheImpl ) {
+				final String[] ownerIdentifyingColumnNames = getIdentityOwnerColumnNames( ownerTableName, datastoreProvider );
+				totalCount += TransactionalRemoteCacheCounter.countAssociations( (TransactionalRemoteCacheImpl) cache, persister, session, ownerIdentifyingColumnNames );
+			}
+			else {
+				totalCount += countAssociations( tableName, ownerTableName, datastoreProvider );
+			}
+		}
+		return totalCount;
+	}
+
+	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( sessionFactory );
 		final Set<String> mappedCacheNames = datastoreProvider.getMappedCacheNames();
@@ -187,13 +211,13 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			OgmEntityPersister persister = (OgmEntityPersister) ep;
 			String tableName = persister.getTableName();
 			RemoteCache<Object, Object> cache = datastoreProvider.getCache( tableName );
-			if ( !( cache instanceof TransactionalRemoteCacheImpl ) ) {
-				counter.addAndGet( cache.size() );
-				continue;
+			if ( cache instanceof TransactionalRemoteCacheImpl ) {
+				int size = TransactionalRemoteCacheCounter.count( persister, (TransactionalRemoteCacheImpl) cache, datastoreProvider.getDataMapperForCache( tableName ), session );
+				counter.addAndGet( size );
 			}
-
-			int size = TransactionalRemoteCacheCounter.count( persister, (TransactionalRemoteCacheImpl) cache, datastoreProvider.getDataMapperForCache( tableName ), session );
-			counter.addAndGet( size );
+			else {
+				counter.addAndGet( cache.size() );
+			}
 		}
 		return counter.get();
 	}
