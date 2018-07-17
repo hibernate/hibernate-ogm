@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.mongodb.test.options.readpreference;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.mockClient;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -24,8 +25,10 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder;
 import org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.MockMongoClient;
 import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.query.NativeQuery;
 import org.junit.After;
 import org.junit.Test;
 
@@ -119,6 +122,25 @@ public class ReadPreferencePropagationTest {
 		verify( mockClient.getCollection( "Associations" ).withReadPreference( ReadPreference.primaryPreferred() ) ).find( any( Document.class ) ) ;
 		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) ).first() ;
 		verifyNoMoreInteractions( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) );
+	}
+
+	@Test
+	public void shouldApplyReadPreferenceWhenExecutingBackendQuery() {
+		//given
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+		Session session = sessions.openSession();
+		String nativeQuery = "db.GolfPlayer"
+				+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'name': 'Ben' } }, 'new': true })";
+
+		//when
+		NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( GolfPlayer.class );
+		@SuppressWarnings("unchecked")
+		List<GolfPlayer> result = query.list();
+
+		// then
+		assertThat( result ).hasSize( 1 );
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadPreference( eq( ReadPreference.secondaryPreferred() ) );
 	}
 
 	private Class<?>[] getAnnotatedClasses() {

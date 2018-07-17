@@ -68,6 +68,7 @@ public class MockMongoClientBuilder {
 			FindIterable<Document> findIterableMock1 = mock( FindIterable.class );
 			FindIterable<Document> findIterableMock2 = mock( FindIterable.class );
 			when( findIterableMock1.projection( any( Document.class ) ) ).thenReturn( findIterableMock2 );
+			when( findIterableMock1.modifiers( any( Document.class ) ) ).thenReturn( findIterableMock1 );
 			when( findIterableMock2.first() ).thenReturn( object );
 			when( collection.find( any( Document.class ) ) ).thenReturn( findIterableMock1 );
 			when( collection.findOneAndUpdate( any( Document.class ), any( Document.class ), any( FindOneAndUpdateOptions.class ) ) ).thenReturn( object );
