@@ -17,9 +17,13 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder;
 import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.search.FullTextSession;
+import org.hibernate.search.Search;
 import org.junit.After;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +46,7 @@ public class ReadConcernPropagationTest {
 
 	@Test
 	public void shouldApplyConfiguredReadConcernForGettingTuple() {
-		// given an empty database
+		// given a database with one golf player
 		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
 		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
 
@@ -84,6 +88,50 @@ public class ReadConcernPropagationTest {
 
 		// then expect a call for the entity and the embedded association with the configured read concern
 		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyReadConcernWhenExecutingBackendQuery() {
+		//given
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+		Session session = sessions.openSession();
+
+		//when
+		String nativeQuery = "db.GolfPlayer"
+				+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'name': 'Ben' } }, 'new': true })";
+		NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( GolfPlayer.class );
+		@SuppressWarnings("unchecked")
+		List<GolfPlayer> result = query.list();
+
+		// then
+		assertThat( result ).hasSize( 1 );
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyReadConcernWhenMassIndexing() throws Exception {
+		//given
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		//when
+		purgeAll( GolfPlayer.class );
+		startAndWaitMassIndexing( GolfPlayer.class );
+
+		//then
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
+	}
+
+	private void startAndWaitMassIndexing(Class<?> entityType) throws InterruptedException, IOException {
+		FullTextSession session = Search.getFullTextSession( sessions.openSession() );
+		session.createIndexer( entityType ).purgeAllOnStart( true ).startAndWait();
+	}
+
+	private void purgeAll(Class<?> entityType) throws IOException {
+		FullTextSession session = Search.getFullTextSession( sessions.openSession() );
+		session.purgeAll( entityType );
+		session.flushToIndexes();
 	}
 
 	@Test
