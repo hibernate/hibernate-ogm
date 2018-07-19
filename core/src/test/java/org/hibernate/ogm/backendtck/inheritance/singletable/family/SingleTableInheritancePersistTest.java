@@ -178,6 +178,20 @@ public class SingleTableInheritancePersistTest extends OgmJpaTestCase {
 		em.getTransaction().commit();
 	}
 
+	@Test
+	public void testFlushAndCommitAfterCascadeDelete() {
+		initDB();
+
+		em.getTransaction().begin();
+		Family found = em.find( Family.class, family.getName() );
+		if ( found != null ) {
+			em.remove( found );
+		}
+
+		em.flush();
+		em.getTransaction().commit();
+	}
+
 	private String[] extractNames(List<Person> persons) {
 		List<String> names = new ArrayList<>();
 		for ( Person person : persons ) {
