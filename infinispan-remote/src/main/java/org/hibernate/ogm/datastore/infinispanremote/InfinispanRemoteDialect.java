@@ -59,6 +59,7 @@ import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
 import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
+import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
@@ -344,6 +345,13 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+		// join columns could contains reference to a deleted objects
+		// see the issue https://hibernate.atlassian.net/browse/OGM-1513
+		// so in this case the presence of a tuple is required
+		if ( isAJoinColumn( key ) && associationContext.getEntityTuplePointer().getTuple() == null ) {
+			return null;
+		}
+
 		Map<RowKey, Map<String, Object>> results = loadRowKeysByQuery( provider, key );
 		if ( results.isEmpty() ) {
 			// For consistency with other dialects,
@@ -351,6 +359,16 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 			return null;
 		}
 		return new Association( new MapAssociationSnapshot( results ) );
+	}
+
+	private boolean isAJoinColumn(AssociationKey key) {
+		AssociationKeyMetadata metadata = key.getMetadata();
+		if ( AssociationKind.EMBEDDED_COLLECTION.equals( metadata.getAssociationKind() ) ) {
+			return false;
+		}
+
+		AssociatedEntityKeyMetadata entityKeyMetadata = metadata.getAssociatedEntityKeyMetadata();
+		return metadata.getTable().equals( entityKeyMetadata.getEntityKeyMetadata().getTable() );
 	}
 
 	private static Map<RowKey, Map<String, Object>> loadRowKeysByQuery(InfinispanRemoteDatastoreProvider provider, AssociationKey key) {
