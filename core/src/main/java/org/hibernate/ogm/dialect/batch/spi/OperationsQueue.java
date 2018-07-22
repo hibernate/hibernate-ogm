@@ -135,4 +135,15 @@ public class OperationsQueue {
 		return operations.size();
 	}
 
+	public boolean isMarkedForRemoval(EntityKey entityKey) {
+		for ( Operation operation: operations ) {
+			if ( !( operation instanceof RemoveTupleOperation ) ) {
+				continue;
+			}
+			if ( ( (RemoveTupleOperation) operation ).getEntityKey().equals( entityKey ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

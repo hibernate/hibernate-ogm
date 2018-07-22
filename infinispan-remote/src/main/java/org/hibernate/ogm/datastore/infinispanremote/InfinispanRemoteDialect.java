@@ -345,10 +345,7 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		// join columns could contains reference to a deleted objects
-		// see the issue https://hibernate.atlassian.net/browse/OGM-1513
-		// so in this case the presence of a tuple is required
-		if ( isAJoinColumn( key ) && associationContext.getEntityTuplePointer().getTuple() == null ) {
+		if ( referencesDeleteEntity( key, associationContext ) ) {
 			return null;
 		}
 
@@ -359,6 +356,26 @@ public class InfinispanRemoteDialect<EK, AK, ISK> extends AbstractGroupingByEnti
 			return null;
 		}
 		return new Association( new MapAssociationSnapshot( results ) );
+	}
+
+	private boolean referencesDeleteEntity(AssociationKey key, AssociationContext associationContext) {
+		// only join columns could contain references to deleted objects
+		if ( !isAJoinColumn( key ) ) {
+			return false;
+		}
+
+		// if tuple is null reference entity has been deleted by another batch
+		// see the issue https://hibernate.atlassian.net/browse/OGM-1513
+		if ( associationContext.getEntityTuplePointer().getTuple() == null ) {
+			return true;
+		}
+
+		// or reference entity might have been deleted in current batch
+		return referencesEntityDeletedByCurrentBatch( key, associationContext );
+	}
+
+	private boolean referencesEntityDeletedByCurrentBatch(AssociationKey key, AssociationContext associationContext) {
+		return associationContext.getOperationsQueue().isMarkedForRemoval( key.getEntityKey() );
 	}
 
 	private boolean isAJoinColumn(AssociationKey key) {
