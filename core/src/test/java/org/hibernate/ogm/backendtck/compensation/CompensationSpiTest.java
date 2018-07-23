@@ -244,7 +244,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN },
+			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE },
 			comment = "Can use parallel local TX not with JTA"
 	)
 	public void appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction() throws Exception {
@@ -400,7 +400,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE },
+			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN_REMOTE },
 			comment = "Transaction cannot be committed when continuing after an exception "
 	)
 	public void subsequentOperationsArePerformedForErrorHandlingStrategyContinue() {
