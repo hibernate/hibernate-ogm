@@ -51,8 +51,8 @@ public class HotRodSearchIntegrationIT extends MagiccardsDatabaseScenario {
 						.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 						.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan_remote" ).up()
 						.createProperty().name( "hibernate.ogm.infinispan_remote.configuration_resource_name" ).value( "hotrod-client-configuration.properties" ).up()
+						.createProperty().name( "hibernate.ogm.cache.transaction.mode" ).value( "NONE" ).up()
 						.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${module-slot.org.hibernate.search.short-id}" ).up()
 				.up().up();
 	}
-
 }
