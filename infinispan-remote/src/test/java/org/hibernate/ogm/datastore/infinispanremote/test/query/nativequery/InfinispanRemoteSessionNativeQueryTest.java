@@ -122,18 +122,20 @@ public class InfinispanRemoteSessionNativeQueryTest extends OgmTestCase {
 	public void testEntitiesInsertedInCurrentSessionAreFoundByNativeQuery() {
 		Employee mike = new Employee( 5l, "Mike", getDate( 2020, Month.NOVEMBER, 21 ), 1 );
 
+		String query = "from HibernateOGMGenerated.Registry where name = 'Mike'";
 		inTransaction( session -> {
-			String query = "from HibernateOGMGenerated.Registry where name = 'Mike'";
-
-			NativeQuery nativeQuery = session.createNativeQuery( query )
-					.addEntity( Employee.class );
+			NativeQuery nativeQuery = session.createNativeQuery( query ).addEntity( Employee.class );
 
 			List result = nativeQuery.list();
 			assertThat( result ).isEmpty();
 
 			session.persist( mike );
+		} );
 
-			result = nativeQuery.list();
+		inTransaction( session -> {
+			NativeQuery nativeQuery = session.createNativeQuery( query ).addEntity( Employee.class );
+
+			List result = nativeQuery.list();
 			assertThat( result ).containsExactly( mike );
 		} );
 
