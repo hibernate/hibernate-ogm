@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.configuration.XMLStringConfiguration;
 
@@ -41,11 +42,13 @@ public class HotRodCacheCreationHandler implements HotRodCacheHandler {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final Map<String, String> cacheConfigurations;
+	private final TransactionMode transactionMode;
 
 	private Set<String> failedCacheConfigurationNames = new HashSet<>();
 
-	public HotRodCacheCreationHandler(String globalConfiguration, Map<String, String> perCacheConfiguration) {
+	public HotRodCacheCreationHandler(String globalConfiguration, Map<String, String> perCacheConfiguration, TransactionMode transactionMode) {
 		this.cacheConfigurations = perCacheConfiguration;
+		this.transactionMode = transactionMode;
 
 		// applying globalConfiguration to all caches where a configuration is not defined
 		perCacheConfiguration.forEach( (cache, configuration) -> {
@@ -87,7 +90,7 @@ public class HotRodCacheCreationHandler implements HotRodCacheHandler {
 	}
 
 	private XMLStringConfiguration getCacheConfiguration(String cacheName) {
-		return new XMLStringConfiguration( String.format( OGM_BASIC_CONFIG, cacheName, "NON_DURABLE_XA" ) );
+		return new XMLStringConfiguration( String.format( OGM_BASIC_CONFIG, cacheName, transactionMode.name() ) );
 	}
 
 	@Override
