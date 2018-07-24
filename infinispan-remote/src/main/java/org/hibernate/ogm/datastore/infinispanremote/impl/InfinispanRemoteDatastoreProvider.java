@@ -44,6 +44,7 @@ import org.hibernate.service.spi.Stoppable;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.protostream.DescriptorParserException;
@@ -114,6 +115,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	@EffectivelyFinal
 	private String schemaFileName;
 
+	@EffectivelyFinal
+	private TransactionMode transactionMode;
+
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return InfinispanRemoteDialect.class;
@@ -144,6 +148,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.schemaFileName = config.getSchemaFileName();
 		this.createCachesEnabled = config.isCreateCachesEnabled();
 		this.cacheConfiguration = config.getCacheConfiguration();
+		this.transactionMode = config.getTransactionMode();
 	}
 
 	@Override

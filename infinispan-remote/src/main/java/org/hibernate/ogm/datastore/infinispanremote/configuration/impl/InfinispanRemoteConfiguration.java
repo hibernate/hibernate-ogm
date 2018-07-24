@@ -13,6 +13,7 @@ import static org.infinispan.client.hotrod.impl.ConfigurationProperties.MARSHALL
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -25,10 +26,14 @@ import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStr
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
+import java.util.stream.Collectors;
+
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 
 /**
@@ -112,6 +117,8 @@ public class InfinispanRemoteConfiguration {
 
 	private String cacheConfiguration;
 
+	private TransactionMode transactionMode;
+
 	/**
 	 * The location of the configuration file.
 	 *
@@ -163,6 +170,10 @@ public class InfinispanRemoteConfiguration {
 
 	public String getCacheConfiguration() {
 		return cacheConfiguration;
+	}
+
+	public TransactionMode getTransactionMode() {
+		return transactionMode;
 	}
 
 	/**
@@ -217,7 +228,29 @@ public class InfinispanRemoteConfiguration {
 				.withDefault( null )
 				.getValue();
 
+		String transactionModeString = propertyReader
+				.property( InfinispanRemoteProperties.TRANSACTION_MODE, String.class )
+				.withDefault( InfinispanRemoteProperties.DEFAULT_TRANSACTION_MODE )
+				.getValue();
+
+		this.transactionMode = extractTransactionMode( transactionModeString );
+
 		log.tracef( "Initializing Infinispan Hot Rod client from configuration file at '%1$s'", configurationResource );
+	}
+
+	private TransactionMode extractTransactionMode(String transactionModeString) {
+		try {
+			return TransactionMode.valueOf( transactionModeString );
+		}
+		catch (IllegalArgumentException iae) {
+			throw log.invalidConfigurationValue( InfinispanRemoteProperties.TRANSACTION_MODE, transactionModePossibleValues(), transactionModeString );
+		}
+	}
+
+	private String transactionModePossibleValues() {
+		return Arrays.stream( TransactionMode.values() )
+				.map( transactionMode -> transactionMode.toString() )
+				.collect( Collectors.joining( "," ) );
 	}
 
 	/**

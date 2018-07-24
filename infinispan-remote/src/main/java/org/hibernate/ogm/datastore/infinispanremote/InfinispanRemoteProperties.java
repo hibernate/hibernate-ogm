@@ -10,6 +10,8 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
 import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
 
+import org.infinispan.client.hotrod.configuration.TransactionMode;
+
 /**
  * Properties for configuring the Infinispan Remote datastore via {@code persistence.xml} or
  * {@link StandardServiceRegistryBuilder}.
@@ -98,6 +100,18 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	 * If not set the default configuration is used.
 	 */
 	public static final String CACHE_CONFIGURATION = "hibernate.ogm.datastore.cache_configuration";
+
+	/**
+	 * Property is used to configure the transaction mode of {@link org.infinispan.client.hotrod.RemoteCacheManager}.
+	 * Possible values are the String values of the enum {@link TransactionMode}
+	 */
+	public static final String TRANSACTION_MODE = "hibernate.ogm.cache.transaction.mode";
+
+	/**
+	 * The default transaction mode. To override it using TRANSACTION_MODE.
+	 * @see #TRANSACTION_MODE
+	 */
+	public static final String DEFAULT_TRANSACTION_MODE = TransactionMode.NON_DURABLE_XA.name();
 
 	private InfinispanRemoteProperties() {
 	}
