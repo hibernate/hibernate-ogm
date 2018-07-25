@@ -2135,8 +2135,7 @@ Infinispan supports transactions and integrates with any standard JTA `Transacti
 this is a great advantage for JPA users as it allows to experience a _similar_ behaviour
 to the one we are used to when we work with RDBMS databases.
 
-This capability is only available to Infinispan Embedded users: the transactional integration
-capabilities are not exposed to the Hot Rod clients.
+This capability is now available for both Infinispan Embedded and Hot Rod client users.
 
 If you're having Hibernate OGM start and manage Infinispan,
 you can skip this as it will inject the same `TransactionManager` instance
@@ -2160,7 +2159,7 @@ as Hibernate:
 ----
 ====
 
-Infinispan supports different transaction modes like `PESSIMISTIC` and `OPTIMISTIC`,
+Infinispan Embedded supports different transaction modes like `PESSIMISTIC` and `OPTIMISTIC`,
 supports [acronym]`XA` recovery and provides many more configuration options;
 see the http://infinispan.org/documentation/[Infinispan User Guide]
 for more advanced configuration options.
@@ -2416,6 +2415,11 @@ Hibernate OGM will use the specified Protobuf Schema instead of the generated on
 This doesn't affect how entities are encoded so the specified schema is expected to be compatible with the generated one.
 This can be used to defined server side indexes on caches used by JPQL and native Ickle queries.
 
+hibernate.ogm.cache.transaction.mode::
+Property is used to configure the transaction mode of Infinispan caches.
+Possible values are: `XA`, `NON_DURABLE_XA` (the default), `NON_XA` and `NONE` (the one to disable transaction).
+For more information see the chapter <<infinispan-remote-transaction>>.
+
 ==== Data encoding: Protobuf Schema
 
 Using the _Infinispan Remote_ backend your data will be encoded using Protocol Buffers,
@@ -2485,26 +2489,29 @@ So let's highlight the differences with the relational world:
 
 Referential integrity::
 While we can use relations based on foreign keys, Infinispan has no notion of referential integrity.
-Hibernate is able to maintain the integrity as it won't "forget" stale references, but since
-the storage doesn't support transactions either it is possible to interrupt Hibernate OGM
-during such maintenance and introduce breaks of integrity.
+Hibernate is able to maintain the integrity as it won't "forget" stale references,
+but it is possible to interrupt Hibernate OGM
+during such maintenance and then introduce breaks of integrity.
 
 When integrity could be broken::
-When the unit of work involves several operations we might risk to have a partial writes
-(updates, deletes, inserts); due to the fact that the Hot Rod client is not transactional
-some operation would be flushed to data store, other not.
+Using transactions, that are enabled by default, we can reduce the risk.
+In contrast, without transactions,
+when the unit of work involves several operations we might risk to have a partial writes
+(updates, deletes, inserts); some operation would be flushed to data store, other not.
 For instance let's imagine you create a new entity, remove an old one and update an association
-from the old to the new one in a single transaction,
+from the old to the new one in a single interaction,
 this would correspond to three different remote invocations: an Entity insert, an Entity delete
 and an Association update.
 If there were network problems during the third invocation,
 we could have a partial write in which only the first and the second operations
 would be actually stored on the remote storage and this could lead to a breaking referential
-integrity of the association.
+integrity of the association. Because, like we said, Infinispan has no acquaintance
+of referential integrity constraints.
 
 How to detect broken integrity::
 Unfortunately, at the moment the only way to detect a referential integrity error is to
-inspect the logs for error messages or periodically monitor the associations cache.
+inspect the logs for error messages or periodically monitor the associations cache and join column values.
+Our advice is to keep the default transactional configuration and rely on it.
 
 A key. And a Value.::
 In a key/value store the two elements _key_ and _value_ are different, separate objects.
@@ -2513,8 +2520,9 @@ and encode these two objects separately. You will notice that the attributes of 
 are encoded in the value *as well*, as it is not possible to run e.g. range queries
 on attributes of keys.
 
-No Sequences, no auto-incrementing values::
-Infinispan does not support sequences, yet allows concurrent "compare and set" operations;
+Sequences and auto-incrementing values::
+Infinispan now support sequences, they are created by the dialect where a `@SequenceGenerator` annotation is present.
+On the other hand `@TableGenerator` still use the old Hibernate OGM "compare and set" implementation;
 Hibernate OGM makes use of such CAS operations to emulate the need of sequences or auto-incrementing
 primary keys if your entity mapping uses them, however this solution might not work
 under high load: make sure to use a different strategy, such as assigning IDs explicitly,
@@ -2600,13 +2608,15 @@ By default all caches created use the __OGM default configuration__:
 ----
 <infinispan><cache-container>
   <distributed-cache-configuration name="configuration">
-     <locking striping="false" acquire-timeout="10000" concurrency-level="50" isolation="READ_COMMITTED"/>
-     <transaction mode="NON_DURABLE_XA" />
+     <locking striping="false" acquire-timeout="10000" concurrency-level="50" isolation="REPEATABLE_READ"/>
+     <transaction locking="PESSIMISTIC" mode="%s" /> # <1>
      <expiration max-idle="-1" />
      <indexing index="NONE" />
      <state-transfer timeout="480000" await-initial-transfer="true" />
   </distributed-cache-configuration>
 </cache-container></infinispan>"
+----
+<1> Transaction mode attribute will be filled with the value of the propery `hibernate.ogm.cache.transaction.mode`
 ====
 
 To apply a custom configuration to a newly created cache
@@ -2716,7 +2726,7 @@ We always recommend using transactional caches, at least unless you are confiden
 ==== Remote Query Capability
 
 Hibernate OGM backend is able to run the queries it needs to materialize relations.
-From version __5.4.0.Alpha2__ the dialect is capable to translate JPQL to the **corresponding** Infinispan remote queries
+Since version __5.4.0.Alpha2__, the dialect is capable to translate JPQL to the **corresponding** Infinispan remote queries
 or to execute native queries.
 But there are still some limitations:
 
@@ -2724,14 +2734,35 @@ But there are still some limitations:
 * Selecting from associations is not yet implemented (example: select h.author.name from Hypothesis h where author is a one-to-one association)
 * Query on Byte filed is currently unsupported
 
+[[infinispan-remote-transaction]]
+
+==== Infinispan Remote Transaction
+
+Since version __5.4.0.CR1__, transactions over HotRot client are finally available.
+In order to fallback to the previous behavior will be necessary just to set property 'hibernate.ogm.cache.transaction.mode' property to `NONE` value.
+With mode set to NONE transactions are disabled, then the client will be able to handle both transactional and no transactional caches.
+In contrast, if transactions are enabled, by default they are, __all cache should be defined transactional__.
+In other word, at the moment, a transactional client cannot handle non transactional caches.
+For this reason, the default configuration for client side defined caches uses the same transaction mode of the client.
+
+Transaction are implemented by Infinispan HotRod client mimicking the embedded `Repeatable Read`
+and the `Optimistic Locking` semantics.
+Even if it is mandatory, with current Infinispan version, define them with:
+
+1. Pessimistic locking
+2. REPEATABLE_READ as isolation level
+
+In fact, these ones are now also the current values of the default configuration for client side defined caches.
+
+Is important to stress the fact that even if the caches must be defined with a pessimistic lock,
+the behavior seen by the client it is the same that we would have with an optimistic lock.
+
+For more information about HotRod transaction see the http://infinispan.org/docs/dev/user_guide/user_guide.html#hot_rod_transaction[Infinispan user guide].
+
 ==== Known Limitations & Future improvements
 
 The Infinispan Remote dataprovider has some known limitations, some of which are
 unsolvable without further development of Infinispan itself.
-
-Transaction Support::
-We're eagerly waiting for Infinispan to support transactions over Hot Rod, as it
-already provides this feature in Embedded Mode.
 
 Indexing::
 Infinispan supports Hibernate Search annotations directly embedded within its protobuf
@@ -2759,8 +2790,3 @@ Automatic creating of ``Cache``s::
 When deploying the _Protobuf Schema_, we should also automatically define and start
 the needed Caches if they are not defined.
 This is currently not allowed over the Hot Rod protocol.
-
-Id generation and sequences for local caches::
-When using the the Infinispan Embedded dialect, the generation of id or sequences only works
-for clustered caches. This is because the version of Infinispan included doesn't support
-counters for local caches.
