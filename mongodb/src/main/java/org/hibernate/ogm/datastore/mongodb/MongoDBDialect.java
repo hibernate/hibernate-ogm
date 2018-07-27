@@ -426,6 +426,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		MongoCollection<Document> newCollection = collection;
 		newCollection = withReadPreference( context, newCollection );
 		newCollection = withReadConcern( context, newCollection );
+		newCollection = withWriteConcern( context, newCollection );
 		return newCollection;
 	}
 
@@ -445,8 +446,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return newCollection;
 	}
 
-	private MongoCollection<Document> getCollection(EntityKeyMetadata entityKeyMetadata, OptionsContext optionsContext) {
-		return getCollection( entityKeyMetadata.getTable(), optionsContext );
+	private MongoCollection<Document> withWriteConcern(OptionsContext context, MongoCollection<Document> newCollection) {
+		WriteConcern writeConcern = context.getUnique( WriteConcernOption.class );
+		if ( writeConcern != null ) {
+			return newCollection.withWriteConcern( writeConcern );
+		}
+		return newCollection;
 	}
 
 	private MongoCollection<Document> getAssociationCollection(AssociationKey key, AssociationStorageStrategy storageStrategy, AssociationContext associationContext) {
@@ -511,8 +516,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
-		WriteConcern writeConcern = getWriteConcern( tupleContext );
-		Document objectWithId = insertDocument( entityKeyMetadata, tuple, writeConcern, tupleContext );
+		Document objectWithId = insertDocument( entityKeyMetadata, tuple, tupleContext );
 		String idColumnName = entityKeyMetadata.getColumnNames()[0];
 		tuple.put( idColumnName, objectWithId.get( ID_FIELDNAME ) );
 	}
@@ -520,9 +524,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	/*
 	 * InsertOne the tuple and return an object containing the id in the field ID_FIELDNAME
 	 */
-	private Document insertDocument(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern, TupleContext tupleContext ) {
+	private Document insertDocument(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext ) {
 		Document dbObject = objectForInsert( tuple, ( (MongoDBTupleSnapshot) tuple.getSnapshot() ).getDbObject() );
-		getCollection( entityKeyMetadata.getTable() , tupleContext.getTupleTypeContext().getOptionsContext() ).withWriteConcern( writeConcern ).insertOne( dbObject );
+		getCollection( entityKeyMetadata.getTable(), tupleContext.getTupleTypeContext().getOptionsContext() ).insertOne( dbObject );
 		return dbObject;
 	}
 
@@ -596,8 +600,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Document toDelete = prepareIdObject( key );
-		WriteConcern writeConcern = getWriteConcern( tupleContext );
-		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		MongoCollection<Document> collection = getCollection( key, getTypeContext( tupleContext ) );
 		collection.deleteMany( toDelete );
 	}
 
@@ -617,8 +620,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	//not for embedded
 	private Document findAssociation(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
-		ReadPreference readPreference = getReadPreference( associationContext );
-		ReadConcern readConcern = getReadConcern( associationContext );
 		final Document associationKeyObject = associationKeyToObject( key, storageStrategy );
 		MongoCollection<Document> associationCollection = getAssociationCollection( key, storageStrategy, associationContext );
 
@@ -1635,7 +1636,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy, associationContext );
 					Document query = associationSnapshot.getQueryObject();
 					Document update = new Document( "$set", new Document( ROWS_FIELDNAME, toStore ) );
-					associationCollection.withWriteConcern( getWriteConcern( associationContext ) ).updateOne( query, update, updateOptions );
+					associationCollection.updateOne( query, update, updateOptions );
 				}
 			}
 			else if ( operation instanceof RemoveAssociationOperation ) {

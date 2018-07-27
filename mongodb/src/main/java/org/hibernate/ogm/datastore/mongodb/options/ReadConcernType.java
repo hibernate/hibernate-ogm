@@ -7,10 +7,6 @@
 package org.hibernate.ogm.datastore.mongodb.options;
 
 import com.mongodb.ReadConcern;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 
 /**
  * Read preference options for MongoDB. Represents the defined strategies from {@link ReadConcern}.
@@ -42,8 +38,6 @@ public enum ReadConcernType {
 	 * to propagate to a majority of replica set members before returning results.
 	 */
 	LINEARIZABLE(ReadConcern.LINEARIZABLE);
-
-	private static Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private final ReadConcern readConcern;
 
