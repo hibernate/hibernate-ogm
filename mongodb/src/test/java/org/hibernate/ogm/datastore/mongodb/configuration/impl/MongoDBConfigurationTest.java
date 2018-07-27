@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.mongodb.MongoClientOptions;
+import com.mongodb.ReadConcern;
 import com.mongodb.WriteConcern;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,13 @@ public class MongoDBConfigurationTest {
 		MongoClientOptions clientOptions = createMongoClientOptions();
 
 		assertEquals( "Unexpected write concern", WriteConcern.ACKNOWLEDGED, clientOptions.getWriteConcern() );
+	}
+
+	@Test
+	public void testDefaultReadConcernGetsApplied() {
+		MongoClientOptions clientOptions = createMongoClientOptions();
+
+		assertEquals( "Unexpected read concern", ReadConcern.DEFAULT, clientOptions.getReadConcern() );
 	}
 
 	@Test

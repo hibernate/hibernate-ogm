@@ -4,20 +4,10 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.mongodb.test.options.readpreference;
+package org.hibernate.ogm.datastore.mongodb.test.options.readconcern;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.mockClient;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.mongodb.ReadConcern;
+import org.bson.Document;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -26,21 +16,26 @@ import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder;
-import org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.MockMongoClient;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.query.NativeQuery;
+import org.hibernate.search.FullTextSession;
+import org.hibernate.search.Search;
 import org.junit.After;
 import org.junit.Test;
 
-import com.mongodb.ReadPreference;
-import org.bson.Document;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Tests that the configured read preference is applied when performing operations against MongoDB.
- *
- * @author Gunnar Morling
- */
-public class ReadPreferencePropagationTest {
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.mockClient;
+
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+
+public class ReadConcernPropagationTest {
 
 	private OgmSessionFactory sessions;
 
@@ -50,9 +45,9 @@ public class ReadPreferencePropagationTest {
 	}
 
 	@Test
-	public void shouldApplyConfiguredReadPreferenceForGettingTuple() {
-		// given an empty database
-		MockMongoClient mockClient = mockClient().build();
+	public void shouldApplyConfiguredReadConcernForGettingTuple() {
+		// given a database with one golf player
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
 		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
 
 		final Session session = sessions.openSession();
@@ -64,17 +59,17 @@ public class ReadPreferencePropagationTest {
 		transaction.commit();
 		session.close();
 
-		// then expect a findOne() call with the configured read preference
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) );
+		// then expect a call with the configured read concern
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection( "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
 	}
 
 	@Test
-	public void shouldApplyConfiguredReadPreferenceForGettingEmbeddedAssociation() {
+	public void shouldApplyConfiguredReadConcernForGettingEmbeddedAssociation() {
 		// given a persisted player with one associated golf course
 		Document player = getPlayer();
 		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
 
-		MockMongoClient mockClient = mockClient()
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient()
 				.insert( "GolfPlayer", player )
 				.insert( "GolfCourse", getGolfCourse() )
 				.build();
@@ -83,7 +78,6 @@ public class ReadPreferencePropagationTest {
 
 		Session session = sessions.openSession();
 		Transaction transaction = session.beginTransaction();
-
 		// when getting the golf player
 		GolfPlayer ben = (GolfPlayer) session.get( GolfPlayer.class, 1L );
 		List<GolfCourse> playedCourses = ben.getPlayedCourses();
@@ -92,14 +86,58 @@ public class ReadPreferencePropagationTest {
 		transaction.commit();
 		session.close();
 
-		// then expect a findOne() call for the entity and the embedded association with the configured read preference
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) );
+		// then expect a call for the entity and the embedded association with the configured read concern
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
 	}
 
 	@Test
-	public void shouldApplyConfiguredReadPreferenceForGettingAssociationStoredAsAssociation() {
+	public void shouldApplyReadConcernWhenExecutingBackendQuery() {
+		//given
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+		Session session = sessions.openSession();
+
+		//when
+		String nativeQuery = "db.GolfPlayer"
+				+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'name': 'Ben' } }, 'new': true })";
+		NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( GolfPlayer.class );
+		@SuppressWarnings("unchecked")
+		List<GolfPlayer> result = query.list();
+
+		// then
+		assertThat( result ).hasSize( 1 );
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyReadConcernWhenMassIndexing() throws Exception {
+		//given
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		//when
+		purgeAll( GolfPlayer.class );
+		startAndWaitMassIndexing( GolfPlayer.class );
+
+		//then
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
+	}
+
+	private void startAndWaitMassIndexing(Class<?> entityType) throws InterruptedException, IOException {
+		FullTextSession session = Search.getFullTextSession( sessions.openSession() );
+		session.createIndexer( entityType ).purgeAllOnStart( true ).startAndWait();
+	}
+
+	private void purgeAll(Class<?> entityType) throws IOException {
+		FullTextSession session = Search.getFullTextSession( sessions.openSession() );
+		session.purgeAll( entityType );
+		session.flushToIndexes();
+	}
+
+	@Test
+	public void shouldApplyConfiguredReadConcernForGettingAssociationStoredAsAssociation() {
 		// given a persisted player with one associated golf course
-		MockMongoClient mockClient = mockClient()
+		MockMongoClientBuilder.MockMongoClient mockClient = mockClient()
 				.insert( "GolfPlayer", getPlayer() )
 				.insert( "GolfCourse", getGolfCourse() )
 				.insert( "Associations", getPlayedCoursesAssociationAsDocument() )
@@ -117,34 +155,10 @@ public class ReadPreferencePropagationTest {
 
 		transaction.commit();
 		session.close();
-		// then expect a findOne() call for the entity and one for the association  with the configured read preference
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ) ).find( any( Document.class ) ) ;
-		verify( mockClient.getCollection( "Associations" ).withReadPreference( ReadPreference.primaryPreferred() ) ).find( any( Document.class ) ) ;
-		verify( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) ).first() ;
-		verifyNoMoreInteractions( mockClient.getCollection( "GolfPlayer" ).withReadPreference( ReadPreference.secondaryPreferred() ).find( any( Document.class ) ).projection( any( Document.class ) ) );
-	}
-
-	@Test
-	public void shouldApplyReadPreferenceWhenExecutingBackendQuery() {
-		//given
-		MockMongoClientBuilder.MockMongoClient mockClient = mockClient().insert( "GolfPlayer", getPlayer() ).build();
-		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
-		Session session = sessions.openSession();
-		String nativeQuery = "db.GolfPlayer"
-				+ ".findAndModify({ 'query': {'_id': 1}, 'update': { '$set': { 'name': 'Ben' } }, 'new': true })";
-
-		//when
-		NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( GolfPlayer.class );
-		@SuppressWarnings("unchecked")
-		List<GolfPlayer> result = query.list();
-
-		// then
-		assertThat( result ).hasSize( 1 );
-		verify( mockClient.getClient().getDatabase( "db" ).getCollection(  "GolfPlayer" ) ).withReadPreference( eq( ReadPreference.secondaryPreferred() ) );
-	}
-
-	private Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { GolfPlayer.class, GolfCourse.class };
+		// then expect a call for the entity and one for the association  with the configured read concern
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection( "GolfPlayer" ) ).withReadConcern( eq( ReadConcern.MAJORITY ) );
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection( "Associations" ) ).withReadConcern( eq( ReadConcern.LOCAL ) );
+		verify( mockClient.getClient().getDatabase( "db" ).getCollection( "GolfCourse" ) ).withReadConcern( eq( ReadConcern.LINEARIZABLE ) );
 	}
 
 	private void setupSessionFactory(MongoDBDatastoreProvider provider) {
@@ -162,11 +176,8 @@ public class ReadPreferencePropagationTest {
 		sessions = TestHelper.getDefaultTestSessionFactory( settings, getAnnotatedClasses() );
 	}
 
-	private Document getGolfCourse() {
-		Document bepplePeach = new Document();
-		bepplePeach.put( "_id", 1L );
-		bepplePeach.put( "name", "Bepple Peach" );
-		return bepplePeach;
+	public Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] { GolfPlayer.class, GolfCourse.class };
 	}
 
 	private Document getPlayer() {
@@ -175,6 +186,13 @@ public class ReadPreferencePropagationTest {
 		golfPlayer.put( "name", "Ben" );
 		golfPlayer.put( "handicap", 0.1 );
 		return golfPlayer;
+	}
+
+	private Document getGolfCourse() {
+		Document bepplePeach = new Document();
+		bepplePeach.put( "_id", 1L );
+		bepplePeach.put( "name", "Bepple Peach" );
+		return bepplePeach;
 	}
 
 	private List<Document> getPlayedCoursesAssociationEmbedded() {
@@ -203,4 +221,5 @@ public class ReadPreferencePropagationTest {
 		association.put( "rows", rows );
 		return association;
 	}
+
 }

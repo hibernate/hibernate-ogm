@@ -25,10 +25,12 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.mongodb.ReadConcern;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers;
@@ -47,6 +49,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
@@ -115,6 +118,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
@@ -303,9 +307,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			return embeddingEntityDocument;
 		}
 		else {
-			ReadPreference readPreference = getReadPreference( associationContext );
-
-			MongoCollection<Document> collection = readPreference != null ? getCollection( key.getEntityKey() ).withReadPreference( readPreference ) : getCollection( key.getEntityKey() );
+			MongoCollection<Document> collection = getCollection( key.getEntityKey(), associationContext.getAssociationTypeContext().getOptionsContext() );
 			Document searchObject = prepareIdObject( key.getEntityKey() );
 			Document projection = getProjection( key, true );
 
@@ -314,9 +316,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private Document getObject(EntityKey key, OperationContext operationContext) {
-		ReadPreference readPreference = getReadPreference( operationContext );
-
-		MongoCollection<Document> collection = readPreference != null ? getCollection( key ).withReadPreference( readPreference ) : getCollection( key ) ;
+		MongoCollection<Document> collection = getCollection( key, operationContext.getTupleTypeContext().getOptionsContext() );
 		Document searchObject = prepareIdObject( key );
 		Document projection = getProjection( operationContext );
 
@@ -326,9 +326,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
 			tupleContext) {
-		ReadPreference readPreference = getReadPreference( tupleContext );
 
-		MongoCollection<Document> collection = readPreference != null ? getCollection( entityKeyMetadata ).withReadPreference( readPreference ) : getCollection( entityKeyMetadata );
+		MongoCollection<Document> collection = getCollection( entityKeyMetadata.getTable(), tupleContext.getTupleTypeContext().getOptionsContext() );
 
 		Document projection = getProjection( tupleContext );
 
@@ -409,24 +408,60 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private MongoCollection<Document> getCollection(String table) {
-		return currentDB.getCollection( table );
+	private MongoCollection<Document> getCollection(String table, OptionsContext context) {
+		MongoCollection<Document> collection = currentDB.getCollection( table );
+		if ( context != null ) {
+			return withOptions( collection, context );
+		}
+		return collection;
 	}
 
-	private MongoCollection<Document> getCollection( EntityKey key ) {
-		return getCollection( key.getTable() );
+	private MongoCollection<Document> getCollection( EntityKey key) {
+		return getCollection( key.getTable(), null );
 	}
 
-	private MongoCollection<Document> getCollection(EntityKeyMetadata entityKeyMetadata) {
-		return getCollection( entityKeyMetadata.getTable() );
+	private MongoCollection<Document> getCollection( EntityKey key, OptionsContext context ) {
+		return getCollection( key.getTable(), context );
 	}
 
-	private MongoCollection<Document> getAssociationCollection(AssociationKey key, AssociationStorageStrategy storageStrategy) {
+	private MongoCollection<Document> withOptions(MongoCollection<Document> collection, OptionsContext context) {
+		MongoCollection<Document> newCollection = collection;
+		newCollection = withReadPreference( context, newCollection );
+		newCollection = withReadConcern( context, newCollection );
+		newCollection = withWriteConcern( context, newCollection );
+		return newCollection;
+	}
+
+	private MongoCollection<Document> withReadConcern(OptionsContext context, MongoCollection<Document> newCollection) {
+		ReadConcern readConcern = context.getUnique( ReadConcernOption.class );
+		if ( readConcern != null ) {
+			newCollection = newCollection.withReadConcern( readConcern );
+		}
+		return newCollection;
+	}
+
+	private MongoCollection<Document> withReadPreference(OptionsContext context, MongoCollection<Document> newCollection) {
+		ReadPreference readPreference = context.getUnique( ReadPreferenceOption.class );
+		if ( readPreference != null ) {
+			return newCollection.withReadPreference( readPreference );
+		}
+		return newCollection;
+	}
+
+	private MongoCollection<Document> withWriteConcern(OptionsContext context, MongoCollection<Document> newCollection) {
+		WriteConcern writeConcern = context.getUnique( WriteConcernOption.class );
+		if ( writeConcern != null ) {
+			return newCollection.withWriteConcern( writeConcern );
+		}
+		return newCollection;
+	}
+
+	private MongoCollection<Document> getAssociationCollection(AssociationKey key, AssociationStorageStrategy storageStrategy, AssociationContext associationContext) {
 		if ( storageStrategy == AssociationStorageStrategy.GLOBAL_COLLECTION ) {
-			return getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
+			return getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE, associationContext.getAssociationTypeContext().getOptionsContext() );
 		}
 		else {
-			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
+			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable(), associationContext.getAssociationTypeContext().getOptionsContext() );
 		}
 	}
 
@@ -483,8 +518,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
-		WriteConcern writeConcern = getWriteConcern( tupleContext );
-		Document objectWithId = insertDocument( entityKeyMetadata, tuple, writeConcern );
+		Document objectWithId = insertDocument( entityKeyMetadata, tuple, tupleContext );
 		String idColumnName = entityKeyMetadata.getColumnNames()[0];
 		tuple.put( idColumnName, objectWithId.get( ID_FIELDNAME ) );
 	}
@@ -492,9 +526,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	/*
 	 * InsertOne the tuple and return an object containing the id in the field ID_FIELDNAME
 	 */
-	private Document insertDocument(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern) {
+	private Document insertDocument(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext ) {
 		Document dbObject = objectForInsert( tuple, ( (MongoDBTupleSnapshot) tuple.getSnapshot() ).getDbObject() );
-		getCollection( entityKeyMetadata ).withWriteConcern( writeConcern ).insertOne( dbObject );
+		getCollection( entityKeyMetadata.getTable(), tupleContext.getTupleTypeContext().getOptionsContext() ).insertOne( dbObject );
 		return dbObject;
 	}
 
@@ -568,8 +602,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Document toDelete = prepareIdObject( key );
-		WriteConcern writeConcern = getWriteConcern( tupleContext );
-		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		MongoCollection<Document> collection = getCollection( key, getTypeContext( tupleContext ) );
 		collection.deleteMany( toDelete );
 	}
 
@@ -589,9 +622,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	//not for embedded
 	private Document findAssociation(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
-		ReadPreference readPreference = getReadPreference( associationContext );
 		final Document associationKeyObject = associationKeyToObject( key, storageStrategy );
-		MongoCollection<Document> associationCollection = ( readPreference != null  ? getAssociationCollection( key, storageStrategy ).withReadPreference( readPreference ) : getAssociationCollection( key, storageStrategy ) );
+		MongoCollection<Document> associationCollection = getAssociationCollection( key, storageStrategy, associationContext );
 
 		FindIterable<Document> fi = associationCollection.find( associationKeyObject );
 		return fi != null ? ( fi.projection( getProjection( key, false ) ).first() ) : null ;
@@ -757,7 +789,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		String valueColumnName = request.getKey().getMetadata().getValueColumnName();
-		MongoCollection<Document> sequenceCollection = getCollection( request.getKey().getTable() );
+		MongoCollection<Document> sequenceCollection = getCollection( request.getKey().getTable(), null );
 
 		Document sequenceId = prepareIdObject( request.getKey() );
 
@@ -848,8 +880,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
-		MongoDatabase db = provider.getDatabase();
-		MongoCollection<Document> collection = db.getCollection( entityKeyMetadata.getTable() );
+		MongoCollection<Document> collection = getCollection( entityKeyMetadata.getTable(), tupleTypeContext.getOptionsContext() );
 		consumer.consume( new MongoDBTuplesSupplier( collection, entityKeyMetadata ) );
 	}
 
@@ -867,8 +898,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
-		MongoCollection<Document> collection = provider.getDatabase().getCollection( collectionName );
-
+		MongoCollection<Document> collection = getCollection( collectionName, getTypeContext( tupleContext ) );
 		if ( !queryParameters.getPositionalParameters().isEmpty() ) { // TODO Implement binding positional parameters.
 			throw new UnsupportedOperationException( "Positional parameters are not yet supported for MongoDB native queries." );
 		}
@@ -989,6 +1019,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		AggregateIterable<Document> output = collection.aggregate( pipeline );
 		return new MongoDBAggregationOutput( output, entityKeyMetadata );
+	}
+
+	private static final OptionsContext getTypeContext(TupleContext tupleContext) {
+		try {
+			return tupleContext.getTupleTypeContext().getOptionsContext();
+		}
+		catch (HibernateException exception) {
+			return null;
+		}
 	}
 
 	private static void applyMaxResults(QueryParameters queryParameters, List<Document> pipeline) {
@@ -1529,7 +1568,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private void executeBatchRemove(Map<MongoCollection<Document>, BatchInsertionTask> inserts, RemoveTupleOperation tupleOperation) {
 		EntityKey entityKey = tupleOperation.getEntityKey();
-		MongoCollection<Document> collection = getCollection( entityKey );
+		MongoCollection<Document> collection = getCollection( entityKey, tupleOperation.getTupleContext().getTupleTypeContext().getOptionsContext() );
 		BatchInsertionTask batchedInserts = inserts.get( collection );
 
 		if ( batchedInserts != null && batchedInserts.containsKey( entityKey ) ) {
@@ -1599,10 +1638,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy );
+					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy, associationContext );
 					Document query = associationSnapshot.getQueryObject();
 					Document update = new Document( "$set", new Document( ROWS_FIELDNAME, toStore ) );
-					associationCollection.withWriteConcern( getWriteConcern( associationContext ) ).updateOne( query, update, updateOptions );
+					associationCollection.updateOne( query, update, updateOptions );
 				}
 			}
 			else if ( operation instanceof RemoveAssociationOperation ) {
@@ -1627,7 +1666,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					addUnsetToQuery( updateStatement, collectionRole );
 				}
 				else {
-					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy ).withWriteConcern( getWriteConcern( associationContext ) );
+					MongoCollection<Document> associationCollection = getAssociationCollection( associationKey, storageStrategy, associationContext ).withWriteConcern( getWriteConcern( associationContext ) );
 					Document query = associationKeyToObject( associationKey, storageStrategy );
 					DeleteResult result = associationCollection.deleteMany( query );
 					long nAffected = -1;
@@ -1772,6 +1811,22 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static ReadPreference getReadPreference(AssociationContext associationContext) {
 		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private static ReadPreference getReadPreference(TupleContext tupleContext) {
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private static ReadConcern getReadConcern(OperationContext operationContext) {
+		return operationContext.getTupleTypeContext().getOptionsContext().getUnique( ReadConcernOption.class );
+	}
+
+	private static ReadConcern getReadConcern(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadConcernOption.class );
+	}
+
+	private static ReadConcern getReadConcern(TupleContext tupleContext) {
+		return tupleContext.getTupleTypeContext().getOptionsContext().getUnique( ReadConcernOption.class );
 	}
 
 	/**

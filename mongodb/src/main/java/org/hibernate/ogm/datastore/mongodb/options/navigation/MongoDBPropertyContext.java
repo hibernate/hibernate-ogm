@@ -6,9 +6,11 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation;
 
+import com.mongodb.ReadConcern;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
@@ -42,6 +44,24 @@ public interface MongoDBPropertyContext extends DocumentStorePropertyContext<Mon
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	MongoDBPropertyContext writeConcern(WriteConcern writeConcern);
+
+	/**
+	 * Defines the type of <a href="https://docs.mongodb.com/manual/reference/read-concern/">read concern</a> to be
+	 * applied when performing read operations against the datastore.
+	 *
+	 * @param readConcern the read concern type
+	 * @return this context, allowing for further fluent API invocations
+	 */
+	MongoDBPropertyContext readConcern(ReadConcern readConcern);
+
+	/**
+	 * Defines the type of <a href="https://docs.mongodb.com/manual/reference/read-concern/">read concern</a> to be
+	 * applied when performing read operations against the datastore.
+	 *
+	 * @param readConcern the read concern type
+	 * @return this context, allowing for further fluent API invocations
+	 */
+	MongoDBPropertyContext readConcern(ReadConcernType readConcern);
 
 	/**
 	 * Defines the type of <a href="http://docs.mongodb.org/manual/core/read-preference/">read preference</a> to be
