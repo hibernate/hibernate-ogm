@@ -2164,6 +2164,17 @@ supports [acronym]`XA` recovery and provides many more configuration options;
 see the http://infinispan.org/documentation/[Infinispan User Guide]
 for more advanced configuration options.
 
+==== Infinispan Embedded Stored Procedures
+
+A stored procedure for Infinispan embedded dialect is just a Java `Runnable` or `Callable` class.
+The class must be defined on application classpath, then the JPA stored procedure API can be used to execute it.
+
+To invoke it there are two ways:
+* Using directly the name of class as a procedure name
+* Map an arbitrary name to a special cache named `___stored_procedures`. Each mapping needs an entry with the procedure name as key and full class name as a value.
+
+Parameters are filled automatically by Hibernate OGM. At the moment only named parameters are supported.
+
 [[ogm-infinispan-indexstorage]]
 
 ==== Storing a Lucene index in Infinispan
