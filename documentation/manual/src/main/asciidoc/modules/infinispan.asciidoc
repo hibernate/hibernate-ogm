@@ -2759,6 +2759,27 @@ the behavior seen by the client it is the same that we would have with an optimi
 
 For more information about HotRod transaction see the http://infinispan.org/docs/dev/user_guide/user_guide.html#hot_rod_transaction[Infinispan user guide].
 
+==== Infinispan Remote Stored Procedures
+
+Stored procedures are now supported by the remote dialect.
+There are two ways to execute code in the remote grid: __server task__ and __remote script__.
+
+Hibernate OGM is capable to execute both, using the standard JPA storing procedure syntax.
+In order to be executed, the scripts or tasks **must first be defined** server side by the user.
+Such as a stored procedure, of a SQL data store, that should first be defined on database before it could be executed.
+
+To run a __remote script__, the script entry must first be in the Infinispan remote cache.
+The name of the procedure is the key of the corresponding entry script.
+The parameter names are instead defined in the first line of the script itself.
+For more information see http://infinispan.org/docs/dev/user_guide/user_guide.html#scripting[Infinispan Guide -Remote Script]
+
+Whereas to run a __server task__ you need first to deploy the java task as jar on Infinispan server.
+In this case the name of the procedure is defined by `getName` method of the task service class.
+The input parameters are extracted instead from the `TaskContext` in the same task service class.
+For more information see http://infinispan.org/docs/dev/user_guide/user_guide.html#server_tasks[Infinispan Guide - Server Task]
+
+In both cases only named parameters are supported, while positional parameters are not supported yet.
+
 ==== Known Limitations & Future improvements
 
 The Infinispan Remote dataprovider has some known limitations, some of which are
