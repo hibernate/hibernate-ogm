@@ -212,11 +212,6 @@ The following two strategies exist (values of the `org.hibernate.ogm.datastore.k
 
 +
 Defaults to `CACHE_PER_TABLE`. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
-`hibernate.ogm.datastore.create_database`::
-If set to `true` Hibernate OGM will create any missing Cache definitions on the Infinispan Server.
-This requires the Infinispan Server configuration to have a default configuration defined, as this will be copied to the newly defined caches.
-If set to `false` an exception is thrown when a Cache is expected but not explicitly configured on the server.
-Defaults to `false`.
 
 [NOTE]
 ====
@@ -2404,6 +2399,12 @@ properties configured using an external reosurce file.
 ====
 
 In the next section we'll see a couple more advanced properties which might be of interest.
+
+hibernate.ogm.datastore.create_database::
+If set to `true` Hibernate OGM will create any missing Cache definitions on the Infinispan Server.
+This requires the Infinispan Server configuration to have a default configuration defined, as this will be copied to the newly defined caches.
+If set to `false` an exception is thrown when a Cache is expected but not explicitly configured on the server.
+Defaults to `false`.
 
 hibernate.ogm.infinispan_remote.schema_capture_service::
 If you set this to an implementation of `org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture` you
