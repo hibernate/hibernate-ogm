@@ -54,13 +54,21 @@ public class OptimisticLockingTest extends OgmTestCase {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
-	protected Class<? extends Throwable> lockExceptionClass = OptimisticLockException.class;
+	private final Class<? extends Throwable> lockExceptionClass;
 
 	private enum LatchAction { DECREASE_AND_WAIT, IGNORE }
 
 	private ThreadFactory threadFactory;
 
 	private final CountDownLatch deleteLatch = new CountDownLatch( 2 );
+
+	public OptimisticLockingTest() {
+		this( OptimisticLockException.class );
+	}
+
+	protected OptimisticLockingTest(Class<? extends Throwable> lockExceptionClass) {
+		this.lockExceptionClass = lockExceptionClass;
+	}
 
 	@Before
 	public void setupThreadFactory() {

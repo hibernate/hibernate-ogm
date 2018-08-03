@@ -10,7 +10,6 @@ import javax.persistence.PersistenceException;
 
 import org.hibernate.ogm.backendtck.optimisticlocking.OptimisticLockingTest;
 import org.hibernate.ogm.datastore.infinispanremote.utils.InfinispanRemoteServerRunner;
-
 import org.junit.runner.RunWith;
 
 /**
@@ -27,6 +26,6 @@ import org.junit.runner.RunWith;
 public class InfinispanRemoteLockingTest extends OptimisticLockingTest {
 
 	public InfinispanRemoteLockingTest() {
-		lockExceptionClass = PersistenceException.class;
+		super( PersistenceException.class );
 	}
 }
