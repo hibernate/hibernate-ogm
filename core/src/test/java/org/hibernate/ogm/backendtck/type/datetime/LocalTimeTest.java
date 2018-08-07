@@ -7,13 +7,10 @@
 package org.hibernate.ogm.backendtck.type.datetime;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J_EMBEDDED;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.time.LocalTime;
 
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestForIssue;
 
 import org.junit.After;
@@ -27,7 +24,6 @@ import org.junit.Test;
  * @author Fabio Massimo Ercoli
  */
 @TestForIssue(jiraKey = "OGM-1515")
-@SkipByGridDialect(value = { NEO4J_EMBEDDED, NEO4J_REMOTE }, comment = "Dialects need to handle java.sql.Time as property type")
 public class LocalTimeTest extends OgmTestCase {
 
 	private LocalTimeEntity entity;
