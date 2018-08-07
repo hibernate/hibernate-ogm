@@ -33,6 +33,9 @@ import org.hibernate.ogm.type.impl.EntityType;
 import org.hibernate.ogm.type.impl.EnumType;
 import org.hibernate.ogm.type.impl.FloatType;
 import org.hibernate.ogm.type.impl.IntegerType;
+import org.hibernate.ogm.type.impl.LocalDateTimeType;
+import org.hibernate.ogm.type.impl.LocalDateType;
+import org.hibernate.ogm.type.impl.LocalTimeType;
 import org.hibernate.ogm.type.impl.LongType;
 import org.hibernate.ogm.type.impl.NumericBooleanType;
 import org.hibernate.ogm.type.impl.PrimitiveByteArrayType;
@@ -134,6 +137,15 @@ public class ProtofieldAccessorSet {
 		}
 		else if ( gridType instanceof FloatType ) {
 			add( new FloatProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
+		}
+		else if ( gridType instanceof LocalDateType ) {
+			add( new LocalDateProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
+		}
+		else if ( gridType instanceof LocalDateTimeType ) {
+			add( new LocalDateTimeProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
+		}
+		else if ( gridType instanceof LocalTimeType ) {
+			add( new TimeProtofieldAccessor( uniqueTagAssigningCounter, name, nullable, ormMappedName ) );
 		}
 		else if ( gridType instanceof EnumType ) {
 			EnumType etype = (EnumType) gridType;
