@@ -1,5 +1,5 @@
 [[ogm-infinispan-storage-principles]]
-==== Storage principles
+=== Storage principles
 
 To describe things simply, each entity is stored under a single key.
 The value itself is a map containing the columns / values pair.
@@ -8,7 +8,7 @@ Each association from one entity instance to (a set of) another is stored under 
 The value contains the navigational information to the (set of) entity.
 
 [[ogm-infinispan-built-in-types]]
-===== Properties and built-in types
+==== Properties and built-in types
 
 Each entity is represented by a map.
 Each property or more precisely column is represented by an entry in this map,
@@ -44,7 +44,7 @@ from Infinispan.
 This can have consequences when it comes to queries on null value.
 ====
 
-===== Identifiers
+==== Identifiers
 
 Entity identifiers are used to build the key in which the entity is stored in the cache.
 
@@ -147,7 +147,7 @@ public class News {
 
 [[infinispan-embedded-id-generation-strategies]]
 
-====== Identifier generation strategies for Infinispan Embedded
+===== Identifier generation strategies for Infinispan Embedded
 
 The Infinispan Embedded dialect will use
 http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Infinispan clustered counters]
@@ -261,7 +261,7 @@ http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[
 
 [[infinispan-remote-id-generation-strategies]]
 
-====== Identifier generation strategies for Infinispan Remote via Hot Rod
+===== Identifier generation strategies for Infinispan Remote via Hot Rod
 
 Since Infinispan has not native sequence nor identity column support,
 these are simulated using the table strategy, however their default values vary.
@@ -392,7 +392,7 @@ public class Song {
 |===
 ====
 
-===== Entities
+==== Entities
 
 Entities are stored in the cache named after the entity name when using the `CACHE_PER_TABLE` strategy.
 In the `CACHE_PER_KIND` strategy, entities are stored in a single cache named `ENTITIES`.
@@ -478,7 +478,7 @@ public class News {
 |===
 ====
 
-====== Embedded objects and collections
+===== Embedded objects and collections
 
 .Embedded object
 ====
@@ -766,7 +766,7 @@ public class JiraIssue {
 |===
 ====
 
-===== Associations
+==== Associations
 
 Associations between entities are mapped like (collection of) embeddables 
 except that the target entity is represented by its identifier(s).

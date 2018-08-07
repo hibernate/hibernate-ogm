@@ -509,8 +509,6 @@ Start with the default configuration and see if that fits you.
 You can fine tune these setting when you are closer to going in production.
 ====
 
-include::submodules/infinispan-storage-principles.asciidoc[]
-
 [[ogm-infinispan-transactions]]
 
 ==== Transactions
@@ -1212,3 +1210,5 @@ Automatic creating of ``Cache``s::
 When deploying the _Protobuf Schema_, we should also automatically define and start
 the needed Caches if they are not defined.
 This is currently not allowed over the Hot Rod protocol.
+
+include::submodules/infinispan-storage-principles.asciidoc[]
