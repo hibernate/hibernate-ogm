@@ -11,6 +11,9 @@ import static org.hibernate.ogm.datastore.document.impl.DotPatternMapHelpers.get
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 import java.lang.invoke.MethodHandles;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -120,6 +123,9 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
+import org.hibernate.ogm.type.impl.LocalDateAsStringType;
+import org.hibernate.ogm.type.impl.LocalDateTimeAsStringType;
+import org.hibernate.ogm.type.impl.LocalTimeAsStringType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.impl.TimestampAsDateType;
 import org.hibernate.ogm.type.spi.GridType;
@@ -873,6 +879,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type.getReturnedClass() == GeoCollection.class ) {
 			return GeoCollectionGridType.INSTANCE;
+		}
+		else if ( type.getReturnedClass().equals( LocalDate.class ) ) {
+			return LocalDateAsStringType.INSTANCE;
+		}
+		else if ( type.getReturnedClass().equals( LocalDateTime.class ) ) {
+			return LocalDateTimeAsStringType.INSTANCE;
+		}
+		else if ( type.getReturnedClass().equals( LocalTime.class ) ) {
+			return LocalTimeAsStringType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}
