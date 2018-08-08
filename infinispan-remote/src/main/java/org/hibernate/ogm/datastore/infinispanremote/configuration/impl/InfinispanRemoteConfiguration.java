@@ -189,6 +189,7 @@ public class InfinispanRemoteConfiguration {
 
 		this.configurationResource = propertyReader
 				.property( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
+				.withDefaultStringValue( InfinispanRemoteProperties.DEFAULT_CONFIGURATION_RESOURCE_NAME )
 				.getValue();
 
 		this.clientProperties = getHotRodConfiguration( configurationMap, propertyReader, this.configurationResource );

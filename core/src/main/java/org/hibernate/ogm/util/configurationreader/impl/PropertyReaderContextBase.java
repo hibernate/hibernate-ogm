@@ -35,6 +35,7 @@ abstract class PropertyReaderContextBase<T> implements PropertyReaderContext<T> 
 	private final ClassLoaderService classLoaderService;
 
 	private T defaultValue;
+	private String defaultStringValue;
 	private boolean isRequired;
 	private final List<PropertyValidator<T>> validators;
 
@@ -61,6 +62,12 @@ abstract class PropertyReaderContextBase<T> implements PropertyReaderContext<T> 
 	@Override
 	public PropertyReaderContext<T> withDefault(T defaultValue) {
 		this.defaultValue = defaultValue;
+		return this;
+	}
+
+	@Override
+	public PropertyReaderContext<T> withDefaultStringValue(String defaultStringValue) {
+		this.defaultStringValue = defaultStringValue;
 		return this;
 	}
 
@@ -118,5 +125,9 @@ abstract class PropertyReaderContextBase<T> implements PropertyReaderContext<T> 
 
 	protected T getDefaultValue() {
 		return defaultValue;
+	}
+
+	protected String getDefaultStringValue() {
+		return defaultStringValue;
 	}
 }
