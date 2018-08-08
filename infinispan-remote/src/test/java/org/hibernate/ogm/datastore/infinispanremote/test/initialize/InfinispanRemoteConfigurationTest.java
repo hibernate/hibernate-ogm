@@ -57,7 +57,7 @@ public class InfinispanRemoteConfigurationTest {
 	private static final String OGM_DEFAULT_EXECUTOR_FACTORY_QUEUE_SIZE_PROPERTY = HOT_ROD_CLIENT_PREFIX + "default_executor_factory.queue_size";
 
 	private static final String EVICTION_MILLIS_PROPERTY = "timeBetweenEvictionRunsMillis";
-	private static final String RESOURCE_NAME = "hotrod-client-testingconfiguration.properties";
+	private static final String RESOURCE_NAME = "hotrodclient.properties";
 
 	@Test
 	public void shouldThrowExceptionWhenForceReturnValuesIsFalse() {

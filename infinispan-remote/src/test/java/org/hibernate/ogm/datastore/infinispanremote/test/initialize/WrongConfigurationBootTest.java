@@ -36,7 +36,7 @@ public class WrongConfigurationBootTest {
 
 	@Test
 	public void testHotrodConnectionEstablished() {
-		tryBoot( "hotrod-client-testingconfiguration.properties" );
+		tryBoot( "hotrodclient.properties" );
 	}
 
 	@Test

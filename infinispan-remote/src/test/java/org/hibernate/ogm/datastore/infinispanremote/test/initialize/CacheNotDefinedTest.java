@@ -61,7 +61,7 @@ public class CacheNotDefinedTest {
 	private void createFactory(Class<?>... entities) {
 		Map<String, Object> settings = new HashMap<>();
 		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
-		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
+		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrodclient.properties" );
 		// This is the important option
 		settings.put( OgmProperties.CREATE_DATABASE, false );
 
