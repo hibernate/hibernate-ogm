@@ -112,7 +112,7 @@ public class ProtoBufSchemaTest {
 	private Map<String, Object> settings() {
 		Map<String, Object> settings = new HashMap<>();
 		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
-		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
+		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrodclient.properties" );
 		settings.put( OgmProperties.CREATE_DATABASE, true );
 		return settings;
 	}
