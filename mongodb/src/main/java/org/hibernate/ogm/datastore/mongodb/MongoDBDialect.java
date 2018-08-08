@@ -75,7 +75,7 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridTyp
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
-import org.hibernate.ogm.datastore.mongodb.utils.GridFsUtil;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.BinaryStorageManager;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.GroupedChangesToEntityOperation;
 import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
@@ -331,7 +331,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		FindIterable<Document> fi = collection.find( searchObject );
 		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
-		GridFsUtil.loadContentFromGridFs( currentDB, targetDocument, key, provider.getOptionService() );
+		BinaryStorageManager.loadContentFromGridFs( currentDB, targetDocument, key, provider.getOptionService() );
 		return targetDocument;
 	}
 
@@ -618,7 +618,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
 		Document deleted = collection.findOneAndDelete( toDelete );
 		if ( deleted != null ) {
-			GridFsUtil.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, key );
+			BinaryStorageManager.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, key );
 		}
 	}
 
@@ -634,7 +634,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		MongoCollection<Document> collection = getCollection( entityKey );
 		Document deleted = collection.findOneAndDelete( toDelete );
 		if ( deleted != null ) {
-			GridFsUtil.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, entityKey );
+			BinaryStorageManager.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, entityKey );
 		}
 		return deleted != null;
 	}
@@ -1626,8 +1626,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
-					//process gridfs
-					GridFsUtil.storeContentToGridFs( currentDB,insertStatement,entityKey,optionService,tuple, tuple.getSnapshotType() );
+					BinaryStorageManager.storeContentToBinaryStorage( currentDB, insertStatement, entityKey, optionService, tuple );
 
 					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
 							.put( entityKey, insertStatement );
@@ -1635,8 +1634,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
-					//process gridfs
-					GridFsUtil.storeContentToGridFs( currentDB,updateStatement,entityKey,optionService, tuple, tuple.getSnapshotType() );
+					BinaryStorageManager.storeContentToBinaryStorage( currentDB, updateStatement, entityKey, optionService, tuple );
 				}
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
@@ -1750,6 +1748,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private static void flushInserts(Map<MongoCollection<Document>, BatchInsertionTask> inserts) {
+		//@todo move GridFS features here
 		for ( Map.Entry<MongoCollection<Document>, BatchInsertionTask> entry : inserts.entrySet() ) {
 			MongoCollection<Document> collection = entry.getKey();
 			if ( entry.getValue().isEmpty() ) {
