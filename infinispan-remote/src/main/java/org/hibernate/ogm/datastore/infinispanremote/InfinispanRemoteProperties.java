@@ -49,6 +49,11 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.infinispan_remote.configuration_resource_name";
 
 	/**
+	 * Default value for {@link #CONFIGURATION_RESOURCE_NAME} property.
+	 */
+	public static final String DEFAULT_CONFIGURATION_RESOURCE_NAME = "hotrodclient.properties";
+
+	/**
 	 * Prefix for the Hot Rod (Infinispan remote) client properties.
 	 */
 	public static final String HOT_ROD_CLIENT_PREFIX = "hibernate.ogm.infinispan_remote.client.";
