@@ -6,14 +6,11 @@
  */
 package org.hibernate.ogm.datastore.mongodb.binarystorage;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.BinaryStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.BinaryStorageOption;
 import org.hibernate.ogm.datastore.mongodb.utils.TableEntityTypeMappingInfo;
@@ -29,7 +26,7 @@ import org.bson.Document;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class BinaryStorageManager {
-	private static final BinaryStorageDelegator NULL_DELEGATOR = new NullDelegator();
+	private static final BinaryStorageDelegator NOOP_DELEGATOR = new NoopDelegator();
 
 	private final Map<BinaryStorageType,BinaryStorageDelegator> BINARY_STORAGE_DELEGATOR_MAP;
 	private final MongoDatabase mongoDatabase;
@@ -63,7 +60,7 @@ public class BinaryStorageManager {
 	private void storeContentFromFieldToBinaryStorage(Document currentDocument, Class entityClass, String fieldName,OptionsService optionService, Tuple tuple) {
 		OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 		BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-		BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NULL_DELEGATOR );
+		BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
 		binaryStorageDelegator.storeContentToBinaryStorage( optionsContext, currentDocument, fieldName, tuple );
 	}
 
@@ -73,7 +70,7 @@ public class BinaryStorageManager {
 		for ( Field currentField : entityClass.getDeclaredFields() ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, currentField.getName() );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NULL_DELEGATOR );
+			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
 			binaryStorageDelegator.removeContentFromBinaryStore( optionsContext, deletedDocument, currentField.getName() );
 		}
 	}
@@ -86,7 +83,7 @@ public class BinaryStorageManager {
 		for ( String fieldName : currentDocument.keySet() ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NULL_DELEGATOR );
+			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
 			binaryStorageDelegator.loadContentFromBinaryStorageToField( optionsContext, currentDocument, fieldName );
 		}
 	}
