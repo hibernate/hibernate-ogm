@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.mongodb.binarystorage;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
-import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 /**
@@ -18,17 +17,17 @@ import org.bson.Document;
  */
 public class NullDelegator implements BinaryStorageDelegator {
 	@Override
-	public void storeContentToBinaryStorage(MongoDatabase mongoDatabase, OptionsContext optionsContext, Document currentDocument, String fieldName,Tuple tuple) {
+	public void storeContentToBinaryStorage( OptionsContext optionsContext, Document currentDocument, String fieldName,Tuple tuple) {
 
 	}
 
 	@Override
-	public void removeContentFromBinaryStore(MongoDatabase mongoDatabase, OptionsContext optionsContext, Document deletedDocument, String fieldName) {
+	public void removeContentFromBinaryStore(OptionsContext optionsContext, Document deletedDocument, String fieldName) {
 
 	}
 
 	@Override
-	public void loadContentFromBinaryStorageToField(MongoDatabase mongoDatabase, OptionsContext optionsContext, Document currentDocument, String fieldName) {
+	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName) {
 
 	}
 }

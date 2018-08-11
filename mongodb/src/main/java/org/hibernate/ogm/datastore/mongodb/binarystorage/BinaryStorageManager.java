@@ -29,19 +29,18 @@ import org.bson.Document;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class BinaryStorageManager {
-	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
-
-	private static final Map<BinaryStorageType,BinaryStorageDelegator> BINARY_STORAGE_DELEGATOR_MAP;
 	private static final BinaryStorageDelegator NULL_DELEGATOR = new NullDelegator();
 
-	static {
+	private final Map<BinaryStorageType,BinaryStorageDelegator> BINARY_STORAGE_DELEGATOR_MAP;
+	private final MongoDatabase mongoDatabase;
+	public BinaryStorageManager(MongoDatabase mongoDatabase) {
+		this.mongoDatabase = mongoDatabase;
 		EnumMap<BinaryStorageType, BinaryStorageDelegator> map = new EnumMap<>( BinaryStorageType.class );
-		map.put( BinaryStorageType.GRID_FS, new GridFSDelegator() );
+		map.put( BinaryStorageType.GRID_FS, new GridFSDelegator( mongoDatabase ) );
 		BINARY_STORAGE_DELEGATOR_MAP = Collections.unmodifiableMap( map );
 	}
 
-	public static void storeContentToBinaryStorage(MongoDatabase mongoDatabase, Document currentDocument,
-											EntityKey entityKey, OptionsService optionService, Tuple tuple) {
+	public  void storeContentToBinaryStorage(Document currentDocument, EntityKey entityKey, OptionsService optionService, Tuple tuple) {
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
 		if ( currentDocument == null ) {
 			return;
@@ -51,51 +50,48 @@ public class BinaryStorageManager {
 				// it is part of request. it is not document
 				Document queryFields = (Document) currentDocument.get( fieldName );
 				for ( String queryField : queryFields.keySet() ) {
-					storeContentFromFieldToBinaryStorage( mongoDatabase, queryFields, entityClass, queryField, optionService, tuple );
+					storeContentFromFieldToBinaryStorage( queryFields, entityClass, queryField, optionService, tuple );
 				}
 			}
 			else {
 				// it is not document
-				storeContentFromFieldToBinaryStorage( mongoDatabase, currentDocument, entityClass, fieldName, optionService, tuple );
+				storeContentFromFieldToBinaryStorage( currentDocument, entityClass, fieldName, optionService, tuple );
 			}
 		}
 	}
 
-	private static void storeContentFromFieldToBinaryStorage(MongoDatabase mongoDatabase,  Document currentDocument, Class entityClass, String fieldName,
-									OptionsService optionService,Tuple tuple) {
+	private void storeContentFromFieldToBinaryStorage(Document currentDocument, Class entityClass, String fieldName,OptionsService optionService, Tuple tuple) {
 		OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 		BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-		BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType,NULL_DELEGATOR  );
-		binaryStorageDelegator.storeContentToBinaryStorage( mongoDatabase, optionsContext, currentDocument, fieldName,  tuple );
+		BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NULL_DELEGATOR );
+		binaryStorageDelegator.storeContentToBinaryStorage( optionsContext, currentDocument, fieldName, tuple );
 	}
 
-	public static void removeFromGridFsByEntity(MongoDatabase mongoDatabase, OptionsService optionService, Document deletedDocument,
+	public void removeFromBinaryStorageByEntity(OptionsService optionService, Document deletedDocument,
 			EntityKey entityKey) {
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
 		for ( Field currentField : entityClass.getDeclaredFields() ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, currentField.getName() );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType,NULL_DELEGATOR  );
-			binaryStorageDelegator.removeContentFromBinaryStore( mongoDatabase,optionsContext,deletedDocument,currentField.getName() );
+			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NULL_DELEGATOR );
+			binaryStorageDelegator.removeContentFromBinaryStore( optionsContext, deletedDocument, currentField.getName() );
 		}
 	}
 
-	public static void loadContentFromGridFs( MongoDatabase mongoDatabase, Document currentDocument, EntityKey entityKey,
-			OptionsService optionService) {
+	public void loadContentFromBinaryStorage(Document currentDocument, EntityKey entityKey, OptionsService optionService) {
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
 		if ( currentDocument == null ) {
 			return;
 		}
 		for ( String fieldName : currentDocument.keySet() ) {
-			//has the field GridFS info?
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType,NULL_DELEGATOR  );
-			binaryStorageDelegator.loadContentFromBinaryStorageToField( mongoDatabase,optionsContext,currentDocument,fieldName );
+			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NULL_DELEGATOR );
+			binaryStorageDelegator.loadContentFromBinaryStorageToField( optionsContext, currentDocument, fieldName );
 		}
 	}
 
-	private static OptionsContext getPropertyOptions( OptionsService optionService, Class entityClass, String fieldName) {
+	private  OptionsContext getPropertyOptions( OptionsService optionService, Class entityClass, String fieldName) {
 		return optionService.context().getPropertyOptions( entityClass, fieldName );
 	}
 

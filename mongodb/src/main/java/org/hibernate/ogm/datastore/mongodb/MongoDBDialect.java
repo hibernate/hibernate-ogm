@@ -227,10 +227,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private final MongoDBDatastoreProvider provider;
 	private final MongoDatabase currentDB;
+	private final BinaryStorageManager binaryStorageManager;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
 		this.currentDB = this.provider.getDatabase();
+		this.binaryStorageManager = new BinaryStorageManager( this.currentDB );
 	}
 
 	@Override
@@ -331,7 +333,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		FindIterable<Document> fi = collection.find( searchObject );
 		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
-		BinaryStorageManager.loadContentFromGridFs( currentDB, targetDocument, key, provider.getOptionService() );
+		binaryStorageManager.loadContentFromBinaryStorage( targetDocument, key, provider.getOptionService() );
 		return targetDocument;
 	}
 
@@ -618,7 +620,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
 		Document deleted = collection.findOneAndDelete( toDelete );
 		if ( deleted != null ) {
-			BinaryStorageManager.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, key );
+			binaryStorageManager.removeFromBinaryStorageByEntity( optionService, deleted, key );
 		}
 	}
 
@@ -634,7 +636,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		MongoCollection<Document> collection = getCollection( entityKey );
 		Document deleted = collection.findOneAndDelete( toDelete );
 		if ( deleted != null ) {
-			BinaryStorageManager.removeFromGridFsByEntity( getCurrentDB(), optionService, deleted, entityKey );
+			binaryStorageManager.removeFromBinaryStorageByEntity( optionService, deleted, entityKey );
 		}
 		return deleted != null;
 	}
@@ -1626,7 +1628,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
-					BinaryStorageManager.storeContentToBinaryStorage( currentDB, insertStatement, entityKey, optionService, tuple );
+					binaryStorageManager.storeContentToBinaryStorage( insertStatement, entityKey, optionService, tuple );
 
 					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
 							.put( entityKey, insertStatement );
@@ -1634,7 +1636,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
-					BinaryStorageManager.storeContentToBinaryStorage( currentDB, updateStatement, entityKey, optionService, tuple );
+					binaryStorageManager.storeContentToBinaryStorage( updateStatement, entityKey, optionService, tuple );
 				}
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {

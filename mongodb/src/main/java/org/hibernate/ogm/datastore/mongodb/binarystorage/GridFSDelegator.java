@@ -27,10 +27,20 @@ import org.bson.types.ObjectId;
  */
 public class GridFSDelegator implements BinaryStorageDelegator {
 
+	private static final int SIZE = 100_000;
+	private final MongoDatabase mongoDatabase;
+
+	/**
+	 * constructor
+	 * @param mongoDatabase current database
+	 */
+	public GridFSDelegator(MongoDatabase mongoDatabase) {
+		this.mongoDatabase = mongoDatabase;
+	}
+
 	/**
 	 * store binary content of field to GridFS
 	 *
-	 * @param mongoDatabase current instance of MongoDB
 	 * @param optionsContext options context
 	 * @param currentDocument current BSON document
 	 * @param fieldName fieldName with binary content
@@ -38,7 +48,7 @@ public class GridFSDelegator implements BinaryStorageDelegator {
 	 */
 
 	@Override
-	public void storeContentToBinaryStorage(MongoDatabase mongoDatabase,OptionsContext optionsContext, Document currentDocument,String fieldName,
+	public void storeContentToBinaryStorage(OptionsContext optionsContext, Document currentDocument,String fieldName,
 			Tuple tuple ) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
@@ -56,14 +66,13 @@ public class GridFSDelegator implements BinaryStorageDelegator {
 
 	/**
 	 * remove binary content from store
-	 * @param mongoDatabase current instance of MongoDB
 	 * @param optionsContext options context
 	 * @param deletedDocument deleted BSON document
 	 * @param fieldName field name with binary content
 	 */
 
 	@Override
-	public void removeContentFromBinaryStore(MongoDatabase mongoDatabase, OptionsContext optionsContext, Document deletedDocument, String fieldName) {
+	public void removeContentFromBinaryStore( OptionsContext optionsContext, Document deletedDocument, String fieldName) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 		ObjectId gridFsLink = deletedDocument.get( fieldName, ObjectId.class );
@@ -72,20 +81,18 @@ public class GridFSDelegator implements BinaryStorageDelegator {
 
 	/**
 	 * load content from binary store to field
-	 * @param mongoDatabase current instance of MongoDB
 	 * @param optionsContext options context
 	 * @param currentDocument current BSON document
 	 * @param fieldName field name with binary content
 	 */
 	@Override
-	public void loadContentFromBinaryStorageToField(MongoDatabase mongoDatabase, OptionsContext optionsContext,Document currentDocument,String fieldName) {
-		//the field has GridFS configuration. Process it!
+	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext,Document currentDocument,String fieldName) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 
 		ObjectId uploadId = currentDocument.get( fieldName, ObjectId.class );
-		ByteArrayOutputStream fullContent = new ByteArrayOutputStream( 100_000 );
+		ByteArrayOutputStream fullContent = new ByteArrayOutputStream( SIZE );
 		//@todo Ask Davide about Blob Proxy
 		//GridFSDownloadStream downloadStream = gridFSFilesBucket.openDownloadStream( uploadId );
 		//read full blob
