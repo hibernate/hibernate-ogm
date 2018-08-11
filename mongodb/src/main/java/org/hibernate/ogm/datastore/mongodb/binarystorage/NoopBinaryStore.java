@@ -15,7 +15,7 @@ import org.bson.Document;
  * It is empty implementation of BinaryStorageDelegator
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-public class NoopDelegator implements BinaryStorageDelegator {
+public class NoopBinaryStore implements BinaryStorage {
 	@Override
 	public void storeContentToBinaryStorage( OptionsContext optionsContext, Document currentDocument, String fieldName,Tuple tuple) {
 

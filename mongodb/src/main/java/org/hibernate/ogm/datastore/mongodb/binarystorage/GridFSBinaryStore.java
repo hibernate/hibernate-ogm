@@ -25,7 +25,7 @@ import org.bson.types.ObjectId;
  * @see <a href ="https://docs.mongodb.com/manual/core/gridfs">GridFS documentation</a>
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
-public class GridFSDelegator implements BinaryStorageDelegator {
+public class GridFSBinaryStore implements BinaryStorage {
 
 	private static final int SIZE = 100_000;
 	private final MongoDatabase mongoDatabase;
@@ -34,7 +34,7 @@ public class GridFSDelegator implements BinaryStorageDelegator {
 	 * constructor
 	 * @param mongoDatabase current database
 	 */
-	public GridFSDelegator(MongoDatabase mongoDatabase) {
+	public GridFSBinaryStore(MongoDatabase mongoDatabase) {
 		this.mongoDatabase = mongoDatabase;
 	}
 

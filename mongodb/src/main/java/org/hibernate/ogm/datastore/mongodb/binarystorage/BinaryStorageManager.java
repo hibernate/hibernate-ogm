@@ -26,15 +26,14 @@ import org.bson.Document;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class BinaryStorageManager {
-	private static final BinaryStorageDelegator NOOP_DELEGATOR = new NoopDelegator();
+	private static final BinaryStorage NOOP_DELEGATOR = new NoopBinaryStore();
 
-	private final Map<BinaryStorageType,BinaryStorageDelegator> BINARY_STORAGE_DELEGATOR_MAP;
-	private final MongoDatabase mongoDatabase;
+	private final Map<BinaryStorageType, BinaryStorage> BINARY_STORAGE_MAP;
+
 	public BinaryStorageManager(MongoDatabase mongoDatabase) {
-		this.mongoDatabase = mongoDatabase;
-		EnumMap<BinaryStorageType, BinaryStorageDelegator> map = new EnumMap<>( BinaryStorageType.class );
-		map.put( BinaryStorageType.GRID_FS, new GridFSDelegator( mongoDatabase ) );
-		BINARY_STORAGE_DELEGATOR_MAP = Collections.unmodifiableMap( map );
+		EnumMap<BinaryStorageType, BinaryStorage> map = new EnumMap<>( BinaryStorageType.class );
+		map.put( BinaryStorageType.GRID_FS, new GridFSBinaryStore( mongoDatabase ) );
+		BINARY_STORAGE_MAP = Collections.unmodifiableMap( map );
 	}
 
 	public  void storeContentToBinaryStorage(Document currentDocument, EntityKey entityKey, OptionsService optionService, Tuple tuple) {
@@ -60,18 +59,17 @@ public class BinaryStorageManager {
 	private void storeContentFromFieldToBinaryStorage(Document currentDocument, Class entityClass, String fieldName,OptionsService optionService, Tuple tuple) {
 		OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 		BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-		BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
-		binaryStorageDelegator.storeContentToBinaryStorage( optionsContext, currentDocument, fieldName, tuple );
+		BinaryStorage binaryStorage = BINARY_STORAGE_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
+		binaryStorage.storeContentToBinaryStorage( optionsContext, currentDocument, fieldName, tuple );
 	}
 
-	public void removeFromBinaryStorageByEntity(OptionsService optionService, Document deletedDocument,
-			EntityKey entityKey) {
+	public void removeFromBinaryStorageByEntity(OptionsService optionService, Document deletedDocument, EntityKey entityKey) {
 		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
 		for ( Field currentField : entityClass.getDeclaredFields() ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, currentField.getName() );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
-			binaryStorageDelegator.removeContentFromBinaryStore( optionsContext, deletedDocument, currentField.getName() );
+			BinaryStorage binaryStorage = BINARY_STORAGE_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
+			binaryStorage.removeContentFromBinaryStore( optionsContext, deletedDocument, currentField.getName() );
 		}
 	}
 
@@ -83,8 +81,8 @@ public class BinaryStorageManager {
 		for ( String fieldName : currentDocument.keySet() ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
-			BinaryStorageDelegator binaryStorageDelegator = BINARY_STORAGE_DELEGATOR_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
-			binaryStorageDelegator.loadContentFromBinaryStorageToField( optionsContext, currentDocument, fieldName );
+			BinaryStorage binaryStorage = BINARY_STORAGE_MAP.getOrDefault( binaryStorageType, NOOP_DELEGATOR );
+			binaryStorage.loadContentFromBinaryStorageToField( optionsContext, currentDocument, fieldName );
 		}
 	}
 
