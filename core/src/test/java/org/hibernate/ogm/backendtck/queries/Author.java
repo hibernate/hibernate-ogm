@@ -42,6 +42,18 @@ public class Author {
 	@IndexedEmbedded
 	private Address address;
 
+
+	public Author(Long id, String name, Set<Hypothesis> hypotheses, Address address) {
+		this.id = id;
+		this.name = name;
+		this.hypotheses = hypotheses;
+		this.address = address;
+	}
+
+	public Author() {
+
+	}
+
 	public Long getId() {
 		return id;
 	}

@@ -29,14 +29,16 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	private final Document projection;
 	private final Document orderBy;
 	private final List<String> unwinds;
+	private final Operation operation;
 
-	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, Document query, Document projection, Document orderBy, List<String> unwinds) {
+	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, Document query, Document projection, Document orderBy, List<String> unwinds, Operation operation) {
 		this.entityType = entityType;
 		this.collectionName = collectionName;
 		this.query = query;
 		this.projection = projection;
 		this.orderBy = orderBy;
 		this.unwinds = unwinds;
+		this.operation = operation;
 	}
 
 	public Document getQuery() {
@@ -63,7 +65,7 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	public Object getQueryObject() {
 		return new MongoDBQueryDescriptor(
 			collectionName,
-			unwinds == null ? Operation.FIND : Operation.AGGREGATE,
+			operation,
 			query,
 			projection,
 			orderBy,
@@ -80,6 +82,9 @@ public class MongoDBQueryParsingResult implements QueryParsingResult {
 	@Override
 	public List<String> getColumnNames() {
 		//TODO Non-scalar case
+		if ( operation.isAggregation ) {
+			return Collections.singletonList( "n" );
+		}
 		return projection != null ? new ArrayList<>( projection.keySet() ) : Collections.<String>emptyList();
 	}
 

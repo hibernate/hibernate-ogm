@@ -47,6 +47,7 @@ public class MongoDBQueryDescriptorBuilder {
 	private String criteria;
 	private String projection;
 	private String orderBy;
+	private boolean count;
 
 	/**
 	 * Distinct Operation will be performed on this field
@@ -154,6 +155,11 @@ public class MongoDBQueryDescriptorBuilder {
 
 	public boolean setOrderBy(String orderBy) {
 		this.orderBy = orderBy;
+		return true;
+	}
+
+	public boolean setCount(boolean count) {
+		this.count = count;
 		return true;
 	}
 
