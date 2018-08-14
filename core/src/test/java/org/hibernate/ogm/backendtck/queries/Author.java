@@ -42,6 +42,15 @@ public class Author {
 	@IndexedEmbedded
 	private Address address;
 
+
+	public Author(Long id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
+	public Author() {
+	}
+
 	public Long getId() {
 		return id;
 	}
