@@ -27,7 +27,8 @@ import org.bson.types.ObjectId;
  */
 public class GridFSBinaryStore implements BinaryStorage {
 
-	private static final int SIZE = 100_000;
+	private static final int BUFFER_SIZE = 100_000;
+	private static final String UPLOAD_ID = "_uploadId";
 	private final MongoDatabase mongoDatabase;
 
 	/**
@@ -48,8 +49,7 @@ public class GridFSBinaryStore implements BinaryStorage {
 	 */
 
 	@Override
-	public void storeContentToBinaryStorage(OptionsContext optionsContext, Document currentDocument,String fieldName,
-			Tuple tuple ) {
+	public void storeContentToBinaryStorage(OptionsContext optionsContext, Document currentDocument, String fieldName, Tuple tuple ) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
@@ -59,7 +59,7 @@ public class GridFSBinaryStore implements BinaryStorage {
 		//change value of the field (BinaryStream -> ObjectId)
 		currentDocument.put( fieldName, uploadId );
 		if ( Tuple.SnapshotType.UPDATE == tuple.getSnapshotType() ) {
-			ObjectId oldContentObjectId = (ObjectId) tuple.get( fieldName + "_uploadId" );
+			ObjectId oldContentObjectId = (ObjectId) tuple.get( fieldName + UPLOAD_ID );
 			gridFSFilesBucket.delete( oldContentObjectId );
 		}
 	}
@@ -86,21 +86,19 @@ public class GridFSBinaryStore implements BinaryStorage {
 	 * @param fieldName field name with binary content
 	 */
 	@Override
-	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext,Document currentDocument,String fieldName) {
+	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 
 		ObjectId uploadId = currentDocument.get( fieldName, ObjectId.class );
-		ByteArrayOutputStream fullContent = new ByteArrayOutputStream( SIZE );
-		//@todo Ask Davide about Blob Proxy
-		//GridFSDownloadStream downloadStream = gridFSFilesBucket.openDownloadStream( uploadId );
+		ByteArrayOutputStream fullContent = new ByteArrayOutputStream( BUFFER_SIZE );
 		//read full blob
 		gridFSFilesBucket.downloadToStream( uploadId, fullContent );
 
 		//change value of the field (ObjectId -> BinaryStream)
 		currentDocument.put( fieldName, fullContent );
-		currentDocument.put( fieldName + "_uploadId", uploadId );
+		currentDocument.put( fieldName + UPLOAD_ID, uploadId );
 	}
 
 	private GridFSBucket getGridFSFilesBucket(MongoDatabase mongoDatabase, String gridfsBucketName) {
