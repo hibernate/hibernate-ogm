@@ -17,7 +17,7 @@ import org.bson.Document;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public interface BinaryStorage {
-	void storeContentToBinaryStorage(OptionsContext optionsContext, Document currentDocument,String fieldName, Tuple tuple);
+	void storeContentToBinaryStorage(OptionsContext optionsContext, Document currentDocument, String fieldName, Tuple tuple);
 
 	void removeContentFromBinaryStore(OptionsContext optionsContext, Document deletedDocument, String fieldName);
 

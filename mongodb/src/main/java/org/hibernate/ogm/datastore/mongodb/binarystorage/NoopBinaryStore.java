@@ -17,7 +17,7 @@ import org.bson.Document;
  */
 public class NoopBinaryStore implements BinaryStorage {
 	@Override
-	public void storeContentToBinaryStorage( OptionsContext optionsContext, Document currentDocument, String fieldName,Tuple tuple) {
+	public void storeContentToBinaryStorage( OptionsContext optionsContext, Document currentDocument, String fieldName, Tuple tuple) {
 
 	}
 
