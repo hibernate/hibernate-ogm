@@ -227,11 +227,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private final MongoDBDatastoreProvider provider;
 	private final MongoDatabase currentDB;
 	private final BinaryStorageManager binaryStorageManager;
+	private final Map<String, Class<?>> tableEntityTypeMapping;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
 		this.currentDB = this.provider.getDatabase();
-		this.binaryStorageManager = new BinaryStorageManager( this.currentDB );
+		this.tableEntityTypeMapping = this.provider.getTableEntityTypeMapping();
+		this.binaryStorageManager = new BinaryStorageManager( this.currentDB,provider );
 	}
 
 	@Override

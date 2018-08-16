@@ -11,9 +11,9 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.BinaryStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.BinaryStorageOption;
-import org.hibernate.ogm.datastore.mongodb.utils.TableEntityTypeMappingInfo;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsContext;
@@ -29,15 +29,18 @@ public class BinaryStorageManager {
 	private static final BinaryStorage NOOP_DELEGATOR = new NoopBinaryStore();
 
 	private final Map<BinaryStorageType, BinaryStorage> BINARY_STORAGE_MAP;
+	private final MongoDBDatastoreProvider provider;
 
-	public BinaryStorageManager(MongoDatabase mongoDatabase) {
+	public BinaryStorageManager(MongoDatabase mongoDatabase, MongoDBDatastoreProvider provider) {
 		EnumMap<BinaryStorageType, BinaryStorage> map = new EnumMap<>( BinaryStorageType.class );
 		map.put( BinaryStorageType.GRID_FS, new GridFSBinaryStore( mongoDatabase ) );
 		BINARY_STORAGE_MAP = Collections.unmodifiableMap( map );
+		//this.TABLE_ENTITY_TYPE_MAPPING = Collections.unmodifiableMap( tableEntityTypeMapping );
+		this.provider = provider;
 	}
 
 	public  void storeContentToBinaryStorage(Document currentDocument, EntityKey entityKey, OptionsService optionService, Tuple tuple) {
-		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
+		Class entityClass = provider.getTableEntityTypeMapping().get( entityKey.getTable() );
 		if ( currentDocument == null ) {
 			return;
 		}
@@ -64,7 +67,7 @@ public class BinaryStorageManager {
 	}
 
 	public void removeFromBinaryStorageByEntity(OptionsService optionService, Document deletedDocument, EntityKey entityKey) {
-		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
+		Class entityClass =  provider.getTableEntityTypeMapping().get( entityKey.getTable() );
 		for ( Field currentField : entityClass.getDeclaredFields() ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, currentField.getName() );
 			BinaryStorageType binaryStorageType = optionsContext.getUnique( BinaryStorageOption.class );
@@ -74,7 +77,7 @@ public class BinaryStorageManager {
 	}
 
 	public void loadContentFromBinaryStorage(Document currentDocument, EntityKey entityKey, OptionsService optionService) {
-		Class entityClass = TableEntityTypeMappingInfo.getEntityClass( entityKey.getTable() );
+		Class entityClass =  provider.getTableEntityTypeMapping().get( entityKey.getTable() );
 		if ( currentDocument == null ) {
 			return;
 		}
