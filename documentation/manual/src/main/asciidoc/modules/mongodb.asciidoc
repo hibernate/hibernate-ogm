@@ -184,6 +184,10 @@ If you're interested in such a feature, please let us know.
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
 
+hibernate.ogm.mongodb.gridfs.bucket.name::
+Defines common bucket name for GridFs using.
+
+
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
@@ -210,7 +214,7 @@ When working with the MongoDB backend, you can specify the following settings:
 * a strategy for storing associations using the `@AssociationStorage` and `@AssociationDocumentStorage` annotations
 * a strategy for storing the contents of map-typed associations using the `@MapStorage` annotation
 
-Refer to <<mongodb-associations> to learn more about the options related to storing associations.
+Refer to <<mongodb-associations>> to learn more about the options related to storing associations.
 
 The following shows an example:
 
@@ -458,6 +462,14 @@ Hibernate OGM supports by default the following property types:
 ----
   { "url" : "http://www.hibernate.org/" }
 ----
+
+* `java.sql.Blob`
+
+[source, JSON]
+----
+  { "content_id" : ObjectId("567d9b60f62028750f25ef88") }
+----
+The type is used for storing binary content to GridFS. See details in <<mongodb-gridfs>>
 
 * `org.bson.types.ObjectId`
 
@@ -3050,6 +3062,52 @@ Associations collection
 }
 ----
 ====
+
+
+[[mongodb-gridfs]]
+==== GridFS Using
+GridFS is specification for working (store and load) with large files (more 16M). Details about
+GridFS you can read in https://docs.mongodb.com/manual/core/gridfs/[GridFS manual].
+
+.Mapping for an entity with using storing content in GridFS
+====
+[source, JAVA]
+----
+@Entity
+public class Photo {
+
+    @Id
+    private ObjectId id;
+    private String title;
+    @Lob
+    @GridFSBucket("photos")
+    @BinaryStorage( BinaryStorageType.GRID_FS )
+    private Blob content;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+// Stored in the Collection "Photo"
+{
+    "_id" : ObjectId("367d0b60a63123751425ef91"),
+    "title": "I am at Black Sea in Sochi",
+    "content_id" : ObjectId("567d9b60f62028750f25ef88")
+}
+----
+
+====
+===== GridFS Configuration
+Entity with GridFs is configurable.
+GridFS is manageable by:
+
+* annotation `@GridFSBucket` have a parameter with bucket name. if bucket name not specified, Hibernate OGM
+uses default bucket name of MongoDB or value from property `hibernate.ogm.mongodb.gridfs.bucket.name`.
+* annotation `@BinaryStorage` specify type of binary storage. Version 5.2.0 supports 'GRID_FS' only.
+
+
 
 [[ogm-mongodb-indexes-unique-constraints]]
 === Indexes and unique constraints

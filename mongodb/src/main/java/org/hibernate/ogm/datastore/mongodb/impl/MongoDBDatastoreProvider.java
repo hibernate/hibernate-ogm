@@ -55,6 +55,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	private MongoDatabase mongoDb;
 	private MongoDBConfiguration config;
 	private JndiService jndiService;
+	private Map<String, Class<?>> tableEntityTypeMapping;
 
 	public MongoDBDatastoreProvider() {
 	}
@@ -108,6 +109,10 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	@Override
 	public boolean allowsTransactionEmulation() {
 		return true;
+	}
+
+	public OptionsService getOptionService() {
+		return serviceRegistry.getService( OptionsService.class );
 	}
 
 	@Override
@@ -225,5 +230,13 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			// we don't have enough privileges, ignore the database creation
 			return null;
 		}
+	}
+
+	public Map<String, Class<?>> getTableEntityTypeMapping() {
+		return tableEntityTypeMapping;
+	}
+
+	public void setTableEntityTypeMapping(Map<String, Class<?>> tableEntityTypeMapping) {
+		this.tableEntityTypeMapping = tableEntityTypeMapping;
 	}
 }
