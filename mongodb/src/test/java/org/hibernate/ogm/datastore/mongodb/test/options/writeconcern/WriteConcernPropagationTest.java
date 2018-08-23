@@ -114,7 +114,7 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect a call to remove with the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ) ).deleteMany( any( Document.class ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.MAJORITY ) ).findOneAndDelete( any( Document.class ) );
 	}
 
 	@Test

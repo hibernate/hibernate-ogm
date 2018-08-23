@@ -89,6 +89,11 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 */
 	public static final String MONGO_DRIVER_SETTINGS_PREFIX = "hibernate.ogm.mongodb.driver";
 
+	/**
+	 * Specify default bucket name for GridFS.
+	 */
+	public static final String DEFAULT_GRIDFS_BUCKET_NAME = "hibernate.ogm.mongodb.gridfs.bucket.name";
+
 	private MongoDBProperties() {
 	}
 }
