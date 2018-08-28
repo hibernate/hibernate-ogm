@@ -103,7 +103,7 @@ from Hypothesis h where h.position = 2 and not h.id = '13'
 from Hypothesis h where h.description = :myParam
 
 // range query
-from Hypothesis h where h.description BETWEEN :start and :end"
+from Hypothesis h where h.description BETWEEN :start and :end
 
 // comparisons
 from Hypothesis h where h.position < 3
