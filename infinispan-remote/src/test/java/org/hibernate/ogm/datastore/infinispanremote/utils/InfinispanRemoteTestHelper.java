@@ -239,4 +239,19 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 		}
 		return InfinispanRemoteDatastoreProvider.class.cast( provider );
 	}
+
+	public static ProtostreamPayload fetchProtoStreamPayload(SessionFactory sessionFactory, String cacheName, String keyColumnName, Object keyColumnValue) {
+		String[] keyColumnNames = { keyColumnName };
+		Object[] keyColumnValues = { keyColumnValue };
+
+		return fetchProtoStreamPayload( sessionFactory, cacheName, keyColumnNames, keyColumnValues );
+	}
+
+	public static ProtostreamPayload fetchProtoStreamPayload(SessionFactory sessionFactory, String cacheName, String[] keyColumnNames, Object[] keyColumnValues) {
+		InfinispanRemoteDatastoreProvider provider = getProvider( sessionFactory );
+		ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
+
+		ProtostreamId key = mapper.createIdPayload( keyColumnNames, keyColumnValues );
+		return mapper.withinCacheEncodingContext( cache -> cache.get( key ) );
+	}
 }
