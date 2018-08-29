@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.infinispan.test.storedprocedures.SimpleValueP
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -178,5 +179,22 @@ public class InfinispanTestHelper extends BaseGridDialectTestHelper implements G
 	@Override
 	public Class<? extends DatastoreConfiguration<?>> getDatastoreConfigurationType() {
 		return InfinispanEmbedded.class;
+	}
+
+	public static FineGrainedAtomicMap<String, Object> fetchPropertyMap(SessionFactory sessionFactory, String cacheName, String keyColumnName, Object keyColumnValue) {
+		String[] keyColumnNames = { keyColumnName };
+		Object[] keyColumnValues = { keyColumnValue };
+
+		return fetchPropertyMap( sessionFactory, cacheName, keyColumnNames, keyColumnValues );
+	}
+
+	public static FineGrainedAtomicMap<String, Object> fetchPropertyMap(SessionFactory sessionFactory, String cacheName, String[] keyColumnNames, Object[] keyColumnValues) {
+		EntityKey key = new EntityKey( new DefaultEntityKeyMetadata( cacheName, keyColumnNames ), keyColumnValues );
+
+		InfinispanEmbeddedDatastoreProvider provider = getProvider( sessionFactory );
+		Cache<PersistentEntityKey, Map<String, Object>> entityCache = (Cache<PersistentEntityKey, Map<String, Object>>) getEntityCache( sessionFactory, key.getMetadata() );
+		PersistentEntityKey entityCacheKey = (PersistentEntityKey) provider.getKeyProvider().getEntityCacheKey( key );
+
+		return AtomicMapLookup.getFineGrainedAtomicMap( entityCache, entityCacheKey, false );
 	}
 }
