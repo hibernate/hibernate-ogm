@@ -13,6 +13,8 @@ import static org.hibernate.ogm.util.impl.EmbeddedHelper.isPartOfEmbedded;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -48,6 +50,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -297,4 +300,18 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 	}
 
 	protected abstract A createNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata);
+
+	protected Map.Entry<String, Map> buildProcedureQueryWithParams(String storedProcedureName,
+			ProcedureQueryParameters queryParameters) {
+		StringBuilder queryBuilder = new StringBuilder();
+		queryBuilder.append( "CALL " ).append( storedProcedureName ).append( "(" );
+		Map namedParams = new HashMap<>();
+		List parameters = queryParameters.getPositionalParameters();
+		for ( int i = 0; i < parameters.size(); i++ ) {
+			queryBuilder.append( "{a" + i + "}," );
+			namedParams.put( "a" + i, parameters.get( i ) );
+		}
+		queryBuilder.replace( queryBuilder.lastIndexOf( "," ), queryBuilder.length(), ")" );
+		return new AbstractMap.SimpleEntry<>( queryBuilder.toString(), namedParams );
+	}
 }
