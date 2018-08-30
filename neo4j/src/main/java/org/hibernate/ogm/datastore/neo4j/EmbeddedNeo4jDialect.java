@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
@@ -45,6 +46,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -58,6 +60,8 @@ import org.hibernate.ogm.model.spi.EntityMetadataInformation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -80,7 +84,7 @@ import org.neo4j.kernel.api.exceptions.schema.UniquePropertyValueValidationExcep
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQueries, EmbeddedNeo4jAssociationQueries> {
+public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQueries, EmbeddedNeo4jAssociationQueries> implements StoredProcedureAwareGridDialect {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
@@ -531,6 +535,24 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQu
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		ResourceIterator<Node> queryNodes = getEntityQueries( entityKeyMetadata, tupleTypeContext ).findEntities( dataBase );
 		consumer.consume( new EmbeddedNeo4jTuplesSupplier( queryNodes, tupleTypeContext, entityKeyMetadata ) );
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName,
+			ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
+		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
+		Result result = dataBase.execute( queryAndParams.getKey(), queryAndParams.getValue() );
+		return CollectionHelper.newClosableIterator( extractTuples( result ) );
+	}
+
+	private List<Tuple> extractTuples(Result result) {
+		List<Tuple> tuples = new ArrayList<>();
+		while ( result.hasNext() ) {
+			Tuple tuple = new Tuple();
+			result.next().forEach( (key, value) -> tuple.put( key, value ) );
+			tuples.add( tuple );
+		}
+		return tuples;
 	}
 
 	private static class EmbeddedNeo4jTuplesSupplier implements TuplesSupplier {

@@ -48,6 +48,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -61,6 +62,8 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
@@ -85,7 +88,7 @@ import org.neo4j.driver.v1.types.Relationship;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, BoltNeo4jAssociationQueries> implements RemoteNeo4jDialect {
+public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, BoltNeo4jAssociationQueries> implements RemoteNeo4jDialect, StoredProcedureAwareGridDialect {
 
 	public static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
@@ -587,6 +590,31 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		BoltNeo4jClient client = neo4jProvider.getClient();
 		BoltTuplesSupplier tupleSupplier = new BoltTuplesSupplier( getEntityQueries( entityKeyMetadata, tupleTypeContext ), entityKeyMetadata, tupleTypeContext, client );
 		consumer.consume( tupleSupplier );
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(
+			String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
+		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
+		Transaction transaction = transaction( tupleContext );
+		if ( transaction == null ) {
+			DatastoreProvider datastoreProvider = getServiceRegistry().getService( DatastoreProvider.class );
+			BoltNeo4jDatastoreProvider neo4jProvider = (BoltNeo4jDatastoreProvider) datastoreProvider;
+			BoltNeo4jClient client = neo4jProvider.getClient();
+			transaction = client.getDriver().session().beginTransaction();
+		}
+		StatementResult result = transaction.run( queryAndParams.getKey(), queryAndParams.getValue() );
+		return CollectionHelper.newClosableIterator( extractTuples( result ) );
+	}
+
+	private List<Tuple> extractTuples(StatementResult result) {
+		List<Tuple> tuples = new ArrayList<>();
+		while ( result.hasNext() ) {
+			Tuple tuple = new Tuple();
+			result.next().asMap().forEach( (key, value) -> tuple.put( key, value ) );
+			tuples.add( tuple );
+		}
+		return tuples;
 	}
 
 	private static class BoltTuplesSupplier implements TuplesSupplier {

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -54,6 +55,7 @@ import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.spi.TuplesSupplier;
+import org.hibernate.ogm.dialect.storedprocedure.spi.StoredProcedureAwareGridDialect;
 import org.hibernate.ogm.entityentry.impl.TuplePointer;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -66,6 +68,8 @@ import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -79,7 +83,7 @@ import org.hibernate.ogm.model.spi.TupleOperation;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, HttpNeo4jAssociationQueries> implements RemoteNeo4jDialect {
+public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, HttpNeo4jAssociationQueries> implements RemoteNeo4jDialect, StoredProcedureAwareGridDialect {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
@@ -484,6 +488,46 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		HttpTuplesSupplier tupleSupplier = new HttpTuplesSupplier( getEntityQueries( entityKeyMetadata, tupleTypeContext ), entityKeyMetadata, tupleTypeContext, client );
 		consumer.consume( tupleSupplier );
+	}
+
+	@Override
+	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName,
+			ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
+		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
+		Statement statement = new Statement( queryAndParams.getKey(), queryAndParams.getValue() );
+		statement.setResultDataContents( Collections.singletonList( Statement.AS_ROW ) );
+		Statements statements = new Statements();
+		statements.addStatement( statement );
+		Long txId = transactionId( tupleContext.getTransactionContext() );
+		StatementsResponse response;
+		if ( txId != null ) {
+			response = client.executeQueriesInOpenTransaction( txId, statements );
+		}
+		else {
+			response = client.executeQueriesInNewTransaction( statements );
+		}
+		validate( response, queryAndParams.getKey() );
+		return CollectionHelper.newClosableIterator( extractTuples( response ) );
+	}
+
+	private List<Tuple> extractTuples(StatementsResponse response) {
+		List<Tuple> tuples = new ArrayList<>();
+		List<String> columns = response.getResults().get( 0 ).getColumns();
+		List<Row> rows = response.getResults().get( 0 ).getData();
+		rows.forEach( row -> {
+			Tuple tuple = new Tuple();
+			List rowAsList = row.getRow();
+			for ( int i = 0; i < rowAsList.size(); i++ ) {
+				if ( columns.size() > i ) {
+					tuple.put( columns.get( i ), rowAsList.get( i ) );
+				}
+				else {
+					tuple.put( "", rowAsList.get( i ) );
+				}
+			}
+			tuples.add( tuple );
+		} );
+		return tuples;
 	}
 
 	private static class HttpTuplesSupplier implements TuplesSupplier {
