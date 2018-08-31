@@ -728,6 +728,24 @@ minIdle = 1
 ----
 ====
 
+The `hotrodclient.properties` is optional, in this case Hibernate OGM will use the following:
+
+|===
+| HotRod client property | Hibernate OGM mandatory value
+| infinispan.client.hotrod.marshaller
+| org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller
+| infinispan.client.hotrod.force_return_values
+| true
+|===
+
+Every other property will use the default values defined by http://infinispan.org/docs/stable/user_guide/user_guide.html#hotrod:java-client[Infinispan - Java Hot Rod client].
+
+[IMPORTANT]
+====
+These values for `infinispan.client.hotrod.marshaller` and `infinispan.client.hotrod.force_return_values` are mandatory in order to keep the expected behaviour of the dialect.
+If you change them, an exception will be thrown.
+====
+
 Alternatively you can embed the Hot Rod properties in your Hibernate (or JPA) configuration
 file, but you'll have to replace the `infinispan.client.hotrod.` prefix with the custom
 prefix `hibernate.ogm.infinispan_remote.client.`.
