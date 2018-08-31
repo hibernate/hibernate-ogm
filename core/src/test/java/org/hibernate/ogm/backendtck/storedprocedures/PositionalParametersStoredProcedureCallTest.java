@@ -13,6 +13,7 @@ import static org.hibernate.ogm.backendtck.storedprocedures.Car.SIMPLE_VALUE_PRO
 import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J_REMOTE;
 
 import java.util.List;
 
@@ -44,7 +45,7 @@ import org.junit.rules.ExpectedException;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 @SkipByGridDialect(
-		value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE },
+		value = {HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_REMOTE},
 		comment = "These dialects not support stored procedures with positional parameters")
 @TestForIssue(jiraKey = { "OGM-359" })
 public class PositionalParametersStoredProcedureCallTest extends OgmJpaTestCase {
