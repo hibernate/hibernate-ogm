@@ -597,13 +597,18 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 			String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
 		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
 		Transaction transaction = transaction( tupleContext );
+		StatementResult result;
 		if ( transaction == null ) {
 			DatastoreProvider datastoreProvider = getServiceRegistry().getService( DatastoreProvider.class );
 			BoltNeo4jDatastoreProvider neo4jProvider = (BoltNeo4jDatastoreProvider) datastoreProvider;
 			BoltNeo4jClient client = neo4jProvider.getClient();
-			transaction = client.getDriver().session().beginTransaction();
+			try ( Session session = client.getDriver().session() ) {
+				result = session.run( queryAndParams.getKey(), queryAndParams.getValue() );
+			}
 		}
-		StatementResult result = transaction.run( queryAndParams.getKey(), queryAndParams.getValue() );
+		else {
+			result = transaction.run( queryAndParams.getKey(), queryAndParams.getValue() );
+		}
 		return CollectionHelper.newClosableIterator( extractTuples( result ) );
 	}
 
