@@ -25,6 +25,11 @@ public class CarStoredProcedures {
 		return Collections.singletonList( new ResultSetProcedure( (int) id, title ) ).stream();
 	}
 
+	@Procedure(value = "exceptionalProcedure", mode = Mode.WRITE)
+	public Stream<ResultSetProcedure> exceptionalProcedure(@Name("id") long id) throws Exception {
+		throw new Exception();
+	}
+
 	public static class SimpleValueProcedure {
 		public Number id;
 

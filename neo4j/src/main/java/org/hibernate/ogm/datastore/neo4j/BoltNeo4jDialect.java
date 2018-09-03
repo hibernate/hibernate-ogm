@@ -63,7 +63,6 @@ import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
-import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
@@ -595,26 +594,23 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	@Override
 	public ClosableIterator<Tuple> callStoredProcedure(
 			String storedProcedureName, ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
-		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
+		Map.Entry<String, Map<String, Object>> queryAndParams = buildProcedureQueryWithParams(
+				storedProcedureName, queryParameters );
 		Transaction transaction = transaction( tupleContext );
-		if ( transaction == null ) {
-			DatastoreProvider datastoreProvider = getServiceRegistry().getService( DatastoreProvider.class );
-			BoltNeo4jDatastoreProvider neo4jProvider = (BoltNeo4jDatastoreProvider) datastoreProvider;
-			BoltNeo4jClient client = neo4jProvider.getClient();
-			transaction = client.getDriver().session().beginTransaction();
-		}
 		StatementResult result = transaction.run( queryAndParams.getKey(), queryAndParams.getValue() );
-		return CollectionHelper.newClosableIterator( extractTuples( result ) );
-	}
-
-	private List<Tuple> extractTuples(StatementResult result) {
-		List<Tuple> tuples = new ArrayList<>();
-		while ( result.hasNext() ) {
-			Tuple tuple = new Tuple();
-			result.next().asMap().forEach( (key, value) -> tuple.put( key, value ) );
-			tuples.add( tuple );
+		try {
+			return new BoltNeo4jMapsTupleIterator( result );
 		}
-		return tuples;
+		catch (ClientException e) {
+			switch ( e.code() ) {
+				case BaseNeo4jDialect.PROCEDURE_CALL_FAILED_CODE:
+					throw log.cannotExecuteStoredProcedure( storedProcedureName, e );
+				case BaseNeo4jDialect.PROCEDURE_NOT_FOUND_CODE:
+					throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, e );
+				default:
+					throw new HibernateException( e.getMessage() );
+			}
+		}
 	}
 
 	private static class BoltTuplesSupplier implements TuplesSupplier {

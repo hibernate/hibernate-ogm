@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -69,7 +68,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
-import org.hibernate.ogm.util.impl.CollectionHelper;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -493,41 +491,25 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 	@Override
 	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName,
 			ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
-		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
+		Map.Entry<String, Map<String, Object>> queryAndParams = buildProcedureQueryWithParams(
+				storedProcedureName, queryParameters );
 		Statement statement = new Statement( queryAndParams.getKey(), queryAndParams.getValue() );
 		statement.setResultDataContents( Collections.singletonList( Statement.AS_ROW ) );
 		Statements statements = new Statements();
 		statements.addStatement( statement );
-		Long txId = transactionId( tupleContext.getTransactionContext() );
-		StatementsResponse response;
-		if ( txId != null ) {
-			response = client.executeQueriesInOpenTransaction( txId, statements );
-		}
-		else {
-			response = client.executeQueriesInNewTransaction( statements );
-		}
-		validate( response, queryAndParams.getKey() );
-		return CollectionHelper.newClosableIterator( extractTuples( response ) );
-	}
-
-	private List<Tuple> extractTuples(StatementsResponse response) {
-		List<Tuple> tuples = new ArrayList<>();
-		List<String> columns = response.getResults().get( 0 ).getColumns();
-		List<Row> rows = response.getResults().get( 0 ).getData();
-		rows.forEach( row -> {
-			Tuple tuple = new Tuple();
-			List rowAsList = row.getRow();
-			for ( int i = 0; i < rowAsList.size(); i++ ) {
-				if ( columns.size() > i ) {
-					tuple.put( columns.get( i ), rowAsList.get( i ) );
-				}
-				else {
-					tuple.put( "", rowAsList.get( i ) );
-				}
+		StatementsResponse response = client.executeQueriesInNewTransaction( statements );
+		if ( !response.getErrors().isEmpty() ) {
+			ErrorResponse errorResponse = response.getErrors().get( 0 );
+			switch ( errorResponse.getCode() ) {
+				case BaseNeo4jDialect.PROCEDURE_CALL_FAILED_CODE:
+					throw log.cannotExecuteStoredProcedure( storedProcedureName, null );
+				case BaseNeo4jDialect.PROCEDURE_NOT_FOUND_CODE:
+					throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, null );
+				default:
+					throw new HibernateException( errorResponse.getMessage() );
 			}
-			tuples.add( tuple );
-		} );
-		return tuples;
+		}
+		return new HttpNeo4jMapsTupleIterator( response.getResults().get( 0 ) );
 	}
 
 	private static class HttpTuplesSupplier implements TuplesSupplier {

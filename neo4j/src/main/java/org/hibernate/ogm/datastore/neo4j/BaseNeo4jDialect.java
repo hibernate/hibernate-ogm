@@ -67,6 +67,10 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 
 	public static final String CONSTRAINT_VIOLATION_CODE = "Neo.ClientError.Schema.ConstraintValidationFailed";
 
+	public static final String PROCEDURE_CALL_FAILED_CODE = "Neo.ClientError.Procedure.ProcedureCallFailed";
+
+	public static final String PROCEDURE_NOT_FOUND_CODE = "Neo.ClientError.Procedure.ProcedureNotFound";
+
 	protected static final Pattern TUPLE_ALREADY_EXISTS_EXCEPTION_PATTERN = Pattern.compile( ".*Node(\\(| )\\d+\\)? already exists with label.*" );
 
 	private ServiceRegistryImplementor serviceRegistry;
@@ -301,15 +305,25 @@ public abstract class BaseNeo4jDialect<E extends BaseNeo4jEntityQueries, A exten
 
 	protected abstract A createNeo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata);
 
-	protected Map.Entry<String, Map> buildProcedureQueryWithParams(String storedProcedureName,
+	protected Map.Entry<String, Map<String, Object>> buildProcedureQueryWithParams(String storedProcedureName,
 			ProcedureQueryParameters queryParameters) {
 		StringBuilder queryBuilder = new StringBuilder();
 		queryBuilder.append( "CALL " ).append( storedProcedureName ).append( "(" );
-		Map namedParams = new HashMap<>();
-		List parameters = queryParameters.getPositionalParameters();
-		for ( int i = 0; i < parameters.size(); i++ ) {
-			queryBuilder.append( "{a" + i + "}," );
-			namedParams.put( "a" + i, parameters.get( i ) );
+		Map<String, Object> namedParams;
+		if ( queryParameters.getPositionalParameters() != null && queryParameters.getPositionalParameters()
+				.size() > 0 ) {
+			namedParams = new HashMap<>();
+			List parameters = queryParameters.getPositionalParameters();
+			for ( int i = 0; i < parameters.size(); i++ ) {
+				queryBuilder.append( "{" ).append( i ).append( "}," );
+				namedParams.put( String.valueOf( i ), parameters.get( i ) );
+			}
+		}
+		else {
+			namedParams = queryParameters.getNamedParameters();
+			for ( String namedParameter : namedParams.keySet() ) {
+				queryBuilder.append( "{" ).append( namedParameter ).append( "}," );
+			}
 		}
 		queryBuilder.replace( queryBuilder.lastIndexOf( "," ), queryBuilder.length(), ")" );
 		return new AbstractMap.SimpleEntry<>( queryBuilder.toString(), namedParams );
