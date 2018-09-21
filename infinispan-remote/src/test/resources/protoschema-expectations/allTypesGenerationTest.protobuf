@@ -16,7 +16,7 @@ message Bookmark {
 	optional int64 destructionCalendar = 9;
 	optional int64 destructionDate = 10;
 	optional int64 destructionJdbcTimestamp = 11;
-	optional bytes displayMask = 12;
+	optional int32 displayMask = 12;
 	optional bool favourite = 13;
 	optional string isPrivate = 14;
 	optional string isRead = 15;
