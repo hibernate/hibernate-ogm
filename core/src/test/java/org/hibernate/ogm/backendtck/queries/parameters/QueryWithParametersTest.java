@@ -35,7 +35,7 @@ public class QueryWithParametersTest extends OgmJpaTestCase {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Movie.class );
 
 	@Test
-	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Query on Byte field are currently not supported")
+	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Due to ISPN-7863, fields starting with 'v' are currently not supported.")
 	public void canUseByteForSimpleComparison() {
 		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
@@ -50,7 +50,7 @@ public class QueryWithParametersTest extends OgmJpaTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Query on Byte field are currently not supported")
+	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Due to ISPN-7863, fields starting with 'v' are currently not supported.")
 	public void canUseByteAsParameterForSimpleComparison() {
 		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
@@ -66,7 +66,7 @@ public class QueryWithParametersTest extends OgmJpaTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Query on Byte field are currently not supported")
+	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Due to ISPN-7863, fields starting with 'v' are currently not supported.")
 	public void canUseByteAsParameterForInComparison() {
 		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();

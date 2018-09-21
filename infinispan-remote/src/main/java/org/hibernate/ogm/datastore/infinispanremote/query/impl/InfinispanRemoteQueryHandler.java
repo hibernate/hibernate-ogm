@@ -79,10 +79,12 @@ public class InfinispanRemoteQueryHandler {
 	private Object getValue(Map.Entry<String, TypedGridValue> param) {
 		Object value = param.getValue().getValue();
 
-		// Protobuf does not support Character type
-		// convert to String type
+		// ProtoStream does not support natively Character or Byte types
 		if ( value instanceof Character ) {
 			return value.toString();
+		}
+		if ( value instanceof Byte ) {
+			return ( (Byte) value ).intValue();
 		}
 
 		return value;
