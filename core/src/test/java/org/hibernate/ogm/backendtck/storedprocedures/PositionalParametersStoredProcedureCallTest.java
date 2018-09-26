@@ -165,7 +165,7 @@ public class PositionalParametersStoredProcedureCallTest extends OgmJpaTestCase 
 	@Test
 	public void testResultSetStaticCallWithNullStringParameter() throws Exception {
 		thrown.expect( IllegalArgumentException.class );
-		thrown.expectMessage( "String" ); // String parameter cannot be null
+		thrown.expectMessage( "was null" ); // The parameter at position [3] was null. You need to call ParameterRegistration#enablePassingNulls(true) in order to pass null parameters.
 
 		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
 		// First parameter is void
@@ -180,7 +180,7 @@ public class PositionalParametersStoredProcedureCallTest extends OgmJpaTestCase 
 	@Test
 	public void testResultSetStaticCallWithNullIntegerParameter() throws Exception {
 		thrown.expect( IllegalArgumentException.class );
-		thrown.expectMessage( "Integer" ); // Integer parameter cannot be null
+		thrown.expectMessage( "was null" ); // The parameter at position [2] was null. You need to call ParameterRegistration#enablePassingNulls(true) in order to pass null parameters.
 
 		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
 		// First parameter is void
