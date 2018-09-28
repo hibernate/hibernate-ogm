@@ -164,17 +164,18 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 
 	private URL getAsUrl() {
 		Object value = getConfiguredValue();
-
 		if ( StringHelper.isNullOrEmptyString( value ) && getDefaultValue() != null ) {
 			return (URL) getDefaultValue();
 		}
 		else if ( value instanceof URL ) {
 			return (URL) value;
 		}
-		else if ( StringHelper.isNullOrEmptyString( value ) && getDefaultStringValue() != null ) {
-			value = getDefaultStringValue();
-		}
 
+		boolean useDefault = false;
+		if ( StringHelper.isNullOrEmptyString( value ) && getDefaultStringValue() != null ) {
+			value = getDefaultStringValue();
+			useDefault = true;
+		}
 		if ( value == null ) {
 			return null;
 		}
@@ -189,7 +190,9 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 		if ( resource == null ) {
 			resource = getFromFileSystemPath( stringValue );
 		}
-		if ( resource == null ) {
+
+		// if the resource is explicitly defined by the user, it mustn't be null
+		if ( resource == null && !useDefault ) {
 			throw log.invalidConfigurationUrl( getPropertyName(), value.toString() );
 		}
 
