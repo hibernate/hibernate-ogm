@@ -213,11 +213,11 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	private T nullSafeGet(Tuple rs, String name, final SharedSessionContractImplementor session) {
-		return nullSafeGet( rs, name, (WrapperOptions) null );
+		return nullSafeGet( rs, name, (WrapperOptions) session );
 	}
 
 	protected final T nullSafeGet(Tuple rs, String name, WrapperOptions options) {
-		return typeExtractor.extract( rs, name );
+		return typeExtractor.extract( rs, name, options );
 	}
 
 //	public Object get(Map<String,Object> rs, String name, SessionImplementor session) throws HibernateException, SQLException {
@@ -230,12 +230,12 @@ public abstract class AbstractGenericBasicType<T>
 			Object value,
 			String[] names,
 			final SharedSessionContractImplementor session)  {
-		nullSafeSet( rs, value, names, (WrapperOptions) null );
+		nullSafeSet( rs, value, names, (WrapperOptions) session );
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	protected final void nullSafeSet(Tuple rs, Object value, String[] names, WrapperOptions options) {
-		typeBinder.bind( rs, (T) value, names );
+		typeBinder.bind( rs, (T) value, names, options );
 	}
 
 	@Override
