@@ -1,6 +1,35 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.0.CR1 (01-10-2018)
+-------------------------
+
+** Bug
+    * OGM-1513 - infinispan, mongodb        - Join columns might keep reference to some previously associated, but then deleted, entities
+    * OGM-1512 - infinispan                 - Flush operation after a cascade delete could prejudice commit 
+
+** Improvement
+    * OGM-1521 - documentation              - Removed redundant double quote from HQL query example
+    * OGM-1520 - infinispan, tests          - Enable tests for Infinispan Remote dialect requiring tx
+    * OGM-1494 - infinispan                 - Infinispan Remote: support local HotRod transaction
+    * OGM-1458 -                            - Infinispan Remote Query: support query on Byte field
+    * OGM-1408 -                            - Review the Infinispan chapter in Hibernate OGM manual
+
+** New Feature
+    * OGM-1515 - core                       - Support Java 8 LocalDate and LocalDateTime
+    * OGM-1501 - mongodb                    - Add support for ReadConcern
+
+** Task
+    * OGM-1526 - infinispan                 - Upgrade to Infinispan 9.3.3
+    * OGM-1525 - core                       - Upgrade to Hibernate Search 5.10.4.Final
+    * OGM-1522 - build, core                - Upgrade to Hibernate ORM 5.3.6.Final (and related dependencies)
+    * OGM-1519 - infinispan, mongodb, neo4j - Test java.time fields are mapped to the correct type
+    * OGM-1518 - infinispan                 - Provide a default for most of HotRod properties
+    * OGM-1517 - core, tests                - Run Hibernate OGM without its provider persistence property
+    * OGM-1516 - infinispan                 - Provide a default value for HotRod configuration_resource_name
+    * OGM-1514 - documentation, infinispan  - Document the remote task feature
+    * OGM-1511 - infinispan                 - Infinispan Remote: remove thread local serializzation context
+
 5.4.0.Beta2 (05-07-2018)
 -------------------------
 
