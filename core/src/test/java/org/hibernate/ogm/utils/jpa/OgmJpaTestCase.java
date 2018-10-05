@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  * @author Guillaume Smet
+ * @author Fabio Massimo Ercoli
  */
 @RunWith(OgmJpaTestRunner.class)
 public abstract class OgmJpaTestCase {
@@ -112,5 +113,18 @@ public abstract class OgmJpaTestCase {
 		finally {
 			em.close();
 		}
+	}
+
+	protected void removeAll(Object... entities) {
+		inTransaction( em -> {
+			for ( Object entity : entities ) {
+				if ( entity == null ) {
+					continue;
+				}
+
+				em.refresh( entity );
+				em.remove( entity );
+			}
+		} );
 	}
 }
