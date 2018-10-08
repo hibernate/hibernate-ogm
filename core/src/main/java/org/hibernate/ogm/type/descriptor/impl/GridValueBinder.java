@@ -7,6 +7,7 @@
 package org.hibernate.ogm.type.descriptor.impl;
 
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.type.descriptor.WrapperOptions;
 
 /**
  * Contract to bind a value to the resultset
@@ -14,6 +15,10 @@ import org.hibernate.ogm.model.spi.Tuple;
  * @author Emmanuel Bernard
  */
 public interface GridValueBinder<X> {
-	//WrappedOptions for streams?
+
 	void bind(Tuple resultset, X value, String[] names);
+
+	default void bind(Tuple rs, X value, String[] names, WrapperOptions options) {
+		bind( rs, value, names );
+	}
 }
