@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.binarystorage;
 
-import java.io.ByteArrayOutputStream;
-
 import org.hibernate.engine.jdbc.BinaryStream;
 import org.hibernate.ogm.datastore.mongodb.options.impl.GridFSBucketOption;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -16,6 +14,7 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSDownloadStream;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -70,12 +69,12 @@ public class GridFSBinaryStore implements BinaryStorage {
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 
 		ObjectId uploadId = currentDocument.get( fieldName, ObjectId.class );
-		ByteArrayOutputStream fullContent = new ByteArrayOutputStream( BUFFER_SIZE );
-		//read full blob
-		gridFSFilesBucket.downloadToStream( uploadId, fullContent );
+		//lazy reading blob
+		GridFSDownloadStream gridFSDownloadStream = gridFSFilesBucket.openDownloadStream( uploadId ).batchSize(
+				BUFFER_SIZE );
 
 		//change value of the field (ObjectId -> BinaryStream)
-		currentDocument.put( fieldName, fullContent );
+		currentDocument.put( fieldName, gridFSDownloadStream );
 		currentDocument.put( fieldName + UPLOAD_ID, uploadId );
 	}
 

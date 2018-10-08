@@ -33,7 +33,7 @@ public class Photo {
 	@Lob
 	@GridFSBucket(BUCKET_NAME)
 	@BinaryStorage( GRID_FS )
-	private Blob content;
+	private Blob blobContent;
 
 	public String getId() {
 		return id;
@@ -51,12 +51,12 @@ public class Photo {
 		this.description = description;
 	}
 
-	public Blob getContent() {
-		return content;
+	public Blob getBlobContent() {
+		return blobContent;
 	}
 
-	public void setContent(Blob content) {
-		this.content = content;
+	public void setBlobContent(Blob blobContent) {
+		this.blobContent = blobContent;
 	}
 
 	@Override

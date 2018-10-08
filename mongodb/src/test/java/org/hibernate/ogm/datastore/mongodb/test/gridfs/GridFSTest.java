@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.mongodb.test.gridfs;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.SQLException;
@@ -32,6 +34,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author Davide D'Alto
@@ -41,10 +44,10 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 @TestForIssue(jiraKey = "OGM-786")
 public class GridFSTest extends OgmJpaTestCase {
 
-	// GridFS is usually for file of size bigger than 16 MB
-	private final static int BLOB_SIZE = 30 * 1024 * 1024; // 30 MB
-
 	static final String BUCKET_NAME = "photos";
+
+	// GridFS is usually for file of size bigger than 16 MB
+	private static final int BLOB_SIZE = 30 * 1024 * 1024; // 30 MB
 
 	private static final byte[] BLOB_CONTENT_1 = createByteArray( 'a', BLOB_SIZE );
 	private static final byte[] BLOB_CONTENT_2 = createByteArray( 'x', BLOB_SIZE );
@@ -53,7 +56,7 @@ public class GridFSTest extends OgmJpaTestCase {
 	private static final String ENTITY_ID_2 = "photo2";
 
 	private static byte[] createByteArray(char c, int size) {
-		char[] chars = new char[30 * 1024 * 1024];
+		char[] chars = new char[size];
 		Arrays.fill( chars, c );
 		byte[] bytes = new String( chars ).getBytes( StandardCharsets.UTF_8 );
 		return bytes;
@@ -66,7 +69,7 @@ public class GridFSTest extends OgmJpaTestCase {
 			photo.setId( ENTITY_ID_1 );
 			photo.setDescription( "photo1" );
 			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
-			photo.setContent( blob );
+			photo.setBlobContent( blob );
 			em.persist( photo );
 		} );
 
@@ -89,8 +92,13 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContent() ).isNotNull();
-			assertBlobAreEqual( photo.getContent(), BLOB_CONTENT_1 );
+			assertThat( photo.getBlobContent() ).isNotNull();
+			try {
+				assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_1 );
+			}
+			catch (IOException e) {
+				throw new RuntimeException( e );
+			}
 		} );
 	}
 
@@ -99,18 +107,28 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContent() ).isNotNull();
-			assertBlobAreEqual( photo.getContent(), BLOB_CONTENT_1 );
+			assertThat( photo.getBlobContent() ).isNotNull();
+			try {
+				assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_1 );
+			}
+			catch (IOException e) {
+				throw new RuntimeException( e );
+			}
 
 			Blob blob2 = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_2 );
-			photo.setContent( blob2 );
+			photo.setBlobContent( blob2 );
 		} );
 
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContent() ).isNotNull();
-			assertBlobAreEqual( photo.getContent(), BLOB_CONTENT_2 );
+			assertThat( photo.getBlobContent() ).isNotNull();
+			try {
+				assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_2 );
+			}
+			catch (IOException e) {
+				throw new RuntimeException( e );
+			}
 		} );
 
 		inTransaction( em -> {
@@ -133,15 +151,20 @@ public class GridFSTest extends OgmJpaTestCase {
 			photo.setDescription( "photo2" );
 
 			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
-			photo.setContent( blob );
+			photo.setBlobContent( blob );
 			em.persist( photo );
 		} );
 
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_2 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContent() ).isNotNull();
-			assertBlobAreEqual( photo.getContent(), BLOB_CONTENT_1 );
+			assertThat( photo.getBlobContent() ).isNotNull();
+			try {
+				assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_1 );
+			}
+			catch (IOException e) {
+				throw new RuntimeException( e );
+			}
 
 			em.remove( photo );
 		} );
@@ -165,10 +188,15 @@ public class GridFSTest extends OgmJpaTestCase {
 		return mongoDBDatastoreProvider.getDatabase();
 	}
 
-	private void assertBlobAreEqual(Blob actual, byte[] expected) {
+	private void assertBlobAreEqual(Blob actual, byte[] expected) throws IOException {
 		try {
 			assertThat( actual.length() ).isEqualTo( expected.length );
-			assertThat( actual.getBytes( 1, expected.length ) ).isEqualTo( expected );
+			InputStream binaryStream = actual.getBinaryStream();
+			ByteArrayOutputStream fullContent = new ByteArrayOutputStream( expected.length );
+			//read full content from blob
+			IOUtils.copy( binaryStream, fullContent );
+
+			assertThat( fullContent.toByteArray() ).isEqualTo( expected );
 		}
 		catch (SQLException e) {
 			throw new RuntimeException( e );

@@ -6,9 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.type.impl;
 
-import java.io.ByteArrayOutputStream;
+import java.sql.Blob;
 
 import org.hibernate.engine.jdbc.BinaryStream;
+import org.hibernate.engine.jdbc.BlobProxy;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.descriptor.impl.BasicGridBinder;
 import org.hibernate.ogm.type.descriptor.impl.GridTypeDescriptor;
@@ -16,6 +17,8 @@ import org.hibernate.ogm.type.descriptor.impl.GridValueBinder;
 import org.hibernate.ogm.type.descriptor.impl.GridValueExtractor;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+
+import com.mongodb.client.gridfs.GridFSDownloadStream;
 
 /**
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
@@ -39,22 +42,15 @@ public class BlobMappedGridTypeDescriptor implements GridTypeDescriptor {
 	@Override
 	public <X> GridValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
 		return new GridValueExtractor<X>() {
-
 			@Override
-			public X extract(Tuple tuple, String name, WrapperOptions options) {
-				final ByteArrayOutputStream binaryStream = (ByteArrayOutputStream) tuple.get( name );
-				if ( binaryStream == null ) {
-					return null;
+			public X extract(Tuple tuple, String name) {
+				final GridFSDownloadStream binaryStream = (GridFSDownloadStream) tuple.get( name );
+				if ( binaryStream != null ) {
+					long fileSize  = binaryStream.getGridFSFile().getLength();
+					Blob blob = BlobProxy.generateProxy( binaryStream, fileSize );
+					return (X) blob;
 				}
-				else {
-					byte[] data = binaryStream.toByteArray();
-					return javaTypeDescriptor.wrap( data, options );
-				}
-			}
-
-			@Override
-			public X extract(Tuple resultset, String name) {
-				throw new UnsupportedOperationException( "Resultset cannot be converted without a LobCreator object" );
+				return null;
 			}
 		};
 	}
