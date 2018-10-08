@@ -108,7 +108,6 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 	 * @return a new {@link GlobalContext} object based on the given context implementation types
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <G extends GlobalContext<?, ?>> G createGlobalContext(Class<? extends G> globalContextImplType,
 			final Class<? extends EntityContext<?, ?>> entityContextImplType, Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
 
@@ -129,7 +128,6 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private <E extends EntityContext<?, ?>> E createEntityMappingContext(Class<? extends E> entityContextImplType,
 			Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
 
@@ -150,7 +148,6 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private <P extends PropertyContext<?, ?>> P createPropertyMappingContext(Class<? extends EntityContext<?, ?>> entityContextImplType,
 			Class<? extends P> propertyContextImplType) {
 
