@@ -4,23 +4,33 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.mongodb.test.inheritance;
+package org.hibernate.ogm.datastore.mongodb.test.inheritance.singletable;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.Type;
 
 @Entity
-public class NodeLink {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+public abstract class Node {
+
+	private Set<NodeLink> children;
 
 	private String id;
+	private String name;
 
-	private Node source;
-	private Node target;
+	public Node() {
+		children = new HashSet<>();
+	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,37 +43,21 @@ public class NodeLink {
 		this.id = id;
 	}
 
-	@ManyToOne
-	public Node getSource() {
-		return source;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	void setSource(Node source) {
-		this.source = source;
+	public String getName() {
+		return name;
 	}
 
-	public void assignSource(Node source) {
-		setSource( source );
-		source.getChildren().add( this );
+	@OneToMany(mappedBy = "source")
+	public Set<NodeLink> getChildren() {
+		return children;
 	}
 
-	@ManyToOne
-	public Node getTarget() {
-		return target;
-	}
-
-	void setTarget(Node target) {
-		this.target = target;
-	}
-
-	public void assignTarget(Node target) {
-		setTarget( target );
-	}
-
-
-	@Override
-	public String toString() {
-		return "NodeLink(" + id + "):  " + source + " to " + target;
+	void setChildren(Set<NodeLink> children) {
+		this.children = children;
 	}
 
 	@Override
@@ -71,8 +65,7 @@ public class NodeLink {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ( ( id == null ) ? 0 : id.hashCode() );
-		result = prime * result + ( ( source == null ) ? 0 : source.hashCode() );
-		result = prime * result + ( ( target == null ) ? 0 : target.hashCode() );
+		result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
 		return result;
 	}
 
@@ -87,7 +80,7 @@ public class NodeLink {
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		NodeLink other = (NodeLink) obj;
+		Node other = (Node) obj;
 		if ( id == null ) {
 			if ( other.id != null ) {
 				return false;
@@ -96,22 +89,20 @@ public class NodeLink {
 		else if ( !id.equals( other.id ) ) {
 			return false;
 		}
-		if ( source == null ) {
-			if ( other.source != null ) {
+		if ( name == null ) {
+			if ( other.name != null ) {
 				return false;
 			}
 		}
-		else if ( !source.equals( other.source ) ) {
-			return false;
-		}
-		if ( target == null ) {
-			if ( other.target != null ) {
-				return false;
-			}
-		}
-		else if ( !target.equals( other.target ) ) {
+		else if ( !name.equals( other.name ) ) {
 			return false;
 		}
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "(" + id + ", " + name + ")";
+	}
+
 }
