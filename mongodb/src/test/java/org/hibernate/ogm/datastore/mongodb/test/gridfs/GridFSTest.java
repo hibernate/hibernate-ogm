@@ -67,7 +67,7 @@ public class GridFSTest extends OgmJpaTestCase {
 			photo.setId( ENTITY_ID_1 );
 			photo.setDescription( "photo1" );
 			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
-			photo.setBlobContent( blob );
+			photo.setContentAsBlob( blob );
 			em.persist( photo );
 		} );
 
@@ -90,8 +90,8 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getBlobContent() ).isNotNull();
-			assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_1 );
+			assertThat( photo.getContentAsBlob() ).isNotNull();
+			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
 		} );
 	}
 
@@ -100,18 +100,18 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getBlobContent() ).isNotNull();
-			assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_1 );
+			assertThat( photo.getContentAsBlob() ).isNotNull();
+			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
 
 			Blob blob2 = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_2 );
-			photo.setBlobContent( blob2 );
+			photo.setContentAsBlob( blob2 );
 		} );
 
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getBlobContent() ).isNotNull();
-			assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_2 );
+			assertThat( photo.getContentAsBlob() ).isNotNull();
+			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_2 );
 		} );
 
 		inTransaction( em -> {
@@ -134,15 +134,15 @@ public class GridFSTest extends OgmJpaTestCase {
 			photo.setDescription( "photo2" );
 
 			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
-			photo.setBlobContent( blob );
+			photo.setContentAsBlob( blob );
 			em.persist( photo );
 		} );
 
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_2 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getBlobContent() ).isNotNull();
-			assertBlobAreEqual( photo.getBlobContent(), BLOB_CONTENT_1 );
+			assertThat( photo.getContentAsBlob() ).isNotNull();
+			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
 			em.remove( photo );
 		} );
 
