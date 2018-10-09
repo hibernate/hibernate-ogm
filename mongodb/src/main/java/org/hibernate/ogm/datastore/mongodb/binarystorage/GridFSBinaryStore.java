@@ -23,6 +23,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import org.bson.BsonBinary;
 import org.bson.Document;
 import org.bson.types.Binary;
@@ -52,7 +53,7 @@ public class GridFSBinaryStore implements BinaryStorage {
 	@Override
 	public void storeContentToBinaryStorage(OptionsContext optionsContext, Document currentDocument, String fieldName, Tuple tuple) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
-
+		Document metadata = new Document(  );
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 		String fileName = "";
 		Object binaryContentObject = currentDocument.get( fieldName );
@@ -60,16 +61,25 @@ public class GridFSBinaryStore implements BinaryStorage {
 		if ( binaryContentObject instanceof BinaryStream ) {
 			BinaryStream binaryStream = (BinaryStream) binaryContentObject;
 			binaryInputStream = binaryStream.getInputStream();
+			metadata.put( "binaryContent","BinaryStream" );
 		}
 		else if ( binaryContentObject instanceof BsonBinary ) {
 			BsonBinary bsonBinary = (BsonBinary) binaryContentObject;
 			binaryInputStream = new ByteArrayInputStream( bsonBinary.getData() );
+			metadata.put( "binaryContent","BsonBinary" );
+		}
+		else if ( binaryContentObject instanceof String ) {
+			String string = (String) binaryContentObject;
+			//use default encoding
+			binaryInputStream = new ByteArrayInputStream( string.getBytes() );
+			metadata.put( "binaryContent","String" );
 		}
 		else {
 			throw log.unsupportedBinaryType( binaryContentObject.getClass() );
 		}
-
-		ObjectId uploadId = gridFSFilesBucket.uploadFromStream( fileName, binaryInputStream );
+		GridFSUploadOptions gridFSUploadOptions = new GridFSUploadOptions();
+		gridFSUploadOptions.metadata( metadata );
+		ObjectId uploadId = gridFSFilesBucket.uploadFromStream( fileName, binaryInputStream,gridFSUploadOptions );
 		// change value of the field (BinaryStream -> ObjectId)
 		currentDocument.put( fieldName, uploadId );
 		if ( Tuple.SnapshotType.UPDATE == tuple.getSnapshotType() ) {
@@ -91,8 +101,8 @@ public class GridFSBinaryStore implements BinaryStorage {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
-
 		ObjectId uploadId = currentDocument.get( fieldName, ObjectId.class );
+		Document metadata = gridFSFilesBucket.openDownloadStream( uploadId ).getGridFSFile().getMetadata();
 
 		if ( fieldType.equals( Blob.class ) ) {
 			//lazy reading blob
@@ -106,6 +116,12 @@ public class GridFSBinaryStore implements BinaryStorage {
 			ByteArrayOutputStream byteArrayContentStream = new ByteArrayOutputStream(  );
 			gridFSFilesBucket.downloadToStream( uploadId, byteArrayContentStream  );
 			currentDocument.put( fieldName, new Binary( byteArrayContentStream.toByteArray() ) );
+		}
+		else if ( fieldType.equals( String.class ) ) {
+			//change value of the field (ObjectId -> org.bson.types.Binary)
+			ByteArrayOutputStream byteArrayContentStream = new ByteArrayOutputStream(  );
+			gridFSFilesBucket.downloadToStream( uploadId, byteArrayContentStream  );
+			currentDocument.put( fieldName, new String( byteArrayContentStream.toByteArray() ) );
 		}
 
 		currentDocument.put( fieldName + UPLOAD_ID, uploadId );

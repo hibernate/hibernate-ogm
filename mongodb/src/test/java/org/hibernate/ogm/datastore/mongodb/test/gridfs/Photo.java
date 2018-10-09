@@ -40,6 +40,11 @@ public class Photo {
 	@BinaryStorage( GRID_FS )
 	private byte[] contentAsByteArray;
 
+	@Lob
+	@GridFSBucket(BUCKET_NAME)
+	@BinaryStorage( GRID_FS )
+	private String contentAsString;
+
 
 	public String getId() {
 		return id;
@@ -71,6 +76,14 @@ public class Photo {
 
 	public void setContentAsByteArray(byte[] contentAsByteArray) {
 		this.contentAsByteArray = contentAsByteArray;
+	}
+
+	public String getContentAsString() {
+		return contentAsString;
+	}
+
+	public void setContentAsString(String contentAsString) {
+		this.contentAsString = contentAsString;
 	}
 
 	@Override
