@@ -40,6 +40,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.BinaryStorageManager;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
@@ -64,6 +65,7 @@ import org.hibernate.ogm.datastore.mongodb.type.GeoMultiPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPoint;
 import org.hibernate.ogm.datastore.mongodb.type.GeoPolygon;
 import org.hibernate.ogm.datastore.mongodb.type.impl.BinaryAsBsonBinaryGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.BlobGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoCollectionGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoLineStringGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiLineStringGridType;
@@ -120,6 +122,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.hibernate.ogm.type.impl.ByteStringType;
 import org.hibernate.ogm.type.impl.CharacterStringType;
@@ -131,6 +134,8 @@ import org.hibernate.ogm.type.impl.TimestampAsDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.ogm.util.impl.StringHelper;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.MaterializedBlobType;
 import org.hibernate.type.SerializableToBlobType;
 import org.hibernate.type.StandardBasicTypes;
@@ -197,7 +202,7 @@ import com.mongodb.client.result.UpdateResult;
  * @author Guillaume Smet
  */
 public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect,
-		StoredProcedureAwareGridDialect {
+		StoredProcedureAwareGridDialect, ServiceRegistryAwareService {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -223,10 +228,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private final MongoDBDatastoreProvider provider;
 	private final MongoDatabase currentDB;
+	private final BinaryStorageManager binaryStorageManager;
+	private ServiceRegistryImplementor serviceRegistry;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
 		this.currentDB = this.provider.getDatabase();
+		this.binaryStorageManager = new BinaryStorageManager( this.currentDB, provider );
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
 	}
 
 	@Override
@@ -326,7 +339,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( operationContext );
 
 		FindIterable<Document> fi = collection.find( searchObject );
-		return fi != null ? fi.projection( projection ).first() : null;
+		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
+
+		OptionsService options = optionService();
+		binaryStorageManager.loadContentFromBinaryStorage( targetDocument, key, options );
+		return targetDocument;
+	}
+
+	private OptionsService optionService() {
+		OptionsService options = serviceRegistry.getService( OptionsService.class );
+		return options;
 	}
 
 	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
@@ -607,8 +629,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Document toDelete = prepareIdObject( key );
-		MongoCollection<Document> collection = getCollection( key, getOptionsContext( tupleContext ) );
-		collection.deleteMany( toDelete );
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		Document deleted = collection.findOneAndDelete( toDelete );
+		if ( deleted != null ) {
+			OptionsService options = optionService();
+			binaryStorageManager.removeFromBinaryStorageByEntity( options, deleted, key );
+		}
 	}
 
 	@Override
@@ -838,6 +865,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type == StandardBasicTypes.BINARY ) {
 			return BinaryAsBsonBinaryGridType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.BLOB ) {
+			return BlobGridType.INSTANCE;
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
@@ -1596,6 +1626,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document insertStatement = null;
 		Document updateStatement = new Document();
 		WriteConcern writeConcern = null;
+		OptionsService optionsService = optionService();
 
 		final UpdateOptions updateOptions = new UpdateOptions().upsert( true );
 		for ( Operation operation : groupedOperation.getOperations() ) {
@@ -1608,6 +1639,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				if ( SnapshotType.INSERT == tuple.getSnapshotType() ) {
 					Document document = getCurrentDocument( snapshot, insertStatement, entityKey );
 					insertStatement = objectForInsert( tuple, document );
+					binaryStorageManager.storeContentToBinaryStorage( insertStatement, entityKey, optionsService, tuple );
 
 					getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection )
 							.put( entityKey, insertStatement );
@@ -1615,6 +1647,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					updateStatement = objectForUpdate( tuple, tupleOperation.getTupleContext(), updateStatement );
+					binaryStorageManager.storeContentToBinaryStorage( updateStatement, entityKey, optionsService, tuple );
 				}
 			}
 			else if ( operation instanceof InsertOrUpdateAssociationOperation ) {

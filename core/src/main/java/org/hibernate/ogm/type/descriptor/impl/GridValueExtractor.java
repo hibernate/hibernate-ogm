@@ -7,6 +7,7 @@
 package org.hibernate.ogm.type.descriptor.impl;
 
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.type.descriptor.WrapperOptions;
 
 /**
  * Extract value from the result set
@@ -14,6 +15,10 @@ import org.hibernate.ogm.model.spi.Tuple;
  * @author Emmanuel Bernard
  */
 public interface GridValueExtractor<X> {
-	//WrappedOptions for streams?
+
 	X extract(Tuple resultset, String name);
+
+	default X extract(Tuple resultset, String name, WrapperOptions options) {
+		return extract( resultset, name );
+	}
 }
