@@ -144,4 +144,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1240, value = "Procedures returning muliple documents are not supported. Procedure '%1$s' returned %2$d results")
 	HibernateException multipleDocumentReturnedByStoredProcedure(String storedProcedureName, int size);
+
+	@Message(id = 1241, value = "Type %s is not supported yet! ")
+	HibernateException unsupportedBinaryType(Class binaryType);
+
+	@Message(id = 1242, value = "Class %s haven't field %s! ")
+	HibernateException unknownField(Class entityType, String field);
 }

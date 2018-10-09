@@ -61,13 +61,14 @@ public class GridFSTest extends OgmJpaTestCase {
 	}
 
 	@Test
-	public void canCreateEntityWithBlob() throws Exception {
+	public void canCreateEntityWithBlob() {
 		inTransaction( em -> {
 			Photo photo = new Photo();
 			photo.setId( ENTITY_ID_1 );
 			photo.setDescription( "photo1" );
 			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
 			photo.setContentAsBlob( blob );
+			photo.setContentAsByteArray( BLOB_CONTENT_1 );
 			em.persist( photo );
 		} );
 
@@ -75,28 +76,31 @@ public class GridFSTest extends OgmJpaTestCase {
 			MongoDatabase mongoDatabase = getCurrentDB( em );
 			GridFSBucket gridFSFilesBucket = GridFSBuckets.create( mongoDatabase, BUCKET_NAME );
 			MongoCursor<GridFSFile> cursor = gridFSFilesBucket.find().iterator();
-			assertThat( cursor.hasNext() ).isEqualTo( true );
+			for ( int i = 0; i < 2; i++ ) {
+				assertThat( cursor.hasNext() ).isEqualTo( true );
+				GridFSFile savedFile = cursor.next();
+				assertThat( savedFile ).isNotNull();
+				assertThat( savedFile.getLength() ).isEqualTo( BLOB_CONTENT_1.length );
 
-			GridFSFile savedFile = cursor.next();
-			assertThat( savedFile ).isNotNull();
-			assertThat( savedFile.getLength() ).isEqualTo( BLOB_CONTENT_1.length );
-
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			gridFSFilesBucket.downloadToStream( savedFile.getObjectId(), outputStream );
-			assertThat( outputStream.size() ).isEqualTo( BLOB_CONTENT_1.length );
-			assertThat( outputStream.toByteArray() ).isEqualTo( BLOB_CONTENT_1 );
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				gridFSFilesBucket.downloadToStream( savedFile.getObjectId(), outputStream );
+				assertThat( outputStream.size() ).isEqualTo( BLOB_CONTENT_1.length );
+				assertThat( outputStream.toByteArray() ).isEqualTo( BLOB_CONTENT_1 );
+			}
 		} );
 
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
 			assertThat( photo.getContentAsBlob() ).isNotNull();
+			assertThat( photo.getContentAsByteArray() ).isNotNull();
 			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
+			assertThat( photo.getContentAsByteArray() ).isEqualTo( BLOB_CONTENT_1 );
 		} );
 	}
 
 	@Test
-	public void canReplaceBlobInEntity() throws Exception {
+	public void canReplaceBlobInEntity() {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
@@ -105,6 +109,7 @@ public class GridFSTest extends OgmJpaTestCase {
 
 			Blob blob2 = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_2 );
 			photo.setContentAsBlob( blob2 );
+			photo.setContentAsByteArray( BLOB_CONTENT_2 );
 		} );
 
 		inTransaction( em -> {
@@ -112,6 +117,8 @@ public class GridFSTest extends OgmJpaTestCase {
 			assertThat( photo ).isNotNull();
 			assertThat( photo.getContentAsBlob() ).isNotNull();
 			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_2 );
+			assertThat( photo.getContentAsByteArray() ).isNotNull();
+			assertThat( photo.getContentAsByteArray() ).isEqualTo( BLOB_CONTENT_2 );
 		} );
 
 		inTransaction( em -> {
@@ -121,12 +128,12 @@ public class GridFSTest extends OgmJpaTestCase {
 			for ( ; cursor.hasNext(); ) {
 				files.add( cursor.next() );
 			}
-			assertThat( files.size() ).isEqualTo( 1 );
+			assertThat( files.size() ).isEqualTo( 2 );
 		} );
 	}
 
 	@Test
-	public void canRemoveEntityWithBlob() throws Exception {
+	public void canRemoveEntityWithBlob() {
 
 		inTransaction( em -> {
 			Photo photo = new Photo();
@@ -135,6 +142,7 @@ public class GridFSTest extends OgmJpaTestCase {
 
 			Blob blob = Hibernate.getLobCreator( em.unwrap( Session.class ) ).createBlob( BLOB_CONTENT_1 );
 			photo.setContentAsBlob( blob );
+			photo.setContentAsByteArray( BLOB_CONTENT_1 );
 			em.persist( photo );
 		} );
 
@@ -143,6 +151,8 @@ public class GridFSTest extends OgmJpaTestCase {
 			assertThat( photo ).isNotNull();
 			assertThat( photo.getContentAsBlob() ).isNotNull();
 			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
+			assertThat( photo.getContentAsByteArray() ).isNotNull();
+			assertThat( photo.getContentAsByteArray() ).isEqualTo( BLOB_CONTENT_1 );
 			em.remove( photo );
 		} );
 
@@ -153,7 +163,7 @@ public class GridFSTest extends OgmJpaTestCase {
 			while ( cursor.hasNext() ) {
 				files.add( cursor.next() );
 			}
-			assertThat( files.size() ).isEqualTo( 1 );
+			assertThat( files.size() ).isEqualTo( 2 ); // files for ENTITY_ID_1
 		} );
 	}
 

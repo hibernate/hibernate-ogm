@@ -27,7 +27,7 @@ public class NoopBinaryStore implements BinaryStorage {
 	}
 
 	@Override
-	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName) {
+	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName, Class<?> fieldType) {
 
 	}
 }

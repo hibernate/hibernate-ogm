@@ -6,12 +6,17 @@
  */
 package org.hibernate.ogm.datastore.mongodb.binarystorage;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.BinaryStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.BinaryStorageOption;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -26,6 +31,7 @@ import org.bson.Document;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 public class BinaryStorageManager {
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final BinaryStorage NOOP_DELEGATOR = new NoopBinaryStore();
 
 	private final Map<BinaryStorageType, BinaryStorage> BINARY_STORAGE_MAP;
@@ -86,16 +92,31 @@ public class BinaryStorageManager {
 		if ( currentDocument == null ) {
 			return;
 		}
-		for ( String fieldName : currentDocument.keySet() ) {
+		Set<String> sourceKeySet = new HashSet<>( currentDocument.keySet() );
+		for ( String fieldName : sourceKeySet ) {
 			OptionsContext optionsContext = getPropertyOptions( optionService, entityClass, fieldName );
 			BinaryStorage binaryStorage = binaryStorage( optionsContext );
-
-			binaryStorage.loadContentFromBinaryStorageToField( optionsContext, currentDocument, fieldName );
+			if ( !( binaryStorage instanceof NoopBinaryStore ) ) {
+				Class<?> fieldType = null;
+				try {
+					fieldType = getFieldType( entityClass, fieldName );
+				}
+				catch (NoSuchFieldException e) {
+					throw log.unknownField( entityClass, fieldName );
+				}
+				binaryStorage.loadContentFromBinaryStorageToField(
+						optionsContext, currentDocument, fieldName, fieldType );
+			}
 		}
 	}
 
 	private  OptionsContext getPropertyOptions( OptionsService optionService, Class entityClass, String fieldName) {
 		return optionService.context().getPropertyOptions( entityClass, fieldName );
+	}
+
+	private  Class<?> getFieldType( Class entityClass, String fieldName) throws NoSuchFieldException {
+		Field field = entityClass.getDeclaredField( fieldName );
+		return field.getType();
 	}
 
 }

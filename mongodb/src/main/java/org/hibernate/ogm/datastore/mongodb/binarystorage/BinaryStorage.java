@@ -21,5 +21,5 @@ public interface BinaryStorage {
 
 	void removeContentFromBinaryStore(OptionsContext optionsContext, Document deletedDocument, String fieldName);
 
-	void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName);
+	void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName, Class<?> fieldType);
 }

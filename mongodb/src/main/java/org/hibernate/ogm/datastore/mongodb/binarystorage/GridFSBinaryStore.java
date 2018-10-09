@@ -6,7 +6,15 @@
  */
 package org.hibernate.ogm.datastore.mongodb.binarystorage;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
+import java.sql.Blob;
+
 import org.hibernate.engine.jdbc.BinaryStream;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.impl.GridFSBucketOption;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsContext;
@@ -15,7 +23,9 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
+import org.bson.BsonBinary;
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 
 /**
@@ -26,6 +36,7 @@ import org.bson.types.ObjectId;
  */
 public class GridFSBinaryStore implements BinaryStorage {
 
+	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 	private static final int BUFFER_SIZE = 100_000;
 	private static final String UPLOAD_ID = "_uploadId";
 	private final MongoDatabase mongoDatabase;
@@ -44,8 +55,21 @@ public class GridFSBinaryStore implements BinaryStorage {
 
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 		String fileName = "";
-		BinaryStream binaryStream = currentDocument.get( fieldName, BinaryStream.class );
-		ObjectId uploadId = gridFSFilesBucket.uploadFromStream( fileName, binaryStream.getInputStream() );
+		Object binaryContentObject = currentDocument.get( fieldName );
+		InputStream  binaryInputStream = null;
+		if ( binaryContentObject instanceof BinaryStream ) {
+			BinaryStream binaryStream = (BinaryStream) binaryContentObject;
+			binaryInputStream = binaryStream.getInputStream();
+		}
+		else if ( binaryContentObject instanceof BsonBinary ) {
+			BsonBinary bsonBinary = (BsonBinary) binaryContentObject;
+			binaryInputStream = new ByteArrayInputStream( bsonBinary.getData() );
+		}
+		else {
+			throw log.unsupportedBinaryType( binaryContentObject.getClass() );
+		}
+
+		ObjectId uploadId = gridFSFilesBucket.uploadFromStream( fileName, binaryInputStream );
 		// change value of the field (BinaryStream -> ObjectId)
 		currentDocument.put( fieldName, uploadId );
 		if ( Tuple.SnapshotType.UPDATE == tuple.getSnapshotType() ) {
@@ -63,18 +87,27 @@ public class GridFSBinaryStore implements BinaryStorage {
 	}
 
 	@Override
-	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName) {
+	public void loadContentFromBinaryStorageToField( OptionsContext optionsContext, Document currentDocument, String fieldName, Class<?> fieldType) {
 		String gridfsBucketName = optionsContext.getUnique( GridFSBucketOption.class );
 
 		GridFSBucket gridFSFilesBucket = getGridFSFilesBucket( mongoDatabase, gridfsBucketName );
 
 		ObjectId uploadId = currentDocument.get( fieldName, ObjectId.class );
-		//lazy reading blob
-		GridFSDownloadStream gridFSDownloadStream = gridFSFilesBucket.openDownloadStream( uploadId ).batchSize(
-				BUFFER_SIZE );
 
-		//change value of the field (ObjectId -> BinaryStream)
-		currentDocument.put( fieldName, gridFSDownloadStream );
+		if ( fieldType.equals( Blob.class ) ) {
+			//lazy reading blob
+			GridFSDownloadStream gridFSDownloadStream = gridFSFilesBucket.openDownloadStream( uploadId ).batchSize(
+					BUFFER_SIZE );
+			//change value of the field (ObjectId -> BinaryStream)
+			currentDocument.put( fieldName, gridFSDownloadStream );
+		}
+		else if ( fieldType.equals( byte[].class ) ) {
+			//change value of the field (ObjectId -> org.bson.types.Binary)
+			ByteArrayOutputStream byteArrayContentStream = new ByteArrayOutputStream(  );
+			gridFSFilesBucket.downloadToStream( uploadId, byteArrayContentStream  );
+			currentDocument.put( fieldName, new Binary( byteArrayContentStream.toByteArray() ) );
+		}
+
 		currentDocument.put( fieldName + UPLOAD_ID, uploadId );
 	}
 
