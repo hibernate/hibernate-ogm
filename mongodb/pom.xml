@@ -22,6 +22,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>-Xmx3g</argLine>
                     <environmentVariables>
                         <MONGODB_HOSTNAME>${env.MONGODB_HOSTNAME}</MONGODB_HOSTNAME>
                         <MONGODB_PORT>${env.MONGODB_PORT}</MONGODB_PORT>
