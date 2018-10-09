@@ -26,8 +26,6 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mongodb.client.MongoCursor;
@@ -35,7 +33,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import org.bson.Document;
 
 /**
  * @author Davide D'Alto
@@ -97,11 +94,8 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContentAsBlob() ).isNotNull();
-			assertThat( photo.getContentAsByteArray() ).isNotNull();
 			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
 			assertThat( photo.getContentAsByteArray() ).isEqualTo( BLOB_CONTENT_1 );
-			assertThat( photo.getContentAsString() ).isNotNull();
 			assertThat( photo.getContentAsString() ).isEqualTo( BLOB_STRING_CONTENT_1 );
 		} );
 	}
@@ -123,11 +117,8 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_1 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContentAsBlob() ).isNotNull();
 			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_2 );
-			assertThat( photo.getContentAsByteArray() ).isNotNull();
 			assertThat( photo.getContentAsByteArray() ).isEqualTo( BLOB_CONTENT_2 );
-			assertThat( photo.getContentAsString() ).isNotNull();
 			assertThat( photo.getContentAsString() ).isEqualTo( BLOB_STRING_CONTENT_2 );
 		} );
 
@@ -160,11 +151,8 @@ public class GridFSTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Photo photo = em.find( Photo.class, ENTITY_ID_2 );
 			assertThat( photo ).isNotNull();
-			assertThat( photo.getContentAsBlob() ).isNotNull();
 			assertBlobAreEqual( photo.getContentAsBlob(), BLOB_CONTENT_1 );
-			assertThat( photo.getContentAsByteArray() ).isNotNull();
 			assertThat( photo.getContentAsByteArray() ).isEqualTo( BLOB_CONTENT_1 );
-			assertThat( photo.getContentAsString() ).isNotNull();
 			assertThat( photo.getContentAsString() ).isEqualTo( BLOB_STRING_CONTENT_1 );
 			em.remove( photo );
 		} );
