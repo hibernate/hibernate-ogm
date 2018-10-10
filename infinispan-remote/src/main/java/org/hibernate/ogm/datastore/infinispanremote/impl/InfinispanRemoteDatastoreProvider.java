@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.boot.model.relational.Sequence;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteDialect;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
 import org.hibernate.ogm.datastore.infinispanremote.impl.cachehandler.HotRodCacheCreationHandler;
@@ -44,6 +45,7 @@ import org.hibernate.service.spi.Stoppable;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
 import org.infinispan.protostream.DescriptorParserException;
@@ -65,6 +67,8 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	 * by our Hot Rod client.
 	 */
 	private final OgmProtoStreamMarshaller marshaller = new OgmProtoStreamMarshaller();
+
+	private JtaPlatform jtaPlatform;
 
 	// Only available during configuration
 	private InfinispanRemoteConfiguration config;
@@ -114,6 +118,9 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	@EffectivelyFinal
 	private String schemaFileName;
 
+	@EffectivelyFinal
+	private TransactionMode transactionMode;
+
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return InfinispanRemoteDialect.class;
@@ -121,7 +128,10 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	@Override
 	public void start() {
-		hotrodClient = HotRodClientBuilder.builder().withConfiguration( config, marshaller ).build();
+		hotrodClient = HotRodClientBuilder.builder()
+				.withConfiguration( config, marshaller )
+				.withTransactionMode( transactionMode, jtaPlatform ).build();
+
 		// TODO temporary create another cache manager to handle remote script registration and invocation due to incompatibility of ProtoStreamMarshaller.
 		// When https://issues.jboss.org/browse/ISPN-8020 is closed, we could remove it and reuse the common hotrodClient.
 		scriptManager = HotRodClientBuilder.builder().withConfiguration( config, new GenericJBossMarshaller() ).build();
@@ -144,11 +154,13 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 		this.schemaFileName = config.getSchemaFileName();
 		this.createCachesEnabled = config.isCreateCachesEnabled();
 		this.cacheConfiguration = config.getCacheConfiguration();
+		this.transactionMode = config.getTransactionMode();
 	}
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
+		this.jtaPlatform = serviceRegistry.getService( JtaPlatform.class );
 	}
 
 	@Override
@@ -197,7 +209,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 
 	private HotRodCacheHandler createCacheHandler(SchemaDefinitions sd) {
 		if ( createCachesEnabled ) {
-			return new HotRodCacheCreationHandler( cacheConfiguration, sd.getCacheConfigurationByName() );
+			return new HotRodCacheCreationHandler( cacheConfiguration, sd.getCacheConfigurationByName(), transactionMode );
 		}
 		else {
 			return new HotRodCacheValidationHandler( sd.getCacheConfigurationByName().keySet() );
@@ -205,13 +217,7 @@ public class InfinispanRemoteDatastoreProvider extends BaseDatastoreProvider
 	}
 
 	private RemoteCache<String, String> getProtobufCache() {
-		return getCache( ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME );
-	}
-
-	@Override
-	public boolean allowsTransactionEmulation() {
-		// Hot Rod doesn't support "true" transaction yet
-		return true;
+		return hotrodClient.getCache( ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME, TransactionMode.NONE );
 	}
 
 	@Override

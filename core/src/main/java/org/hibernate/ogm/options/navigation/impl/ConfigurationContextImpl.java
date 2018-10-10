@@ -9,6 +9,7 @@ package org.hibernate.ogm.options.navigation.impl;
 import static net.bytebuddy.implementation.MethodDelegation.to;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
+import static org.hibernate.bytecode.internal.bytebuddy.ByteBuddyState.resolveClassLoadingStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.invoke.MethodHandles;
@@ -107,15 +108,17 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 	 * @return a new {@link GlobalContext} object based on the given context implementation types
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public <G extends GlobalContext<?, ?>> G createGlobalContext(Class<? extends G> globalContextImplType,
 			final Class<? extends EntityContext<?, ?>> entityContextImplType, Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
 
+		// ByteBuddyState#resolveClassLoadingStrategy static method is an Hibernate ORM internal,
+		// please remove its use here as soon the issue HHH-13014 has been closed.
+		// url https://hibernate.atlassian.net/browse/HHH-13014.
 		Class<? extends G> globalContextType = new ByteBuddy()
 				.subclass( globalContextImplType )
 				.method( filterEntityMethod() )
 				.intercept( to( new EntityOrPropertyMethodInterceptor( entityContextImplType, propertyContextImplType ) ) )
-				.make().load( globalContextImplType.getClassLoader() ).getLoaded();
+				.make().load( globalContextImplType.getClassLoader(), resolveClassLoadingStrategy( globalContextImplType ) ).getLoaded();
 
 		try {
 			return globalContextType.getConstructor( ConfigurationContext.class ).newInstance( this );
@@ -125,15 +128,17 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private <E extends EntityContext<?, ?>> E createEntityMappingContext(Class<? extends E> entityContextImplType,
 			Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
 
+		// ByteBuddyState#resolveClassLoadingStrategy static method is an Hibernate ORM internal,
+		// please remove its use here as soon the issue HHH-13014 has been closed.
+		// url https://hibernate.atlassian.net/browse/HHH-13014.
 		Class<? extends E> entityContextType = new ByteBuddy()
 				.subclass( entityContextImplType )
 				.method( filterEntityMethod().or( filterPropertyMethod() ) )
 				.intercept( to( new EntityOrPropertyMethodInterceptor( entityContextImplType, propertyContextImplType ) ) )
-				.make().load( entityContextImplType.getClassLoader() ).getLoaded();
+				.make().load( entityContextImplType.getClassLoader(), resolveClassLoadingStrategy( entityContextImplType ) ).getLoaded();
 
 		try {
 			return entityContextType.getConstructor( ConfigurationContext.class ).newInstance( this );
@@ -143,15 +148,17 @@ public class ConfigurationContextImpl implements ConfigurationContext {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private <P extends PropertyContext<?, ?>> P createPropertyMappingContext(Class<? extends EntityContext<?, ?>> entityContextImplType,
 			Class<? extends P> propertyContextImplType) {
 
+		// ByteBuddyState#resolveClassLoadingStrategy static method is an Hibernate ORM internal,
+		// please remove its use here as soon the issue HHH-13014 has been closed.
+		// url https://hibernate.atlassian.net/browse/HHH-13014.
 		Class<? extends P> propertyContextType = new ByteBuddy()
 				.subclass( propertyContextImplType )
 				.method( filterEntityMethod().or( filterPropertyMethod() ) )
 				.intercept( to( new EntityOrPropertyMethodInterceptor( entityContextImplType, propertyContextImplType ) ) )
-				.make().load( propertyContextImplType.getClassLoader() ).getLoaded();
+				.make().load( propertyContextImplType.getClassLoader(), resolveClassLoadingStrategy( entityContextImplType ) ).getLoaded();
 
 		try {
 			return propertyContextType.getConstructor( ConfigurationContext.class ).newInstance( this );

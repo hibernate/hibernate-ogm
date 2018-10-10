@@ -16,10 +16,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-
 import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceException;
 
 import org.hibernate.Transaction;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -30,6 +31,7 @@ import org.hibernate.ogm.compensation.operation.ExecuteBatch;
 import org.hibernate.ogm.compensation.operation.GridDialectOperation;
 import org.hibernate.ogm.compensation.operation.InsertOrUpdateTuple;
 import org.hibernate.ogm.compensation.operation.UpdateTupleWithOptimisticLock;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.GroupingByEntityDialect;
 import org.hibernate.ogm.dialect.impl.GridDialects;
@@ -202,7 +204,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 			fail( "expected exception was not raised" );
 		}
-		catch (OptimisticLockException sose) {
+		catch (PersistenceException sose) {
 			// Expected
 		}
 		finally {
@@ -229,7 +231,16 @@ public class CompensationSpiTest extends OgmTestCase {
 			InsertOrUpdateTuple insertOrUpdate = batchedOperations.next().as( InsertOrUpdateTuple.class );
 			assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
 			assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-1" } );
-			assertThat( batchedOperations.hasNext() ).isFalse();
+
+			if ( transactionsAreEmulated() ) {
+				assertThat( batchedOperations.hasNext() ).isFalse();
+			}
+			else {
+				// In case of transaction the error will be raised just at end of the operations queue
+				insertOrUpdate = batchedOperations.next().as( InsertOrUpdateTuple.class );
+				assertThat( insertOrUpdate.getEntityKey().getTable() ).isEqualTo( "Shipment" );
+				assertThat( insertOrUpdate.getEntityKey().getColumnValues() ).isEqualTo( new Object[] { "shipment-2" } );
+			}
 		}
 		else {
 			GridDialectOperation appliedOperation = appliedOperations.next();
@@ -244,7 +255,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN },
+			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN, GridDialectType.INFINISPAN_REMOTE },
 			comment = "Can use parallel local TX not with JTA"
 	)
 	public void appliedOperationsPassedToErrorHandlerAreSeparatedByTransaction() throws Exception {
@@ -345,7 +356,7 @@ public class CompensationSpiTest extends OgmTestCase {
 			session.getTransaction().commit();
 			fail( "Expected exception was not raised" );
 		}
-		catch (Exception e) {
+		catch (PersistenceException e) {
 			rollbackTransactionIfActive( session.getTransaction() );
 		}
 
@@ -400,7 +411,7 @@ public class CompensationSpiTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE },
+			value = { GridDialectType.NEO4J_EMBEDDED, GridDialectType.NEO4J_REMOTE, GridDialectType.INFINISPAN_REMOTE },
 			comment = "Transaction cannot be committed when continuing after an exception "
 	)
 	public void subsequentOperationsArePerformedForErrorHandlingStrategyContinue() {
@@ -517,6 +528,11 @@ public class CompensationSpiTest extends OgmTestCase {
 		DefaultEntityKeyMetadata ekm = new DefaultEntityKeyMetadata( "Shipment", new String[]{"id"} );
 
 		return gridDialect.getDuplicateInsertPreventionStrategy( ekm ) == DuplicateInsertPreventionStrategy.LOOK_UP;
+	}
+
+	public boolean transactionsAreEmulated() {
+		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
+		return provider.allowsTransactionEmulation();
 	}
 
 	/**

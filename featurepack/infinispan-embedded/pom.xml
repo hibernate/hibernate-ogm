@@ -16,7 +16,7 @@
     <description>Hibernate OGM WildFly Feature Pack - Hibernate OGM Infinispan Embedded</description>
 
     <properties>
-        <module-slot.org.infinispan.short-id>ispn-9.3</module-slot.org.infinispan.short-id>
+        <module-slot.org.infinispan.short-id>ispn-9.4</module-slot.org.infinispan.short-id>
     </properties>
 
     <dependencies>

@@ -6,21 +6,26 @@
  */
 package org.hibernate.ogm.datastore.infinispanremote.impl;
 
+import javax.transaction.TransactionManager;
+
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispanremote.configuration.impl.InfinispanRemoteConfiguration;
-import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
-import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
+
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.commons.tx.lookup.TransactionManagerLookup;
 
 public class HotRodClientBuilder {
-
-	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private InfinispanRemoteConfiguration config;
 
 	private Marshaller marshaller;
+
+	private JtaPlatform platform;
+
+	private TransactionMode transactionMode;
 
 	private HotRodClientBuilder() {
 		//not to be created directly
@@ -36,12 +41,38 @@ public class HotRodClientBuilder {
 		return this;
 	}
 
+	public HotRodClientBuilder withTransactionMode(TransactionMode transactionMode, JtaPlatform platform) {
+		this.platform = platform;
+		this.transactionMode = transactionMode;
+		return this;
+	}
+
 	public RemoteCacheManager build() {
-		return new RemoteCacheManager(
-				new ConfigurationBuilder()
-					.classLoader( HotRodClientBuilder.class.getClassLoader() )
-					.withProperties( config.getClientProperties() )
-					.marshaller( marshaller )
-					.build() );
+		ConfigurationBuilder builder = new ConfigurationBuilder()
+				.classLoader( HotRodClientBuilder.class.getClassLoader() )
+				.withProperties( config.getClientProperties() )
+				.marshaller( this.marshaller );
+
+		if ( platform != null && !TransactionMode.NONE.equals( transactionMode ) ) {
+			builder.transaction().transactionMode( transactionMode );
+			builder.transaction().transactionManagerLookup( new TransactionManagerLookupDelegator( platform ) );
+		}
+
+		return new RemoteCacheManager( builder.build() );
+	}
+
+	public static class TransactionManagerLookupDelegator implements TransactionManagerLookup {
+
+		private final JtaPlatform platform;
+
+		public TransactionManagerLookupDelegator(JtaPlatform platform) {
+			this.platform = platform;
+		}
+
+		@Override
+		public TransactionManager getTransactionManager() throws Exception {
+			return ( platform != null ) ?
+					platform.retrieveTransactionManager() : null;
+		}
 	}
 }

@@ -43,7 +43,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		UPDATEONE,
 		UPDATEMANY,
 		REPLACEONE,
-		COUNT,
+		COUNT(true),
 		DROP,
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
@@ -55,6 +55,17 @@ public class MongoDBQueryDescriptor implements Serializable {
 		AGGREGATE_PIPELINE,
 		DISTINCT,
 		MAP_REDUCE;
+
+		public final boolean isAggregation;
+
+		Operation() {
+			isAggregation = false;
+		}
+
+		Operation(boolean isAggregation) {
+			this.isAggregation = isAggregation;
+		}
+
 	}
 
 	private final String collectionName;

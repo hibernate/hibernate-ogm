@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
@@ -21,6 +22,8 @@ import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
+
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.StringHelper;
 
@@ -38,6 +41,8 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
 	private Document orderBy;
+	private AggregationPropertyPath.Type aggregationPropertyPathType;
+	private MongoDBPropertyPathConverter propertyPathConverter = new MongoDBPropertyPathConverter();
 	/*
 	 * The fields for which needs to be aggregated using $unwind when running the query
 	 */
@@ -66,7 +71,15 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 				query,
 				getProjectionDocument(),
 				orderBy,
-				unwinds );
+				unwinds,
+				getOperation() );
+	}
+
+	private MongoDBQueryDescriptor.Operation getOperation() {
+		if ( aggregationPropertyPathType != null ) {
+			return propertyPathConverter.convert( this.aggregationPropertyPathType );
+		}
+		return unwinds == null ? MongoDBQueryDescriptor.Operation.FIND : MongoDBQueryDescriptor.Operation.AGGREGATE;
 	}
 
 	private Document appendDiscriminatorClause(OgmEntityPersister entityPersister, Document query) {
@@ -163,6 +176,13 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 
 		return projectionDocument;
 	}
+
+	@Override
+	public void activateAggregation(AggregationPropertyPath.Type aggregationType) {
+		super.activateAggregation( aggregationType );
+		this.aggregationPropertyPathType = aggregationType;
+	}
+
 
 	@Override
 	protected void addSortField(PropertyPath propertyPath, String collateName, boolean isAscending) {

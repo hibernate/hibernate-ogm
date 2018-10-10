@@ -33,7 +33,7 @@ public class JPAStandaloneNoOGMTest {
 		// (and this would fail only if effectively loading Hibernate ORM without OGM superpowers)
 
 		try {
-			emf = Persistence.createEntityManagerFactory( "noogm" );
+			emf = Persistence.createEntityManagerFactory( "withJtaDataSourcePU" );
 			fail( "Expected exception was not raised" );
 		}
 		catch ( PersistenceException pe ) {

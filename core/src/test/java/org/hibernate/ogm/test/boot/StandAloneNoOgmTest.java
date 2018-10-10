@@ -26,8 +26,14 @@ public class StandAloneNoOgmTest {
 
 	@Test
 	public void canBootstrapHibernateOrmWithOgmBeingPresent() {
+		// Hibernate OGM is not auto-enabled if a connection url is defined on the persistence unit.
+		// In this case Hibernate ORM will be stated.
+		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+			.applySetting( "hibernate.connection.url", "jdbc:h2:tcp://localhost/mem:test" )
+			.build();
+
 		try {
-			new MetadataSources()
+			new MetadataSources( registry )
 				.buildMetadata()
 				.buildSessionFactory();
 

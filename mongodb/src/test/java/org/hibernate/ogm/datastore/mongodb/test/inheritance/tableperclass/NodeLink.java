@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.mongodb.test.inheritance;
+package org.hibernate.ogm.datastore.mongodb.test.inheritance.tableperclass;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,8 +19,11 @@ public class NodeLink {
 
 	private String id;
 
-	private Node source;
-	private Node target;
+	// Currently we don't support association to polymorphic entities, using TABLE_PER_CLASS inheritance strategy.
+	// Because we don't support even queries or loadings on polymorphic entities using TABLE_PER_CLASS inheritance strategy.
+	// So we cannot use the superclass Node as a field type.
+	private SimpleNode source;
+	private TextNode target;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,29 +37,29 @@ public class NodeLink {
 	}
 
 	@ManyToOne
-	public Node getSource() {
+	public SimpleNode getSource() {
 		return source;
 	}
 
-	void setSource(Node source) {
+	void setSource(SimpleNode source) {
 		this.source = source;
 	}
 
-	public void assignSource(Node source) {
+	public void assignSource(SimpleNode source) {
 		setSource( source );
 		source.getChildren().add( this );
 	}
 
 	@ManyToOne
-	public Node getTarget() {
+	public TextNode getTarget() {
 		return target;
 	}
 
-	void setTarget(Node target) {
+	void setTarget(TextNode target) {
 		this.target = target;
 	}
 
-	public void assignTarget(Node target) {
+	public void assignTarget(TextNode target) {
 		setTarget( target );
 	}
 

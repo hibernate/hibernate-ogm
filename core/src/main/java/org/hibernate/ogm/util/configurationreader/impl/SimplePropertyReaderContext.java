@@ -163,31 +163,40 @@ public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T>
 	}
 
 	private URL getAsUrl() {
-		Object configuredValue = getConfiguredValue();
-
-		if ( StringHelper.isNullOrEmptyString( configuredValue ) ) {
+		Object value = getConfiguredValue();
+		if ( StringHelper.isNullOrEmptyString( value ) && getDefaultValue() != null ) {
 			return (URL) getDefaultValue();
 		}
-		else if ( configuredValue instanceof URL ) {
-			return (URL) configuredValue;
+		else if ( value instanceof URL ) {
+			return (URL) value;
 		}
-		else {
-			String stringValue = configuredValue.toString().trim();
 
-			URL resource = getFromClassPath( stringValue );
-
-			if ( resource == null ) {
-				resource = getFromStringUrl( stringValue );
-			}
-			if ( resource == null ) {
-				resource = getFromFileSystemPath( stringValue );
-			}
-			if ( resource == null ) {
-				throw log.invalidConfigurationUrl( getPropertyName(), configuredValue.toString() );
-			}
-
-			return resource;
+		boolean useDefault = false;
+		if ( StringHelper.isNullOrEmptyString( value ) && getDefaultStringValue() != null ) {
+			value = getDefaultStringValue();
+			useDefault = true;
 		}
+		if ( value == null ) {
+			return null;
+		}
+
+		String stringValue = value.toString().trim();
+
+		URL resource = getFromClassPath( stringValue );
+
+		if ( resource == null ) {
+			resource = getFromStringUrl( stringValue );
+		}
+		if ( resource == null ) {
+			resource = getFromFileSystemPath( stringValue );
+		}
+
+		// if the resource is explicitly defined by the user, it mustn't be null
+		if ( resource == null && !useDefault ) {
+			throw log.invalidConfigurationUrl( getPropertyName(), value.toString() );
+		}
+
+		return resource;
 	}
 
 	private URL getFromFileSystemPath(String stringValue) {

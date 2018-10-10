@@ -9,6 +9,9 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
-    <persistence-unit name="noogm" transaction-type="JTA">
+    <persistence-unit name="withJtaDataSourcePU" transaction-type="JTA">
+        <!-- Hibernate OGM is not auto-enabled if a datasource is defined on the persistence unit. -->
+        <!-- In this case Hibernate ORM will be stated. -->
+        <jta-data-source>java:/MySqlDS</jta-data-source>
     </persistence-unit>
 </persistence>

@@ -71,7 +71,7 @@ public class InfinispanRemotePerformanceTest extends OgmTestCase {
 
 		// Load the entity
 		int getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getVersioned" );
-		assertThat( getEntityInvocationCount ).isEqualTo( 1 );
+		assertThat( getEntityInvocationCount ).isEqualTo( 0 );
 
 		// Insert the entity
 		int storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "putIfAbsent" );
@@ -96,7 +96,7 @@ public class InfinispanRemotePerformanceTest extends OgmTestCase {
 
 		// Load the entity
 		getEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "getVersioned" );
-		assertThat( getEntityInvocationCount ).isEqualTo( 1 );
+		assertThat( getEntityInvocationCount ).isEqualTo( 0 );
 
 		// We are not adding anything new
 		storeEntityInvocationCount = BytemanHelper.getAndResetInvocationCount( "putIfAbsent" );

@@ -56,6 +56,11 @@ public final class ProtostreamPayload implements MultiMessage {
 			vt.setSnapshotType( snapshotType );
 			return vt;
 		}
+		else if ( tuple != null && tuple.getOperations().isEmpty() ) {
+			// if the entity is gathered from the local transaction context
+			// loadedSnapshot will be null, in contrast tuple field may contain the data
+			return new VersionedTuple( tuple.getSnapshot(), snapshotType );
+		}
 		else {
 			throw new AssertionFailure( "toVersionedTuple() can only be used on just loaded instances" );
 		}

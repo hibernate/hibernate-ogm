@@ -78,6 +78,9 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		tmpMap.put( org.hibernate.type.ImageType.INSTANCE, PrimitiveByteArrayType.INSTANCE );
 		tmpMap.put( org.hibernate.type.UUIDBinaryType.INSTANCE, UUIDType.INSTANCE );
 		tmpMap.put( org.hibernate.type.UUIDCharType.INSTANCE, UUIDType.INSTANCE );
+		tmpMap.put( org.hibernate.type.LocalDateType.INSTANCE, LocalDateType.INSTANCE );
+		tmpMap.put( org.hibernate.type.LocalTimeType.INSTANCE, LocalTimeType.INSTANCE );
+		tmpMap.put( org.hibernate.type.LocalDateTimeType.INSTANCE, LocalDateTimeType.INSTANCE );
 
 		typeConverter = Collections.unmodifiableMap( tmpMap );
 	}

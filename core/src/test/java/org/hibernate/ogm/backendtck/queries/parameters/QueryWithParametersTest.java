@@ -7,7 +7,6 @@
 package org.hibernate.ogm.backendtck.queries.parameters;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN_REMOTE;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -17,7 +16,6 @@ import java.util.List;
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.utils.PackagingRule;
-import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.OgmJpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +33,6 @@ public class QueryWithParametersTest extends OgmJpaTestCase {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/ogm.xml", Movie.class );
 
 	@Test
-	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Query on Byte field are currently not supported")
 	public void canUseByteForSimpleComparison() {
 		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
@@ -50,7 +47,6 @@ public class QueryWithParametersTest extends OgmJpaTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Query on Byte field are currently not supported")
 	public void canUseByteAsParameterForSimpleComparison() {
 		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();
@@ -66,7 +62,6 @@ public class QueryWithParametersTest extends OgmJpaTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { INFINISPAN_REMOTE }, comment = "Query on Byte field are currently not supported")
 	public void canUseByteAsParameterForInComparison() {
 		EntityManager entityManager = getFactory().createEntityManager();
 		entityManager.getTransaction().begin();

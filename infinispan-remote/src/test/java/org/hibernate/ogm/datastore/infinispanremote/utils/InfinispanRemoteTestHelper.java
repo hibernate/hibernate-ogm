@@ -42,6 +42,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.Search;
+import org.infinispan.client.hotrod.impl.transaction.TransactionalRemoteCacheImpl;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.counter.api.CounterManager;
 import org.infinispan.query.dsl.Query;
@@ -64,6 +65,30 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			SingleTableOgmEntityPersister owningPersister = (SingleTableOgmEntityPersister) persister.getOwnerEntityPersister().getEntityPersister();
 			String ownerTableName = owningPersister.getTableName();
 			totalCount += countAssociations( tableName, ownerTableName, datastoreProvider );
+		}
+		return totalCount;
+	}
+
+	@Override
+	public long getNumberOfAssociations(Session session) {
+		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( session.getSessionFactory() );
+		final SessionFactoryImplementor sessionFactoryImplementor = getSessionFactoryImplementor( session.getSessionFactory() );
+		Collection<CollectionPersister> persisters = sessionFactoryImplementor.getMetamodel().collectionPersisters().values();
+		long totalCount = 0;
+		for ( CollectionPersister ep : persisters ) {
+			OgmCollectionPersister persister = (OgmCollectionPersister) ep;
+			String tableName = persister.getTableName();
+			SingleTableOgmEntityPersister owningPersister = (SingleTableOgmEntityPersister) persister.getOwnerEntityPersister().getEntityPersister();
+			String ownerTableName = owningPersister.getTableName();
+
+			RemoteCache<Object, Object> cache = datastoreProvider.getCache( tableName );
+			if ( cache instanceof TransactionalRemoteCacheImpl ) {
+				final String[] ownerIdentifyingColumnNames = getIdentityOwnerColumnNames( ownerTableName, datastoreProvider );
+				totalCount += TransactionalRemoteCacheCounter.countAssociations( (TransactionalRemoteCacheImpl) cache, persister, session, ownerIdentifyingColumnNames );
+			}
+			else {
+				totalCount += countAssociations( tableName, ownerTableName, datastoreProvider );
+			}
 		}
 		return totalCount;
 	}
@@ -175,6 +200,28 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 		return counter.get();
 	}
 
+	@Override
+	public long getNumberOfEntities(Session session) {
+		final InfinispanRemoteDatastoreProvider datastoreProvider = getProvider( session );
+		final SessionFactoryImplementor sessionFactoryImplementor = getSessionFactoryImplementor( session.getSessionFactory() );
+		final Collection<EntityPersister> persisters = sessionFactoryImplementor.getMetamodel().entityPersisters().values();
+
+		final AtomicLong counter = new AtomicLong();
+		for ( EntityPersister ep : persisters ) {
+			OgmEntityPersister persister = (OgmEntityPersister) ep;
+			String tableName = persister.getTableName();
+			RemoteCache<Object, Object> cache = datastoreProvider.getCache( tableName );
+			if ( cache instanceof TransactionalRemoteCacheImpl ) {
+				int size = TransactionalRemoteCacheCounter.count( persister, (TransactionalRemoteCacheImpl) cache, datastoreProvider.getDataMapperForCache( tableName ), session );
+				counter.addAndGet( size );
+			}
+			else {
+				counter.addAndGet( cache.size() );
+			}
+		}
+		return counter.get();
+	}
+
 	// Various static helpers below:
 
 	private static SessionFactoryImplementor getSessionFactoryImplementor(SessionFactory sessionFactory) {
@@ -191,5 +238,20 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 			throw new RuntimeException( "Not testing with Infinispan Remote, cannot extract underlying cache" );
 		}
 		return InfinispanRemoteDatastoreProvider.class.cast( provider );
+	}
+
+	public static ProtostreamPayload fetchProtoStreamPayload(SessionFactory sessionFactory, String cacheName, String keyColumnName, Object keyColumnValue) {
+		String[] keyColumnNames = { keyColumnName };
+		Object[] keyColumnValues = { keyColumnValue };
+
+		return fetchProtoStreamPayload( sessionFactory, cacheName, keyColumnNames, keyColumnValues );
+	}
+
+	public static ProtostreamPayload fetchProtoStreamPayload(SessionFactory sessionFactory, String cacheName, String[] keyColumnNames, Object[] keyColumnValues) {
+		InfinispanRemoteDatastoreProvider provider = getProvider( sessionFactory );
+		ProtoStreamMappingAdapter mapper = provider.getDataMapperForCache( cacheName );
+
+		ProtostreamId key = mapper.createIdPayload( keyColumnNames, keyColumnValues );
+		return mapper.withinCacheEncodingContext( cache -> cache.get( key ) );
 	}
 }

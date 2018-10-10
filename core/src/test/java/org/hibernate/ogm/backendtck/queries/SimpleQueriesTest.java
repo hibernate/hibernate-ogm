@@ -531,6 +531,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
+	@SkipByGridDialect(INFINISPAN_REMOTE)
 	public void testAutoFlushIsAppliedDuringQueryExecution() throws Exception {
 		Query<Hypothesis> query = session.createQuery( "from Hypothesis" );
 		assertQuery( session, 8, query );
@@ -553,6 +554,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
+	@SkipByGridDialect(INFINISPAN_REMOTE)
 	public void testEntitiesInsertedInCurrentSessionAreFoundByQueriesNotBasedOnHibernateSearch() throws Exception {
 		Query<Hypothesis> query = session.createQuery( "from Hypothesis h where h.position = 30" );
 		assertQuery( session, 0, query );
@@ -575,6 +577,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@TestForIssue(jiraKey = "OGM-424")
+	@SkipByGridDialect(INFINISPAN_REMOTE)
 	public void testSetFlushModeIsApplied() throws Exception {
 		Query<Hypothesis> query = session.createQuery( "from Hypothesis h where h.position = 31" );
 		assertQuery( session, 0, query );

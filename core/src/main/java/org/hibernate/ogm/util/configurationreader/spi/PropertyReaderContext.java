@@ -24,6 +24,15 @@ public interface PropertyReaderContext<T> {
 	PropertyReaderContext<T> withDefault(T defaultValue);
 
 	/**
+	 * Defines a default value as {@link String} type,
+	 * in case no value is specified for the given property.
+	 *
+	 * @param defaultValue the default value used when non is specified
+	 * @return the property reader context
+	 */
+	PropertyReaderContext<T> withDefaultStringValue(String defaultValue);
+
+	/**
 	 * Marks the given property as required. In this case an exception will be raised if no value is specified for that
 	 * property.
 	 *

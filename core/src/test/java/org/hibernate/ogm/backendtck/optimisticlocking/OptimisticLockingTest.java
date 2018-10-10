@@ -48,18 +48,27 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect(value = INFINISPAN_REMOTE, comment = "At the moment Infinispan HotRod transactions are always pessimistic and REPEATABLE_READ")
 public class OptimisticLockingTest extends OgmTestCase {
-
-	private static enum LatchAction {
-		DECREASE_AND_WAIT, IGNORE
-	};
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
+	private final Class<? extends Throwable> lockExceptionClass;
+
+	private enum LatchAction { DECREASE_AND_WAIT, IGNORE }
+
 	private ThreadFactory threadFactory;
 
 	private final CountDownLatch deleteLatch = new CountDownLatch( 2 );
+
+	public OptimisticLockingTest() {
+		this( OptimisticLockException.class );
+	}
+
+	protected OptimisticLockingTest(Class<? extends Throwable> lockExceptionClass) {
+		this.lockExceptionClass = lockExceptionClass;
+	}
 
 	@Before
 	public void setupThreadFactory() {
@@ -78,7 +87,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void updatingEntityUsingOldVersionCausesException() throws Throwable {
-		thrown.expect( OptimisticLockException.class );
+		thrown.expect( lockExceptionClass );
 
 		persistPlanet();
 
@@ -105,7 +114,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE }
 	)
 	public void updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate() throws Throwable {
-		thrown.expectCause( isA( OptimisticLockException.class ) );
+		thrown.expectCause( isA( lockExceptionClass ) );
 
 		persistPlanet();
 
@@ -124,7 +133,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void deletingEntityUsingOldVersionCausesException() throws Throwable {
-		thrown.expect( OptimisticLockException.class );
+		thrown.expect( lockExceptionClass );
 
 		persistPlanet();
 
@@ -151,7 +160,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 			value = { HASHMAP, INFINISPAN, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE }
 	)
 	public void deletingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndDelete() throws Throwable {
-		thrown.expectCause( isA( OptimisticLockException.class ) );
+		thrown.expectCause( isA( lockExceptionClass ) );
 
 		persistPlanet();
 
@@ -170,7 +179,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void updatingEntityUsingOldEntityStateCausesException() throws Throwable {
-		thrown.expect( OptimisticLockException.class );
+		thrown.expect( lockExceptionClass );
 
 		persistPulsar();
 
@@ -195,7 +204,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	 */
 	@Test
 	public void deletingEntityUsingOldEntityStateCausesException() throws Throwable {
-		thrown.expect( OptimisticLockException.class );
+		thrown.expect( lockExceptionClass );
 
 		persistPulsar();
 
@@ -216,7 +225,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 	@Test
 	public void mergingEntityUsingOldVersionCausesException() throws Throwable {
-		thrown.expect( OptimisticLockException.class );
+		thrown.expect( lockExceptionClass );
 
 		persistPlanet();
 
