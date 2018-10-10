@@ -14,13 +14,17 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.BinaryContentType;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.MetadataField;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
@@ -33,6 +37,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import org.bson.Document;
 
 /**
  * @author Davide D'Alto
@@ -49,8 +54,8 @@ public class GridFSTest extends OgmJpaTestCase {
 
 	private static final byte[] BLOB_CONTENT_1 = createByteArray( 'a', BLOB_SIZE );
 	private static final byte[] BLOB_CONTENT_2 = createByteArray( 'x', BLOB_SIZE );
-	private static final String BLOB_STRING_CONTENT_1 = new String(BLOB_CONTENT_1, StandardCharsets.UTF_8  );
-	private static final String BLOB_STRING_CONTENT_2 = new String(BLOB_CONTENT_2, StandardCharsets.UTF_8  );
+	private static final String BLOB_STRING_CONTENT_1 = new String( BLOB_CONTENT_1, StandardCharsets.UTF_8  );
+	private static final String BLOB_STRING_CONTENT_2 = new String( BLOB_CONTENT_2, StandardCharsets.UTF_8  );
 
 	private static final String ENTITY_ID_1 = "photo1";
 	private static final String ENTITY_ID_2 = "photo2";
@@ -79,16 +84,29 @@ public class GridFSTest extends OgmJpaTestCase {
 			MongoDatabase mongoDatabase = getCurrentDB( em );
 			GridFSBucket gridFSFilesBucket = GridFSBuckets.create( mongoDatabase, BUCKET_NAME );
 			MongoCursor<GridFSFile> cursor = gridFSFilesBucket.find().iterator();
-			for ( int i = 0; i < 3; i++ ) {
-				assertThat( cursor.hasNext() ).isEqualTo( true );
+			int itCount = 0;
+			Set<BinaryContentType> readTypes = EnumSet.noneOf( BinaryContentType.class );
+			for ( ; cursor.hasNext(); itCount++ ) {
 				GridFSFile savedFile = cursor.next();
-				assertThat( savedFile ).isNotNull();
 				assertThat( savedFile.getLength() ).isEqualTo( BLOB_CONTENT_1.length );
+				Document metadata = savedFile.getMetadata();
+				BinaryContentType binaryContentType = BinaryContentType.valueOf( metadata.getString( MetadataField.binaryContentType.name() ) );
+				readTypes.add( binaryContentType );
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				gridFSFilesBucket.downloadToStream( savedFile.getObjectId(), outputStream );
-				assertThat( outputStream.size() ).isEqualTo( BLOB_CONTENT_1.length );
-				assertThat( outputStream.toByteArray() ).isEqualTo( BLOB_CONTENT_1 );
+				switch ( binaryContentType ) {
+					case BinaryStream:
+					case BsonBinary:
+						assertThat( outputStream.size() ).isEqualTo( BLOB_CONTENT_1.length );
+						assertThat( outputStream.toByteArray() ).isEqualTo( BLOB_CONTENT_1 );
+						break;
+					case String:
+						String actual = new String( outputStream.toByteArray(), StandardCharsets.UTF_8  );
+						assertThat( actual ).isEqualTo( BLOB_STRING_CONTENT_1 );
+				}
 			}
+			assertThat( itCount ).isEqualTo( 3 );
+			assertThat( readTypes ).hasSize( 3 );
 		} );
 
 		inTransaction( em -> {

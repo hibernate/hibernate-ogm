@@ -61,18 +61,18 @@ public class GridFSBinaryStore implements BinaryStorage {
 		if ( binaryContentObject instanceof BinaryStream ) {
 			BinaryStream binaryStream = (BinaryStream) binaryContentObject;
 			binaryInputStream = binaryStream.getInputStream();
-			metadata.put( "binaryContent","BinaryStream" );
+			metadata.put( MetadataField.binaryContentType.name(),BinaryContentType.BinaryStream.name() );
 		}
 		else if ( binaryContentObject instanceof BsonBinary ) {
 			BsonBinary bsonBinary = (BsonBinary) binaryContentObject;
 			binaryInputStream = new ByteArrayInputStream( bsonBinary.getData() );
-			metadata.put( "binaryContent","BsonBinary" );
+			metadata.put( MetadataField.binaryContentType.name(),BinaryContentType.BsonBinary.name() );
 		}
 		else if ( binaryContentObject instanceof String ) {
 			String string = (String) binaryContentObject;
 			//use default encoding
 			binaryInputStream = new ByteArrayInputStream( string.getBytes() );
-			metadata.put( "binaryContent","String" );
+			metadata.put( MetadataField.binaryContentType.name(),BinaryContentType.String.name() );
 		}
 		else {
 			throw log.unsupportedBinaryType( binaryContentObject.getClass() );
@@ -106,8 +106,8 @@ public class GridFSBinaryStore implements BinaryStorage {
 
 		if ( fieldType.equals( Blob.class ) ) {
 			//lazy reading blob
-			GridFSDownloadStream gridFSDownloadStream = gridFSFilesBucket.openDownloadStream( uploadId ).batchSize(
-					BUFFER_SIZE );
+			GridFSDownloadStream gridFSDownloadStream = gridFSFilesBucket.openDownloadStream( uploadId )
+					.batchSize( BUFFER_SIZE );
 			//change value of the field (ObjectId -> BinaryStream)
 			currentDocument.put( fieldName, gridFSDownloadStream );
 		}
