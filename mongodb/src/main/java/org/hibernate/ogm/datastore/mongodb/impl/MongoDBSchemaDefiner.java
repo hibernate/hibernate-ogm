@@ -80,6 +80,9 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema( SchemaDefinitionContext context) {
+		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
+		MongoDBDatastoreProvider datastoreProvider = (MongoDBDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		datastoreProvider.setTableEntityTypeMapping( context.getTableEntityTypeMapping() );
 		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
