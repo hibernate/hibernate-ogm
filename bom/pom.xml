@@ -69,7 +69,7 @@
         <!-- MongoDB -->
 
         <version.org.mongodb>3.6.2</version.org.mongodb>
-        <version.org.mongodb.mongo-java-driver>3.6.3</version.org.mongodb.mongo-java-driver>
+        <version.org.mongodb.mongo-java-driver>3.8.2</version.org.mongodb.mongo-java-driver>
 
         <!-- Neo4j -->
 
