@@ -73,7 +73,7 @@
 
         <!-- Neo4j -->
 
-        <version.org.neo4j>3.4.1</version.org.neo4j>
+        <version.org.neo4j>3.4.8</version.org.neo4j>
         <version.org.neo4j.driver>1.6.1</version.org.neo4j.driver>
         <version.neo4j.org.scala-lang>2.11.11</version.neo4j.org.scala-lang>
         <!-- See Parboiled dependency above -->
