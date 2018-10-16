@@ -143,21 +143,21 @@ You configure Hibernate OGM and Infinispan in two steps basically:
 * If you need to run JPQL or HQL queries, add Hibernate Search on the classpath
   (<<ogm-query-using-hibernate-search>>)
 
-Note that, except when using [acronym]`JNDI`, Hibernate OGM will bootstrap and Infinispan Embedded node
-in your same JVM, and terminate it on shutdown of the Hibernate instance.
+Note that, except when using [acronym]`JNDI`, Hibernate OGM will bootstrap Infinispan Embedded 
+in the same JVM and terminate it on shutdown of the Hibernate OGM session factory.
 
 [CAUTION]
 ====
-If you have Hibernate OGM boot Infinispan using a clustered configuration, this might automatically join the cluster of
-other Infinispan nodes running in your network: the default is automatic discovery!
+Hibernate OGM will start Infinispan Embedded in automatic discovery.
+If you are using a clustered configuration, it might automatically join an existing
+Infinispan cluster on the network.
 ====
 
-[[ogm-infinispan-adddepencies]]
+[[ogm-infinispan-add-dependencies]]
 
 ==== Adding Infinispan dependencies
 
-To add the dependencies for the Hibernate OGM extensions for Infinispan Embedded via Maven, add the following module:
-
+You can add the Infinispan Embedded dialect to your project using the following Maven GAV: 
 
 [source, XML]
 [subs="verbatim,attributes"]
@@ -189,7 +189,7 @@ and usually just point to this external resource.
 To use the default configuration provided by Hibernate OGM -
 which is a good starting point for new users - you don't have to set any property.
 
-.Hibernate OGM properties for Infinispan
+.Hibernate OGM properties for Infinispan dialect
 `hibernate.ogm.datastore.provider`::
 Set it to `infinispan_embedded` to use Infinispan as the datastore provider in embedded mode.
 `hibernate.ogm.infinispan.cachemanager_jndi_name`::
@@ -199,7 +199,7 @@ instead of starting a new `CacheManager`.
 This will ignore any further configuration properties
 as Infinispan is assumed being already configured.
 Infinispan can typically be pushed to JNDI via WildFly, Spring or Seam.
-`hibernate.ogm.infinispan.configuration_resource_name`::
+`hibernate.ogm.infinispan_remote.configuration_resource_name`::
 Should point to the resource name of an Infinispan configuration file.
 This is ignored in case [acronym]`JNDI`  lookup is set.
 Defaults to `org/hibernate/ogm/datastore/infinispan/default-config.xml`.
@@ -677,10 +677,10 @@ First, let Hibernate know that you want to use the OGM Infinispan Remote datasto
 `hibernate.ogm.datastore.provider` property to `infinispan_remote`.
 
 The next step is to configure the Hot Rod client.
-You have two options:
+You have two alternatives:
 
-* either provide a resource file containing all Hot Rod client configuration properties
-* or include all the Hot Rod client configuration properties with a custom prefix, as explained below.
+* provide a resource file containing all Hot Rod client configuration properties
+* include all the Hot Rod client configuration properties with a custom prefix, as explained below.
 
 To use an external configuration resource, set the `hibernate.ogm.infinispan_remote.configuration_resource_name`
 configuration property to the resource name.
@@ -755,7 +755,7 @@ all properties relating to connection pooling as in the previous example - these
 need to use the `hibernate.ogm.infinispan_remote.client.` prefix.
 
 Properties set with the `hibernate.ogm.infinispan_remote.client.` prefix will override the same
-properties configured using an external reosurce file.
+properties configured using an external resource file.
 
 .Embedding the Hot Rod client configuration properties in the Hibernate configuration
 ====
@@ -810,6 +810,12 @@ If set to `true` Hibernate OGM will create any missing Cache definitions on the 
 This requires the Infinispan Server configuration to have a default configuration defined, as this will be copied to the newly defined caches.
 If set to `false` an exception is thrown when a Cache is expected but not explicitly configured on the server.
 Defaults to `false`.
+
+hibernate.ogm.infinispan_remote.cache_configuration::
+The name of the default cache configuration that Hibernate OGM will use for the creation of new caches
+on the Infinispan Server
+This is only used if `hibernate.ogm.datastore.create_database` is set to true.
+For more details about cache configuration, check the section <<infinispan-remote-cache-configuration>>
 
 hibernate.ogm.infinispan_remote.schema_capture_service::
 If you set this to an implementation of `org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture` you
@@ -1014,66 +1020,72 @@ configure the caches for the most important data to have a synchronous CacheStor
 data to a relational database, and have less important entries use an asynchronous CacheStore,
 or none at all, to favour performance over redundancy.
 
-==== Caches creation and Configuration
+[[infinispan-remote-cache-configuration]]
 
-The Hibernate ORM property ``hibernate.ogm.datastore.create_database`` is now supported by the dialect.
-When this property is enabled the dialect will create any missing caches on the remote Infinispan cluster.
+==== Caches creation and configuration
 
-By default all caches created use the __OGM default configuration__:
+Hibernate OGM can create a cache on the remote Infinispan cluster if it doesn't exist.
+You can enable this behavior by setting the property
+``hibernate.ogm.datastore.create_database=true``.
+
+By default, the creation of a new cache is done using the following __default configuration__:
+
+.Hibernate OGM default configuration for new Infinispan caches
 ====
 [source, XML]
 ----
-<infinispan><cache-container>
-  <distributed-cache-configuration name="configuration">
-     <locking striping="false" acquire-timeout="10000" concurrency-level="50" isolation="REPEATABLE_READ"/>
-     <transaction locking="PESSIMISTIC" mode="%s" /> # <1>
-     <expiration max-idle="-1" />
-     <indexing index="NONE" />
-     <state-transfer timeout="480000" await-initial-transfer="true" />
-  </distributed-cache-configuration>
-</cache-container></infinispan>"
+<infinispan>
+  <cache-container>
+    <distributed-cache-configuration name="configuration">
+      <locking striping="false" acquire-timeout="10000" concurrency-level="50" isolation="REPEATABLE_READ"/>
+      <transaction locking="PESSIMISTIC" mode="%s" /> # <1>
+      <expiration max-idle="-1" />
+      <indexing index="NONE" />
+      <state-transfer timeout="480000" await-initial-transfer="true" />
+    </distributed-cache-configuration>
+  </cache-container>
+</infinispan>
 ----
-<1> Transaction mode attribute will be filled with the value of the propery `hibernate.ogm.cache.transaction.mode`
+<1> Transaction mode attribute will be filled with the value of the property `hibernate.ogm.cache.transaction.mode`
 ====
 
-To apply a custom configuration to a newly created cache
-we need a previously defined cache or an existing __cache configuration__ on the remote Infinispan server to use as templates.
+If a different default configuration is defined on the Infinispan server, it's possible to use
+the property ``hibernate.ogm.datastore.cache_configuration`` to refer to it.
+This means that Hibernate OGM will create new caches using the selected configuration.
 
-There are two alternative ways to apply a cache configuration to new caches:
+If some of your entities need a different configuration, you can use the annotation 
+``@CacheConfiguration``. This annotation will override the behavior of the global property using
+instead the configuration defined for the annotated entity.
 
-* Using the dialect property: ``hibernate.ogm.infinispan_remote.cache_configuration``
-* Using the ``@CacheConfiguration`` annotation on Entity class
-
-The property is applied to all new caches, it means for all Entities. So property has a global scope.
-
-The annotations are applied to the new caches being used to store the respective Entities on which they are present,
-so the approach using annotations is scoped to the entity.
-
-It is possible to use a mixed approach; when both the dialect property and annotations are used the annotation takes
-precedence on the global property.
+Note that Hibernate OGM will create the caches only if they don't exist already and it doesn't
+update the configuration of existing caches.
 
 [IMPORTANT]
 ====
-Any configuration being referred to when when creating new Caches need to be present on the remote Infinispan cluster,
-or an exception will thrown.
+The cache configurations referred to by the annotation and the property must exist on
+the Infinispan cluster. An exception will be thrown otherwise.
 ====
 
-Let's suppose that we have two Entities: __NoAnnotationEntity__ and __CacheConfigurationEntity__:
+Let's suppose we have two entities: __Sheep__ and __BlackSheep__:
 
+.Example of entities having different cache configurations
 ====
 [source, JAVA]
 ----
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-@Entity # <1>
-public class NoAnnotationEntity {
+@Entity 
+public class Sheep {
 
 	@Id
-	private String id;
+	String name;
+
+    // ...
 
 }
 ----
+
 [source, JAVA]
 ----
 import javax.persistence.Entity;
@@ -1081,20 +1093,19 @@ import javax.persistence.Id;
 import org.hibernate.ogm.datastore.infinispanremote.options.cache.CacheConfiguration;
 
 @Entity
-@CacheConfiguration("transactional") # <2>
-public class CacheConfigurationEntity {
+@CacheConfiguration("black_sheep")
+public class BlackSheep {
 
 	@Id
-	private String id;
+	String name;
+
+    // ...
 
 }
 ----
-<1> __NoAnnotationEntity__ Entity does not make use of `@CacheConfiguration` annotation
-<2> __CacheConfigurationEntity__ Entity declares instead to use a configuration, named __transactional__
-====
 
 Bundled with a __persistence.xml__ such that:
-====
+
 [source, XML]
 ----
 <?xml version="1.0"?>
@@ -1108,48 +1119,43 @@ Bundled with a __persistence.xml__ such that:
 		<properties>
 			<property name="hibernate.ogm.datastore.provider"
 				value="infinispan_remote" />
+
 			<property name="hibernate.ogm.infinispan_remote.configuration_resource_name"
 				value="hotrodclient.properties" />
+
 			<property name="hibernate.ogm.datastore.create_database"
 				value="true" /> # <1>
+
 			<property name="hibernate.ogm.infinispan_remote.cache_configuration"
-				value="default" /> # <2>
+				value="sheep" /> # <2>
+
 		</properties>
 	</persistence-unit>
 </persistence>
 ----
-<1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
-<2> Property ``hibernate.ogm.infinispan_remote.cache_configuration`` defines a configuration,
-named __default__, to apply to all created caches
+<1> Enable cache creation
+<2> Select __sheep__ as default cache configuration
 ====
 
-Assuming that:
-
-* Caches __default__ and __transactional__ are **present** on Infinispan server configuration.
-* Caches __NoAnnotationEntity__ and __CacheConfigurationEntity__ are instead **NOT present** on Infinispan server configuration.
-
-Then:
-
-* Cache __NoAnnotationEntity__ will be created by the dialect using __default__ as a cache configuration.
-* Cache __CacheConfigurationEntity__ will be created by the dialect using __transactional__ as a cache configuration.
+In this scenario, Hibernate OGM will create the  __Sheep__ cache using the configuration
+__sheep__ and the __BlackSheep__  cache using the __black_sheep__ cache configuration.
 
 [IMPORTANT]
 ====
-__OGM default configuration__ is transactional.
+__Hibernate OGM default configuration__ is transactional.
 
-We always recommend using transactional caches, at least unless you are confident that data consistency is not important for your use case.
+We generally recommend using transactional caches unless you are confident that data consistency
+is not important for your use case.
 ====
 
-==== Remote Query Capability
+==== Remote Query Capabilities
 
-Hibernate OGM backend is able to run the queries it needs to materialize relations.
-Since version __5.4.0.Alpha2__, the dialect is capable to translate JPQL to the **corresponding** Infinispan remote queries
-or to execute native queries.
-But there are still some limitations:
+Hibernate OGM backend can translate JPQL queries to the **corresponding** Infinispan remote
+native queries, or it can execute native queries directly.
+There are some limitations, though:
 
-* We don't support queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy
-* Selecting from associations is not yet implemented (example: select h.author.name from Hypothesis h where author is a one-to-one association)
-* Query on Byte filed is currently unsupported
+* queries on polymorphic entities using TABLE_PER_CLASS inheritance strategy are not supported
+* projection from associations is not yet implemented (example: select h.author.name from Hypothesis h where author is a one-to-one association)
 
 [[infinispan-remote-transaction]]
 
@@ -1188,7 +1194,7 @@ Such as a stored procedure, of a SQL data store, that should first be defined on
 To run a __remote script__, the script entry must first be in the Infinispan remote cache.
 The name of the procedure is the key of the corresponding entry script.
 The parameter names are instead defined in the first line of the script itself.
-For more information see http://infinispan.org/docs/dev/user_guide/user_guide.html#scripting[Infinispan Guide -Remote Script]
+For more information see http://infinispan.org/docs/dev/user_guide/user_guide.html#scripting[Infinispan Guide - Remote Script]
 
 Whereas to run a __server task__ you need first to deploy the java task as jar on Infinispan server.
 In this case the name of the procedure is defined by `getName` method of the task service class.
