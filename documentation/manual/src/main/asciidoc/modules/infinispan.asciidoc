@@ -1041,7 +1041,7 @@ we need a previously defined cache or an existing __cache configuration__ on the
 
 There are two alternative ways to apply a cache configuration to new caches:
 
-* Using the dialect property: ``hibernate.ogm.datastore.cache_configuration``
+* Using the dialect property: ``hibernate.ogm.infinispan_remote.cache_configuration``
 * Using the ``@CacheConfiguration`` annotation on Entity class
 
 The property is applied to all new caches, it means for all Entities. So property has a global scope.
@@ -1112,14 +1112,14 @@ Bundled with a __persistence.xml__ such that:
 				value="hotrodclient.properties" />
 			<property name="hibernate.ogm.datastore.create_database"
 				value="true" /> # <1>
-			<property name="hibernate.ogm.datastore.cache_configuration"
+			<property name="hibernate.ogm.infinispan_remote.cache_configuration"
 				value="default" /> # <2>
 		</properties>
 	</persistence-unit>
 </persistence>
 ----
 <1> Property ``hibernate.ogm.datastore.create_database`` enables cache creation
-<2> Property ``hibernate.ogm.datastore.cache_configuration`` defines a configuration,
+<2> Property ``hibernate.ogm.infinispan_remote.cache_configuration`` defines a configuration,
 named __default__, to apply to all created caches
 ====
 

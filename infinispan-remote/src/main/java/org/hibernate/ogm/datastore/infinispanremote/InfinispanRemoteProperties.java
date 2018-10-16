@@ -104,7 +104,7 @@ public final class InfinispanRemoteProperties implements KeyValueStoreProperties
 	 * Cache configuration to apply to the caches created by the dialect.
 	 * If not set the default configuration is used.
 	 */
-	public static final String CACHE_CONFIGURATION = "hibernate.ogm.datastore.cache_configuration";
+	public static final String CACHE_CONFIGURATION = "hibernate.ogm.infinispan_remote.cache_configuration";
 
 	/**
 	 * Property is used to configure the transaction mode of {@link org.infinispan.client.hotrod.RemoteCacheManager}.
