@@ -144,7 +144,7 @@ You configure Hibernate OGM and Infinispan in two steps basically:
   (<<ogm-query-using-hibernate-search>>)
 
 Note that, except when using [acronym]`JNDI`, Hibernate OGM will bootstrap Infinispan Embedded 
-in the same JVM and terminate it on shutdown of the Hibernate OGM factory.
+in the same JVM and terminate it on shutdown of the Hibernate OGM session factory.
 
 [CAUTION]
 ====
@@ -169,7 +169,7 @@ You can add the Infinispan Embedded dialect to your project using the following 
 </dependency>
 ----
 
-If you're not using a dependencies management tool,
+If you're not using a dependency management tool,
 copy all the dependencies from the distribution in the directories:
 
 * `/lib/required`
