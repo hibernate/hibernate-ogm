@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.ArrayList;
 
 import org.hibernate.AssertionFailure;
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl.EmbeddedNeo4jBackendQueryResultIterator;
@@ -540,9 +541,22 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQu
 	@Override
 	public ClosableIterator<Tuple> callStoredProcedure(String storedProcedureName,
 			ProcedureQueryParameters queryParameters, TupleContext tupleContext) {
-		Map.Entry<String, Map> queryAndParams = buildProcedureQueryWithParams( storedProcedureName, queryParameters );
-		Result result = dataBase.execute( queryAndParams.getKey(), queryAndParams.getValue() );
-		return CollectionHelper.newClosableIterator( extractTuples( result ) );
+		Map.Entry<String, Map<String, Object>> queryAndParams = buildProcedureQueryWithParams(
+				storedProcedureName, queryParameters );
+		try {
+			Result result = dataBase.execute( queryAndParams.getKey(), queryAndParams.getValue() );
+			return CollectionHelper.newClosableIterator( extractTuples( result ) );
+		}
+		catch (QueryExecutionException e) {
+			switch ( e.getStatusCode() ) {
+				case BaseNeo4jDialect.PROCEDURE_CALL_FAILED_CODE:
+					throw log.cannotExecuteStoredProcedure( storedProcedureName, e );
+				case BaseNeo4jDialect.PROCEDURE_NOT_FOUND_CODE:
+					throw log.procedureWithResolvedNameDoesNotExist( storedProcedureName, e );
+				default:
+					throw new HibernateException( e.getMessage() );
+			}
+		}
 	}
 
 	private List<Tuple> extractTuples(Result result) {

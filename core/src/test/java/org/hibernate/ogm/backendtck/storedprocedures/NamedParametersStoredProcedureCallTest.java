@@ -54,7 +54,7 @@ import org.junit.rules.ExpectedException;
  * @author Sergey Chernolyas &amp;sergey_chernolyas@gmail.com&amp;
  */
 @SkipByGridDialect(
-		value = { HASHMAP, INFINISPAN_REMOTE, NEO4J_EMBEDDED, NEO4J_REMOTE, MONGODB },
+		value = { HASHMAP, INFINISPAN_REMOTE, NEO4J_REMOTE, MONGODB },
 		comment = "These dialects don't support stored procedures with named parameters")
 @TestForIssue(jiraKey = { "OGM-359" })
 public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
@@ -76,129 +76,166 @@ public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
 
 	@Test
 	public void testSingleResultDynamicCall() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( SIMPLE_VALUE_PROC );
-		storedProcedureQuery.registerStoredProcedureParameter( UNIQUE_VALUE_PROC_PARAM, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( UNIQUE_VALUE_PROC_PARAM, 1 );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery( SIMPLE_VALUE_PROC );
+			storedProcedureQuery.registerStoredProcedureParameter(
+					UNIQUE_VALUE_PROC_PARAM, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( UNIQUE_VALUE_PROC_PARAM, 1 );
 
-		Number singleResult = (Number) storedProcedureQuery.getSingleResult();
-		assertThat( singleResult ).isEqualTo( 1 );
+			Number singleResult = (Number) storedProcedureQuery.getSingleResult();
+			assertThat( singleResult ).isEqualTo( 1 );
+		} );
 	}
 
 	@Test
 	public void testResultSetDynamicCallWithResultClass() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, Car.class );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					RESULT_SET_PROC, Car.class );
 
-		storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( RESULT_SET_PROC_ID_PARAM, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( RESULT_SET_PROC_TITLE_PARAM, String.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter(
+					RESULT_SET_PROC_ID_PARAM, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter(
+					RESULT_SET_PROC_TITLE_PARAM, String.class, ParameterMode.IN );
 
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 1 );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title" );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 1 );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 1, "title" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Car( 1, "title" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetDynamicCallWithResultMapping() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, "carMapping" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					RESULT_SET_PROC, "carMapping" );
 
-		storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( RESULT_SET_PROC_ID_PARAM, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( RESULT_SET_PROC_TITLE_PARAM, String.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( "result", Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter(
+					RESULT_SET_PROC_ID_PARAM, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter(
+					RESULT_SET_PROC_TITLE_PARAM, String.class, ParameterMode.IN );
 
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 2 );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'1" );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 2 );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'1" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 2, "title'1" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Car( 2, "title'1" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithResultClass() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnNamedParametersWithEntity" );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 1 );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnNamedParametersWithEntity" );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 1 );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 1, "title" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Car( 1, "title" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithResultMapping() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnNamedParametersWithMapping" );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 2 );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'2" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnNamedParametersWithMapping" );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 2 );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'2" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 2, "title'2" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Car( 2, "title'2" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallRaw() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnNamedParametersRaw" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 2 );
-		storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'2" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnNamedParametersRaw" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_ID_PARAM, 2 );
+			storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'2" );
 
-		@SuppressWarnings("unchecked")
-		List<Object[]> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Object[]{ 2, "title'2" } );
+			@SuppressWarnings("unchecked")
+			List<Object[]> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Object[] { 2, "title'2" } );
+		} );
 	}
 
 	@Test
 	public void testExceptionWhenMultipleEntitiesAreUsed() throws Exception {
-		thrown.expect( PersistenceException.class );
-		thrown.expectCause( isA( HibernateException.class ) );
-		thrown.expectMessage(
-				"org.hibernate.HibernateException: OGM000090: Returning multiple entities is not supported. Procedure '" + RESULT_SET_PROC
-						+ "' expects results of type [Car, Motorbike]" );
+		inTransaction( entityManager -> {
+			thrown.expect( PersistenceException.class );
+			thrown.expectCause( isA( HibernateException.class ) );
+			thrown.expectMessage(
+					"org.hibernate.HibernateException: OGM000090: Returning multiple entities is not supported. Procedure '" + RESULT_SET_PROC
+							+ "' expects results of type [Car, Motorbike]" );
 
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, Car.class, Motorbike.class );
-		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( 1, 1 );
-		storedProcedureQuery.setParameter( 2, "title" );
-		storedProcedureQuery.getResultList();
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					RESULT_SET_PROC, Car.class, Motorbike.class );
+			storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( 1, 1 );
+			storedProcedureQuery.setParameter( 2, "title" );
+			storedProcedureQuery.getResultList();
+		} );
 	}
 
 	@Test
 	public void testExceptionWhenProcedureDoesNotExist() throws Exception {
-		thrown.expect( PersistenceException.class );
-		thrown.expectMessage( "org.hibernate.HibernateException: OGM000093" );
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( NOT_EXISTING_PROCEDURE_NAME, Car.class );
-		storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( "param", 1 );
-		storedProcedureQuery.getSingleResult();
+		inTransaction( entityManager -> {
+			thrown.expect( PersistenceException.class );
+			thrown.expectMessage( "org.hibernate.HibernateException: OGM000093" );
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					NOT_EXISTING_PROCEDURE_NAME, Car.class );
+			storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( "param", 1 );
+			storedProcedureQuery.getSingleResult();
+		} );
 	}
 
 	@Test
+	@SkipByGridDialect(
+			value = { NEO4J_EMBEDDED },
+			comment = "Work fine for Neo4j, because function still accepts integer value as a parameter")
 	public void testExceptionWhenUsingNotRegisteredParameter() throws Exception {
-		thrown.expect( PersistenceException.class );
-		thrown.expectMessage( "org.hibernate.HibernateException: OGM000095" );
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( Car.SIMPLE_VALUE_PROC, Integer.class );
-		storedProcedureQuery.registerStoredProcedureParameter( INVALID_PARAM, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( INVALID_PARAM, 1 );
-		storedProcedureQuery.getSingleResult();
+		inTransaction( entityManager -> {
+			thrown.expect( PersistenceException.class );
+			thrown.expectMessage( "org.hibernate.HibernateException: OGM000095" );
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					Car.SIMPLE_VALUE_PROC, Integer.class );
+			storedProcedureQuery.registerStoredProcedureParameter( INVALID_PARAM, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( INVALID_PARAM, 1 );
+			storedProcedureQuery.getSingleResult();
+		} );
 	}
 
 	@Test
 	public void testExceptionWhenProcedureFails() throws Exception {
-		thrown.expect( PersistenceException.class );
-		thrown.expectMessage( "org.hibernate.HibernateException: OGM000092" );
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( EXCEPTIONAL_PROCEDURE_NAME, Integer.class );
-		storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( "param", 1 );
-		storedProcedureQuery.getSingleResult();
+		inTransaction( entityManager -> {
+			thrown.expect( PersistenceException.class );
+			thrown.expectMessage( "org.hibernate.HibernateException: OGM000092" );
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					EXCEPTIONAL_PROCEDURE_NAME, Integer.class );
+			storedProcedureQuery.registerStoredProcedureParameter( "param", Integer.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( "param", 1 );
+			storedProcedureQuery.getSingleResult();
+		} );
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[]{ Car.class, Motorbike.class };
+		return new Class[] { Car.class, Motorbike.class };
 	}
 }

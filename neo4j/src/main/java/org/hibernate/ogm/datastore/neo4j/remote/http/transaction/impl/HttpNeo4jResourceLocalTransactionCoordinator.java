@@ -330,7 +330,7 @@ public class HttpNeo4jResourceLocalTransactionCoordinator implements Transaction
 
 		@Override
 		public Object getTransactionId() {
-			return tx != null ? tx.getId() : null;
+			return tx.getId();
 		}
 	}
 }
