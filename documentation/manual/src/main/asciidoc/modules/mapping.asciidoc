@@ -120,3 +120,20 @@ store 1 million tuples in the association key.
 For example the Infinispan Embedded dialect suffers from this limitation as it's
 treated as a pure key/value store, while the Infinispan Remote dialect does not
 as it is more similar to a document store.
+
+==== Preserve the order of the association items
+
+The order of the association items can be lost, even if it used a `List` as a collection type.
+Without the use of `javax.persistence.OrderColumn` or a `javax.persistence.OrderBy` annotation, the responsibility of order preservation is left
+to the underlining datastore.
+
+Alternatively, it is possible to tell Hibernate to handle the order, using the annotations: `@javax.persistence.OrderColumn` and `@javax.persistence.OrderBy`.
+For more information on order see the Hibernate ORM guide http://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#collections-list.
+
+==== Keep duplicates of the association items
+
+Duplicate items on association can be lost, even if it used a `List` as a collection type.
+Without the use of the `javax.persistence.OrderColumn` annotation, the responsibility to keep duplicates is left to the underlining datastore.
+Most of them are idempotent on keys, it means that duplicates will be lost in save. Others aren't, so they will be able to keep duplicates.
+
+Using the JPA annotation `@javax.persistence.OrderColumn`, Hibernate will take care of the duplicates, as well as order.
