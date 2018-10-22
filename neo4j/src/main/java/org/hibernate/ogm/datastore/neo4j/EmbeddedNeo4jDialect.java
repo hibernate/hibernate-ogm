@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -62,7 +61,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
-import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -545,7 +543,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQu
 				storedProcedureName, queryParameters );
 		try {
 			Result result = dataBase.execute( queryAndParams.getKey(), queryAndParams.getValue() );
-			return CollectionHelper.newClosableIterator( extractTuples( result ) );
+			return new EmbeddedNeo4jBackendQueryResultIterator( result, null, tupleContext );
 		}
 		catch (QueryExecutionException e) {
 			switch ( e.getStatusCode() ) {
@@ -557,16 +555,6 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQu
 					throw new HibernateException( e.getMessage() );
 			}
 		}
-	}
-
-	private List<Tuple> extractTuples(Result result) {
-		List<Tuple> tuples = new ArrayList<>();
-		while ( result.hasNext() ) {
-			Tuple tuple = new Tuple();
-			result.next().forEach( (key, value) -> tuple.put( key, value ) );
-			tuples.add( tuple );
-		}
-		return tuples;
 	}
 
 	private static class EmbeddedNeo4jTuplesSupplier implements TuplesSupplier {
