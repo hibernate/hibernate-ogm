@@ -7,6 +7,8 @@
 package org.hibernate.ogm.datastore.neo4j.embedded.dialect.impl;
 
 import java.lang.invoke.MethodHandles;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -35,9 +37,11 @@ public class EmbeddedNeo4jBackendQueryResultIterator extends EmbeddedNeo4jTupleI
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final TupleTypeContext tupleTypeContext;
+	private final List<String> columns;
 
 	public EmbeddedNeo4jBackendQueryResultIterator(Result result, EntityMetadataInformation info, TupleContext tupleContext) {
 		super( result );
+		this.columns = result != null ? result.columns() : null;
 		this.entityKeyMetadata = info != null ? info.getEntityKeyMetadata() : null;
 		this.tupleTypeContext = info != null ? tupleContext.getTupleTypeContext() : null;
 	}
@@ -64,6 +68,13 @@ public class EmbeddedNeo4jBackendQueryResultIterator extends EmbeddedNeo4jTupleI
 
 	private TupleSnapshot mapSnapshot(Map<String, Object> next) {
 		TupleSnapshot snapshot;
+		if ( this.columns != null ) {
+			Map<String, Object> sortedColumns = new LinkedHashMap<>();
+			for ( String column : this.columns ) {
+				sortedColumns.put( column, next.get( column ) );
+			}
+			next = sortedColumns;
+		}
 		snapshot = new MapTupleSnapshot( (Map<String, Object>) next );
 		return snapshot;
 	}
