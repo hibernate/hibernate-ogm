@@ -120,3 +120,34 @@ store 1 million tuples in the association key.
 For example the Infinispan Embedded dialect suffers from this limitation as it's
 treated as a pure key/value store, while the Infinispan Remote dialect does not
 as it is more similar to a document store.
+
+==== Elements order in associations
+
+Hibernate OGM, by default, does not guarantee that elements in an association will
+be retrieved in the same order each time you load the association from the datastore.
+
+If the order is important, you can enforce it using the following annotations:
+
+* `@javax.persistence.OrderColumn`: the collection uses a dedicated order column
+  in the collection link table
+
+* `@javax.persistence.OrderBy`: the collection is ordered upon retrieval using
+  a child entity property
+
+You can find more details and examples in the
+http://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#collections-list[Hibernate ORM documentation].
+
+[WARNING]
+====
+At the moment, Hibernate OGM doesn't support duplicates in an association.
+Which means that even if an entity or on embeddable appear in an association twice,
+Hibernate OGM will only save or read the element once. This only happens for elements with
+the same id.
+
+A work-around for this issue is to use the annotation `@javax.persistence.OrderColumn`.
+
+For more details you can check the issues
+https://hibernate.atlassian.net/browse/OGM-1237[OGM-1237] or
+https://hibernate.atlassian.net/browse/OGM-1537[OGM-1537].
+====
+
