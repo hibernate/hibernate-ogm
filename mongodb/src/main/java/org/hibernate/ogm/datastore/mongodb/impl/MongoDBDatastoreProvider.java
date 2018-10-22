@@ -22,6 +22,8 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.GridFSStorageManager;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.GridFSFields;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
@@ -55,6 +57,8 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	private MongoDatabase mongoDb;
 	private MongoDBConfiguration config;
 	private JndiService jndiService;
+
+	private GridFSStorageManager binaryStorageManager;
 
 	public MongoDBDatastoreProvider() {
 	}
@@ -225,5 +229,13 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			// we don't have enough privileges, ignore the database creation
 			return null;
 		}
+	}
+
+	public void initializeBinaryStorageManager(OptionsService optionsService, Map<String, GridFSFields> map) {
+		this.binaryStorageManager = new GridFSStorageManager( this, optionsService, map );
+	}
+
+	public GridFSStorageManager getBinaryStorageManager() {
+		return binaryStorageManager;
 	}
 }
