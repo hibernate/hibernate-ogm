@@ -40,6 +40,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.MapStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.GridFSStorageManager;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
@@ -71,6 +72,8 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPointGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoMultiPolygonGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPointGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.GeoPolygonGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GridFSGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.GridFSType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.SerializableAsBinaryGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
@@ -326,7 +329,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document projection = getProjection( operationContext );
 
 		FindIterable<Document> fi = collection.find( searchObject );
-		return fi != null ? fi.projection( projection ).first() : null;
+		Document targetDocument = fi != null ? fi.projection( projection ).first() : null;
+
+		provider.getBinaryStorageManager().loadContentFromBinaryStorage( targetDocument, key.getMetadata() );
+		return targetDocument;
 	}
 
 	private MongoCursor<Document> getObjects(EntityKeyMetadata entityKeyMetadata, Object[] searchObjects, TupleContext
@@ -607,8 +613,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Document toDelete = prepareIdObject( key );
-		MongoCollection<Document> collection = getCollection( key, getOptionsContext( tupleContext ) );
-		collection.deleteMany( toDelete );
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+		MongoCollection<Document> collection = getCollection( key ).withWriteConcern( writeConcern );
+		Document deleted = collection.findOneAndDelete( toDelete );
+		if ( deleted != null ) {
+			provider.getBinaryStorageManager().removeEntityFromBinaryStorage( deleted, key.getMetadata() );
+		}
 	}
 
 	@Override
@@ -851,6 +861,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else if ( type instanceof StringAsObjectIdType ) {
 			return StringAsObjectIdGridType.INSTANCE;
 		}
+		else if ( type == GridFSType.INSTANCE ) {
+			return GridFSGridType.INSTANCE;
+		}
 		else if ( type instanceof SerializableToBlobType ) {
 			SerializableToBlobType<?> exposedType = (SerializableToBlobType<?>) type;
 			return new SerializableAsBinaryGridType<>( exposedType.getJavaTypeDescriptor() );
@@ -895,7 +908,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void forEachTuple(ModelConsumer consumer, TupleTypeContext tupleTypeContext, EntityKeyMetadata entityKeyMetadata) {
 		MongoCollection<Document> collection = getCollection( entityKeyMetadata.getTable(), tupleTypeContext.getOptionsContext() );
-		consumer.consume( new MongoDBTuplesSupplier( collection, entityKeyMetadata ) );
+		consumer.consume( new MongoDBTuplesSupplier( collection, entityKeyMetadata, provider.getBinaryStorageManager() ) );
 	}
 
 	@Override
@@ -1190,7 +1203,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collation;
 	}
 
-	private static ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, MongoCollection<Document> collection,
+	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, MongoCollection<Document> collection,
 			EntityKeyMetadata entityKeyMetadata) {
 		Document criteria = query.getCriteria();
 		Document orderby = query.getOrderBy();
@@ -1233,7 +1246,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		MongoCursor<Document> iterator = prepareFind.iterator();
-		return new MongoDBResultsCursor( iterator, entityKeyMetadata );
+		return new MongoDBResultsCursor( iterator, entityKeyMetadata, provider.getBinaryStorageManager() );
 	}
 
 	private static void addModifier(Document modifiers, Document criteria, String key) {
@@ -1567,7 +1580,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				operation = queue.poll();
 			}
 
-			flushInserts( inserts );
+			flushInserts( provider, inserts );
 			for ( Tuple insertTuple : insertTuples ) {
 				insertTuple.setSnapshotType( SnapshotType.UPDATE );
 			}
@@ -1692,7 +1705,15 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		if ( updateStatement != null && !updateStatement.isEmpty() ) {
-			collection. withWriteConcern( writeConcern ).updateOne( prepareIdObject( entityKey ), updateStatement , updateOptions );
+			Document documentId = prepareIdObject( entityKey );
+
+			Document fieldsToUpdate = updateStatement.get( "$set", Document.class );
+			provider.getBinaryStorageManager().storeContentToBinaryStorage( fieldsToUpdate, entityKey.getMetadata(), documentId.get( "_id" ) );
+
+			Document fieldsToDelete = updateStatement.get( "$unset", Document.class );
+			provider.getBinaryStorageManager().removeFieldsFromBinaryStorage( fieldsToDelete, entityKey.getMetadata(), documentId.get( "_id" ) );
+
+			collection. withWriteConcern( writeConcern ).updateOne( documentId, updateStatement, updateOptions );
 		}
 	}
 
@@ -1727,7 +1748,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return insertsForCollection;
 	}
 
-	private static void flushInserts(Map<MongoCollection<Document>, BatchInsertionTask> inserts) {
+	private static void flushInserts(MongoDBDatastoreProvider provider, Map<MongoCollection<Document>, BatchInsertionTask> inserts) {
 		for ( Map.Entry<MongoCollection<Document>, BatchInsertionTask> entry : inserts.entrySet() ) {
 			MongoCollection<Document> collection = entry.getKey();
 			if ( entry.getValue().isEmpty() ) {
@@ -1736,6 +1757,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			}
 
 			try {
+				for ( Document documentToInsert : entry.getValue().getAll() ) {
+					Object documentId = documentToInsert.get( "_id" );
+					provider.getBinaryStorageManager().storeContentToBinaryStorage( documentToInsert, entry.getValue().entityKeyMetadata, documentId );
+				}
 				collection.insertMany( entry.getValue().getAll() );
 			}
 			catch ( DuplicateKeyException | MongoBulkWriteException dke ) {
@@ -1959,15 +1984,17 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		private final MongoCollection<Document> collection;
 		private final EntityKeyMetadata entityKeyMetadata;
+		private final GridFSStorageManager binaryStorageManager;
 
-		public MongoDBTuplesSupplier(MongoCollection<Document> collection, EntityKeyMetadata entityKeyMetadata) {
+		public MongoDBTuplesSupplier(MongoCollection<Document> collection, EntityKeyMetadata entityKeyMetadata, GridFSStorageManager binaryStorageManager) {
 			this.collection = collection;
 			this.entityKeyMetadata = entityKeyMetadata;
+			this.binaryStorageManager = binaryStorageManager;
 		}
 
 		@Override
 		public ClosableIterator<Tuple> get(TransactionContext transactionContext) {
-			return new MongoDBResultsCursor( collection.find().iterator(), entityKeyMetadata );
+			return new MongoDBResultsCursor( collection.find().iterator(), entityKeyMetadata, binaryStorageManager );
 		}
 	}
 
@@ -1975,10 +2002,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		private final MongoCursor<Document> cursor;
 		private final EntityKeyMetadata metadata;
+		private final GridFSStorageManager binaryStorageManager;
 
-		public MongoDBResultsCursor(MongoCursor<Document> cursor, EntityKeyMetadata metadata) {
+		public MongoDBResultsCursor(MongoCursor<Document> cursor, EntityKeyMetadata metadata, GridFSStorageManager binaryStorageManager) {
 			this.cursor = cursor;
 			this.metadata = metadata;
+			this.binaryStorageManager = binaryStorageManager;
 		}
 
 		@Override
@@ -1989,6 +2018,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		@Override
 		public Tuple next() {
 			Document dbObject = cursor.next();
+			binaryStorageManager.loadContentFromBinaryStorage( dbObject, metadata );
 			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata ), SnapshotType.UPDATE );
 		}
 

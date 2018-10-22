@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,11 +28,13 @@ import org.hibernate.mapping.Index;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.binarystorage.GridFSFields;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexSpec;
 import org.hibernate.ogm.datastore.mongodb.index.impl.MongoDBIndexType;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import java.lang.invoke.MethodHandles;
+import org.hibernate.ogm.datastore.mongodb.type.GridFS;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -82,11 +86,32 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 	public void initializeSchema( SchemaDefinitionContext context) {
 		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+		OptionsService optionsService = registry.getService( OptionsService.class );
+
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
+		provider.initializeBinaryStorageManager( optionsService, findBinaryStorageTypeEntities( context.getTableEntityTypeMapping(), optionsService ) );
 
 		for ( MongoDBIndexSpec indexSpec : indexSpecs ) {
 			createIndex( provider.getDatabase(), indexSpec );
 		}
+	}
+
+	private Map<String, GridFSFields> findBinaryStorageTypeEntities(Map<String, Class<?>> tableEntityTypeMapping, OptionsService optionsService) {
+		Map<String, GridFSFields> map = new HashMap<>();
+		for ( Entry<String, Class<?>> entries : tableEntityTypeMapping.entrySet() ) {
+			boolean storageTypeDefined = false;
+			GridFSFields storages = new GridFSFields( entries.getValue() );
+			for ( Field currentField : entries.getValue().getDeclaredFields() ) {
+				if ( currentField.getType() == GridFS.class ) {
+					storageTypeDefined = true;
+					storages.add( currentField, null );
+				}
+			}
+			if ( storageTypeDefined ) {
+				map.put( entries.getKey(), storages );
+			}
+		}
+		return Collections.unmodifiableMap( map );
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {
