@@ -67,156 +67,190 @@ public class PositionalParametersStoredProcedureCallTest extends OgmJpaTestCase 
 
 	@Test
 	public void testSingleResultDynamicCall() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( SIMPLE_VALUE_PROC );
-		storedProcedureQuery.registerStoredProcedureParameter( 0, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( 0, 1 );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery( SIMPLE_VALUE_PROC );
+			storedProcedureQuery.registerStoredProcedureParameter( 0, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( 0, 1 );
 
-		Number singleResult = (Number) storedProcedureQuery.getSingleResult();
-		assertThat( singleResult.intValue() ).isEqualTo( 1 );
+			Number singleResult = (Number) storedProcedureQuery.getSingleResult();
+			assertThat( singleResult.intValue() ).isEqualTo( 1 );
+		} );
 	}
 
 	@Test
 	public void testResultSetDynamicCallWithResultClass() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, Car.class );
-		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( 1, 1 );
-		storedProcedureQuery.setParameter( 2, "title" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery( RESULT_SET_PROC, Car.class );
+			storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( 1, 1 );
+			storedProcedureQuery.setParameter( 2, "title" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsOnly( new Car( 1, "title" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsOnly( new Car( 1, "title" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetDynamicCallWithResultMapping() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, "carMapping" );
-		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( 1, 1 );
-		Parameter<String> p2 = storedProcedureQuery.getParameter( 2,String.class );
-		storedProcedureQuery.setParameter( p2, "title'1" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery( RESULT_SET_PROC, "carMapping" );
+			storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( 1, 1 );
+			Parameter<String> p2 = storedProcedureQuery.getParameter( 2, String.class );
+			storedProcedureQuery.setParameter( p2, "title'1" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsOnly( new Car( 1, "title'1" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsOnly( new Car( 1, "title'1" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithResultClass() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithEntity" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, 1 );
-		storedProcedureQuery.setParameter( 3, "title" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersWithEntity" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, 1 );
+			storedProcedureQuery.setParameter( 3, "title" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsOnly( new Car( 1, "title" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsOnly( new Car( 1, "title" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithResultMapping() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, 2 );
-		storedProcedureQuery.setParameter( 3, "title'2" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersWithMapping" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, 2 );
+			storedProcedureQuery.setParameter( 3, "title'2" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 2, "title'2" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Car( 2, "title'2" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallRaw() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersRaw" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, 2 );
-		storedProcedureQuery.setParameter( 3, "title'2" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersRaw" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, 2 );
+			storedProcedureQuery.setParameter( 3, "title'2" );
 
-		@SuppressWarnings("unchecked")
-		List<Object[]> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Object[]{ 2, "title'2" } );
+			@SuppressWarnings("unchecked")
+			List<Object[]> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Object[] { 2, "title'2" } );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithCodeInjectionForMongoDB() throws Exception {
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, 2 );
-		storedProcedureQuery.setParameter( 3, "title'2\") && returnPositionalParametersWithMapping(2,\"\");" );
+		inTransaction( entityManager -> {
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersWithMapping" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, 2 );
+			storedProcedureQuery.setParameter( 3, "title'2\") && returnPositionalParametersWithMapping(2,\"\");" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 2, "title'2\") && returnPositionalParametersWithMapping(2,\"\");" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly(
+					new Car( 2, "title'2\") && returnPositionalParametersWithMapping(2,\"\");" ) );
 
-		storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, 3 );
-		storedProcedureQuery.setParameter( 3, "title'2\\" );
+			storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersWithMapping" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, 3 );
+			storedProcedureQuery.setParameter( 3, "title'2\\" );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult2 = storedProcedureQuery.getResultList();
-		assertThat( listResult2 ).containsExactly( new Car( 3, "title'2\\" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult2 = storedProcedureQuery.getResultList();
+			assertThat( listResult2 ).containsExactly( new Car( 3, "title'2\\" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithNullStringParameter() throws Exception {
-		thrown.expect( IllegalArgumentException.class );
-		thrown.expectMessage( "was null" ); // The parameter at position [3] was null. You need to call ParameterRegistration#enablePassingNulls(true) in order to pass null parameters.
+		inTransaction( entityManager -> {
+			thrown.expect( IllegalArgumentException.class );
+			thrown.expectMessage(
+					"was null" ); // The parameter at position [3] was null. You need to call ParameterRegistration#enablePassingNulls(true) in order to pass null parameters.
 
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, 2 );
-		storedProcedureQuery.setParameter( 3, null );
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersWithMapping" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, 2 );
+			storedProcedureQuery.setParameter( 3, null );
 
-		@SuppressWarnings("unchecked")
-		List<Car> listResult = storedProcedureQuery.getResultList();
-		assertThat( listResult ).containsExactly( new Car( 2, "title'2" ) );
+			@SuppressWarnings("unchecked")
+			List<Car> listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).containsExactly( new Car( 2, "title'2" ) );
+		} );
 	}
 
 	@Test
 	public void testResultSetStaticCallWithNullIntegerParameter() throws Exception {
-		thrown.expect( IllegalArgumentException.class );
-		thrown.expectMessage( "was null" ); // The parameter at position [2] was null. You need to call ParameterRegistration#enablePassingNulls(true) in order to pass null parameters.
+		inTransaction( entityManager -> {
+			thrown.expect( IllegalArgumentException.class );
+			thrown.expectMessage(
+					"was null" ); // The parameter at position [2] was null. You need to call ParameterRegistration#enablePassingNulls(true) in order to pass null parameters.
 
-		StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "returnPositionalParametersWithMapping" );
-		// First parameter is void
-		storedProcedureQuery.setParameter( 2, null );
-		storedProcedureQuery.setParameter( 3, "Whatever" );
-		storedProcedureQuery.getResultList();
+			StoredProcedureQuery storedProcedureQuery = entityManager.createNamedStoredProcedureQuery(
+					"returnPositionalParametersWithMapping" );
+			// First parameter is void
+			storedProcedureQuery.setParameter( 2, null );
+			storedProcedureQuery.setParameter( 3, "Whatever" );
+			storedProcedureQuery.getResultList();
+		} );
 	}
 
 	@Test
 	public void testExceptionWhenMultipleEntitiesAreUsed() throws Exception {
-		thrown.expect( PersistenceException.class );
-		thrown.expectCause( isA( HibernateException.class ) );
-		thrown.expectMessage(
-				"org.hibernate.HibernateException: OGM000090: Returning multiple entities is not supported. Procedure '" + RESULT_SET_PROC
-						+ "' expects results of type [Car, Motorbike]" );
+		inTransaction( entityManager -> {
+			thrown.expect( PersistenceException.class );
+			thrown.expectCause( isA( HibernateException.class ) );
+			thrown.expectMessage(
+					"org.hibernate.HibernateException: OGM000090: Returning multiple entities is not supported. Procedure '" + RESULT_SET_PROC
+							+ "' expects results of type [Car, Motorbike]" );
 
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, Car.class, Motorbike.class );
-		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( 1, 1 );
-		storedProcedureQuery.setParameter( 2, "title" );
-		storedProcedureQuery.getResultList();
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					RESULT_SET_PROC, Car.class, Motorbike.class );
+			storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( 1, 1 );
+			storedProcedureQuery.setParameter( 2, "title" );
+			storedProcedureQuery.getResultList();
+		} );
 	}
 
 	@Test
 	public void testExceptionWhenInvalidTypeIsPassed() throws Exception {
-		thrown.expect( IllegalArgumentException.class );
+		inTransaction( entityManager -> {
+			thrown.expect( IllegalArgumentException.class );
 
-		StoredProcedureQuery storedProcedureQuery = em.createStoredProcedureQuery( RESULT_SET_PROC, Car.class );
-		storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
-		storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
-		storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
-		storedProcedureQuery.setParameter( 1, 1 );
-		// Should be a string
-		storedProcedureQuery.setParameter( 2, 5 );
-		storedProcedureQuery.getResultList();
+			StoredProcedureQuery storedProcedureQuery = entityManager.createStoredProcedureQuery(
+					RESULT_SET_PROC, Car.class );
+			storedProcedureQuery.registerStoredProcedureParameter( 0, Void.class, ParameterMode.REF_CURSOR );
+			storedProcedureQuery.registerStoredProcedureParameter( 1, Integer.class, ParameterMode.IN );
+			storedProcedureQuery.registerStoredProcedureParameter( 2, String.class, ParameterMode.IN );
+			storedProcedureQuery.setParameter( 1, 1 );
+			// Should be a string
+			storedProcedureQuery.setParameter( 2, 5 );
+			storedProcedureQuery.getResultList();
+		} );
 	}
 
 	@Override
