@@ -8,6 +8,7 @@ package org.hibernate.ogm.backendtck.elementcollection;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -34,7 +35,6 @@ public class Meeting {
 	private List<Programmer> speakers = new ArrayList<>();
 
 	@OneToMany
-	@JoinTable
 	private List<Programmer> participants = new ArrayList<>();
 
 	public String getName() {
