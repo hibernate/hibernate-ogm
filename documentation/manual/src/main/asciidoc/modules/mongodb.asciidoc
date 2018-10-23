@@ -475,6 +475,95 @@ in the corresponding object in the db.
 This can have consequences when it comes to queries on null value.
 ====
 
+[[mongodb-gridfs-support]]
+==== GridFS Support
+
+This feature is experimental.
+
+GridFS is a specification for storing and retrieving files that
+exceed the BSON-document size limit of 16 MB.
+
+You can find more details about it in
+the https://docs.mongodb.com/manual/core/gridfs/[official MongoDB documentation].
+
+It's possible to store a value as GridFS using the type
+`org.hibernate.ogm.datastore.mongodb.type.GridFS`.
+
+.Field mapped using GridFS
+====
+[source, JAVA]
+----
+import org.hibernate.ogm.datastore.mongodb.type.GridFS;
+
+@Entity
+public class Photo {
+
+    @Id
+    String name;
+
+    GridFS image;
+
+    // ...
+}
+----
+
+----
+> db.Photo.find()
+{ "_id" : "photo.jpg", "image" : ObjectId("5bce7202826ce81d7fe7ebe5") }
+
+> db.Photo_bucket.files.find().pretty()
+{
+        "_id" : ObjectId("5bce7202826ce81d7fe7ebe5"),
+        "filename" : "image_photo.jpg",
+        "length" : NumberLong(30000000),
+        "chunkSize" : 261120,
+        "uploadDate" : ISODate("2018-10-22T20:57:37.047Z"),
+        "md5" : "a08988fc1e3da0e80d2ba7b55599d1f7"
+}
+----
+====
+
+The default bucket name is the name of the class with the suffix `_bucket` while the name
+of the filename is the combination of the field name with the id of the document.
+
+It's possible to select a different bucket name using the annotation `@GridFSBucket`.
+
+.Field mapped using GridFS with custom bucket name
+====
+[source, JAVA]
+----
+import org.hibernate.ogm.datastore.mongodb.type.GridFS;
+import org.hibernate.ogm.datastore.mongodb.options.GridFSBucket;
+
+@Entity
+public class Photo {
+
+    @Id
+    String name;
+
+    @GridFSBucket("PhotoGallery")
+    GridFS image;
+
+    // ...
+}
+----
+
+----
+> db.Photo.find()
+{ "_id" : "photo.jpg", "image" : ObjectId("5bce7202826ce81d7fe7ebe5") }
+
+> db.PhotoGallery.files.find().pretty()
+{
+        "_id" : ObjectId("5bce7202826ce81d7fe7ebe5"),
+        "filename" : "image_photo.jpg",
+        "length" : NumberLong(30000000),
+        "chunkSize" : 261120,
+        "uploadDate" : ISODate("2018-10-22T20:57:37.047Z"),
+        "md5" : "a08988fc1e3da0e80d2ba7b55599d1f7"
+}
+----
+====
+
 ==== Entities
 
 Entities are stored as MongoDB documents and not as BLOBs:
