@@ -121,19 +121,26 @@ For example the Infinispan Embedded dialect suffers from this limitation as it's
 treated as a pure key/value store, while the Infinispan Remote dialect does not
 as it is more similar to a document store.
 
-==== Preserve the order of the association items
+==== Elements order in associations
 
-The order of the association items can be lost, even if it used a `List` as a collection type.
-Without the use of `javax.persistence.OrderColumn` or a `javax.persistence.OrderBy` annotation, the responsibility of order preservation is left
-to the underlining datastore.
+Hibernate OGM, by default, does not guarantees that elements in an association will
+be retrieved in the same order each time you read the association.
 
-Alternatively, it is possible to tell Hibernate to handle the order, using the annotations: `@javax.persistence.OrderColumn` and `@javax.persistence.OrderBy`.
-For more information on order see the Hibernate ORM guide http://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#collections-list.
+If the order is important, you can enforce it using the following annotations:
 
-==== Keep duplicates of the association items
+* `@javax.persistence.OrderColumn`: the collection uses a dedicated order column
+  in the collection link table
 
-Duplicate items on association can be lost, even if it used a `List` as a collection type.
-Without the use of the `javax.persistence.OrderColumn` annotation, the responsibility to keep duplicates is left to the underlining datastore.
-Most of them are idempotent on keys, it means that duplicates will be lost in save. Others aren't, so they will be able to keep duplicates.
+* `@javax.persistence.OrderBy`: the collection is ordered upon retrieval using
+  a child entity property
 
-Using the JPA annotation `@javax.persistence.OrderColumn`, Hibernate will take care of the duplicates, as well as order.
+You can find more details and examples in the
+http://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#collections-list[Hibernate ORM documentation].
+
+[WARNING]
+====
+At the moment, Hibernate OGM doesn't support associations of embeddables with duplicates.
+
+A work-around for this issue is to use the annotation `@javax.persistence.OrderColumn`.
+====
+
