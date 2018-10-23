@@ -44,6 +44,35 @@ public class DuplicatesAndOrderOfAssociationItemsTest extends OgmTestCase {
 	}
 
 	@Test
+	@TestForIssue(jiraKey = "OGM-1537")
+	public void testDuplicatesForElementsCollectionWithoutOrderColumn() {
+		Meeting meeting = new Meeting();
+		meeting.setName( NAME );
+		meeting.addAddress( ADDRESS_0 );
+		meeting.addAddress( ADDRESS_0 );
+		meeting.addAddress( ADDRESS_1 );
+		meeting.addAddress( ADDRESS_0 );
+		meeting.addAddress( ADDRESS_2 );
+
+		inTransaction( session -> {
+			persistAll( session, meeting );
+		} );
+
+		inTransaction( session -> {
+			Meeting load = session.load( Meeting.class, NAME );
+			assertThat( load.getAddresses() ).hasSize( 3 );
+			assertThat( load.getAddresses() )
+				.as( "Hibernate OGM does not support duplicates for a collection of embeddebles (issue OGM-1537)."
+						+ " If you've solved this issue, congratulations!"
+						+ " Please, update the jira and this test accordingly, and thanks a lot" )
+				.containsOnly( ADDRESS_0, ADDRESS_1, ADDRESS_2 );
+			// it should be:
+			// assertThat( load.getAddresses() ).containsExactly( ADDRESS_0, ADDRESS_0, ADDRESS_1, ADDRESS_0, ADDRESS_2 );
+		} );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1537")
 	public void testDuplicatesForOneToManyAssociationWithoutOrderColumn() {
 		Programmer participant0 = new Programmer( PARTICIPANT_0 );
 		Programmer participant1 = new Programmer( PARTICIPANT_1 );
@@ -63,7 +92,15 @@ public class DuplicatesAndOrderOfAssociationItemsTest extends OgmTestCase {
 
 		inTransaction( session -> {
 			Meeting load = session.load( Meeting.class, NAME );
-			assertThat( load.getParticipants() ).containsOnly( participant0, participant1, participant1, participant2, participant1 );
+			assertThat( load.getParticipants() ).hasSize( 3 );
+			assertThat( load.getParticipants() )
+				.as( "Hibernate OGM does not support duplicates for associations (issue OGM-1537)."
+						+ " If you've solved this issue, congratulations!"
+						+ " Please, update the jira and this test accordingly, and thanks a lot" )
+				.containsOnly( participant0, participant1, participant2 );
+
+			// It should be:
+			// assertThat( load.getParticipants() ).containsExactly( participant0, participant1, participant1, participant2, participant1 );
 		} );
 	}
 
@@ -125,32 +162,6 @@ public class DuplicatesAndOrderOfAssociationItemsTest extends OgmTestCase {
 		inTransaction( session -> {
 			Meeting load = session.load( Meeting.class, NAME );
 			assertThat( load.getPhones() ).containsExactly( PHONE_0, PHONE_1, PHONE_0, PHONE_0 );
-		} );
-	}
-
-	@Test
-	@TestForIssue(jiraKey = "OGM-1237")
-	public void testDuplicatesForElementsCollectionWithoutOrderColumn() {
-		Meeting meeting = new Meeting();
-		meeting.setName( NAME );
-		meeting.addAddress( ADDRESS_0 );
-		meeting.addAddress( ADDRESS_0 );
-		meeting.addAddress( ADDRESS_1 );
-		meeting.addAddress( ADDRESS_0 );
-
-		inTransaction( session -> {
-			persistAll( session, meeting );
-		} );
-
-		inTransaction( session -> {
-			Meeting load = session.load( Meeting.class, NAME );
-			assertThat( load.getAddresses() )
-				.as( "Hibernate OGM does not support duplicates for a collection of embeddebles (issue OGM-1237)."
-						+ " If you've solved this issue, congratulations!"
-						+ " Please, update the jira and this test accordingly, and thanks a lot" )
-				.containsOnly( ADDRESS_0, ADDRESS_1 );
-			// it should be:
-			// .containsExactly( ADDRESS_0, ADDRESS_0, ADDRESS_1, ADDRESS_0 );
 		} );
 	}
 
