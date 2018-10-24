@@ -126,16 +126,10 @@ as it is more similar to a document store.
 Hibernate OGM, by default, does not guarantee that elements in an association will
 be retrieved in the same order each time you load the association from the datastore.
 
-If the order is important, you can enforce it using the following annotations:
-
-* `@javax.persistence.OrderColumn`: the collection uses a dedicated order column
-  in the collection link table
-
-* `@javax.persistence.OrderBy`: the collection is ordered upon retrieval using
-  a child entity property
-
-You can find more details and examples in the
-http://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#collections-list[Hibernate ORM documentation].
+If the order is important, you can enforce it using the annotation
+`@javax.persistence.OrderColumn`:
+it defines a field to keep track of the position
+of each element in the association.
 
 [WARNING]
 ====
