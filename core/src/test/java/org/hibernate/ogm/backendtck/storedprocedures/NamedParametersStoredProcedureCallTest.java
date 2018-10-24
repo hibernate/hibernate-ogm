@@ -83,7 +83,7 @@ public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
 			storedProcedureQuery.setParameter( UNIQUE_VALUE_PROC_PARAM, 1 );
 
 			Number singleResult = (Number) storedProcedureQuery.getSingleResult();
-			assertThat( singleResult ).isEqualTo( 1 );
+			assertThat( singleResult.intValue() ).isEqualTo( 1 );
 		} );
 	}
 
@@ -167,8 +167,10 @@ public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
 			storedProcedureQuery.setParameter( RESULT_SET_PROC_TITLE_PARAM, "title'2" );
 
 			@SuppressWarnings("unchecked")
-			List<Object[]> listResult = storedProcedureQuery.getResultList();
-			assertThat( listResult ).containsExactly( new Object[] { 2, "title'2" } );
+			List listResult = storedProcedureQuery.getResultList();
+			assertThat( listResult ).hasSize( 2 );
+			assertThat( ( (Number) listResult.get( 0 ) ).intValue() ).isEqualTo( 2 );
+			assertThat( listResult.get( 1 ) ).isEqualTo( "title'2" );
 		} );
 	}
 
@@ -207,7 +209,7 @@ public class NamedParametersStoredProcedureCallTest extends OgmJpaTestCase {
 
 	@Test
 	@SkipByGridDialect(
-			value = { NEO4J_EMBEDDED },
+			value = { NEO4J_EMBEDDED, NEO4J_REMOTE },
 			comment = "Work fine for Neo4j, because function still accepts integer value as a parameter")
 	public void testExceptionWhenUsingNotRegisteredParameter() throws Exception {
 		inTransaction( entityManager -> {
