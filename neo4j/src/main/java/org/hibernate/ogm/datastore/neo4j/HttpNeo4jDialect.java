@@ -497,7 +497,8 @@ public class HttpNeo4jDialect extends BaseNeo4jDialect<HttpNeo4jEntityQueries, H
 		statement.setResultDataContents( Collections.singletonList( Statement.AS_ROW ) );
 		Statements statements = new Statements();
 		statements.addStatement( statement );
-		StatementsResponse response = client.executeQueriesInNewTransaction( statements );
+		Long txId = transactionId( tupleContext.getTransactionContext() );
+		StatementsResponse response = client.executeQueriesInOpenTransaction( txId, statements );
 		if ( !response.getErrors().isEmpty() ) {
 			ErrorResponse errorResponse = response.getErrors().get( 0 );
 			switch ( errorResponse.getCode() ) {
