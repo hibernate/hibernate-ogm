@@ -88,6 +88,25 @@ public class GridFSTest extends OgmJpaTestCase {
 	}
 
 	@Test
+	public void testGridFSFieldLoadedByQuery() throws Exception {
+		final String photoId  = "testGridFSFieldLoadedByQuery";
+		inTransaction( em -> {
+			Photo photo = new Photo( photoId );
+			photo.setGridFS( new GridFS( BYTE_ARRAY_CONTENT_1 ) );
+			em.persist( photo );
+		} );
+
+		inTransaction( em -> {
+			List<Photo> photos = em.createQuery( "from Photo" ).getResultList();
+			assertThat( photos ).hasSize( 1 );
+
+			Photo photo = photos.get( 0 );
+			assertThat( photo ).isNotNull();
+			assertThatGridFSAreEqual( photo.getGridFS(), BYTE_ARRAY_CONTENT_1 );
+		} );
+	}
+
+	@Test
 	public void testGridFSFieldWithDefaultBucket() throws Exception {
 		final String photoId  = "testGridFSFieldWithDefaultBucket";
 		inTransaction( em -> {
