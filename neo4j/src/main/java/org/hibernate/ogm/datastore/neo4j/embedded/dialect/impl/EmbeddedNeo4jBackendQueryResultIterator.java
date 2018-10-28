@@ -67,16 +67,24 @@ public class EmbeddedNeo4jBackendQueryResultIterator extends EmbeddedNeo4jTupleI
 	}
 
 	private TupleSnapshot mapSnapshot(Map<String, Object> next) {
-		TupleSnapshot snapshot;
+		Map<String, Object> sortedColumns = sortColumns( next );
+		TupleSnapshot snapshot = new MapTupleSnapshot( sortedColumns );
+		return snapshot;
+	}
+
+	/**
+	 * The map represents a single row of the results returned by Neo4j but the columns might
+	 * not be ordered in the same way as {@link Result#columns()}.
+	 * If the user runs a native query, we need to make sure that the results are in the right order.
+	 */
+	private Map<String, Object> sortColumns(Map<String, Object> next) {
+		Map<String, Object> sortedColumns = new LinkedHashMap<>();
 		if ( this.columns != null ) {
-			Map<String, Object> sortedColumns = new LinkedHashMap<>();
 			for ( String column : this.columns ) {
 				sortedColumns.put( column, next.get( column ) );
 			}
-			next = sortedColumns;
 		}
-		snapshot = new MapTupleSnapshot( (Map<String, Object>) next );
-		return snapshot;
+		return sortedColumns;
 	}
 
 	private TupleSnapshot nodeSnapshot(Node node) {
