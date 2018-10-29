@@ -1,6 +1,31 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.0.Final (29-10-2018)
+-------------------------
+
+** Bug
+    * OGM-534 -                   - Add support for count() function in JP-QL on MongoDB
+
+** Improvement
+    * OGM-1536 - infinispan        - Rename property hibernate.ogm.datastore.cache_configuration
+    * OGM-1533 - neo4j             - Update MongoDB java driver to version 3.8.2
+    * OGM-1532 - neo4j             - Update Neo4j driver to version 1.6.3
+    * OGM-1531 - neo4j             - Update Neo4j to version 3.4.8
+    * OGM-1425 - mongodb           - Mapping tests for TABLE_PER_CLASS inheritance type in MongoDB
+    * OGM-1419 - documentation     - Update infinispan documentation about selecting template for the cache configuration
+
+** New Feature
+    * OGM-1349 - neo4j             - Support stored procedures for Neo4J
+    * OGM-786 - mongodb           - Investigate usage of MongoDB's GridFS for storing large binary data
+
+** Sub-task
+    * OGM-1097 - neo4j             - Have the Neo4J integration build and tested on Java 9
+
+** Task
+    * OGM-1529 - infinispan, tests - Enable TCK query with parameters test for Infinispan remote
+    * OGM-1528 - infinispan        - Upgrade to Infinispan 9.4.0.Final
+
 5.4.0.CR1 (01-10-2018)
 -------------------------
 
