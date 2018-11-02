@@ -199,6 +199,7 @@ import com.mongodb.client.result.UpdateResult;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Thorsten Möller &lt;thorsten.moeller@sbi.ch&gt;
  * @author Guillaume Smet
+ * @author Aleksandr Mylnikov
  */
 public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, MultigetGridDialect, OptimisticLockingAwareGridDialect,
 		StoredProcedureAwareGridDialect {
@@ -1030,7 +1031,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		List<Document> pipeline = new ArrayList<Document>();
 
 		pipeline.add( stage( "$match", query.getCriteria() ) );
-		pipeline.add( stage( "$project", query.getProjection() ) );
+
+		if ( query.getAggregation() != null ) {
+			pipeline.add( query.getAggregation().asDocument() );
+		}
+
+		if ( query.getProjection() != null ) {
+			pipeline.add( stage( "$project", query.getProjection() ) );
+		}
 
 		if ( query.getUnwinds() != null && !query.getUnwinds().isEmpty() ) {
 			for ( String field : query.getUnwinds() ) {

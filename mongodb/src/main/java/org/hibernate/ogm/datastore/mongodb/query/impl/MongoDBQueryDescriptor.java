@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bson.Document;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.AggregationRenderer;
 
 /**
  * Describes a query to be executed against MongoDB.
@@ -43,7 +44,10 @@ public class MongoDBQueryDescriptor implements Serializable {
 		UPDATEONE,
 		UPDATEMANY,
 		REPLACEONE,
-		COUNT(true),
+		/**
+		 * This is only for native queries, example: db.collection.count( ... );
+		 */
+		COUNT,
 		DROP,
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
@@ -55,17 +59,6 @@ public class MongoDBQueryDescriptor implements Serializable {
 		AGGREGATE_PIPELINE,
 		DISTINCT,
 		MAP_REDUCE;
-
-		public final boolean isAggregation;
-
-		Operation() {
-			isAggregation = false;
-		}
-
-		Operation(boolean isAggregation) {
-			this.isAggregation = isAggregation;
-		}
-
 	}
 
 	private final String collectionName;
@@ -97,6 +90,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * </ul>
 	 */
 	private final Document options;
+	private final AggregationRenderer aggregation;
 	private final List<String> unwinds;
 	private final List<Document> pipeline;
 
@@ -114,9 +108,10 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.distinctFieldName = null;
 		this.mapFunction = null;
 		this.reduceFunction = null;
+		this.aggregation = null;
 	}
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Document projection, Document orderBy, Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds, String distinctFieldName, String mapFunction, String reduceFunction) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Document projection, Document orderBy, Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds, String distinctFieldName, String mapFunction, String reduceFunction, AggregationRenderer aggregation ) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
@@ -130,6 +125,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.distinctFieldName = distinctFieldName;
 		this.mapFunction = mapFunction;
 		this.reduceFunction = reduceFunction;
+		this.aggregation = aggregation;
 	}
 
 	public List<Document> getPipeline() {
@@ -167,6 +163,15 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 */
 	public Document getProjection() {
 		return projection;
+	}
+
+	/**
+	 * Additional information for when an aggregation is required, for example for $SUM.
+	 *
+	 * @return additional information for aggregations
+	 */
+	public AggregationRenderer getAggregation() {
+		return aggregation;
 	}
 
 	/**
