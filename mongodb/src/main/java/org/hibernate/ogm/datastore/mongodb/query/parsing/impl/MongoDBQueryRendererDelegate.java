@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bson.Document;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
@@ -21,13 +23,9 @@ import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
-
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.StringHelper;
-
-import org.bson.Document;
 
 /**
  * Parser delegate which creates MongoDB queries in form of {@link Document}s.
@@ -41,8 +39,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
 	private Document orderBy;
-	private AggregationPropertyPath.Type aggregationPropertyPathType;
-	private MongoDBPropertyPathConverter propertyPathConverter = new MongoDBPropertyPathConverter();
+	private AggregationRenderer aggregation;
 	/*
 	 * The fields for which needs to be aggregated using $unwind when running the query
 	 */
@@ -72,14 +69,15 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 				getProjectionDocument(),
 				orderBy,
 				unwinds,
-				getOperation() );
+				getOperation(),
+				aggregation );	
 	}
 
 	private MongoDBQueryDescriptor.Operation getOperation() {
-		if ( aggregationPropertyPathType != null ) {
-			return propertyPathConverter.convert( this.aggregationPropertyPathType );
+		if ( aggregation != null  || unwinds != null ) {
+			return MongoDBQueryDescriptor.Operation.AGGREGATE;
 		}
-		return unwinds == null ? MongoDBQueryDescriptor.Operation.FIND : MongoDBQueryDescriptor.Operation.AGGREGATE;
+		return MongoDBQueryDescriptor.Operation.FIND;
 	}
 
 	private Document appendDiscriminatorClause(OgmEntityPersister entityPersister, Document query) {
@@ -130,7 +128,13 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 		if ( status == Status.DEFINING_SELECT ) {
 			List<String> pathWithoutAlias = resolveAlias( propertyPath );
 			if ( propertyHelper.isSimpleProperty( pathWithoutAlias ) ) {
-				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
+				if ( aggregationType != null ) {
+					this.aggregation = new AggregationRenderer( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ), ((AggregationPropertyPath) propertyPath).getType() );
+					projections.add( aggregation.getAggregationProjection() );
+				}
+				else {
+					projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
+				}
 			}
 			else if ( propertyHelper.isNestedProperty( pathWithoutAlias ) ) {
 				if ( propertyHelper.isEmbeddedProperty( targetTypeName, pathWithoutAlias ) ) {
@@ -179,10 +183,13 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 
 	@Override
 	public void activateAggregation(AggregationPropertyPath.Type aggregationType) {
-		super.activateAggregation( aggregationType );
-		this.aggregationPropertyPathType = aggregationType;
-	}
+		if ( aggregationType == AggregationPropertyPath.Type.COUNT ) {
+			this.aggregation = new AggregationRenderer( aggregationType );
+			projections.add( aggregation.getAggregationProjection() );
+		}
 
+		super.activateAggregation( aggregationType );
+	}
 
 	@Override
 	protected void addSortField(PropertyPath propertyPath, String collateName, boolean isAscending) {

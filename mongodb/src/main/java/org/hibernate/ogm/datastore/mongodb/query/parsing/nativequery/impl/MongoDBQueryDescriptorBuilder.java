@@ -13,12 +13,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.bson.Document;
+import org.bson.json.JsonParseException;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.util.impl.StringHelper;
-
-import org.bson.Document;
-import org.bson.json.JsonParseException;
 
 /**
  * Builder for {@link MongoDBQueryDescriptor}s.
@@ -244,6 +243,7 @@ public class MongoDBQueryDescriptorBuilder {
 						null,
 						null,
 						null,
+						null,
 						null
 				);
 			}
@@ -264,6 +264,7 @@ public class MongoDBQueryDescriptorBuilder {
 							null,
 							null,
 							null,
+							null,
 							null
 					);
 				}
@@ -277,6 +278,7 @@ public class MongoDBQueryDescriptorBuilder {
 							parse( orderBy ),
 							parse( options ),
 							(Document) anyDocs,
+							null,
 							null,
 							null,
 							null,
@@ -298,7 +300,8 @@ public class MongoDBQueryDescriptorBuilder {
 						null,
 						distinctFieldName,
 						mapFunction,
-						reduceFunction
+						reduceFunction,
+						null
 				);
 			}
 			return descriptor;

@@ -43,6 +43,7 @@ public class MongoDBQueryDescriptorSerializationTest {
 				Arrays.asList( "foo, bar" ),
 				null,
 				null,
+				null,
 				null
 		);
 
