@@ -41,8 +41,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
 	private Document orderBy;
-	private AggregationPropertyPath.Type aggregationPropertyPathType;
-	private MongoDBPropertyPathConverter propertyPathConverter = new MongoDBPropertyPathConverter();
+	private Aggregation aggregation;
 	/*
 	 * The fields for which needs to be aggregated using $unwind when running the query
 	 */
@@ -72,14 +71,16 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 				getProjectionDocument(),
 				orderBy,
 				unwinds,
-				getOperation() );
+				getOperation(),
+				getGroup(),
+				getCount() );
 	}
 
 	private MongoDBQueryDescriptor.Operation getOperation() {
-		if ( aggregationPropertyPathType != null ) {
-			return propertyPathConverter.convert( this.aggregationPropertyPathType );
+		if ( aggregation != null  || unwinds != null ) {
+			return MongoDBQueryDescriptor.Operation.AGGREGATE;
 		}
-		return unwinds == null ? MongoDBQueryDescriptor.Operation.FIND : MongoDBQueryDescriptor.Operation.AGGREGATE;
+		return MongoDBQueryDescriptor.Operation.FIND;
 	}
 
 	private Document appendDiscriminatorClause(OgmEntityPersister entityPersister, Document query) {
@@ -130,7 +131,14 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 		if ( status == Status.DEFINING_SELECT ) {
 			List<String> pathWithoutAlias = resolveAlias( propertyPath );
 			if ( propertyHelper.isSimpleProperty( pathWithoutAlias ) ) {
-				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
+				if ( aggregationType != null ) {
+					this.aggregation = new Aggregation( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ),
+							((AggregationPropertyPath) propertyPath).getType() );
+					projections.add( aggregation.getAggregationProjection() );
+				}
+				else {
+					projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) );
+				}
 			}
 			else if ( propertyHelper.isNestedProperty( pathWithoutAlias ) ) {
 				if ( propertyHelper.isEmbeddedProperty( targetTypeName, pathWithoutAlias ) ) {
@@ -177,12 +185,29 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 		return projectionDocument;
 	}
 
-	@Override
-	public void activateAggregation(AggregationPropertyPath.Type aggregationType) {
-		super.activateAggregation( aggregationType );
-		this.aggregationPropertyPathType = aggregationType;
+	private Document getGroup() {
+		if ( aggregation == null ) {
+			return null;
+		}
+		return aggregation.getAsDocument();
 	}
 
+	private Document getCount() {
+		if ( aggregation == null ) {
+			return null;
+		}
+		return aggregation.getCount();
+	}
+
+	@Override
+	public void activateAggregation(AggregationPropertyPath.Type aggregationType) {
+		if ( aggregationType == AggregationPropertyPath.Type.COUNT ) {
+			this.aggregation = new Aggregation( null, aggregationType );
+			projections.add( aggregation.getAggregationProjection() );
+		}
+
+		super.activateAggregation( aggregationType );
+	}
 
 	@Override
 	protected void addSortField(PropertyPath propertyPath, String collateName, boolean isAscending) {

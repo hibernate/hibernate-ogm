@@ -244,6 +244,8 @@ public class MongoDBQueryDescriptorBuilder {
 						null,
 						null,
 						null,
+						null,
+						null,
 						null
 				);
 			}
@@ -264,6 +266,8 @@ public class MongoDBQueryDescriptorBuilder {
 							null,
 							null,
 							null,
+							null,
+							null,
 							null
 					);
 				}
@@ -277,6 +281,8 @@ public class MongoDBQueryDescriptorBuilder {
 							parse( orderBy ),
 							parse( options ),
 							(Document) anyDocs,
+							null,
+							null,
 							null,
 							null,
 							null,
@@ -298,7 +304,9 @@ public class MongoDBQueryDescriptorBuilder {
 						null,
 						distinctFieldName,
 						mapFunction,
-						reduceFunction
+						reduceFunction,
+						null,
+						null
 				);
 			}
 			return descriptor;

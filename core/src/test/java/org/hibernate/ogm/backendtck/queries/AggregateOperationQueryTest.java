@@ -29,10 +29,13 @@ import org.junit.Test;
 public class AggregateOperationQueryTest extends OgmJpaTestCase {
 
 	@Before
-	public void populateDb() throws Exception {
+	public void populateDb() {
 		inTransaction( em -> {
 			em.persist( new Author( 1l, "Josh" ) );
 			em.persist( new Author( 2l, "Ela" ) );
+			em.persist( new Author( 4l, "Ela", 20 ) );
+			em.persist( new Author( 3l, "Ela", 34 ) );
+
 		} );
 	}
 
@@ -45,21 +48,63 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	@Test
 	public void shouldCountEntities() {
 		inTransaction( em -> {
-			Long result = (Long) em.createQuery( "SELECT COUNT(*) FROM Author author" ).getSingleResult();
-			assertThat( result ).isEqualTo( 2l );
+			Integer result = (Integer) em.createQuery( "SELECT COUNT(author.age) FROM Author author" ).getSingleResult();
+			assertThat( result ).isEqualTo( 4 );
 		} );
 	}
 
 	@Test
 	public void shouldCountEntitiesWithCondition() {
 		inTransaction( em -> {
-			Long result = (Long) em.createQuery( "select count(*) from Author a WHERE id = :id" ).setParameter( "id", 1l ).getSingleResult();
-			assertThat( result ).isEqualTo( 1l );
+			Integer result = (Integer) em.createQuery( "select count(*) from Author a WHERE id = :id" ).setParameter( "id", 3l ).getSingleResult();
+			assertThat( result ).isEqualTo( 1 );
 		} );
 	}
 
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition() {
+		inTransaction( em -> {
+			Integer result = (Integer) em.createQuery( "select sum(a.age) from Author a WHERE id = :id" ).setParameter( "id", 3l ).getSingleResult();
+			assertThat( result ).isEqualTo( 34 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition2() {
+		inTransaction( em -> {
+			Integer result = (Integer) em.createQuery( "select sum(a.age) from Author a" ).getSingleResult();
+			assertThat( result ).isEqualTo( 54 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition3() {
+		inTransaction( em -> {
+			Integer result = (Integer) em.createQuery( "select min(a.age) from Author a" ).getSingleResult();
+			assertThat( result ).isEqualTo( 20 );
+		} );
+	}
+
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition4() {
+		inTransaction( em -> {
+			Integer result = (Integer) em.createQuery( "select max(a.age) from Author a" ).getSingleResult();
+			assertThat( result ).isEqualTo( 34 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition5() {
+		inTransaction( em -> {
+			Double result = (Double) em.createQuery( "select avg(a.age) from Author a" ).getSingleResult();
+			assertThat( result ).isEqualTo( 27.0 );
+		} );
+	}
+
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[]{ Author.class, Hypothesis.class, Address.class };
+		return new Class[]{ Author.class, Address.class, Hypothesis.class };
 	}
 }

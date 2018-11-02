@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.bson.Document;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryRendererDelegate;
 
 /**
  * Describes a query to be executed against MongoDB.
@@ -48,7 +49,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
 		 */
-		AGGREGATE,
+		AGGREGATE(true),
 		/**
 		 * This is used for native queries, when the user wants to execute a generic aggregation query.
 		 */
@@ -97,6 +98,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 * </ul>
 	 */
 	private final Document options;
+	private final Document group;
+	private final Document count;
 	private final List<String> unwinds;
 	private final List<Document> pipeline;
 
@@ -114,9 +117,11 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.distinctFieldName = null;
 		this.mapFunction = null;
 		this.reduceFunction = null;
+		this.group = null;
+		this.count = null;
 	}
 
-	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Document projection, Document orderBy, Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds, String distinctFieldName, String mapFunction, String reduceFunction) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, Document criteria, Document projection, Document orderBy, Document options, Document updateOrInsertOne, List<Document> updateOrInsertMany, List<String> unwinds, String distinctFieldName, String mapFunction, String reduceFunction, Document group, Document count) {
 		this.collectionName = collectionName;
 		this.operation = operation;
 		this.criteria = criteria;
@@ -130,6 +135,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 		this.distinctFieldName = distinctFieldName;
 		this.mapFunction = mapFunction;
 		this.reduceFunction = reduceFunction;
+		this.group = group;
+		this.count = count;
 	}
 
 	public List<Document> getPipeline() {
@@ -167,6 +174,22 @@ public class MongoDBQueryDescriptor implements Serializable {
 	 */
 	public Document getProjection() {
 		return projection;
+	}
+
+	/**
+	 * @see MongoDBQueryRendererDelegate#getGroup()
+	 * @return the {@link Document} for group stage in aggregation pipeline
+	 */
+	public Document getGroup() {
+		return group;
+	}
+
+	/**
+	 * @see MongoDBQueryRendererDelegate#getCount() ()
+	 * @return the {@link Document} for count stage in aggregation pipeline
+	 */
+	public Document getCount() {
+		return count;
 	}
 
 	/**
