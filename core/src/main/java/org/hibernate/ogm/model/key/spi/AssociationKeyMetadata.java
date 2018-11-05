@@ -9,6 +9,8 @@ package org.hibernate.ogm.model.key.spi;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.ogm.model.spi.AssociationOrderBy;
+
 /**
  * Stores metadata information common to all keys related
   * to a given association
@@ -106,6 +108,13 @@ public interface AssociationKeyMetadata {
 	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
 	 */
 	boolean isKeyColumn(String columnName);
+
+	/**
+	 * Allows the access to the parsed value of the {@link javax.persistence.OrderBy} qualifier for the current association
+	 *
+	 * @return the {@link javax.persistence.OrderBy} parsed value list
+	 */
+	List<AssociationOrderBy> getManyToManyOrderBy();
 
 	/**
 	 * Whether this key meta-data represents the inverse side of a bi-directional association.

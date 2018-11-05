@@ -15,6 +15,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKind;
 import org.hibernate.ogm.model.key.spi.AssociationType;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.AssociationOrderBy;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 
 /**
@@ -32,6 +33,7 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	// not part of the object identity
 	private final String[] rowKeyColumnNames;
 	private final String[] rowKeyIndexColumnNames;
+	private final List<AssociationOrderBy> manyToManyOrderBy;
 	private final boolean isInverse;
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
@@ -45,6 +47,7 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 
 		this.rowKeyColumnNames = builder.rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = builder.rowKeyIndexColumnNames;
+		this.manyToManyOrderBy = builder.manyToManyOrderBy;
 		this.isInverse = builder.isInverse;
 		this.entityKeyMetadata = builder.entityKeyMetadata;
 		this.associatedEntityKeyMetadata = builder.associatedEntityKeyMetadata;
@@ -62,6 +65,7 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		private String[] columnNames;
 		private String[] rowKeyColumnNames;
 		private String[] rowKeyIndexColumnNames = ArrayHelper.EMPTY_STRING_ARRAY;
+		private List<AssociationOrderBy> manyToManyOrderBy;
 		private boolean isInverse;
 		private EntityKeyMetadata entityKeyMetadata;
 		private AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
@@ -86,6 +90,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 
 		public Builder rowKeyIndexColumnNames(String[] rowKeyIndexColumnNames) {
 			this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
+			return this;
+		}
+
+		public Builder manyToManyOrderBy(List<AssociationOrderBy> manyToManyOrderBy) {
+			this.manyToManyOrderBy = manyToManyOrderBy;
 			return this;
 		}
 
@@ -235,6 +244,11 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 		}
 
 		return false;
+	}
+
+	@Override
+	public List<AssociationOrderBy> getManyToManyOrderBy() {
+		return manyToManyOrderBy;
 	}
 
 	/**

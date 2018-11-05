@@ -331,4 +331,10 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 98, value = "Error on fetch property " + OgmProperties.NATIVE_CLIENT_RESOURCE + ": '%s'.")
 	HibernateException errorOnFetchJndiClientProperty(String nativeClientResource);
+
+	@Message(id = 99, value = "Unable to parse order-by fragment: '%s'.")
+	HibernateException unableToParseOrderByFragment(String queryFragment, @Cause Throwable e);
+
+	@Message(id = 100, value = "Unable to render order-by fragment: '%s'.")
+	HibernateException unableToRenderOrderByFragment(String queryFragment, @Cause Exception e);
 }
