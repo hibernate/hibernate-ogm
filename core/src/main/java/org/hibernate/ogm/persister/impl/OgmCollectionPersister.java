@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.AssertionFailure;
@@ -50,9 +51,11 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationOrderBy;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
+import org.hibernate.ogm.query.impl.OGMOrderByParser;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.AssociationPersister;
@@ -66,6 +69,9 @@ import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.spi.PersisterCreationContext;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.sql.ordering.antlr.ColumnMapper;
+import org.hibernate.sql.ordering.antlr.ColumnReference;
+import org.hibernate.sql.ordering.antlr.SqlValueReference;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.ListType;
@@ -150,11 +156,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		String[] rowKeyColumnNames = rowKeyBuilder.getColumnNames();
 		String[] rowKeyIndexColumnNames = rowKeyBuilder.getIndexColumnNames();
 
+		List<AssociationOrderBy> manyToManyOrderBy = null;
+		if ( collection.getManyToManyOrdering() != null ) {
+			manyToManyOrderBy = OGMOrderByParser.parse( collection.getManyToManyOrdering(), persisterCreationContext.getSessionFactory(), new BasicColumnMapperImpl() );
+		}
+
 		associationKeyMetadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( getTableName() )
 				.columnNames( getKeyColumnNames() )
 				.rowKeyColumnNames( rowKeyColumnNames )
 				.rowKeyIndexColumnNames( rowKeyIndexColumnNames )
+				.manyToManyOrderBy( manyToManyOrderBy )
 				.entityKeyMetadata( ( (OgmEntityPersister) getOwnerEntityPersister() ).getEntityKeyMetadata() )
 				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( getElementColumnNames(), targetEntityKeyMetadata( false ) ) )
 				.inverse( isInverse )
@@ -919,4 +931,25 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return (OgmEntityPersister) super.getOwnerEntityPersister();
 	}
 
+	private class BasicColumnMapperImpl implements ColumnMapper {
+
+		@Override
+		public SqlValueReference[] map(String reference) {
+			// the special "$element$" property names are NOT handled here
+			final String[] columnNames = toColumns( reference );
+
+			final SqlValueReference[] result = new SqlValueReference[ columnNames.length ];
+			int i = 0;
+			for ( final String columnName : columnNames ) {
+				result[i] = new ColumnReference() {
+					@Override
+					public String getColumnName() {
+						return columnName;
+					}
+				};
+				i++;
+			}
+			return result;
+		}
+	}
 }
