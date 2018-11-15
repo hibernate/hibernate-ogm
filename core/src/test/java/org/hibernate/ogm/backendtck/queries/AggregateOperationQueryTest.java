@@ -33,6 +33,8 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			em.persist( new Author( 1l, "Josh" ) );
 			em.persist( new Author( 2l, "Ela" ) );
+			em.persist( new Author( 4l, "Ela", 20 ) );
+			em.persist( new Author( 3l, "Ela", 34 ) );
 		} );
 	}
 
@@ -55,6 +57,46 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 		inTransaction( em -> {
 			Number result = (Number) em.createQuery( "select count(*) from Author a WHERE id = :id" ).setParameter( "id", 1l ).getSingleResult();
 			assertThat( result.intValue() ).isEqualTo( 1 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "select sum(a.age) from Author a WHERE id = :id" ).setParameter( "id", 3l ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 34 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition2() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "select sum(a.age) from Author a" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 54 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition3() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "select min(a.age) from Author a" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 20 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition4() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "select max(a.age) from Author a" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 34 );
+		} );
+	}
+
+	@Test
+	public void shouldAggregateSumEntitiesWithCondition5() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "select avg(a.age) from Author a" ).getSingleResult();
+			assertThat( result.doubleValue() ).isEqualTo( 27.0 );
 		} );
 	}
 

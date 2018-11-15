@@ -42,10 +42,17 @@ public class Author {
 	@IndexedEmbedded
 	private Address address;
 
+	private Integer age;
 
 	public Author(Long id, String name) {
 		this.id = id;
 		this.name = name;
+	}
+
+	public Author(Long id, String name, Integer age) {
+		this.id = id;
+		this.name = name;
+		this.age = age;
 	}
 
 	public Author() {
@@ -81,5 +88,13 @@ public class Author {
 
 	public void setAddress(Address address) {
 		this.address = address;
+	}
+
+	public Integer getAge() {
+		return age;
+	}
+
+	public void setAge(Integer age) {
+		this.age = age;
 	}
 }
