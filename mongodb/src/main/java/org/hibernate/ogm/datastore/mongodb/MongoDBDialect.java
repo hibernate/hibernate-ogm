@@ -167,6 +167,7 @@ import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import com.mongodb.client.model.InsertOneModel;
 import com.mongodb.client.model.MapReduceAction;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -1433,11 +1434,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			collation = ( col != null ) ? getCollation( col ) : null;
 		}
 
-		final UpdateOptions updateOptions = new UpdateOptions().upsert( upsert ).collation( collation );
+		final ReplaceOptions replaceOptions = new ReplaceOptions().upsert( upsert ).collation( collation );
 
 		final UpdateResult result = collection
 				.withWriteConcern( ( writeConcern != null ? writeConcern : collection.getWriteConcern() ) )
-				.replaceOne( query, update, updateOptions );
+				.replaceOne( query, update, replaceOptions );
 
 		if ( result.wasAcknowledged() ) {
 			return (int) result.getModifiedCount();
