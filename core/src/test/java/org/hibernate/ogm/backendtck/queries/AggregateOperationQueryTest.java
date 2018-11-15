@@ -45,16 +45,16 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	@Test
 	public void shouldCountEntities() {
 		inTransaction( em -> {
-			Long result = (Long) em.createQuery( "SELECT COUNT(*) FROM Author author" ).getSingleResult();
-			assertThat( result ).isEqualTo( 2l );
+			Number result = (Number) em.createQuery( "SELECT COUNT(*) FROM Author author" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 4 );
 		} );
 	}
 
 	@Test
 	public void shouldCountEntitiesWithCondition() {
 		inTransaction( em -> {
-			Long result = (Long) em.createQuery( "select count(*) from Author a WHERE id = :id" ).setParameter( "id", 1l ).getSingleResult();
-			assertThat( result ).isEqualTo( 1l );
+			Number result = (Number) em.createQuery( "select count(*) from Author a WHERE id = :id" ).setParameter( "id", 1l ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 1 );
 		} );
 	}
 
