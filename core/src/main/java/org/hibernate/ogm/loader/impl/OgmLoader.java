@@ -728,11 +728,7 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 					.getLoadingCollection( persister, collectionRowKey );
 
 			if ( rowCollection != null ) {
-				rowCollection.readFrom(
-						rs,
-						persister,
-						descriptor,
-						owner );
+				hydrateRowCollection( persister, descriptor, rs, owner, rowCollection );
 			}
 
 		}
@@ -756,6 +752,11 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 
 		// else no collection element, but also no owner
 
+	}
+
+	protected void hydrateRowCollection(CollectionPersister persister, CollectionAliases descriptor, ResultSet rs, Object owner, PersistentCollection rowCollection)
+			throws SQLException {
+		rowCollection.readFrom( rs, persister, descriptor, owner );
 	}
 
 	/**
