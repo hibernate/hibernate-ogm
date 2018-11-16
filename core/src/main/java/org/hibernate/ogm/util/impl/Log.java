@@ -337,4 +337,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 100, value = "Unable to render order-by fragment: '%s'.")
 	HibernateException unableToRenderOrderByFragment(String queryFragment, @Cause Exception e);
+
+	@Message(id = 101, value = "Error introspecting an object instance.")
+	HibernateException errorIntrospectingObject(@Cause Exception e);
 }
