@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 import org.bson.Document;
@@ -27,14 +30,14 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath.Typ
  *     {$sum: $col }}
  * }}
  *
- * @see #asDocument()
+ * @see #asDocumentPipeline()
  * @author Davide D'Alto
  * @author Aleksandr Mylnikov
  */
 public class AggregationRenderer {
 
 	private static final String PROJECTION_FIELD = "n";
-	private final boolean isCount;
+	private final AggregationPropertyPath.Type aggregationType;
 	private final String propertyPath;
 	private final String aggregationTypeOperator;
 
@@ -43,24 +46,20 @@ public class AggregationRenderer {
 	}
 
 	public AggregationRenderer(String propertypath, AggregationPropertyPath.Type aggregationType) {
-		validate( aggregationType );
-		this.propertyPath = "$" + propertypath;
-		this.aggregationTypeOperator = "$" + aggregationType.name().toLowerCase( Locale.ROOT );
-		this.isCount = aggregationType == Type.COUNT;
+		this.propertyPath = propertypath != null ? "$" + propertypath : null;
+		this.aggregationTypeOperator = "$" + aggregationType.name().toLowerCase( Locale.ROOT ).split( "_" )[0];
+		this.aggregationType = aggregationType;
 	}
 
-	private void validate(Type aggregationType) {
-		if ( aggregationType == Type.COUNT_DISTINCT ) {
-			throw new UnsupportedOperationException( "Currently OGM does not support count distinct operations" );
+	public List<Document> asDocumentPipeline() {
+		if ( aggregationType == Type.COUNT_DISTINCT && propertyPath != null ) {
+			return getDistinctCount();
 		}
-	}
-
-	public Document asDocument() {
-		if ( isCount ) {
-			return getCount();
+		else if ( aggregationType == Type.COUNT ) {
+			return Arrays.asList( getCount() );
 		}
 		else {
-			return getGroup();
+			return Arrays.asList( getGroup() );
 		}
 	}
 
@@ -71,6 +70,13 @@ public class AggregationRenderer {
 		Document group = new Document();
 		group.append( "$group", groupOptions );
 		return group;
+	}
+
+	private List<Document> getDistinctCount() {
+		List<Document> distinctCount = new LinkedList<>();
+		distinctCount.add( new Document().append( "$group", new Document().append( "_id", propertyPath ) ) );
+		distinctCount.add( getCount() );
+		return distinctCount;
 	}
 
 	private Document getCount() {
