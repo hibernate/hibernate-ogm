@@ -1033,7 +1033,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		pipeline.add( stage( "$match", query.getCriteria() ) );
 
 		if ( query.getAggregation() != null ) {
-			pipeline.add( query.getAggregation().asDocument() );
+			pipeline.addAll( query.getAggregation().asDocumentPipeline() );
 		}
 
 		if ( query.getProjection() != null ) {
