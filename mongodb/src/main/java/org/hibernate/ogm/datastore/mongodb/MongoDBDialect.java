@@ -212,6 +212,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
+	/**
+	 * This is not Threadsafe!
+	 */
 	private static final NativeQueryParser NATIVE_QUERY_PARSER = Parboiled.createParser( NativeQueryParser.class );
 
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
@@ -1013,7 +1016,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public MongoDBQueryDescriptor parseNativeQuery(String nativeQuery) {
-		ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( NATIVE_QUERY_PARSER.Query() )
+		NativeQueryParser localParser = NATIVE_QUERY_PARSER.newInstance();
+		ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( localParser.Query() )
 				.run( nativeQuery );
 		if ( parseResult.hasErrors() ) {
 			throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
