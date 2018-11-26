@@ -10,7 +10,7 @@
         <artifact name="${org.hibernate.ogm:hibernate-ogm-jipijapa}" />
     </resources>
     <dependencies>
-        <module name="org.hibernate.orm.jipijapa-hibernate5" slot="${module-slot.org.hibernate.short-id}"/>
+        <module name="org.hibernate.jipijapa-hibernate5"/>
         <module name="org.jboss.as.jpa.spi" />
         <module name="org.hibernate" slot="${module-slot.org.hibernate.short-id}" />
     </dependencies>

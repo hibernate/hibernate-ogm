@@ -132,7 +132,7 @@
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <includes>
                                 <include>**/neo4j/embedded/*IT.java</include>
-                                <include>**/mongodb/*IT.java</include>
+                                <include>**/mongodb/**/*IT.java</include>
                                 <include>**/infinispan/*IT.java</include>
                             </includes>
                         </configuration>

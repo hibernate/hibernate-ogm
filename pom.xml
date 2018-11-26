@@ -75,9 +75,10 @@
         <module-slot.org.hibernate.ogm.short-id>${parsed-version.majorVersion}.${parsed-version.minorVersion}</module-slot.org.hibernate.ogm.short-id>
         <module-slot.org.hibernate.ogm.jipijapa.full-id>${project.version}</module-slot.org.hibernate.ogm.jipijapa.full-id>
 
-        <!-- Temporary use of full version *5.10.0.Final* as module slot for Hibernate Search -->
-        <!-- Because *5.10* alias slot is reserved to *5.10.1.Final* in WildFly 13.0.0.Final -->
-        <module-slot.org.hibernate.search.short-id>${version.org.hibernate.search}</module-slot.org.hibernate.search.short-id>
+        <!-- using 'main' slot module, so that we're using the one provided by WF itself -->
+        <module-slot.org.hibernate.search.short-id>main</module-slot.org.hibernate.search.short-id>
+        <!-- to use instead the one provided by Hibernate Search feature pack please put back the usual slot: -->
+        <!-- <module-slot.org.hibernate.search.short-id>${parsed-version.org.hibernate.search.majorVersion}.${parsed-version.org.hibernate.search.minorVersion}</module-slot.org.hibernate.search.short-id> -->
 
         <module-slot.org.hibernate.short-id>${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}</module-slot.org.hibernate.short-id>
         <module-slot.org.hibernate.hql.full-id>${version.org.hibernate.hql}</module-slot.org.hibernate.hql.full-id>
