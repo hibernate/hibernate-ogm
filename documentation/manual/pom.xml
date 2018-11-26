@@ -177,7 +177,6 @@
                         <hibernate-orm-version>${version.org.hibernate}</hibernate-orm-version>
                         <hibernate-orm-major-minor-version>${parsed-version.org.hibernate.majorVersion}.${parsed-version.org.hibernate.minorVersion}</hibernate-orm-major-minor-version>
                         <hibernate-search-version>${version.org.hibernate.search}</hibernate-search-version>
-                        <hibernate-search-module-slot>${module-slot.org.hibernate.search.short-id}</hibernate-search-module-slot>
                         <hibernate-search-major-minor-version>${parsed-version.org.hibernate.search.majorVersion}.${parsed-version.org.hibernate.search.minorVersion}</hibernate-search-major-minor-version>
                         <infinispan-version>${version.org.infinispan}</infinispan-version>
                         <jboss-jta-version>${version.org.jboss.narayana}</jboss-jta-version>

@@ -369,10 +369,15 @@ This is the default behaviour, but you are in control and can override this all;
 see the https://docs.jboss.org/author/display/WFLY10/JPA+Reference+Guide[WildFly JPA Reference Guide]
 for a full list of properties you can explicitly set.
 
-WildFly {wildfly-short-version} however does not include Hibernate OGM and the compatible Hibernate ORM and Hibernate Search
-versions and it will require some configuration to make everything works.
+WildFly {wildfly-short-version} however does not include Hibernate OGM and it will require some configuration to make everything works.
 
 Hibernate OGM {hibernate-ogm-version} requires Hibernate ORM {hibernate-orm-version} and Hibernate Search {hibernate-search-version}.
+
+[NOTE]
+====
+Unlike other versions, WildFly {wildfly-short-version} includes the compatible versions of Hibernate ORM and Hibernate Search.
+So that, it will no longer necessary to install extra Hibrnate Search modules.
+====
 
 ===== Server provisioning via Maven
 
@@ -414,38 +419,31 @@ You will also need a `server-provisioning.xml` in the root of your project:
 	<feature-packs>
 
 		<feature-pack
-			groupId="org.hibernate"
-			artifactId="hibernate-search-jbossmodules-orm"
-			version="{hibernate-search-version}" /> # <1>
-
-		<feature-pack
 			groupId="org.hibernate.ogm"
 			artifactId="hibernate-ogm-featurepack-infinispan-remote"
-			version="{hibernate-ogm-version}" /> # <2>
+			version="{hibernate-ogm-version}" /> # <1>
 
 		<feature-pack
 			groupId="org.hibernate.ogm"
 			artifactId="hibernate-ogm-featurepack-infinispan-embedded"
-			version="{hibernate-ogm-version}" /> # <2>
+			version="{hibernate-ogm-version}" /> # <1>
 
 		<feature-pack
 			groupId="org.hibernate.ogm"
 			artifactId="hibernate-ogm-featurepack-mongodb"
-			version="{hibernate-ogm-version}" /> # <2>
+			version="{hibernate-ogm-version}" /> # <1>
 
 		<feature-pack
 			groupId="org.hibernate.ogm"
 			artifactId="hibernate-ogm-featurepack-neo4j"
-			version="{hibernate-ogm-version}" /> # <2>
+			version="{hibernate-ogm-version}" /> # <1>
 
 	</feature-packs>
 </server-provisioning>
 ----
-<1> Add Hibernate Search feature pack, if you need it.
-<2> Add one or more Hibernate OGM feature packs, it depends on which dialects your application needs.
+<1> Add one or more Hibernate OGM feature packs, it depends on which dialects your application needs.
 ====
 
-. See https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#hibernatesearch-jboss-modules-feature-packs[list of available Hibernate Search feature packs].
 . See <<hibernate-ogm-jboss-modules-feature-packs, list of available Hibernate OGM feature packs>>.
 
 Once you have the archives, you need to 
@@ -455,25 +453,10 @@ The modules included are:
 * _org.hibernate.ogm_, the core Hibernate OGM library.
 * _org.hibernate.ogm.<%DATASTORE%>_, one module for each datastore, with _<%DATASTORE%>_ being one of _infinispan_, _mongodb_ etc.
 * _org.hibernate.orm_, the Hibernate ORM libraries.
-* _org.hibernate.search_, the Hibernate Search libraries.
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
 
 The module slot to use for Hibernate OGM {hibernate-ogm-version} is `{hibernate-ogm-module-slot}`
 as the format of the slot name does not include the "micro" part of the project version.
-
-You will also need to set the property `wildfly.jpa.hibernate.search.module`
-to `org.hibernate.search.orm:{hibernate-search-module-slot}` in your `persistence.xml`.
-This way your application will use the right Hibernate ORM and Hibernate Search version
-(and not the one shipped with WildFly).
-
-.Property for enabling a Hibernate Search and Hibernate ORM version compatible with Hibernate OGM
-====
-[source, XML]
-[subs="verbatim,attributes"]
-----
-<property name="wildfly.jpa.hibernate.search.module" value="org.hibernate.search.orm:{hibernate-search-module-slot}"/>
-----
-====
 
 Now that WildFly is ready, you can include the dependencies in your application in two ways:
 
