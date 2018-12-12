@@ -53,6 +53,30 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	}
 
 	@Test
+	public void shouldCountByName() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "SELECT COUNT(author.name) FROM Author author" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 4 );
+		} );
+	}
+
+	@Test
+	public void shouldCountDistinctByName() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "SELECT COUNT(DISTINCT author.name) FROM Author author" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 2 );
+		} );
+	}
+
+	@Test
+	public void shouldCountDistinctWithNullValues() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "SELECT COUNT(DISTINCT author.age) FROM Author author" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 3 );
+		} );
+	}
+
+	@Test
 	public void shouldCountEntitiesWithCondition() {
 		inTransaction( em -> {
 			Number result = (Number) em.createQuery( "select count(*) from Author a WHERE id = :id" ).setParameter( "id", 1l ).getSingleResult();
