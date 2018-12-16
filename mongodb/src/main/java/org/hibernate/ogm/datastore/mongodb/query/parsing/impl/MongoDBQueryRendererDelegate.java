@@ -17,6 +17,7 @@ import java.util.Set;
 import org.bson.Document;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath;
+import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath.Type;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
@@ -183,7 +184,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 
 	@Override
 	public void activateAggregation(AggregationPropertyPath.Type aggregationType) {
-		if ( aggregationType == AggregationPropertyPath.Type.COUNT ) {
+		if ( aggregationType == Type.COUNT || aggregationType == Type.COUNT_DISTINCT ) {
 			this.aggregation = new AggregationRenderer( aggregationType );
 			projections.add( aggregation.getAggregationProjection() );
 		}

@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -53,8 +52,8 @@ public class AggregationRenderer {
 	}
 
 	public List<Document> asDocumentPipeline() {
-		if ( aggregationType == Type.COUNT_DISTINCT && propertyPath != null ) {
-			return getDistinctCount();
+		if ( aggregationType == Type.COUNT_DISTINCT ) {
+			return getDistinctCountGroup();
 		}
 		else if ( aggregationType == Type.COUNT ) {
 			return Arrays.asList( getCount() );
@@ -68,16 +67,31 @@ public class AggregationRenderer {
 		Document groupOptions = new Document();
 		groupOptions.append( "_id", null );
 		groupOptions.append( PROJECTION_FIELD, new Document().append( aggregationTypeOperator, propertyPath ) );
+
 		Document group = new Document();
 		group.append( "$group", groupOptions );
 		return group;
 	}
 
-	private List<Document> getDistinctCount() {
-		List<Document> distinctCount = new LinkedList<>();
-		distinctCount.add( new Document().append( "$group", new Document().append( "_id", propertyPath ) ) );
-		distinctCount.add( getCount() );
-		return distinctCount;
+	/*
+	 * A distinct query on the id looks something like:
+	 *
+	 * db.Author.aggregate([{ $group : { _id: "$_id" }}, {$group : {_id:null, n: {$sum: 1}}}, {$project: {n: 1, _id:0}}])
+	 *
+	 * This method returns the "groups" part.
+	 */
+	private List<Document> getDistinctCountGroup() {
+		// propertyPath is null when the query is a select on an entity
+		// In this case we can make the distinct on the id of the document
+		Object groupColumn = propertyPath == null ? "$_id" : propertyPath;
+		Document group = new Document();
+		group.append( "$group", new Document( "_id", groupColumn ) );
+
+		Document groupSum = new Document();
+		groupSum.append( "$group", new Document()
+				.append( "_id", propertyPath )
+				.append( PROJECTION_FIELD, new Document( "$sum", 1 ) ) );
+		return Arrays.asList( group, groupSum );
 	}
 
 	private Document getCount() {
