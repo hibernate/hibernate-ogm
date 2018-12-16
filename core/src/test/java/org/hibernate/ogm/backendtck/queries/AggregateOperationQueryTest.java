@@ -53,6 +53,14 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	}
 
 	@Test
+	public void shouldCountDistinctEntities() {
+		inTransaction( em -> {
+			Number result = (Number) em.createQuery( "SELECT COUNT(DISTINCT author) FROM Author author" ).getSingleResult();
+			assertThat( result.intValue() ).isEqualTo( 4 );
+		} );
+	}
+
+	@Test
 	public void shouldCountByName() {
 		inTransaction( em -> {
 			Number result = (Number) em.createQuery( "SELECT COUNT(author.name) FROM Author author" ).getSingleResult();
