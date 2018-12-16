@@ -47,6 +47,7 @@ public class AggregationRenderer {
 
 	public AggregationRenderer(String propertypath, AggregationPropertyPath.Type aggregationType) {
 		this.propertyPath = propertypath != null ? "$" + propertypath : null;
+		// Type.COUNT_DISTINCT -> $count, Type.COUNT -> $count. We don't care about the other cases for now.
 		this.aggregationTypeOperator = "$" + aggregationType.name().toLowerCase( Locale.ROOT ).split( "_" )[0];
 		this.aggregationType = aggregationType;
 	}
