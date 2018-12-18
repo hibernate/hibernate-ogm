@@ -1,6 +1,31 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.1.Final (18-12-2018)
+-------------------------
+
+** Bug
+    * OGM-1544 - mongodb     - MongoDBDialect uses shared Parboiled parser across multiple threads, while the parser is NOT thread safe
+    * OGM-1542 - mongodb     - Distinct count works as count(*)
+
+** Improvement
+    * OGM-1550 - mongodb     - Update MongoDB java driver to version 3.9.1
+    * OGM-1549 - neo4j       - Upgrade Neo4j java driver to version 1.7.2
+    * OGM-1548 - neo4j       - Upgrade Neo4j to version 3.4.10
+    * OGM-1482 - neo4j       - Upgrade to Neo4j 3.4.1
+    * OGM-1439 - build       - Provide a way to build a WildFly server containing OGM
+
+** New Feature
+    * OGM-1406 - build       - Create feature pack for Hibernate OGM 
+
+** Task
+    * OGM-1541 - neo4j       - Upgrade Jackson to 2.9.5
+    * OGM-1538 -             - Support @OrderBy qualifier
+    * OGM-1523 - build, core - Upgrade integration tests to WildFly 14.0.0.Final
+    * OGM-1504 - build       - Remove usage of the groovy-maven-plugin
+    * OGM-1488 - core        - Review strategies for loading of enhanced classes in ConfigurationContextImpl
+    * OGM-1477 - build       - Update integration tests to use WildFly 13.0.0.Beta1
+
 5.4.0.Final (29-10-2018)
 -------------------------
 
