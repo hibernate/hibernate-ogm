@@ -71,8 +71,14 @@ public class MongoDBPropertyHelper extends ParserPropertyHelper implements Prope
 			return MongoDBDialect.ID_FIELDNAME;
 		}
 		String column = getColumn( persister, propertyPath );
-		if ( propertyPath.size() > 1 && propertyPath.get( 0 ).equals( identifierPropertyName ) ) {
-			column = MongoDBDialect.ID_FIELDNAME + "." + column.substring( propertyPath.get( 0 ).length() + 1 );
+		if ( propertyPath.size() > 1 ) {
+			String prop = propertyPath.get( 0 );
+			if ( prop.equals( identifierPropertyName ) ) {
+				if ( column.startsWith( identifierPropertyName + "." ) ) {
+					column = column.substring( prop.length() + 1 );
+				}
+				column = MongoDBDialect.ID_FIELDNAME + "." + column;
+			}
 		}
 		return column;
 	}
