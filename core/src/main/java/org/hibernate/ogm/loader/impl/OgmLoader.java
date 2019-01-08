@@ -1096,8 +1096,24 @@ public class OgmLoader implements UniqueEntityLoader, BatchableEntityLoader, Tup
 		}
 		else {
 			Object value = resultset.get( discriminatorColumnName );
-			return persister.getSubclassForDiscriminatorValue( value );
+			return subClassForValue( persister, value );
 		}
+	}
+
+	private String subClassForValue(final Loadable persister, Object value) {
+		String instanceClass = persister.getSubclassForDiscriminatorValue( value );
+		if ( instanceClass != null ) {
+			return instanceClass;
+		}
+
+		// Currently, only integer is supported as a numeric discriminator type.
+		// Native queries might return a number as a different type,
+		// so we convert the value to an integer and check again.
+		if ( value instanceof Number ) {
+			Object discriminatorValue = ( (Number) value ).intValue();
+			instanceClass = persister.getSubclassForDiscriminatorValue( discriminatorValue );
+		}
+		return instanceClass;
 	}
 
 	/**
