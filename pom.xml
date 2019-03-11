@@ -91,7 +91,7 @@
         <version.assembly.plugin>3.1.0</version.assembly.plugin>
         <version.buildhelper.plugin>3.0.0</version.buildhelper.plugin>
         <version.buildnumber.plugin>1.4</version.buildnumber.plugin>
-        <version.checkstyle.plugin>2.17</version.checkstyle.plugin>
+        <version.checkstyle.plugin>3.0.0</version.checkstyle.plugin>
         <version.clean.plugin>3.0.0</version.clean.plugin>
         <version.clirr.plugin>2.7</version.clirr.plugin>
         <version.compiler.plugin>3.7.0</version.compiler.plugin>
