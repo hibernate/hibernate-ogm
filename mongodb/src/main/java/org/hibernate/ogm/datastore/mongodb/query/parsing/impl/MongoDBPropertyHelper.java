@@ -16,6 +16,7 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.parsing.impl.ParserPropertyHelper;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
@@ -82,4 +83,21 @@ public class MongoDBPropertyHelper extends ParserPropertyHelper implements Prope
 		}
 		return column;
 	}
+
+	public boolean isIdProperty(OgmEntityPersister persister, List<String> namesWithoutAlias) {
+		String join = StringHelper.join( namesWithoutAlias, "." );
+		org.hibernate.type.Type propertyType = persister.getPropertyType( namesWithoutAlias.get( 0 ) );
+		String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		if ( propertyType.isComponentType() ) {
+			String[] embeddedColumnNames = persister.getPropertyColumnNames( join );
+			for ( String embeddedColumn : embeddedColumnNames ) {
+				if ( !ArrayHelper.contains( identifierColumnNames, embeddedColumn ) ) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return ArrayHelper.contains( identifierColumnNames, join );
+	}
+
 }

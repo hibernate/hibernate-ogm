@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,6 +40,7 @@ public class AggregationRenderer {
 	private final AggregationPropertyPath.Type aggregationType;
 	private final String propertyPath;
 	private final String aggregationTypeOperator;
+	private List<String> groupingValues = new LinkedList<>();
 
 	public AggregationRenderer(AggregationPropertyPath.Type aggregationType) {
 		this( null, aggregationType );
@@ -56,7 +58,7 @@ public class AggregationRenderer {
 			return getDistinctCountGroup();
 		}
 		else if ( aggregationType == Type.COUNT ) {
-			return Arrays.asList( getCount() );
+			return getCount();
 		}
 		else {
 			return Arrays.asList( getGroup() );
@@ -65,12 +67,24 @@ public class AggregationRenderer {
 
 	private Document getGroup() {
 		Document groupOptions = new Document();
-		groupOptions.append( "_id", null );
+		groupOptions.append( "_id", groupingValues.isEmpty() ? null : getGroupingValuesAsDocument() );
 		groupOptions.append( PROJECTION_FIELD, new Document().append( aggregationTypeOperator, propertyPath ) );
 
 		Document group = new Document();
 		group.append( "$group", groupOptions );
 		return group;
+	}
+
+	private Document getGroupingValuesAsDocument() {
+		Document doc = new Document();
+		for ( String groupValue : groupingValues ) {
+			doc.append( groupValue, "$" + groupValue );
+		}
+		return doc;
+	}
+
+	public void addGrouping(String propertyPath, boolean isId) {
+		groupingValues.add( isId ? "_id" : propertyPath );
 	}
 
 	/*
@@ -83,9 +97,10 @@ public class AggregationRenderer {
 	private List<Document> getDistinctCountGroup() {
 		// propertyPath is null when the query is a select on an entity
 		// In this case we can make the distinct on the id of the document
-		Object groupColumn = propertyPath == null ? "$_id" : propertyPath;
+		Object grouping = groupingValues.isEmpty() ? ((propertyPath == null) ? "$_id" : propertyPath) : getGroupingValuesAsDocument();
+
 		Document group = new Document();
-		group.append( "$group", new Document( "_id", groupColumn ) );
+		group.append( "$group", new Document( "_id", grouping ) );
 
 		Document groupSum = new Document();
 		groupSum.append( "$group", new Document()
@@ -94,10 +109,15 @@ public class AggregationRenderer {
 		return Arrays.asList( group, groupSum );
 	}
 
-	private Document getCount() {
+	private List<Document> getCount() {
+		Document groupOptions = new Document();
+		groupOptions.append( "_id", groupingValues.isEmpty() ? "$_id" : getGroupingValuesAsDocument() );
+		Document group = new Document();
+		group.append( "$group", groupOptions );
+
 		Document count = new Document();
 		count.append( aggregationTypeOperator, PROJECTION_FIELD );
-		return count;
+		return Arrays.asList( group, count );
 	}
 
 	public String getAggregationProjection() {
