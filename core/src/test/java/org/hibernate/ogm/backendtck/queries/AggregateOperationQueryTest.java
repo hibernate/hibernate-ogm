@@ -19,6 +19,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
  * @author Davide D'Alto
  * @author Aleksandr Mylnikov
@@ -32,9 +34,9 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	public void populateDb() throws Exception {
 		inTransaction( em -> {
 			em.persist( new Author( 1l, "Josh" ) );
-			em.persist( new Author( 2l, "Ela" ) );
-			em.persist( new Author( 4l, "Ela", 20 ) );
-			em.persist( new Author( 3l, "Ela", 34 ) );
+			em.persist( new Author( 2l, "Ela" , 24, "FR" ) );
+			em.persist( new Author( 4l, "Ela", 20 , "UK" ) );
+			em.persist( new Author( 3l, "Ela", 34, "UK" ) );
 		} );
 	}
 
@@ -80,7 +82,7 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	public void shouldCountDistinctWithNullValues() {
 		inTransaction( em -> {
 			Number result = (Number) em.createQuery( "SELECT COUNT(DISTINCT author.age) FROM Author author" ).getSingleResult();
-			assertThat( result.intValue() ).isEqualTo( 3 );
+			assertThat( result.intValue() ).isEqualTo( 4 );
 		} );
 	}
 
@@ -104,7 +106,7 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	public void shouldAggregateSumEntitiesWithCondition2() {
 		inTransaction( em -> {
 			Number result = (Number) em.createQuery( "select sum(a.age) from Author a" ).getSingleResult();
-			assertThat( result.intValue() ).isEqualTo( 54 );
+			assertThat( result.intValue() ).isEqualTo( 78 );
 		} );
 	}
 
@@ -128,7 +130,34 @@ public class AggregateOperationQueryTest extends OgmJpaTestCase {
 	public void shouldAggregateSumEntitiesWithCondition5() {
 		inTransaction( em -> {
 			Number result = (Number) em.createQuery( "select avg(a.age) from Author a" ).getSingleResult();
-			assertThat( result.doubleValue() ).isEqualTo( 27.0 );
+			assertThat( result.doubleValue() ).isEqualTo( 26.0 );
+		} );
+	}
+
+	@Test
+	public void shouldSelectMaxAgesForEachNameAndCountry() {
+		inTransaction( em -> {
+			List result = (List) em.createQuery( "select max(a.age) from Author a group by a.name, a.country" ).getResultList();
+			assertThat( result.size() ).isEqualTo( 3 );
+			assertThat( result ).containsOnly( null, 34, 24 );
+		} );
+	}
+
+	@Test
+	public void shouldCountEntitiesWithGroupBy() {
+		inTransaction( em -> {
+			List result = (List) em.createQuery( "select count(*) from Author a group by a.name" ).getResultList();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result ).contains( 2 );
+		} );
+	}
+
+	@Test
+	public void shouldDistinctCountWithGrouping() {
+		inTransaction( em -> {
+			List result = (List) em.createQuery( "select count(distinct a) from Author a group by a.name" ).getResultList();
+			assertThat( result.size() ).isEqualTo( 1 );
+			assertThat( result ).contains( 2 );
 		} );
 	}
 

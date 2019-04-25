@@ -20,6 +20,7 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath;
 import org.hibernate.hql.ast.origin.hql.resolve.path.AggregationPropertyPath.Type;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
+import org.hibernate.hql.ast.spi.SingleEntityHavingQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -41,6 +42,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	private final MongoDBPropertyHelper propertyHelper;
 	private Document orderBy;
 	private AggregationRenderer aggregation;
+	private MongoDBHavingQueryBuilder mongoDBHavingQueryBuilder = new MongoDBHavingQueryBuilder();
 	/*
 	 * The fields for which needs to be aggregated using $unwind when running the query
 	 */
@@ -122,6 +124,18 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 			discriminatorFilter = new Document( discriminatorColumnName, new Document( "$in", discriminatorValues ) );
 		}
 		return discriminatorFilter;
+	}
+
+	/**
+	 * Return the optional HAVING clause builder. To be overridden by subclasses that wish to support the HAVING clause.
+	 */
+	protected SingleEntityHavingQueryBuilder<Document> getHavingBuilder() {
+		return mongoDBHavingQueryBuilder;
+	}
+
+	protected void addGrouping(PropertyPath propertyPath, String collateName) {
+		aggregation.addGrouping( propertyPath.asStringPathWithoutAlias(),
+				propertyHelper.isIdProperty( (OgmEntityPersister) sessionFactory.getMetamodel().entityPersister( targetType ), propertyPath.getNodeNamesWithoutAlias() ) );
 	}
 
 	@Override

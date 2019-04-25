@@ -44,15 +44,18 @@ public class Author {
 
 	private Integer age;
 
+	private String country;
+
 	public Author(Long id, String name) {
 		this.id = id;
 		this.name = name;
 	}
 
-	public Author(Long id, String name, Integer age) {
+	public Author(Long id, String name, Integer age, String country) {
 		this.id = id;
 		this.name = name;
 		this.age = age;
+		this.country = country;
 	}
 
 	public Author() {
@@ -96,5 +99,13 @@ public class Author {
 
 	public void setAge(Integer age) {
 		this.age = age;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
 	}
 }
