@@ -85,6 +85,13 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 */
 	public static final String MONGO_DRIVER_SETTINGS_PREFIX = "hibernate.ogm.mongodb.driver";
 
+	/**
+	 * Configuration property for setting lazy get of database by the datastore provider
+	 * <p>
+	 * Defaults to false.
+	 */
+	public static final String LAZY_GET_DATABASE = "hibernate.ogm.mongodb.lazy_get_database";
+
 	private MongoDBProperties() {
 	}
 }

@@ -21,6 +21,7 @@ import com.mongodb.client.MongoDatabase;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
@@ -51,8 +52,11 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	private ServiceRegistryImplementor serviceRegistry;
 
 	private MongoClient mongo;
-	private MongoDatabase mongoDb;
+	private volatile MongoDatabase mongoDb;
 	private MongoDBConfiguration config;
+
+	private boolean lazyGetDatabase;
+	private List<Runnable> lazyOperations;
 
 	public MongoDBDatastoreProvider() {
 	}
@@ -71,7 +75,8 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
-
+		lazyGetDatabase = propertyReader.property( MongoDBProperties.LAZY_GET_DATABASE, Boolean.class )
+				.withDefault( Boolean.FALSE ).getValue().booleanValue();
 		try {
 			this.config = new MongoDBConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
 		}
@@ -113,7 +118,9 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			if ( mongo == null ) {
 				mongo = createMongoClient( config );
 			}
-			mongoDb = extractDatabase( mongo, config );
+			if ( !lazyGetDatabase ) {
+				getDatabase();
+			}
 		}
 		catch (Exception e) {
 			// Wrap Exception in a ServiceException to make the stack trace more friendly
@@ -147,6 +154,18 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	}
 
 	public MongoDatabase getDatabase() {
+		if ( null == mongoDb ) {
+			synchronized ( this ) {
+				if ( null == mongoDb ) {
+					mongoDb = extractDatabase( mongo, config );
+					if ( null != lazyOperations ) {
+						for ( Runnable operation : lazyOperations ) {
+							operation.run();
+						}
+					}
+				}
+			}
+		}
 		return mongoDb;
 	}
 
@@ -199,6 +218,17 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		catch (MongoException me) {
 			// we don't have enough privileges, ignore the database creation
 			return null;
+		}
+	}
+
+	public void addOperation(Runnable operation) {
+		if ( lazyGetDatabase ) {
+			if ( null == lazyOperations ) {
+				lazyOperations = new ArrayList<>();
+			}
+			lazyOperations.add( operation );
+		} else {
+			operation.run();
 		}
 	}
 }

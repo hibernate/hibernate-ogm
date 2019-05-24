@@ -83,10 +83,11 @@ public class MongoDBSchemaDefiner extends BaseSchemaDefiner {
 		SessionFactoryImplementor sessionFactoryImplementor = context.getSessionFactory();
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) registry.getService( DatastoreProvider.class );
-
-		for ( MongoDBIndexSpec indexSpec : indexSpecs ) {
-			createIndex( provider.getDatabase(), indexSpec );
-		}
+		provider.addOperation( () -> {
+			for ( MongoDBIndexSpec indexSpec : indexSpecs ) {
+				createIndex( provider.getDatabase(), indexSpec );
+			}
+		} );
 	}
 
 	private void validateAllPersisters(Iterable<EntityPersister> persisters) {

@@ -201,11 +201,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private static final Pattern PRIMARY_KEY_CONSTRAINT_VIOLATION_MESSAGE = Pattern.compile( ".*[. ]\\$?_id_? .*" );
 
 	private final MongoDBDatastoreProvider provider;
-	private final MongoDatabase currentDB;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
-		this.currentDB = this.provider.getDatabase();
 	}
 
 	@Override
@@ -398,7 +396,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private MongoCollection<Document> getCollection(String table) {
-		return currentDB.getCollection( table );
+		return provider.getDatabase().getCollection( table );
 	}
 
 	private MongoCollection<Document> getCollection( EntityKey key ) {
