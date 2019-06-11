@@ -115,7 +115,7 @@
         <version.surefire.plugin>2.21.0</version.surefire.plugin>
         <version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
         <version.wildfly.plugin>1.2.1.Final</version.wildfly.plugin>
-        <version.org.wildfly.build-tools>1.2.9.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.2.11.Final</version.org.wildfly.build-tools>
 
         <!-- Asciidoctor -->
 
