@@ -150,18 +150,31 @@ under the License.
        | server for that repository.
        |-->
     <mirrors>
-        <!-- mirror
-             | Specifies a repository mirror site to use instead of a given repository. The repository that
-             | this mirror serves has an ID that matches the mirrorOf element of this mirror. IDs are used
-             | for inheritance and direct lookup purposes, and must be unique across the set of mirrors.
-             |
-            <mirror>
-              <id>mirrorId</id>
-              <mirrorOf>repositoryId</mirrorOf>
-              <name>Human Readable Name for this Mirror.</name>
-              <url>http://my.repository.com/repo/path</url>
-            </mirror>
-             -->
+
+        <!--
+             Override the repositories declared with a HTTP URL
+             and leaking from some dependencies,
+             org.wildfly.arquillian:wildfly-arquillian-parent:2.1.0.Final in particular.
+         -->
+        <mirror>
+          <id>jboss-public-repository-https</id>
+          <name>JBoss Public Maven Repository Group - HTTPS</name>
+          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+          <mirrorOf>jboss-public-repository</mirrorOf>
+        </mirror>
+        <mirror>
+          <id>jboss-public-repository-group-https</id>
+          <name>JBoss Public Maven Repository Group - HTTPS</name>
+          <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+          <mirrorOf>jboss-public-repository-group</mirrorOf>
+        </mirror>
+        <mirror>
+          <id>jboss-oss-public-repository-group-https</id>
+          <name>JBoss Public Maven Repository Group - HTTPS</name>
+          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+          <mirrorOf>jboss-oss-public-repository-group</mirrorOf>
+        </mirror>
+
     </mirrors>
 
     <!-- profiles
@@ -259,7 +272,7 @@ under the License.
                 <repository>
                     <id>central</id>
                     <name>Maven Central</name>
-                    <url>http://repo.maven.apache.org/maven2/</url>
+                    <url>https://repo.maven.apache.org/maven2/</url>
                     <snapshots>
                         <enabled>false</enabled>
                         <updatePolicy>never</updatePolicy>
@@ -285,7 +298,7 @@ under the License.
                 <pluginRepository>
                     <id>central</id>
                     <name>Maven Central</name>
-                    <url>http://repo.maven.apache.org/maven2/</url>
+                    <url>https://repo.maven.apache.org/maven2/</url>
                     <snapshots>
                         <enabled>false</enabled>
                         <updatePolicy>never</updatePolicy>
