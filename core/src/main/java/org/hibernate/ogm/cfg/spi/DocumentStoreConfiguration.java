@@ -91,7 +91,6 @@ public abstract class DocumentStoreConfiguration {
 	}
 
 	/**
-	 * @see OgmProperties#CREATE_DATABASE
 	 * @return whether to create the database to connect to if not existent or not
 	 */
 	public boolean isCreateDatabase() {
