@@ -14,7 +14,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.jboss.logging.annotations.Cause;
