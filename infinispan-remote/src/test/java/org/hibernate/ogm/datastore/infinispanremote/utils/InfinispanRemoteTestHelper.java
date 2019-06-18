@@ -86,7 +86,7 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
-		return new InfinispanRemoteDialect( (InfinispanRemoteDatastoreProvider) datastoreProvider );
+		return new InfinispanRemoteDialect<>( (InfinispanRemoteDatastoreProvider) datastoreProvider );
 	}
 
 	@Override
