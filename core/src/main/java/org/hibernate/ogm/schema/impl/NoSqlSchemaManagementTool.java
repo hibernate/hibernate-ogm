@@ -99,8 +99,8 @@ public class NoSqlSchemaManagementTool implements SchemaManagementTool {
 
 	private static class SchemaDropperImpl implements SchemaDropper {
 
-		private final SessionFactoryImplementor factory;		
-		
+		private final SessionFactoryImplementor factory;
+
 		public SchemaDropperImpl(SessionFactoryImplementor factory) {
 			this.factory = factory;
 		}
@@ -117,7 +117,9 @@ public class NoSqlSchemaManagementTool implements SchemaManagementTool {
 			if ( sourceDescriptor.getSourceType() != SourceType.METADATA ) {
 				throw new UnsupportedOperationException( "Drop scripts for schema drop are not supported at this point by Hibernate OGM" );
 			}
-			return ( registry ) -> { throw new UnsupportedOperationException( "Drop for schema drop are not supported at this point by Hibernate OGM" ); };
+			return ( registry ) -> {
+				throw new UnsupportedOperationException( "Drop for schema drop are not supported at this point by Hibernate OGM" );
+			};
 		}
 	}
 }
