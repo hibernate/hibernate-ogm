@@ -15,6 +15,7 @@
     <persistence-unit name="no-ogm" transaction-type="RESOURCE_LOCAL">
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="javax.persistence.schema-generation.database.action" value="none"/>
         </properties>
     </persistence-unit>
 </persistence>
