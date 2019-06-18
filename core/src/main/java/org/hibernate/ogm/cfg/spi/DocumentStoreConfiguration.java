@@ -6,10 +6,12 @@
  */
 package org.hibernate.ogm.cfg.spi;
 
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.HostParser;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.tool.schema.Action;
 
 /**
  * Provides access to properties common to different document datastores.
@@ -48,9 +50,11 @@ public abstract class DocumentStoreConfiguration {
 		this.username = propertyReader.property( OgmProperties.USERNAME, String.class ).getValue();
 		this.password = propertyReader.property( OgmProperties.PASSWORD, String.class ).getValue();
 
-		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
-				.withDefault( false )
+		String dbActionValue = propertyReader.property( AvailableSettings.HBM2DDL_DATABASE_ACTION, String.class )
+				.withDefault( "none" )
 				.getValue();
+		Action dbAction = Action.interpretJpaSetting( dbActionValue );
+		this.createDatabase = Action.CREATE_ONLY.equals( dbAction ) || Action.CREATE.equals( dbAction );
 	}
 
 	/**

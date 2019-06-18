@@ -12,6 +12,7 @@ import static org.infinispan.client.hotrod.impl.ConfigurationProperties.MARSHALL
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,12 +20,10 @@ import java.util.Properties;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.internal.util.collections.ArrayHelper;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
 import org.hibernate.ogm.datastore.infinispanremote.impl.protostream.OgmProtoStreamMarshaller;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispanremote.logging.impl.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaCapture;
 import org.hibernate.ogm.datastore.infinispanremote.schema.spi.SchemaOverride;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
@@ -104,8 +103,6 @@ public class InfinispanRemoteConfiguration {
 
 	private Properties clientProperties;
 
-	private boolean createCachesEnabled;
-
 	/**
 	 * The location of the configuration file.
 	 *
@@ -135,10 +132,6 @@ public class InfinispanRemoteConfiguration {
 
 	public String getSchemaPackageName() {
 		return schemaPackageName;
-	}
-
-	public boolean isCreateCachesEnabled() {
-		return createCachesEnabled;
 	}
 
 	/**
@@ -171,11 +164,6 @@ public class InfinispanRemoteConfiguration {
 		this.schemaPackageName = propertyReader
 				.property( InfinispanRemoteProperties.SCHEMA_PACKAGE_NAME, String.class )
 				.withDefault( InfinispanRemoteProperties.DEFAULT_SCHEMA_PACKAGE_NAME )
-				.getValue();
-
-		this.createCachesEnabled = propertyReader
-				.property( OgmProperties.CREATE_DATABASE, boolean.class )
-				.withDefault( false )
 				.getValue();
 
 		log.tracef( "Initializing Infinispan Hot Rod client from configuration file at '%1$s'", configurationResource );

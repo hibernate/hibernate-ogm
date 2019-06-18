@@ -90,13 +90,6 @@ public interface OgmProperties {
 	String PASSWORD = "hibernate.ogm.datastore.password";
 
 	/**
-	 * Property for specifying whether the database to connect to should be created when it doesn't exist. Default to
-	 * false. The user defined with {@link #USERNAME} must have the privileges for the creation of a new database. The
-	 * database will have the name defined with {@link #DATABASE}. Accepts "true" or "false".
-	 */
-	String CREATE_DATABASE = "hibernate.ogm.datastore.create_database";
-
-	/**
 	 * Property for setting a {@link ErrorHandler} which will receive applied and failed grid dialect operations upon
 	 * failures. Supported value types are:
 	 * <ul>

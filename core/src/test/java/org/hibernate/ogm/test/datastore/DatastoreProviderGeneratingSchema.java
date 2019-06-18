@@ -52,7 +52,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 	public static class TestSchemaDefiner extends BaseSchemaDefiner {
 
 		@Override
-		public void initializeSchema(SchemaDefinitionContext context) {
+		public void postInitializeSchema(SchemaDefinitionContext context) {
 			for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
 				for ( Table table : namespace.getTables() ) {
 					if ( table.isPhysicalTable() ) {

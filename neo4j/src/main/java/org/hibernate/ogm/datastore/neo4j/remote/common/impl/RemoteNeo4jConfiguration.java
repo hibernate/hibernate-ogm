@@ -40,7 +40,6 @@ public class RemoteNeo4jConfiguration {
 	private final String databaseName;
 	private final String username;
 	private final String password;
-	private final boolean createDatabase;
 	private final Long socketTimeout;
 	private final Long establishConnectionTimeout;
 	private final Long connectionCheckoutTimeout;
@@ -71,9 +70,6 @@ public class RemoteNeo4jConfiguration {
 		this.connectionCheckoutTimeout = propertyReader.property( Neo4jProperties.CONNECTION_CHECKOUT_TIMEOUT, Long.class ).getValue();
 		this.connectionTTL = propertyReader.property( Neo4jProperties.CONNECTION_TTL, Long.class ).getValue();
 
-		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
-				.withDefault( false )
-				.getValue();
 		this.authenticationRequired = this.username != null;
 		this.clientPoolSize = propertyReader.property( Neo4jProperties.CONNECTION_POOL_SIZE, Integer.class )
 				.withDefault( DEFAULT_CONNECTION_POOL_SIZE ).getValue();
@@ -110,14 +106,6 @@ public class RemoteNeo4jConfiguration {
 	 */
 	public String getPassword() {
 		return password;
-	}
-
-	/**
-	 * @see OgmProperties#CREATE_DATABASE
-	 * @return whether to create the database to connect to if not existent or not
-	 */
-	public boolean isCreateDatabase() {
-		return createDatabase;
 	}
 
 	/**

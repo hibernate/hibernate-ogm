@@ -13,6 +13,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -65,7 +66,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1218, value = "Cannot use primary key column name '%s' for id generator, going to use '%s' instead")
 	void cannotUseGivenPrimaryKeyColumnName(String givenKeyColumnName, String usedKeyColumnName);
 
-	@Message(id = 1219, value = "Database %s does not exist. Either create it yourself or set property '" + OgmProperties.CREATE_DATABASE + "' to true.")
+	@Message(id = 1219, value = "Database %s does not exist. Either create it yourself or set property '" + AvailableSettings.HBM2DDL_DATABASE_ACTION + "'.")
 	HibernateException databaseDoesNotExistException(String databaseName);
 
 	// The following statements have to return MappingException to make sure Hibernate ORM doesn't wrap them in a

@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.compensation.ErrorHandler.RollbackContext;
 import org.hibernate.ogm.compensation.operation.CreateTuple;
@@ -92,7 +93,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 		return propertiesContext
 					.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( MongoDB.DATASTORE_PROVIDER_NAME ).up()
 					.createProperty().name( OgmProperties.DATABASE ).value( "ogm_test_database" ).up()
-					.createProperty().name( OgmProperties.CREATE_DATABASE ).value( "true" ).up()
+					.createProperty().name( AvailableSettings.HBM2DDL_DATABASE_ACTION ).value( "create" ).up()
 					.createProperty().name( OgmProperties.ERROR_HANDLER ).value( TestErrorHandler.class.getName() ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 					.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()

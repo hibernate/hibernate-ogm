@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -37,6 +38,7 @@ import org.hibernate.ogm.utils.BaseGridDialectTestHelper;
 import org.hibernate.ogm.utils.GridDialectTestHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.tool.schema.Action;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.query.dsl.Query;
@@ -71,7 +73,7 @@ public class InfinispanRemoteTestHelper extends BaseGridDialectTestHelper implem
 
 	@Override
 	public Map<String, String> getAdditionalConfigurationProperties() {
-		return Collections.singletonMap( OgmProperties.CREATE_DATABASE, "true" );
+		return Collections.singletonMap( AvailableSettings.HBM2DDL_DATABASE_ACTION, "create" );
 	}
 
 	@Override
