@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.test.integration.neo4j.embedded;
 
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
@@ -53,6 +54,7 @@ public class EmbeddedNeo4jResourceLocalModuleMemberRegistrationIT extends Neo4jM
 				.createProperty().name( Neo4jProperties.DATABASE_PATH ).value( EmbeddedNeo4jJtaModuleMemberRegistrationIT.neo4jFolder() ).up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.createProperty().name( "wildfly.jpa.hibernate.search.module" ).value( "org.hibernate.search.orm:${hibernate-search.module.slot}" ).up()
+				.createProperty().name( AvailableSettings.HBM2DDL_DATABASE_ACTION ).value( "create" ).up()
 				.up().up();
 		return persistenceDescriptor;
 	}
