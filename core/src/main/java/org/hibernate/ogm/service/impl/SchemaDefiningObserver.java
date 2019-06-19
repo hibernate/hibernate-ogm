@@ -38,8 +38,7 @@ public class SchemaDefiningObserver implements SessionFactoryObserver {
 				sessionFactoryImplementor
 		);
 
-		schemaInitializer.validateMapping( context );
-		schemaInitializer.initializeSchema( context );
+		schemaInitializer.postInitializeSchema( context );
 	}
 
 	@Override

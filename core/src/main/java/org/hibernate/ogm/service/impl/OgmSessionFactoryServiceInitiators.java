@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.impl.SchemaDefinerInitiator;
+import org.hibernate.ogm.schema.impl.NoSqlSchemaManagementToolInitiator;
 import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
@@ -27,6 +28,7 @@ public class OgmSessionFactoryServiceInitiators {
 			QueryParserServicesInitiator.INSTANCE,
 			SchemaDefinerInitiator.INSTANCE,
 			NativeNoSqlQueryInterpreterInitiator.INSTANCE,
-			TypeTranslatorInitiator.INSTANCE
+			TypeTranslatorInitiator.INSTANCE,
+			NoSqlSchemaManagementToolInitiator.INSTANCE
 	) );
 }

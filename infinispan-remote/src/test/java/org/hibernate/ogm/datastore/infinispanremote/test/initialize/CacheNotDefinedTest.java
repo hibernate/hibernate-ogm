@@ -15,6 +15,7 @@ import javax.persistence.Table;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.infinispanremote.InfinispanRemoteProperties;
 import org.hibernate.ogm.datastore.infinispanremote.utils.RemoteHotRodServerRule;
@@ -63,7 +64,7 @@ public class CacheNotDefinedTest {
 		settings.put( OgmProperties.DATASTORE_PROVIDER, "infinispan_remote" );
 		settings.put( InfinispanRemoteProperties.CONFIGURATION_RESOURCE_NAME, "hotrod-client-testingconfiguration.properties" );
 		// This is the important option
-		settings.put( OgmProperties.CREATE_DATABASE, false );
+		settings.put( AvailableSettings.HBM2DDL_DATABASE_ACTION, "none" );
 
 		try ( SessionFactory sessionFactory = TestHelper.getDefaultTestSessionFactory( settings, entities ) ) {
 			Assert.fail( "This should have refused to boot because the caches don't exist" );

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.cfg.spi.Hosts;
@@ -170,7 +171,7 @@ public class DocumentStoreConfigurationTest {
 
 	@Test
 	public void shouldReturnFalseIfTheDatabaseCreationValueIsTheEmptyString() {
-		configurationValues.put( OgmProperties.CREATE_DATABASE, "" );
+		configurationValues.put( AvailableSettings.HBM2DDL_DATABASE_ACTION, "" );
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
 		assertThat( configuration.isCreateDatabase() ).isFalse();
@@ -178,8 +179,17 @@ public class DocumentStoreConfigurationTest {
 
 	@Test
 	public void shouldReturnTheDatabaseCreationConfiguredValue() {
-		final String configuredValue = "true";
-		configurationValues.put( OgmProperties.CREATE_DATABASE, configuredValue );
+		final String configuredValue = "create";
+		configurationValues.put( AvailableSettings.HBM2DDL_DATABASE_ACTION, configuredValue );
+		configuration = new TestDocumentStoreConfiguration( configurationValues );
+
+		assertThat( configuration.isCreateDatabase() ).isTrue();
+	}
+
+	@Test
+	public void shouldReturnTheDatabaseDropAndCreateConfiguredValue() {
+		final String configuredValue = "drop-and-create";
+		configurationValues.put( AvailableSettings.HBM2DDL_DATABASE_ACTION, configuredValue );
 		configuration = new TestDocumentStoreConfiguration( configurationValues );
 
 		assertThat( configuration.isCreateDatabase() ).isTrue();

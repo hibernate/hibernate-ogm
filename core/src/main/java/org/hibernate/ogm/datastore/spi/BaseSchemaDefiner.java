@@ -24,4 +24,9 @@ public class BaseSchemaDefiner implements SchemaDefiner {
 	public void initializeSchema(SchemaDefinitionContext context) {
 		// No-op
 	}
+
+	@Override
+	public void postInitializeSchema(SchemaDefinitionContext context) {
+		// No-op
+	}
 }

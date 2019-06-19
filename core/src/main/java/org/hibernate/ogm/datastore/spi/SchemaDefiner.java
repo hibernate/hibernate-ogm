@@ -76,4 +76,11 @@ public interface SchemaDefiner extends Service {
 		 */
 		Map<String, Class<?>> getTableEntityTypeMapping();
 	}
+
+	/**
+	 * Post initializes the schema in the datastore.
+	 *
+	 * @param context Provides access to metadata describing the schema
+	 */
+	void postInitializeSchema(SchemaDefinitionContext context);
 }

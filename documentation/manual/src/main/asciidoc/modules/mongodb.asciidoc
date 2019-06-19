@@ -106,9 +106,6 @@ Ignored when multiple hosts are defined.
 The default value is `27017`.
 hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
-hibernate.ogm.datastore.create_database::
-If set to true, the database will be created if it doesn't exist.
-This property default value is false.
 hibernate.ogm.datastore.username::
 The username used when connecting to the MongoDB server.
 This property has no default value.

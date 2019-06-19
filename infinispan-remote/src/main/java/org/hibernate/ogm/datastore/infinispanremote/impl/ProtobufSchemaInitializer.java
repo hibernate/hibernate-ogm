@@ -30,9 +30,16 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema(SchemaDefinitionContext context) {
+		doInitializeSchema( context, true );
+	}
+
+	private void doInitializeSchema(SchemaDefinitionContext context, boolean createCachesEnabled) {
 		ServiceRegistryImplementor serviceRegistry = context.getSessionFactory().getServiceRegistry();
-		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
 		InfinispanRemoteDatastoreProvider datastoreProvider = (InfinispanRemoteDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		if ( null != datastoreProvider.getSequenceHandler() ) {
+			return;
+		}
+		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
 		String protobufPackageName = datastoreProvider.getProtobufPackageName();
 		SchemaDefinitions sd = new SchemaDefinitions( protobufPackageName );
 		for ( Namespace namespace : context.getDatabase().getNamespaces() ) {
@@ -45,7 +52,7 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 		for ( IdSourceKeyMetadata iddSourceKeyMetadata : context.getAllIdSourceKeyMetadata() ) {
 			sd.createSequenceSchemaDefinition( iddSourceKeyMetadata, datastoreProvider.getProtobufPackageName() );
 		}
-		datastoreProvider.registerSchemaDefinitions( sd );
+		datastoreProvider.registerSchemaDefinitions( sd, createCachesEnabled );
 	}
 
 	private void createTableDefinition(SessionFactoryImplementor sessionFactory, SchemaDefinitions sd,
@@ -86,5 +93,10 @@ public class ProtobufSchemaInitializer extends BaseSchemaDefiner {
 	@Override
 	public void validateMapping(SchemaDefinitionContext context) {
 		//TODO something interesting to do here?
+	}
+
+	@Override
+	public void postInitializeSchema(SchemaDefinitionContext context) {
+		doInitializeSchema( context, false );
 	}
 }
