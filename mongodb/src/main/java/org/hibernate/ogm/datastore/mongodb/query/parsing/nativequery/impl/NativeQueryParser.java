@@ -68,7 +68,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule ParsedQuery() {
-		return Sequence( Db(),  Collection(),  Operation() );
+		return Sequence( Db(),  FirstOf( DropDatabase(), Sequence( Collection(),  Operation() ) ) );
 	}
 
 	/**
@@ -135,6 +135,7 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				Distinct(),
 				MapReduce(),
 				Drop(),
+				DropDatabase(),
 				Sequence( Optional( Ident(), peek().setOperationName( match() ) ), ACTION( false ) )
 		);
 	}
@@ -377,6 +378,16 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				peek().setParametersValid( false ),
 				") "
 		);
+	}
+
+	public Rule DropDatabase() {
+		return Sequence(
+				"dropDatabase ",
+				peek().setOperation( Operation.DROP_DATABASE ),
+				"( ",
+				peek().setParametersValid( false ),
+				") "
+				);
 	}
 
 	public Rule JsonParameter(Rule Parameter) {

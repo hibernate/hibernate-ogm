@@ -343,4 +343,12 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		MongoIterable<String> listCollectionNames = provider.getDatabase().listCollectionNames();
 		return listCollectionNames.into( new ArrayList<>() ).contains( collectionName );
 	}
+
+	/**
+	 * If there are no collections we assume the db has been deleted. We use this approach because
+	 * MongoDB creates a new database every time you request one.
+	 */
+	public static boolean databaseExists(SessionFactory sessionFactory, String collectionName) {
+		return collectionExists( sessionFactory, collectionName );
+	}
 }

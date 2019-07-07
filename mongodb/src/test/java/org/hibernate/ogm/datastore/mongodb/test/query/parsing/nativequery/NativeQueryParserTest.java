@@ -6,24 +6,21 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.parsing.nativequery;
 
+import org.bson.Document;
+import org.bson.json.JsonParseException;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
-import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParseException;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.utils.DocumentUtil;
 import org.hibernate.ogm.utils.TestForIssue;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.bson.Document;
-import org.bson.json.JsonParseException;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParseTreeUtils;
 import org.parboiled.support.ParsingResult;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -72,8 +69,6 @@ public class NativeQueryParserTest {
 						+ "," + sort
 						+ "])";
 		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new ReportingParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run( nativeQuery );
-
-		System.out.println( ParseTreeUtils.printNodeTree( run ) );
 
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 
@@ -206,6 +201,21 @@ public class NativeQueryParserTest {
 		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
 		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
 		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DROP );
+		assertThat( queryDescriptor.getCriteria() ).isNull();
+		assertThat( queryDescriptor.getOptions() ).isNull();
+		assertThat( queryDescriptor.getProjection() ).isNull();
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-1432")
+	public void shouldParseDropDatabaseQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		String query = "db.dropDatabase()";
+		ParsingResult<MongoDBQueryDescriptorBuilder> run = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( query );
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+		assertThat( queryDescriptor.getCollectionName() ).isNull();
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.DROP_DATABASE );
 		assertThat( queryDescriptor.getCriteria() ).isNull();
 		assertThat( queryDescriptor.getOptions() ).isNull();
 		assertThat( queryDescriptor.getProjection() ).isNull();
