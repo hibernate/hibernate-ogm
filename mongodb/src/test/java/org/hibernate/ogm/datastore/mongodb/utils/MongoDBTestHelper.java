@@ -338,9 +338,19 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		return simpleValueFunction;
 	}
 
-	public static boolean collectionExists(SessionFactory sessionFactory, String collectionName) {
+	public static boolean isCollectionExists(SessionFactory sessionFactory, String collectionName) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		MongoIterable<String> listCollectionNames = provider.getDatabase().listCollectionNames();
 		return listCollectionNames.into( new ArrayList<>() ).contains( collectionName );
+	}
+
+	/**
+	 * isCollectionExists method is used because every time when whe
+	 * call provider.getDatabase() MongoDB driver create new instance of db,
+	 * but after dropping there aren't any collection.
+	 * In this way we can check is database exists
+	 */
+	public static boolean isDataBaseExists(SessionFactory sessionFactory, String collectionName) {
+		return isCollectionExists( sessionFactory, collectionName );
 	}
 }

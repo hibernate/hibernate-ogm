@@ -6,13 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.collectionExists;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import com.mongodb.BasicDBList;
 import org.fest.assertions.Fail;
 import org.fest.assertions.MapAssert;
 import org.hibernate.Session;
@@ -28,7 +22,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.mongodb.BasicDBList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.isCollectionExists;
 
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
@@ -1082,13 +1081,13 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	@TestForIssue(jiraKey = "OGM-1433")
 	public void testDropCollection() {
 		inTransaction( ( session ) -> {
-			assertThat( collectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isTrue();
+			assertThat( isCollectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isTrue();
 
 			String nativeQuery = "db." + MarkTwainPoem.TABLE_NAME + ".drop()";
 			int result = session.createNativeQuery( nativeQuery ).executeUpdate();
 			assertThat( result ).isEqualTo( 1 );
-			assertThat( collectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isFalse();
-			assertThat( collectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
+			assertThat( isCollectionExists( sessionFactory, MarkTwainPoem.TABLE_NAME ) ).isFalse();
+			assertThat( isCollectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
 		} );
 	}
 
@@ -1097,7 +1096,7 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 	public void testDropCollectionThatDoesNotExist() {
 		inTransaction( ( session ) -> {
 			String fakeCollection = "IdoNotExistCollectionForTest";
-			assertThat( collectionExists( sessionFactory, fakeCollection ) ).isFalse();
+			assertThat( isCollectionExists( sessionFactory, fakeCollection ) ).isFalse();
 
 			String nativeQuery = "db." + fakeCollection + ".drop()";
 			int result = session.createNativeQuery( nativeQuery ).executeUpdate();
@@ -1105,8 +1104,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			assertThat( result )
 					.as( "Congratulations, you have solved an issue! So far we couldn't know if the collection was actually deleted so we always returned 1. If you fix this issue, update this test, please." )
 					.isNotEqualTo( 0 );
-			assertThat( collectionExists( sessionFactory, fakeCollection ) ).isFalse();
-			assertThat( collectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
+			assertThat( isCollectionExists( sessionFactory, fakeCollection ) ).isFalse();
+			assertThat( isCollectionExists( sessionFactory, OscarWildePoem.TABLE_NAME ) ).isTrue();
 		} );
 	}
 
@@ -1121,4 +1120,5 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			session.createNativeQuery( nativeQuery ).executeUpdate();
 		} );
 	}
+
 }

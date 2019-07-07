@@ -973,6 +973,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public int executeBackendUpdateQuery(final BackendQuery<MongoDBQueryDescriptor> backendQuery, final QueryParameters queryParameters, final TupleContext tupleContext) {
 		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
+		if ( queryDescriptor.getOperation().equals( MongoDBQueryDescriptor.Operation.DROP_DATABASE ) ) {
+			return doDropDatabase( provider.getDatabase() );
+		}
+
+
 		EntityKeyMetadata entityKeyMetadata =
 				backendQuery.getSingleEntityMetadataInformationOrNull() == null ? null :
 					backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
@@ -1012,6 +1017,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
 		}
+	}
+
+	private int doDropDatabase(MongoDatabase database) {
+		database.drop();
+		return 1;
 	}
 
 	@Override

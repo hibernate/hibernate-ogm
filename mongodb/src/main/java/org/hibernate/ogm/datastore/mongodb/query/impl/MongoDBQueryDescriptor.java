@@ -49,6 +49,7 @@ public class MongoDBQueryDescriptor implements Serializable {
 		 */
 		COUNT,
 		DROP,
+		DROP_DATABASE,
 		/**
 		 * This is used by the query parser when the parsed query requires an aggregation, usually for embedded collections.
 		 */
