@@ -887,6 +887,32 @@
             </properties>
         </profile>
         <profile>
+            <id>java11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <properties>
+                <!-- Standard APIs >= JDK 11 -->
+                <version.jakarta.xml.bind>2.3.3</version.jakarta.xml.bind>
+                <additionalRuntimeArgLine>-Djdk.attach.allowAttachSelf=true</additionalRuntimeArgLine>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
+                        <version>${version.jakarta.xml.bind}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>integrationtest</id>
             <activation>
                 <property>
