@@ -28,8 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Integration test for {@link org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryResolverDelegate} and
- * {@link org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryRendererDelegate}.
+ * Integration test for {@link org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryRendererDelegate}.
  *
  * @author Gunnar Morling
  */
@@ -48,14 +47,14 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	public void shouldCreateUnrestrictedQuery() {
 		assertMongoDbQuery(
 				"from IndexedEntity",
-				"{ }" );
+				"{}" );
 	}
 
 	@Test
 	public void shouldCreateQueryWithSingleDiscriminatorValue() {
 		assertMongoDbQuery(
 				"from EmployeeST",
-				"{ \"DTYPE\" : \"EMP\" }",
+				"{\"DTYPE\": \"EMP\"}",
 				EmployeeST.class );
 	}
 
@@ -63,10 +62,10 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	public void shouldCreateQueryWithSingleDiscriminatorValueWithFilter() {
 		assertMongoDbQuery(
 				"from EmployeeST e where e.employer = 'Red Hat'",
-				"{ \"$and\" : [" +
-					"{ \"employer\" : \"Red Hat\" }, " +
-					"{ \"DTYPE\" : \"EMP\" }" +
-				"] }",
+				"{\"$and\": [" +
+					"{\"employer\": \"Red Hat\"}, " +
+					"{\"DTYPE\": \"EMP\"}" +
+				"]}",
 				EmployeeST.class );
 	}
 
@@ -74,8 +73,8 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	public void shouldCreateQueryWithMultipleDiscriminatorValues() {
 		assertMongoDbQuery(
 				"from CommunityMemberST",
-				"{ \"DTYPE\" : " +
-					"{ \"$in\" : [\"CMM\", \"EMP\"] } " +
+				"{\"DTYPE\": " +
+					"{\"$in\": [\"CMM\", \"EMP\"]}" +
 				"}",
 				CommunityMemberST.class );
 	}
@@ -84,12 +83,12 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	public void shouldCreateQueryWithMultipleDiscriminatorValuesWithFilter() {
 		assertMongoDbQuery(
 				"from CommunityMemberST c where c.project = 'Hibernate OGM'",
-				"{ \"$and\" : [" +
-					"{ \"project\" : \"Hibernate OGM\" }, " +
-					"{ \"DTYPE\" : " +
-						"{ \"$in\" : [\"CMM\", \"EMP\"] }" +
-					" }" +
-				"] }",
+				"{\"$and\": [" +
+					"{\"project\": \"Hibernate OGM\"}, " +
+					"{\"DTYPE\": " +
+						"{\"$in\": [\"CMM\", \"EMP\"]}" +
+					"}" +
+				"]}",
 				CommunityMemberST.class );
 	}
 
@@ -97,103 +96,103 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	public void shouldCreateRestrictedQueryUsingSelect() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title = 'same'",
-				"{ \"title\" : \"same\" }" );
+				"{\"title\": \"same\"}" );
 	}
 
 	@Test
 	public void shouldUseSpecialNameForIdPropertyInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.id = '1'",
-				"{ \"_id\" : \"1\" }" );
+				"{\"_id\": \"1\"}" );
 	}
 
 	@Test
 	public void shouldUseColumnNameForPropertyInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name = 'Bob'",
-				"{ \"entityName\" : \"Bob\" }" );
+				"{\"entityName\": \"Bob\"}" );
 	}
 
 	@Test
 	public void shouldCreateProjectionQuery() {
 		MongoDBQueryParsingResult parsingResult = parseQuery( "select e.id, e.name, e.position from IndexedEntity e" );
 
-		assertThat( parsingResult.getQuery().toJson() ).isEqualTo( "{ }" );
-		assertThat( parsingResult.getProjection().toJson() ).isEqualTo( "{ \"_id\" : 1, \"entityName\" : 1, \"position\" : 1 }" );
+		assertThat( parsingResult.getQuery().toJson() ).isEqualTo( "{}" );
+		assertThat( parsingResult.getProjection().toJson() ).isEqualTo( "{\"_id\": 1, \"entityName\": 1, \"position\": 1}" );
 	}
 
 	@Test
 	public void shouldAddNumberPropertyAsNumber() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.position = 2",
-				"{ \"position\" : { \"$numberLong\" : \"2\" } }" );
+				"{\"position\": {\"$numberLong\": \"2\"}}" );
 	}
 
 	@Test
 	public void shouldCreateLessOrEqualQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.position <= 20",
-				"{ \"position\" : { \"$lte\" : { \"$numberLong\" : \"20\" } } }" );
+				"{\"position\": {\"$lte\": {\"$numberLong\": \"20\"}}}" );
 	}
 
 	@Test
 	public void shouldCreateQueryWithNegationInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name <> 'Bob'",
-				"{ \"entityName\" : { \"$ne\" : \"Bob\" } }" );
+				"{\"entityName\": {\"$ne\": \"Bob\"}}" );
 	}
 
 	@Test
 	public void shouldCreateQueryWithNestedNegationInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where NOT e.name <> 'Bob'",
-				"{ \"entityName\" : \"Bob\" }" );
+				"{\"entityName\": \"Bob\"}" );
 	}
 
 	@Test
 	public void shouldCreateQueryUsingSelectWithConjunctionInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title = 'same' and e.position = 1",
-				"{ \"$and\" : [" +
-					"{ \"title\" : \"same\" }, " +
-					"{ \"position\" : { \"$numberLong\" : \"1\" } }" +
-				"] }" );
+				"{\"$and\": [" +
+					"{\"title\": \"same\"}, " +
+					"{\"position\": {\"$numberLong\": \"1\"}}" +
+				"]}" );
 	}
 
 	@Test
 	public void shouldCreateQueryWithNegationAndConjunctionInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where NOT ( e.name = 'Bob' AND e.position = 1 )",
-				"{ \"$or\" : [" +
-					"{ \"entityName\" : { \"$ne\" : \"Bob\" } }, " +
-					"{ \"position\" : { \"$ne\" : { \"$numberLong\" : \"1\" } } }" +
-				"] }" );
+				"{\"$or\": [" +
+					"{\"entityName\": {\"$ne\": \"Bob\"}}, " +
+					"{\"position\": {\"$ne\": {\"$numberLong\": \"1\"}}}" +
+				"]}" );
 	}
 
 	@Test
 	public void shouldCreateNegatedRangeQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name = 'Bob' and not e.position between 1 and 3",
-				"{ \"$and\" : [" +
-					"{ \"entityName\" : \"Bob\" }, " +
-					"{ \"$or\" : [" +
-						"{ \"position\" : { \"$lt\" : { \"$numberLong\" : \"1\" } } }, " +
-						"{ \"position\" : { \"$gt\" : { \"$numberLong\" : \"3\" } } }" +
-					"] }" +
-				"] }" );
+				"{\"$and\": [" +
+					"{\"entityName\": \"Bob\"}, " +
+					"{\"$or\": [" +
+						"{\"position\": {\"$lt\": {\"$numberLong\": \"1\"}}}, " +
+						"{\"position\": {\"$gt\": {\"$numberLong\": \"3\"}}}" +
+					"]}" +
+				"]}" );
 	}
 
 	@Test
 	public void shouldCreateBooleanQueryUsingSelect() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name = 'same' or ( e.id = 4 and e.name = 'booh')",
-				"{ \"$or\" : [" +
-					"{ \"entityName\" : \"same\" }, " +
-					"{ \"$and\" : [" +
-						"{ \"_id\" : \"4\" }, " +
-						"{ \"entityName\" : \"booh\" }" +
-					"] }" +
-				"] }" );
+				"{\"$or\": [" +
+					"{\"entityName\": \"same\"}, " +
+					"{\"$and\": [" +
+						"{\"_id\": \"4\"}, " +
+						"{\"entityName\": \"booh\"}" +
+					"]}" +
+				"]}" );
 	}
 
 	@Test
@@ -205,70 +204,70 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.position between :lower and :upper",
 				namedParameters,
-				"{ \"$and\" : [" +
-					"{ \"position\" : { \"$gte\" : { \"$numberLong\" : \"10\" } } }, " +
-					"{ \"position\" : { \"$lte\" : { \"$numberLong\" : \"20\" } } }" +
-				"] }" );
+				"{\"$and\": [" +
+					"{\"position\": {\"$gte\": {\"$numberLong\": \"10\"}}}, " +
+					"{\"position\": {\"$lte\": {\"$numberLong\": \"20\"}}}" +
+				"]}" );
 	}
 
 	@Test
 	public void shouldCreateInQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title IN ( 'foo', 'bar', 'same')",
-				"{ \"title\" : " +
-					"{ \"$in\" : [\"foo\", \"bar\", \"same\"] }" +
-				" }" );
+				"{\"title\": " +
+					"{\"$in\": [\"foo\", \"bar\", \"same\"]}" +
+				"}" );
 	}
 
 	@Test
 	public void shouldCreateNotInQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title NOT IN ( 'foo', 'bar', 'same')",
-				"{ \"title\" : " +
-					"{ \"$nin\" : [\"foo\", \"bar\", \"same\"] }" +
-				" }" );
+				"{\"title\": " +
+					"{\"$nin\": [\"foo\", \"bar\", \"same\"]}" +
+				"}" );
 	}
 
 	@Test
 	public void shouldCreateLikeQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title like 'Ali_e%'",
-				"{ \"title\" : " +
-					"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\", " +
-					"\"$options\" : \"s\"" +
-					" }" +
-				" }" );
+				"{\"title\": " +
+					"{\"$regex\": \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\", " +
+					"\"$options\": \"s\"" +
+					"}" +
+				"}" );
 	}
 
 	@Test
 	public void shouldCreateNotLikeQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title not like 'Ali_e%'",
-				"{ \"title\" : " +
-					"{ \"$not\" : " +
-						"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\", " +
-						"\"$options\" : \"s\"" +
-						" }" +
-					" }" +
-				" }" );
+				"{\"title\": " +
+					"{\"$not\": " +
+						"{\"$regex\": \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\", " +
+						"\"$options\": \"s\"" +
+						"}" +
+					"}" +
+				"}" );
 	}
 
 	@Test
 	public void shouldCreateIsNullQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title is null",
-				"{ \"title\" : " +
-					"{ \"$exists\" : false }" +
-				" }" );
+				"{\"title\": " +
+					"{\"$exists\": false}" +
+				"}" );
 	}
 
 	@Test
 	public void shouldCreateIsNotNullQuery() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.title is not null",
-				"{ \"title\" : " +
-					"{ \"$exists\" : true }" +
-				" }" );
+				"{\"title\": " +
+					"{\"$exists\": true}" +
+				"}" );
 	}
 
 	private void assertMongoDbQuery(String queryString, String expectedMongoDbQuery) {
