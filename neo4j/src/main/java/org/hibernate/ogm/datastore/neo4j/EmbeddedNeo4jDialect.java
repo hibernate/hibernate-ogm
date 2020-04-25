@@ -69,7 +69,7 @@ import org.neo4j.graphdb.QueryExecutionException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Result;
-import org.neo4j.kernel.api.exceptions.schema.UniquePropertyValueValidationException;
+import org.neo4j.kernel.api.exceptions.index.IndexEntryConflictException;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -209,7 +209,7 @@ public class EmbeddedNeo4jDialect extends BaseNeo4jDialect<EmbeddedNeo4jEntityQu
 		catch (QueryExecutionException qee) {
 			if ( CONSTRAINT_VIOLATION_CODE.equals( qee.getStatusCode() ) ) {
 				Throwable cause = findRecognizableCause( qee );
-				if ( cause instanceof UniquePropertyValueValidationException ) {
+				if ( cause instanceof IndexEntryConflictException ) {
 					throw new TupleAlreadyExistsException( key, qee );
 				}
 			}
