@@ -98,7 +98,7 @@
         <version.copy.plugin>0.0.5</version.copy.plugin>
         <version.dependency.plugin>3.0.2</version.dependency.plugin>
         <version.deploy.plugin>2.8.2</version.deploy.plugin>
-        <version.embedmongo.plugin>0.4.0</version.embedmongo.plugin>
+        <version.embedmongo.plugin>0.4.1</version.embedmongo.plugin>
         <version.de.flapdoodle.embed.mongo>2.1.1</version.de.flapdoodle.embed.mongo>
         <version.enforcer.plugin>3.0.0-M1</version.enforcer.plugin>
         <version.groovy.plugin>2.0</version.groovy.plugin>
