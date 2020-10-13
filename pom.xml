@@ -37,7 +37,7 @@
 
         <!-- Test dependencies -->
 
-        <version.junit>4.12</version.junit>
+        <version.junit>4.13.1</version.junit>
         <version.io.takari.junit>1.2.7</version.io.takari.junit>
         <version.org.easytesting.fest-assert>1.4</version.org.easytesting.fest-assert>
         <version.org.mockito>1.9.5</version.org.mockito>
