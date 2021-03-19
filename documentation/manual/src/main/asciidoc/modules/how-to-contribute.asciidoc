@@ -95,7 +95,7 @@ run it from the [filename]`hibernate-ogm-documentation/manual` subdirectory.
 The best way to share code is to fork the Hibernate OGM repository on GitHub,
 create a branch and open a pull request when you are ready.
 Make sure to rebase your pull request
-on the latest version of the master branch before offering it.
+on the latest version of the main branch before offering it.
 
 Here are a couple of approaches the team follows:
 

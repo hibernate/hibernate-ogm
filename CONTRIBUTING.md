@@ -40,10 +40,10 @@ You can base your test case on the test cases already existing in the repository
 
 Create a "topic" branch on which you will work.  The convention is to name the branch
 using the JIRA issue key.  If there is not already a JIRA issue covering the work you
-want to do, create one.  Assuming you will be working from the master branch and working
+want to do, create one.  Assuming you will be working from the main branch and working
 on the JIRA OGM-1234 :
 
-     git checkout -b OGM-1234 master
+     git checkout -b OGM-1234 main
 
 
 ## Code
@@ -82,9 +82,9 @@ Add the original Hibernate OGM repository as a remote repository called upstream
 git remote add upstream https://github.com/hibernate/hibernate-ogm.git
 ```
 
-If you want to rebase your branch on top of the master branch, you can use the following git command:
+If you want to rebase your branch on top of the main branch, you can use the following git command:
 ```shell
-git pull --rebase upstream master
+git pull --rebase upstream main
 ```
 
 ## Submit

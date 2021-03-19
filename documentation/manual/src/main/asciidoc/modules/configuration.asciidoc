@@ -596,7 +596,7 @@ If you are using the Hibernate OGM Infinispan feature packs, you don't have to w
 === Integration with WildFly NoSQL
 
 _WildFly NoSQL_ project allows to configure a NoSQL datastore client within a WildFly subsystem.
-See https://github.com/wildfly/wildfly-nosql/tree/master/doc[WildFly NoSQL Documentation].
+See https://github.com/wildfly/wildfly-nosql/tree/1.0.2.Final/doc[WildFly NoSQL Documentation].
 In a nutshell it provides the analogous concept of a _SQL DataSource_ for a NoSQL datastore.
 
 It is possible to configure Hibernate OGM to use the connections provided by WildFly NoSQL,
