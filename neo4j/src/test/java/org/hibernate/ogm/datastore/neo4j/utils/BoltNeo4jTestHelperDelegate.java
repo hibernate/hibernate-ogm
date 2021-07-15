@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hibernate.Session;
@@ -26,14 +27,14 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.IdentifiableDriver;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Statement;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.Value;
-import org.neo4j.driver.v1.exceptions.ClientException;
-import org.neo4j.driver.v1.types.Node;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Query;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.Value;
+import org.neo4j.driver.exceptions.ClientException;
+import org.neo4j.driver.types.Node;
 import org.neo4j.graphdb.Label;
 
 /**
@@ -51,7 +52,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	@Override
 	public List<Neo4jIndexSpec> getIndexes(Session session, DatastoreProvider provider) {
 		BoltNeo4jClient client = createClient( provider );
-		StatementResult result = run( session, client.getDriver(), GET_DB_INDEXES_PROCEDURE );
+		Result result = run( session, client.getDriver(), GET_DB_INDEXES_PROCEDURE );
 		return result.list().stream()
 				.map( BoltNeo4jTestHelperDelegate::extractNeo4jIndexSpec )
 				.collect( Collectors.toList() );
@@ -77,12 +78,12 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	}
 
 	private long readCountFromResponse(Session session, Driver driver, String query) {
-		StatementResult response = run( session, driver, query );
+		Result response = run( session, driver, query );
 		return response.single().get( 0 ).asInt();
 	}
 
-	private StatementResult run(Session session, Driver driver, String query) {
-		StatementResult response = null;
+	private Result run(Session session, Driver driver, String query) {
+		Result response = null;
 		if ( session != null ) {
 			Transaction transactionId = transactionId( session );
 			if ( transactionId != null ) {
@@ -90,15 +91,13 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 			}
 			else {
 				// Transaction rollbacked or committed
-				try ( org.neo4j.driver.v1.Session neo4jSession = driver.session() ) {
-					response = neo4jSession.run( query );
-				}
+				org.neo4j.driver.Session neo4jSession = driver.session();
+				response = neo4jSession.run( query );
 			}
 		}
 		else {
-			try ( org.neo4j.driver.v1.Session neo4jSession = driver.session() ) {
-				response = neo4jSession.run( query );
-			}
+			org.neo4j.driver.Session neo4jSession = driver.session();
+			response = neo4jSession.run( query );
 		}
 		return response;
 	}
@@ -128,9 +127,9 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 		Driver driver = driver( datastoreProvider );
 
 		List<Record> records = null;
-		try ( org.neo4j.driver.v1.Session neo4jSession = driver.session() ) {
-			Statement statement = new Statement( query, node.getParams() );
-			StatementResult result = neo4jSession.run( statement );
+		try ( org.neo4j.driver.Session neo4jSession = driver.session() ) {
+			Query nativeQuery = new Query( query, node.getParams() );
+			Result result = neo4jSession.run( nativeQuery );
 			validate( result );
 			records = result.list();
 		}
@@ -160,9 +159,9 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 		List<Record> records = null;
 		Driver driver = driver( datastoreProvider );
 
-		try ( org.neo4j.driver.v1.Session neo4jSession = driver.session() ) {
-			Statement statement = new Statement( query, relationship.getParams() );
-			StatementResult result = neo4jSession.run( statement );
+		try ( org.neo4j.driver.Session neo4jSession = driver.session() ) {
+			Query nativeQuery = new Query( query, relationship.getParams() );
+			Result result = neo4jSession.run( nativeQuery );
 			validate( result );
 			records = result.list();
 		}
@@ -181,7 +180,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	@Override
 	public void deleteAllElements(DatastoreProvider datastoreProvider) {
 		Driver driver = driver( datastoreProvider );
-		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
+		try ( org.neo4j.driver.Session session = driver.session() ) {
 			session.run( DELETE_ALL );
 		}
 	}
@@ -202,7 +201,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	private void deleteAllConstraints(DatastoreProvider datastoreProvider) {
 		Driver driver = driver( datastoreProvider );
 		List<String> constraints = getConstraints( driver, datastoreProvider );
-		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
+		try ( org.neo4j.driver.Session session = driver.session() ) {
 			for ( String constraint : constraints ) {
 				session.run( dropUniqueConstraintQuery( constraint ) );
 			}
@@ -210,8 +209,8 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	}
 
 	public List<String> getConstraints(Driver driver, DatastoreProvider provider) {
-		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
-			StatementResult result = session.run( GET_DB_CONSTRAINTS_PROCEDURE );
+		try ( org.neo4j.driver.Session session = driver.session() ) {
+			Result result = session.run( GET_DB_CONSTRAINTS_PROCEDURE );
 			return result.list().stream()
 					.map( r -> r.get( 0 ).asString() )
 					.collect( Collectors.toList() );
@@ -221,7 +220,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	private void deleteAllIndexes(DatastoreProvider datastoreProvider) {
 		Driver driver = driver( datastoreProvider );
 		List<Neo4jIndexSpec> indexes = getIndexes( null, datastoreProvider );
-		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
+		try ( org.neo4j.driver.Session session = driver.session() ) {
 			for ( Neo4jIndexSpec indexSpec : indexes ) {
 				session.run( indexSpec.asCypherDropQuery() );
 			}
@@ -231,13 +230,13 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	@Override
 	public void executeCypherQuery(DatastoreProvider datastoreProvider, String query, Map<String, Object> parameters) {
 		Driver driver = driver( datastoreProvider );
-		try ( org.neo4j.driver.v1.Session session = driver.session() ) {
-			StatementResult result = session.run( query, parameters );
+		try ( org.neo4j.driver.Session session = driver.session() ) {
+			Result result = session.run( query, parameters );
 			validate( result );
 		}
 	}
 
-	private void validate(StatementResult result) {
+	private void validate(Result result) {
 		try {
 			result.hasNext();
 		}
@@ -250,7 +249,7 @@ class BoltNeo4jTestHelperDelegate implements Neo4jTestHelperDelegate {
 	@Override
 	public Long executeCountQuery(DatastoreProvider datastoreProvider, String queryString) {
 		Driver driver = driver( datastoreProvider );
-		StatementResult result = driver.session().run( queryString );
+		Result result = driver.session().run( queryString );
 		return result.single().get( 0 ).asLong();
 	}
 }

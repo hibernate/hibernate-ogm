@@ -32,10 +32,9 @@ import org.hibernate.resource.transaction.spi.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.util.Resource;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Transaction;
 
 /**
  * An implementation of TransactionCoordinator based on managing a transaction through a Neo4j Connection.
@@ -145,7 +144,7 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 			if ( !transacted ) {
 				log.cannotExecuteWorkOutsideIsolatedTransaction();
 			}
-			Driver dataBase = ( (BoltNeo4jClient) provider.getClient() ).getDriver();
+			Driver dataBase = provider.getClient().getDriver();
 			Session session = null;
 			try {
 				session = dataBase.session();
@@ -155,13 +154,13 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 					// In this scenario I expect the visitable object to already have a way to connect to the db.
 					Connection connection = null;
 					T result = work.accept( new WorkExecutor<T>(), connection );
-					tx.success();
+					tx.commit();
 					tx.close();
 					return result;
 				}
 				catch (Exception e) {
 					try {
-						tx.failure();
+						tx.commit();
 						tx.close();
 					}
 					catch (Exception re) {
@@ -176,19 +175,13 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 				}
 			}
 			finally {
-				close( session );
+				session.close();
 			}
 		}
 
 		@Override
 		public <T> T delegateCallable(Callable<T> callable, boolean transacted) throws HibernateException {
 			throw new UnsupportedOperationException( "Not implemented yet" );
-		}
-	}
-
-	private void close(Resource closable) {
-		if ( closable != null ) {
-			closable.close();
 		}
 	}
 
@@ -310,11 +303,10 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 
 		private void commit(Transaction tx) {
 			try {
-				tx.success();
+				tx.commit();
 				tx.close();
 			}
 			finally {
-				tx = null;
 				closeSession();
 			}
 		}
@@ -333,11 +325,10 @@ public class BoltNeo4jResourceLocalTransactionCoordinator implements Transaction
 
 		private void rollback(Transaction tx) {
 			try {
-				tx.failure();
+				tx.rollback();
 				tx.close();
 			}
 			finally {
-				tx = null;
 				closeSession();
 			}
 		}

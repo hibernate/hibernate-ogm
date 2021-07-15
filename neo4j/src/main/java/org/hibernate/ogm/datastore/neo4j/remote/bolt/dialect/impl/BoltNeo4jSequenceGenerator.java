@@ -21,12 +21,11 @@ import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata.IdSourceType;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.Statement;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.util.Resource;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Query;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Transaction;
 
 /**
  * Generates the next value of an id sequence as represented by {@link IdSourceKey}.
@@ -67,8 +66,8 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 	 * <p>
 	 * All nodes are created inside the same transaction.
 	 */
-	private void createSequencesConstraintsStatements(List<Statement> statements, Iterable<Sequence> sequences) {
-		Statement statement = createUniqueConstraintStatement( SEQUENCE_NAME_PROPERTY, NodeLabel.SEQUENCE.name() );
+	private void createSequencesConstraintsStatements(List<Query> statements, Iterable<Sequence> sequences) {
+		Query statement = createUniqueConstraintStatement( SEQUENCE_NAME_PROPERTY, NodeLabel.SEQUENCE.name() );
 		statements.add( statement );
 	}
 
@@ -78,8 +77,8 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 	 *
 	 * @param sequences the generators to process
 	 */
-	public List<Statement> createSequencesStatements(Iterable<Sequence> sequences) {
-		List<Statement> statements = new ArrayList<Statement>();
+	public List<Query> createSequencesStatements(Iterable<Sequence> sequences) {
+		List<Query> statements = new ArrayList<>();
 		for ( Sequence sequence : sequences ) {
 			addSequence( statements, sequence );
 		}
@@ -89,19 +88,19 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 	/**
 	 * Adds a unique constraint to make sure that each node of the same "sequence table" is unique.
 	 */
-	private void addUniqueConstraintForTableBasedSequence(List<Statement> statements, IdSourceKeyMetadata generatorKeyMetadata) {
-		Statement statement = createUniqueConstraintStatement( generatorKeyMetadata.getKeyColumnName(), generatorKeyMetadata.getName() );
+	private void addUniqueConstraintForTableBasedSequence(List<Query> statements, IdSourceKeyMetadata generatorKeyMetadata) {
+		Query statement = createUniqueConstraintStatement( generatorKeyMetadata.getKeyColumnName(), generatorKeyMetadata.getName() );
 		statements.add( statement );
 	}
 
-	private Statement createUniqueConstraintStatement(String propertyName, String label) {
+	private Query createUniqueConstraintStatement(String propertyName, String label) {
 		String queryString = createUniqueConstraintQuery( propertyName, label );
-		Statement statement = new Statement( queryString );
+		Query statement = new Query( queryString );
 		return statement;
 	}
 
-	private void addSequence(List<Statement> statements, Sequence sequence) {
-		Statement statement = new Statement( SEQUENCE_CREATION_QUERY, Collections.<String, Object>singletonMap( SEQUENCE_NAME_QUERY_PARAM, sequence.getName().render() ) );
+	private void addSequence(List<Query> statements, Sequence sequence) {
+		Query statement = new Query( SEQUENCE_CREATION_QUERY, Collections.singletonMap( SEQUENCE_NAME_QUERY_PARAM, sequence.getName().render() ) );
 		statements.add( statement );
 	}
 
@@ -112,14 +111,14 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 	 */
 	@Override
 	protected Number nextValue(RemoteStatements remoteStatements) {
-		List<Statement> statements = convert( remoteStatements );
+		List<Query> statements = convert( remoteStatements );
 
-		StatementResult result = execute( statements );
+		Result result = execute( statements );
 		Number nextValue = result.single().get( 0 ).asNumber();
 		return nextValue;
 	}
 
-	public void createUniqueConstraintsForTableSequences(List<Statement> statements, Iterable<IdSourceKeyMetadata> tableIdGenerators) {
+	public void createUniqueConstraintsForTableSequences(List<Query> statements, Iterable<IdSourceKeyMetadata> tableIdGenerators) {
 		for ( IdSourceKeyMetadata idSourceKeyMetadata : tableIdGenerators ) {
 			if ( idSourceKeyMetadata.getType() == IdSourceType.TABLE ) {
 				addUniqueConstraintForTableBasedSequence( statements, idSourceKeyMetadata );
@@ -127,17 +126,17 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 		}
 	}
 
-	private List<Statement> convert(RemoteStatements remoteStatements) {
-		List<Statement> statements = new ArrayList<>();
+	private List<Query> convert(RemoteStatements remoteStatements) {
+		List<Query> statements = new ArrayList<>();
 		for ( RemoteStatement remoteStatement : remoteStatements ) {
-			Statement statement = new Statement( remoteStatement.getQuery(), remoteStatement.getParams() );
+			Query statement = new Query( remoteStatement.getQuery(), remoteStatement.getParams() );
 			statements.add( statement );
 		}
 		return statements;
 	}
 
 	private void createUniqueConstraints(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
-		List<Statement> statements = new ArrayList<Statement>();
+		List<Query> statements = new ArrayList<Query>();
 		createSequencesConstraintsStatements( statements, sequences );
 		createUniqueConstraintsForTableSequences( statements, idSourceKeyMetadata );
 
@@ -148,48 +147,31 @@ public class BoltNeo4jSequenceGenerator extends RemoteNeo4jSequenceGenerator {
 	public void createSequences(List<Sequence> sequences, Iterable<IdSourceKeyMetadata> idSourceKeyMetadata) {
 		createUniqueConstraints( sequences, idSourceKeyMetadata );
 
-		List<Statement> statements = createSequencesStatements( sequences );
+		List<Query> statements = createSequencesStatements( sequences );
 		execute( statements );
 	}
 
-	private StatementResult execute( List<Statement> statements ) {
+	private Result execute( List<Query> statements ) {
 		Driver driver = client.getDriver();
-		Session session = null;
-		try {
-			session = driver.session();
-			Transaction tx = null;
-
-			try {
-				tx = session.beginTransaction();
-				StatementResult result = runAll( tx, statements );
-				tx.success();
-				return result;
-			}
-			finally {
-				close( tx );
-			}
-		}
-		finally {
-			close( session );
+		try (
+			Session session = driver.session();
+			Transaction tx = session.beginTransaction() ) {
+			Result result = runAll( tx, statements );
+			tx.commit();
+			return result;
 		}
 	}
 
-	private StatementResult runAll(Transaction tx, List<Statement> statements) {
-		StatementResult result = null;
-		for ( Statement statement : statements ) {
+	private Result runAll(Transaction tx, List<Query> statements) {
+		Result result = null;
+		for ( Query statement : statements ) {
 			result = tx.run( statement );
 			validate( result );
 		}
 		return result;
 	}
 
-	private void validate(StatementResult result) {
+	private void validate(Result result) {
 		result.hasNext();
-	}
-
-	private void close(Resource closable) {
-		if ( closable != null ) {
-			closable.close();
-		}
 	}
 }

@@ -21,13 +21,12 @@ import org.hibernate.ogm.datastore.neo4j.remote.bolt.dialect.impl.BoltNeo4jSeque
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.Statement;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.exceptions.ClientException;
-import org.neo4j.driver.v1.util.Resource;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Query;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.exceptions.ClientException;
 
 /**
  * Initialize the schema for the Neo4j database:
@@ -61,65 +60,49 @@ public class BoltNeo4jSchemaDefiner extends BaseNeo4jSchemaDefiner {
 
 	@Override
 	protected void createIndexesIfMissing(DatastoreProvider provider, List<Neo4jIndexSpec> indexes ) {
-		List<Statement> statements = new ArrayList<>();
+		List<Query> queries = new ArrayList<>();
 		for ( Neo4jIndexSpec index : indexes ) {
 			log.tracef( "Creating composite index for nodes labeled as %1$s on properties %2$s", index.getLabel(), index.getProperties() );
-			statements.add( new Statement( index.asCypherCreateQuery() ) );
+			queries.add( new Query( index.asCypherCreateQuery() ) );
 		}
-		run( provider, statements );
+		run( provider, queries );
 	}
 
 	@Override
 	protected void createUniqueConstraintsIfMissing(DatastoreProvider provider, List<UniqueConstraintDetails> constraints) {
-		List<Statement> statements = new ArrayList<>();
+		List<Query> queries = new ArrayList<>();
 		for ( UniqueConstraintDetails constraint : constraints ) {
 			log.tracef( "Creating unique constraint for nodes labeled as %1$s on property %2$s", constraint.getLabel(), constraint.getProperty() );
-			statements.add( new Statement( constraint.asCypherQuery() ) );
+			queries.add( new Query( constraint.asCypherQuery() ) );
 		}
 
-		run( provider, statements );
+		run( provider, queries );
 	}
 
-	private void run(DatastoreProvider provider, List<Statement> statements) {
+	private void run(DatastoreProvider provider, List<Query> queries) {
 		BoltNeo4jDatastoreProvider boltProvider = (BoltNeo4jDatastoreProvider) provider;
 		Driver driver = boltProvider.getClient().getDriver();
-		Session session = null;
-		try {
-			session = driver.session();
-			Transaction tx = null;
-			try {
-				tx = session.beginTransaction();
-				runAll( tx, statements );
-				tx.success();
-			}
-			catch (ClientException e) {
-				throw log.constraintsCreationException( e.code(), e.getMessage() );
-			}
-			finally {
-				close( tx );
-			}
+
+		try ( Session session = driver.session();
+			Transaction tx = session.beginTransaction() ) {
+			runAll( tx, queries );
+			tx.commit();
 		}
-		finally {
-			close( session );
+		catch (ClientException e) {
+			throw log.constraintsCreationException( e.code(), e.getMessage() );
 		}
 	}
 
-	private void runAll(Transaction tx, List<Statement> statements) {
-		List<StatementResult> results = new ArrayList<>();
-		for ( Statement statement : statements ) {
-			StatementResult result = tx.run( statement );
+	private void runAll(Transaction tx, List<Query> queries) {
+		List<Result> results = new ArrayList<>();
+		for ( Query query : queries ) {
+			Result result = tx.run( query );
 			validate( result );
 			results.add( result );
 		}
 	}
 
-	private void validate(StatementResult result) {
+	private void validate(Result result) {
 		result.hasNext();
-	}
-
-	private void close(Resource closable) {
-		if ( closable != null ) {
-			closable.close();
-		}
 	}
 }
