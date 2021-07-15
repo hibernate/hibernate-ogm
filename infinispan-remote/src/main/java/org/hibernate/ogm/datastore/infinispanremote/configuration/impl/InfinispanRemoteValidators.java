@@ -33,5 +33,5 @@ public class InfinispanRemoteValidators {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private InfinispanRemoteValidators() {
-	};
+	}
 }

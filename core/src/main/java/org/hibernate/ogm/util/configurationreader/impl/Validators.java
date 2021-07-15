@@ -38,5 +38,5 @@ public class Validators {
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	private Validators() {
-	};
+	}
 }
