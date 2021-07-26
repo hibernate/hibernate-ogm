@@ -13,9 +13,9 @@ import java.util.Map;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.remote.common.dialect.impl.RemoteNeo4jMapsTupleIterator;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Value;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Value;
 
 /**
  * Iterates over the results of a native query when each result is not mapped by an entity
@@ -24,7 +24,7 @@ import org.neo4j.driver.v1.Value;
  */
 public class BoltNeo4jMapsTupleIterator extends RemoteNeo4jMapsTupleIterator<Record> {
 
-	public BoltNeo4jMapsTupleIterator(StatementResult statementResult) {
+	public BoltNeo4jMapsTupleIterator(Result statementResult) {
 		super( statementResult, statementResult.keys() );
 	}
 

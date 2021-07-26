@@ -13,8 +13,8 @@ import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.Tuple.SnapshotType;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.types.Node;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.types.Node;
 
 /**
  * Iterates over the result of a native query when each result is a neo4j node. This is the case when the result of
@@ -81,7 +81,7 @@ public class BoltNeo4jNodesTupleIterator implements ClosableIterator<Tuple> {
 		try {
 			entities.close();
 			if ( closeTransaction ) {
-				tx.success();
+				tx.commit();
 			}
 		}
 		finally {

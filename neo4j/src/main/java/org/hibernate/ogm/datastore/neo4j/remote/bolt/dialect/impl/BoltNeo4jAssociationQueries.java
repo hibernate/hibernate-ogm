@@ -16,9 +16,9 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.util.impl.ArrayHelper;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.types.Relationship;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.types.Relationship;
 
 /**
  * @author Davide D'Alto
@@ -36,11 +36,11 @@ public class BoltNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 	public Relationship findRelationship(Transaction tx, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues = relationshipValues( associationKey, rowKey );
 		Object[] queryValues = ArrayHelper.concat( associationKey.getEntityKey().getColumnValues(), relationshipValues );
-		StatementResult result = tx.run( findRelationshipQuery, params( queryValues ) );
+		Result result = tx.run( findRelationshipQuery, params( queryValues ) );
 		return relationship( result );
 	}
 
-	private Relationship relationship(StatementResult result) {
+	private Relationship relationship(Result result) {
 		if ( result.hasNext() ) {
 			return result.next().get( 0 ).asRelationship();
 		}
@@ -51,14 +51,14 @@ public class BoltNeo4jAssociationQueries extends BaseNeo4jAssociationQueries {
 			Object[] relationshipProperties) {
 		String query = initCreateEmbeddedAssociationQuery( associationKey, embeddedKey );
 		Object[] queryValues = createRelationshipForEmbeddedQueryValues( associationKey, embeddedKey, relationshipProperties );
-		StatementResult statementResult = tx.run( query, params( queryValues ) );
+		Result statementResult = tx.run( query, params( queryValues ) );
 		return relationship( statementResult );
 	}
 
 	public Relationship createRelationship(Transaction tx, Object[] ownerKeyValues, Object[] targetKeyValues, Object[] relationshipProperties) {
 		Object[] concat = ArrayHelper.concat( Arrays.asList( ownerKeyValues, targetKeyValues, relationshipProperties ) );
 		Map<String, Object> params = params( concat );
-		StatementResult statementResult = tx.run( createRelationshipQuery, params );
+		Result statementResult = tx.run( createRelationshipQuery, params );
 		return relationship( statementResult );
 	}
 

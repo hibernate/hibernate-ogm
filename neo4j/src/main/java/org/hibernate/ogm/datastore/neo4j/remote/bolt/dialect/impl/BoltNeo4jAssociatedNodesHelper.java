@@ -13,8 +13,8 @@ import java.util.Map.Entry;
 import org.hibernate.ogm.dialect.spi.TupleTypeContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.types.Node;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.types.Node;
 
 /**
  * Function required to get the associated nodes when building the tuple snapshot.
