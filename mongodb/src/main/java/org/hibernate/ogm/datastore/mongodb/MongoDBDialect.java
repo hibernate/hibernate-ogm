@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.hibernate.AssertionFailure;
 import org.hibernate.ogm.datastore.document.association.impl.DocumentHelpers;
@@ -1226,40 +1227,53 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return collation;
 	}
 
-	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, MongoCollection<Document> collection,
-			EntityKeyMetadata entityKeyMetadata) {
+	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, MongoCollection<Document> collection, EntityKeyMetadata entityKeyMetadata) {
 		Document criteria = query.getCriteria();
 		Document orderby = query.getOrderBy();
-		int maxTimeMS = -1;
+		FindIterable<Document> prepareFind = collection.find();
 
-		Document modifiers = new Document();
 		// We need to extract the different parts of the criteria and pass them to the cursor API
 		if ( criteria.containsKey( "$query" ) ) {
+
+			prepareFind.filter( (Bson) criteria.get( "$query" ) );
+
 			if ( orderby == null ) {
 				orderby = (Document) criteria.get( "$orderby" );
 			}
-			maxTimeMS = criteria.getInteger( "$maxTimeMS", -1 );
 
-			addModifier( modifiers, criteria, "$hint" );
-			addModifier( modifiers, criteria, "$maxScan" );
-			addModifier( modifiers, criteria, "$snapshot", false );
-			addModifier( modifiers, criteria, "$min" );
-			addModifier( modifiers, criteria, "$max" );
-			addModifier( modifiers, criteria, "$comment" );
-			addModifier( modifiers, criteria, "$explain", false );
+			if ( criteria.containsKey( "$maxTimeMS") ) {
+				prepareFind.maxTime(criteria.getInteger("$maxTimeMS"), TimeUnit.MILLISECONDS);
+			}
 
-			criteria = (Document) criteria.get( "$query" );
+			if ( criteria.containsKey( "$hint") ) {
+				Object hint = criteria.get( "$hint" );
+				if ( hint instanceof String ) {
+					prepareFind.hintString( (String) hint );
+				} else if ( hint instanceof Bson ) {
+					prepareFind.hint( (Bson) hint );
+				}
+			}
+
+			if ( criteria.containsKey( "$min" ) ) {
+				prepareFind.min( (Bson) criteria.get( "$min" ) );
+			}
+
+			if ( criteria.containsKey( "$max" ) ) {
+				prepareFind.max( (Bson) criteria.get( "$max" ) );
+			}
+
+			if ( criteria.containsKey( "$comment" ) ) {
+				prepareFind.comment( criteria.getString( "$comment" ) );
+			}
 		}
 
-		FindIterable<Document> prepareFind = collection.find( criteria ).modifiers( modifiers ).projection( query.getProjection() );
+		prepareFind = prepareFind.projection( query.getProjection() );
+
 		if ( orderby != null ) {
 			prepareFind.sort( orderby );
 		}
-		if ( maxTimeMS > 0 ) {
-			prepareFind.maxTime( maxTimeMS, TimeUnit.MILLISECONDS );
-		}
 
-		// apply firstRow/maxRows if present
+        // apply firstRow/maxRows if present
 		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
 			prepareFind.skip( queryParameters.getRowSelection().getFirstRow() );
 		}
@@ -1268,23 +1282,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			prepareFind.limit( queryParameters.getRowSelection().getMaxRows() );
 		}
 
+		boolean explain = criteria.containsKey( "$explain" ) && criteria.getBoolean( "$explain" );
+		if ( explain ) {
+			return new SingleTupleIterator( prepareFind.explain(), null, entityKeyMetadata );
+		}
+
 		MongoCursor<Document> iterator = prepareFind.iterator();
 		return new MongoDBResultsCursor( iterator, entityKeyMetadata, provider.getBinaryStorageManager() );
-	}
-
-	private static void addModifier(Document modifiers, Document criteria, String key) {
-		Object value = criteria.get( key );
-		if ( value != null ) {
-			modifiers.append( key, value );
-		}
-	}
-
-	private static <T> void addModifier(Document modifiers, Document criteria, String key, T defaultValue) {
-		Object value = criteria.get( key );
-		if ( value == null ) {
-			value = defaultValue;
-		}
-		modifiers.append( key, value );
 	}
 
 	private static ClosableIterator<Tuple> doFindOne(final MongoDBQueryDescriptor query, final MongoCollection<Document> collection,
@@ -1492,7 +1496,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * @param obj A JSON object representing a write concern.
 	 * @return The parsed write concern or <code>null</code> if <code>obj</code> is <code>null</code>.
 	 */
-	@SuppressWarnings("deprecation")
 	private static WriteConcern getWriteConcern(Document obj) {
 		WriteConcern wc = null;
 		if ( obj != null ) {
@@ -1500,10 +1503,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			Boolean j = (Boolean) obj.get( "j" );
 			Integer t = (Integer) obj.get( "wtimeout" );
 			if ( w instanceof String ) {
-				wc = new WriteConcern( (String) w, ( t != null ? t : 0 ), false, ( j != null ? j : false ) );
+				wc = new WriteConcern( (String) w );
 			}
 			if ( w instanceof Number ) {
-				wc = new WriteConcern( ( (Number) w ).intValue(), ( t != null ? t : 0 ), false, ( j != null ? j : false ) );
+				wc = new WriteConcern( ( (Number) w ).intValue() );
+			}
+			if (t != null) {
+				wc = wc.withWTimeout(t, TimeUnit.MILLISECONDS);
+			}
+			if (j != null) {
+				wc = wc.withJournal(j);
 			}
 		}
 		return wc;
@@ -1814,7 +1823,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 *
 	 * Thus, for each parameter of the write concern, we keep the stricter one for the resulting merged write concern.
 	 */
-	@SuppressWarnings("deprecation")
 	private static WriteConcern mergeWriteConcern(WriteConcern original, WriteConcern writeConcern) {
 		if ( original == null ) {
 			return writeConcern;
@@ -1828,7 +1836,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		Object wObject;
 		int wTimeoutMS;
-		boolean fsync;
 		Boolean journal;
 
 		if ( original.getWObject() instanceof String ) {
@@ -1841,9 +1848,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			wObject = Math.max( original.getW(), writeConcern.getW() );
 		}
 
-		wTimeoutMS = Math.min( original.getWtimeout(), writeConcern.getWtimeout() );
-
-		fsync = original.getFsync() || writeConcern.getFsync();
+		wTimeoutMS = Math.min( original.getWTimeout(TimeUnit.MILLISECONDS), writeConcern.getWTimeout(TimeUnit.MILLISECONDS) );
 
 		if ( original.getJournal() == null ) {
 			journal = writeConcern.getJournal();
@@ -1856,10 +1861,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		if ( wObject instanceof String ) {
-			return new WriteConcern( (String) wObject, wTimeoutMS, fsync, journal );
+			return new WriteConcern( (String) wObject).withWTimeout(wTimeoutMS, TimeUnit.MILLISECONDS).withJournal(journal);
 		}
 		else {
-			return new WriteConcern( (int) wObject, wTimeoutMS, fsync, journal );
+			return new WriteConcern( (int) wObject).withWTimeout(wTimeoutMS, TimeUnit.MILLISECONDS).withJournal(journal);
 		}
 	}
 
@@ -2056,7 +2061,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private static class SingleTupleIterator implements ClosableIterator<Tuple> {
+	public static class SingleTupleIterator implements ClosableIterator<Tuple> {
 		private Document theOne;
 		private final EntityKeyMetadata metadata;
 		private final MongoCollection<Document> collection;

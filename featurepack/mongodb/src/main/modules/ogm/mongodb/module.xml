@@ -8,7 +8,10 @@
 <module xmlns="urn:jboss:module:1.3" name="org.hibernate.ogm.mongodb" slot="${module-slot.org.hibernate.ogm.short-id}">
     <resources>
         <artifact name="${org.hibernate.ogm:hibernate-ogm-mongodb}" />
-        <artifact name="${org.mongodb:mongo-java-driver}" />
+        <artifact name="${org.mongodb:mongodb-driver-legacy}" />
+        <artifact name="${org.mongodb:mongodb-driver-core}" />
+        <artifact name="${org.mongodb:bson}" />
+        <artifact name="${org.mongodb:mongodb-driver-sync}"/>
     </resources>
     <dependencies>
         <module name="org.hibernate.ogm" slot="${module-slot.org.hibernate.ogm.short-id}" />

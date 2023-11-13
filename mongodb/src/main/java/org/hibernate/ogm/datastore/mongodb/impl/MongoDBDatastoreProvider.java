@@ -153,16 +153,16 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	protected MongoClient createMongoClient(MongoDBConfiguration config) {
 		MongoClientOptions clientOptions = config.buildOptions();
-		List<MongoCredential> credentials = config.buildCredentials();
+		MongoCredential credential = config.buildCredential();
 		log.connectingToMongo( config.getHosts().toString(), clientOptions.getConnectTimeout() );
 		try {
 			List<ServerAddress> serverAddresses = new ArrayList<>( config.getHosts().size() );
 			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {
 				serverAddresses.add( new ServerAddress( hostAndPort.getHost(), hostAndPort.getPort() ) );
 			}
-			return credentials == null
+			return credential == null
 					? new MongoClient( serverAddresses, clientOptions )
-					: new MongoClient( serverAddresses, credentials, clientOptions );
+					: new MongoClient( serverAddresses, credential, clientOptions );
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
