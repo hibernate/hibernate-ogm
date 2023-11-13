@@ -8,9 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.configuration.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.mongodb.ReadConcern;
@@ -144,15 +142,12 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return authenticationDatabaseName;
 	}
 
-	public List<MongoCredential> buildCredentials() {
+	public MongoCredential buildCredential() {
 		if ( getUsername() != null ) {
-			return Collections.singletonList(
-					authenticationMechanism.createCredential(
+			return authenticationMechanism.createCredential(
 							getUsername(),
 							getAuthenticationDatabaseName(),
-							getPassword()
-					)
-			);
+							getPassword());
 		}
 		return null;
 	}

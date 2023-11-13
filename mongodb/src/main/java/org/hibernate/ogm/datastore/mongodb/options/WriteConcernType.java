@@ -34,7 +34,7 @@ public enum WriteConcernType {
 	 * Exceptions are raised for network issues, and server errors; the write operation waits for the server to flush
 	 * the data to disk.
 	 */
-	FSYNCED(WriteConcern.FSYNCED),
+	FSYNCED(WriteConcern.JOURNALED),
 
 	/**
 	 * Exceptions are raised for network issues, and server errors; the write operation waits for the server to group
@@ -46,7 +46,7 @@ public enum WriteConcernType {
 	 * Exceptions are raised for network issues, and server errors; waits for at least 2 servers for the write
 	 * operation.
 	 */
-	REPLICA_ACKNOWLEDGED(WriteConcern.REPLICA_ACKNOWLEDGED),
+	REPLICA_ACKNOWLEDGED(WriteConcern.W2),
 
 	/**
 	 * Exceptions are raised for network issues, and server errors; waits on a majority of servers for the write
