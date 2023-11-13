@@ -81,7 +81,7 @@ public class DatastoreInitializationTest {
 		// will start the service
 		TestHelper.getDefaultTestStandardServiceRegistry( cfg ).getService( DatastoreProvider.class );
 
-		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( null );
+		assertThat( provider.leakingClient.getCredential().getMechanism() ).isEqualTo( null );
 	}
 
 	@Test
@@ -94,8 +94,7 @@ public class DatastoreInitializationTest {
 		TestHelper.getDefaultTestStandardServiceRegistry( cfg ).getService( DatastoreProvider.class );
 
 		assertThat(
-				provider.leakingClient.getCredentialsList()
-						.get( 0 )
+				provider.leakingClient.getCredential()
 						.getMechanism()
 		).isEqualTo( MongoCredential.SCRAM_SHA_1_MECHANISM );
 	}
@@ -111,8 +110,7 @@ public class DatastoreInitializationTest {
 		TestHelper.getDefaultTestStandardServiceRegistry( cfg ).getService( DatastoreProvider.class );
 
 		assertThat(
-				provider.leakingClient.getCredentialsList()
-						.get( 0 )
+				provider.leakingClient.getCredential()
 						.getMechanism()
 		).isEqualTo( MongoCredential.MONGODB_X509_MECHANISM );
 	}
@@ -127,8 +125,7 @@ public class DatastoreInitializationTest {
 		TestHelper.getDefaultTestStandardServiceRegistry( cfg ).getService( DatastoreProvider.class );
 
 		assertThat(
-				provider.leakingClient.getCredentialsList()
-						.get( 0 )
+				provider.leakingClient.getCredential()
 						.getMechanism()
 		).isEqualTo( MongoCredential.GSSAPI_MECHANISM );
 	}
@@ -143,8 +140,7 @@ public class DatastoreInitializationTest {
 		TestHelper.getDefaultTestStandardServiceRegistry( cfg ).getService( DatastoreProvider.class );
 
 		assertThat(
-				provider.leakingClient.getCredentialsList()
-						.get( 0 )
+				provider.leakingClient.getCredential()
 						.getMechanism()
 		).isEqualTo( MongoCredential.PLAIN_MECHANISM );
 	}

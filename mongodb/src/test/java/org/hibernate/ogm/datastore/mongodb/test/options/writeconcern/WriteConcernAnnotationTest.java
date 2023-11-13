@@ -31,7 +31,7 @@ public class WriteConcernAnnotationTest {
 	@Test
 	public void testWriteConcernForEntity() throws Exception {
 		OptionsContainer options = source.getEntityOptions( EntityWriteConcernExample.class );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.REPLICA_ACKNOWLEDGED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.W2 );
 	}
 
 	@Test

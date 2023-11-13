@@ -43,10 +43,10 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypeOnGlobalLevel() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED );
+			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED);
 
 		OptionsContainer options = getSource().getGlobalOptions();
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.W2 );
 	}
 
 	@Test
@@ -62,20 +62,20 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypePriority() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
+			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED)
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY )
 				.property( "content", ElementType.FIELD )
-					.writeConcern( WriteConcernType.FSYNCED );
+					.writeConcern( WriteConcernType.JOURNALED );
 
 		OptionsContainer options = getSource().getGlobalOptions();
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.W2 );
 
 		options = getSource().getEntityOptions( ExampleForMongoDBMapping.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.MAJORITY );
 
 		options = getSource().getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.FSYNCED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ACKNOWLEDGED.withJournal(true) );
 	}
 
 	@Test
@@ -135,7 +135,7 @@ public class WriteConcernOptionTest {
 	private static class ReplicaConfigurableWriteConcern extends WriteConcern {
 
 		public ReplicaConfigurableWriteConcern(int numberOfRequiredReplicas) {
-			super( numberOfRequiredReplicas, 0, false, true );
+			super( numberOfRequiredReplicas );
 		}
 	}
 }

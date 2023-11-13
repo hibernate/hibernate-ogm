@@ -69,7 +69,7 @@
         <!-- MongoDB -->
 
         <version.org.mongodb>3.6.2</version.org.mongodb>
-        <version.org.mongodb.mongo-java-driver>3.11.2</version.org.mongodb.mongo-java-driver>
+        <version.org.mongodb.mongo-java-driver>4.11.3</version.org.mongodb.mongo-java-driver>
 
         <!-- Neo4j -->
 
@@ -489,7 +489,7 @@
             <!-- MongoDB -->
             <dependency>
                 <groupId>org.mongodb</groupId>
-                <artifactId>mongo-java-driver</artifactId>
+                <artifactId>mongodb-driver-legacy</artifactId>
                 <version>${version.org.mongodb.mongo-java-driver}</version>
             </dependency>
 
