@@ -32,7 +32,7 @@ public enum AuthenticationMechanismType {
 
 		@Override
 		public MongoCredential createCredential(String username, String databaseName, String password) {
-			return MongoCredential.createMongoCRCredential( username, databaseName, asCharArray( password ) );
+			return MongoCredential.createCredential( username, databaseName, asCharArray( password ) );
 		}
 	},
 	PLAIN {

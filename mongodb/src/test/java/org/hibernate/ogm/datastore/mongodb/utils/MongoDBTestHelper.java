@@ -82,7 +82,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		int count = 0;
 
 		for ( String collectionName : getEntityCollections( sessionFactory ) ) {
-			count += db.getCollection( collectionName ).count();
+			count += db.getCollection( collectionName ).countDocuments();
 		}
 
 		return count;
@@ -103,7 +103,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 
 	public long getNumberOfAssociationsFromGlobalCollection(SessionFactory sessionFactory) {
 		MongoDatabase db = getProvider( sessionFactory ).getDatabase();
-		return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count();
+		return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).countDocuments();
 	}
 
 	public long getNumberOfAssociationsFromDedicatedCollections(SessionFactory sessionFactory) {
@@ -112,7 +112,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		Set<String> associationCollections = getDedicatedAssociationCollections( sessionFactory );
 		long associationCount = 0;
 		for ( String collectionName : associationCollections ) {
-			associationCount += db.getCollection( collectionName ).count();
+			associationCount += db.getCollection( collectionName ).countDocuments();
 		}
 
 		return associationCount;

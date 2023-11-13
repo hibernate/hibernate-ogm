@@ -75,10 +75,10 @@ public class WriteConcernTest {
 
 	@Test
 	public void shouldApplyValueGivenViaGlobalOptions() {
-		configuration.writeConcern( WriteConcernType.FSYNCED );
+		configuration.writeConcern( WriteConcernType.MAJORITY );
 
 		MongoDBConfiguration config = new MongoDBConfiguration( reader, getGlobalOptions() );
-		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
+		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.MAJORITY );
 	}
 
 	@Test

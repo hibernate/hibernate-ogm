@@ -175,7 +175,7 @@ public class WriteConcernPropagationTest {
 
 		TestHelper.configureOptionsFor( settings, MongoDB.class )
 			.entity( GolfPlayer.class )
-				.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
+				.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED)
 				.property( "playedCourses", ElementType.FIELD )
 					.writeConcern( WriteConcernType.ACKNOWLEDGED );
 
@@ -192,7 +192,7 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect tuple and association operations using the configured write concerns
-		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.REPLICA_ACKNOWLEDGED ) ).insertMany( any( List.class ) );
+		verify( mockClient.getCollection( "GolfPlayer" ).withWriteConcern( WriteConcern.W2 ) ).insertMany( any( List.class ) );
 		verify( mockClient.getCollection( "Associations" ).withWriteConcern( WriteConcern.ACKNOWLEDGED ) ).updateOne( any( Document.class ), any( Document.class ), any( UpdateOptions.class ) );
 	}
 
