@@ -160,9 +160,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {
 				serverAddresses.add( new ServerAddress( hostAndPort.getHost(), hostAndPort.getPort() ) );
 			}
-			return credential == null
-					? new MongoClient( serverAddresses, clientOptions )
-					: new MongoClient( serverAddresses, credential, clientOptions );
+			return new MongoClient( serverAddresses, credential, clientOptions );
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
