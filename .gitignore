@@ -36,9 +36,5 @@ test-output/
 transaction.log
 infinispan.log
 
-# Maven wrapper files
-.mvn
-mvnw*
-
 # Infinispan embedded clustered counter generated file
 counters.xml
