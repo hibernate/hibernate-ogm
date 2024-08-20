@@ -3,10 +3,10 @@ name: Hibernate OGM CI
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
   pull_request:
     branches:
-      - 'master'
+      - 'main'
   # Allow running this workflow against a specific branch/tag
   workflow_dispatch:
 
