@@ -24,14 +24,14 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Statement;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.Value;
-import org.neo4j.driver.v1.types.Node;
-import org.neo4j.driver.v1.types.Relationship;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Query;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.Value;
+import org.neo4j.driver.types.Node;
+import org.neo4j.driver.types.Relationship;
 
 /**
  * @author Davide D'Alto
@@ -53,8 +53,8 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	public NodeWithEmbeddedNodes findEntity(Transaction tx, Object[] columnValues) {
 		String findQuery = getFindEntityWithEmbeddedEndNodeQuery();
 		Map<String, Object> params = params( columnValues );
-		Statement statement = new Statement( findQuery, params );
-		StatementResult queryResult = tx.run( statement );
+		Query nativeQuery = new Query( findQuery, params );
+		Result queryResult = tx.run( nativeQuery );
 		ClosableIterator<NodeWithEmbeddedNodes> closableIterator = null;
 		try {
 			closableIterator = closableIterator( queryResult );
@@ -75,7 +75,7 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	}
 
 	public ClosableIterator<NodeWithEmbeddedNodes> findEntitiesWithEmbedded(Transaction tx) {
-		StatementResult results = tx.run( getFindEntitiesQuery() );
+		Result results = tx.run( getFindEntitiesQuery() );
 		return closableIterator( results );
 	}
 
@@ -94,7 +94,7 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 	private ClosableIterator<NodeWithEmbeddedNodes> multiPropertiesIdFindEntities(EntityKey[] keys, Transaction tx) {
 		String query = getMultiGetQueryCacheQuery( keys );
 		Map<String, Object> params = multiGetParams( keys );
-		StatementResult results = tx.run( query, params );
+		Result results = tx.run( query, params );
 		return closableIterator( results );
 	}
 
@@ -106,17 +106,17 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		for ( int i = 0; i < keys.length; i++ ) {
 			paramsValues[i] = keys[i].getColumnValues()[0];
 		}
-		Map<String, Object> params = Collections.singletonMap( "0", (Object) paramsValues );
-		Statement statement = new Statement( multiGetQuery, params );
-		StatementResult statementResult = tx.run( statement );
+		Map<String, Object> params = Collections.singletonMap( "0", paramsValues );
+		Query nativeQuery = new Query( multiGetQuery, params );
+		Result statementResult = tx.run( nativeQuery );
 		return closableIterator( statementResult, keys );
 	}
 
-	private ClosableIterator<NodeWithEmbeddedNodes> closableIterator(StatementResult results) {
+	private ClosableIterator<NodeWithEmbeddedNodes> closableIterator(Result results) {
 		return closableIterator( results, null );
 	}
 
-	private ClosableIterator<NodeWithEmbeddedNodes> closableIterator(StatementResult results, EntityKey[] keys) {
+	private ClosableIterator<NodeWithEmbeddedNodes> closableIterator(Result results, EntityKey[] keys) {
 		if ( results != null && results.hasNext() ) {
 			List<Node> owners = new ArrayList<>();
 			Map<Long, Map<String, Collection<Node>>> nodes = new HashMap<>();
@@ -219,7 +219,7 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		Map<String, Object> params = params( keyValues );
 		String query = getFindAssociatedEntityQuery( associationrole );
 		if ( query != null ) {
-			StatementResult statementResult = tx.run( query, params );
+			Result statementResult = tx.run( query, params );
 			if ( statementResult.hasNext() ) {
 				return statementResult.single().get( 0 ).asNode();
 			}
@@ -227,22 +227,22 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		return null;
 	}
 
-	public Statement getCreateEntityWithPropertiesQueryStatement(Object[] columnValues, Map<String, Object> properties) {
+	public Query getCreateEntityWithPropertiesQueryStatement(Object[] columnValues, Map<String, Object> properties) {
 		String query = getCreateEntityWithPropertiesQuery();
 		Map<String, Object> params = Collections.singletonMap( "props", (Object) properties );
-		return new Statement( query, params );
+		return new Query( query, params );
 	}
 
-	public Statement removeEmbeddedColumnStatement(Object[] keyValues, String embeddedColumn, Transaction transaction) {
+	public Query removeEmbeddedColumnStatement(Object[] keyValues, String embeddedColumn, Transaction transaction) {
 		String query = getRemoveEmbeddedPropertyQuery().get( embeddedColumn );
 		Map<String, Object> params = params( keyValues );
-		return new Statement( query, params );
+		return new Query( query, params );
 	}
 
-	public Statement removeColumnStatement(Object[] columnValues, String column, Transaction transaction) {
+	public Query removeColumnStatement(Object[] columnValues, String column, Transaction transaction) {
 		String query = getRemoveColumnQuery( column );
 		Map<String, Object> params = params( columnValues );
-		return new Statement( query, params );
+		return new Query( query, params );
 	}
 
 	public void removeToOneAssociation(Transaction tx, Object[] columnValues, String associationRole) {
@@ -250,7 +250,7 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		tx.run( getRemoveToOneAssociation(), params );
 	}
 
-	public Statement getUpdateEntityPropertiesStatement(Object[] columnValues, Map<String, Object> properties) {
+	public Query getUpdateEntityPropertiesStatement(Object[] columnValues, Map<String, Object> properties) {
 		String query = getUpdateEntityPropertiesQuery( properties );
 
 		Object[] paramsValues = ArrayHelper.concat( Arrays.asList( columnValues, new Object[properties.size()] ) );
@@ -258,24 +258,24 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		for ( Map.Entry<String, Object> entry : properties.entrySet() ) {
 			paramsValues[index++] = entry.getValue();
 		}
-		return new Statement( query, params( paramsValues ) );
+		return new Query( query, params( paramsValues ) );
 	}
 
-	public Statement updateEmbeddedColumnStatement(Object[] keyValues, String column, Object value) {
+	public Query updateEmbeddedColumnStatement(Object[] keyValues, String column, Object value) {
 		String query = getUpdateEmbeddedColumnQuery( keyValues, column );
 		Map<String, Object> params = params( ArrayHelper.concat( keyValues, value, value ) );
-		return new Statement( query, params );
+		return new Query( query, params );
 	}
 
 	public Node findAssociatedEntity(Driver driver, Object[] keyValues, String associationrole) {
 		return null;
 	}
 
-	public Statement getUpdateOneToOneAssociationStatement(String associationRole, Object[] ownerKeyValues, Object[] targetKeyValues) {
+	public Query getUpdateOneToOneAssociationStatement(String associationRole, Object[] ownerKeyValues, Object[] targetKeyValues) {
 		String query = getUpdateToOneQuery( associationRole );
 		Map<String, Object> params = params( ownerKeyValues );
 		params.putAll( params( targetKeyValues, ownerKeyValues.length ) );
-		return new Statement( query, params );
+		return new Query( query, params );
 	}
 
 	public void removeEntity(Transaction transaction, Object[] columnValues) {
@@ -292,11 +292,11 @@ public class BoltNeo4jEntityQueries extends BaseNeo4jEntityQueries {
 		// Execute the queries
 		Map<String, Object> params = params( columnValues );
 
-		Statement associationStatement = new Statement( queryForAssociation, params );
-		StatementResult associationResult = tx.run( associationStatement );
+		Query associationStatement = new Query( queryForAssociation, params );
+		Result associationResult = tx.run( associationStatement );
 
-		Statement embeddedStatement = new Statement( queryForEmbedded, params );
-		StatementResult embeddedResult = tx.run( embeddedStatement );
+		Query embeddedStatement = new Query( queryForEmbedded, params );
+		Result embeddedResult = tx.run( embeddedStatement );
 
 		List<RemoteNeo4jAssociationPropertiesRow> responseRows = new ArrayList<>();
 		Record embeddedRecord = null;

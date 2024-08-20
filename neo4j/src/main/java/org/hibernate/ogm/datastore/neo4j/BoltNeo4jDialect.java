@@ -64,16 +64,16 @@ import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.hibernate.ogm.storedprocedure.ProcedureQueryParameters;
 import org.neo4j.driver.internal.types.InternalTypeSystem;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.Statement;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.Transaction;
-import org.neo4j.driver.v1.Value;
-import org.neo4j.driver.v1.exceptions.ClientException;
-import org.neo4j.driver.v1.summary.ResultSummary;
-import org.neo4j.driver.v1.types.Node;
-import org.neo4j.driver.v1.types.Relationship;
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Query;
+import org.neo4j.driver.Result;
+import org.neo4j.driver.Transaction;
+import org.neo4j.driver.Value;
+import org.neo4j.driver.exceptions.ClientException;
+import org.neo4j.driver.summary.ResultSummary;
+import org.neo4j.driver.types.Node;
+import org.neo4j.driver.types.Relationship;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -111,14 +111,14 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters, TupleContext tupleContext) {
 		Map<String, Object> parameters = getParameters( queryParameters );
-		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
-		Statement statement = new Statement( nativeQuery, parameters );
+		String cypher = buildNativeQuery( backendQuery, queryParameters );
+		Query nativeQuery = new Query( cypher, parameters );
 		if ( backendQuery.getSingleEntityMetadataInformationOrNull() != null ) {
 				EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityMetadataInformationOrNull().getEntityKeyMetadata();
 				BoltNeo4jEntityQueries queries = getEntityQueries( entityKeyMetadata, tupleContext );
 				Transaction transaction = transaction( tupleContext );
-				StatementResult result = transaction.run( statement );
-				validateNativeQuery( result );
+				Result result = transaction.run( nativeQuery );
+				validateResult( result );
 				List<EntityKey> entityKeys = new ArrayList<>();
 				while ( result.hasNext() ) {
 					Record record = result.next();
@@ -139,8 +139,8 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		}
 		else {
 			Transaction transaction = transaction( tupleContext );
-			StatementResult statementResult = transaction.run( statement );
-			validateNativeQuery( statementResult );
+			Result statementResult = transaction.run( nativeQuery );
+			validateResult( statementResult );
 			return new BoltNeo4jMapsTupleIterator( statementResult );
 		}
 	}
@@ -152,16 +152,16 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	@Override
 	public int executeBackendUpdateQuery(BackendQuery<String> query, QueryParameters queryParameters, TupleContext tupleContext) {
 		Map<String, Object> parameters = getParameters( queryParameters );
-		String nativeQuery = buildNativeQuery( query, queryParameters );
-		Statement statement = new Statement( nativeQuery, parameters );
+		String cypher = buildNativeQuery( query, queryParameters );
+		Query nativeQuery = new Query( cypher, parameters );
 		Transaction transaction = transaction( tupleContext );
-		StatementResult statementResult = transaction.run( statement );
-		validateNativeQuery( statementResult );
+		Result statementResult = transaction.run( nativeQuery );
+		validateResult( statementResult );
 		ResultSummary summary = statementResult.consume();
 		return updatesCount( summary );
 	}
 
-	private void validateNativeQuery(StatementResult result) {
+	private void validateResult(Result result) {
 		try {
 			result.hasNext();
 		}
@@ -281,19 +281,19 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		Tuple tuple = tuplePointer.getTuple();
 		final Map<String, EntityKey> toOneAssociations = new HashMap<>();
 		Map<String, Object> properties = new HashMap<>();
-		List<Statement> statements = new ArrayList<>();
-		applyTupleOperations( key, tuple, properties, toOneAssociations, statements, tuple.getOperations(), tupleContext, tupleContext.getTransactionContext() );
+		List<Query> queries = new ArrayList<>();
+		applyTupleOperations( key, tuple, properties, toOneAssociations, queries, tuple.getOperations(), tupleContext, tupleContext.getTransactionContext() );
 		if ( SnapshotType.INSERT.equals( tuple.getSnapshotType() ) ) {
 			// Insert new node
-			Statement statement = getEntityQueries( key.getMetadata(), tupleContext ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
-			statements.add( 0, statement );
+			Query query = getEntityQueries( key.getMetadata(), tupleContext ).getCreateEntityWithPropertiesQueryStatement( key.getColumnValues(), properties );
+			queries.add( 0, query );
 		}
 		else {
-			updateTuple( key, statements, properties, tupleContext );
+			updateTuple( key, queries, properties, tupleContext );
 		}
-		saveToOneAssociations( statements, key, toOneAssociations, tupleContext );
+		saveToOneAssociations( queries, key, toOneAssociations, tupleContext );
 		try {
-			runAll( transaction( tupleContext ), statements );
+			runAll( transaction( tupleContext ), queries );
 			tuple.setSnapshotType( SnapshotType.UPDATE );
 		}
 		catch (ClientException e) {
@@ -306,14 +306,14 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		}
 	}
 
-	private void runAll(Transaction tx, List<Statement> statements) {
-		for ( Statement statement : statements ) {
-			StatementResult result = tx.run( statement );
+	private void runAll(Transaction tx, List<Query> statements) {
+		for ( Query statement : statements ) {
+			Result result = tx.run( statement );
 			validate( result );
 		}
 	}
 
-	private void validate(StatementResult result) {
+	private void validate(Result result) {
 		result.hasNext();
 	}
 
@@ -327,49 +327,49 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		}
 	}
 
-	private void updateTuple(EntityKey key, List<Statement> statements, Map<String, Object> properties, TupleContext tupleContext) {
+	private void updateTuple(EntityKey key, List<Query> queries, Map<String, Object> properties, TupleContext tupleContext) {
 		if ( !properties.isEmpty() ) {
-			Statement statement = getEntityQueries( key.getMetadata(), tupleContext ).getUpdateEntityPropertiesStatement( key.getColumnValues(), properties );
-			statements.add( statement );
+			Query statement = getEntityQueries( key.getMetadata(), tupleContext ).getUpdateEntityPropertiesStatement( key.getColumnValues(), properties );
+			queries.add( statement );
 		}
 	}
 
-	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, List<Statement> statements, Set<TupleOperation> operations, TupleContext tupleContext, TransactionContext transactionContext) {
+	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, List<Query> queries, Set<TupleOperation> operations, TupleContext tupleContext, TransactionContext transactionContext) {
 		Set<String> processedAssociationRoles = new HashSet<String>();
 
 		for ( TupleOperation operation : operations ) {
-			applyOperation( entityKey, tuple, node, toOneAssociations, statements, operation, tupleContext, transactionContext, processedAssociationRoles );
+			applyOperation( entityKey, tuple, node, toOneAssociations, queries, operation, tupleContext, transactionContext, processedAssociationRoles );
 		}
 	}
 
-	private void applyOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, List<Statement> statements, TupleOperation operation, TupleContext tupleContext, TransactionContext transactionContext, Set<String> processedAssociationRoles) {
+	private void applyOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations, List<Query> queries, TupleOperation operation, TupleContext tupleContext, TransactionContext transactionContext, Set<String> processedAssociationRoles) {
 		switch ( operation.getType() ) {
 		case PUT:
-			putTupleOperation( entityKey, tuple, node, toOneAssociations, statements, operation, tupleContext, processedAssociationRoles );
+			putTupleOperation( entityKey, tuple, node, toOneAssociations, queries, operation, tupleContext, processedAssociationRoles );
 			break;
 		case PUT_NULL:
 		case REMOVE:
-			removeTupleOperation( entityKey, node, operation, statements, tupleContext, transactionContext, processedAssociationRoles );
+			removeTupleOperation( entityKey, node, operation, queries, tupleContext, transactionContext, processedAssociationRoles );
 			break;
 		}
 	}
 
-	private void saveToOneAssociations(List<Statement> statements, EntityKey key, final Map<String, EntityKey> toOneAssociations, TupleContext tupleContext) {
+	private void saveToOneAssociations(List<Query> statements, EntityKey key, final Map<String, EntityKey> toOneAssociations, TupleContext tupleContext) {
 		for ( Map.Entry<String, EntityKey> entry : toOneAssociations.entrySet() ) {
-			Statement statement = getEntityQueries( key.getMetadata(), tupleContext ).getUpdateOneToOneAssociationStatement( entry.getKey(), key.getColumnValues(), entry.getValue().getColumnValues() );
+			Query statement = getEntityQueries( key.getMetadata(), tupleContext ).getUpdateOneToOneAssociationStatement( entry.getKey(), key.getColumnValues(), entry.getValue().getColumnValues() );
 			statements.add( statement );
 		}
 	}
 
-	private void removeTupleOperation(EntityKey entityKey, Map<String, Object> ownerNode, TupleOperation operation, List<Statement> statements, TupleContext tupleContext, TransactionContext transactionContext, Set<String> processedAssociationRoles) {
+	private void removeTupleOperation(EntityKey entityKey, Map<String, Object> ownerNode, TupleOperation operation, List<Query> statements, TupleContext tupleContext, TransactionContext transactionContext, Set<String> processedAssociationRoles) {
 		if ( !tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
 				// Embedded node
-				Statement statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).removeEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
+				Query statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).removeEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
 				statements.add( statement );
 			}
 			else {
-				Statement statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).removeColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
+				Query statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).removeColumnStatement( entityKey.getColumnValues(), operation.getColumn(), transaction( tupleContext ) );
 				statements.add( statement );
 			}
 		}
@@ -383,13 +383,13 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	}
 
 	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Map<String, Object> node, Map<String, EntityKey> toOneAssociations,
-			List<Statement> statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+			List<Query> statements, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		if ( tupleContext.getTupleTypeContext().isPartOfAssociation( operation.getColumn() ) ) {
 			// the column represents a to-one association, map it as relationship
 			putOneToOneAssociation( entityKey, tuple, node, toOneAssociations, operation, tupleContext, processedAssociationRoles );
 		}
 		else if ( isPartOfRegularEmbedded( entityKey.getMetadata().getColumnNames(), operation.getColumn() ) ) {
-			Statement statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).updateEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
+			Query statement = getEntityQueries( entityKey.getMetadata(), tupleContext ).updateEmbeddedColumnStatement( entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
 			statements.add( statement );
 		}
 		else {
@@ -497,7 +497,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 	 * <p>
 	 * the first time with the information related to the owner of the association and the {@link RowKey},
 	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
-	 * @param associatedEntityKeyMetadata
+	 * @param associationKey
 	 * @param action
 	 */
 	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action, AssociationContext associationContext) {
@@ -597,7 +597,7 @@ public class BoltNeo4jDialect extends BaseNeo4jDialect<BoltNeo4jEntityQueries, B
 		Map.Entry<String, Map<String, Object>> queryAndParams = buildProcedureQueryWithParams(
 				storedProcedureName, queryParameters );
 		Transaction transaction = transaction( tupleContext );
-		StatementResult result = transaction.run( queryAndParams.getKey(), queryAndParams.getValue() );
+		Result result = transaction.run( queryAndParams.getKey(), queryAndParams.getValue() );
 		try {
 			return new BoltNeo4jMapsTupleIterator( result );
 		}

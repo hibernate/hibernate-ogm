@@ -25,7 +25,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
-import org.neo4j.driver.v1.Driver;
+import org.neo4j.driver.Driver;
 
 /**
  * @author Davide D'Alto

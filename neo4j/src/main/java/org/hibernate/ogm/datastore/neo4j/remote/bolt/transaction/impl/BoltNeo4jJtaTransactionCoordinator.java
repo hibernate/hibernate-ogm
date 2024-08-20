@@ -15,9 +15,9 @@ import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jSynchronization;
 import org.hibernate.ogm.datastore.neo4j.transaction.impl.RemoteTransactionDriver;
 import org.hibernate.ogm.transaction.impl.ForwardingTransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinator;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Session;
-import org.neo4j.driver.v1.Transaction;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.Session;
+import org.neo4j.driver.Transaction;
 
 /**
  * A {@link TransactionCoordinator} for a remote Neo4j.
@@ -79,7 +79,7 @@ public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 	public void success() {
 		if ( tx != null ) {
 			try {
-				tx.success();
+				tx.commit();
 				tx.close();
 			}
 			finally {
@@ -93,7 +93,7 @@ public class BoltNeo4jJtaTransactionCoordinator extends ForwardingTransactionCoo
 	public void failure() {
 		if ( tx != null ) {
 			try {
-				tx.failure();
+				tx.rollback();
 				tx.close();
 			}
 			finally {
