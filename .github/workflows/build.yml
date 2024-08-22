@@ -1,0 +1,218 @@
+name: Hibernate OGM CI
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+  # Allow running this workflow against a specific branch/tag
+  workflow_dispatch:
+
+# See https://github.com/hibernate/hibernate-orm/pull/4615 for a description of the behavior we're getting.
+concurrency:
+  # Consider that two builds are in the same concurrency group (cannot run concurrently)
+  # if they use the same workflow and are about the same branch ("ref"), pull request, and branch (for scheduled job).
+  group: "workflow = ${{ github.workflow }}, ref = ${{ github.event.ref }}, pr = ${{ github.event.pull_request.id }}, branch=${{ inputs.branch }}"
+  # Cancel previous builds in the same concurrency group even if they are in process
+  # for pull requests or pushes to forks (not the upstream repository).
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.repository != 'hibernate/hibernate-reactive' }}
+
+jobs:
+  test_dbs:
+    name: Test default build with all embedded databases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v2
+      - name: Get year/month for cache key
+        id: get-date
+        run: |
+          echo "::set-output name=yearmonth::$(/bin/date -u "+%Y-%m")"
+        shell: bash
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2.2.0
+        with:
+          distribution: 'temurin'
+          java-version: 8
+            # https://github.com/actions/cache/blob/main/examples.md#java---maven
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Maven
+        run: ./mvnw -v
+      - name: Run default build
+        run: |
+          ./mvnw install -s settings-example.xml
+      - name: Upload build reports (if build failed)
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || cancelled() }}
+        with:
+          name: reports-db-ogm
+          path: './**/build/reports/'
+          retention-days: 7
+
+  test_remote_mongodb:
+    name: Test remote MongoDb instance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v2
+      - name: Get year/month for cache key
+        id: get-date
+        run: |
+          echo "::set-output name=yearmonth::$(/bin/date -u "+%Y-%m")"
+        shell: bash
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2.2.0
+        with:
+          distribution: 'temurin'
+          java-version: 8
+          # https://github.com/actions/cache/blob/main/examples.md#java---maven
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Maven
+        run: ./mvnw -v
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: 3.6.23
+          mongodb-port: 27017
+      - name: Run tests
+        run: |
+          ./mvnw verify -pl mongodb -s settings-example.xml -DuseExternalMongoDb -am
+      - name: Upload build reports (if build failed)
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || cancelled() }}
+        with:
+          name: reports-db-ogm
+          path: './**/build/reports/'
+          retention-days: 7
+
+  test_neo4j_bolt_protocol:
+    name: Test Neo4j Bolt protocol
+    env:
+      HTTP_NEO4J_PORT: 7777
+      BOLT_NEO4J_PORT: 7687
+      # Checked by the source code
+      NEO4J_HOSTNAME: localhost
+      NEO4J_PORT: 7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: jenkins
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:3.4
+        ports:
+          - 7777:7474
+          - 7687:7687
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v2
+      - name: Get year/month for cache key
+        id: get-date
+        run: |
+          echo "::set-output name=yearmonth::$(/bin/date -u "+%Y-%m")"
+        shell: bash
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2.2.0
+        with:
+          distribution: 'temurin'
+          java-version: 8
+          # https://github.com/actions/cache/blob/main/examples.md#java---maven
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Maven
+        run: ./mvnw -v
+        # A new Neo4j instance will set the credentials for the admin to neo4j:neo4j. we change them to check
+        # that the tests will pass when we are not using the defaults
+      - name: Set Neo4j credentials
+        run: |
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: Basic `echo -n 'neo4j:neo4j' | base64`" -d "{\"password\":\"$NEO4J_PASSWORD\"}" http://localhost:$HTTP_NEO4J_PORT/user/neo4j/password
+      - name: Validate Neo4j credentials
+        run: |
+          curl --user $NEO4J_USERNAME:$NEO4J_PASSWORD http://localhost:$HTTP_NEO4J_PORT/db/data
+      - name: Test Bolt protocol
+        run: |
+          ./mvnw verify -pl neo4j -s settings-example.xml -Pneo4j-bolt -am
+      - name: Upload build reports (if build failed)
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || cancelled() }}
+        with:
+          name: reports-db-ogm
+          path: './**/build/reports/'
+          retention-days: 7
+
+  test_neo4j_http_protocol:
+    name: Test Neo4j Http protocol
+    env:
+      HTTP_NEO4J_PORT: 7777
+      BOLT_NEO4J_PORT: 7687
+      # Checked by the source code
+      NEO4J_HOSTNAME: localhost
+      NEO4J_PORT: 7777
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: jenkins
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:3.4
+        ports:
+          - 7777:7474
+          - 7687:7687
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v2
+      - name: Get year/month for cache key
+        id: get-date
+        run: |
+          echo "::set-output name=yearmonth::$(/bin/date -u "+%Y-%m")"
+        shell: bash
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2.2.0
+        with:
+          distribution: 'temurin'
+          java-version: 8
+          # https://github.com/actions/cache/blob/main/examples.md#java---maven
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Set up Maven
+        run: ./mvnw -v
+        # A new Neo4j instance will set the credentials for the admin to neo4j:neo4j. we change them to check
+        # that the tests will pass when we are not using the defaults
+      - name: Set Neo4j credentials
+        run: |
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: Basic `echo -n 'neo4j:neo4j' | base64`" -d "{\"password\":\"$NEO4J_PASSWORD\"}" http://localhost:$HTTP_NEO4J_PORT/user/neo4j/password
+      - name: Validate Neo4j credentials
+        run: |
+          curl --user $NEO4J_USERNAME:$NEO4J_PASSWORD http://localhost:$HTTP_NEO4J_PORT/db/data
+      - name: Test Bolt protocol
+        run: |
+          ./mvnw verify -pl neo4j -s settings-example.xml -Pneo4j-http -am
+      - name: Upload build reports (if build failed)
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || cancelled() }}
+        with:
+          name: reports-db-ogm
+          path: './**/build/reports/'
+          retention-days: 7
