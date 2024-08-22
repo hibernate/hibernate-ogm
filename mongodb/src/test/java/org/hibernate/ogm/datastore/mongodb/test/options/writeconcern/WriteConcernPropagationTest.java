@@ -175,7 +175,7 @@ public class WriteConcernPropagationTest {
 
 		TestHelper.configureOptionsFor( settings, MongoDB.class )
 			.entity( GolfPlayer.class )
-				.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED)
+				.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
 				.property( "playedCourses", ElementType.FIELD )
 					.writeConcern( WriteConcernType.ACKNOWLEDGED );
 
