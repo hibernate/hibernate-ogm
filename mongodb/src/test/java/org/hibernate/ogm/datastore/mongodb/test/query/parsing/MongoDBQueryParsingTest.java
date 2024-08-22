@@ -11,6 +11,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -35,6 +37,9 @@ import org.junit.Test;
 public class MongoDBQueryParsingTest extends OgmTestCase {
 
 	private Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	@SuppressWarnings("deprecation")
+    private JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().outputMode( JsonMode.STRICT ).build();
 
 	private QueryParser queryParser;
 
@@ -117,8 +122,9 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	public void shouldCreateProjectionQuery() {
 		MongoDBQueryParsingResult parsingResult = parseQuery( "select e.id, e.name, e.position from IndexedEntity e" );
 
-		assertThat( parsingResult.getQuery().toJson() ).isEqualTo( "{}" );
-		assertThat( parsingResult.getProjection().toJson() ).isEqualTo( "{\"_id\": 1, \"entityName\": 1, \"position\": 1}" );
+		assertThat( parsingResult.getQuery().toJson( jsonWriterSettings ) ).isEqualTo( "{}" );
+		assertThat( parsingResult.getProjection().toJson( jsonWriterSettings ) )
+				.isEqualTo( "{\"_id\": 1, \"entityName\": 1, \"position\": 1}" );
 	}
 
 	@Test
@@ -293,9 +299,9 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		else {
 			assertThat( parsingResult.getQuery() ).isNotNull();
 			log.debugf( "expectedMongoDbQuery: %s", expectedMongoDbQuery );
-			log.debugf( "  actualMongoDbQuery: %s", parsingResult.getQuery().toJson() );
+			log.debugf( "  actualMongoDbQuery: %s", parsingResult.getQuery().toJson( jsonWriterSettings ) );
 
-			assertThat( parsingResult.getQuery().toJson() ).isEqualTo( expectedMongoDbQuery );
+			assertThat( parsingResult.getQuery().toJson( jsonWriterSettings ) ).isEqualTo( expectedMongoDbQuery );
 		}
 	}
 
