@@ -1265,6 +1265,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			if ( criteria.containsKey( "$comment" ) ) {
 				prepareFind.comment( criteria.getString( "$comment" ) );
 			}
+		} else {
+			prepareFind.filter( criteria );
 		}
 
 		prepareFind = prepareFind.projection( query.getProjection() );
