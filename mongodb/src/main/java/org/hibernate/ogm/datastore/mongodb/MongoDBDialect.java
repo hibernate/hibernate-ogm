@@ -1232,9 +1232,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Document criteria = query.getCriteria();
 		Document orderby = query.getOrderBy();
 
-        FindIterable<Document> prepareFind = collection.find();
+		FindIterable<Document> prepareFind = collection.find();
 
-        // We need to extract the different parts of the criteria and pass them to the cursor API
+		// We need to extract the different parts of the criteria and pass them to the cursor API
 		if ( criteria.containsKey( "$query" ) ) {
 
 			prepareFind.filter( (Bson) criteria.get( "$query" ) );
