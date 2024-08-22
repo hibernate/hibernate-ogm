@@ -147,7 +147,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 			return authenticationMechanism.createCredential(
 							getUsername(),
 							getAuthenticationDatabaseName(),
-							getPassword());
+							getPassword() );
 		}
 		return null;
 	}

@@ -39,7 +39,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	private Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@SuppressWarnings("deprecation")
-    private JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().outputMode( JsonMode.STRICT ).build();
+	private JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().outputMode( JsonMode.STRICT ).build();
 
 	private QueryParser queryParser;
 
