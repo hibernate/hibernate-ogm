@@ -61,7 +61,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
 
 	@SuppressWarnings("deprecation")
-    private static final JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().outputMode( JsonMode.STRICT ).build();
+	private static final JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().outputMode( JsonMode.STRICT ).build();
 
 	static {
 		// Read host and port from environment variable
