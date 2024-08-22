@@ -43,7 +43,7 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypeOnGlobalLevel() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED);
+			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED );
 
 		OptionsContainer options = getSource().getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.W2 );
@@ -62,7 +62,7 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernGivenByTypePriority() throws Exception {
 		mongoOptions
-			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED)
+			.writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY )
 				.property( "content", ElementType.FIELD )
@@ -75,7 +75,7 @@ public class WriteConcernOptionTest {
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.MAJORITY );
 
 		options = getSource().getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ACKNOWLEDGED.withJournal(true) );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ACKNOWLEDGED.withJournal( true ) );
 	}
 
 	@Test

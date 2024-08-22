@@ -1243,15 +1243,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				orderby = (Document) criteria.get( "$orderby" );
 			}
 
-			if ( criteria.containsKey( "$maxTimeMS") ) {
-				prepareFind.maxTime(criteria.getInteger("$maxTimeMS"), TimeUnit.MILLISECONDS);
+			if ( criteria.containsKey( "$maxTimeMS" ) ) {
+				prepareFind.maxTime( criteria.getInteger( "$maxTimeMS" ), TimeUnit.MILLISECONDS );
 			}
 
-			if ( criteria.containsKey( "$hint") ) {
+			if ( criteria.containsKey( "$hint" ) ) {
 				Object hint = criteria.get( "$hint" );
 				if ( hint instanceof String ) {
 					prepareFind.hintString( (String) hint );
-				} else if ( hint instanceof Bson ) {
+				}
+				else if ( hint instanceof Bson ) {
 					prepareFind.hint( (Bson) hint );
 				}
 			}
@@ -1267,7 +1268,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			if ( criteria.containsKey( "$comment" ) ) {
 				prepareFind.comment( criteria.getString( "$comment" ) );
 			}
-		} else {
+		}
+		else {
 			prepareFind.filter( criteria );
 		}
 
@@ -1522,11 +1524,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			if ( w instanceof Number ) {
 				wc = new WriteConcern( ( (Number) w ).intValue() );
 			}
-			if (t != null) {
-				wc = wc.withWTimeout(t, TimeUnit.MILLISECONDS);
+			if ( t != null ) {
+				wc = wc.withWTimeout( t, TimeUnit.MILLISECONDS );
 			}
-			if (j != null) {
-				wc = wc.withJournal(j);
+			if ( j != null ) {
+				wc = wc.withJournal( j );
 			}
 		}
 		return wc;
@@ -1862,7 +1864,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			wObject = Math.max( original.getW(), writeConcern.getW() );
 		}
 
-		wTimeoutMS = Math.min( original.getWTimeout(TimeUnit.MILLISECONDS), writeConcern.getWTimeout(TimeUnit.MILLISECONDS) );
+		wTimeoutMS = Math.min( original.getWTimeout( TimeUnit.MILLISECONDS ), writeConcern.getWTimeout( TimeUnit.MILLISECONDS ) );
 
 		if ( original.getJournal() == null ) {
 			journal = writeConcern.getJournal();
@@ -1875,10 +1877,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 
 		if ( wObject instanceof String ) {
-			return new WriteConcern( (String) wObject).withWTimeout(wTimeoutMS, TimeUnit.MILLISECONDS).withJournal(journal);
+			return new WriteConcern( (String) wObject ).withWTimeout( wTimeoutMS, TimeUnit.MILLISECONDS ).withJournal( journal );
 		}
 		else {
-			return new WriteConcern( (int) wObject).withWTimeout(wTimeoutMS, TimeUnit.MILLISECONDS).withJournal(journal);
+			return new WriteConcern( (int) wObject ).withWTimeout( wTimeoutMS, TimeUnit.MILLISECONDS ).withJournal( journal );
 		}
 	}
 

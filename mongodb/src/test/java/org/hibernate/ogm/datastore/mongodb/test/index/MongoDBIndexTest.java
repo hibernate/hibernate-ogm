@@ -44,7 +44,7 @@ public class MongoDBIndexTest extends OgmTestCase {
 				indexMap.get( "author_idx" ).toJson( jsonWriterSettings ) );
 		// TODO OGM-1080: the order should be -1 but we are waiting for ORM 5.2 which exposes this value and allows us to retrieve it
 		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'name' : 1} , 'name' : 'name_idx' , 'ns' : 'ogm_test_database.T_POEM' ,  'expireAfterSeconds' : { '$numberLong' : '10' }}",
-				indexMap.get( "name_idx" ).toJson( jsonWriterSettings) );
+				indexMap.get( "name_idx" ).toJson( jsonWriterSettings ) );
 		assertJsonEquals( "{ 'v' : 2 , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'sparse' : true}",
 				indexMap.get( "author_name_idx" ).toJson( jsonWriterSettings ) );
 
