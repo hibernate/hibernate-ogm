@@ -19,6 +19,8 @@ import com.mongodb.client.MongoIterable;
 import org.bson.BsonDocument;
 import org.bson.BsonJavaScript;
 import org.bson.Document;
+import org.bson.json.JsonMode;
+import org.bson.json.JsonWriterSettings;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -57,6 +59,9 @@ import com.mongodb.client.model.UpdateOptions;
 public class MongoDBTestHelper extends BaseGridDialectTestHelper implements GridDialectTestHelper {
 
 	private static final Log log = LoggerFactory.make( MethodHandles.lookup() );
+
+	@SuppressWarnings("deprecation")
+    private static final JsonWriterSettings jsonWriterSettings = JsonWriterSettings.builder().outputMode( JsonMode.STRICT ).build();
 
 	static {
 		// Read host and port from environment variable
@@ -262,7 +267,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		if ( actualDocument == null ) {
 			throw new AssertionError( "Document not found!" );
 		}
-		assertJsonEquals( expectedDocument, actualDocument.toJson() );
+		assertJsonEquals( expectedDocument, actualDocument.toJson( jsonWriterSettings ) );
 	}
 
 	public static Map<String, Document> getIndexes(OgmSessionFactory sessionFactory, String collection) {
@@ -324,7 +329,7 @@ public class MongoDBTestHelper extends BaseGridDialectTestHelper implements Grid
 		registerServerSideFunction( mongoDatabase, resultSetFunction, Car.RESULT_SET_PROC );
 
 		Document result =  mongoDatabase.runCommand( new Document( "$eval", "db.loadServerScripts()" ) );
-		log.infof( "Server-side scripts evaluated: %s", result.toJson() );
+		log.infof( "Server-side scripts evaluated: %s", result.toJson( jsonWriterSettings ) );
 	}
 
 	private void registerServerSideFunction(MongoDatabase mongoDatabase, BsonDocument uniqueValueFunction, String functionName) {
