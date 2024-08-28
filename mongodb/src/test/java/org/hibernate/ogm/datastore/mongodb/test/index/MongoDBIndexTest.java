@@ -40,12 +40,14 @@ public class MongoDBIndexTest extends OgmTestCase {
 		// on same field set
 		assertThat( indexMap.size() ).isEqualTo( 5 );
 
-		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
+		sanitizeIndexMap( indexMap );
+
+		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'author' : 1} , 'name' : 'author_idx' , 'background' : true , 'partialFilterExpression' : { 'author' : 'Verlaine'}}",
 				indexMap.get( "author_idx" ).toJson( jsonWriterSettings ) );
 		// TODO OGM-1080: the order should be -1 but we are waiting for ORM 5.2 which exposes this value and allows us to retrieve it
-		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'name' : 1} , 'name' : 'name_idx' , 'ns' : 'ogm_test_database.T_POEM' ,  'expireAfterSeconds' : { '$numberLong' : '10' }}",
+		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'name' : 1} , 'name' : 'name_idx' ,  'expireAfterSeconds' : { '$numberLong' : '10' }}",
 				indexMap.get( "name_idx" ).toJson( jsonWriterSettings ) );
-		assertJsonEquals( "{ 'v' : 2 , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'sparse' : true}",
+		assertJsonEquals( "{ 'v' : 2 , 'unique' : true , 'key' : { 'author' : 1 , 'name' : 1} , 'name' : 'author_name_idx' , 'sparse' : true}",
 				indexMap.get( "author_name_idx" ).toJson( jsonWriterSettings ) );
 
 		session.close();
@@ -61,7 +63,9 @@ public class MongoDBIndexTest extends OgmTestCase {
 		// on same field set
 		assertThat( indexMap.size() ).isEqualTo( 5 );
 
-		assertJsonEquals( "{ 'v' : 2 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'ns' : 'ogm_test_database.T_POEM' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
+		sanitizeIndexMap( indexMap );
+
+		assertJsonEquals( "{ 'v' : 2 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'author_name_text_idx' , 'weights' : { 'author' : 2, 'name' : 5} , 'default_language' : 'fr' , 'language_override' : 'language' , 'textIndexVersion' : 3}",
 				indexMap.get( "author_name_text_idx" ).toJson( jsonWriterSettings ) );
 
 		session.close();
@@ -74,7 +78,9 @@ public class MongoDBIndexTest extends OgmTestCase {
 		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), OscarWildePoem.COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 3 );
 
-		assertJsonEquals( "{ 'v' : 2 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'name_text_idx' , 'ns' : 'ogm_test_database.T_OSCAR_WILDE_POEM', 'default_language' : 'fr' , 'language_override' : 'language' , weights : { name: 5 } , 'textIndexVersion' : 3}",
+		sanitizeIndexMap( indexMap );
+
+		assertJsonEquals( "{ 'v' : 2 , 'key' : { '_fts' : 'text' , '_ftsx' : 1} , 'name' : 'name_text_idx' , 'default_language' : 'fr' , 'language_override' : 'language' , weights : { name: 5 } , 'textIndexVersion' : 3}",
 				indexMap.get( "name_text_idx" ).toJson( jsonWriterSettings ) );
 
 		session.close();
@@ -87,10 +93,22 @@ public class MongoDBIndexTest extends OgmTestCase {
 		Map<String, Document> indexMap = getIndexes( session.getSessionFactory(), Restaurant.COLLECTION_NAME );
 		assertThat( indexMap.size() ).isEqualTo( 2 );
 
-		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'location' : '2dsphere'} , 'name' : 'location_spatial_idx' , 'ns' : 'ogm_test_database.T_RESTAURANT' , 2dsphereIndexVersion=3}",
+		sanitizeIndexMap( indexMap );
+
+		assertJsonEquals( "{ 'v' : 2 , 'key' : { 'location' : '2dsphere'} , 'name' : 'location_spatial_idx' , 2dsphereIndexVersion=3}",
 				indexMap.get( "location_spatial_idx" ).toJson( jsonWriterSettings ) );
 
 		session.close();
+	}
+
+	// Normalize index map to account for difference in output in various versions of MongoDB
+	private static void sanitizeIndexMap(Map<String, Document> indexMap) {
+		indexMap.values().forEach( document -> {
+			document.remove( "ns" );
+			if ( document.containsKey( "expireAfterSeconds" ) ) {
+				document.put( "expireAfterSeconds", document.toBsonDocument().getNumber( "expireAfterSeconds" ).longValue() );
+			}
+		} );
 	}
 
 	@Override
