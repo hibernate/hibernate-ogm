@@ -68,6 +68,12 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-legacy</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>bson-record-codec</artifactId>
+                    <groupId>org.mongodb</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.parboiled</groupId>
