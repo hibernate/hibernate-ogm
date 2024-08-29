@@ -491,6 +491,12 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongodb-driver-legacy</artifactId>
                 <version>${version.org.mongodb.mongo-java-driver}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>bson-record-codec</artifactId>
+                        <groupId>org.mongodb</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Neo4j -->
