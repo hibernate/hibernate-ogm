@@ -68,6 +68,17 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-legacy</artifactId>
+            <exclusions>
+                <!--
+                    The bson-record-codec module is not needed for hibernate-ogm, and needs to be excluded at
+                    least for tests because the class files in that module are compiled for Java 17 (the
+                    minimum LTS release required for record support).
+                -->
+                <exclusion>
+                    <artifactId>bson-record-codec</artifactId>
+                    <groupId>org.mongodb</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.parboiled</groupId>
