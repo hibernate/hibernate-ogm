@@ -41,6 +41,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-core</artifactId>
+            <version>${version.org.mongodb.mongo-java-driver}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
