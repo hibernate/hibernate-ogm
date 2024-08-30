@@ -11,6 +11,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.test.integration.mongodb.MongoDBModuleMemberRegistrationScenario;
 import org.hibernate.ogm.test.integration.mongodb.errorhandler.TestErrorHandler;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -28,6 +29,7 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
  * @author Fabio Massimo Ercoli
  */
 @RunWith(Arquillian.class)
+@Ignore("WildFly 14 mongo subsystem is not compatible with mongo client 4. Add back the subsystem in standalone-nosql.xml to enable the test")
 public class MongoDBWildFlyNoSQLMemberRegistrationIT extends MongoDBModuleMemberRegistrationScenario {
 
 	@Deployment
