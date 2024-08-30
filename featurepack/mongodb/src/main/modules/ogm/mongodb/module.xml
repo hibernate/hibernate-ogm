@@ -9,6 +9,7 @@
     <resources>
         <artifact name="${org.hibernate.ogm:hibernate-ogm-mongodb}" />
         <artifact name="${org.mongodb:mongodb-driver-legacy}" />
+        <artifact name="${org.mongodb:mongodb-driver-core}" />
     </resources>
     <dependencies>
         <module name="org.hibernate.ogm" slot="${module-slot.org.hibernate.ogm.short-id}" />
