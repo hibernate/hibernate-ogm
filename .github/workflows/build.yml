@@ -54,7 +54,7 @@ jobs:
         if: ${{ failure() || cancelled() }}
         with:
           name: reports-db-ogm
-          path: './**/build/reports/'
+          path: './**/target/failsafe-reports/'
           retention-days: 7
 
   test_remote_mongodb:
@@ -96,7 +96,7 @@ jobs:
         if: ${{ failure() || cancelled() }}
         with:
           name: reports-db-ogm
-          path: './**/build/reports/'
+          path: './**/target/failsafe-reports/'
           retention-days: 7
 
   test_neo4j_bolt_protocol:
@@ -155,7 +155,7 @@ jobs:
         if: ${{ failure() || cancelled() }}
         with:
           name: reports-db-ogm
-          path: './**/build/reports/'
+          path: './**/target/failsafe-reports/'
           retention-days: 7
 
   test_neo4j_http_protocol:
@@ -214,5 +214,5 @@ jobs:
         if: ${{ failure() || cancelled() }}
         with:
           name: reports-db-ogm
-          path: './**/build/reports/'
+          path: './**/target/failsafe-reports/'
           retention-days: 7
