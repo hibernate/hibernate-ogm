@@ -31,11 +31,11 @@ jobs:
         run: |
           echo "::set-output name=yearmonth::$(/bin/date -u "+%Y-%m")"
         shell: bash
-      - name: Set up JDK 11
+      - name: Set up JDK 8
         uses: actions/setup-java@v2.2.0
         with:
           distribution: 'temurin'
-          java-version: 11
+          java-version: 8
             # https://github.com/actions/cache/blob/main/examples.md#java---maven
       - name: Cache local Maven repository
         uses: actions/cache@v4
