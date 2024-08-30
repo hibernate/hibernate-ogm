@@ -491,15 +491,15 @@
             <client-config name="Standard-Client-Config"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:weld:4.0"/>
-        <subsystem xmlns="urn:jboss:domain:mongodb:1.0">
-            <mongo name="default" id="mongodb" jndi-name="java:jboss/mongodb/client" database="mongodb" module="org.hibernate.ogm.mongodb">
-                <host name="default" outbound-socket-binding-ref="mongodb"/>
-                <properties name="default">
-                    <property name="writeConcern" value="ACKNOWLEDGED"/>
-                    <property name="readConcern" value="LOCAL"/>
-                </properties>
-            </mongo>
-        </subsystem>
+<!--        <subsystem xmlns="urn:jboss:domain:mongodb:1.0">-->
+<!--            <mongo name="default" id="mongodb" jndi-name="java:jboss/mongodb/client" database="mongodb" module="org.hibernate.ogm.mongodb">-->
+<!--                <host name="default" outbound-socket-binding-ref="mongodb"/>-->
+<!--                <properties name="default">-->
+<!--                    <property name="writeConcern" value="ACKNOWLEDGED"/>-->
+<!--                    <property name="readConcern" value="LOCAL"/>-->
+<!--                </properties>-->
+<!--            </mongo>-->
+<!--        </subsystem>-->
     </profile>
     <interfaces>
         <interface name="management">
