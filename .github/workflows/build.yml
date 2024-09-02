@@ -86,7 +86,7 @@ jobs:
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.11.0
         with:
-          mongodb-version: 3.6.23
+          mongodb-version: 7.0.14
           mongodb-port: 27017
       - name: Run tests
         run: |

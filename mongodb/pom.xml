@@ -232,6 +232,19 @@
             <properties>
                 <datastoreProvider>mongodb</datastoreProvider>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <!-- MongoDB 7.0 (the one we use for remote testing on CI) doesn't support `$eval` anymore -->
+                                <exclude>**/PositionalParametersStoredProcedureCallTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
