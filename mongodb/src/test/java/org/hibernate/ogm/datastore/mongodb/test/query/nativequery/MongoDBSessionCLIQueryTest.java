@@ -6,15 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.collectionExists;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.fest.assertions.Fail;
-import org.fest.assertions.MapAssert;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
@@ -22,6 +17,7 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.Native
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.query.NativeQuery;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,6 +25,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.mongodb.BasicDBList;
+import org.fest.assertions.Fail;
+import org.fest.assertions.MapAssert;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.collectionExists;
 
 /**
  * Test the execution of native queries on MongoDB using the {@link Session}
@@ -684,7 +685,9 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		inTransaction( ( session ) -> {
 			String queryJson = "'$query': { 'author': 'Oscar Wilde' } ";
 			String max = " '$max': { 'year' : 1881 } ";
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + max + "})";
+			// Since MongoDB 4.2, hints are mandatory for $max
+			String hint = " '$hint': { 'year' : 1 } ";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + max + "," + hint + "})";
 
 			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
@@ -698,7 +701,9 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 		inTransaction( ( session ) -> {
 			String queryJson = "'$query': { 'author': 'Oscar Wilde' } ";
 			String min = " '$min': { 'year' : 1882 } ";
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + min + "})";
+			// Since MongoDB 4.2, hints are mandatory for $min
+			String hint = " '$hint': { 'year' : 1 } ";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryJson + "," + min + "," + hint + "})";
 
 			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
@@ -713,13 +718,13 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			StringBuilder queryWithModifiers = new StringBuilder();
 			queryWithModifiers.append( "'$query': { } " );
 			queryWithModifiers.append( ", '$max': { 'year' : 1881 } " );
+			queryWithModifiers.append( ", '$hint': { 'year' : 1 } " );
 			queryWithModifiers.append( ", '$explain': false " );
 			queryWithModifiers.append( ", '$snapshot': false " );
-			queryWithModifiers.append( ", 'hint': { 'year' : 1881 } " );
-			queryWithModifiers.append( ", 'maxScan': 11234" );
-
 			queryWithModifiers.append( ", '$comment': 'Testing comment' " );
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers.toString() + "})";
+			queryWithModifiers.append( ", '$maxScan': 11234" );
+
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers + "})";
 
 			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			@SuppressWarnings("unchecked")
@@ -734,13 +739,14 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			StringBuilder queryWithModifiers = new StringBuilder();
 			queryWithModifiers.append( "'$query': { 'author': 'Oscar Wilde' } " );
 			queryWithModifiers.append( ", '$max': { 'year' : 1881 } " );
+			queryWithModifiers.append( ", '$hint': { 'year' : 1 } " );
 			queryWithModifiers.append( ", '$explain': true " );
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers.toString() + "})";
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers + "})";
 
 			NativeQuery query = session.createNativeQuery( nativeQuery );
 			@SuppressWarnings("unchecked")
 			List<Object[]> result = query.list();
-			// I'm not sure we can test the content because this is the result of the explain command
+			// I'm not sure if we can test the content because this is the result of the explain command
 			// and I believe it might change among versions
 			assertThat( result.get( 0 ) ).isNotEmpty();
 		} );
