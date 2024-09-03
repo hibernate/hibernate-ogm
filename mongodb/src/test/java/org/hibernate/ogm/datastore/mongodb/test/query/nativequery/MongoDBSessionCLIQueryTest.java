@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.mongodb.BasicDBList;
+import org.bson.Document;
 import org.fest.assertions.Fail;
 import org.fest.assertions.MapAssert;
 
@@ -719,6 +720,8 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			queryWithModifiers.append( "'$query': { } " );
 			queryWithModifiers.append( ", '$max': { 'year' : 1881 } " );
 			queryWithModifiers.append( ", '$hint': { 'year' : 1 } " );
+			// It's important to have at least one test with the `$explain` modifier set to false because
+			// if something goes wrong it will return a different result type
 			queryWithModifiers.append( ", '$explain': false " );
 			queryWithModifiers.append( ", '$snapshot': false " );
 			queryWithModifiers.append( ", '$comment': 'Testing comment' " );
@@ -726,10 +729,9 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 
 			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers + "})";
 
-			NativeQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
-			@SuppressWarnings("unchecked")
+			NativeQuery<OscarWildePoem> query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			List<OscarWildePoem> result = query.list();
-			assertThat( result ).onProperty( "id" ).containsExactly( athanasia.getId() );
+			assertThat( result ).containsExactly( athanasia );
 		} );
 	}
 
@@ -741,15 +743,32 @@ public class MongoDBSessionCLIQueryTest extends OgmTestCase {
 			queryWithModifiers.append( ", '$max': { 'year' : 1881 } " );
 			queryWithModifiers.append( ", '$hint': { 'year' : 1 } " );
 			queryWithModifiers.append( ", '$explain': true " );
-			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers + "})";
 
-			NativeQuery query = session.createNativeQuery( nativeQuery );
-			@SuppressWarnings("unchecked")
-			List<Object[]> result = query.list();
-			// I'm not sure if we can test the content because this is the result of the explain command
-			// and I believe it might change among versions
-			assertThat( result.get( 0 ) ).isNotEmpty();
+			String nativeQuery = "db." + OscarWildePoem.TABLE_NAME + ".find({" + queryWithModifiers + "})";
+			Object[] result = (Object[]) session.createNativeQuery( nativeQuery ).uniqueResult();
+			assertThat( explained( result ) )
+					.as( "Unrecognized `$explain` output: " + Arrays.toString( result ) )
+					.isTrue();
 		} );
+	}
+
+	/**
+	 * Different versions of MongoDB return different results for the `$explain` operator.
+	 * But, we expect to have a `namespace` key inside a `Document` somewhere in the result.
+	 */
+	private static boolean explained(Object[] result) {
+		if ( result == null ) {
+			return false;
+		}
+		for ( Object value : result ) {
+			if ( value instanceof Document ) {
+				Document document = (Document) value;
+				if ( document.containsKey( "namespace" ) ) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Test

@@ -151,14 +151,14 @@ public class OscarWildePoem {
 			return false;
 		}
 		OscarWildePoem that = (OscarWildePoem) o;
-		return Objects.equals( name, that.name ) &&
-				Objects.equals( author, that.author ) &&
-				Objects.equals( year, that.year );
+		return rating == that.rating && Objects.equals( name, that.name ) && Objects.equals(
+				author,
+				that.author
+		) && Objects.equals( year, that.year ) && Objects.equals( copiesSold, that.copiesSold );
 	}
 
 	@Override
 	public int hashCode() {
-
-		return Objects.hash( name, author, year );
+		return Objects.hash( name, author, rating, year, copiesSold );
 	}
 }
