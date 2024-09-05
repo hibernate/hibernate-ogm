@@ -13,6 +13,7 @@ import java.util.Map;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
+import com.mongodb.MongoDriverInformation;
 import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCursor;
@@ -20,6 +21,7 @@ import com.mongodb.client.MongoDatabase;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.jndi.spi.JndiService;
+import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.cfg.spi.Hosts;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.binarystorage.GridFSStorageManager;
@@ -160,7 +162,11 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			for ( Hosts.HostAndPort hostAndPort : config.getHosts() ) {
 				serverAddresses.add( new ServerAddress( hostAndPort.getHost(), hostAndPort.getPort() ) );
 			}
-			return new MongoClient( serverAddresses, credential, clientOptions );
+			return new MongoClient( serverAddresses, credential, clientOptions,
+					MongoDriverInformation.builder()
+							.driverName( "hibernate-ogm" )
+							.driverVersion( Version.getVersionString() )
+							.build() );
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeMongoDB( e );
