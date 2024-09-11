@@ -11,7 +11,7 @@ Make sure you have:
 3. all the permissions required to perform the release process:
 
   - [CI](http://ci.hibernate.org/)
-  - [Nexus](https://repository.jboss.org/nexus/index.html): you can try to login on the Nexus web interface
+  - [OSSRH](https://central.sonatype.com/)
 
 ## Release process
 

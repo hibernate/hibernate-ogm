@@ -506,8 +506,8 @@ It contains the core of Hibernate OGM and all the dialects feature packs extend 
 It extends the base WildFly feature pack distribution.
 It includes Hibernate ORM {hibernate-orm-version} modules, required by Hibernate OGM {hibernate-ogm-version}.
 
-The feature pack is published on the JBoss Nexus repository and Maven Central as
-link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-core~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-core:{hibernate-ogm-version}:zip].
+The feature pack is published on Maven Central as
+link:$$https://central.sonatype.com/artifact/org.hibernate.ogm/hibernate-ogm-featurepack-core/{hibernate-ogm-version}$$[org.hibernate.ogm:hibernate-ogm-featurepack-core:{hibernate-ogm-version}:zip].
 
 ===== Infinispan Remote feature pack
 
@@ -517,8 +517,8 @@ It includes the main module:
 * _org.hibernate.ogm.infinispan-remote_, containing Hibernate OGM Infinispan Remote module
 
 It includes Hibernate OGM core feature pack and Infinispan client Wildfly modules.
-The feature pack is published on the JBoss Nexus repository and Maven Central as
-link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-infinispan-remote~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:{hibernate-ogm-version}:zip].
+The feature pack is published on Maven Central as
+link:$$https://central.sonatype.com/artifact/org.hibernate.ogm/hibernate-ogm-featurepack-infinispan-remote/{hibernate-ogm-version}$$[org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:{hibernate-ogm-version}:zip].
 
 ===== Infinispan Embedded feature pack
 
@@ -528,8 +528,8 @@ It includes the main module:
 * _org.hibernate.ogm.infinispan-embedded_, containing Hibernate OGM Infinispan Embedded module
 
 It includes Hibernate OGM core feature pack and Infinispan client Wildfly modules.
-The feature pack is published on the JBoss Nexus repository and Maven Central as
-link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-infinispan-embedded~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:{hibernate-ogm-version}:zip].
+The feature pack is published on Maven Central as
+link:$$https://central.sonatype.com/artifact/org.hibernate.ogm/hibernate-ogm-featurepack-infinispan-embedded/{hibernate-ogm-version}$$[org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:{hibernate-ogm-version}:zip].
 
 ===== MongoDB feature pack
 
@@ -539,8 +539,8 @@ It includes the main module:
 * _org.hibernate.ogm.mongodb_, containing Hibernate OGM MongoDB module
 
 It includes Hibernate OGM core feature pack and MongoDB Java client.
-The feature pack is published on the JBoss Nexus repository and Maven Central as
-link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-mongodb~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:{hibernate-ogm-version}:zip].
+The feature pack is published on Maven Central as
+link:$$https://central.sonatype.com/artifact/org.hibernate.ogm/hibernate-ogm-featurepack-mongodb/{hibernate-ogm-version}$$[org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:{hibernate-ogm-version}:zip].
 
 ===== Neo4j feature pack
 
@@ -550,8 +550,8 @@ It includes the main module:
 * _org.hibernate.ogm.neo4j_, containing Hibernate OGM Neo4j module
 
 It includes Hibernate OGM core feature pack and Neo4j client libraries.
-The feature pack is published on the JBoss Nexus repository and Maven Central as
-link:$$https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate.ogm~hibernate-ogm-featurepack-neo4j~{hibernate-ogm-version}~~$$[org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:{hibernate-ogm-version}:zip].
+The feature pack is published on Maven Central as
+link:$$https://central.sonatype.com/artifact/org.hibernate.ogm/hibernate-ogm-featurepack-neo4j/{hibernate-ogm-version}$$[org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:{hibernate-ogm-version}:zip].
 
 ==== Configure your persistence.xml to use your choice of persistence provider
 
