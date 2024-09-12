@@ -6,7 +6,7 @@
 
 ==== MongoDB Java Driver
 
-This patch release updates the underlying MongoDB Java driver from 3.11 to 4.11.  It also fixes some incompatibilities
+This patch release updates the underlying MongoDB Java driver from 3.11 to 4.11. It also fixes some incompatibilities
 with more recent versions of MongoDB that prevent 5.4.1.Final from executing native queries.
 
 As a consequence of the driver update, the oldest MongoDB server release that Hibernate OGM will connect to is now 3.6 (which reached
@@ -23,6 +23,8 @@ Recent versions of the MongoDB server have removed support for some features on 
 All other Hibernate OGM tests of MongoDB support are passing with MongoDB 3.6, up through the latest release of MongoDB
 (currently MongoDB 8.0).
 
+== Older versions
 
-
+The migration guide for the previous versions of Hibernate OGM is available on the
+https://developer.jboss.org/docs/DOC-52281[JBoss Community Archive] website.
 
