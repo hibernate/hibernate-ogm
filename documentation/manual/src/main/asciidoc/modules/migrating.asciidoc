@@ -1,6 +1,6 @@
-[[ogm-migration]]
+[[ogm-migrating]]
 
-== 5.4.2.Final
+== Migrating from 5.4.1.Final
 
 === MongoDB
 
@@ -23,8 +23,7 @@ Recent versions of the MongoDB server have removed support for some features on 
 All other Hibernate OGM tests of MongoDB support are passing with MongoDB 3.6, up through the latest release of MongoDB
 (currently MongoDB 8.0).
 
-== Older versions
+=== Older versions
 
 The migration guide for the previous versions of Hibernate OGM is available on the
 https://developer.jboss.org/docs/DOC-52281[JBoss Community Archive] website.
-

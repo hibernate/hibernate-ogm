@@ -18,6 +18,8 @@ include::modules/how-to-contribute.asciidoc[]
 
 include::modules/getting-started.asciidoc[]
 
+include::modules/migrating.asciidoc[]
+
 include::modules/architecture.asciidoc[]
 
 include::modules/configuration.asciidoc[]
