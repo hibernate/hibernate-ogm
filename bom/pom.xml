@@ -104,6 +104,10 @@
         <ossrh.snapshots.repo.id>ossrh</ossrh.snapshots.repo.id>
         <ossrh.snapshots.repo.url>https://oss.sonatype.org/content/repositories/snapshots</ossrh.snapshots.repo.url>
 
+        <!-- JBoss public repository -->
+
+        <jboss.public.repo.id>jboss-public-repository-group</jboss.public.repo.id>
+        <jboss.public.repo.url>https://repository.jboss.org/nexus/content/groups/public-jboss/</jboss.public.repo.url>
     </properties>
 
     <inceptionYear>2010</inceptionYear>
