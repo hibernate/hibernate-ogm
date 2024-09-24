@@ -220,31 +220,19 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>ch.mfrey.maven.plugin</groupId>
-                        <artifactId>copy-maven-plugin</artifactId>
+                        <groupId>com.coderplus.maven.plugins</groupId>
+                        <artifactId>copy-rename-maven-plugin</artifactId>
+                        <version>1.0.1</version>
                         <executions>
                             <execution>
-                                <id>copy</id>
+                                <id>copy-file</id>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>copy</goal>
                                 </goals>
                                 <configuration>
-                                    <resources>
-                                        <resource>
-                                            <directory>${asciidoctor.base-output-dir}/pdf</directory>
-                                            <move>true</move>
-                                            <includes>
-                                                <include>index.pdf</include>
-                                            </includes>
-                                            <paths>
-                                                <path>
-                                                    <from>index.pdf</from>
-                                                    <to>hibernate_ogm_reference.pdf</to>
-                                                </path>
-                                            </paths>
-                                        </resource>
-                                    </resources>
+                                    <sourceFile>${asciidoctor.base-output-dir}/pdf/index.pdf</sourceFile>
+                                    <destinationFile>${asciidoctor.base-output-dir}/pdf/hibernate_ogm_reference.pdf</destinationFile>
                                 </configuration>
                             </execution>
                         </executions>
