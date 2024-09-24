@@ -1,6 +1,21 @@
 Hibernate OGM Changelog
 =======================
 
+5.4.2.Final (2024-09-24)
+-------------------------
+
+** Improvement
+    * OGM-1592 Create migration guide
+    * OGM-1589 Append hibernate-ogm to driver info
+    * OGM-1588 Update MongoDB driver dependency to 4.11
+    * OGM-1567 Support JDK->= 11
+
+** Task
+    * OGM-1595 Update and fix the maven wrapper plugin
+    * OGM-1594 Add Jenkins pipeline configuration file
+    * OGM-1591 Test with remote servers in the GitHub workflow
+    * OGM-1590 Add GitHub workflow file to the project
+
 5.4.1.Final (18-12-2018)
 -------------------------
 
