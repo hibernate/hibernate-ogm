@@ -63,25 +63,14 @@ Run maven
 [source, bash]
 ----
 #build project
-mvn clean install -s settings-example.xml
+mvn clean install 
 ----
-
-[NOTE]
-====
-Note that Hibernate OGM uses artifacts from the Maven repository hosted by JBoss.
-Make sure to either use the [code]`-s settings-example.xml` option
-or adjust your [filename]`$$~/.m2/settings.xml$$`
-according to the descriptions available
-http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
-
-These settings are required for development of Hibernate OGM but should not be needed to use it.
-====
 
 To skip building the documentation, set the `skipDocs` property to true:
 
 [source, bash]
 ----
-mvn clean install -DskipDocs=true -s settings-example.xml
+mvn clean install -DskipDocs=true
 ----
 
 [TIP]

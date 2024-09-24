@@ -12,5 +12,5 @@ else
 fi
 
 pushd $WORKSPACE
-mvn clean versions:set -s settings-example.xml -DnewVersion=$NEW_VERSION -DgenerateBackupPoms=false -f bom/pom.xml
+mvn clean versions:set -DnewVersion=$NEW_VERSION -DgenerateBackupPoms=false -f bom/pom.xml
 popd

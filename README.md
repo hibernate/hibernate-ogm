@@ -54,7 +54,7 @@ The code is available on GitHub at <https://github.com/hibernate/hibernate-ogm>.
 
 To run the full project build including tests for all backends, documentation etc. execute:
 
-    mvn clean install -s settings-example.xml
+    mvn clean install
 
 Note that for running the test suite against separately installed MongoDB or Neo4j servers their host name must be specified via an environment variable.
 See the sections below for the details.
@@ -62,7 +62,7 @@ See the sections below for the details.
 To speed things up, there are several options for skipping parts of the build.
 To run the minimum project build without integration tests, documentation and distribution execute:
 
-    mvn clean install -DskipITs -DskipDocs -DskipDistro -s settings-example.xml
+    mvn clean install -DskipITs -DskipDocs -DskipDistro
 
 The following sections describe these options in more detail.
 
@@ -77,29 +77,29 @@ Make sure that annotation processing is enabled in your project settings (see "P
 
 You can skip integration tests by specifying the `skipITs` property:
 
-    mvn clean install -DskipITs -s settings-example.xml
+    mvn clean install -DskipITs
 
 ### Documentation
 
 The documentation is built by default as part of the project build. You can skip it by specifying the `skipDocs` property:
 
-    mvn clean install -DskipDocs -s settings-example.xml
+    mvn clean install -DskipDocs
 
 If you just want to build the documentation, run it from the _documentation/manual_ subdirectory.
 
 By default, the following command only builds the HTML version of the documentation:
 
-    mvn clean install -f documentation/manual/pom.xml -s settings-example.xml
+    mvn clean install -f documentation/manual/pom.xml
 
 If you also wish to generate the PDF version of the documentation, you need to use the `documentation-pdf` profile:
 
-    mvn clean install -f documentation/manual/pom.xml -s settings-example.xml -Pdocumentation-pdf
+    mvn clean install -f documentation/manual/pom.xml -Pdocumentation-pdf
 
 ### Distribution
 
 The distribution bundle is built by default as part of the project build. You can skip it by specifying the `skipDistro` property:
 
-    mvn clean install -DskipDistro -s settings-example.xml
+    mvn clean install -DskipDistro
 
 ### Integration tests
 
@@ -119,11 +119,11 @@ distribution, extracts it, starts a _mongod_ process and shuts it down after tes
 If required, you can configure the port to which the MongoDB instance binds to (by default 27018)
 and the target directory for the extracted binary (defaults to _${project.build.directory}/embeddedMongoDb/extracted_) like this:
 
-    mvn clean install -s settings-example.xml -DembeddedMongoDbTempDir=<my-temp-dir> -DembeddedMongoDbPort=<my-port>
+    mvn clean install -DembeddedMongoDbTempDir=<my-temp-dir> -DembeddedMongoDbPort=<my-port>
 
 To work with a separately installed MongoDB instance instead, specify the property `-DuseExternalMongoDb`:
 
-    mvn clean install -s settings-example.xml -DuseExternalMongoDb
+    mvn clean install -DuseExternalMongoDb
 
 This assumes MongoDB to be installed on `localhost`, using the default port and no authentication.
 If you work with different settings, configure the required properties in hibernate.properties (for the tests in _mongodb_)
@@ -134,7 +134,7 @@ prior to running the tests:
     export MONGODB_PORT=1234
     export MONGODB_USERNAME=someUsername
     export MONGODB_PASSWORD=someP@ssw0rd
-    mvn clean install -s settings-example.xml -DuseExternalMongoDb
+    mvn clean install -DuseExternalMongoDb
 
 ### Neo4j
 
@@ -144,11 +144,11 @@ embedded Neo4j configuration is used.
 Hibernate OGM can connect to a Neo4j server remotely via the Bolt protocol or via HTTP.
 These tests are not executed by default, you can run them using the following commands:
 
-    mvn clean install -s settings-example.xml -Pneo4j-http
+    mvn clean install -Pneo4j-http
 
 or
 
-    mvn clean install -s settings-example.xml -Pneo4j-bolt
+    mvn clean install -Pneo4j-bolt
 
 This assumes Neo4j to be installed on `localhost`, using the default port and no authentication.
 If you work with different settings, configure the required properties in hibernate.properties

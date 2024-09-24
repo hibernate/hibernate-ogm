@@ -30,7 +30,7 @@ Verify:
 4. tests and artifacts:
 
    ```
-       mvn clean install -s settings-example.xml
+       mvn clean install
    ```
 
 5. the distribution package as built by Maven (_distribution/target/hibernate-ogm-[version]-dist_).
