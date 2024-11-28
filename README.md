@@ -2,6 +2,10 @@
 
 *Version: 5.4.2.Final - 2024-09-24*
 
+## Archived
+
+Hibernate OGM has not been kept up to date with the latest Hibernate ORM versions and is not maintained anymore. If community members have interest in maintaining it, please [contact us](https://hibernate.org/community/).
+
 ## Description
 
 Hibernate OGM stores data in a NoSQL data grid using the Hibernate ORM engine.
